@@ -1,0 +1,128 @@
+---
+apiVersion: processkit.projectious.work/v1
+kind: Skill
+metadata:
+  id: SKILL-role-management
+  name: role-management
+  version: "1.0.0"
+  created: 2026-04-06T00:00:00Z
+spec:
+  description: "Create and maintain Role entities — named sets of responsibilities that actors can fill."
+  category: process
+  layer: 1
+  uses: [event-log]
+  provides:
+    primitives: [Role]
+    templates: [role]
+  when_to_use: "Use when defining a new role in the project (developer, reviewer, tech-lead, release-manager) or updating an existing role's responsibilities."
+---
+
+# Role Management
+
+## Level 1 — Intro
+
+A Role is a named set of responsibilities that an Actor can fill. Roles
+describe what — not who. "Alice is a developer" is a Binding between Actor
+`ACTOR-alice` and Role `ROLE-developer`; this skill manages the Role side of
+that relationship.
+
+**Important:** Roles in processkit have no enforcement semantics. They are
+descriptive, not restrictive. RBAC enforcement is out of scope
+(see DISC-002 / DEC-017).
+
+## Level 2 — Overview
+
+### When to create a Role
+
+Create a Role when:
+- A responsibility recurs across multiple work items or processes.
+- You need to refer to "the person who X" without naming a specific actor.
+- A process template references the role ("the reviewer must …").
+
+### Shape
+
+```yaml
+---
+apiVersion: processkit.projectious.work/v1
+kind: Role
+metadata:
+  id: ROLE-reviewer
+  created: 2026-04-06T00:00:00Z
+spec:
+  name: reviewer
+  description: "Reviews code and documentation changes before merge."
+  responsibilities:
+    - "Read PRs within 48 hours of request"
+    - "Approve or request changes with actionable feedback"
+    - "Block merges on security or correctness concerns"
+  skills_required: [code-review, debugging]
+  default_scope: project      # project | sprint | permanent
+---
+
+Optional body: elaboration, examples, anti-patterns.
+```
+
+### Workflow
+
+1. Pick an ID: `ROLE-<name>` where name is kebab-case and unique.
+2. Write a one-sentence `description` — the role's purpose.
+3. List concrete `responsibilities` as imperative bullet points.
+4. Optionally list `skills_required` — links to skill IDs that describe the
+   capabilities this role depends on.
+5. Save to `context/roles/`.
+6. Log `role.created`.
+
+### Assigning actors to roles
+
+**Do not list actor IDs in the Role file.** Assignments go in Binding entities
+so they can be scoped, time-bounded, and changed without editing the Role.
+
+```yaml
+kind: Binding
+spec:
+  type: role-assignment
+  subject: ACTOR-alice
+  target: ROLE-reviewer
+  scope: SCOPE-project-x    # optional
+```
+
+See `skills/binding-management`.
+
+## Level 3 — Full reference
+
+### Fields
+
+| Field              | Type          | Notes                                                    |
+|--------------------|---------------|----------------------------------------------------------|
+| `name`             | string        | Kebab-case. Matches the suffix of `metadata.id`.         |
+| `description`      | string        | One sentence. Shown in role listings.                    |
+| `responsibilities` | list[string]  | Imperative bullet points. Concrete, not vague.           |
+| `skills_required`  | list[string]  | Skill IDs or names. Advisory, not enforced.              |
+| `default_scope`    | enum          | `project` / `sprint` / `permanent`. Default assumption for Bindings. |
+| `supersedes`       | string        | Role ID this one replaces (for role renames/reorg).      |
+
+### Roles vs Categories vs Gates
+
+Beginners sometimes conflate three related concepts:
+
+- **Role** — who does a thing (reviewer, developer, release-manager).
+- **Category** — how a thing is classified (bug, feature, tech-debt).
+- **Gate** — a checkpoint that validates a thing (code-review-passed).
+
+A Role can be assigned via Binding; a Category is a label; a Gate is
+something a process has to pass. Don't model one as another.
+
+### No enforcement
+
+processkit does not check that an actor filling a role has the right
+`skills_required`, or that actions restricted to a role are only performed
+by bound actors. Roles are descriptive. If you need RBAC, that's a
+governance platform concern (DEC-017).
+
+### Well-known roles
+
+processkit does not ship a canonical list of roles — they vary too much per
+project. But these are common enough to be mentioned here for naming
+consistency: `developer`, `reviewer`, `tech-lead`, `release-manager`,
+`incident-commander`, `product-owner`, `designer`, `security-reviewer`.
+Projects are free to use these names or invent their own.
