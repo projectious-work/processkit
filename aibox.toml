@@ -1,0 +1,95 @@
+# =============================================================================
+# aibox.toml — single source of truth for your aibox project.
+# All .devcontainer/ files are generated from this. Edit here, run `aibox sync`.
+# Reference: https://projectious-work.github.io/aibox/docs/reference/configuration
+# =============================================================================
+
+[aibox]
+version = "0.14.1"             # Set by aibox — do not edit manually
+base    = "debian"             # Base image flavor. Options: debian
+
+# =============================================================================
+# [container] — runtime and build configuration
+# =============================================================================
+[container]
+name     = "processkit"         # Container name used by docker/podman
+hostname = "processkit"         # Hostname visible inside the container
+user     = "aibox"              # User inside the container (controls mount paths)
+
+# --- Lifecycle ---
+# post_create_command = "npm install"  # Shell command run once after container first starts
+# keepalive           = true           # Send periodic keepalive (prevents NAT idle dropout in OrbStack/VMs)
+
+# =============================================================================
+# [context] — context system and process packages
+# =============================================================================
+[context]
+schema_version = "1.0.0"      # Context schema version — updated automatically by `aibox sync`
+# Presets (use one of these):
+#   managed          core + tracking + standups + handover  (recommended default)
+#   software         managed + code + architecture
+#   research-project managed + research + documentation
+#   full-product     managed + code + architecture + design + product + security + operations
+# Individual packages (advanced): core, tracking, standups, handover, code, architecture,
+#   design, product, security, data, operations, research, documentation
+packages = ["product"]
+
+# =============================================================================
+# [skills] — fine-tune which skills are deployed
+# =============================================================================
+# Skills are automatically selected from process packages and addons.
+# Use include/exclude to override.
+# [skills]
+# include = ["skill-name"]    # Explicitly add skills beyond defaults
+# exclude = ["skill-name"]    # Remove skills you don't need
+
+# =============================================================================
+# [addons] — language runtimes and tool bundles
+# =============================================================================
+# Each addon installs a tool set into the container at build time.
+# Run `aibox addon list` to see all available addons.
+# Run `aibox addon info <name>` for tool details and supported versions.
+#
+# Examples (uncomment and adjust versions as needed):
+# [addons.python.tools]
+# python = { version = "3.13" }     # CPython interpreter
+# uv     = { version = "0.7" }      # Fast Python package manager
+#
+# [addons.rust.tools]
+# rust = { version = "stable" }     # Rust toolchain via rustup (stable/beta/nightly)
+#
+# [addons.node.tools]
+# node = { version = "22" }         # Node.js LTS
+
+[addons.ai-claude.tools]
+
+[addons.python.tools]
+
+# =============================================================================
+# [ai] — AI coding assistant providers
+# =============================================================================
+# Each provider listed here is automatically installed as an addon.
+# Options: claude, aider, gemini, mistral
+[ai]
+providers = ["claude"]
+
+# =============================================================================
+# [customization] — color theme, shell prompt, and zellij layout
+# =============================================================================
+# Theme is applied consistently across Zellij, Vim, Yazi, lazygit, and bat.
+# Options: gruvbox-dark | catppuccin-mocha | catppuccin-latte | dracula | tokyo-night | nord | projectious
+[customization]
+theme  = "gruvbox-dark"
+# Starship prompt preset.
+# Options: default | plain | minimal | nerd-font | pastel | bracketed | arrow
+prompt = "default"
+# Default zellij layout. Options: dev | focus | cowork | browse
+layout = "dev"
+
+# =============================================================================
+# [audio] — PulseAudio bridging for voice features (e.g., Claude Code voice)
+# =============================================================================
+# Requires host-side setup: run `aibox audio setup` on the host first.
+[audio]
+enabled = false
+# pulse_server = "tcp:host.docker.internal:4714"  # PulseAudio TCP endpoint (default port: 4714)
