@@ -13,16 +13,25 @@ errors.
 
 | Layer | Role                      | Skills                                                                                                 |
 |-------|---------------------------|--------------------------------------------------------------------------------------------------------|
-| 0     | Foundation                | `event-log`                                                                                            |
+| 0     | Foundation                | `index-management`, `id-management`, `event-log`                                                       |
 | 1     | Primitive management      | `role-management`, `actor-profile`                                                                     |
 | 2     | Core entities             | `workitem-management`, `decision-record`, `scope-management`, `category-management`, `cross-reference-management`, `binding-management` |
 | 3     | Process orchestration     | `process-management`, `state-machine-management`, `gate-management`, `schedule-management`, `constraint-management` |
 | 4     | Cross-cutting             | `discussion-management`, `metrics-management`                                                          |
 
+> **Layer 0 has three skills with one intra-layer edge.** `index-management`
+> and `id-management` are the absolute foundation — they depend on nothing.
+> `event-log` is also Layer 0 but `uses: [index-management, id-management]`,
+> so it conceptually sits "atop" them. This is the only intra-layer edge in
+> the entire hierarchy. The strict-downward rule applies to Layers 1+ unchanged.
+
 ## What the layers mean
 
-- **Layer 0** — the single foundation skill all other process skills
-  depend on. `event-log` sits here because everything should log.
+- **Layer 0** — the foundation that every entity-creating skill depends
+  on. `index-management` provides the read side (look up entities by ID,
+  kind, state, text). `id-management` provides the write side (allocate
+  unique IDs in the configured format). `event-log` is also at Layer 0
+  but uses both — the only intra-layer edge in the hierarchy.
 - **Layer 1** — management for the "participants" of processes: Actors
   (who does things) and Roles (what things they do).
 - **Layer 2** — management for the primary work artifacts: WorkItems,

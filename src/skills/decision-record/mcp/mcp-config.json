@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "processkit-decision-record": {
+      "command": "uv",
+      "args": ["run", ".claude/skills/decision-record/mcp/server.py"],
+      "env": {}
+    }
+  }
+}

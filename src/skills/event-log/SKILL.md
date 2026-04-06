@@ -10,6 +10,7 @@ spec:
   description: "Append-only event log — the probabilistic record of everything that happened in the project."
   category: process
   layer: 0
+  uses: [index-management, id-management]
   provides:
     primitives: [LogEntry]
     mcp_tools: [log_event, query_events, recent_events]

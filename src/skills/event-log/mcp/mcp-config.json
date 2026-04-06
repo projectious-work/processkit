@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "processkit-event-log": {
+      "command": "uv",
+      "args": ["run", ".claude/skills/event-log/mcp/server.py"],
+      "env": {}
+    }
+  }
+}

@@ -15,9 +15,13 @@ spec:
   intended_for: "Solo developers and small side projects."
   includes:
     skills:
-      # Foundation process primitives
+      # Layer 0 foundation — required by every entity-creating skill
+      - index-management
+      - id-management
+      # Layer 0/1 — event log and primitive management
       - event-log
       - actor-profile
+      # Layer 2 — primary work artifact
       - workitem-management
       # Core engineering hygiene
       - git-workflow

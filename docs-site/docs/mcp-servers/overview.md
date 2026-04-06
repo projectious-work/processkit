@@ -11,16 +11,26 @@ either edit entity files directly (following the SKILL.md instructions)
 or call an MCP tool (which validates against the schema and state machine).
 Both are first-class; MCP is not required.
 
-## Status at v0.2.0
+## Status at v0.3.0
 
-**No MCP servers ship yet.** v0.2.0 is the skill migration release.
-MCP servers land in **v0.3.0**, starting with five foundation servers:
+**Six MCP servers ship.** They live under `src/skills/<skill>/mcp/` and
+share a small Python utility library at `src/lib/processkit/`.
 
-- `index-management` — SQLite index over all entity files
-- `event-log` — `log_event`, `query_events`, `recent_events`
-- `workitem-management` — `create_workitem`, `transition_workitem`, `query_workitems`, `link_workitems`
-- `decision-record` — `record_decision`, `query_decisions`, `link_decision`
-- `binding-management` — `create_binding`, `query_bindings`, `resolve_bindings_for`
+| Server                                                                                                          | Layer | Tools                                                                                          |
+|-----------------------------------------------------------------------------------------------------------------|-------|------------------------------------------------------------------------------------------------|
+| [`index-management`](https://github.com/projectious-work/processkit/blob/main/src/skills/index-management/mcp/) | 0     | `reindex`, `query_entities`, `get_entity`, `search_entities`, `query_events`, `list_errors`, `stats` |
+| [`id-management`](https://github.com/projectious-work/processkit/blob/main/src/skills/id-management/mcp/)       | 0     | `generate_id`, `validate_id`, `list_used_ids`, `format_info`                                   |
+| [`event-log`](https://github.com/projectious-work/processkit/blob/main/src/skills/event-log/mcp/)               | 0     | `log_event`, `query_events`, `recent_events`                                                   |
+| [`workitem-management`](https://github.com/projectious-work/processkit/blob/main/src/skills/workitem-management/mcp/) | 2 | `create_workitem`, `transition_workitem`, `query_workitems`, `get_workitem`, `link_workitems` |
+| [`decision-record`](https://github.com/projectious-work/processkit/blob/main/src/skills/decision-record/mcp/)   | 2     | `record_decision`, `transition_decision`, `query_decisions`, `get_decision`, `supersede_decision`, `link_decision_to_workitem` |
+| [`binding-management`](https://github.com/projectious-work/processkit/blob/main/src/skills/binding-management/mcp/) | 2 | `create_binding`, `end_binding`, `query_bindings`, `resolve_bindings_for`                   |
+
+A standalone smoke test (no MCP transport, just direct function calls)
+runs all five via:
+
+```bash
+uv run scripts/smoke-test-servers.py
+```
 
 ## Runtime requirements
 

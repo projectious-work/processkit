@@ -1,0 +1,191 @@
+---
+apiVersion: processkit.projectious.work/v1
+kind: Skill
+metadata:
+  id: SKILL-id-management
+  name: id-management
+  version: "1.0.0"
+  created: 2026-04-06T00:00:00Z
+spec:
+  description: "Generate unique entity IDs following the project's configured format. The write-side foundation that every entity-creating skill depends on."
+  category: process
+  layer: 0
+  uses: [index-management]
+  provides:
+    primitives: []
+    mcp_tools: [generate_id, validate_id, list_used_ids, format_info]
+  when_to_use: "Use whenever a new entity is being created and needs an ID, or when validating an ID format, or to inspect the project's ID configuration."
+---
+
+# ID Management
+
+## Level 1 — Intro
+
+`id-management` is the write-side foundation alongside `index-management`.
+Where `index-management` answers "what entities exist?", `id-management`
+answers "what should this new entity be called?". Every skill that
+creates a new entity calls into this one to allocate a unique ID.
+
+## Level 2 — Overview
+
+### What it provides
+
+- **`generate_id(kind, slug_text?)`** — produce a fresh, collision-free ID for the given kind
+- **`validate_id(id)`** — check if a string is a syntactically valid processkit ID and parse out its kind/body
+- **`list_used_ids(kind?, limit?)`** — return IDs already in use (useful for diagnostics or bulk operations)
+- **`format_info()`** — return the project's ID configuration so the agent can reason about it
+
+### ID anatomy
+
+Every processkit entity ID has the shape `<PREFIX>-<body>`:
+
+| Part      | Example          | How it is set                                          |
+|-----------|------------------|--------------------------------------------------------|
+| Prefix    | `BACK`           | Determined by the primitive kind (not configurable).   |
+| Body      | `calm-fox`       | Generated from `id_format` × `id_slug` configuration.  |
+
+The body has two independent axes (set in `aibox.toml`):
+
+| `id_format` | `id_slug` | Body shape                          |
+|-------------|-----------|-------------------------------------|
+| `word`      | `false`   | `calm-fox`                          |
+| `word`      | `true`    | `calm-fox-add-aibox-lint`           |
+| `uuid`      | `false`   | `550e8400-e29b-41d4`                |
+| `uuid`      | `true`    | `550e8400-add-aibox-lint`           |
+
+Default: `word` + no slug.
+
+### Workflow when creating a new entity
+
+This is what every entity-creating skill follows internally — the agent
+rarely needs to call `generate_id` directly:
+
+1. Decide the **kind** (`WorkItem`, `LogEntry`, `DecisionRecord`, ...).
+2. Optionally provide **slug text** (e.g. the title of a WorkItem).
+3. Call `generate_id(kind, slug_text)`.
+4. The skill writes the entity file with that ID and updates the index.
+
+### When the agent calls id-management directly
+
+Most of the time, agents create entities via skills like
+`workitem-management.create_workitem` and never see `id-management`.
+Direct calls are useful when:
+
+- You need to reserve an ID before fully writing the entity (e.g. for a
+  multi-step creation flow that references its own ID in the body).
+- You want to validate an ID a human typed in.
+- You want to list all used IDs of a kind for bulk operations or audits.
+- You want to confirm what format the project is configured for.
+
+## Level 3 — Full reference
+
+### Prefix registry
+
+| Primitive       | Prefix   |
+|-----------------|----------|
+| WorkItem        | `BACK`   |
+| LogEntry        | `LOG`    |
+| DecisionRecord  | `DEC`    |
+| Actor           | `ACTOR`  |
+| Role            | `ROLE`   |
+| Binding         | `BIND`   |
+| Scope           | `SCOPE`  |
+| Category        | `CAT`    |
+| Gate            | `GATE`   |
+| Metric          | `METRIC` |
+| Schedule        | `SCHED`  |
+| Constraint      | `CONST`  |
+| Context         | `CTX`    |
+| Discussion      | `DISC`   |
+| Process         | `PROC`   |
+| StateMachine    | `SM`     |
+| Artifact        | `ART`    |
+
+The registry is hard-coded in `src/lib/processkit/__init__.py` (`KIND_PREFIXES`).
+Adding a new primitive kind requires adding its prefix there.
+
+### Word generation
+
+Word-based IDs are produced from a small built-in dictionary of ~60
+adjectives and ~60 nouns (~3600 base combinations per kind). The
+generator picks a random pair, checks for collision against the index,
+and retries up to 50 times. If exhausted, it appends a 4-hex suffix
+to guarantee uniqueness.
+
+The dictionary lives in `src/lib/processkit/ids.py` — replace it if you
+want a different vibe (e.g. mythological creatures, geological terms,
+project-themed words). Custom dictionaries are on the backlog.
+
+### Slug generation
+
+When `id_slug = true`, a content-derived slug is appended:
+
+```
+slug_text = "Add aibox lint command"
+→ slug = "add-aibox-lint" (first 4 tokens, lowercase, kebab-case)
+```
+
+The slug is informational — uniqueness is still carried by the word or
+UUID portion, not the slug. Two entities can have the same slug as long
+as their word/UUID parts differ.
+
+### Collision avoidance
+
+The generator queries the index for `existing_ids(kind)` and excludes
+those before picking a new pair. This is fast (a single SQL query) and
+correct as long as the index is fresh. The index is kept fresh by every
+MCP server calling `index.upsert_entity()` immediately after each write.
+
+If files have been edited outside the MCP path, run `reindex()` first.
+The Phase 5 `aibox lint` command will detect a stale index and warn.
+
+### Idempotency
+
+`generate_id` is **not** deterministic — calling it twice produces two
+different IDs. This is intentional: multiple agents working in parallel
+should not collide on the same ID. If you need a deterministic preview
+(e.g. "what ID would I get for this title?"), pass a fixed
+`random.Random` to the lib function (`ids.generate_id(..., rng=...)`).
+The MCP `generate_id` tool does not yet expose a deterministic mode.
+
+### Validation
+
+`validate_id` accepts a string and returns:
+
+```python
+{
+  "valid": True,
+  "kind": "WorkItem",
+  "prefix": "BACK",
+  "body": "calm-fox",
+  "format_guess": "word",
+  "has_slug": False,
+}
+```
+
+or:
+
+```python
+{
+  "valid": False,
+  "reason": "no known prefix in <id>",
+}
+```
+
+It checks the prefix against the registry and verifies the body shape
+roughly matches a known format. It does NOT check whether the ID is
+currently in use — for that, use `list_used_ids` or query the index
+directly.
+
+### Relationship to index-management
+
+id-management is a **peer** of index-management at Layer 0, not a
+parent or child. Both are foundational. id-management has a soft
+dependency on index-management (`uses: [index-management]`) because it
+queries the index for collision avoidance — but conceptually they cover
+opposite halves of the entity lifecycle:
+
+- **id-management** = write side (allocate identity)
+- **index-management** = read side (find what exists)
+
+Every skill that creates entities depends on both.

@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "processkit-index-management": {
+      "command": "uv",
+      "args": ["run", ".claude/skills/index-management/mcp/server.py"],
+      "env": {}
+    }
+  }
+}

@@ -10,7 +10,7 @@ spec:
   description: "Manage Binding entities — scoped, temporal, many-to-many relationships between any two primitives."
   category: process
   layer: 2
-  uses: [event-log, actor-profile]
+  uses: [event-log, actor-profile, index-management, id-management]
   provides:
     primitives: [Binding]
     mcp_tools: [create_binding, query_bindings, end_binding, resolve_bindings_for]

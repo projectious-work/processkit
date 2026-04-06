@@ -10,7 +10,7 @@ spec:
   description: "Create, transition, query, and link WorkItems — tasks, stories, bugs, epics."
   category: process
   layer: 2
-  uses: [event-log, actor-profile]
+  uses: [event-log, actor-profile, index-management, id-management]
   provides:
     primitives: [WorkItem]
     mcp_tools: [create_workitem, transition_workitem, query_workitems, link_workitems]

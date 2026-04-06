@@ -10,7 +10,7 @@ spec:
   description: "Record decisions with rationale, alternatives, and consequences — the ADR pattern as a primitive."
   category: process
   layer: 2
-  uses: [event-log, actor-profile]
+  uses: [event-log, actor-profile, index-management, id-management]
   provides:
     primitives: [DecisionRecord]
     mcp_tools: [record_decision, query_decisions, link_decision, supersede_decision]
