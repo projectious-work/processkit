@@ -16,32 +16,21 @@ existing `references/` material into Level 3 sections where appropriate.
 Estimated scale: 85 files × ~30min each = ~40 hours of careful editing.
 Can be batched by category (process first, then language, then framework, etc.).
 
-### BACK-002 — Remaining 14 primitive schemas
-Only WorkItem, LogEntry, DecisionRecord, Migration have full JSON schemas
-in `src/primitives/schemas/`. Add schemas for: Actor, Role, Binding,
-Scope, Category, Gate, Metric, Schedule, Constraint, Context, Discussion,
-Process, StateMachine, Artifact. CrossReference is intentionally not a
-file primitive.
+### BACK-002 — Remaining 14 primitive schemas — **DONE in v0.5.0**
+All 18 primitive schemas now ship under `src/primitives/schemas/`.
+CrossReference remains intentionally not a file primitive. See the
+v0.5.0 Done section for the list.
 
-Each schema is ~50–100 lines of YAML. Block the corresponding
-management skill's full validation until the schema lands.
+### BACK-003 — MCP servers for the remaining process primitives — **DONE in v0.5.0**
+All 5 missing servers shipped: actor-profile, role-management,
+scope-management, gate-management, discussion-management. processkit
+now ships 11 MCP servers total. Smoke test exercises all of them
+end-to-end.
 
-### BACK-003 — MCP servers for the remaining process primitives
-v0.3.0 ships 6 servers (index-management, id-management, event-log,
-workitem-management, decision-record, binding-management). Add servers for:
-- actor-profile (create_actor, update_actor, list_actors)
-- role-management (create_role, list_roles, link_role_to_actor)
-- scope-management (create_scope, list_scopes, transition_scope)
-- gate-management (create_gate, evaluate_gate, list_gates)
-- discussion-management (open_discussion, resolve_discussion, link_decision)
-
-Each is ~150–250 lines, similar shape to the existing servers.
-
-### BACK-004 — Process templates as first-class Process entities
-The aibox templates currently include four .md files for processes
-(bug-fix, code-review, feature-development, release). Migrate them to
-the formal Process primitive shape (apiVersion/kind/metadata/spec with
-steps/roles/gates) and put them under `src/processes/`.
+### BACK-004 — Process templates as first-class Process entities — **DONE in v0.5.0**
+All four legacy aibox process .md files (bug-fix, code-review,
+feature-development, release) promoted to `kind: Process` entities
+under `src/processes/`. Each validates against process.yaml.
 
 ## Medium priority
 
@@ -54,10 +43,9 @@ FTS5 for proper tokenization and ranking. Schema migration needed.
 diffs the filesystem against the index and updates only changed rows.
 Useful for projects with thousands of entities.
 
-### BACK-007 — WAL mode for concurrent MCP servers
-Two servers writing at the same time hit `database is locked`. Enable
-SQLite WAL mode in `index.open_db()` and verify all writes are
-short-lived.
+### BACK-007 — WAL mode for concurrent MCP servers — **DONE in v0.5.0**
+SQLite WAL mode enabled in `src/lib/processkit/index.py` `open_db()`.
+Multiple readers + single writer no longer hit `database is locked`.
 
 ### BACK-008 — Per-primitive docs-site pages
 Currently the docs-site has one `primitives/overview.md` listing all
@@ -134,6 +122,70 @@ Revisit at v1.0 planning when the apiVersion bump (v1) is on the
 table anyway and a coordinated restructure is cheaper.
 
 ## Done
+
+### v0.5.0 (2026-04-07)
+- **Provider-neutral install paths.** All MCP server `mcp-config.json`
+  fragments now use `context/skills/<name>/mcp/server.py`. The lib's
+  `paths.py` resolves consumer-installed schemas at `context/schemas/`
+  and state machines at `context/state-machines/`. The `_find_lib()`
+  walk-up locates `context/skills/_lib/processkit/` for the
+  consumer-install layout. Per the aibox handover v2.
+- **Runtime cache moved.** `paths.index_db_path()` returns
+  `context/.cache/processkit/index.sqlite`. `context/.aibox/` is gone.
+  `.gitignore` adds `context/.cache/` and `context/**/private/`.
+- **Reference-templates model docs.** All references to
+  `processkit.manifest` removed (manifest model superseded). Docs
+  updated to describe `aibox.lock` at the project root and the
+  verbatim reference templates at `context/templates/processkit/<v>/`.
+- **AGENTS.md as canonical agent entry.** New `AGENTS.md` at the repo
+  root holds the authoritative instructions; `CLAUDE.md` is a thin
+  pointer (~22 lines). The shipped template is at
+  `src/scaffolding/AGENTS.md` for consumer projects. The old
+  `context/AIBOX.md` (pure duplication of HANDOVER/BACKLOG/CLAUDE) was
+  deleted.
+- **HANDOVER.md G8 rewritten** as the formal aibox-sync perimeter rule
+  (only `.devcontainer/{Dockerfile,docker-compose.yml,devcontainer.json}`
+  are in scope; anything else aibox touches is an aibox-side bug).
+- **BACK-002: 14 new primitive schemas.** Actor, Role, Scope, Gate,
+  Discussion (priority five), Binding, Category, Metric, Schedule,
+  Constraint, Context, Process, StateMachine, Artifact. All 18
+  primitive schemas now ship (CrossReference is intentionally not a
+  file primitive). All validate as JSON Schema draft 2020-12.
+- **2 new state machines.** scope (planned → active → completed +
+  cancelled) and discussion (active ↔ resolved → archived).
+- **BACK-003: 5 new MCP servers.** actor-profile, role-management,
+  scope-management, gate-management, discussion-management. Each
+  follows the existing boilerplate, validates against its schema,
+  and is exercised end-to-end in `scripts/smoke-test-servers.py`. The
+  smoke test now creates 11+ entities across 11 servers in a single
+  run. Total processkit MCP servers: 11.
+- **BACK-004: 4 Process entities** under `src/processes/` — bug-fix,
+  code-review, feature-development, release. Promoted from the legacy
+  aibox `.md` files into formal `kind: Process` entities with full
+  step lists, role assignments, gates, and definition_of_done. Each
+  validates against process.yaml.
+- **BACK-007: WAL mode** in `src/lib/processkit/index.py` — multiple
+  readers and a single writer can now coexist without "database is
+  locked".
+- **80-column line-width policy** with smart exemptions (tables,
+  fenced code blocks, URLs, frontmatter, TOML). Encoded in
+  `.editorconfig`; documented in `AGENTS.md` and `CONTRIBUTING.md`.
+- **`scripts/build-release-tarball.sh`** — reproducible producer of
+  `dist/processkit-<version>.tar.gz` + sha256 sidecar. Tested with a
+  v0.5.0-test dry-run. The release process in `CONTRIBUTING.md` and
+  `HANDOVER.md` now includes the build + upload step.
+- **Aibox issues filed:** projectious-work/aibox#33 (AGENTS.md
+  scaffolding), projectious-work/aibox#34 (sync perimeter docs).
+- **Skill `provides.mcp_tools`** declared on the 5 new servers'
+  SKILL.md files. Each also adds `index-management` + `id-management`
+  to `spec.uses` (the Layer 0 foundations rule).
+- **`src/skills/agent-management/SKILL.md`** generalized: removed
+  hard-coded `CLAUDE.md` and `context/AIBOX.md` references; the
+  context-budget example acknowledges that the config file location
+  depends on how processkit was installed.
+- **`src/skills/context-grooming/`** updated to reference
+  `context/skills/` (the new install location) instead of
+  `.claude/skills/`.
 
 ### v0.1.0 (2026-04-06)
 - Repo bootstrap, entity file format spec, 3 schemas, 2 state machines

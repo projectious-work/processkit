@@ -8,7 +8,67 @@ making any changes. It covers what processkit is, the architectural
 decisions you must not accidentally undo, how the pieces fit together,
 what's done, what's next, and the gotchas that will trip you up.
 
-Last updated: 2026-04-07 (v0.4.0).
+Last updated: 2026-04-07 (v0.5.0).
+
+## What changed in v0.5.0 (read this section first if you already know v0.4.0)
+
+v0.5.0 lands the consumer-side install layout (per the aibox handover
+v2) and fills the major content gaps from BACK-002, BACK-003, BACK-004:
+
+1. **Provider-neutral install paths.** Nothing lands under `.claude/`
+   anymore. Installed processkit content goes to `context/skills/`,
+   `context/skills/_lib/processkit/`, `context/schemas/`,
+   `context/state-machines/`, `context/processes/`. The lib's
+   `paths.py` was updated and the `_find_lib()` walk in MCP servers
+   resolves correctly for both checkout and consumer-install layouts.
+2. **Runtime cache moved.** The SQLite index now lives at
+   `context/.cache/processkit/index.sqlite` (gitignored). The whole
+   `context/.aibox/` directory is gone; the dead override paths in
+   `paths.py` were dropped.
+3. **Reference-templates model replaces processkit.manifest.** aibox
+   copies the upstream cache verbatim to
+   `context/templates/processkit/<version>/` and reads SHAs on the fly
+   for 3-way diffs. `aibox.lock` at the project root pins source URL,
+   version, and resolved commit (Cargo-style). All docs that mentioned
+   the manifest were updated.
+4. **AGENTS.md as canonical agent entry.** New `AGENTS.md` at the repo
+   root holds the authoritative instructions; `CLAUDE.md` is a thin
+   pointer. The shipped template lives at `src/scaffolding/AGENTS.md`
+   for consumer projects. Per agents.md ecosystem convention.
+5. **All 18 primitive schemas shipped (BACK-002).** WorkItem, LogEntry,
+   DecisionRecord, Migration were already in. v0.5.0 adds Actor, Role,
+   Scope, Gate, Discussion (priority five), then Binding, Category,
+   Metric, Schedule, Constraint, Context, Process, StateMachine,
+   Artifact. CrossReference is intentionally NOT a file primitive.
+6. **All 11 MCP servers shipped (BACK-003).** v0.4.0 had six (Layer 0
+   trio + workitem + decision + binding); v0.5.0 adds actor-profile,
+   role-management, scope-management, gate-management,
+   discussion-management. Each is exercised end-to-end by
+   `scripts/smoke-test-servers.py`.
+7. **4 Process entities under src/processes/ (BACK-004).** bug-fix,
+   code-review, feature-development, release — promoted from the
+   legacy aibox process .md files into formal `kind: Process`
+   entities with full step lists, role assignments, gates, and
+   definition_of_done.
+8. **Release-asset tarball convention (DEC-025 / aibox BACK-106).**
+   New `scripts/build-release-tarball.sh` produces a reproducible
+   `dist/processkit-<version>.tar.gz` plus a sha256 sidecar. Top-level
+   entry inside the tarball is `processkit-<version>/`. The release
+   process in CONTRIBUTING.md and HANDOVER.md was updated to build +
+   upload the asset after tagging. aibox prefers the release asset
+   over a git fetch on the happy version-tag path.
+9. **WAL mode** in the SQLite index (BACK-007 — done in passing this
+   release).
+10. **80-column line-width policy** with smart exemptions, encoded in
+    `.editorconfig` and documented in `AGENTS.md` and `CONTRIBUTING.md`.
+    Existing wide-prose files (the 85 migrated skills, the docs-site
+    catalog) will be wrapped as part of BACK-001 / BACK-009.
+11. **Two new state machines.** scope (planned → active → completed +
+    cancelled) and discussion (active ↔ resolved → archived).
+12. **Aibox issues filed:** projectious-work/aibox#33 (AGENTS.md
+    scaffolding), projectious-work/aibox#34 (sync perimeter docs).
+
+For the v0.4.0 orientation, keep reading.
 
 ## What changed in v0.4.0 (read this section first if you already know v0.3.0)
 
