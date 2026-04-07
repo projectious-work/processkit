@@ -8,7 +8,42 @@ making any changes. It covers what processkit is, the architectural
 decisions you must not accidentally undo, how the pieces fit together,
 what's done, what's next, and the gotchas that will trip you up.
 
-Last updated: 2026-04-07 (v0.5.0).
+Last updated: 2026-04-07 (v0.5.1).
+
+## What changed in v0.5.1 (read this section first if you already know v0.5.0)
+
+v0.5.1 is a focused content release: BACK-001 — the three-level
+rewrite of all 85 migrated skills.
+
+1. **All 106 skills now follow the canonical three-level format.**
+   The 21 process-primitive skills shipped in v0.4.0/v0.5.0 already
+   used the format; v0.5.1 brings the remaining 85 migrated skills
+   into alignment.
+2. **Per-skill changes:** every rewritten skill has
+   `metadata.version: 1.1.0` (bumped from 1.0.0), an explicit
+   `spec.when_to_use` field, a condensed `spec.description` (drops
+   the duplicated "Use when..." clause), and a body restructured into
+   `## Level 1 — Intro`, `## Level 2 — Overview` (with `### sub-
+   headings`), and `## Level 3 — Full reference` sections. Original
+   content is preserved semantically; deeper material is promoted
+   into Level 3 either inline or by reference to the existing
+   `references/` subdirectory.
+3. **80-column hard wrap** applied to all rewritten prose, with the
+   smart exemptions documented in v0.5.0 (tables, fenced code blocks,
+   URLs, frontmatter, TOML).
+4. **Reference exemplar:** `src/skills/python-best-practices/SKILL.md`
+   was rewritten first as the canonical reference; subsequent rounds
+   used it as the gold-standard structural exemplar.
+5. **Execution model:** the rewrite was done by 14 parallel
+   general-purpose subagent invocations across 7 rounds (2 agents per
+   round), with each round committed separately. The orchestrator
+   verified format markers (Level 1/2/3 headers, version 1.1.0,
+   when_to_use field) before committing.
+6. **No code or schema changes.** v0.5.1 is content-only. The 11 MCP
+   servers, 18 primitive schemas, 4 Process entities, and lib code
+   are unchanged from v0.5.0. Smoke test still green.
+
+For the v0.5.0 orientation, keep reading.
 
 ## What changed in v0.5.0 (read this section first if you already know v0.4.0)
 

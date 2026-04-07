@@ -6,15 +6,12 @@ WorkItem files under `context/workitems/`.
 
 ## High priority
 
-### BACK-001 — Three-level rewrite of 85 migrated skills
-Each migrated skill currently has the original aibox structure
-(`When to Use` + `Instructions`) which roughly maps to Level 1+2 content
-but is not labeled with explicit `## Level 1/2/3` headers. Add the
-explicit structure, condense the intros to ≤3 sentences, and promote
-existing `references/` material into Level 3 sections where appropriate.
-
-Estimated scale: 85 files × ~30min each = ~40 hours of careful editing.
-Can be batched by category (process first, then language, then framework, etc.).
+### BACK-001 — Three-level rewrite of 85 migrated skills — **DONE in v0.5.1**
+All 85 migrated skills now follow the canonical three-level format
+(plus the python-best-practices exemplar). Each has metadata.version
+1.1.0, explicit spec.when_to_use, condensed description, and
+Level 1/2/3 body sections. Done in 14 parallel subagent invocations
+across 7 rounds. See the v0.5.1 Done section for details.
 
 ### BACK-002 — Remaining 14 primitive schemas — **DONE in v0.5.0**
 All 18 primitive schemas now ship under `src/primitives/schemas/`.
@@ -122,6 +119,29 @@ Revisit at v1.0 planning when the apiVersion bump (v1) is on the
 table anyway and a coordinated restructure is cheaper.
 
 ## Done
+
+### v0.5.1 (2026-04-07)
+- **BACK-001 complete.** Three-level rewrite of all 85 migrated
+  skills. Every skill under `src/skills/` now has explicit
+  `## Level 1 — Intro`, `## Level 2 — Overview`, and `## Level 3 —
+  Full reference` sections. Frontmatter on each rewritten skill has:
+  - `metadata.version` bumped 1.0.0 → 1.1.0
+  - `spec.description` condensed (drops the duplicated "Use when..."
+    clause)
+  - explicit `spec.when_to_use` field added
+  - 80-column hard wrap on all prose (tables, code blocks, URLs,
+    frontmatter exempt)
+- **Reference exemplar** `src/skills/python-best-practices/SKILL.md`
+  rewritten first as the canonical structural reference.
+- **Execution:** 14 parallel general-purpose subagent invocations
+  across 7 rounds (one category or pair of categories per round, two
+  agents per round). 8 commits total (1 exemplar + 7 rounds).
+- **Original content preserved semantically** — no fabricated
+  technical claims. `references/` subdirectories left untouched;
+  relevant material was either inlined into Level 3 or pointed to
+  from Level 3 for the longest treatments.
+- v0.5.1 is content-only — no code or schema changes from v0.5.0,
+  smoke test still green.
 
 ### v0.5.0 (2026-04-07)
 - **Provider-neutral install paths.** All MCP server `mcp-config.json`
