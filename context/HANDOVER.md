@@ -8,7 +8,56 @@ making any changes. It covers what processkit is, the architectural
 decisions you must not accidentally undo, how the pieces fit together,
 what's done, what's next, and the gotchas that will trip you up.
 
-Last updated: 2026-04-06 (v0.3.0).
+Last updated: 2026-04-07 (v0.4.0).
+
+## What changed in v0.4.0 (read this section first if you already know v0.3.0)
+
+v0.4.0 grew out of a long design discussion in the aibox repo. Quick orientation:
+
+1. **New 19th primitive: `Migration`.** First-class entity for
+   pending/in-progress/applied transitions between upstream versions.
+   Has a state machine (`pending → in-progress → applied`, plus
+   `rejected`). Schema at `src/primitives/schemas/migration.yaml`.
+2. **Three new process-primitive skills (now 21, not 18):**
+   - `migration-management` (Layer 3) — workflow for working through
+     migration documents.
+   - `owner-profiling` (Layer 4) — interview-driven owner profile
+     bootstrap. Four templates (identity, working-style, goals-and-context,
+     team-and-relationships) plus an interview protocol and an
+     observable-signals reference.
+   - `context-grooming` (Layer 4) — periodic context cleanup with a
+     review-then-act workflow and a default ruleset.
+3. **`src/PROVENANCE.toml`** — single file mapping every shipped file
+   to its last-changed git tag. Source of truth for the diff script.
+   Regenerated at release time by `scripts/stamp-provenance.sh`.
+4. **Two scripts in `scripts/`:**
+   - `stamp-provenance.sh` — release-time generator for PROVENANCE.toml
+   - `processkit-diff.sh` — generic diff between two tags (text/toml/json
+     output). Consumed by aibox sync to drive Migration generation.
+5. **Privacy tiers** documented in `src/primitives/FORMAT.md`. Three tiers:
+   `public`, `project-private` (default), `user-private`. The filesystem
+   rule is `context/**/private/` in `.gitignore`. The `owner-profiling`
+   skill uses this convention for `team-and-relationships.md`.
+6. **Context efficiency** documented in `src/skills/agent-management/SKILL.md`
+   (new "Context budget and lazy loading" section) — tells agents to use
+   the index MCP server, lazy-load skills, respect `[context.budget]` in
+   `aibox.toml`. Paired with the new `context-grooming` skill.
+7. **Skill count: 106** (was 103 at v0.3.0). The three new skills are all
+   markdown-only (no MCP servers yet).
+8. **Manifest model (NOT YET IMPLEMENTED IN AIBOX):** the agreed design is
+   that each project gets a git-tracked `context/.aibox/processkit.manifest`
+   recording the SHA of every installed file. `aibox sync` does a 3-way
+   comparison (manifest vs cache vs live) to classify changes.
+   **Strawman D + groups + never-auto-overwrite** is the agreed model. The
+   cache (`~/.cache/aibox/processkit/<v>/`) is reproducible from the
+   git-tracked lock + manifest. Implementation lives on the aibox side
+   and is part of the next aibox work front (Phase 4.1+).
+9. **Configurable upstream source URL:** `[processkit] source = "..."`
+   in `aibox.toml` accepts any git URL. Companies can fork processkit
+   and have their projects consume the fork. PROVENANCE.toml's `[source]`
+   block identifies which fork the provenance belongs to.
+
+For the original v0.3.0 orientation, keep reading the sections below.
 
 ---
 
@@ -396,21 +445,24 @@ Should print `=== ALL SERVER SMOKE TESTS PASSED ===`. If it doesn't, do not comm
 
 The 2 errors in `reindex stats` are from the test fixture's seeded `INDEX.md` files (correctly tracked in the errors table without crashing). Real workflows have 0 errors.
 
-## 9. Status — what's done at v0.3.0
+## 9. Status — what's done at v0.4.0
 
 | Area | Done | Not done |
 |---|---|---|
-| Entity format spec | Yes | — |
-| Primitive schemas | 3 of 18 (WorkItem, LogEntry, DecisionRecord) | 15 missing — BACK-002 |
-| State machines | 2 of 18 (workitem, decisionrecord) | Schedule, Discussion, Scope all need machines |
-| Process-primitive skills | 18 of 18, with explicit Level 1/2/3 sections | — |
+| Entity format spec | Yes — includes optional `privacy:` field (v0.4.0) | — |
+| Primitive schemas | 4 of 19 (WorkItem, LogEntry, DecisionRecord, **Migration**) | 15 missing — BACK-002 |
+| State machines | 3 of 19 (workitem, decisionrecord, **migration**) | Schedule, Discussion, Scope all need machines |
+| Process-primitive skills | 21 of 21 (added migration-management, owner-profiling, context-grooming in v0.4.0) | — |
 | Migrated skills | 85, with mechanically updated frontmatter | Three-level rewrite — BACK-001 |
-| MCP servers | 6 (index-, id-, event-log, workitem-, decision-, binding-) | Servers for actor, role, scope, gate, discussion — BACK-003 |
-| Package tiers | 5 (minimal, managed, software, research, product) | — |
-| Docs site | Bootstrapped, intro/getting-started/primitives/skills/packages/mcp-servers/reference | Per-primitive pages, per-skill pages — BACK-008/009 |
+| MCP servers | 6 (index-, id-, event-log, workitem-, decision-, binding-) | Servers for actor, role, scope, gate, discussion + the v0.4.0 skills — BACK-003 |
+| Package tiers | 5 (minimal, managed, software, research, product) | Update minimal/managed to include the 3 new v0.4.0 skills |
+| Docs site | All v0.4.0 changes reflected (intro, primitives/overview, reference/migration, reference/privacy) | Per-primitive pages, per-skill pages — BACK-008/009 |
 | Smoke test | All 6 servers covered | Real MCP-protocol test — needs aibox Phase 4 |
-| Library | 8 modules, 700 LOC, smoke-tested | FTS5 search — BACK-005, WAL mode — BACK-007, incremental reindex — BACK-006 |
+| Library | 8 modules, 700 LOC, smoke-tested + Migration kind in registry | FTS5 search — BACK-005, WAL mode — BACK-007, incremental reindex — BACK-006 |
 | Processes (top level) | INDEX.md only | Migrate aibox process .md files to formal Process shape — BACK-004 |
+| **PROVENANCE.toml** | **v0.4.0 — seed file present, scripts/stamp-provenance.sh ready** | Will be properly populated on first proper release; v0.5.0 should be the first hop where the diff script can compare two PROVENANCE.toml versions. |
+| **Generic diff script** | **v0.4.0 — scripts/processkit-diff.sh** | — |
+| **Privacy tier convention** | **v0.4.0 — documented in FORMAT.md, reference/privacy.md, used by owner-profiling** | aibox lint validation — needs aibox Phase 4.4 |
 
 ## 10. Next priorities (read context/BACKLOG.md for the full list)
 
@@ -503,15 +555,17 @@ The current `apiVersion` is `processkit.projectious.work/v1`. Bumping to `v2` tr
   - v0.1.0 = foundation (format spec, schemas, state machines)
   - v0.2.0 = skill migration (101 skills, 5 packages, docs-site)
   - v0.3.0 = MCP servers (6 servers, shared lib, smoke test)
+  - v0.4.0 = Migration primitive, owner-profiling, context-grooming, PROVENANCE.toml, configurable upstream source, privacy tiers
   - v1.0.0 = first stable release (not yet scheduled)
 - **Releasing a new tag:**
   1. Update `context/AIBOX.md` status
   2. Update `context/BACKLOG.md` Done section
   3. Update docs-site if user-visible changes shipped
   4. Run `uv run scripts/smoke-test-servers.py`
-  5. Commit, then `git tag -a vX.Y.Z -m "..."`
-  6. `git push origin main && git push origin vX.Y.Z`
-  7. Optionally `cd docs-site && npm run deploy` for docs publication
+  5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
+  6. Commit, then `git tag -a vX.Y.Z -m "..."`
+  7. `git push origin main && git push origin vX.Y.Z`
+  8. Optionally `cd docs-site && npm run deploy` for docs publication
 
 - **DO NOT push to `gh-pages`** directly. Use `npm run deploy` from docs-site.
 

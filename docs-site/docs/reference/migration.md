@@ -7,66 +7,132 @@ title: "Version Migration"
 
 processkit is distributed as git tags. Upgrading pinned versions is
 deliberate — neither aibox nor processkit follows the other automatically.
+Starting in **v0.4.0**, migrations are first-class processkit entities:
+each version-bump produces a `Migration` document under
+`context/migrations/pending/` that the user and agent work through together.
 
-## When to upgrade processkit
+## The model (v0.4.0+)
 
-- A new processkit tag ships skills, schemas, or MCP servers you want
-- A security fix lands
-- You're starting a new project and want the latest
+processkit ships a generic diff script (`scripts/processkit-diff.sh`) that
+compares two tagged versions of any processkit-compatible source — upstream
+processkit, a company fork like `processkit-acme`, or any other downstream.
+The script reads `src/PROVENANCE.toml` at each tag (a single file mapping
+every shipped file to the tag in which it last changed) and emits a
+structured diff: added, removed, changed, unchanged.
 
-## How to upgrade
+aibox is one consumer of this diff script. When `aibox sync` runs and
+notices a new pinned version, it:
+
+1. Fetches the new tag into `~/.cache/aibox/processkit/<version>/`
+2. Calls the diff script (or reimplements its logic) to compare the
+   currently-installed version against the new one
+3. Compares each affected file's SHA against the project's
+   `context/.aibox/processkit.manifest` to classify it:
+   - **changed-upstream-only** — safe to take with one approval
+   - **changed-locally-only** — no-op for this migration
+   - **conflict** — both sides changed, must be resolved by hand
+   - **new-upstream** — added by upstream, decide whether to take it
+   - **removed-upstream** — removed by upstream, decide whether to drop locally
+4. Writes a `Migration` document to `context/migrations/pending/MIG-<id>.md`
+   containing the briefing
+5. Updates `context/migrations/INDEX.md` with the new pending entry
+6. Reports the result and stops — **never auto-applies**
+
+The user reads the briefing, approves a project-specific plan, and the
+migration moves through `pending/` → `in-progress/` → `applied/`. See the
+[`migration-management` skill](https://github.com/projectious-work/processkit/blob/main/src/skills/migration-management/SKILL.md)
+for the workflow details.
+
+## What's git-tracked vs cache
+
+| Where | Git status | Purpose |
+|---|---|---|
+| `context/.aibox/processkit.lock` | tracked | Pinned source URL + version + resolved commit (like Cargo.lock) |
+| `context/.aibox/processkit.manifest` | tracked | SHA256 of every file as installed (the "as-installed" reference) |
+| `context/migrations/pending/MIG-*.md` | tracked | Pending migration briefings |
+| `context/migrations/in-progress/MIG-*.md` | tracked | Migrations being worked through |
+| `context/migrations/applied/MIG-*.md` | tracked | Historical record |
+| `context/migrations/INDEX.md` | tracked | Always-loaded summary |
+| `~/.cache/aibox/processkit/<v>/...` | NOT tracked | Fetched cache, reproducible from the lock |
+
+A new developer cloning the project gets the lock + manifest + migration
+documents from git. `aibox sync` fetches the cache as needed. Everything
+is reconstructible from the git checkout.
+
+## Upgrading
 
 ```toml
 # aibox.toml
-[context]
-processkit_version = "v0.2.0"   # was: "v0.1.0"
+[processkit]
+source           = "https://github.com/projectious-work/processkit.git"
+version          = "v0.4.0"   # was: "v0.3.0"
+src_path         = "src"      # default — matches upstream layout
 ```
 
 Then:
 
 ```bash
-aibox sync        # refetches processkit, reinstalls skills
-aibox migrate     # reviews template diffs (v0.1.0 → v0.2.0)
-aibox lint        # structural validation
+aibox sync         # fetches new tag, generates the migration document
+aibox migrate      # walks through the pending migration with you
+aibox lint         # structural validation after migration is applied
 ```
 
-`aibox migrate` (from aibox Phase 4.7) diffs the template snapshot stored
-in `context/.aibox/templates/v0.1.0/` against the new snapshot and
-produces migration prompts for the agent. The agent reviews each change
-and applies it with human approval. **No automatic in-place patching.**
+## Configurable source URL
 
-## What gets updated
+The `[processkit] source` field accepts any git URL. The default
+upstream is `https://github.com/projectious-work/processkit.git`, but
+companies can fork processkit into their own repository, customize it,
+and have their projects consume the fork:
 
-Upgrading processkit affects:
+```toml
+[processkit]
+source  = "https://gitlab.acme.com/platform/processkit-acme.git"
+version = "v0.4.0-acme.1"
+```
 
-- **Skills** in `.claude/skills/` — re-installed from the new tag
-- **Primitive schemas** in `context/.aibox/schemas/` — refreshed
-- **State machines** in `context/.aibox/state-machines/` — refreshed
-- **Package definitions** — refreshed
-- **MCP configs** — refreshed
+The fork is responsible for regenerating its own `PROVENANCE.toml` against
+its git history and tagging releases. The diff script and migration model
+work identically for forks — they just see the fork's tags instead of
+upstream's.
 
-It does **not** touch:
+For forks pulling from upstream periodically, use the diff script
+directly:
 
-- Your `context/workitems/`, `context/decisions/`, `context/logs/`, etc.
-- Any files you have manually edited outside `.aibox/` scaffolding
-- Your `aibox.toml` (except `processkit_version` which you set)
+```bash
+# Inside the processkit-acme checkout
+scripts/processkit-diff.sh --from upstream/v0.4.0 --to upstream/v0.5.0 --format toml > upstream-changes.toml
+```
 
-## Breaking changes
+The maintainer applies the changes to the fork manually, then re-tags as
+e.g. `v0.5.0-acme.1`. ACME's projects then bump their `version` and run
+`aibox sync` to pick up the changes.
 
-If the new processkit tag introduces a new `apiVersion` (e.g. `v1 → v2`),
-`aibox migrate` produces a more detailed migration prompt including
-schema-level changes. The agent walks the project's existing entities and
-upgrades them with human approval.
+## Pre-v0.4.0 behavior (deprecated)
 
-See [apiVersion Policy](./apiversion-policy) for what counts as breaking.
+Versions before v0.4.0 used a simpler model: every project copied the
+processkit content into its own files, and `aibox migrate` produced
+text-only migration documents at `context/migrations/<from>-to-<to>.md`.
+This worked but had no concept of provenance, no manifest, and no way to
+classify "user-modified vs unchanged" without manual diffing. The v0.4.0
+model is a strict superset and is backward-compatible: pre-v0.4.0
+migration documents are not touched and remain readable.
+
+## What `aibox sync` will not do
+
+- Auto-overwrite any file the user has touched (per the user-confirmed
+  Strawman D rule)
+- Apply changes from a pending migration without explicit user approval
+- Re-generate a migration document for a version pair that already has
+  one in `pending/` or `in-progress/` (it tells the user "pending
+  migration exists, run `aibox migrate` to work on it")
 
 ## Downgrading
 
 Downgrading is supported but discouraged. To downgrade:
 
 ```toml
-[context]
-processkit_version = "v0.1.0"   # was: "v0.2.0"
+[processkit]
+version = "v0.3.0"   # was: "v0.4.0"
 ```
 
 then `aibox sync`. If the downgrade skips past a schema `apiVersion` bump,

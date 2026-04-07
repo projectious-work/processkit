@@ -123,3 +123,41 @@ becomes a stub pointing at the index.
 - BACKLOG.md
 - minimal package now includes both Layer 0 foundations
 - 103 total skill directories (85 migrated + 18 new process-primitive)
+
+### v0.4.0 (current — design-discussion outcomes)
+- **Migration primitive** (the 19th) — schema, state machine,
+  registered in `KIND_PREFIXES` (prefix `MIG`), `DEFAULT_DIRS`
+  (`migrations`). Skill `migration-management` (Layer 3) ships the
+  workflow with templates and a body briefing format.
+- **owner-profiling skill** (Layer 4) — interview-driven owner profile
+  bootstrap. Four templates (identity, working-style, goals-and-context,
+  team-and-relationships), interview protocol reference, observable-signals
+  reference (ported from aibox `context/research/owner-profiling-skill-2026-03.md`).
+  Markdown-only (no MCP server yet).
+- **context-grooming skill** (Layer 4) — periodic context cleanup with a
+  ruleset, a grooming-report template, and a review-then-act workflow.
+  Markdown-only.
+- **`src/PROVENANCE.toml` convention** — single file mapping every shipped
+  file to its last-changed git tag. Seed file present. Generator script
+  `scripts/stamp-provenance.sh` for release-time regeneration.
+- **`scripts/processkit-diff.sh`** — generic diff between two tags
+  (text/toml/json). Reads PROVENANCE.toml at each tag and emits added/
+  removed/changed/unchanged sets. Consumed by aibox sync (Phase 4).
+- **Privacy tier convention** — `privacy:` field in entity metadata
+  (optional, default `project-private`). Three tiers: `public`,
+  `project-private`, `user-private`. Filesystem rule
+  `context/**/private/` for `.gitignore`. Documented in
+  `src/primitives/FORMAT.md` and `docs-site/docs/reference/privacy.md`.
+  Used by owner-profiling for `team-and-relationships.md`.
+- **Context efficiency** — new "Context budget and lazy loading" section
+  in `src/skills/agent-management/SKILL.md`. Documents the
+  `[context.budget]` section for `aibox.toml`, the always_load /
+  on_demand pattern, and the relationship to `context-grooming`.
+- **docs-site updates** — primitives/overview (19 primitives),
+  reference/migration (rewrite for v0.4.0 model), reference/privacy
+  (new page), intro (new status, new feature list), sidebars
+  (privacy reference added).
+- **README.md** updated for v0.4.0.
+- **HANDOVER.md** updated with "What changed in v0.4.0" preamble +
+  status table.
+- **106 total skill directories** (85 migrated + 21 new process-primitive).

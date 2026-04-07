@@ -5,19 +5,21 @@ title: "Overview"
 
 # Primitives — Overview
 
-processkit provides **18 process primitives** as universal building blocks.
+processkit provides **19 process primitives** as universal building blocks.
 They are framework-agnostic — they appear in every serious process methodology
 (SAFe, PMBOK, CMMI, Scrum, Kanban). processkit ships their schemas, default
 state machines, and management skills, but does not impose a methodology on
-top of them.
+top of them. The 19th, **Migration**, was added in v0.4.0 to make
+upstream-version transitions first-class entities.
 
-## The 18 primitives
+## The 19 primitives
 
 | Primitive         | Purpose                                                           | Prefix |
 |-------------------|-------------------------------------------------------------------|--------|
 | **WorkItem**      | Unit of work (task, story, bug, epic, spike, chore)              | BACK   |
 | **LogEntry**      | Immutable record of something that happened                      | LOG    |
 | **DecisionRecord**| A choice with rationale (ADR pattern)                            | DEC    |
+| **Migration**     | *(v0.4.0)* Pending/in-progress/applied transition between upstream versions | MIG |
 | **Artifact**      | Any produced output                                               | ART    |
 | **Actor**         | Person or agent (humans, AI, services)                           | ACTOR  |
 | **Role**          | Named set of responsibilities                                    | ROLE   |
@@ -39,11 +41,11 @@ top of them.
 Primitives depend on each other through the skill hierarchy:
 
 ```
-Layer 0: LogEntry (event-log)
+Layer 0: index (infrastructure), id (infrastructure), LogEntry (event-log)
 Layer 1: Actor (actor-profile), Role (role-management)
 Layer 2: WorkItem, DecisionRecord, Scope, Category, Binding, CrossReference
-Layer 3: Process, StateMachine, Gate, Schedule, Constraint
-Layer 4: Discussion, Metric
+Layer 3: Process, StateMachine, Gate, Schedule, Constraint, Migration
+Layer 4: Discussion, Metric, Owner profile (owner-profiling), Context grooming
 ```
 
 Lower layers never depend on higher layers. The management skill for a

@@ -74,6 +74,7 @@ const sidebars = {
         'reference/apiversion-policy',
         'reference/id-formats',
         'reference/migration',
+        'reference/privacy',
       ],
     },
   ],

@@ -18,30 +18,43 @@ and Model Context Protocol (MCP) servers.
 
 ## What processkit ships
 
-- **18 process primitives** — WorkItem, LogEntry, DecisionRecord, Actor, Role, Binding,
-  Scope, Category, Constraint, Gate, Schedule, Process, StateMachine, Metric, Discussion,
-  Artifact, Context, CrossReference. Framework-agnostic building blocks.
-- **101 skills** — 85 technical and language skills migrated from aibox, plus 16 new
-  process-primitive skills (`event-log`, `workitem-management`, `decision-record`, ...)
-  that wrap the 18 primitives.
+- **19 process primitives** — WorkItem, LogEntry, DecisionRecord, Migration *(new in v0.4.0)*,
+  Actor, Role, Binding, Scope, Category, Constraint, Gate, Schedule, Process, StateMachine,
+  Metric, Discussion, Artifact, Context, CrossReference. Framework-agnostic building blocks.
+- **106 skills** — 85 technical and language skills migrated from aibox, plus 21 new
+  process-primitive skills (`event-log`, `workitem-management`, `decision-record`,
+  `owner-profiling`, `context-grooming`, `migration-management`, ...) that wrap the
+  primitives.
 - **5 package tiers** — `minimal`, `managed`, `software`, `research`, `product` — curated
   bundles of skills for common use cases.
 - **Python MCP servers** (from v0.3.0) — mechanical-correctness tools for foundation skills,
   delivered via the official MCP SDK with PEP 723 inline dependencies.
+- **Configurable upstream + diff script** *(new in v0.4.0)* — `[processkit] source` in
+  `aibox.toml` accepts any git URL (GitHub, GitLab, Gitea, self-hosted), so companies
+  can fork processkit, customize it, and have their projects consume the fork.
+  `scripts/processkit-diff.sh` is the generic version-comparison tool that drives
+  migration generation.
 
 ## How it's used
 
-A consumer selects a processkit tag in their `aibox.toml`:
+A consumer selects a processkit source and version in their `aibox.toml`:
 
 ```toml
+[processkit]
+source  = "https://github.com/projectious-work/processkit.git"
+version = "v0.4.0"
+
 [context]
 packages = ["managed"]
-processkit_version = "v0.2.0"
 ```
 
 `aibox init` fetches that tag and installs the selected package's skills, primitives,
-and process templates into the project's `context/` and `.claude/` directories. Users
-can add more skills from any GitHub repo using the same pattern.
+and process templates into the project's `context/` and `.claude/` directories. The
+project gets a git-tracked manifest (`context/.aibox/processkit.manifest`) that
+records the SHA of every installed file, so a future `aibox sync` can correctly
+classify what's been changed locally vs upstream.
+
+Users can add more skills from any GitHub repo using the same pattern.
 
 ## The two repos
 
@@ -57,12 +70,17 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
 ## Where to go next
 
 - [Getting Started](./getting-started/overview) — install aibox, consume processkit, create your first entity
-- [Primitives](./primitives/overview) — the 18 building blocks and the entity file format
+- [Primitives](./primitives/overview) — the 19 building blocks and the entity file format
 - [Skills](./skills/overview) — the skill package format and the catalog
 - [Packages](./packages/overview) — the five tiers and how to pick one
+- [Reference → Privacy Tiers](./reference/privacy) — public, project-private, user-private
+- [Reference → Migration](./reference/migration) — the v0.4.0 migration model
 
 ## Status
 
-processkit is early. v0.1.0 was the foundation; **v0.2.0** ships the skill migration,
-package tiers, and this documentation site. **v0.3.0** will ship working MCP servers
-and the SQLite index. **v1.0.0** will be the first stable release.
+- **v0.1.0** — foundation (entity format, three primitives, two state machines)
+- **v0.2.0** — skill migration (85 + 16 skills, packages, this docs site)
+- **v0.3.0** — MCP servers (six servers, shared lib, smoke tests)
+- **v0.4.0** *(current)* — Migration primitive, owner-profiling, context-grooming,
+  PROVENANCE.toml + diff script, configurable upstream source URL, privacy tiers
+- **v1.0.0** — first stable release (not yet scheduled)
