@@ -4,131 +4,251 @@ kind: Skill
 metadata:
   id: SKILL-tailwind
   name: tailwind
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Tailwind CSS v4 patterns — utility-first styling, responsive design, dark mode, component extraction. Use when building or reviewing Tailwind-based UIs."
+  description: "Tailwind CSS v4 — utility-first styling, responsive design, dark mode, and component extraction."
   category: framework
   layer: null
+  when_to_use: "Use when building or reviewing Tailwind-based UIs, setting up Tailwind v4, or designing responsive or dark-mode styling."
 ---
 
 # Tailwind CSS
 
-## When to Use
+## Level 1 — Intro
 
-When the user is building UIs with Tailwind CSS, asks about styling patterns,
-responsive layouts, dark mode, or says "style this component" or "set up Tailwind".
+Tailwind v4 is CSS-first: install the package, `@import "tailwindcss"`
+once, and declare design tokens inside a `@theme` block. Compose
+styles directly in markup with utility classes, extract components in
+your framework (not with `@apply`), and lean on semantic tokens so
+dark mode and theming don't fight you.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Project Setup (v4)
+### Project setup (v4)
 
-- Install: `npm i tailwindcss @tailwindcss/postcss` (or use `@tailwindcss/vite`)
-- CSS entry point needs only `@import "tailwindcss";` — no config file required
-- Define design tokens with `@theme` in CSS, not `tailwind.config.js`:
-  ```css
-  @import "tailwindcss";
+Install `tailwindcss` plus the appropriate adapter
+(`@tailwindcss/postcss` or `@tailwindcss/vite`). The CSS entry point
+only needs:
 
-  @theme {
-    --color-brand-500: oklch(0.65 0.19 260);
-    --font-heading: "Inter", sans-serif;
-    --breakpoint-3xl: 1920px;
-  }
-  ```
-- Content detection is automatic (respects `.gitignore`); override with `@source`
-- For Vite projects, prefer the first-party Vite plugin over PostCSS
+```css
+@import "tailwindcss";
 
-### 2. Utility-First Principles
+@theme {
+  --color-brand-500: oklch(0.65 0.19 260);
+  --font-heading: "Inter", sans-serif;
+  --breakpoint-3xl: 1920px;
+}
+```
 
-- Compose styles directly in markup — avoid premature abstraction
-- Keep class lists readable: group by concern (layout, spacing, typography, color)
-- Use arbitrary values sparingly: `w-[347px]` signals a missing design token
-- Tailwind v4 supports any spacing value (`mt-13`, `w-17`) without configuration
-- Prefer semantic HTML elements over `div` soup with utility classes
+There's no `tailwind.config.js`. Content detection is automatic
+(respecting `.gitignore`); override it with `@source` when you need to
+include extra files. For Vite projects, prefer the first-party Vite
+plugin over PostCSS.
 
-### 3. Component Extraction
+### Utility-first principles
 
-- Extract components in your framework (React/Vue/Svelte), not with `@apply`
-- The `@apply` directive still works but is discouraged for maintainability
-- When you must share raw CSS (e.g., markdown-rendered content), use `@apply`
-- Keep extracted components small — a button, a card, not an entire page section
-- Document component variants with props, not class string concatenation
+Compose styles in markup and avoid premature abstraction. Group
+classes by concern (layout → spacing → typography → color) to keep
+long class lists scannable. Tailwind v4 accepts any integer spacing
+(`mt-13`, `w-17`) without configuration — arbitrary values like
+`w-[347px]` should be a code smell that signals a missing design
+token.
 
-### 4. Responsive Design
+### Component extraction
 
-- Mobile-first: base styles apply to all sizes, add breakpoints upward
-- Breakpoints: `sm:` (40rem), `md:` (48rem), `lg:` (64rem), `xl:` (80rem), `2xl:` (96rem)
-- Use container queries for component-level responsiveness:
-  ```html
-  <div class="@container">
-    <div class="grid grid-cols-1 @sm:grid-cols-2 @lg:grid-cols-4">
-  ```
-- Prefer `max-w-*` with `mx-auto` for content width constraints
-- Use `reflow` utilities and test at 320px width for WCAG 1.4.10 compliance
+Extract in your UI framework (React/Vue/Svelte), not with `@apply`.
+`@apply` still works and remains appropriate when you need real CSS
+(e.g., styling HTML rendered from markdown), but prefer framework
+components for everything else. Keep extracted components small — a
+button or card, not an entire page section.
 
-### 5. Dark Mode
+### Responsive design
 
-- Use the `dark:` variant with CSS `prefers-color-scheme` (default) or class strategy
-- Define semantic color tokens that map to light/dark values:
-  ```css
-  @theme {
-    --color-surface: oklch(0.99 0 0);
-    --color-on-surface: oklch(0.15 0 0);
-  }
-  .dark {
-    --color-surface: oklch(0.15 0 0);
-    --color-on-surface: oklch(0.95 0 0);
-  }
-  ```
-- Apply via: `bg-surface text-on-surface` — no `dark:` prefix needed per element
-- Use `color-scheme-dark` / `color-scheme-light` for native element theming
-- Always test both modes; check contrast ratios meet 4.5:1 (WCAG AA)
+Mobile-first: base styles apply to all sizes; add breakpoints upward
+with `sm:`, `md:`, `lg:`, `xl:`, `2xl:`. For component-level
+responsiveness, use container queries:
 
-### 6. Colors and Theming
+```html
+<div class="@container">
+  <div class="grid grid-cols-1 @sm:grid-cols-2 @lg:grid-cols-4">
+```
 
-- Tailwind v4 uses OKLCH color space — more vibrant and perceptually uniform
-- Use `color-mix()` via opacity modifiers: `bg-blue-500/50`
-- Define brand colors in `@theme`; avoid hardcoded hex values in markup
-- Multi-brand theming: swap CSS variables at `[data-theme]` level, no rebuild needed
+Constrain content with `max-w-*` + `mx-auto`. Test at 320px wide to
+stay WCAG 1.4.10 compliant.
 
-### 7. Performance
+### Dark mode
 
-- Automatic unused CSS elimination — no manual purge config in v4
-- Full builds complete in ~100ms; incremental in ~5ms (Rust-based engine)
-- Avoid dynamically constructing class names (`text-${color}-500`) — the scanner
-  cannot detect them. Use complete class names or safelist with `@source`
-- Lazy-load heavy components; Tailwind adds zero runtime JS
+Use the `dark:` variant with either the default
+`prefers-color-scheme` strategy or a `.dark` class. Best pattern:
+define semantic tokens once and override them in `.dark`, then apply
+token-based classes without any `dark:` prefix:
 
-### 8. Common Mistakes to Avoid
+```css
+@theme {
+  --color-surface: oklch(0.99 0 0);
+  --color-on-surface: oklch(0.15 0 0);
+}
+.dark {
+  --color-surface: oklch(0.15 0 0);
+  --color-on-surface: oklch(0.95 0 0);
+}
+```
 
-- **Class string builders**: `text-${size}` breaks detection. Use lookup maps instead
-- **Overusing arbitrary values**: signals missing design tokens — add them to `@theme`
-- **Nesting utilities in CSS**: defeats the utility-first approach
-- **Ignoring accessibility**: add focus-visible styles, sufficient contrast, motion-reduce
-- **Not using `@theme`**: hardcoded values scattered across markup create inconsistency
+Then write `bg-surface text-on-surface` everywhere and both modes
+follow automatically.
 
-### 9. Accessibility with Tailwind
+### Colors and theming
 
-- Always include `focus-visible:` ring/outline styles on interactive elements
-- Use `motion-reduce:` to respect `prefers-reduced-motion`
-- Use `sr-only` for screen-reader-only text (icon-only buttons need labels)
-- Ensure color contrast: text on `bg-*` must meet WCAG AA (4.5:1 normal, 3:1 large)
-- Click targets should be at least 24x24 CSS pixels (WCAG 2.5.8)
+Tailwind v4 uses OKLCH, which is more vibrant and perceptually
+uniform than sRGB. Opacity modifiers work via `color-mix()`:
+`bg-blue-500/50`. Define brand colors in `@theme` rather than
+scattering hex values through markup. Multi-brand apps can swap CSS
+variables at the `[data-theme]` level at runtime without a rebuild.
 
-## References
+### Performance
 
-- `references/cheatsheet.md` — Most-used utility classes by category
+The v4 engine is Rust-based: full builds run in around 100ms and
+incremental rebuilds in single-digit ms. Unused CSS is eliminated
+automatically. Never build class names dynamically
+(`` `text-${color}-500` ``) — the scanner can't see them. Use a
+lookup map or safelist the class with `@source`.
+
+## Level 3 — Full reference
+
+### Layout utilities
+
+| Purpose          | Classes                                                                |
+|------------------|------------------------------------------------------------------------|
+| Display          | `block` `inline-block` `flex` `inline-flex` `grid` `hidden` `contents` |
+| Position         | `static` `relative` `absolute` `fixed` `sticky`                        |
+| Flex direction   | `flex-row` `flex-col` `flex-row-reverse` `flex-col-reverse`            |
+| Flex wrap        | `flex-wrap` `flex-nowrap`                                              |
+| Flex grow/shrink | `grow` `shrink` `grow-0` `shrink-0` `basis-1/2`                        |
+| Justify content  | `justify-start` `justify-center` `justify-between` `justify-end`       |
+| Align items      | `items-start` `items-center` `items-end` `items-stretch`               |
+| Align self       | `self-auto` `self-start` `self-center` `self-end`                      |
+| Grid template    | `grid-cols-1` ... `grid-cols-12` `grid-rows-1` ... `grid-rows-6`       |
+| Grid span        | `col-span-1` ... `col-span-full` `row-span-1` ... `row-span-full`      |
+| Gap              | `gap-0` `gap-1` ... `gap-8` `gap-x-4` `gap-y-4`                        |
+| Overflow         | `overflow-auto` `overflow-hidden` `overflow-scroll` `overflow-visible` |
+| Z-index          | `z-0` `z-10` `z-20` `z-30` `z-40` `z-50` `z-auto`                      |
+
+### Spacing and sizing
+
+| Purpose       | Classes                                                                    |
+|---------------|----------------------------------------------------------------------------|
+| Padding       | `p-0` `p-1` ... `p-8` `px-4` `py-2` `pt-4` `pr-4` `pb-4` `pl-4`            |
+| Margin        | `m-0` `m-1` ... `m-8` `mx-auto` `my-4` `-mt-4`                             |
+| Space between | `space-x-4` `space-y-4`                                                    |
+| Width         | `w-0` `w-px` `w-1` ... `w-96` `w-auto` `w-full` `w-fit` `w-1/2` `w-1/3`    |
+| Max width     | `max-w-xs` `max-w-sm` ... `max-w-7xl` `max-w-full` `max-w-prose`           |
+| Min width     | `min-w-0` `min-w-full` `min-w-min` `min-w-max`                             |
+| Height        | `h-0` `h-1` ... `h-96` `h-auto` `h-full` `h-screen` `h-fit`                |
+| Min/Max height| `min-h-screen` `max-h-96`                                                  |
+
+In v4, any integer works: `p-13`, `mt-17`, `gap-22` — no config.
+
+### Typography
+
+| Purpose         | Classes                                                                |
+|-----------------|------------------------------------------------------------------------|
+| Font size       | `text-xs` `text-sm` `text-base` `text-lg` ... `text-9xl`               |
+| Font weight     | `font-thin` `font-light` `font-normal` `font-medium` `font-semibold` `font-bold` |
+| Font style      | `italic` `not-italic`                                                  |
+| Font family     | `font-sans` `font-serif` `font-mono`                                   |
+| Text align      | `text-left` `text-center` `text-right` `text-justify`                  |
+| Text color      | `text-black` `text-white` `text-{color}-{shade}`                       |
+| Line height     | `leading-none` `leading-tight` `leading-snug` `leading-normal`         |
+| Letter spacing  | `tracking-tight` `tracking-normal` `tracking-wide`                     |
+| Text decoration | `underline` `overline` `line-through` `no-underline`                   |
+| Text transform  | `uppercase` `lowercase` `capitalize` `normal-case`                     |
+| Text overflow   | `truncate` `text-ellipsis` `text-clip`                                 |
+| Whitespace      | `whitespace-normal` `whitespace-nowrap` `whitespace-pre`               |
+
+### Backgrounds and borders
+
+| Purpose       | Classes                                                                  |
+|---------------|--------------------------------------------------------------------------|
+| Background    | `bg-white` `bg-{color}-{shade}` `bg-transparent` `bg-blue-500/50`        |
+| Gradient      | `bg-linear-to-r` `bg-linear-45` `from-{color}` `via-{color}` `to-{color}`|
+| Border width  | `border` `border-0` `border-2` `border-4` `border-t` `border-r`          |
+| Border color  | `border-gray-200` `border-{color}-{shade}` `border-transparent`          |
+| Border style  | `border-solid` `border-dashed` `border-dotted` `border-none`             |
+| Radius        | `rounded-none` `rounded-sm` `rounded` `rounded-md` `rounded-lg` `rounded-full` |
+| Ring          | `ring` `ring-2` `ring-{color}-{shade}` `ring-offset-2`                   |
+
+v4 renamed `bg-gradient-*` to `bg-linear-*`.
+
+### Effects and motion
+
+| Purpose       | Classes                                                                  |
+|---------------|--------------------------------------------------------------------------|
+| Shadow        | `shadow-sm` `shadow` `shadow-md` `shadow-lg` `shadow-xl` `shadow-none`   |
+| Opacity       | `opacity-0` `opacity-25` `opacity-50` `opacity-75` `opacity-100`         |
+| Blur          | `blur-none` `blur-sm` `blur` `blur-md` `blur-lg`                         |
+| Backdrop blur | `backdrop-blur-sm` `backdrop-blur` `backdrop-blur-md`                    |
+| Transition    | `transition-none` `transition` `transition-colors` `transition-transform`|
+| Duration      | `duration-75` `duration-150` `duration-300` `duration-500` `duration-1000` |
+| Timing        | `ease-linear` `ease-in` `ease-out` `ease-in-out`                         |
+| Animation     | `animate-spin` `animate-ping` `animate-pulse` `animate-bounce`           |
+| Transform     | `scale-50` ... `scale-150` `rotate-45` `translate-x-4` `translate-y-4`   |
+
+### Breakpoints
+
+| Prefix | Min-width | Typical use             |
+|--------|-----------|-------------------------|
+| (none) | 0px       | Mobile-first base       |
+| `sm:`  | 640px     | Large phones, landscape |
+| `md:`  | 768px     | Tablets                 |
+| `lg:`  | 1024px    | Laptops                 |
+| `xl:`  | 1280px    | Desktops                |
+| `2xl:` | 1536px    | Large screens           |
+
+### State variants
+
+| Variant            | Trigger                                  |
+|--------------------|------------------------------------------|
+| `hover:`           | Mouse hover                              |
+| `focus:`           | Element focused                          |
+| `focus-visible:`   | Keyboard focus (recommended over focus:) |
+| `active:`          | Being clicked/pressed                    |
+| `disabled:`        | Disabled form element                    |
+| `first:` `last:`   | First/last child                         |
+| `odd:` `even:`     | Odd/even children                        |
+| `dark:`            | Dark mode                                |
+| `motion-reduce:`   | Prefers reduced motion                   |
+| `@sm:` `@md:` etc. | Container query breakpoints (v4)         |
+| `not-hover:`       | Inverse of hover (v4)                    |
+
+### Accessibility utilities
+
+| Purpose            | Classes                                             |
+|--------------------|-----------------------------------------------------|
+| Screen reader only | `sr-only` `not-sr-only`                             |
+| Focus ring         | `focus-visible:ring-2 focus-visible:ring-blue-500`  |
+| Reduced motion     | `motion-reduce:transition-none`                     |
+| Forced colors      | `forced-colors:border`                              |
+
+Always include `focus-visible:` ring/outline styles on interactive
+elements. Use `sr-only` for labels on icon-only buttons. Text on
+colored backgrounds must meet WCAG AA contrast (4.5:1 normal, 3:1
+large). Click targets should be at least 24×24 CSS pixels
+(WCAG 2.5.8).
+
+### Anti-patterns
+
+- **Class string builders** (`` `text-${size}` ``) — the scanner
+  can't detect them; use a lookup map
+- **Overusing arbitrary values** — treat `w-[347px]` as a missing
+  token and add it to `@theme`
+- **Nesting utilities in CSS** — defeats the utility-first approach
+- **Ignoring accessibility** — skipping focus states, contrast, or
+  `motion-reduce:` will come back as audits
+- **Not using `@theme`** — scattered hardcoded values destroy
+  consistency and make dark mode painful
+
+### Further reading
+
 - [Tailwind CSS v4 announcement](https://tailwindcss.com/blog/tailwindcss-v4)
 - [Official documentation](https://tailwindcss.com/docs)
-
-## Examples
-
-**User:** "Add dark mode to this card component"
-**Agent:** Defines semantic color tokens in `@theme` with `.dark` overrides, applies
-token-based classes (`bg-surface text-on-surface`), adds `dark:` variant only where
-semantic tokens do not cover the case, and tests contrast in both modes.
-
-**User:** "Make this layout responsive"
-**Agent:** Starts with a single-column mobile layout, adds `sm:` and `lg:` breakpoints
-for multi-column grids, uses container queries for self-contained components, and
-tests at 320px minimum width.

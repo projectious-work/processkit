@@ -4,30 +4,30 @@ kind: Skill
 metadata:
   id: SKILL-terraform-basics
   name: terraform-basics
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Infrastructure-as-code with Terraform/OpenTofu. Resources, providers, state, modules, and plan/apply workflow. Use when writing Terraform configs, managing cloud infrastructure, or reviewing IaC code."
+  description: "Infrastructure-as-code with Terraform/OpenTofu — resources, state, modules, plan/apply."
   category: infrastructure
   layer: null
+  when_to_use: "Use when writing `.tf` files, managing cloud infrastructure with Terraform or OpenTofu, handling state and backends, or reviewing IaC code."
 ---
 
 # Terraform Basics
 
-## When to Use
+## Level 1 — Intro
 
-- Writing or editing Terraform/OpenTofu configuration files (`.tf`)
-- Planning, applying, or destroying cloud infrastructure
-- Managing state files and backend configuration
-- Creating or consuming reusable modules
-- Reviewing IaC code for best practices
-- Debugging provider or resource issues
+Terraform (and OpenTofu) describes cloud infrastructure declaratively
+and reconciles reality with `plan` and `apply`. Pin provider versions,
+use a remote state backend, and never edit state by hand — get those
+three right and the rest is just resource documentation.
 
-## Instructions
+## Level 2 — Overview
 
-### Resources and Providers
+### Resources and providers
 
-Every Terraform project starts with a provider configuration. Pin provider versions in a `required_providers` block:
+Every project starts with a provider configuration. Pin provider
+versions in a `required_providers` block:
 
 ```hcl
 terraform {
@@ -45,11 +45,13 @@ provider "aws" {
 }
 ```
 
-Resources are the core building blocks. Use descriptive names and always set critical arguments explicitly rather than relying on defaults.
+Resources are the core building blocks. Use descriptive names and set
+critical arguments explicitly rather than relying on defaults.
 
-### Variables and Outputs
+### Variables and outputs
 
-Use typed variables with descriptions and validation where appropriate:
+Use typed variables with descriptions and validation where
+appropriate:
 
 ```hcl
 variable "instance_type" {
@@ -68,11 +70,15 @@ output "instance_ip" {
 }
 ```
 
-Variable types: `string`, `number`, `bool`, `list(type)`, `map(type)`, `object({...})`. Use `terraform.tfvars` or `-var-file` for environment-specific values. Never hardcode secrets -- use environment variables or a secrets manager data source.
+Variable types: `string`, `number`, `bool`, `list(type)`, `map(type)`,
+`object({...})`. Use `terraform.tfvars` or `-var-file` for
+environment-specific values. Never hardcode secrets — use environment
+variables or a secrets manager data source.
 
-### Data Sources
+### Data sources
 
-Use data sources to reference existing infrastructure without managing it:
+Use data sources to reference existing infrastructure without
+managing it:
 
 ```hcl
 data "aws_ami" "ubuntu" {
@@ -85,9 +91,10 @@ data "aws_ami" "ubuntu" {
 }
 ```
 
-### State Management
+### State management
 
-State tracks the mapping between config and real infrastructure. Configure a remote backend for team use:
+State tracks the mapping between config and real infrastructure.
+Configure a remote backend for team use:
 
 ```hcl
 terraform {
@@ -101,11 +108,15 @@ terraform {
 }
 ```
 
-Never edit state files manually. Use `terraform state list`, `terraform state show`, and `terraform state mv` for inspection and refactoring. Use `terraform import` to bring existing resources under management.
+Never edit state files manually. Use `terraform state list`,
+`terraform state show`, and `terraform state mv` for inspection and
+refactoring. Use `terraform import` to bring existing resources under
+management.
 
 ### Modules
 
-Modules group related resources for reuse. Keep modules focused on a single concern:
+Modules group related resources for reuse. Keep modules focused on a
+single concern:
 
 ```hcl
 module "vpc" {
@@ -115,33 +126,41 @@ module "vpc" {
 }
 ```
 
-Public modules from the registry: `source = "terraform-aws-modules/vpc/aws"` with a `version` pin. Always pin module versions in production.
+Public modules from the registry use
+`source = "terraform-aws-modules/vpc/aws"` with a `version` pin.
+Always pin module versions in production.
 
-### Plan / Apply / Destroy Workflow
+### Plan / apply / destroy
 
 Always preview before applying:
 
 ```bash
-terraform init          # download providers and modules
-terraform fmt -check    # check formatting
-terraform validate      # syntax and internal consistency check
+terraform init               # download providers and modules
+terraform fmt -check         # check formatting
+terraform validate           # syntax and internal consistency
 terraform plan -out=tfplan   # preview changes, save plan
 terraform apply tfplan       # apply the saved plan exactly
 ```
 
-Use `terraform destroy` with extreme caution -- review the plan output first. For targeted operations, use `-target=resource.name` sparingly and only for debugging.
+Use `terraform destroy` with extreme caution — review the plan
+output first. For targeted operations, use `-target=resource.name`
+sparingly and only for debugging.
 
-### Best Practices
+## Level 3 — Full reference
 
-- One state per environment (dev/staging/prod) via workspaces or directory structure
-- Use `lifecycle { prevent_destroy = true }` on critical resources (databases, S3 buckets)
+### Best practices
+
+- One state per environment (dev/staging/prod) via workspaces or
+  separate directories
+- Use `lifecycle { prevent_destroy = true }` on critical resources
+  (databases, S3 buckets holding data you cannot recreate)
 - Tag all resources with project, environment, and owner
 - Run `terraform fmt` and `terraform validate` before committing
 - Use `moved` blocks for refactoring instead of destroy/recreate
+- Keep modules small and focused — a module for VPC, another for
+  IAM, another for RDS, rather than one "everything" module
 
-## Examples
-
-### Provision an EC2 instance with security group
+### Worked example: EC2 with security group
 
 ```hcl
 resource "aws_security_group" "web" {
@@ -164,14 +183,17 @@ resource "aws_instance" "web" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.web.id]
-  tags = { Name = "web-server", Environment = "prod" }
+  tags = {
+    Name        = "web-server"
+    Environment = "prod"
+  }
 }
 ```
 
-### Migrate state backend from local to S3
+### Migrating state from local to S3
 
 ```bash
-# 1. Add backend config to terraform block
+# 1. Add backend config to the terraform block
 # 2. Run init with migration flag
 terraform init -migrate-state
 # 3. Verify state is accessible
@@ -179,11 +201,50 @@ terraform state list
 # 4. Delete local terraform.tfstate after confirming
 ```
 
-### Import an existing resource into state
+### Importing an existing resource
 
 ```bash
-# Find the resource ID from the cloud console or CLI
+# Find the resource ID in the cloud console or CLI
 terraform import aws_s3_bucket.logs my-existing-log-bucket
 # Write the matching resource block in .tf
 terraform plan  # should show no changes if config matches
 ```
+
+### State surgery with `state mv`
+
+When you rename a resource or move it into a module, Terraform sees
+it as "destroy old, create new" unless you update state:
+
+```bash
+terraform state mv aws_instance.web module.web.aws_instance.this
+terraform state mv aws_instance.old aws_instance.new
+```
+
+Prefer a `moved` block in config when possible — it is checked into
+version control and replayed automatically:
+
+```hcl
+moved {
+  from = aws_instance.old
+  to   = aws_instance.new
+}
+```
+
+### Anti-patterns
+
+- **Hardcoded secrets in `.tf` files** — use env vars, `-var`, or a
+  secrets manager data source
+- **Unpinned providers or modules** — `version = "~> 5.0"` minimum;
+  prefer exact pins in production
+- **Blind `terraform apply` without a saved plan** — apply the plan
+  you reviewed, not a fresh one
+- **`terraform state rm` to "fix" drift** — you are lying to
+  Terraform about what exists; reach for `import` or `moved` instead
+- **`-target` as normal workflow** — it bypasses graph analysis and
+  produces partial applies
+- **Committing `terraform.tfstate`** — remote backend only; local
+  state is a collaboration hazard
+- **Monolithic root module** — split by lifecycle (network rarely
+  changes, app changes daily); separate state per lifecycle
+- **Destroy/recreate when a `moved` block would do** — destructive
+  changes should be explicit, not accidental

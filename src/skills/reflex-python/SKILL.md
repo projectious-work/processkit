@@ -4,122 +4,312 @@ kind: Skill
 metadata:
   id: SKILL-reflex-python
   name: reflex-python
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Reflex Python web framework for building full-stack apps in pure Python. Components, state management, and deployment. Use when building Reflex apps, designing component hierarchies, or managing app state."
+  description: "Reflex Python web framework for full-stack apps in pure Python — components, state, routing, and deployment."
   category: framework
   layer: null
+  when_to_use: "Use when building Reflex apps, designing component hierarchies, managing Reflex state, or deploying a Reflex application."
 ---
 
 # Reflex Python
 
-## When to Use
+## Level 1 — Intro
 
-When the user is building web apps with Reflex, asks about component design, state
-management, routing in Reflex, or says "create a Reflex app" or "add a page" or
-"manage state in Reflex".
+Reflex lets you build full-stack web apps in pure Python: UI is
+composed from `rx.*` components (Python wrappers over React), state
+lives in `rx.State` subclasses, and event handlers are ordinary
+methods that mutate state. The framework compiles the frontend and
+runs a Python backend that owns all business logic.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. App Structure
+### App structure
 
-- Initialize with `reflex init` -- creates `rxconfig.py` and app directory
-- Entry point is `app/app.py` with `app = rx.App()`
-- Each page is a function decorated with `@rx.page(route="/path", title="Page Title")`
-- File-based routing: files in `app/pages/` map to routes automatically
-- Configuration in `rxconfig.py`: `rx.Config(app_name="myapp", db_url=...)`
-- Static assets go in `assets/` directory, accessible at `/filename`
+`reflex init` scaffolds `rxconfig.py` and the app package. The entry
+point is `app/app.py` with `app = rx.App()`. Each page is a function
+decorated with `@rx.page(route="/path", title="...")`. Files dropped
+in `app/pages/` become routes automatically. Configuration (app name,
+database URL) lives in `rxconfig.py`. Static assets in `assets/` are
+served at `/filename`.
 
-### 2. Components
+### Components
 
-- All UI is built from `rx.*` components -- Python wrappers around React components
-- Layout components: `rx.box`, `rx.flex`, `rx.grid`, `rx.stack`, `rx.center`
-- Display: `rx.text`, `rx.heading`, `rx.image`, `rx.badge`, `rx.code_block`
-- Input: `rx.input`, `rx.text_area`, `rx.select`, `rx.checkbox`, `rx.slider`, `rx.switch`
-- Feedback: `rx.alert`, `rx.toast`, `rx.progress`, `rx.spinner`, `rx.skeleton`
-- Navigation: `rx.link`, `rx.breadcrumb`, `rx.tabs`
-- Components accept props as keyword arguments: `rx.button("Click", color_scheme="blue")`
-- Nest components as positional arguments: `rx.box(rx.text("Hello"), rx.button("Go"))`
+Every piece of UI is an `rx.*` call. Layout helpers (`rx.box`,
+`rx.flex`, `rx.grid`, `rx.stack`, `rx.vstack`, `rx.hstack`,
+`rx.center`) nest display and input components. Props are keyword
+arguments; children are positional. Reflex ships Radix-based
+primitives for inputs, feedback, navigation, and display.
 
-### 3. State Management
+### State management
 
-- Define state as a class inheriting `rx.State`
-- State vars are class attributes with type annotations: `count: int = 0`
-- Event handlers are methods that modify state: `def increment(self): self.count += 1`
-- Bind state to UI: `rx.text(State.count)` -- auto-updates on change
-- Computed vars use the `@rx.var` decorator for derived values
-- State is per-session -- each browser tab gets its own instance
-- Substates for modularity: `class FormState(State): ...`
+Define state as a class inheriting from `rx.State`. State vars are
+typed class attributes (`count: int = 0`) — the type annotation is
+mandatory because Reflex uses it for serialization. Event handlers
+are methods that modify `self`. Computed vars use `@rx.var`. Each
+browser session gets its own state instance, and substates
+(`class FormState(rx.State)`) keep large apps modular.
 
-### 4. Event Handlers
+### Event handlers and binding
 
-- Attach handlers to events: `rx.button("Add", on_click=State.increment)`
-- Handlers receive event data: `def on_change(self, value: str): self.query = value`
-- Use `rx.input(value=State.query, on_change=State.set_query)` for two-way binding
-- `set_<var>` is auto-generated for each state var
-- Background tasks with `@rx.event(background=True)` for long-running operations
-- Yield from handlers to send intermediate UI updates
-- Chain events: return `State.other_handler` from a handler
+Attach handlers to component events: `rx.button("Add",
+on_click=State.increment)`. Reflex auto-generates `set_<var>` for
+every state var, enabling two-way binding like `rx.input(
+value=State.query, on_change=State.set_query)`. Handlers can `yield`
+between mutations to push intermediate UI updates. Long-running work
+goes in `@rx.event(background=True)` handlers that use `async with
+self:` to mutate state safely.
 
-### 5. Styling
+### Styling
 
-- Inline styles as props: `rx.box(padding="4", bg="blue.500", border_radius="md")`
-- Uses Radix UI design tokens: color scales (`blue.1` to `blue.12`), spacing, radii
-- Responsive props with list: `rx.box(columns=["1", "2", "3"])` (mobile, tablet, desktop)
-- Global styles in `rxconfig.py` or `rx.App(style={...})`
-- Use `rx.color_mode.toggle` and `rx.color_mode_cond()` for light/dark themes
-- CSS class support: `rx.box(class_name="custom-class")`
+Props drive styling: `rx.box(padding="4", bg="blue.500",
+border_radius="md")`. Values come from Radix design tokens (color
+scales `blue.1`–`blue.12`, spacing, radii). Responsive props take a
+list that maps to `[mobile, tablet, desktop]`. Global styles live in
+`rx.App(style={...})`. Dark mode uses `rx.color_mode.toggle` and
+`rx.color_mode_cond()`.
 
-### 6. Routing and Navigation
+### Routing
 
-- Decorator-based: `@rx.page(route="/users/[id]", title="User Profile")`
-- Dynamic segments via brackets: access with `self.router.page.params["id"]`
-- Navigate programmatically: `return rx.redirect("/dashboard")`
-- Use `rx.link("Home", href="/")` for navigation links
-- On-load events: `@rx.page(on_load=State.load_data)`
-- 404 handling: define a catch-all page with `@rx.page(route="/[...catchall]")`
+`@rx.page(route="/users/[user_id]")` declares a dynamic route;
+parameters are accessed via `self.router.page.params["user_id"]`.
+`rx.link("Home", href="/")` produces navigation links and
+`rx.redirect("/dashboard")` returned from a handler performs a
+programmatic navigation. Attach `on_load=State.load_data` to the page
+decorator for per-visit initialization.
 
-### 7. Database Integration
+### Database
 
-- Built-in SQLModel integration: define models as `class User(rx.Model): ...`
-- Query in event handlers: `with rx.session() as session: users = session.exec(...)`
-- Migrations handled automatically with `reflex db migrate`
-- Default SQLite for development; configure PostgreSQL for production in `rxconfig.py`
+Reflex ships SQLModel integration: `class User(rx.Model, table=True):
+...`. Query inside handlers via `with rx.session() as session: ...`.
+`reflex db migrate` handles schema migrations. Default SQLite for
+development; configure PostgreSQL in `rxconfig.py` for production.
 
-### 8. Deployment
+## Level 3 — Full reference
 
-- `reflex deploy` for Reflex Cloud (managed hosting)
-- Self-host: `reflex export --frontend-only` produces static frontend + API backend
-- Docker: use `reflex export` then serve frontend via nginx, backend via uvicorn
+### Layout components
+
+```python
+# Flex container (horizontal by default)
+rx.flex(
+    rx.box("Item 1"),
+    rx.box("Item 2"),
+    direction="row",      # "row" | "column"
+    gap="4",
+    align="center",       # cross-axis alignment
+    justify="between",    # main-axis distribution
+    wrap="wrap",
+)
+
+# Grid layout
+rx.grid(
+    rx.box("A"), rx.box("B"), rx.box("C"), rx.box("D"),
+    columns="2",
+    spacing="4",
+)
+
+# Stack shorthands
+rx.vstack(rx.text("Top"), rx.text("Bottom"), spacing="3")
+rx.hstack(rx.text("Left"), rx.text("Right"), spacing="3")
+
+# Center content
+rx.center(rx.spinner(), height="100vh")
+```
+
+### Display and input
+
+```python
+rx.text("Body text", size="3", color="gray.11")
+rx.heading("Page Title", size="7", weight="bold")
+rx.image(src="/logo.png", alt="Logo", width="200px")
+rx.badge("NEW", color_scheme="green", variant="soft")
+rx.code_block(code, language="python", show_line_numbers=True)
+
+rx.card(
+    rx.text("Card content"),
+    rx.button("Action"),
+    size="3",
+)
+
+rx.input(
+    placeholder="Search...",
+    value=State.query,
+    on_change=State.set_query,
+    size="3",
+)
+
+rx.text_area(value=State.content, on_change=State.set_content, rows="5")
+
+rx.select(
+    ["Option A", "Option B", "Option C"],
+    value=State.selected,
+    on_change=State.set_selected,
+    placeholder="Choose one",
+)
+
+rx.checkbox("Accept terms", checked=State.accepted, on_change=State.set_accepted)
+rx.switch(checked=State.dark_mode, on_change=State.toggle_dark)
+
+rx.button("Primary", color_scheme="blue")
+rx.button("Outline", variant="outline")
+rx.button("Loading", loading=State.is_loading, on_click=State.submit)
+```
+
+### State patterns
+
+```python
+import reflex as rx
+
+class AppState(rx.State):
+    # Simple vars (set_<name> auto-generated)
+    count: int = 0
+    items: list[str] = []
+    query: str = ""
+
+    # Event handlers
+    def increment(self):
+        self.count += 1
+
+    def add_item(self):
+        if self.query:
+            self.items.append(self.query)
+            self.query = ""
+
+    def remove_item(self, item: str):
+        self.items = [i for i in self.items if i != item]
+
+    # Computed var (read-only, auto-updates)
+    @rx.var
+    def item_count(self) -> int:
+        return len(self.items)
+
+    @rx.var
+    def filtered_items(self) -> list[str]:
+        if not self.query:
+            return self.items
+        return [i for i in self.items if self.query.lower() in i.lower()]
+```
+
+### Event handler patterns
+
+```python
+class FormState(rx.State):
+    form_data: dict = {}
+
+    # Handler with event data
+    def handle_submit(self, data: dict):
+        self.form_data = data
+
+    # Yielding for progress updates
+    def process(self):
+        self.status = "Starting..."
+        yield
+        self.status = "Processing..."
+        yield
+        self.status = "Done"
+
+    # Background task (non-blocking)
+    @rx.event(background=True)
+    async def fetch_data(self):
+        import httpx
+        async with httpx.AsyncClient() as client:
+            resp = await client.get("https://api.example.com/data")
+            async with self:
+                self.data = resp.json()
+
+    # Redirect after action
+    def login(self):
+        if self.authenticate():
+            return rx.redirect("/dashboard")
+```
+
+### Conditional and dynamic rendering
+
+```python
+# Conditional rendering
+rx.cond(
+    State.logged_in,
+    rx.text("Welcome back!"),
+    rx.button("Log in", on_click=State.show_login),
+)
+
+# Rendering lists
+rx.foreach(
+    State.items,
+    lambda item: rx.hstack(
+        rx.text(item),
+        rx.icon_button("x", on_click=State.remove_item(item)),
+    ),
+)
+
+# Multi-branch
+rx.match(
+    State.status,
+    ("loading", rx.spinner()),
+    ("error", rx.text("Error!", color="red")),
+    ("success", rx.text("Done!", color="green")),
+    rx.text("Unknown"),  # default
+)
+```
+
+### Pages and routing
+
+```python
+@rx.page(route="/", title="Home", on_load=AppState.load_data)
+def index() -> rx.Component:
+    return rx.box(
+        rx.heading("Home"),
+        rx.text("Welcome"),
+    )
+
+@rx.page(route="/users/[user_id]", title="User Profile")
+def user_profile() -> rx.Component:
+    return rx.box(
+        rx.text(f"User: {AppState.router.page.params['user_id']}"),
+    )
+
+rx.link("Go Home", href="/")
+rx.link(rx.button("Dashboard"), href="/dashboard")
+```
+
+### Form handling
+
+```python
+rx.form(
+    rx.vstack(
+        rx.input(name="email", placeholder="Email", required=True),
+        rx.input(name="password", type="password", required=True),
+        rx.button("Submit", type="submit"),
+        spacing="3",
+    ),
+    on_submit=FormState.handle_submit,
+    reset_on_submit=True,
+)
+```
+
+### Deployment
+
+- **Reflex Cloud**: `reflex deploy` for managed hosting
+- **Self-host**: `reflex export --frontend-only` produces a static
+  frontend plus a backend you run with `uvicorn`
+- **Docker**: export, then serve the frontend via nginx and the
+  backend via uvicorn
 - Set `REFLEX_ENV=prod` for production optimizations
 
-### 9. Common Mistakes
+### Common mistakes
 
-- Mutating state outside event handlers -- state changes must occur inside handlers
-- Forgetting type annotations on state vars -- Reflex needs them for serialization
-- Using Python-only objects in state -- all vars must be JSON-serializable
-- Blocking the event loop -- use background tasks for CPU/IO-heavy work
+- **Mutating state outside event handlers** — all state mutation
+  must happen inside a handler method
+- **Missing type annotations on state vars** — Reflex needs them for
+  serialization and code generation
+- **Non-serializable values in state** — every state var must be
+  JSON-serializable
+- **Blocking the event loop** — push CPU/IO-heavy work into
+  `@rx.event(background=True)` handlers
+- **One giant global state** — split into substates by feature
 
-## References
+### Further reading
 
-- `references/component-reference.md` -- Common components, state patterns, and examples
 - [Reflex Documentation](https://reflex.dev/docs/)
 - [Component Library](https://reflex.dev/docs/library/)
-
-## Examples
-
-**User:** "Create a todo app with Reflex"
-**Agent:** Defines a `TodoState` with a list of todos and input field, creates event
-handlers for add/delete/toggle, builds UI with `rx.input`, `rx.button`, and
-`rx.foreach(TodoState.todos, render_todo)` to render the list dynamically.
-
-**User:** "Add authentication to my Reflex app"
-**Agent:** Creates a `LoginState` substate with username/password vars, implements
-`login` and `logout` handlers that validate credentials, uses `rx.cond(State.logged_in,
-dashboard(), login_page())` for conditional rendering, and redirects on auth state change.
-
-**User:** "How do I fetch data from an API in Reflex?"
-**Agent:** Creates an event handler decorated with `@rx.event(background=True)` that
-uses `httpx` to fetch data, stores results in a state var, and triggers the handler
-with `on_load` on the page decorator for automatic loading.

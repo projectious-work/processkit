@@ -4,179 +4,357 @@ kind: Skill
 metadata:
   id: SKILL-linux-administration
   name: linux-administration
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Essential Linux system administration for developers. File permissions, process management, systemd, journald, cron, and disk management. Use when managing Linux servers, debugging system issues, or writing system scripts."
+  description: "Linux sysadmin for developers — permissions, processes, systemd, journald, cron, disks."
   category: infrastructure
   layer: null
+  when_to_use: "Use when managing Linux servers, writing systemd units, querying journalctl, debugging disk or process issues, or wiring up cron and timers."
 ---
 
 # Linux Administration
 
-## When to Use
+## Level 1 — Intro
 
-- Managing file permissions and ownership
-- Investigating and managing running processes
-- Creating or editing systemd service units
-- Querying logs with journalctl
-- Setting up cron jobs or systemd timers
-- Diagnosing disk space, filesystem, or mount issues
-- Managing users and groups
-- Installing or managing packages with apt or dnf
+Day-to-day Linux admin comes down to a small set of tools: `chmod`,
+`ps`/`ss`, `systemctl`/`journalctl`, `cron` or timers, and `df`/`du`.
+Get comfortable with each and most production incidents resolve with
+a handful of commands.
 
-## Instructions
+## Level 2 — Overview
 
-### File Permissions and Ownership
+### File permissions and ownership
 
-Linux permissions use the rwx model for owner, group, and others. Use numeric (chmod 755) or symbolic (chmod u+x) notation:
+Linux uses the rwx model for owner, group, and others. Use numeric
+(`chmod 755`) or symbolic (`chmod u+x`) notation:
 
 ```bash
 chmod 755 script.sh          # rwxr-xr-x
-chmod u+x,g+r,o-w file      # symbolic mode
+chmod u+x,g+r,o-w file       # symbolic mode
 chown app:app /srv/data      # change owner and group
-chown -R app:app /srv/data   # recursive ownership change
+chown -R app:app /srv/data   # recursive
 ```
 
-Key permission values: 644 (files, rw-r--r--), 755 (executables/dirs, rwxr-xr-x), 600 (secrets, rw-------), 700 (private dirs). Directories need execute permission for traversal.
+Key values: 644 (files, rw-r--r--), 755 (executables/dirs), 600
+(secrets, owner-only), 700 (private dirs). Directories need execute
+permission for traversal. Special bits: setuid (4000), setgid (2000),
+sticky (1000). Inspect concisely with `stat -c '%a %U:%G %n' file`.
 
-Special bits: setuid (4000), setgid (2000), sticky (1000). Use `stat -c '%a %U:%G %n' file` to inspect permissions concisely.
-
-### Process Management
-
-Find and manage processes:
+### Process management
 
 ```bash
-ps aux                        # all processes with details
-ps aux --sort=-%mem           # sorted by memory usage
-pgrep -af "pattern"           # find processes by name
-kill -TERM <pid>              # graceful termination
-kill -KILL <pid>              # force kill (last resort)
-top -b -n 1 -o %MEM          # batch mode, single snapshot, sort by memory
+ps aux                         # all processes
+ps aux --sort=-%mem            # sort by memory
+pgrep -af "pattern"            # find by name
+kill -TERM <pid>               # graceful termination
+kill -KILL <pid>               # force kill (last resort)
+top -b -n 1 -o %MEM            # batch snapshot sorted by memory
 ```
 
-Use `SIGTERM` (15) first, `SIGKILL` (9) only when the process does not respond. Check open files with `lsof -p <pid>` and network connections with `ss -tlnp`.
+Send `SIGTERM` (15) first; reach for `SIGKILL` (9) only when the
+process refuses to exit. Check open files with `lsof -p <pid>` and
+listening ports with `ss -tlnp`.
 
-### User and Group Management
+### User and group management
 
 ```bash
-useradd -m -s /bin/bash -G sudo newuser    # create user with home dir
-usermod -aG docker existinguser            # add to group (keep existing groups)
-passwd username                             # set password
-userdel -r username                         # remove user and home dir
-groups username                             # list user's groups
-id username                                 # uid, gid, groups
+useradd -m -s /bin/bash -G sudo newuser  # create user with home dir
+usermod -aG docker existinguser           # append to group (keep existing)
+passwd username                           # set password
+userdel -r username                       # remove user and home dir
+groups username                           # list user's groups
+id username                               # uid, gid, groups
 ```
 
-Prefer `useradd` over `adduser` for scripting (consistent across distros). Always use `-aG` (append) with `usermod` to avoid removing existing group memberships.
+Prefer `useradd` over `adduser` for scripts (consistent across
+distros). Always use `-aG` (append) with `usermod` — without `-a` you
+replace the user's entire group list.
 
-### Systemd Services
+### Systemd services
 
-Create service units in `/etc/systemd/system/`. See `references/systemd-reference.md` for the full unit file format.
+Create unit files in `/etc/systemd/system/`. Always run
+`daemon-reload` after editing:
 
 ```bash
-systemctl start myapp              # start service
-systemctl stop myapp               # stop service
-systemctl restart myapp            # restart
-systemctl enable myapp             # start on boot
-systemctl enable --now myapp       # enable and start immediately
-systemctl status myapp             # status with recent logs
-systemctl daemon-reload            # reload after editing unit files
+systemctl start myapp
+systemctl stop myapp
+systemctl restart myapp
+systemctl enable myapp            # start on boot
+systemctl enable --now myapp      # enable and start immediately
+systemctl status myapp            # status with recent logs
+systemctl daemon-reload           # reload after editing unit files
 ```
 
-Always run `daemon-reload` after creating or modifying unit files.
-
-### Journald Logging
-
-Query logs with journalctl:
+### Journald
 
 ```bash
-journalctl -u myapp -f                 # follow logs for a unit
-journalctl -u myapp --since "1 hour ago"  # recent logs
-journalctl -u myapp -p err             # only errors and above
-journalctl -b -1                       # logs from previous boot
-journalctl --disk-usage                # check journal size
-journalctl --vacuum-size=500M          # reclaim space
+journalctl -u myapp -f                       # follow service logs
+journalctl -u myapp --since "1 hour ago"     # recent
+journalctl -u myapp -p err                   # errors and above
+journalctl -b -1                             # previous boot
+journalctl --disk-usage                      # journal size
+journalctl --vacuum-size=500M                # reclaim space
 ```
 
-See `references/systemd-reference.md` for journalctl patterns and filtering.
+### Cron
 
-### Cron Jobs
-
-Edit crontabs with `crontab -e`. Format: `minute hour day month weekday command`.
-
-```bash
-crontab -l                          # list current user's crontab
-crontab -e                          # edit crontab
-crontab -l -u www-data              # list another user's crontab
-```
-
-Common schedules:
+Edit with `crontab -e`. Format: `minute hour day month weekday command`.
 
 ```cron
-0 * * * *    /usr/local/bin/hourly-task.sh        # every hour
-0 2 * * *    /usr/local/bin/nightly-backup.sh     # daily at 2 AM
-*/5 * * * *  /usr/local/bin/health-check.sh       # every 5 minutes
-0 0 * * 0    /usr/local/bin/weekly-cleanup.sh     # weekly on Sunday
+0 * * * *    /usr/local/bin/hourly-task.sh
+0 2 * * *    /usr/local/bin/nightly-backup.sh
+*/5 * * * *  /usr/local/bin/health-check.sh
+0 0 * * 0    /usr/local/bin/weekly-cleanup.sh
 ```
 
-Always redirect output in cron: `command >> /var/log/task.log 2>&1`. Consider systemd timers as a modern alternative (see systemd-reference.md).
+Always redirect cron output: `command >> /var/log/task.log 2>&1`.
+Consider systemd timers as a modern alternative.
 
-### Disk and Filesystem Management
+### Disk and filesystem
 
 ```bash
-df -h                    # filesystem usage (human-readable)
+df -h                    # filesystem usage
 du -sh /var/log/*        # directory sizes
 lsblk                    # block device tree
 mount | column -t        # current mounts
 findmnt --target /data   # find mount point for a path
 ```
 
-For disk space emergencies: check `/var/log`, `/tmp`, old kernels (`apt autoremove`), Docker (`docker system prune`), and journal logs (`journalctl --vacuum-size`).
+For disk-space emergencies: check `/var/log`, `/tmp`, old kernels
+(`apt autoremove`), Docker (`docker system prune`), and journal logs
+(`journalctl --vacuum-size`).
 
-### Package Management
+### Package management
 
-Debian/Ubuntu (apt):
+**Debian/Ubuntu (apt):**
 
 ```bash
-apt update && apt upgrade -y         # update package lists and upgrade
-apt install -y --no-install-recommends package   # minimal install
-apt search keyword                   # search packages
-apt autoremove -y                    # remove unused dependencies
-dpkg -l | grep package               # check installed version
+apt update && apt upgrade -y
+apt install -y --no-install-recommends package
+apt search keyword
+apt autoremove -y
+dpkg -l | grep package
 ```
 
-RHEL/Fedora (dnf):
+**RHEL/Fedora (dnf):**
 
 ```bash
-dnf check-update                     # check for updates
-dnf install -y package               # install
-dnf search keyword                   # search
-dnf autoremove                       # remove unused dependencies
+dnf check-update
+dnf install -y package
+dnf autoremove
 ```
 
-See `references/commands-cheatsheet.md` for a quick-reference organized by task.
+## Level 3 — Full reference
 
-## Examples
+### Systemd unit file reference
 
-### Diagnose high disk usage on a server
+```ini
+[Unit]
+Description=My Application Service
+Documentation=https://example.com/docs
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=app
+Group=app
+WorkingDirectory=/srv/myapp
+ExecStart=/srv/myapp/bin/server --config /etc/myapp/config.toml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/srv/myapp/data /var/log/myapp
+PrivateTmp=yes
+
+# Environment
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/myapp/env
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Service types:**
+
+- `simple` (default) — ExecStart is the main process
+- `exec` — like simple, but systemd waits for the binary to execute
+- `forking` — process forks and parent exits (use `PIDFile=`)
+- `oneshot` — runs once and exits (combine with `RemainAfterExit=yes`)
+- `notify` — process sends `sd_notify` when ready
+- `idle` — delayed until other jobs finish
+
+**Restart policies:** `no`, `on-failure`, `on-abnormal`, `always`,
+`on-success`. Use `RestartSec=` for delay between restarts and
+`StartLimitIntervalSec=` / `StartLimitBurst=` to prevent restart
+loops.
+
+**Dependencies:** `After=`/`Before=` for ordering only, `Requires=`
+for hard dependencies, `Wants=` for soft dependencies, `BindsTo=` to
+stop when the dependency stops.
+
+### Systemd commands
 
 ```bash
-# 1. Check filesystem usage
+systemctl status myapp             # status with recent logs
+systemctl show myapp               # all properties
+systemctl cat myapp                # show unit file content
+systemctl list-dependencies myapp  # dependency tree
+systemctl is-active myapp          # for scripts
+systemctl is-enabled myapp
+systemctl is-failed myapp
+systemctl list-units --failed      # show failed units
+systemctl list-timers              # show all timers
+systemctl list-units --type=service --state=running
+```
+
+### Journalctl patterns
+
+```bash
+journalctl -u myapp --since "2024-01-15 09:00" --until "2024-01-15 10:00"
+journalctl -u myapp -p warning..err  # warnings through errors
+journalctl -u myapp -o json-pretty   # structured JSON
+journalctl -u myapp -o short-precise # precise timestamps
+journalctl -u myapp -o cat           # message only
+journalctl -b                        # current boot
+journalctl --list-boots              # all recorded boots
+journalctl -k                        # kernel messages
+journalctl --vacuum-time=30d         # keep only last 30 days
+```
+
+### Systemd timers (cron alternative)
+
+```ini
+# /etc/systemd/system/backup.timer
+[Unit]
+Description=Run backup nightly
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
+```
+
+```ini
+# /etc/systemd/system/backup.service
+[Unit]
+Description=Backup job
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/backup.sh
+User=backup
+```
+
+Calendar syntax examples:
+
+```
+*-*-* 02:00:00          # daily at 2 AM
+Mon *-*-* 09:00:00      # every Monday at 9 AM
+*-*-01 00:00:00         # first day of every month
+*-*-* *:00/15:00        # every 15 minutes
+hourly / daily / weekly # shorthands
+```
+
+Verify expressions with `systemd-analyze calendar "Mon *-*-* 09:00:00"`.
+Enable with `systemctl enable --now backup.timer`; list with
+`systemctl list-timers`.
+
+Monotonic timers use relative intervals instead:
+
+```ini
+[Timer]
+OnBootSec=5min          # 5 minutes after boot
+OnUnitActiveSec=1h      # 1 hour after last activation
+```
+
+### Command cheatsheet by task
+
+**Files and directories:**
+
+```bash
+ls -la
+ls -lah --sort=size
+stat file
+find /path -name "*.log" -mtime +30 -delete
+find /path -type f -size +100M
+rsync -avz src/ dest/
+tar czf archive.tar.gz dir/
+tar xzf archive.tar.gz
+```
+
+**Text processing:**
+
+```bash
+grep -rn "pattern" /path/
+grep -rli "pattern" /path/
+sort file | uniq -c | sort -rn
+cut -d: -f1 /etc/passwd
+awk '{print $1, $NF}' file
+sed -i 's/old/new/g' file
+diff -u file1 file2
+```
+
+**Network:**
+
+```bash
+ss -tlnp                  # listening TCP with processes
+ss -tunap                 # all TCP/UDP connections
+ip addr show              # interfaces and IPs
+ip route show             # routing table
+nc -zv host port          # test TCP port reachability
+dig example.com           # DNS lookup
+```
+
+**Disk:**
+
+```bash
+df -h                     # filesystem usage
+df -ih                    # inode usage
+du -sh /path/* | sort -rh # directories sorted by size
+lsblk -f                  # block devices with filesystems
+blkid                     # partition UUIDs and types
+iostat -x 1 5             # disk I/O statistics
+```
+
+**System info:**
+
+```bash
+uname -a
+hostnamectl
+uptime
+free -h
+nproc
+lscpu
+dmesg -T | tail -50
+```
+
+### Worked examples
+
+**Diagnose high disk usage:**
+
+```bash
 df -h
-# 2. Find the largest directories under the full partition
 du -sh /* 2>/dev/null | sort -rh | head -20
-# 3. Drill into the largest directory
 du -sh /var/log/* | sort -rh | head -10
-# 4. Clean up old logs and reclaim journal space
 journalctl --vacuum-size=200M
 apt autoremove -y
 ```
 
-### Create a systemd service for a Python application
+**Create a systemd service for a Python app:**
 
 ```bash
-# 1. Create the unit file
 cat > /etc/systemd/system/myapp.service << 'EOF'
 [Unit]
 Description=My Python Application
@@ -195,24 +373,34 @@ Environment=PYTHONUNBUFFERED=1
 WantedBy=multi-user.target
 EOF
 
-# 2. Enable and start
 systemctl daemon-reload
 systemctl enable --now myapp
 systemctl status myapp
 ```
 
-### Investigate a process consuming excessive memory
+**Investigate a memory-hungry process:**
 
 ```bash
-# 1. Identify the process
 ps aux --sort=-%mem | head -10
-# 2. Get details (open files, connections, memory map)
 PID=12345
-ls -la /proc/$PID/fd | wc -l     # open file descriptors
-ss -tlnp | grep $PID              # listening ports
-cat /proc/$PID/status | grep -i vmrss   # resident memory
-# 3. If needed, send graceful termination
+ls -la /proc/$PID/fd | wc -l           # open file descriptors
+ss -tlnp | grep $PID                   # listening ports
+cat /proc/$PID/status | grep -i vmrss  # resident memory
 kill -TERM $PID
-# 4. Verify it stopped
 sleep 2 && ps -p $PID || echo "Process terminated"
 ```
+
+### Anti-patterns
+
+- **Editing package-installed unit files in `/lib/systemd/system/`** —
+  drop your override in `/etc/systemd/system/` instead (admin wins)
+- **Forgetting `daemon-reload` after unit edits** — systemd keeps
+  serving the old definition until you reload
+- **`usermod -G` without `-a`** — this replaces the user's group list
+  instead of appending
+- **Bare `kill -9`** — always try SIGTERM first so processes can
+  clean up
+- **Not redirecting cron output** — silent failures with no logs
+- **`rm -rf /var/log/*` to reclaim disk** — breaks running daemons
+  that have log files open; use `journalctl --vacuum-*` and rotate
+  logs instead

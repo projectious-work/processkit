@@ -4,31 +4,31 @@ kind: Skill
 metadata:
   id: SKILL-container-orchestration
   name: container-orchestration
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Docker Compose patterns for multi-service architectures. Health checks, networking, volumes, and service dependencies. Use when designing docker-compose files, debugging container networking, or managing multi-container applications."
+  description: "Docker Compose patterns for multi-service apps — health checks, networking, volumes, dependencies."
   category: infrastructure
   layer: null
+  when_to_use: "Use when writing or editing docker-compose files, designing multi-service architectures, debugging container networking, or managing volumes and service dependencies."
 ---
 
 # Container Orchestration
 
-## When to Use
+## Level 1 — Intro
 
-- Writing or editing Docker Compose files
-- Designing multi-service application architectures
-- Debugging container networking or connectivity issues
-- Setting up health checks and service dependencies
-- Managing volumes, bind mounts, and persistent data
-- Configuring environment variables and secrets for services
-- Using Compose profiles for optional services
+Docker Compose stitches multiple containers into a single declarative
+stack: services, networks, and volumes described in one YAML file. Get
+health checks, dependency conditions, and named volumes right and
+everything else follows.
 
-## Instructions
+## Level 2 — Overview
 
-### Compose File Structure
+### Compose file structure
 
-Always specify the services, networks, and volumes at the top level. Use named volumes for persistent data and named networks for inter-service communication:
+Define services, networks, and volumes at the top level. Prefer named
+volumes for persistent data and explicit networks for inter-service
+communication:
 
 ```yaml
 services:
@@ -46,9 +46,10 @@ volumes:
   app-data:
 ```
 
-### Build vs Image
+### Build vs image
 
-Use `build` for services you develop and `image` for third-party services. Combine both to tag locally built images:
+Use `build` for services you develop and `image` for third-party
+services. Combine both to tag locally built images:
 
 ```yaml
 services:
@@ -63,9 +64,11 @@ services:
     image: redis:7-alpine
 ```
 
-### Health Checks
+### Health checks and dependencies
 
-Always define health checks for services that other services depend on. This ensures `depends_on` with `condition: service_healthy` works correctly:
+Always define health checks on services that other services depend on.
+Without them, `depends_on` only waits for the container to start — not
+for the service inside to be ready:
 
 ```yaml
 services:
@@ -86,11 +89,10 @@ services:
         condition: service_healthy
 ```
 
-Without health checks, `depends_on` only waits for the container to start, not for the service inside to be ready.
-
 ### Networking
 
-Compose creates a default network for each project. Use custom networks to isolate traffic:
+Compose creates a default network per project. Use custom networks to
+isolate traffic:
 
 ```yaml
 services:
@@ -106,13 +108,16 @@ networks:
   backend:
 ```
 
-Services resolve each other by service name as hostname. Only expose ports to the host when necessary -- inter-service communication uses the container port directly. Use `expose` for documentation, `ports` for host binding.
+Services resolve each other by service name. Only expose ports to the
+host when necessary — inter-service traffic uses the container port
+directly. Use `expose` for documentation, `ports` for host binding.
 
-### Volume Strategies
+### Volume strategies
 
-- **Named volumes** -- persistent data managed by Docker, survives `docker compose down`
-- **Bind mounts** -- map host paths for development (live reload)
-- **tmpfs** -- in-memory, for sensitive data or caches that should not persist
+- **Named volumes** — persistent data managed by Docker; survives
+  `docker compose down`
+- **Bind mounts** — map host paths for development (live reload)
+- **tmpfs** — in-memory; for sensitive data or caches
 
 ```yaml
 volumes:
@@ -122,9 +127,10 @@ volumes:
     target: /tmp
 ```
 
-Use `docker compose down -v` to remove named volumes (destructive). Back up volume data with `docker run --rm -v pg-data:/data -v $(pwd):/backup alpine tar czf /backup/pg-data.tar.gz /data`.
+`docker compose down -v` removes named volumes (destructive). Back up
+volume data with a one-off `docker run` using a bind mount.
 
-### Environment Management
+### Environment management
 
 Use `.env` files for defaults and override per environment:
 
@@ -138,7 +144,8 @@ services:
       - NODE_ENV=production   # explicit override
 ```
 
-Never put secrets directly in `docker-compose.yml`. Use `env_file` with git-ignored files or Docker secrets for swarm mode.
+Never put secrets directly in `docker-compose.yml`. Use `env_file` with
+git-ignored files or Docker secrets in swarm mode.
 
 ### Profiles
 
@@ -151,14 +158,14 @@ services:
   mailhog:
     image: mailhog/mailhog
     profiles: [debug]
-  adminer:
-    image: adminer
-    profiles: [debug]
 ```
 
-Start with `docker compose --profile debug up` to include debug services. Services without a profile always start.
+Start with `docker compose --profile debug up` to include debug
+services. Services without a profile always start.
 
-### Common Commands
+## Level 3 — Full reference
+
+### Common commands
 
 ```bash
 docker compose up -d              # start all services detached
@@ -171,11 +178,7 @@ docker compose down -v            # also remove volumes (destructive)
 docker compose config             # validate and display resolved config
 ```
 
-See `references/compose-patterns.md` for complete architecture examples.
-
-## Examples
-
-### Debug a service that cannot connect to the database
+### Debugging workflow: service cannot reach the database
 
 ```bash
 # 1. Check both services are on the same network
@@ -190,20 +193,20 @@ docker compose exec app nc -zv db 5432
 docker compose exec app env | grep DB
 ```
 
-### Add a new service with zero-downtime restart
+### Adding a service with zero-downtime restart
 
 ```bash
 # 1. Add the service to docker-compose.yml
 # 2. Validate the config
 docker compose config --quiet
-# 3. Start only the new service (existing services unaffected)
+# 3. Start only the new service
 docker compose up -d new-service
 # 4. Verify health
 docker compose ps new-service
 docker compose logs new-service
 ```
 
-### Run one-off commands in a service context
+### One-off commands in a service context
 
 ```bash
 # Database migration
@@ -213,3 +216,36 @@ docker compose exec db psql -U postgres
 # Run tests with the full service stack
 docker compose run --rm app pytest
 ```
+
+### Reference architectures
+
+The complete YAML examples live in `references/compose-patterns.md`.
+The key patterns, in increasing complexity:
+
+- **Web + database** — the baseline production stack: app service with
+  health-checked postgres, named volume for data, `restart:
+  unless-stopped` on both. Always wire `depends_on` with
+  `condition: service_healthy`.
+- **Web + database + cache** — add redis with `--appendonly yes` and
+  an `allkeys-lru` memory cap. The web service waits on both
+  dependencies.
+- **Worker queue** — web enqueues jobs, celery workers process them via
+  RabbitMQ. Scale workers with `deploy.replicas`. Both web and worker
+  depend on the broker AND the database being healthy.
+- **Reverse proxy** — nginx or Traefik in front of application services
+  for TLS termination, load balancing, and static assets. Proxy lives
+  on the `frontend` network; app straddles `frontend` and `backend`;
+  db is `backend`-only.
+
+### Anti-patterns
+
+- **`depends_on` without health checks** — the dependent service will
+  race its dependency
+- **Hardcoded secrets in `docker-compose.yml`** — use `env_file` with a
+  git-ignored local file
+- **`latest` tags for third-party images** — pin to a specific version
+  so builds are reproducible
+- **Bind-mounting `.` into the container in production** — bind mounts
+  are for development; production should use the built image
+- **Missing `restart:` policy** — default is `no`, which means a crashed
+  service stays down until you notice
