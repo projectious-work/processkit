@@ -1,0 +1,27 @@
+---
+apiVersion: processkit.projectious.work/v1
+kind: StateMachine
+metadata:
+  id: SM-discussion
+  target_kind: Discussion
+  version: "1.0.0"
+  created: 2026-04-07T00:00:00Z
+spec:
+  description: >
+    Default state machine for Discussion entities. Discussions are
+    active while exploring, resolved when convergence is reached (with
+    or without producing DecisionRecords), and archived when no longer
+    actively referenced. Reopening a resolved discussion is allowed —
+    sometimes a question comes back.
+  initial_state: active
+  terminal_states: [archived]
+  states:
+    active:
+      description: "Currently being explored."
+      transitions: [resolved, archived]
+    resolved:
+      description: "Convergence reached. May have produced DecisionRecords."
+      transitions: [active, archived]
+    archived:
+      description: "No longer actively referenced. Kept for historical context."
+      transitions: []

@@ -26,7 +26,17 @@ spec:
           guard: "optional condition for the transition"
 ```
 
-## Phase 1 state machines
+## Shipped state machines
 
-- `workitem.yaml` — WorkItem: backlog → in-progress → review → done (+ blocked, cancelled)
-- `decisionrecord.yaml` — DecisionRecord: proposed → accepted → (superseded)
+| File | Kind | Lifecycle |
+|---|---|---|
+| `workitem.yaml` | WorkItem | backlog → in-progress → review → done (+ blocked, cancelled) |
+| `decisionrecord.yaml` | DecisionRecord | proposed → accepted → (superseded) |
+| `migration.yaml` | Migration | pending → in-progress → applied (+ rejected) |
+| `scope.yaml` | Scope | planned → active → completed (+ cancelled) |
+| `discussion.yaml` | Discussion | active ↔ resolved → archived |
+
+Other primitives (Actor, Role, Gate, Binding, Category, Metric,
+Schedule, Constraint, Context, Process, StateMachine, Artifact) do not
+have lifecycle states by design. Their schemas have `state_machine:
+null`.

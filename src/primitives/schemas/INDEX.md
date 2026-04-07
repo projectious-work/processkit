@@ -27,10 +27,29 @@ spec:
       ...
 ```
 
-## Phase 1 schemas (v0.1.0)
+## Shipped schemas
 
-- `workitem.yaml` — WorkItem (BACK prefix, workitem state machine)
-- `logentry.yaml` — LogEntry (LOG prefix, immutable)
-- `decisionrecord.yaml` — DecisionRecord (DEC prefix, decision state machine)
+| File | Kind | Prefix | State machine? |
+|---|---|---|---|
+| `workitem.yaml` | WorkItem | BACK | yes |
+| `logentry.yaml` | LogEntry | LOG | no (immutable, append-only) |
+| `decisionrecord.yaml` | DecisionRecord | DEC | yes |
+| `migration.yaml` | Migration | MIG | yes |
+| `actor.yaml` | Actor | ACTOR | no |
+| `role.yaml` | Role | ROLE | no |
+| `scope.yaml` | Scope | SCOPE | yes |
+| `gate.yaml` | Gate | GATE | no |
+| `discussion.yaml` | Discussion | DISC | yes |
+| `binding.yaml` | Binding | BIND | no |
+| `category.yaml` | Category | CAT | no |
+| `metric.yaml` | Metric | METRIC | no |
+| `schedule.yaml` | Schedule | SCHED | no |
+| `constraint.yaml` | Constraint | CONST | no |
+| `context.yaml` | Context | CTX | no |
+| `process.yaml` | Process | PROC | no |
+| `statemachine.yaml` | StateMachine | SM | no |
+| `artifact.yaml` | Artifact | ART | no |
 
-Phase 2 adds the remaining 15 primitive schemas.
+`CrossReference` is intentionally NOT a file primitive — it lives as
+frontmatter cross-references on other entities (see `binding-management`
+SKILL.md for the rule). All other primitives have a schema as of v0.5.0.
