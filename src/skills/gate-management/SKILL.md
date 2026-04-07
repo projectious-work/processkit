@@ -10,9 +10,14 @@ spec:
   description: "Manage Gate entities — validation checkpoints that processes must pass (code review, security scan, tests)."
   category: process
   layer: 3
-  uses: [event-log]
+  uses: [event-log, index-management, id-management]
   provides:
     primitives: [Gate]
+    mcp_tools:
+      - create_gate
+      - get_gate
+      - list_gates
+      - evaluate_gate
     templates: [gate]
   when_to_use: "Use when defining or updating a checkpoint a process must pass — code review, tests green, security scan, stakeholder approval."
 ---

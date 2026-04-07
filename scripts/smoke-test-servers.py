@@ -100,6 +100,7 @@ def run():
         actor = import_server("actor-profile")
         role = import_server("role-management")
         scope = import_server("scope-management")
+        gate = import_server("gate-management")
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -271,6 +272,41 @@ def run():
         print("list_scopes sprint:", len(ls))
         assert any(x["id"] == scope_id for x in ls)
 
+        # 4e. gate-management
+        create_gate = get_tool(gate, "create_gate")
+        g = create_gate(
+            name="code-review",
+            description="At least one reviewer has approved the change.",
+            kind="manual",
+            validator="A second actor reviews and approves.",
+            required_roles=[role_id],
+            blocking=True,
+            evidence_required=True,
+        )
+        print("create_gate:", g)
+        assert "id" in g
+        gate_id = g["id"]
+
+        evaluate_gate = get_tool(gate, "evaluate_gate")
+        # missing evidence on a gate that requires it
+        bad_eval = evaluate_gate(id=gate_id, outcome="passed")
+        print("bad evaluate (expected error):", bad_eval)
+        assert "error" in bad_eval
+
+        good_eval = evaluate_gate(
+            id=gate_id,
+            outcome="passed",
+            actor=actor_id,
+            evidence="https://example.com/pr/42",
+        )
+        print("good evaluate_gate:", good_eval)
+        assert good_eval["ok"] and good_eval["log_id"].startswith("LOG-")
+
+        list_gates = get_tool(gate, "list_gates")
+        lg = list_gates(blocking=True)
+        print("list_gates blocking:", len(lg))
+        assert any(x["id"] == gate_id for x in lg)
+
         # 5. binding
         create_bind = get_tool(bind, "create_binding")
         b = create_bind(
@@ -295,9 +331,9 @@ def run():
         reindex = get_tool(idx, "reindex")
         stats = reindex()
         print("reindex stats:", stats)
-        # workitem + log + decision + actor + role + role-binding + scope
-        # + work-binding
-        assert stats["entities"] >= 8
+        # workitem + 2 logs + decision + actor + role + role-binding +
+        # scope + gate + work-binding
+        assert stats["entities"] >= 10
         assert stats["events"] >= 1
 
         query_e = get_tool(idx, "query_entities")
