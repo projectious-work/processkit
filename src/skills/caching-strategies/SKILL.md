@@ -4,97 +4,77 @@ kind: Skill
 metadata:
   id: SKILL-caching-strategies
   name: caching-strategies
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Caching patterns including cache-aside, write-through, TTL strategies, cache invalidation, and HTTP caching. Use when designing caching layers, optimizing response times, or debugging cache-related issues."
+  description: "Caching patterns — cache-aside, write-through, TTL strategies, invalidation, HTTP caching."
   category: performance
   layer: null
+  when_to_use: "Use when adding caching to reduce latency or DB load, choosing between caching patterns, configuring HTTP cache headers, debugging stale data or stampedes, or designing an invalidation strategy."
 ---
 
 # Caching Strategies
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Add caching to reduce latency or database load
-- Choose between caching patterns for a specific use case
-- Configure HTTP caching headers (Cache-Control, ETag, CDN)
-- Debug stale data, cache inconsistency, or cache stampede issues
-- Design a cache invalidation strategy
-- Warm caches for predictable performance
+Pick a caching pattern from read/write ratio and consistency
+requirements, bound staleness with TTLs, and accept that invalidation
+is hard. Always set a TTL as a safety net even when you invalidate
+explicitly. Protect popular keys from stampedes.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Choose the Right Caching Pattern
+### Choose the right pattern
 
-Select based on read/write ratio and consistency requirements:
+**Cache-Aside (Lazy Loading)** — most common, application manages the
+cache. On read, check cache; on miss, load from DB and populate. On
+write, update DB and invalidate the cache (do not write through).
+Best for read-heavy workloads tolerating brief staleness.
 
-**Cache-Aside (Lazy Loading)** — most common, application manages the cache:
-```
-Read: check cache -> miss -> read DB -> populate cache -> return
-Write: update DB -> invalidate cache (do NOT update cache)
-```
-Best for: read-heavy workloads, data that tolerates brief staleness. Simple to implement.
+**Read-Through** — the cache library loads from the data source on
+miss. Reduces application complexity by moving load logic into the
+cache.
 
-**Read-Through** — cache itself loads from the data source on miss:
-```
-Read: check cache -> miss -> cache reads DB internally -> return
-```
-Best for: when you want the cache library to own the loading logic. Reduces application complexity.
+**Write-Through** — writes go through the cache to the data source
+synchronously. Higher write latency but the cache is always fresh.
+Best when downstream reads must never see a stale value.
 
-**Write-Through** — writes go through cache to the data source:
-```
-Write: update cache -> cache writes to DB synchronously -> return
-```
-Best for: data that must always be fresh in cache. Higher write latency but strong consistency.
+**Write-Behind (Write-Back)** — the cache writes to the data source
+asynchronously and returns immediately. Best for write-heavy
+workloads, but you risk data loss if the cache fails before flush.
 
-**Write-Behind (Write-Back)** — cache writes to the data source asynchronously:
-```
-Write: update cache -> return immediately -> cache flushes to DB later
-```
-Best for: write-heavy workloads. Risk of data loss if cache fails before flush.
+### TTL strategy
 
-### 2. Design TTL Strategies
+TTL is the primary tool for bounding staleness:
 
-TTL (Time-to-Live) is the primary tool for bounding staleness:
+- **Short (1-60 s)** — rapidly changing data: stock prices, sessions
+- **Medium (5-60 min)** — user profiles, product listings, API
+  responses
+- **Long (hours-days)** — static assets, configuration, reference
+  data
+- **No TTL (manual)** — data that changes only through known events
 
-- **Short TTL (1-60s)**: rapidly changing data (stock prices, active sessions)
-- **Medium TTL (5-60min)**: user profiles, product listings, API responses
-- **Long TTL (hours-days)**: static assets, configuration, reference data
-- **No TTL (manual invalidation)**: data that changes only through known events
+Apply jitter (e.g. ±10%) to TTLs so a wave of entries does not expire
+together and stampede the database.
 
-Apply **jitter** to TTLs to prevent thundering herd on expiration:
-```python
-ttl = base_ttl + random.uniform(0, base_ttl * 0.1)  # +/- 10% jitter
-```
+### Invalidation
 
-### 3. Cache Invalidation
+The two hard problems in computer science: cache invalidation and
+naming things. Three approaches:
 
-The two hard problems in computer science: cache invalidation and naming things.
+1. **Event-driven** (preferred) — on write/update/delete, explicitly
+   invalidate or update the cache entry. Use pub/sub or CDC to
+   propagate across services.
+2. **Tag-based** — tag entries by entity (`user:123`, `product:456`)
+   and invalidate by tag.
+3. **Versioned keys** — `user:{id}:v{version}`; bump version on
+   change so old entries expire naturally via TTL.
 
-**Event-driven invalidation** (preferred when possible):
-- On write/update/delete, explicitly invalidate or update the cache entry
-- Use pub/sub or change data capture (CDC) to propagate invalidations across services
+Rules: prefer invalidation over update (avoids races); always set a
+TTL as safety net; accept that distributed cache invalidation is
+eventually consistent.
 
-**Tag-based invalidation**:
-- Tag cache entries by entity (e.g., `user:123`, `product:456`)
-- Invalidate all entries with a given tag when that entity changes
-
-**Versioned keys**:
-```
-cache_key = f"user:{user_id}:v{version}"
-# Increment version on change — old entries expire naturally via TTL
-```
-
-Rules:
-- Prefer **invalidation over update** (avoids race conditions)
-- Always set a **TTL as a safety net**, even with explicit invalidation
-- For distributed caches, accept that invalidation is **eventually consistent**
-
-### 4. HTTP Caching
-
-Configure HTTP caching headers correctly:
+### HTTP caching
 
 ```
 # Immutable static assets (hashed filenames)
@@ -108,18 +88,21 @@ ETag: "a1b2c3"
 Cache-Control: public, s-maxage=3600, max-age=60, stale-while-revalidate=300
 ```
 
-**ETag / Last-Modified** — conditional requests for revalidation:
-- Server returns `ETag` or `Last-Modified` header
-- Client sends `If-None-Match` / `If-Modified-Since` on next request
-- Server returns `304 Not Modified` if unchanged (no body transfer)
+Use ETag or Last-Modified for conditional revalidation — clients send
+`If-None-Match` and the server returns `304 Not Modified` when
+unchanged. Use `s-maxage` to control CDN TTL independently of the
+browser TTL. Use `Surrogate-Key` for tag-based purging on
+Fastly/Varnish.
 
-**CDN caching** — add `s-maxage` to control CDN TTL independently of browser TTL. Use `Surrogate-Key` headers for tag-based CDN purging (Fastly, Varnish).
+## Level 3 — Full reference
 
-### 5. Prevent Cache Stampede
+### Stampede prevention
 
-When a popular key expires, hundreds of requests can hit the database simultaneously.
+When a popular key expires, hundreds of requests can hit the database
+at once. Three mitigations:
 
 **Locking (mutex)**:
+
 ```python
 value = cache.get(key)
 if value is None:
@@ -131,32 +114,44 @@ if value is None:
         value = cache.get(key)  # retry — another process is loading
 ```
 
-**Probabilistic early expiration (XFetch)**:
+**Probabilistic early expiration (XFetch)** — recompute before TTL
+expires, with rising probability as expiry approaches:
+
 ```python
-# Recompute before TTL expires, with increasing probability as expiry approaches
 if time_remaining < ttl * 0.1 * random.random():
     recompute_and_cache(key)
 ```
 
-**Stale-while-revalidate**: serve stale data immediately while refreshing in the background.
+**Stale-while-revalidate** — serve the stale value immediately while
+refreshing in the background. Built into HTTP via the
+`stale-while-revalidate` directive.
 
-### 6. Cache Warming
+### Cache warming
 
-Pre-populate caches before traffic hits:
+Pre-populate caches before traffic hits. On deploy, warm the top-N
+most accessed keys. On cache flush, run a warming script that replays
+recent access patterns. For predictable access patterns, pre-compute
+during off-peak hours. Do not warm everything — warm only keys with
+high access frequency and expensive computation.
 
-- On deploy: warm caches for the top-N most accessed keys
-- On cache flush: use a warming script that replays recent access patterns
-- For predictable access: pre-compute and cache during off-peak hours
+### Anti-patterns
 
-Do not warm everything — warm only keys with high access frequency and expensive computation.
+- **Per-instance in-memory caches** in a horizontally scaled fleet —
+  hit rates collapse and one instance can hold a stale value while
+  another invalidates. Use a shared cache (Redis, Memcached) with
+  consistent hashing.
+- **Updating the cache from writers** — racy. Invalidate instead.
+- **No TTL with manual invalidation** — one missed invalidation
+  becomes a permanent bug.
+- **Caching errors** — a downstream 500 cached for 10 minutes turns a
+  blip into an outage. Cache only successful responses, or use a much
+  shorter negative-cache TTL.
+- **Cache key collisions** — always namespace keys by service and
+  version.
 
-## Examples
+### Operational checklist
 
-**User:** "Our product page loads in 800ms, we need it under 200ms"
-**Agent:** Profiles the endpoint and finds 3 database queries per request. Implements cache-aside with Redis: product data (TTL 10min), category tree (TTL 1hr), user-specific pricing (TTL 60s, private). Adds `stale-while-revalidate` to HTTP headers. Response time drops to 45ms on cache hit.
-
-**User:** "Users see stale data after updating their profile"
-**Agent:** Finds the profile cache uses a 15-minute TTL with no explicit invalidation. Adds event-driven invalidation: the profile update endpoint now deletes the cache key after writing to the database. Retains the TTL as a safety net for edge cases.
-
-**User:** "Our cache hit rate dropped from 95% to 60% after scaling to 4 servers"
-**Agent:** Discovers each server runs its own in-memory cache, so the same key is cached independently on each instance. Migrates to a shared Redis cache with consistent hashing, restoring the hit rate to 94%. Adds cache stampede protection with a mutex pattern for the most expensive queries.
+Track hit rate per cache, hit rate per key family, eviction rate, and
+P99 cache latency. Alert when hit rate drops sharply — that usually
+means an upstream change broke key generation. Cap entry sizes; a
+single huge value can blow out your cache memory budget.

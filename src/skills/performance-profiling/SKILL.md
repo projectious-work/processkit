@@ -4,126 +4,169 @@ kind: Skill
 metadata:
   id: SKILL-performance-profiling
   name: performance-profiling
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Performance analysis methodology and profiling techniques for CPU, memory, and I/O. Flame graphs, benchmarking, and regression detection. Use when optimizing performance, profiling bottlenecks, or reviewing performance-critical code."
+  description: "Performance analysis and profiling for CPU, memory, and I/O — flame graphs, benchmarks, regression detection."
   category: performance
   layer: null
+  when_to_use: "Use when identifying performance bottlenecks, profiling CPU/memory/I/O, interpreting flame graphs, setting up benchmarking or regression detection, or optimizing a slow function or endpoint."
 ---
 
 # Performance Profiling
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Identify performance bottlenecks in an application
-- Profile CPU usage, memory allocation, or I/O operations
-- Interpret flame graphs or profiler output
-- Set up benchmarking or performance regression detection
-- Optimize a slow function, endpoint, or pipeline
-- Review performance-critical code paths
+Intuition about performance is unreliable — always profile before
+optimizing. Work the cycle: identify the symptom, measure the
+baseline, profile the right resource, optimize the top bottleneck,
+verify the improvement. One change at a time.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Follow the Performance Analysis Cycle
+### Performance analysis cycle
 
-Always work through the full cycle: **Identify -> Measure -> Profile -> Optimize -> Verify**.
+Always work the full cycle: **Identify -> Measure -> Profile ->
+Optimize -> Verify**.
 
-1. **Identify** the performance concern: slow response time, high memory usage, excessive CPU, I/O stalls
-2. **Measure** the current baseline with concrete numbers (latency p50/p95/p99, throughput, memory RSS)
-3. **Profile** with the right tool for the resource type (see `references/profiling-tools.md`)
-4. **Optimize** the top bottleneck only — do not scatter-shot optimize
-5. **Verify** the improvement with the same measurement from step 2
+1. **Identify** the concern: slow response, high memory, excessive
+   CPU, I/O stalls
+2. **Measure** the baseline with concrete numbers (latency p50/p95/p99,
+   throughput, RSS)
+3. **Profile** with the right tool for the resource type — see
+   `references/profiling-tools.md`
+4. **Optimize** the top bottleneck only; do not scatter-shot
+5. **Verify** with the same measurement from step 2
 
-Never skip measurement. Intuition about performance is unreliable — always profile before optimizing.
+Never skip measurement. Without a number you cannot tell whether the
+change helped or hurt.
 
-### 2. CPU Profiling
+### CPU profiling
 
 Identify what the application spends CPU time on:
 
-1. Use a sampling profiler (not an instrumenting profiler) to minimize overhead
-2. Collect a profile for a representative workload — not a trivial test case
+1. Use a **sampling** profiler (not instrumenting) to minimize
+   overhead
+2. Collect a representative workload, not a trivial test case
 3. Generate a flame graph for visual analysis
-4. Look for: wide stacks (hot functions), deep stacks (excessive abstraction), unexpected functions (regex compilation, serialization, logging)
+4. Look for **wide stacks** (hot functions), **deep stacks** (excess
+   abstraction), and unexpected functions (regex compilation,
+   serialization, logging)
 
-Key metric: CPU time per operation, not wall-clock time (which includes I/O waits).
+Track **CPU time** per operation, not wall-clock (which includes I/O
+waits).
 
-### 3. Memory Profiling
+### Memory profiling
 
 Identify allocation pressure and leaks:
 
-1. Track peak RSS and allocation rate, not just current usage
-2. For leaks: take heap snapshots at intervals and diff them
-3. Look for: growing collections without bounds, caches without eviction, event listener accumulation, reference cycles (in GC languages)
-4. Distinguish between a leak (unbounded growth) and high-but-stable usage (may be acceptable)
+1. Track **peak RSS** and **allocation rate**, not just current usage
+2. For leaks, take heap snapshots at intervals and diff them
+3. Look for unbounded collections, caches without eviction, event
+   listener accumulation, and reference cycles in GC languages
+4. Distinguish a leak (unbounded growth) from high-but-stable usage,
+   which may be acceptable
 
-### 4. I/O Profiling
+### I/O profiling
 
 Identify disk, network, or database bottlenecks:
 
-1. Measure wall-clock time vs CPU time — large gaps indicate I/O waits
-2. For database: enable slow query logging, check for N+1 queries, missing indexes
-3. For network: check connection pooling, DNS resolution, TLS handshake overhead
-4. For disk: check for synchronous writes, excessive fsync, unneeded file operations
+1. Compare wall-clock time with CPU time — a large gap is I/O wait
+2. For databases: enable slow query logging, look for N+1, missing
+   indexes
+3. For network: check connection pooling, DNS, TLS handshake overhead
+4. For disk: check synchronous writes, excessive fsync, unnecessary
+   file ops
 
-### 5. Benchmarking and Regression Detection
+### Quick checklist before profiling
 
-Set up reproducible, reliable benchmarks:
+1. What is the **user-visible symptom**? (slow page, high bill, OOM)
+2. What **resource** is constrained? (CPU, memory, disk, network, DB)
+3. **Constant or intermittent**? (steady-state vs spike-triggered)
+4. **What changed recently?** Regressions usually correlate with
+   recent deploys
+5. What is the **acceptable target**? (p99 < 200 ms, RSS < 512 MB —
+   you need a goal to know when you are done)
 
-1. Isolate the code under test — benchmark the function, not the setup
-2. Run enough iterations for statistical significance (report mean, stddev, and percentiles)
-3. Control for external factors: disable turbo boost, pin CPU frequency, close other processes
-4. For regression detection: store baseline results in version control and compare on each run
+## Level 3 — Full reference
+
+### Profiling tools by language
+
+`references/profiling-tools.md` has the full table. Quick picks:
+
+- **Python**: `py-spy` (sampling CPU, attach to running process,
+  flame graphs); `memray` (allocations, native + Python frames);
+  `scalene` (line-level CPU + memory + GPU); `cProfile` for built-in
+  function-level
+- **Node.js**: `clinic.js` (Doctor / Bubbleprof / Flame); `0x` (flame
+  graphs); Chrome DevTools for heap snapshots
+- **Rust**: `cargo flamegraph` (CPU); `criterion` (statistical
+  benchmarks); `dhat` (heap); `perf` for hardware counters
+- **Go**: `pprof` for CPU/heap/goroutine; `trace` for scheduler and
+  GC events; `benchstat` for statistical comparison
+- **JVM**: JFR (Flight Recorder) — built-in and production-safe;
+  `async-profiler` for sampling CPU/alloc/lock with no safepoint
+  bias; `jmap` + MAT for heap dumps
+
+### Benchmarking and regression detection
+
+1. Isolate the code under test — benchmark the function, not the
+   setup
+2. Run enough iterations for statistical significance (mean, stddev,
+   percentiles)
+3. Control external factors: disable turbo boost, pin CPU frequency,
+   close other processes
+4. For regression detection, store baseline results in version
+   control and compare on each run
 
 ```bash
-# Example: Rust criterion benchmark structure
+# Rust criterion
 cargo bench -- --save-baseline main
 # After changes:
 cargo bench -- --baseline main
 ```
 
-### 6. Flame Graph Interpretation
+### Reading flame graphs
 
-When reading flame graphs:
-
-- **X-axis** is alphabetical (not time), width = proportion of samples
+- **X-axis** is alphabetical (not time); width = proportion of
+  samples
 - **Y-axis** is stack depth, read bottom-up (caller -> callee)
-- **Wide boxes** at the top are hot leaf functions — optimize these first
-- **Wide boxes** at the bottom are hot callers — consider algorithmic changes
-- Look for unexpected frames: GC pauses, lock contention, allocator overhead
-- Use differential flame graphs (red/blue) to compare before/after
+- **Wide boxes at the top** are hot leaf functions — optimize first
+- **Wide boxes at the bottom** are hot callers — consider algorithmic
+  changes
+- Look for unexpected frames: GC pauses, lock contention, allocator
+  overhead
+- Use **differential** flame graphs (red/blue) to compare before/after
 
-### 7. Common Optimization Patterns
+Common patterns: a single tall tower means one deep call chain
+dominates (look for unnecessary abstraction); a wide plateau at the
+top means a leaf function consuming most CPU; many thin towers with
+the same top function is a memoization candidate; GC/malloc frames
+indicate allocation pressure; lock/mutex frames mean contention;
+syscall frames (`read`, `write`, `poll`) mean the workload is I/O
+bound.
+
+### Common optimization patterns
 
 After profiling reveals the bottleneck, apply the right fix:
 
-- **Algorithmic**: O(n^2) -> O(n log n) — always check this first
-- **Batching**: combine many small operations into fewer large ones
-- **Caching**: reuse computed results (but measure cache hit rate)
-- **Pooling**: reuse expensive resources (connections, threads, buffers)
-- **Lazy evaluation**: defer work until actually needed
-- **Data layout**: struct-of-arrays vs array-of-structs for cache friendliness
+- **Algorithmic** — O(n²) -> O(n log n). Always check this first.
+- **Batching** — combine many small operations into fewer large ones
+- **Caching** — reuse computed results, but measure the hit rate
+- **Pooling** — reuse expensive resources (connections, threads,
+  buffers)
+- **Lazy evaluation** — defer work until actually needed
+- **Data layout** — struct-of-arrays vs array-of-structs for cache
+  friendliness
 
-### 8. Quick Profiling Checklist
+### General tips
 
-Before diving in, answer these questions to focus your effort:
-
-1. What is the **user-visible symptom**? (slow page, high bill, OOM crash)
-2. What **resource** is constrained? (CPU, memory, disk I/O, network, database)
-3. Is the issue **constant** or **intermittent**? (steady-state vs spike-triggered)
-4. What changed recently? (`git log --since="1 week ago"` — regressions often correlate with recent deploys)
-5. What is the **acceptable target**? (p99 < 200ms, RSS < 512MB — you need a goal to know when you are done)
-
-If you cannot answer question 2, start with a broad observability check: CPU usage, memory RSS, disk IOPS, and network bytes over the past hour.
-
-## Examples
-
-**User:** "This API endpoint takes 3 seconds to respond"
-**Agent:** Measures end-to-end latency, then profiles the handler. Discovers 80% of time is spent in 47 sequential database queries (N+1 problem). Rewrites as a single JOIN query with eager loading, reducing response time to 120ms. Verifies with the same load profile.
-
-**User:** "Our service memory keeps growing until it OOMs"
-**Agent:** Attaches a memory profiler and takes heap snapshots at 1-minute intervals. Diffs reveal a map used for request deduplication that is never pruned. Adds a TTL-based eviction policy, confirms RSS stabilizes at 400MB under sustained load.
-
-**User:** "I need to set up benchmarks for our Rust library"
-**Agent:** Sets up criterion benchmarks for the hot-path functions, configures `cargo bench` with statistical thresholds, and adds a CI step that compares against the stored baseline and fails if any benchmark regresses by more than 5%.
+- Always profile a **realistic workload**, not a microbenchmark
+- Profile in an environment **close to production** — same data
+  size, same concurrency
+- Sampling profilers (`py-spy`, `async-profiler`, `perf`) are
+  preferred over instrumenting profilers in production
+- Collect profiles for **at least 30 seconds** for statistical
+  significance
+- Compare **before and after** with the same workload to validate
+  improvements

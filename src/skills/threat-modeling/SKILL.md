@@ -4,45 +4,41 @@ kind: Skill
 metadata:
   id: SKILL-threat-modeling
   name: threat-modeling
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Threat modeling using STRIDE methodology. Data flow diagrams, trust boundaries, attack surface mapping, and risk assessment. Use when analyzing system security, designing secure architectures, or conducting security reviews."
+  description: "Threat modeling with STRIDE — data flow diagrams, trust boundaries, risk."
   category: security
   layer: null
+  when_to_use: "Use when designing a new system, reviewing architecture for security, conducting a security review, or prioritizing security work by risk."
 ---
 
 # Threat Modeling
 
-Analyze systems for security threats using the STRIDE methodology. Produce data flow
-diagrams, identify trust boundaries, map attack surfaces, and assess risk.
+## Level 1 — Intro
 
-## When to Use
+A threat model is a structured analysis of how a system could be
+attacked. STRIDE walks each component and data flow through six
+threat categories, producing a prioritized list of risks and
+mitigations.
 
-- Designing a new system or feature that handles sensitive data.
-- Reviewing architecture for security before implementation.
-- Conducting a security review or threat assessment.
-- Identifying trust boundaries and attack surfaces.
-- Prioritizing security work by risk (likelihood x impact).
+## Level 2 — Overview
 
-## Instructions
+### STRIDE categories
 
-### STRIDE Methodology
+| Category                   | Threat                        | Property violated |
+|----------------------------|-------------------------------|-------------------|
+| **S**poofing               | Pretending to be someone else | Authentication    |
+| **T**ampering              | Modifying data or code        | Integrity         |
+| **R**epudiation            | Denying an action occurred    | Non-repudiation   |
+| **I**nformation Disclosure | Exposing data                 | Confidentiality   |
+| **D**enial of Service      | Making the system unavailable | Availability      |
+| **E**levation of Privilege | Gaining unauthorized access   | Authorization     |
 
-Analyze each component and data flow for six threat categories:
+### Step 1 — Draw a data flow diagram
 
-| Category                  | Threat                          | Property Violated   |
-|---------------------------|---------------------------------|---------------------|
-| **S**poofing              | Pretending to be someone else   | Authentication      |
-| **T**ampering             | Modifying data or code          | Integrity           |
-| **R**epudiation           | Denying an action occurred      | Non-repudiation     |
-| **I**nformation Disclosure| Exposing data to unauthorized   | Confidentiality     |
-| **D**enial of Service     | Making the system unavailable   | Availability        |
-| **E**levation of Privilege| Gaining unauthorized access     | Authorization       |
-
-### Step 1: Data Flow Diagram
-
-Map the system showing processes, data stores, data flows, and external entities:
+Map processes, data stores, data flows, and external entities. Mark
+trust boundaries where data crosses between trust levels.
 
 ```
                     Trust Boundary
@@ -57,81 +53,83 @@ Map the system showing processes, data stores, data flows, and external entities
                     [External Auth Provider]
 ```
 
-Label each element:
-- **Processes** (circles/boxes): Web server, app server, background workers.
-- **Data stores** (parallel lines): Database, cache, file system, message queue.
-- **Data flows** (arrows): HTTP requests, database queries, API calls.
-- **External entities** (rectangles): Users, third-party services, admin.
-- **Trust boundaries** (dashed lines): Network segments, process boundaries.
+- **Processes** — web server, app server, background workers.
+- **Data stores** — database, cache, file system, message queue.
+- **Data flows** — HTTP requests, database queries, API calls.
+- **External entities** — users, third-party services, admins.
+- **Trust boundaries** — network segments, process boundaries,
+  privilege levels.
 
-### Step 2: Identify Trust Boundaries
+### Step 2 — Identify trust boundaries
 
-Trust boundaries exist where data crosses between different trust levels:
+Each crossing is a potential attack point:
 
-- Internet to DMZ (user requests entering the network).
-- DMZ to internal network (web server to application server).
-- Application to database (app server to data store).
-- Service to service (between microservices).
-- User privilege levels (regular user vs admin).
+- Internet to DMZ.
+- DMZ to internal network.
+- Application to database.
+- Service to service in a microservice mesh.
+- Regular user vs admin privilege levels.
 
-Every trust boundary crossing is a potential attack point.
+### Step 3 — Apply STRIDE to each element
 
-### Step 3: Apply STRIDE to Each Element
+For every process, data store, and data flow, ask:
 
-For each process, data store, and data flow, ask:
+- **Spoofing** — can an attacker impersonate a legitimate entity?
+- **Tampering** — can data be modified in transit or at rest?
+- **Repudiation** — can a user deny performing an action?
+- **Information disclosure** — can sensitive data leak?
+- **Denial of service** — can this component be overwhelmed?
+- **Elevation of privilege** — can a user gain higher privileges?
 
-- **Spoofing:** Can an attacker impersonate a legitimate entity?
-- **Tampering:** Can data be modified in transit or at rest?
-- **Repudiation:** Can a user deny performing an action?
-- **Info Disclosure:** Can sensitive data leak?
-- **DoS:** Can this component be overwhelmed or crashed?
-- **Elevation:** Can a user gain higher privileges?
+### Step 4 — Risk assessment
 
-### Step 4: Risk Assessment
+Rate each threat by likelihood and impact:
 
-Rate each threat using likelihood and impact:
+| Rating | Likelihood                      | Impact                           |
+|--------|---------------------------------|----------------------------------|
+| High   | Exploitable with public tools   | Data breach, full compromise     |
+| Medium | Requires some skill or access   | Partial data exposure, downtime  |
+| Low    | Requires insider access or luck | Minor data exposure, degradation |
 
-| Rating | Likelihood                        | Impact                           |
-|--------|-----------------------------------|----------------------------------|
-| High   | Exploitable with public tools     | Data breach, full compromise     |
-| Medium | Requires some skill or access     | Partial data exposure, downtime  |
-| Low    | Requires insider access or luck   | Minor data exposure, degradation |
+**Risk = Likelihood × Impact**
 
-**Risk = Likelihood x Impact**
+| Likelihood \ Impact | High     | Medium | Low    |
+|---------------------|----------|--------|--------|
+| High                | Critical | High   | Medium |
+| Medium              | High     | Medium | Low    |
+| Low                 | Medium   | Low    | Low    |
 
-| Likelihood \ Impact | High     | Medium   | Low      |
-|---------------------|----------|----------|----------|
-| High                | Critical | High     | Medium   |
-| Medium              | High     | Medium   | Low      |
-| Low                 | Medium   | Low      | Low      |
+### Step 5 — Mitigations
 
-### Step 5: Mitigation Strategies
+Map each STRIDE category to common mitigations:
 
-For each identified threat, document a mitigation:
+| STRIDE category        | Common mitigations                                |
+|------------------------|---------------------------------------------------|
+| Spoofing               | MFA, certificate pinning, mutual TLS              |
+| Tampering              | Digital signatures, checksums, immutable logs     |
+| Repudiation            | Audit logging, tamper-evident logs, signatures    |
+| Information Disclosure | Encryption (TLS, AES), access controls, masking   |
+| Denial of Service      | Rate limiting, autoscaling, CDN, circuit breakers |
+| Elevation of Privilege | Least privilege, input validation, sandboxing     |
 
-| STRIDE Category       | Common Mitigations                                    |
-|-----------------------|-------------------------------------------------------|
-| Spoofing              | MFA, certificate pinning, mutual TLS                  |
-| Tampering             | Digital signatures, checksums, immutable audit logs    |
-| Repudiation           | Audit logging, tamper-evident logs, digital signatures |
-| Information Disclosure| Encryption (TLS, AES), access controls, data masking  |
-| Denial of Service     | Rate limiting, auto-scaling, CDN, circuit breakers     |
-| Elevation of Privilege| Least privilege, input validation, sandboxing          |
+## Level 3 — Full reference
 
-### Attack Surface Mapping
+### Attack surface mapping
 
-Enumerate all entry points an attacker could use:
+Enumerate every entry point an attacker could use:
 
-- **Network:** Open ports, exposed services, public endpoints.
-- **Application:** API endpoints, file upload, search, user input fields.
-- **Authentication:** Login, password reset, session management.
-- **Data:** Database access, file storage, backups, logs.
-- **Infrastructure:** Cloud console, CI/CD pipeline, container registry.
-- **Human:** Phishing targets, social engineering, insider threats.
+- **Network** — open ports, exposed services, public endpoints.
+- **Application** — API endpoints, file upload, search, user input
+  fields.
+- **Authentication** — login, password reset, session management.
+- **Data** — database access, file storage, backups, logs.
+- **Infrastructure** — cloud console, CI/CD pipeline, container
+  registry.
+- **Human** — phishing targets, social engineering, insider threats.
 
-### Output Format
+### Output format
 
-Structure threat model output as:
+Structure the threat model as a single document:
 
 ```
 ## Threat Model: [System Name]
@@ -155,53 +153,29 @@ List of valuable data and resources to protect.
 Prioritized list of security improvements.
 ```
 
-## Examples
+### When to threat model
 
-### Example 1: Threat model a web application
+- During initial design of any system handling sensitive data.
+- Before adding a new external integration or trust boundary.
+- After an incident, to find adjacent risks.
+- On a periodic schedule for high-value systems (annually or per
+  major release).
 
-```
-User: Create a threat model for our e-commerce application.
+### Anti-patterns
 
-Agent: Reads the architecture and codebase, then produces:
-  1. Data flow diagram showing: browser -> CDN -> load balancer -> API servers
-     -> database / cache / payment gateway. Trust boundaries at each hop.
-  2. STRIDE analysis of each component:
-     - Spoofing: session hijacking on API server (Medium risk).
-     - Tampering: price manipulation in cart requests (High risk).
-     - Info Disclosure: PII exposure in error messages (Medium risk).
-     - DoS: no rate limiting on search endpoint (High risk).
-  3. Risk-prioritized mitigation recommendations.
-```
+- Threat modeling once at design time and never revisiting.
+- Skipping the data flow diagram and going straight to a threat list.
+- Treating "low likelihood" as "ignore forever".
+- Producing a document nobody reads. The output should drive a
+  prioritized punch list of work, not sit in a wiki.
+- Modeling abstract systems instead of the actual architecture in
+  production.
 
-### Example 2: Assess a microservices architecture
+### Tips for sharper models
 
-```
-User: Review our microservices architecture for security threats.
-
-Agent: Maps service communication patterns:
-  - Identifies 12 services with 28 inter-service data flows.
-  - Trust boundaries: public internet, API gateway, service mesh, database tier.
-  - Key findings:
-    - 3 services communicate over unencrypted HTTP internally (Tampering, Info Disclosure).
-    - No mutual TLS between services (Spoofing).
-    - Shared database credentials across services (Elevation of Privilege).
-    - No circuit breakers — cascade failure risk (DoS).
-  Recommends: service mesh with mTLS, per-service DB credentials, circuit breakers.
-```
-
-### Example 3: Pre-launch security review
-
-```
-User: We're launching next week. Do a threat model focused on the highest risks.
-
-Agent: Focuses on critical-path components:
-  - Payment flow: identifies missing webhook signature verification (Tampering, Critical).
-  - User registration: no rate limiting (DoS, High), email enumeration (Info Disclosure).
-  - Admin panel: accessible without VPN (Elevation of Privilege, Critical).
-  - File uploads: no type validation (Injection via uploaded HTML, High).
-  Produces a prioritized punch list:
-    1. [Critical] Add webhook signature verification before processing payments.
-    2. [Critical] Restrict admin panel to VPN or IP allowlist.
-    3. [High] Add rate limiting to registration and login.
-    4. [High] Validate file upload types and serve from separate domain.
-```
+- Walk the diagram with someone who didn't build the system; gaps
+  surface fast.
+- Track every mitigation back to a ticket or commit. A mitigation
+  with no owner is a mitigation that won't happen.
+- Re-rate risks after mitigations land — residual risk is what
+  matters for prioritization.

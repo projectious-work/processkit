@@ -4,25 +4,29 @@ kind: Skill
 metadata:
   id: SKILL-alerting-oncall
   name: alerting-oncall
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Alert design and on-call practices including severity levels, runbooks, SLO-based alerting, and escalation policies. Use when designing alerts, writing runbooks, or improving on-call processes."
+  description: "Alert design and on-call practices — severity, runbooks, SLO burn-rate alerting, escalation."
   category: observability
   layer: null
+  when_to_use: "Use when designing alerts, writing runbooks, reducing alert fatigue, setting up escalation policies, implementing SLO-based alerting, or improving on-call processes."
 ---
 
 # Alerting & On-Call
 
-## When to Use
+## Level 1 — Intro
 
-When the user is designing alerts for a service, writing runbooks, reducing alert fatigue, setting up escalation policies, implementing SLO-based alerting, or improving on-call processes.
+Good alerting wakes humans only when humans need to act. Severity tiers,
+SLO burn-rate alerting, and runbooks turn noisy thresholds into a calm
+on-call rotation. Alert fatigue is the number one quality problem — fix
+it by tracking page volume and deleting low-value alerts.
 
-## Instructions
+## Level 2 — Overview
 
-### Alert Severity Levels
+### Severity levels
 
-Define clear severity levels so responders know how urgently to act:
+Define clear tiers so responders know how urgently to act:
 
 | Severity | Response Time | Action          | Example                                      |
 |----------|---------------|-----------------|----------------------------------------------|
@@ -31,38 +35,55 @@ Define clear severity levels so responders know how urgently to act:
 | **P3 / Medium**   | Within 4 hours       | Ticket, fix today            | Elevated latency, disk 80% full, cert expiring in 7 days |
 | **P4 / Low**      | Within 1 business day| Ticket, fix this sprint      | Deprecated API usage, non-critical background job failures |
 
-Rules:
-- Only P1 and P2 should page (send push notifications / wake people up)
-- P3 and P4 create tickets — they must never page
-- Every alert must have exactly one severity; if you cannot decide, it is P3
+Only P1 and P2 should page. P3 and P4 must create tickets and never
+page. Every alert has exactly one severity; if you cannot decide, it is
+P3.
 
-### Page vs Ticket
+### Page vs ticket
 
-The most important decision in alert design is whether an alert pages or creates a ticket:
+The single most important decision in alert design is whether the alert
+pages a human or files a ticket. Page when users are currently
+impacted, data is at risk, or the situation will get worse without
+intervention. Ticket when the issue can wait hours or days, recovery is
+likely automatic, or it is a warning about future risk. If the
+responder's only action is "acknowledge and wait", it should be a
+ticket. If you page more than twice a week for non-incidents, your
+alerts need tuning.
 
-- **Page** when: users are currently impacted, data is at risk, or the situation will get worse without human intervention
-- **Ticket** when: the issue can wait hours or days, automatic recovery is likely, or it is a warning about future risk
-- If an alert pages but the responder's action is always "acknowledge and wait," it should be a ticket
-- If you page more than twice a week for non-incidents, your alerts need tuning
+### SLO-based (burn-rate) alerting
 
-### SLO-Based Alerting (Burn Rate)
+Threshold alerts like "error rate > 1%" are noisy. SLO alerting fires
+only when you are consuming your error budget too fast.
 
-Traditional threshold alerts ("error rate > 1%") are noisy. SLO-based alerting fires only when you are consuming your error budget too fast:
+1. Define the SLO (e.g. 99.9% availability over 30 days = 43 min budget)
+2. Compute `burn_rate = actual_error_rate / (1 - SLO_target)`
+3. Use multi-window alerts to suppress false positives:
+   - **Page (P1)**: burn rate > 14.4 over both last 5 min AND last 1 hr
+   - **Page (P2)**: burn rate > 6 over both last 30 min AND last 6 hr
+   - **Ticket (P3)**: burn rate > 3 over both last 2 hr AND last 24 hr
 
-1. Define your SLO: e.g., 99.9% availability over 30 days (error budget = 43 minutes)
-2. Calculate burn rate: `burn_rate = actual_error_rate / (1 - SLO_target)`
-   - Burn rate 1 = consuming budget at exactly the expected rate
-   - Burn rate 14.4 = will exhaust the entire monthly budget in 2 hours
-3. Use multi-window alerts to avoid false positives:
-   - **Page (P1)**: burn rate > 14.4 in both the last 5 min AND last 1 hour
-   - **Page (P2)**: burn rate > 6 in both the last 30 min AND last 6 hours
-   - **Ticket (P3)**: burn rate > 3 in both the last 2 hours AND last 24 hours
+This alerts early on severe burns and late on slow burns, matching
+human response capabilities.
 
-This approach alerts early on severe problems and late on slow burns, matching human response capabilities.
+### Runbook minimum
 
-### Runbook Template
+Every alert that pages must have a runbook with: what the alert means
+in one sentence, likely causes ranked by frequency, diagnosis steps
+with dashboard and command links, mitigation (quick fix plus
+escalation path), and the team and channel that owns it.
 
-Every alert that pages must have a runbook. Minimum sections:
+### Alert fatigue prevention
+
+Track pages per week per person; target less than two pages per
+on-call shift. Review every alert weekly — if it fired and no action
+was taken, delete or downgrade it. Merge per-instance alerts into
+per-service grouped alerts. Set thresholds from percentile baselines,
+not guesses. Auto-resolve transient spikes within 5 minutes. Silence
+known alerts proactively during deploys and planned maintenance.
+
+## Level 3 — Full reference
+
+### Runbook template
 
 ```
 # Alert: <alert_name>
@@ -88,47 +109,41 @@ One sentence explaining the condition and its user impact.
 - Secondary: <person or team>
 ```
 
-### Alert Fatigue Prevention
+### Escalation policy
 
-Alert fatigue is the number one on-call quality issue. Combat it by:
+1. **Primary on-call** responds within the target time for severity
+2. **Auto-escalate** to secondary if not acknowledged within 10 min
+   (P1) or 30 min (P2)
+3. **Escalate to engineering lead** if not resolved within 1 hour (P1)
+   or 4 hours (P2)
+4. **Declare an incident** if multiple P1 alerts fire simultaneously
+   or the issue affects multiple services
 
-1. **Track alert volume** — measure pages per week per person; target < 2 pages per on-call shift
-2. **Review every alert weekly** — if an alert fired and no action was taken, delete or downgrade it
-3. **Merge related alerts** — 10 alerts for 10 instances of the same service should be 1 grouped alert
-4. **Set proper thresholds from data** — use percentile baselines, not guesses
-5. **Auto-resolve** — if the condition clears within 5 minutes, do not page (it was a transient spike)
-6. **Silence during maintenance** — proactively suppress known alerts during deploys and planned work
+### On-call handoff
 
-### Escalation Policies
+Hand off at a consistent time (e.g. Monday 10:00 local). The outgoing
+on-call writes a summary covering active incidents, flaky alerts,
+known issues, and anything to watch. The incoming on-call reviews and
+acknowledges. Shadow rotations pair new team members with experienced
+on-call for 1-2 cycles before they take primary.
 
-1. **Primary on-call** responds within the target time for the severity
-2. **Auto-escalate** to secondary if not acknowledged within 10 minutes (P1) or 30 minutes (P2)
-3. **Escalate to engineering lead** if not resolved within 1 hour (P1) or 4 hours (P2)
-4. **Declare an incident** if multiple P1 alerts fire simultaneously or the issue affects multiple services
+### Incident communication
 
-### On-Call Handoff Practices
+During a P1/P2 incident: open an incident channel immediately, post an
+initial summary (what is broken, who is affected, current severity),
+update every 15-30 minutes even if the update is "still investigating",
+post to a public status page if external users are affected, and after
+resolution publish a timeline, root cause, and follow-up actions
+within 48 hours.
 
-- Handoff at a consistent time (e.g., Monday 10:00 local time)
-- Outgoing on-call writes a summary: active incidents, flaky alerts, known issues, anything to watch
-- Incoming on-call reviews the summary and acknowledges
-- Shadow rotations for new team members (paired with experienced on-call for 1-2 cycles)
+### Anti-patterns
 
-### Incident Communication
-
-During a P1/P2 incident:
-1. Open an incident channel (Slack, Teams) immediately
-2. Post an initial summary: what is broken, who is affected, current severity
-3. Update every 15-30 minutes, even if the update is "still investigating"
-4. Post to a status page if external users are affected
-5. After resolution: timeline, root cause, follow-up actions within 48 hours
-
-## Examples
-
-**User:** "We get paged 15 times a week and most are false alarms. How do we fix this?"
-**Agent:** Audits the last 30 days of alerts. Categorizes each by action taken: mitigated (keep), auto-resolved (convert to ticket or delete), no action (delete). Identifies the top 3 noisy alerts and either raises their thresholds, adds auto-resolve windows, or converts them to tickets. Implements alert grouping so per-instance alerts become per-service. Sets a target of < 2 pages per on-call shift and schedules a weekly alert review.
-
-**User:** "How should I set up alerting for our new payment service with a 99.95% availability SLO?"
-**Agent:** Calculates the error budget: 0.05% over 30 days = 22 minutes of downtime. Configures three burn-rate alerts: P1 pages when burn rate > 14.4 (5min AND 1hr windows), P2 pages when burn rate > 6 (30min AND 6hr windows), P3 tickets when burn rate > 3 (2hr AND 24hr windows). Creates a runbook for each alert with diagnosis steps specific to the payment service. Adds a latency SLO alert (p99 < 500ms) with the same multi-window approach.
-
-**User:** "I need a runbook template for our database connection pool exhaustion alert."
-**Agent:** Writes a runbook: explains that the alert fires when active connections exceed 90% of the pool max for 5 minutes. Lists likely causes: connection leak (query not closing connections), traffic spike, slow queries holding connections. Diagnosis steps: check `db_pool_active` metric, look for long-running queries (`pg_stat_activity`), check recent deploys. Mitigation: restart the affected pods to release connections (immediate), increase pool max if traffic is legitimate, identify and fix the leaking query. Escalation: database team in #db-oncall.
+- Alerting on causes instead of symptoms (CPU > 80% rather than
+  latency or error rate)
+- Static thresholds that ignore traffic patterns or seasonality
+- Alerts without runbooks — the responder has to invent the response
+  while paged
+- "Informational" pages — if no action is taken, the alert should not
+  page
+- Per-instance alerts in a fleet of N — group them
+- Letting noisy alerts persist because "we'll fix it later"

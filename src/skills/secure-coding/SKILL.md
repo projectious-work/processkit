@@ -4,39 +4,35 @@ kind: Skill
 metadata:
   id: SKILL-secure-coding
   name: secure-coding
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Secure coding practices based on OWASP Top 10. Injection prevention, XSS mitigation, CSRF protection, input validation, and security headers. Use when reviewing code for security, implementing auth, or hardening web applications."
+  description: "Secure coding practices grounded in the OWASP Top 10."
   category: security
   layer: null
+  when_to_use: "Use when reviewing code for security issues, implementing input validation, hardening web applications, or adding defenses against injection, XSS, or CSRF."
 ---
 
 # Secure Coding
 
-Apply OWASP Top 10 security practices when writing, reviewing, or hardening code.
-Identify vulnerabilities and implement concrete fixes.
+## Level 1 — Intro
 
-## When to Use
+Most application vulnerabilities come from a small set of recurring
+mistakes: trusting input, concatenating strings into queries,
+forgetting to encode output, leaving secrets in source. Apply OWASP
+Top 10 patterns to identify and fix them.
 
-- Reviewing code for security vulnerabilities.
-- Implementing input validation or output encoding.
-- Adding security headers to web applications.
-- Preventing injection attacks (SQL, command, XSS).
-- Implementing CSRF protection.
-- Auditing code for secrets or sensitive data exposure.
-- Hardening an application before production deployment.
+## Level 2 — Overview
 
-## Instructions
+### Input validation
 
-### Input Validation
-
-Validate all input at the boundary — never trust client-supplied data:
+Validate every input at the boundary — never trust client-supplied
+data:
 
 - **Allowlist over denylist** — define what IS valid, not what isn't.
 - **Validate type, length, range, and format** before processing.
 - **Reject unexpected input** — fail closed, not open.
-- **Validate on the server** — client-side validation is for UX only.
+- **Validate on the server.** Client-side validation is for UX only.
 
 ```python
 import re
@@ -48,48 +44,47 @@ def validate_username(username: str) -> str:
     return username
 ```
 
-### Output Encoding
+### Output encoding
 
-Encode output based on context to prevent XSS:
+Encode output based on the context where it lands:
 
-| Context       | Encoding             | Example                          |
-|---------------|----------------------|----------------------------------|
-| HTML body     | HTML entity encoding | `&lt;script&gt;`                 |
-| HTML attribute| Attribute encoding   | `" -> &quot;`                    |
-| JavaScript    | JS hex encoding      | `\x3Cscript\x3E`                |
-| URL parameter | Percent encoding     | `%3Cscript%3E`                   |
-| CSS           | CSS hex encoding     | `\3C script\3E`                  |
+| Context        | Encoding             | Example          |
+|----------------|----------------------|------------------|
+| HTML body      | HTML entity encoding | `&lt;script&gt;` |
+| HTML attribute | Attribute encoding   | `" -> &quot;`    |
+| JavaScript     | JS hex encoding      | `\x3Cscript\x3E` |
+| URL parameter  | Percent encoding     | `%3Cscript%3E`   |
+| CSS            | CSS hex encoding     | `\3C script\3E`  |
 
-Use your framework's built-in template escaping — never build HTML with string
-concatenation.
+Use the framework's built-in template escaping. Never build HTML with
+string concatenation.
 
-### Injection Prevention
+### Injection prevention
 
-**SQL Injection:** Always use parameterized queries.
+**SQL injection** — use parameterized queries:
 
 ```python
-# Safe: parameterized query
 cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
 ```
 
-**Command Injection:** Avoid shell commands. Use library functions or subprocess
-with argument lists (never shell=True with user input).
+**Command injection** — use library functions or subprocess with an
+argument list. Never `shell=True` with user input:
 
 ```python
-# Safe: argument list prevents injection
 subprocess.run(["convert", filename, "output.png"], check=True)
 ```
 
-### CSRF Protection
+### CSRF protection
 
-- Use anti-CSRF tokens (synchronizer token pattern) for state-changing requests.
+- Use anti-CSRF tokens (synchronizer token pattern) for state-changing
+  requests.
 - Set `SameSite=Lax` or `SameSite=Strict` on session cookies.
 - Verify `Origin` and `Referer` headers as defense in depth.
 - Never use GET for state-changing operations.
 
-### Security Headers
+### Security headers
 
-Apply these headers on every response:
+Apply these on every response:
 
 ```
 Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'
@@ -100,80 +95,125 @@ Referrer-Policy: strict-origin-when-cross-origin
 Permissions-Policy: camera=(), microphone=(), geolocation=()
 ```
 
-Start with a strict CSP and relax only as needed. Never use `unsafe-eval`.
+Start with a strict CSP and relax only as needed. Never use
+`unsafe-eval`.
 
-### Secrets Management
+### Secrets and dependencies
 
-- **Never hardcode** secrets, API keys, or credentials in source code.
-- Use environment variables or a secrets manager (Vault, AWS Secrets Manager).
-- Add patterns to `.gitignore`: `.env`, `*.pem`, `credentials.json`.
-- Rotate secrets periodically and after any suspected exposure.
-- Use different secrets for each environment (dev, staging, prod).
-
-### Dependency Security
-
+- Never hardcode secrets. Use environment variables or a secrets
+  manager.
+- Add `.env`, `*.pem`, and `credentials.json` to `.gitignore`.
 - Audit dependencies regularly: `npm audit`, `pip-audit`, `cargo audit`.
-- Pin dependency versions in lock files.
-- Update vulnerable dependencies promptly.
-- Minimize the dependency tree — fewer deps means fewer attack vectors.
+- Pin versions in lockfiles and minimize the dependency tree.
 
-### Security Review Checklist
+## Level 3 — Full reference
+
+### Security review checklist
 
 1. All user input is validated (type, length, format).
 2. SQL queries use parameterized statements.
-3. HTML output is context-encoded (no raw string interpolation).
+3. HTML output is context-encoded — no raw string interpolation.
 4. CSRF tokens protect state-changing endpoints.
 5. Security headers are set (CSP, HSTS, X-Frame-Options).
 6. No secrets in source code or logs.
 7. Authentication uses bcrypt/argon2, not MD5/SHA1.
-8. File uploads validate type, size, and store outside webroot.
-9. Error messages do not leak stack traces or internal details.
+8. File uploads validate type and size and store outside the webroot.
+9. Error messages don't leak stack traces or internal details.
 10. Dependencies are audited and up to date.
 
-See `references/owasp-checklist.md` for the full OWASP Top 10 with prevention
-checklists and secure code patterns.
+See `references/owasp-checklist.md` for the full OWASP Top 10 with
+prevention checklists and secure code patterns.
 
-## Examples
+### OWASP Top 10 highlights
 
-### Example 1: Security review of a web application
+- **A01 Broken Access Control** — deny by default; check authorization
+  on every request, not just in the UI; use indirect object
+  references; log access-control failures.
+- **A02 Cryptographic Failures** — bcrypt or argon2id for passwords;
+  AES-256-GCM for data at rest; TLS 1.2+ in transit; rotate keys.
+- **A03 Injection** — parameterized queries everywhere; subprocess
+  with argument lists; ORM methods over raw SQL; allowlist input.
+- **A04 Insecure Design** — rate-limit auth endpoints, return generic
+  errors to prevent enumeration, threat-model during design.
+- **A05 Security Misconfiguration** — disable debug in production,
+  remove default credentials, audit cloud bucket permissions.
+- **A06 Vulnerable Components** — run `pip-audit` / `npm audit` /
+  `cargo audit` in CI; pin lockfiles; monitor with Dependabot.
+- **A07 Authentication Failures** — strong passwords, rate limiting,
+  session regeneration after login, MFA support.
+- **A08 Software & Data Integrity Failures** — never deserialize
+  untrusted data with formats that allow code execution; verify
+  signatures on updates; protect CI/CD with access controls.
+- **A09 Logging & Monitoring Failures** — log auth events and access
+  failures; never log secrets; alert on anomalies.
+- **A10 SSRF** — allowlist URLs and hosts; block private/internal IP
+  ranges; validate redirect targets.
 
+### Secure patterns by category
+
+**Access control** — explicit ownership check on every protected
+endpoint:
+
+```python
+@app.get("/api/users/{user_id}/profile")
+def get_profile(user_id: int, current_user: User = Depends(get_current_user)):
+    if current_user.id != user_id and "admin" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return db.query(User).filter(User.id == user_id).first()
 ```
-User: Review this Express.js app for security issues.
 
-Agent: Reads the codebase and identifies:
-  - SQL queries built with string concatenation -> switches to parameterized queries.
-  - User input rendered without escaping in EJS templates -> adds output encoding.
-  - No CSRF tokens on POST routes -> adds csurf middleware.
-  - Missing security headers -> adds helmet middleware with strict CSP.
-  - API key hardcoded in config.js -> moves to environment variable.
-  Writes fixes for each issue.
+**Password hashing** — never roll your own:
+
+```python
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+password_hash = pwd_context.hash(password)
+# pwd_context.verify(password, password_hash)
 ```
 
-### Example 2: Harden API input validation
+**Generic error messages** — prevent enumeration:
 
-```
-User: Add input validation to our user registration endpoint.
-
-Agent: Reads the endpoint, then adds:
-  - Email format validation with regex.
-  - Password strength requirements (min 12 chars, complexity).
-  - Username allowlist validation (alphanumeric, 3-30 chars).
-  - Rate limiting on registration endpoint.
-  - Sanitization of all fields before database insertion.
-  Uses a validation library (Joi, Zod, or pydantic) for consistency.
+```python
+@app.post("/reset-password")
+@limiter.limit("3/hour")
+def reset_password(email: str):
+    send_reset_email(email)
+    return {"message": "If the email exists, a reset link was sent."}
 ```
 
-### Example 3: Fix XSS vulnerability
+**SSRF defence** — validate URLs against an allowlist and block
+private IP ranges:
 
-```
-User: We found an XSS vulnerability in the search results page.
+```python
+from urllib.parse import urlparse
+import ipaddress
 
-Agent: Reads the search feature code and finds:
-  - Search query is reflected in the page without encoding.
-  - Template uses raw HTML interpolation instead of encoded output.
-  Fixes:
-  - Switches to encoded output in the template engine.
-  - Adds Content-Security-Policy header to block inline scripts.
-  - Adds input validation to reject HTML/script characters in search.
-  - Tests the fix with common XSS payloads.
+ALLOWED_HOSTS = {"api.example.com", "cdn.example.com"}
+
+def validate_url(url: str) -> str:
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError("Invalid scheme")
+    if parsed.hostname not in ALLOWED_HOSTS:
+        raise ValueError("Host not allowed")
+    try:
+        ip = ipaddress.ip_address(parsed.hostname)
+        if ip.is_private or ip.is_loopback:
+            raise ValueError("Internal addresses not allowed")
+    except ValueError:
+        pass
+    return url
 ```
+
+### Anti-patterns
+
+- Building SQL with f-strings or `+`.
+- Disabling output escaping in templates "just this once".
+- `subprocess.run(..., shell=True)` with any user-derived value.
+- Using GET for actions that mutate state.
+- Returning stack traces to clients.
+- Storing passwords with unsalted hashes (MD5, SHA1, plain SHA256).
+- Trusting the `alg` header in a JWT — explicitly list allowed
+  algorithms.
+- Deserializing untrusted YAML, pickle, or similar formats that allow
+  code execution.

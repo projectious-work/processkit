@@ -4,28 +4,28 @@ kind: Skill
 metadata:
   id: SKILL-load-testing
   name: load-testing
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Load testing methodology including test types, scenario design, and capacity planning. Use when planning load tests, analyzing test results, or setting up performance testing in CI."
+  description: "Load testing methodology — test types, scenario design, capacity planning, CI integration."
   category: performance
   layer: null
+  when_to_use: "Use when planning or running a load test, choosing a load testing tool, designing scenarios, analyzing results, setting up performance testing in CI, or estimating capacity from test data."
 ---
 
 # Load Testing
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Plan or run a load test for an API, service, or website
-- Choose a load testing tool or design test scenarios
-- Analyze load test results and identify bottlenecks
-- Set up performance testing in a CI pipeline
-- Estimate capacity or plan for scaling based on test data
+Load tests answer specific questions: does it work, can it handle
+expected traffic, where does it break, can it survive a spike, is
+there long-term degradation. Always start with a smoke test, model
+real user behavior, and capture latency percentiles — averages hide
+problems.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Choose the Right Test Type
+### Test types
 
 Each type answers a different question:
 
@@ -37,21 +37,25 @@ Each type answers a different question:
 | **Spike** | Sudden burst (10x) | 5-10 min | Can it handle sudden traffic surges? |
 | **Soak / Endurance** | Normal traffic | 2-12 hours | Are there memory leaks or degradation over time? |
 
-Always start with a smoke test before running heavier tests.
+Always smoke first. A failing smoke test means you have a setup
+problem, not a capacity problem.
 
-### 2. Design Realistic Scenarios
+### Realistic scenarios
 
-A good load test simulates real user behavior, not just raw request throughput:
+A useful load test simulates real user behavior, not raw request
+throughput:
 
-1. **Identify key user journeys**: login -> browse -> search -> checkout (not just GET /health)
-2. **Use realistic data**: randomize user IDs, search terms, product IDs from a dataset
-3. **Include think time**: real users pause between actions (1-5 seconds)
-4. **Model traffic distribution**: 60% browse, 25% search, 10% add-to-cart, 5% checkout
-5. **Include authentication**: token refresh, session management
-6. **Test dependent services**: if your API calls a payment provider, account for that latency
+1. Identify key user journeys (login -> browse -> search -> checkout)
+2. Use realistic data — randomize IDs, search terms, and product IDs
+   from a dataset
+3. Include think time (1-5 s pauses between actions)
+4. Model traffic distribution (e.g. 60% browse, 25% search, 10% add
+   to cart, 5% checkout)
+5. Include authentication: token refresh, session management
+6. Account for downstream dependencies (payment providers, etc.)
 
 ```javascript
-// k6 example: realistic scenario with stages
+// k6: realistic scenario with stages
 import http from 'k6/http';
 import { sleep, check } from 'k6';
 
@@ -76,26 +80,16 @@ export default function () {
 }
 ```
 
-### 3. Capture the Right Metrics
+### What to capture
 
-Essential metrics to record during every load test:
+**Latency**: p50, p95, p99, and max — averages hide problems. Track
+per endpoint, not just aggregate. **Throughput**: successful
+requests/sec. **Error rate**: 5xx, timeouts, connection refused.
+**Resource utilization** from monitoring: CPU per service, memory RSS
+and heap, connection pool usage, queue depth, network I/O, open
+connections.
 
-**Latency** (most important):
-- p50 (median), p95, p99, and max — averages hide problems
-- Track per-endpoint, not just aggregate
-
-**Throughput**: requests per second (RPS) successfully processed
-
-**Error rate**: percentage of failed requests (HTTP 5xx, timeouts, connection refused)
-
-**Resource utilization** (capture from monitoring):
-- CPU usage per service
-- Memory RSS and heap usage
-- Database connection pool usage
-- Queue depth and consumer lag
-- Network I/O and open connections
-
-### 4. Tools Overview
+### Tool overview
 
 | Tool | Language | Strengths |
 |---|---|---|
@@ -106,30 +100,42 @@ Essential metrics to record during every load test:
 | **hey** | Go | Simple CLI for quick benchmarks, no scripting needed |
 | **vegeta** | Go | Constant-rate load generation, good for precise RPS targets |
 
-Choose **k6** or **Locust** for realistic scenario testing. Use **wrk** or **hey** for quick single-endpoint benchmarks.
+Use k6 or Locust for realistic scenario testing. Use wrk or hey for
+quick single-endpoint benchmarks.
 
-### 5. Identify Bottlenecks from Results
+## Level 3 — Full reference
 
-Analyze results systematically:
+### Identifying bottlenecks from results
 
-- **Latency climbs linearly with load**: resource saturation (CPU, DB connections, thread pool)
-- **Latency spikes periodically**: GC pauses, cron jobs, log rotation, cache expiration
-- **Errors start at specific VU count**: resource exhaustion (file descriptors, connection pool, memory)
-- **Throughput plateaus while latency grows**: the system is at capacity — find the saturated resource
-- **Errors only under concurrency**: race conditions, deadlocks, connection pool starvation
+Read results systematically:
 
-Correlate load test metrics with infrastructure monitoring (Grafana, Datadog, CloudWatch) to pinpoint which component saturates first.
+- **Latency climbs linearly with load** — resource saturation (CPU,
+  DB connections, thread pool)
+- **Latency spikes periodically** — GC pauses, cron jobs, log
+  rotation, cache expiration
+- **Errors start at a specific VU count** — resource exhaustion (file
+  descriptors, connection pool, memory)
+- **Throughput plateaus while latency grows** — system at capacity;
+  find the saturated resource
+- **Errors only under concurrency** — race conditions, deadlocks,
+  connection pool starvation
 
-### 6. Capacity Planning from Results
+Always correlate load test metrics with infrastructure monitoring
+(Grafana, Datadog, CloudWatch) to pinpoint the saturated component.
+
+### Capacity planning
 
 Use load test data to estimate scaling needs:
 
-1. Find the **throughput ceiling**: the RPS where p99 latency exceeds SLA
-2. Calculate **headroom**: production should run at 50-70% of the ceiling for safety
-3. Scale estimation: if 1 instance handles 500 RPS at ceiling, and you need 2000 RPS, plan for 6 instances (2000 / 500 * 1.5 safety factor)
-4. Verify by running the load test against the scaled setup
+1. Find the **throughput ceiling**: the RPS where p99 latency exceeds
+   your SLA
+2. Calculate **headroom**: production should run at 50-70% of the
+   ceiling for safety
+3. **Scale estimation**: if 1 instance handles 500 RPS at ceiling and
+   you need 2000 RPS, plan for 2000 / 500 * 1.5 = 6 instances
+4. Verify with a load test against the scaled setup
 
-### 7. CI Integration
+### CI integration
 
 Add performance gates to prevent regressions:
 
@@ -141,23 +147,26 @@ Add performance gates to prevent regressions:
 - name: Check thresholds
   run: |
     # k6 exits non-zero if thresholds fail
-    # Thresholds defined in the test script
+    # Thresholds are defined in the test script
 ```
 
 Guidelines for CI load tests:
+
 - Run smoke or light load tests on every PR (1-2 minutes)
 - Run full load tests nightly or before release
-- Use **relative thresholds** (compare to baseline) rather than absolute values
+- Use **relative thresholds** (compare to baseline) over absolute
+  values — environments drift
 - Test against a dedicated environment, never production
 - Store results historically to detect gradual degradation
 
-## Examples
+### Common mistakes
 
-**User:** "We need to load test our API before Black Friday"
-**Agent:** Designs a test plan: smoke test first to validate the setup, then a load test at 2x normal traffic (based on last year's peak), then a stress test at 5x to find the breaking point. Uses k6 with scenarios modeling the top 5 user journeys weighted by actual traffic distribution. Configures thresholds at p95 < 500ms and error rate < 0.1%.
-
-**User:** "Our load test shows p99 latency spiking every 30 seconds"
-**Agent:** Correlates the spikes with infrastructure metrics and identifies GC pauses in the JVM service. The heap is undersized, causing frequent full GCs under load. Recommends increasing heap from 2GB to 4GB and switching to G1GC. Re-runs the test to confirm p99 drops from 3200ms to 180ms.
-
-**User:** "Set up performance testing in our CI pipeline"
-**Agent:** Creates a k6 smoke test that runs on every PR (5 VUs, 30 seconds) with thresholds on p95 latency and error rate. Adds a nightly full load test job (100 VUs, 10 minutes) that posts results to a Grafana dashboard. Configures the PR test to fail if p95 latency regresses by more than 20% compared to the main branch baseline.
+- Running load tests from a single client box that itself becomes the
+  bottleneck (CPU, sockets, ephemeral ports)
+- Forgetting to disable rate limiting or auth caching during the test
+- Hammering one URL and declaring victory — that does not exercise
+  realistic code paths
+- Comparing runs across days without accounting for noisy neighbors,
+  CPU frequency scaling, or cache state
+- Ignoring warm-up — the first 30 seconds of any test usually
+  measures cold caches and JIT compilation, not steady state
