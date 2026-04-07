@@ -97,6 +97,7 @@ def run():
         elog = import_server("event-log")
         idx = import_server("index-management")
         idm = import_server("id-management")
+        actor = import_server("actor-profile")
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -178,12 +179,44 @@ def run():
         print("link workitems:", l)
         assert l.get("ok")
 
+        # 4b. actor-profile
+        create_actor = get_tool(actor, "create_actor")
+        a = create_actor(
+            name="Alice Chen",
+            type="human",
+            email="alice@example.com",
+            expertise=["backend", "rust"],
+        )
+        print("create_actor:", a)
+        assert "id" in a and a["id"].startswith("ACTOR-")
+        actor_id = a["id"]
+
+        get_actor_t = get_tool(actor, "get_actor")
+        ga = get_actor_t(id=actor_id)
+        print("get_actor:", ga["name"], ga["expertise"])
+        assert ga["name"] == "Alice Chen"
+
+        update_actor_t = get_tool(actor, "update_actor")
+        ua = update_actor_t(id=actor_id, expertise=["backend", "rust", "databases"])
+        print("update_actor:", ua)
+        assert ua["ok"] and "expertise" in ua["updated"]
+
+        list_actors_t = get_tool(actor, "list_actors")
+        la = list_actors_t(type="human")
+        print("list_actors human:", len(la))
+        assert any(x["id"] == actor_id for x in la)
+
+        # bad type rejected
+        bad = create_actor(name="Test", type="robot")
+        print("bad actor type (expected error):", bad)
+        assert "error" in bad
+
         # 5. binding
         create_bind = get_tool(bind, "create_binding")
         b = create_bind(
             type="work-assignment",
             subject=wi_id,
-            target="ACTOR-alice",
+            target=actor_id,
             scope="SCOPE-sprint-42",
             valid_from="2026-04-01",
             valid_until="2026-04-14",
@@ -202,7 +235,7 @@ def run():
         reindex = get_tool(idx, "reindex")
         stats = reindex()
         print("reindex stats:", stats)
-        assert stats["entities"] >= 4  # workitem + log + decision + binding
+        assert stats["entities"] >= 5  # workitem + log + decision + binding + actor
         assert stats["events"] >= 1
 
         query_e = get_tool(idx, "query_entities")

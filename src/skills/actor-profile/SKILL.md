@@ -10,9 +10,15 @@ spec:
   description: "Create and maintain Actor entities — humans and AI agents that participate in the project."
   category: process
   layer: 1
-  uses: [event-log]
+  uses: [event-log, index-management, id-management]
   provides:
     primitives: [Actor]
+    mcp_tools:
+      - create_actor
+      - get_actor
+      - update_actor
+      - deactivate_actor
+      - list_actors
     templates: [actor-human, actor-agent]
   when_to_use: "Use when adding a new collaborator (human or agent) to the project, updating their preferences/expertise, or querying who does what."
 ---
