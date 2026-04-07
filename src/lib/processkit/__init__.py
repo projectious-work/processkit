@@ -41,6 +41,7 @@ KIND_PREFIXES = {
     "Process": "PROC",
     "StateMachine": "SM",
     "Artifact": "ART",
+    "Migration": "MIG",
 }
 
 # Default subdirectory under context/ for each primitive kind
@@ -61,4 +62,9 @@ DEFAULT_DIRS = {
     "Process": "processes",
     "StateMachine": "state-machines",
     "Artifact": "artifacts",
+    # Migration's "default" is a logical root; the actual file lives under
+    # context/migrations/{pending,in-progress,applied}/ — the substate
+    # mirrors the entity's spec.state. The migration-management skill
+    # places files in the correct subdirectory.
+    "Migration": "migrations",
 }

@@ -1,8 +1,11 @@
 # primitives/
 
-The 18 universal process primitives. Framework-agnostic building blocks that appear
+The 19 universal process primitives. Framework-agnostic building blocks that appear
 in every process methodology (SAFe, PMBOK, CMMI, Scrum, Kanban). processkit provides
 them as schemas and state machines; it does not impose a workflow.
+
+The 19th, **Migration**, was added in v0.4.0 to make upstream-version transitions
+first-class entities that agents can query and reason about.
 
 ## Contents
 
@@ -10,7 +13,7 @@ them as schemas and state machines; it does not impose a workflow.
 - **schemas/** — one YAML schema file per primitive type
 - **state-machines/** — default state machine definitions (extended per process template)
 
-## The 18 primitives
+## The 19 primitives
 
 1. **WorkItem** — unit of work (task/story/issue/ticket)
 2. **LogEntry** — immutable record of something that happened
@@ -30,5 +33,7 @@ them as schemas and state machines; it does not impose a workflow.
 16. **Discussion** — structured conversation producing decisions
 17. **Actor** — person or agent (preferences, expertise, working style)
 18. **Binding** — assignment of one entity to another with optional scope/time/conditions (generalized RoleBinding)
+19. **Migration** — *(new in v0.4.0)* pending/in-progress/applied transition between versions of an upstream source. Has the migration state machine.
 
-See [FORMAT.md](FORMAT.md) for how these are expressed as files.
+See [FORMAT.md](FORMAT.md) for how these are expressed as files, and how
+the `privacy:` field affects where they may live.

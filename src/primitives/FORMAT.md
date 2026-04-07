@@ -113,13 +113,14 @@ new one, producing prompts for the agent to apply with human approval.
 
 ### kind registry
 
-The 18 primitive kinds at v0.1.0:
+The 19 primitive kinds (18 from v0.1.0 plus Migration added in v0.4.0):
 
 | kind             | schema file                               | state machine? |
 |------------------|-------------------------------------------|----------------|
 | WorkItem         | `schemas/workitem.yaml`                   | yes            |
 | LogEntry         | `schemas/logentry.yaml`                   | no (immutable) |
 | DecisionRecord   | `schemas/decisionrecord.yaml`             | yes            |
+| Migration        | `schemas/migration.yaml`                  | yes            |
 | Artifact         | `schemas/artifact.yaml` (Phase 2)         | no             |
 | Role             | `schemas/role.yaml` (Phase 2)             | no             |
 | Process          | `schemas/process.yaml` (Phase 2)          | no             |
@@ -136,6 +137,14 @@ The 18 primitive kinds at v0.1.0:
 | Binding          | `schemas/binding.yaml` (Phase 2)          | no             |
 | CrossReference   | not a file — frontmatter-only (see below) | n/a            |
 
+**Note on Migration:** Migration is the 19th primitive (added v0.4.0).
+Each Migration entity represents a pending, in-progress, or applied
+transition between two versions of an upstream source (processkit, aibox,
+or community packages). The state mirrors the directory the file lives in:
+`context/migrations/{pending,in-progress,applied}/`. See
+[`src/skills/migration-management/`](../skills/migration-management/) for
+the workflow.
+
 `CrossReference` is the one exception: it is not stored as its own file. Simple
 relationships are expressed as references in frontmatter (`blocks: [BACK-...]`,
 `related: [DEC-...]`). Use `Binding` instead when the relationship has its own
@@ -149,6 +158,38 @@ schema is authoritative. `aibox lint` performs structural validation only
 schema-aware validation is the job of the `index-management` MCP server
 (Phase 3) which parses all entity files, validates against schemas, and
 serves queries via a SQLite index.
+
+### Privacy (optional `privacy:` field)
+
+Some entities — owner profile files, personal-context files, sensitive
+notes — should be visible to a user's local agent but never checked into
+git or shared with collaborators. processkit recognizes three privacy
+tiers via an **optional** `privacy:` field in `metadata`:
+
+```yaml
+metadata:
+  id: OWNER-identity
+  privacy: public            # readable by anyone with repo access (e.g. README, contributors)
+  # or:
+  privacy: project-private   # repo collaborators only — DEFAULT, can be omitted
+  # or:
+  privacy: user-private      # only the file's owner agent — must live under a `private/` directory
+```
+
+**Default:** `project-private`. Most entities omit the field.
+
+**Filesystem rule:** any entity with `privacy: user-private` must live
+under a directory named `private/` somewhere within `context/`. The aibox-
+generated `.gitignore` includes the rule `context/**/private/` which
+matches `private/` directories at any depth under `context/`. Validated
+by `aibox lint` (Phase 4.4): a `user-private` entity outside a `private/`
+directory is a lint error.
+
+| privacy        | git-tracked? | typical use                                          |
+|----------------|--------------|------------------------------------------------------|
+| `public`       | yes          | identity.md, project README, public roadmap          |
+| `project-private` | yes       | workitems, decisions, logs, working-style.md (default)|
+| `user-private` | no           | team-and-relationships.md, personal scratch notes    |
 
 ### Cross-references vs Bindings
 
