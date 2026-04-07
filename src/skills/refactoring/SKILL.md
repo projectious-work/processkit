@@ -4,130 +4,136 @@ kind: Skill
 metadata:
   id: SKILL-refactoring
   name: refactoring
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Systematic code refactoring using Fowler's catalog, Gang of Four patterns, and code smell detection. Use when restructuring code without changing behavior."
+  description: "Systematic refactoring with Fowler's catalog, GoF patterns, and code smell detection."
   category: process
   layer: 3
+  when_to_use: "Use when restructuring code without changing behavior — cleaning up smells, applying patterns, reducing duplication, or preparing a module for an upcoming feature."
 ---
 
 # Refactoring
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Refactor, clean up, or restructure code
-- Fix code smells (long method, feature envy, shotgun surgery, etc.)
-- Apply design patterns to simplify complex code
-- Reduce duplication or improve readability
-- Prepare code for a new feature by improving its structure first
+Refactoring is changing the structure of code without changing its
+observable behavior. Do it in small, test-protected steps, one
+transformation at a time, and never mix it with feature changes in
+the same commit.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Verify Safety Net Before Refactoring
+### Verify the safety net first
 
-Before any refactoring:
+Before any refactoring, run the existing tests and confirm they
+pass. If no tests cover the code you are about to change, write
+characterization tests first — tests that capture current behavior,
+not desired behavior. Plan the refactoring as a sequence of atomic
+transformations where each step keeps the suite green, and commit
+after each step. The golden rule: never mix refactoring with feature
+changes in the same commit.
 
-1. **Check for tests**: Run existing tests to confirm they pass. If no tests exist for the code being refactored, write characterization tests first (tests that capture current behavior, not desired behavior).
-2. **Plan small steps**: Break the refactoring into a sequence of atomic transformations. Each step must keep tests green.
-3. **Commit after each step**: Each refactoring move gets its own commit, separate from behavior changes.
+### Identify code smells
 
-Golden rule: **Never mix refactoring with feature changes in the same commit.**
+Scan systematically for the well-known smells. The full catalog
+lives in `references/code-smells.md`; the most common offenders:
 
-### 2. Identify Code Smells
-
-Systematically scan for smells (see `references/code-smells.md` for the full catalog):
-
-| Smell | What to Look For |
+| Smell | What to look for |
 |---|---|
-| **Long Method** | Function > 20 lines or does more than one thing |
-| **Large Class** | Class with > 5 responsibilities or > 300 lines |
-| **Long Parameter List** | Function with > 3 parameters |
-| **Feature Envy** | Method uses another object's data more than its own |
-| **Data Clumps** | Same group of variables appears together repeatedly |
-| **Primitive Obsession** | Using strings/ints where a domain type belongs |
-| **Shotgun Surgery** | One change requires edits in many unrelated files |
-| **Divergent Change** | One class changed for multiple unrelated reasons |
-| **Duplicate Code** | Same logic in two or more places |
-| **Dead Code** | Unreachable or unused code |
+| Long Method | Function > 20 lines or doing more than one thing |
+| Large Class | Class with > 5 responsibilities or > 300 lines |
+| Long Parameter List | Function with > 3 parameters |
+| Feature Envy | Method uses another object's data more than its own |
+| Data Clumps | Same group of variables appears together repeatedly |
+| Primitive Obsession | Strings/ints where a domain type belongs |
+| Shotgun Surgery | One change requires edits in many unrelated files |
+| Divergent Change | One class changed for multiple unrelated reasons |
+| Duplicate Code | Same logic in two or more places |
+| Dead Code | Unreachable or unused code |
 
-### 3. Apply Refactoring Patterns
+### Apply Fowler's refactoring catalog
 
-Match smells to specific refactorings from Fowler's catalog:
+Match smells to specific refactorings:
 
-**Composing Methods:**
-- **Extract Function**: Pull a block into a named function (fixes Long Method)
-- **Inline Function**: Remove trivial single-use wrappers
-- **Extract Variable**: Name a complex expression for clarity
-- **Replace Temp with Query**: Replace a local variable with a method call
+- **Composing methods** — Extract Function, Inline Function, Extract
+  Variable, Replace Temp with Query.
+- **Moving features** — Move Function/Field, Extract Class, Inline
+  Class.
+- **Simplifying conditionals** — Replace Nested Conditional with
+  Guard Clauses, Decompose Conditional, Replace Conditional with
+  Polymorphism, Introduce Null Object.
+- **Organizing data** — Introduce Parameter Object, Replace Magic
+  Number with Constant, Encapsulate Collection.
+- **Generalization** — Pull Up / Push Down Method, Extract
+  Interface/Trait, Replace Inheritance with Composition.
 
-**Moving Features:**
-- **Move Function/Field**: Relocate to the class that uses it most (fixes Feature Envy)
-- **Extract Class**: Split a class with multiple responsibilities (fixes Large Class)
-- **Inline Class**: Merge a class that does too little
+### Apply GoF patterns when they simplify
 
-**Simplifying Conditionals:**
-- **Replace Nested Conditional with Guard Clauses**: Early returns reduce nesting
-- **Decompose Conditional**: Extract condition and branches into named functions
-- **Replace Conditional with Polymorphism**: Use strategy/state pattern for type-based switches
-- **Introduce Null Object**: Eliminate null checks with a no-op implementation
+Only introduce a design pattern when it solves a concrete problem,
+never speculatively. The full catalog is in
+`references/gof-patterns.md`. Most commonly useful: Strategy,
+Observer, Factory Method, Builder, Adapter, Decorator, Command,
+State, Template Method, Iterator. Warning signs of overuse: adding
+a pattern "just in case", pattern adds more code than it removes,
+only one implementation exists, the team cannot explain why.
 
-**Organizing Data:**
-- **Introduce Parameter Object**: Group related parameters into a struct/class
-- **Replace Magic Number with Constant**: Name unexplained literals
-- **Encapsulate Collection**: Return copies or iterators, not raw mutable collections
+### Example
 
-**Generalization:**
-- **Pull Up / Push Down Method**: Move methods to the right level in the hierarchy
-- **Extract Interface/Trait**: Define a contract for polymorphism
-- **Replace Inheritance with Composition**: Prefer delegation over subclassing
+User says "this function is too long". The agent identifies three
+distinct responsibilities, extracts each into a named helper
+keeping the original as a high-level orchestrator, runs tests after
+each extraction, and commits each extraction separately.
 
-### 4. Apply GoF Patterns When They Simplify Code
+## Level 3 — Full reference
 
-Only introduce a design pattern when it solves a concrete problem, never speculatively. See `references/gof-patterns.md` for the full catalog. Most commonly useful patterns:
+### Modern considerations
 
-| Pattern | When It Helps |
+For async/concurrent code, extract async boundaries clearly (sync
+core, async shell), replace callback chains with async/await where
+possible, and isolate side effects at the edges. For
+functional-style code, replace mutable loops with map/filter/reduce
+pipelines, extract pure functions from impure ones, and use
+algebraic types (enums/unions) over class hierarchies for closed
+sets.
+
+### Smell-to-pattern map
+
+| Smell / situation | Candidate pattern |
 |---|---|
-| **Strategy** | Replace conditional logic selecting algorithms at runtime |
-| **Observer** | Decouple event producers from consumers |
-| **Factory Method** | Centralize complex object creation logic |
-| **Builder** | Construct complex objects step-by-step with optional fields |
-| **Adapter** | Integrate a third-party library behind your own interface |
-| **Decorator** | Add behavior without modifying existing code |
-| **Command** | Encapsulate operations for undo, queuing, or logging |
-| **State** | Replace complex state-dependent conditionals |
-| **Template Method** | Share algorithm structure, vary specific steps |
-| **Iterator** | Provide uniform traversal over custom collections |
+| Complex conditional logic on types | Strategy, State, polymorphism |
+| Growing switch/match statements | Factory Method + polymorphism |
+| Duplicated algorithm with variations | Template Method |
+| Complex object construction | Builder |
+| Third-party integration coupling | Adapter |
+| Need to add behavior to existing code | Decorator |
+| Multiple objects reacting to events | Observer |
+| Complex state-dependent behavior | State |
+| Request needs undo/queue/log | Command |
+| Many interacting objects | Mediator |
 
-Warning signs of pattern overuse:
-- Adding a pattern "just in case" (speculative generality)
-- Pattern adds more code than it removes
-- Only one implementation of an interface exists with no plans for more
-- The team cannot explain why the pattern is there
+### Selecting a pattern (rule of three)
 
-### 5. Modern Refactoring Considerations
+Wait until you see a need in three places before abstracting. One
+occurrence is a fact, two is a coincidence, three is a pattern.
+Premature abstraction is harder to undo than late abstraction
+because the wrong shape constrains future changes.
 
-For async/concurrent code:
-- Extract async boundaries clearly (sync core, async shell)
-- Replace callback chains with async/await where possible
-- Isolate side effects at the edges
+### Anti-patterns
 
-For functional-style code:
-- Replace mutable loops with map/filter/reduce pipelines
-- Extract pure functions from impure ones
-- Use algebraic types (enums/unions) over class hierarchies for closed sets
+- Mixing refactoring with feature work in the same commit
+- Refactoring without a test safety net
+- Speculative generality — adding hooks "just in case"
+- Pattern cargo-culting — applying GoF because it sounds clever
+- Big-bang rewrites instead of incremental transformation
+- Removing dead code without checking it is truly unreachable
+  (search for dynamic dispatch, reflection, config-driven loads)
 
-## Examples
+### Example: extracting test seams
 
-**User:** "This function is too long, clean it up"
-**Agent:** Identifies three responsibilities in the function. Extracts each into a named helper with descriptive names, keeping the original as a high-level orchestrator. Runs tests after each extraction. Commits each extraction separately.
-
-**User:** "There's too much duplication between these two modules"
-**Agent:** Identifies the shared logic, extracts it into a common module with a clear interface. Uses Extract Function and Move Function. Verifies both call sites work with the extracted version. Checks for subtle differences that might need parameterization.
-
-**User:** "This switch statement keeps growing"
-**Agent:** Recognizes the switch dispatches on a type code. Applies Replace Conditional with Polymorphism by introducing a trait/interface with implementations for each case. Uses the Strategy pattern if the behavior varies at runtime, or simple polymorphism if types are known at compile time.
-
-**User:** "Make this code more testable"
-**Agent:** Identifies concrete dependencies (file I/O, HTTP calls, database). Extracts interfaces/traits at the boundaries (Adapter pattern). Moves domain logic into pure functions. Introduces dependency injection so tests can provide fakes.
+To make code more testable, identify concrete dependencies (file
+I/O, HTTP, database), extract interfaces/traits at those
+boundaries (Adapter pattern), move domain logic into pure
+functions, and introduce dependency injection so tests can supply
+fakes. This is refactoring in service of testability, not feature
+work, and should ship in its own commit series.

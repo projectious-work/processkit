@@ -4,41 +4,86 @@ kind: Skill
 metadata:
   id: SKILL-debugging
   name: debugging
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Systematic debugging process — reproduce, isolate, fix, verify. Use when tracking down bugs, unexpected behavior, or test failures."
+  description: "Systematic debugging — reproduce, read the error, isolate, hypothesize, fix, verify, document."
   category: process
   layer: 3
+  when_to_use: "Use when tracking down a bug, unexpected behavior, or test failure — including phrases like \"this doesn't work\", \"why is this failing\", or \"help me debug\"."
 ---
 
 # Debugging
 
-## When to Use
+## Level 1 — Intro
 
-When the user reports a bug, error, unexpected behavior, or says "this doesn't work", "why is this failing?", or "help me debug".
+Debugging is a fixed loop: reproduce the failure, read the error,
+isolate the cause, fix it, verify the fix, and add a regression
+test. Skipping steps causes the bug to come back.
 
-## Instructions
+## Level 2 — Overview
 
-1. **Reproduce:** Get the exact steps, inputs, and error messages. Confirm you can trigger the issue.
-2. **Read the error:** Parse the full stack trace or error message. The root cause is often in the first or last frame, not the middle.
-3. **Isolate:** Narrow the scope:
+### The debugging loop
+
+1. **Reproduce** — get the exact steps, inputs, and error
+   messages. Confirm you can trigger the issue on demand.
+2. **Read the error** — parse the full stack trace or error
+   message. The root cause is usually in the first or last frame,
+   not the middle.
+3. **Isolate** — narrow the scope:
    - Binary search through code (comment out halves)
    - Check recent changes (`git log`, `git diff`)
    - Add targeted logging or print statements
-   - Test with minimal input
-4. **Hypothesize and test:** Form a theory, then test it. Don't change multiple things at once.
-5. **Fix:** Apply the minimal change that resolves the issue.
-6. **Verify:**
-   - Confirm the original error is gone
-   - Run the full test suite to check for regressions
-   - Test edge cases near the fix
-7. **Document:** Add a test that would have caught this bug. Add a comment if the fix is non-obvious.
+   - Test with the minimal failing input
+4. **Hypothesize and test** — form a theory, then test it. Change
+   one thing at a time.
+5. **Fix** — apply the minimal change that resolves the issue.
+6. **Verify** — confirm the original error is gone, run the full
+   test suite for regressions, and exercise edge cases near the
+   fix.
+7. **Document** — add a test that would have caught this bug, and
+   a comment if the fix is non-obvious.
 
-## Examples
+### Common diagnosis paths
 
-**User:** "My tests pass locally but fail in CI"
-**Agent:** Checks for environment differences: OS, dependency versions, file paths, timezone, locale settings, race conditions in parallel tests. Compares CI logs with local output to identify the divergence point.
+- **Tests pass locally, fail in CI** — environment differences:
+  OS, dependency versions, file paths, timezone, locale, or race
+  conditions in parallel tests. Compare CI logs with local output
+  to find the divergence point.
+- **Function returns wrong results for some inputs** — get the
+  specific failing inputs, add assertions at intermediate steps,
+  find where actual diverges from expected, trace back.
 
-**User:** "This function returns wrong results for some inputs"
-**Agent:** Asks for the specific failing inputs, adds assertions at intermediate steps, finds where actual diverges from expected, traces back to the root cause.
+## Level 3 — Full reference
+
+### Anti-patterns
+
+- **Shotgun debugging** — changing many things at once. You won't
+  know which fix worked, and you'll introduce new bugs.
+- **Print-statement spelunking with no plan** — adding prints is
+  fine, but each one should test a specific hypothesis.
+- **Skipping reproduction** — "it sometimes fails" is not a bug
+  report. Find the trigger first.
+- **Stopping at the first fix** — the first thing that makes the
+  symptom go away is often masking the real cause. Verify the
+  underlying state is correct, not just the visible output.
+- **No regression test** — if you don't add a test, the bug will
+  return.
+
+### Tools and techniques
+
+- **`git bisect`** for regressions: a known-good and known-bad
+  commit narrows the offending change in log(N) steps.
+- **Debuggers over prints** when state is rich (object graphs,
+  step-through control flow).
+- **Differential debugging** — diff the working case against the
+  failing case, not the other way around.
+- **Rubber-duck explanation** — articulating the problem out loud
+  often surfaces the bug before you write any code.
+
+### When to stop and ask
+
+If you've spent more than ~30 minutes without forming a viable
+hypothesis, stop and either gather more information (logs,
+reproduction steps, recent commits) or escalate. Continued flailing
+is not progress.

@@ -4,88 +4,96 @@ kind: Skill
 metadata:
   id: SKILL-postmortem-writing
   name: postmortem-writing
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Blameless postmortem writing with timeline, root cause analysis, and corrective actions. Use when writing incident postmortems, conducting post-incident reviews, or creating postmortem templates."
+  description: "Blameless postmortem writing — timeline, root cause analysis, corrective actions."
   category: process
   layer: 3
+  when_to_use: "Use when writing an incident postmortem, conducting a post-incident review, building a postmortem template, or coaching a team toward blameless culture."
 ---
 
 # Postmortem Writing
 
-## When to Use
+## Level 1 — Intro
 
-When the user needs to write an incident postmortem, conduct a post-incident review,
-create a postmortem template, or asks "how do I write a blameless postmortem?" or
-"what should a postmortem include?".
+A good postmortem is a learning artifact, not a punishment. It tells
+the story of an incident factually, traces the root cause to a
+systemic gap (not a person), and produces a small number of owned,
+time-bound corrective actions.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Blameless Postmortem Structure
+### Standard structure
 
-Every postmortem must include these sections in order:
+Every postmortem should include, in order: title and metadata,
+summary, impact, timeline, root cause analysis, contributing
+factors, what went well, corrective actions, and lessons learned.
+The order matters — facts first, analysis second, actions last.
 
-1. **Title and Metadata**: Incident name, date, severity, duration, author, reviewers
-2. **Summary**: 2-3 sentences. What happened, what was the impact, how was it resolved.
-3. **Impact**: Who was affected, for how long, quantified (users, revenue, SLA budget consumed)
-4. **Timeline**: Chronological events from first signal to full resolution
-5. **Root Cause Analysis**: Why it happened, using 5 Whys or fault tree
-6. **Contributing Factors**: What made the incident worse or delayed resolution
-7. **What Went Well**: What worked during the response (detection, communication, tooling)
-8. **Corrective Actions**: Specific, owned, time-bound tasks to prevent recurrence
-9. **Lessons Learned**: What the team now knows that it did not before
+### Writing the timeline
 
-### 2. Writing the Timeline
+Use UTC timestamps. Format each line as
+`HH:MM UTC — Event description (who/what)`. Include first alert,
+escalation points, key diagnostic steps, mitigations applied, and
+full resolution. Separate detection time (first signal) from response
+time (first human action) and call out delays explicitly. The
+timeline is factual, not interpretive — analysis goes in the root
+cause section.
 
-- Use UTC timestamps consistently
-- Format: `HH:MM UTC — Event description (who/what system)`
-- Include: first alert, escalation points, key diagnostic steps, mitigation applied, full resolution
-- Separate detection time (first signal) from response time (first human action)
-- Note any delays and why they occurred (e.g., "15 min delay — on-call was in a meeting")
-- The timeline is factual, not interpretive — save analysis for the root cause section
+### Root cause analysis with 5 Whys
 
-### 3. Root Cause Analysis with 5 Whys
+Start with the observable failure and ask "why?" iteratively. Stop
+when you reach a systemic or process issue, not a human mistake. If
+the chain branches, document all branches. Example:
 
-- Start with the observable failure and ask "why?" iteratively
-- Stop when you reach a systemic or process issue, not a human mistake
-- Example:
-  - Why did the site go down? The database ran out of connections.
-  - Why did it run out? A query was holding connections open for 30+ seconds.
-  - Why was the query slow? It was doing a full table scan on a 50M row table.
-  - Why was there no index? The migration that added the column did not include an index.
-  - Why was that not caught? There is no review step for migration performance impact.
-- The root cause is the process gap (no migration performance review), not the person who wrote the migration
-- If the 5 Whys produce multiple branches, document all of them
+- Why did the site go down? The database ran out of connections.
+- Why? A query held connections open for 30+ seconds.
+- Why? It was doing a full table scan on a 50M row table.
+- Why no index? The migration that added the column did not include
+  one.
+- Why was that not caught? There is no review step for migration
+  performance impact.
 
-### 4. Corrective Actions
+The root cause is "no migration performance review", not "Alice
+wrote a slow migration."
 
-- Each action must be: specific, assigned to an owner, and have a due date
-- Categorize as: prevent (stop it from happening), detect (catch it faster), mitigate (reduce impact)
-- Format: `[P/D/M] Action description — @owner — due YYYY-MM-DD`
-- Limit to 5-8 actions — too many means none get done
-- Include at least one action from each category (prevent, detect, mitigate)
-- Track completion in the team's issue tracker, not just the postmortem document
+### Corrective actions
 
-### 5. Blameless Culture
+Each action must be specific, owned, and have a due date. Categorize
+as **prevent** (stop it from happening), **detect** (catch it
+faster), or **mitigate** (reduce impact). Format:
+`[P/D/M] Action — @owner — due YYYY-MM-DD`. Cap at 5–8 actions; more
+means none get done. Aim for at least one action per category. Track
+completion in the team's issue tracker, not just the document.
 
-- Focus on systems and processes, not individuals
-- Use passive voice for human errors: "the config was deployed without review" not "Alice deployed without review"
-- Ask "what about our system made this mistake easy to make?" not "who made this mistake?"
-- Assume everyone acted with the best information available at the time
-- The goal is learning, not accountability — accountability happens in separate processes
-- If someone feels blamed, the postmortem has failed regardless of the wording
+### Blameless culture
 
-### 6. Facilitation Tips
+Focus on systems and processes, not individuals. Use passive voice
+for human errors ("the config was deployed without review", not
+"Alice deployed without review"). Ask "what about our system made
+this mistake easy to make?" Assume everyone acted with the best
+information available at the time. If anyone feels blamed, the
+postmortem has failed regardless of wording.
 
-- Schedule the review within 3-5 business days of the incident (memories fade)
-- Invite all responders plus 1-2 people who were not involved (fresh perspective)
-- Time-box to 60 minutes: 10 min timeline walk-through, 20 min root cause, 20 min actions, 10 min wrap-up
-- The facilitator is not the author — separate roles prevent defensiveness
-- Start by reading the timeline aloud as a group to establish shared understanding
-- End with: "What is the single most important thing we should change?"
+## Level 3 — Full reference
 
-### 7. Template
+### Facilitation tips
+
+- Schedule the review within 3–5 business days of the incident;
+  memories fade fast.
+- Invite all responders plus 1–2 people who were not involved for
+  fresh perspective.
+- Time-box to 60 minutes: 10 min timeline walk-through, 20 min root
+  cause, 20 min actions, 10 min wrap-up.
+- The facilitator should not be the author — separating the roles
+  reduces defensiveness.
+- Start by reading the timeline aloud as a group to establish a
+  shared factual baseline.
+- End with: "What is the single most important thing we should
+  change?"
+
+### Template
 
 ```markdown
 # Postmortem: [Incident Title]
@@ -137,25 +145,15 @@ Every postmortem must include these sections in order:
 - [Key takeaway]
 ```
 
-## Examples
+### Common failure modes
 
-**User:** "We had a production outage last night. Help me write the postmortem."
-**Agent:** Asks for the timeline of events, collects facts (what failed, when it was
-detected, who responded, how it was fixed), then structures the postmortem using the
-template. Guides the 5 Whys analysis from the symptom to the systemic root cause.
-Proposes corrective actions in prevent/detect/mitigate categories, each with a
-suggested owner and due date.
-
-**User:** "Our postmortems always end with 20 action items that never get done"
-**Agent:** Reviews the corrective actions section and helps prioritize: keep the top
-5 highest-impact actions, defer the rest to the backlog with explicit justification.
-Ensures each action is specific enough to be a single ticket, has a clear owner,
-and a realistic due date. Suggests tracking completion in the team's sprint board
-rather than the document.
-
-**User:** "How do I make our postmortem process more blameless?"
-**Agent:** Reviews the language in recent postmortems for blame patterns (naming
-individuals in failure descriptions, using "should have" language). Rewrites examples
-using systems-focused language. Recommends separating the facilitator from the author
-role, starting reviews with the timeline (shared facts) before analysis, and adding
-a "what about our system made this easy?" question to the template.
+- **Action item bloat.** Twenty actions, none done. Cut to the top
+  five and defer the rest with explicit justification.
+- **Symptom-level root cause.** Stopping at "the query was slow"
+  instead of asking why the slow query reached production.
+- **Blame disguised as systems language.** "The team should have
+  noticed" is still blame. Rewrite as "no automated check existed
+  for X."
+- **Postmortem as archive.** A document that is written, filed, and
+  never referenced. Link corrective actions out to tickets and
+  schedule a follow-up review.

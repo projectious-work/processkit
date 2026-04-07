@@ -4,45 +4,98 @@ kind: Skill
 metadata:
   id: SKILL-incident-response
   name: incident-response
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Guides production incident handling — triage, communicate, fix, postmortem. Use when something is broken in production."
+  description: "Production incident handling — triage, communicate, mitigate, fix, postmortem."
   category: process
   layer: 3
+  when_to_use: "Use when production is broken, users are affected, an outage is in progress, or a deploy has caused regressions and the priority is restoring service."
 ---
 
 # Incident Response
 
-## When to Use
+## Level 1 — Intro
 
-When the user reports a production issue, outage, or says "production is down", "users are affected", "we have an incident", or describes urgent production problems.
+When production breaks, restore service first and understand it
+later. Triage user impact, communicate early, mitigate with the
+fastest safe action (often a rollback), then fix the root cause and
+write a blameless postmortem within 48 hours.
 
-## Instructions
+## Level 2 — Overview
 
-1. **Triage (first 5 minutes):**
-   - What is the user impact? (total outage, degraded, cosmetic)
-   - What changed recently? (deploy, config change, dependency update)
-   - Is there a quick rollback option?
-2. **Communicate:**
-   - Notify stakeholders immediately with: what's broken, who's affected, ETA to fix
-   - Update status page or team channel
-3. **Mitigate first, fix later:**
-   - Rollback if safe and quick
-   - Apply a temporary workaround to restore service
-   - Don't debug in production if you can reproduce elsewhere
-4. **Fix:**
-   - Identify root cause
-   - Apply and test the fix
-   - Deploy with extra monitoring
-5. **Postmortem (within 48 hours):**
-   - Timeline of events
-   - Root cause analysis
-   - What went well, what didn't
-   - Action items to prevent recurrence
-   - No blame — focus on systems and processes
+### Triage in the first five minutes
 
-## Examples
+Answer three questions before doing anything else: what is the user
+impact (total outage, degraded, cosmetic), what changed recently
+(deploy, config flip, dependency update), and is there a quick
+rollback option. The answers decide whether you mitigate by reverting
+or by patching forward.
 
-**User:** "Our API is returning 500 errors after the last deploy"
-**Agent:** Checks the deploy diff, identifies the breaking change, recommends immediate rollback while preparing a fix, drafts a stakeholder update.
+### Communicate early and often
+
+Notify stakeholders immediately with what is broken, who is affected,
+and an ETA to next update — not an ETA to fix. Post to the status
+page or incident channel. Re-post on a regular cadence even if there
+is no progress; silence is worse than bad news.
+
+### Mitigate before fixing
+
+Mitigation restores service; the fix comes later. Roll back if it is
+safe and quick. Apply a workaround (feature flag off, traffic shed,
+cache bypass) to stop the bleeding. Do not debug in production if you
+can reproduce the issue elsewhere.
+
+### Fix and verify
+
+Once service is stable, identify the root cause, apply the fix in a
+normal change-management path, and deploy with extra monitoring.
+Resist the urge to ship the fix straight to prod under incident
+adrenaline — that is how you create the next incident.
+
+### Postmortem within 48 hours
+
+Write a blameless postmortem covering the timeline, root cause
+analysis, what went well, what did not, and concrete corrective
+actions. Focus on systems and processes, never individuals. See the
+`postmortem-writing` skill for the full template.
+
+### Example
+
+User reports the API is returning 500s after the latest deploy. The
+agent checks the deploy diff, identifies the breaking change,
+recommends an immediate rollback while preparing a forward fix,
+drafts a stakeholder update, and schedules the postmortem.
+
+## Level 3 — Full reference
+
+### Severity levels
+
+| Severity | Definition | Response |
+|---|---|---|
+| SEV-1 | Total outage or data loss | All-hands, immediate |
+| SEV-2 | Major feature down or large user subset affected | On-call + manager |
+| SEV-3 | Degraded performance, workaround exists | On-call only |
+| SEV-4 | Cosmetic or low-impact bug | Normal triage |
+
+### Roles during an incident
+
+- **Incident commander** — owns coordination and decisions, does
+  not type fixes.
+- **Communications lead** — owns external/stakeholder updates and
+  the status page.
+- **Technical lead** — owns diagnosis and mitigation.
+- **Scribe** — captures the timeline in real time for the postmortem.
+
+For small teams, one person may wear multiple hats, but the
+commander role should never be combined with hands-on debugging.
+
+### Anti-patterns
+
+- Debugging in production when a rollback would restore service
+- Going silent on stakeholders while you investigate
+- Skipping the postmortem because "we know what happened"
+- Shipping the fix straight to prod without normal review
+- Naming individuals in the timeline or root cause
+- Letting corrective actions live only in the postmortem document
+  instead of the team's tracker

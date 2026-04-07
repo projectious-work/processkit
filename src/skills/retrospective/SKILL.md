@@ -4,50 +4,100 @@ kind: Skill
 metadata:
   id: SKILL-retrospective
   name: retrospective
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Facilitates team or project retrospectives — what worked, what didn't, action items. Use at the end of a sprint, milestone, or project phase."
+  description: "Facilitates team or project retrospectives — what worked, what didn't, action items."
   category: process
   layer: 3
+  when_to_use: "Use at the end of a sprint, milestone, or project phase to reflect on what went well, what didn't, and what to try next."
 ---
 
 # Retrospective
 
-## When to Use
+## Level 1 — Intro
 
-When the user says "let's do a retro", "what went well?", "lessons learned", "end of sprint review", or wants to reflect on a completed phase of work.
+A retrospective is a short, structured reflection on a completed
+phase of work. Capture what worked, what didn't, and a small set
+of concrete experiments to try next — then act on them.
 
-## Instructions
+## Level 2 — Overview
 
-1. **Set the scope:** What time period or milestone are we reflecting on?
-2. **Gather input in three categories:**
-   - **What worked well:** Practices, tools, decisions that helped
-   - **What didn't work:** Pain points, blockers, things that slowed us down
-   - **What to try next:** Concrete experiments or changes for the next iteration
-3. **Format as a structured document:**
-   ```markdown
-   ## Retrospective — [date/milestone]
+### Set the scope
 
-   ### What Worked
-   - Item 1
-   - Item 2
+Be explicit about the period under review: a sprint, a milestone,
+a release, a project phase. A vague scope produces vague feedback;
+a tight scope produces actionable items.
 
-   ### What Didn't Work
-   - Item 1
-   - Item 2
+### Gather input in three categories
 
-   ### Action Items
-   - [ ] Specific, assignable action 1
-   - [ ] Specific, assignable action 2
-   ```
-4. **Action items must be:**
-   - Specific (not "improve testing" but "add integration tests for auth module")
-   - Assignable (someone owns it)
-   - Time-bound (done by when?)
-5. Store the retrospective in context/ or the project's designated location
+- **What worked well** — practices, tools, decisions that helped.
+- **What didn't work** — pain points, blockers, things that slowed
+  the team down.
+- **What to try next** — concrete experiments or changes for the
+  next iteration.
 
-## Examples
+### Format as a structured document
 
-**User:** "Let's do a retro on the v0.3 release"
-**Agent:** Asks what went well and what was painful, then structures findings into the retro format with concrete action items. Saves to `context/retros/v0.3.md`.
+```markdown
+## Retrospective — [date/milestone]
+
+### What Worked
+- Item 1
+- Item 2
+
+### What Didn't Work
+- Item 1
+- Item 2
+
+### Action Items
+- [ ] Specific, assignable action 1
+- [ ] Specific, assignable action 2
+```
+
+### Action items must be specific, owned, and time-bound
+
+Not "improve testing" but "add integration tests for the auth
+module by end of next sprint, owner @alice." If you cannot name
+the owner and the date, the item will not happen.
+
+### Store it where the team will find it
+
+Save the retro in `context/` or the project's designated location.
+Link to it from the next sprint's kickoff so the action items
+actually feed into planning.
+
+### Example
+
+User says "let's do a retro on the v0.3 release". The agent asks
+what went well and what was painful, structures the findings into
+the retro format with concrete action items, and saves it to
+`context/retros/v0.3.md`.
+
+## Level 3 — Full reference
+
+### Facilitation patterns
+
+Common formats besides the three-column default:
+
+- **Start / Stop / Continue** — what should we start doing, stop
+  doing, continue doing.
+- **Mad / Sad / Glad** — emotion-led, useful when team morale is
+  the topic.
+- **4 Ls** — Liked / Learned / Lacked / Longed for.
+- **Sailboat** — wind (helpers), anchors (blockers), rocks
+  (risks), island (goal).
+
+Pick a format that matches the question you actually want to
+answer. Rotate formats so retros do not become routine.
+
+### Anti-patterns
+
+- Action items with no owner or due date
+- Discussing the same blockers retro after retro with no change
+- Treating the retro as a complaint session with no follow-through
+- Letting the loudest voices dominate; use silent input gathering
+  (sticky notes, async docs) before discussion
+- Skipping the retro "because we are too busy" — that is usually
+  exactly when you need it
+- Storing retros where nobody looks at them again

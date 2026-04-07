@@ -4,116 +4,147 @@ kind: Skill
 metadata:
   id: SKILL-estimation-planning
   name: estimation-planning
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Software estimation and planning including story points, velocity tracking, scope negotiation, and technical debt budgeting. Use when estimating work, planning sprints, or negotiating project scope."
+  description: "Software estimation and planning — story points, velocity, scope negotiation, technical debt budgeting, and statistical forecasting."
   category: process
   layer: 3
+  when_to_use: "Use when estimating effort, planning a sprint, negotiating scope with stakeholders, budgeting for technical debt, or forecasting completion dates."
 ---
 
 # Estimation and Planning
 
-## When to Use
+## Level 1 — Intro
 
-When the user is estimating work effort, planning sprints, negotiating scope with
-stakeholders, budgeting for technical debt, or asks "how should I estimate this project?"
-or "how do I improve our sprint planning?".
+Estimation is uncertainty management, not prediction. Use relative
+sizing for stories, track velocity over many sprints, and present
+forecasts as ranges. When dates and scope conflict, negotiate one;
+never fix both.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Story Points vs Time Estimates
+### Story points vs time estimates
 
-- **Story points** measure relative complexity, not hours. They account for uncertainty,
-  effort, and risk combined into a single number.
-- Use the Fibonacci sequence (1, 2, 3, 5, 8, 13) — the gaps reflect estimation uncertainty at larger sizes
-- A "1" is the simplest well-understood task on the team. Everything else is relative to it.
-- If a story is 13+, it needs to be broken down before it can be estimated
-- **Time estimates** (hours/days) are appropriate for: fixed-scope contracts, individual task tracking,
-  and teams that prefer them — neither approach is universally superior
-- Never convert story points to hours — it defeats the purpose of relative sizing
+Story points measure relative complexity, accounting for effort,
+uncertainty, and risk in one number. Use the Fibonacci sequence
+(1, 2, 3, 5, 8, 13) — the gaps reflect rising uncertainty at
+larger sizes. A "1" is the simplest well-understood task on the
+team; everything is relative to it. Stories of 13+ must be split
+before estimation.
 
-### 2. Planning Poker
+Time estimates (hours/days) are appropriate for fixed-scope
+contracts, individual task tracking, or teams that prefer them.
+Neither approach is universally superior. Never convert story
+points to hours — it defeats the purpose of relative sizing.
 
-- Each estimator independently selects a card (prevents anchoring bias)
-- Discuss outliers: the highest and lowest estimators explain their reasoning
-- After discussion, re-vote. Converge within 2 rounds or take the higher estimate.
-- Limit sessions to 60-90 minutes; estimate no more than 15-20 stories per session
-- The person doing the work does not get extra weight — estimation is a team activity
-- Use async estimation (each person submits independently) for remote teams, then discuss outliers
+### Planning poker
 
-### 3. Cone of Uncertainty
+Each estimator independently picks a card to prevent anchoring.
+Discuss outliers (highest and lowest explain themselves), then
+re-vote. Converge within two rounds or take the higher estimate.
+Sessions: 60-90 minutes, 15-20 stories max. The person doing the
+work does not get extra weight — estimation is a team activity.
+For remote teams, run async estimation first, then discuss
+outliers live.
 
-- Early estimates are inherently inaccurate: 4x range at project start, 1.25x at late stages
-- Communicate estimates as ranges, not single numbers: "3-5 sprints" not "4 sprints"
-- Re-estimate as uncertainty decreases: after design, after spike, after first iteration
-- Use the cone to set stakeholder expectations: "our confidence increases as we progress"
-- Never promise a single date at the start of a project — provide a range with confidence level
+### Cone of uncertainty
 
-### 4. Velocity Tracking
+Early estimates are inherently inaccurate: ~4x range at project
+start, ~1.25x at late stages. Communicate as ranges ("3-5
+sprints"), not single numbers. Re-estimate as uncertainty
+decreases — after design, after a spike, after the first
+iteration. Never promise a single date at project start.
 
-- Velocity = story points completed per sprint (only count fully done stories)
-- Track over at least 5-6 sprints before using velocity for forecasting
-- Use the average of the last 3-5 sprints, not the best sprint, for planning
-- Velocity is a planning tool, not a performance metric — never compare teams
-- When velocity drops, investigate: scope changes, interruptions, technical debt, team changes
-- Adjust planned work when velocity trends downward; do not assume it will recover on its own
+### Velocity tracking
 
-### 5. Scope Negotiation
+Velocity = story points completed per sprint, counting only fully
+done stories. Track at least 5-6 sprints before forecasting. Use
+the average of the last 3-5 sprints for planning, not the best
+sprint. Velocity is a planning tool, not a performance metric;
+never compare teams. When velocity drops, investigate (scope
+changes, interruptions, debt, team changes) — don't assume it
+will recover.
 
-- Present scope as a menu with trade-offs: "We can deliver A+B by March, or A+B+C by April"
-- Use MoSCoW prioritization: Must-have, Should-have, Could-have, Won't-have (this time)
-- Fixed date? Negotiate scope. Fixed scope? Negotiate date. Never fix both.
-- Identify the MVP: what is the smallest delivery that provides value?
-- Document what was explicitly descoped and why — prevents scope creep later
-- Revisit scope decisions at sprint boundaries, not mid-sprint
+### Scope negotiation
 
-### 6. Technical Debt Budgeting
+Present scope as a menu with trade-offs ("A+B by March, or A+B+C
+by April"). Use MoSCoW: Must-have, Should-have, Could-have,
+Won't-have (this time). Fixed date? Negotiate scope. Fixed scope?
+Negotiate date. Never fix both. Identify the MVP — the smallest
+delivery that provides value. Document descoped items and the
+reason, to prevent later scope creep. Revisit scope at sprint
+boundaries, not mid-sprint.
 
-- Allocate 15-20% of each sprint to technical debt and maintenance
-- Track technical debt items in the same backlog as features — they compete for priority
-- Categorize debt: critical (blocks future work), important (slows development), minor (cosmetic)
-- Pay down critical debt immediately; schedule important debt each sprint
-- Frame debt for stakeholders in business terms: "this refactoring will reduce bug rate by ~30%
-  and speed up feature delivery in this area"
-- Never let debt accumulate silently — make it visible in planning
+### Technical debt budgeting
 
-### 7. Three-Point Estimation
+Allocate 15-20% of each sprint to debt and maintenance. Track
+debt items in the same backlog as features so they compete for
+priority. Categorize debt as critical (blocks future work),
+important (slows development), or minor (cosmetic). Pay critical
+debt immediately; schedule important debt each sprint. Frame debt
+for stakeholders in business terms ("this refactor will reduce
+bug rate by ~30%"). Never let debt accumulate silently.
 
-- For each task, estimate: Optimistic (O), Most Likely (M), Pessimistic (P)
-- PERT estimate: `(O + 4*M + P) / 6`
-- Standard deviation: `(P - O) / 6`
-- Use for project-level estimates where individual task uncertainty compounds
-- The pessimistic estimate should assume things go wrong (but not catastrophically)
-- Sum the PERT estimates for project total; sum the variances and take the square root for project uncertainty
+## Level 3 — Full reference
 
-### 8. Monte Carlo Simulation Basics
+### Three-point estimation (PERT)
 
-- Input: historical velocity data (points per sprint) and total backlog size
-- Run 1000+ simulations: randomly sample a velocity for each sprint, count sprints to complete
-- Output: probability distribution of completion dates
-- Report as: "80% chance of completing by Sprint 12, 95% chance by Sprint 14"
-- More credible than single-point estimates because it uses actual historical variation
-- Re-run as the backlog changes or new velocity data is available
+For each task, estimate Optimistic (O), Most Likely (M), and
+Pessimistic (P).
 
-## Examples
+- **PERT estimate:** `(O + 4*M + P) / 6`
+- **Standard deviation:** `(P - O) / 6`
 
-**User:** "The stakeholder wants all 50 stories done by end of quarter. Is that realistic?"
-**Agent:** Calculates based on the team's average velocity (last 5 sprints) and remaining
-sprints in the quarter. If velocity is 25 points/sprint and 50 stories total 180 points,
-that requires 7.2 sprints — but only 5 remain. Presents options: descope to 120 points
-of must-haves (fits in 5 sprints), extend the deadline by 2 sprints, or add capacity.
-Uses MoSCoW to identify which stories are must-have vs could-have.
+Use for project-level estimates where individual task uncertainty
+compounds. Pessimistic should assume things go wrong, but not
+catastrophically. Sum the PERT estimates for project total; sum
+the variances and take the square root for project uncertainty.
 
-**User:** "Our estimates are always wrong. How do we improve?"
-**Agent:** Reviews recent sprints to identify patterns: stories consistently under-estimated
-(8-point stories taking two sprints), scope creep mid-sprint, or missing tasks not
-captured in estimates. Recommends: break stories to 5 points or less, add explicit
-time for code review and testing in estimates, track estimate-vs-actual for calibration,
-and use planning poker to surface hidden complexity.
+### Monte Carlo simulation
 
-**User:** "When will this project be done? We have 400 points in the backlog."
-**Agent:** Runs a three-point estimate: with velocity ranging 20-35 points/sprint
-(O=12, M=16, P=25 sprints), PERT estimate is 17 sprints. Presents as a range:
-"14-20 sprints with 80% confidence." Offers to run a Monte Carlo simulation
-using the team's actual sprint velocity history for a more precise forecast.
+Inputs: historical velocity data (points per sprint) and total
+backlog size. Run 1000+ simulations: randomly sample a velocity
+for each sprint, count sprints to complete. Output: a probability
+distribution of completion dates.
+
+Report as: "80% chance of completing by Sprint 12, 95% chance by
+Sprint 14." More credible than single-point estimates because it
+uses real historical variation. Re-run as the backlog or velocity
+data changes.
+
+### Worked examples
+
+**"Stakeholder wants all 50 stories done by end of quarter."**
+Compute based on the team's average velocity (last 5 sprints) and
+remaining sprints. If velocity is 25 points/sprint and the 50
+stories total 180 points, that's 7.2 sprints — but only 5
+remain. Present options: descope to 120 points of must-haves
+(fits in 5), extend by 2 sprints, or add capacity. Use MoSCoW to
+identify what's actually must-have.
+
+**"Our estimates are always wrong."** Review recent sprints for
+patterns: stories consistently under-estimated (8-pointers
+spilling across sprints), mid-sprint scope creep, missing tasks.
+Recommend: split stories to 5 points or less, include code
+review and testing time in estimates, track estimate-vs-actual
+for calibration, use planning poker to surface hidden complexity.
+
+**"When will this project be done? We have 400 points in the
+backlog."** Run a three-point estimate: with velocity 20-35
+points/sprint (O=12, M=16, P=25 sprints), PERT estimate is 17
+sprints. Present as a range: "14-20 sprints with 80% confidence."
+Offer Monte Carlo for a more precise forecast using actual
+velocity history.
+
+### Anti-patterns
+
+- **Single-number estimates at project start** — always a range.
+- **Comparing velocity across teams** — different baselines, not
+  comparable.
+- **Padding estimates secretly** — surface the risk explicitly
+  instead.
+- **Re-estimating done work to match actuals** — destroys the
+  feedback loop that improves future estimates.
+- **Treating story points as currency** — they exist to compare
+  stories within a team, not to bill against.

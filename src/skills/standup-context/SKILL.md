@@ -4,27 +4,74 @@ kind: Skill
 metadata:
   id: SKILL-standup-context
   name: standup-context
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Manages session standup notes in context/STANDUPS.md. Records what was done, what is planned, and any blockers at the start or end of work sessions."
+  description: "Manages session standup notes in context/STANDUPS.md — done, next, blockers."
   category: process
   layer: 2
+  when_to_use: "Use at the start of a new session, or when the user asks to record progress, log a standup, or add a daily check-in entry."
 ---
 
 # Session Standup Notes (Context-based)
 
-## When to use
+## Level 1 — Intro
 
-At the start of a new session, or when the user asks to record progress.
+A standup note is a one-screen log of what was just done, what is
+about to happen, and what is blocked. Append a fresh entry to
+`context/STANDUPS.md` at the top of each session so the team (and
+future agents) have a continuous timeline of progress.
 
-## Instructions
+## Level 2 — Overview
 
-1. Read context/STANDUPS.md
-2. Add a new entry with today's date as heading
-3. Each entry includes:
-   - **Done:** What was completed since last session
-   - **Next:** What is planned for this session
-   - **Blockers:** Any issues preventing progress (or "None")
-4. Place new entries at the top, below the header
-5. Keep entries concise — one line per item
+### How to add an entry
+
+1. Read `context/STANDUPS.md`.
+2. Add a new entry with today's date as the heading.
+3. Place the new entry at the top of the file, immediately below
+   the header. Most recent first.
+
+### Entry shape
+
+Each entry contains three sections:
+
+- **Done** — what was completed since the last session.
+- **Next** — what is planned for this session.
+- **Blockers** — any issues preventing progress, or "None".
+
+Keep entries concise: one line per item, no paragraphs.
+
+### Example
+
+```markdown
+## 2026-04-07
+
+**Done:**
+- BACK-014: rewrote 9 process skills to three-level format
+- Verified line wrapping with awk
+
+**Next:**
+- BACK-015: smoke-test the rewritten skills
+
+**Blockers:**
+- None
+```
+
+## Level 3 — Full reference
+
+### Why standups belong in context, not a chat tool
+
+Putting standups in `context/STANDUPS.md` makes them part of the
+project's persistent memory. A chat-tool standup is gone when the
+channel scrolls; a context-file standup is in git, indexable, and
+visible to every agent that opens the project.
+
+### Anti-patterns
+
+- Long paragraphs instead of bullets
+- Backfilling missed days with invented activity (just skip them)
+- Vague "next" entries like "continue work" — name the item
+- Treating "blockers: none" as filler — if there really is a
+  blocker, surface it loudly
+- Letting the file grow forever without archival; rotate to
+  `context/archive/standups/` when it gets long

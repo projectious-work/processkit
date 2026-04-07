@@ -4,104 +4,122 @@ kind: Skill
 metadata:
   id: SKILL-tdd-workflow
   name: tdd-workflow
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Test-Driven Development workflow with red-green-refactor cycle, test naming, and when to apply TDD. Use when writing tests first, practicing TDD, or choosing between TDD and test-after approaches."
+  description: "Test-driven development workflow — red-green-refactor, naming, doubles, when to apply."
   category: process
   layer: 3
+  when_to_use: "Use when writing code with TDD, practicing the red-green-refactor cycle, deciding between TDD and test-after, naming tests, choosing test doubles, or exploring property-based and mutation testing."
 ---
 
 # TDD Workflow
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Write code using test-driven development
-- Practice the red-green-refactor cycle
-- Decide between TDD and test-after approaches
-- Name or organize tests effectively
-- Understand test doubles (mocks, stubs, spies, fakes)
-- Explore property-based or mutation testing
+Test-driven development means writing a failing test before any
+production code, then making it pass with the smallest possible
+change, then refactoring with the test as a safety net. The cycle
+is short — a few minutes — and the discipline is what produces the
+design benefit, not the tests themselves.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Red-Green-Refactor Cycle
+### Red-green-refactor
 
-Follow the cycle strictly in this order:
+Follow the cycle strictly in order:
 
-1. **Red** -- Write a failing test that describes the desired behavior. Run it. Confirm it fails for the right reason (not a syntax error or import issue).
-2. **Green** -- Write the minimum code to make the test pass. Do not optimize, do not handle edge cases yet. The goal is a green bar as fast as possible.
-3. **Refactor** -- Clean up both production code and test code. Remove duplication, improve naming, extract helpers. All tests must stay green.
+1. **Red** — write a failing test that describes the desired
+   behavior. Run it. Confirm it fails for the right reason, not a
+   typo or missing import.
+2. **Green** — write the minimum code to make the test pass. Do
+   not optimize, do not handle edge cases yet. The goal is a green
+   bar as fast as possible.
+3. **Refactor** — clean up production and test code. Remove
+   duplication, improve naming, extract helpers. All tests must
+   stay green throughout.
 
-Rules of thumb:
-- Never write production code without a failing test
-- Each cycle should take 2-10 minutes; if longer, the step is too big
-- Commit after each green-refactor pair for easy rollback
+Rules of thumb: never write production code without a failing
+test; each cycle should take 2–10 minutes (longer means the step
+is too big); commit after each green-refactor pair so rollback is
+cheap.
 
-### 2. When to Use TDD vs Test-After
+### When to use TDD vs test-after
 
 **Use TDD when:**
+
 - Implementing well-understood business rules or algorithms
-- Building APIs where the contract is known upfront
-- Fixing bugs (write a test that reproduces the bug first)
+- Building APIs whose contract is known upfront
+- Fixing bugs (write the failing reproduction test first)
 - Working with pure functions or isolated modules
 
 **Use test-after when:**
+
 - Prototyping or exploring an unfamiliar problem space
 - Writing integration tests against third-party systems
 - The design is highly uncertain and likely to change completely
-- Working with UI layout code where visual feedback is primary
+- Working on UI layout where visual feedback is the primary signal
 
-### 3. Outside-In vs Inside-Out
+### Outside-in vs inside-out
 
-**Outside-in (London school):** Start from the outermost layer (HTTP handler, CLI entry point). Use test doubles for dependencies. Build inward, defining interfaces as you go. Best for systems with clear layered architecture.
+**Outside-in (London school):** start at the outermost layer (HTTP
+handler, CLI entry point), use test doubles for dependencies,
+build inward defining interfaces as you go. Best for layered
+architectures.
 
-**Inside-out (Chicago school):** Start from the core domain logic with no dependencies. Build outward, composing tested units. Uses real objects where possible. Best for algorithmic or data-heavy code.
+**Inside-out (Chicago school):** start at the core domain logic
+with no dependencies, build outward composing tested units, use
+real objects where possible. Best for algorithmic or data-heavy
+code.
 
-### 4. Test Naming Conventions
+### Test naming
 
-Use names that describe behavior, not implementation:
+Names should describe behavior, not implementation:
 
-- `test_empty_cart_has_zero_total` (good -- describes behavior)
-- `test_calculate` (bad -- vague, says nothing about expectation)
-- `should_reject_negative_quantities` (good -- states the rule)
-- Pattern: `test_<scenario>_<expected_outcome>` or `should_<expected_behavior>_when_<condition>`
+- `test_empty_cart_has_zero_total` — good, describes behavior.
+- `test_calculate` — bad, says nothing about expectation.
+- `should_reject_negative_quantities` — good, states the rule.
+- Pattern: `test_<scenario>_<expected_outcome>` or
+  `should_<expected_behavior>_when_<condition>`.
 
-### 5. Test Doubles
+### Test doubles
 
-| Double | Purpose | When to Use |
-|--------|---------|-------------|
-| **Stub** | Returns canned data | Replace a dependency that provides input |
-| **Mock** | Verifies interactions | Assert that a method was called with specific args |
-| **Spy** | Records calls for later assertion | When you need both real behavior and verification |
-| **Fake** | Working implementation (e.g., in-memory DB) | When stubs become too complex |
+| Double | Purpose | When to use |
+|---|---|---|
+| Stub | Returns canned data | Replace a dependency that provides input |
+| Mock | Verifies interactions | Assert a method was called with specific args |
+| Spy | Records calls for later assertion | Need real behavior + verification |
+| Fake | Working implementation (e.g., in-memory DB) | When stubs become too complex |
 
-Prefer fakes and stubs over mocks. Excessive mocking couples tests to implementation.
+Prefer fakes and stubs over mocks. Excessive mocking couples tests
+to implementation and makes refactoring painful.
 
-### 6. Property-Based Testing
+## Level 3 — Full reference
 
-Instead of testing specific examples, define properties that must always hold:
+### Property-based testing
 
-- **Invariants**: `sort(xs).length == xs.length` -- sorting preserves length
-- **Round-trips**: `decode(encode(x)) == x` -- serialization is reversible
-- **Idempotence**: `f(f(x)) == f(x)` -- applying twice gives same result
+Instead of testing specific examples, define properties that must
+always hold:
 
-Use property-based testing alongside example-based tests, not as a replacement.
+- **Invariants:** `sort(xs).length == xs.length`
+- **Round-trips:** `decode(encode(x)) == x`
+- **Idempotence:** `f(f(x)) == f(x)`
 
-### 7. Mutation Testing
+Use property-based testing alongside example-based tests, not as a
+replacement. Examples are good documentation; properties are good
+coverage.
 
-Mutation testing measures test quality by introducing small changes (mutations) to production code and checking whether tests catch them:
+### Mutation testing
 
-- **Killed mutant**: A test failed, meaning the test suite detected the change
-- **Survived mutant**: No test failed, revealing a gap in test coverage
-- Tools: `mutmut` (Python), `cargo-mutants` (Rust), `Stryker` (JS/TS)
+Mutation testing measures test quality by introducing small
+changes (mutations) to production code and checking whether tests
+catch them. A killed mutant means a test failed (good); a survived
+mutant means a coverage gap. Tools: `mutmut` (Python),
+`cargo-mutants` (Rust), `Stryker` (JS/TS). A mutation score above
+~80% indicates tests verify behavior rather than just executing
+code.
 
-A high mutation score (>80%) indicates tests verify behavior, not just execute code.
-
-## Examples
-
-### Example 1: Full Red-Green-Refactor Cycle (Python)
+### Example: full red-green-refactor in Python
 
 ```python
 # RED: Write failing test
@@ -109,7 +127,7 @@ def test_fizzbuzz_returns_fizz_for_multiples_of_3():
     assert fizzbuzz(3) == "Fizz"
     assert fizzbuzz(9) == "Fizz"
 
-# Run: pytest => NameError: name 'fizzbuzz' is not defined (FAILS -- good)
+# Run: pytest => NameError: name 'fizzbuzz' is not defined (FAILS)
 
 # GREEN: Minimal implementation
 def fizzbuzz(n):
@@ -123,10 +141,10 @@ def fizzbuzz(n):
 def test_fizzbuzz_returns_buzz_for_multiples_of_5():
     assert fizzbuzz(5) == "Buzz"
 
-# Run: pytest => AssertionError (FAILS -- good, next RED phase)
+# Run: pytest => AssertionError (next RED phase)
 ```
 
-### Example 2: Outside-In with Stubs (TypeScript)
+### Example: outside-in with stubs (TypeScript)
 
 ```typescript
 // Start from the handler, stub the repository
@@ -143,11 +161,9 @@ describe("CreateOrder", () => {
     );
   });
 });
-// Now implement CreateOrderHandler to make this pass (GREEN).
-// Then write the real repository and its own unit tests (inside-out from here).
 ```
 
-### Example 3: Property-Based Test (Rust)
+### Example: property-based test (Rust)
 
 ```rust
 use proptest::prelude::*;
@@ -169,3 +185,13 @@ proptest! {
     }
 }
 ```
+
+### Anti-patterns
+
+- Writing the test after the code "to satisfy TDD" — that is
+  test-after with extra steps
+- Cycles that take 30+ minutes — the step is too big
+- Tests that mock the unit under test
+- Naming tests after the function rather than the scenario
+- Chasing 100% coverage instead of meaningful coverage of branches
+- Skipping the refactor step because "tests pass"
