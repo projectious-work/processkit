@@ -4,54 +4,56 @@ kind: Skill
 metadata:
   id: SKILL-graphql-patterns
   name: graphql-patterns
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "GraphQL schema design, resolver patterns, N+1 prevention with DataLoader, and federation. Use when designing GraphQL APIs, implementing resolvers, or optimizing GraphQL performance."
+  description: "GraphQL schema design, resolver patterns, DataLoader, pagination, federation, and schema evolution."
   category: api
   layer: null
+  when_to_use: "Use when designing a GraphQL schema, implementing resolvers, diagnosing N+1 problems, adding pagination, setting up federation, or evolving a schema without breaking clients."
 ---
 
 # GraphQL Patterns
 
-Design, implement, and optimize GraphQL APIs — schema design, resolver architecture,
-performance tuning, federation, and schema evolution.
+## Level 1 — Intro
 
-## When to Use
+GraphQL schemas are designed from the client's perspective, not the
+database. Resolvers stay thin, DataLoader prevents N+1 fan-out, lists
+use Relay-style cursor pagination, and schemas evolve only by adding
+fields and deprecating the old ones.
 
-- Designing a GraphQL schema (types, queries, mutations, subscriptions).
-- Implementing resolvers and data fetching logic.
-- Diagnosing or preventing N+1 query problems.
-- Adding pagination to list fields.
-- Setting up federation across microservices.
-- Evolving a schema without breaking clients.
+## Level 2 — Overview
 
-## Instructions
+### Schema design
 
-### Schema Design
+Model the domain as the client wants to consume it. Types are nouns
+(`User`, `Order`); queries are reads (`user(id: ID!)`,
+`orders(filter: OrderFilter)`); mutations are verb-object writes
+(`createOrder`, `cancelOrder`); subscriptions are real-time streams
+(`orderStatusChanged(orderId: ID!)`).
 
-Design from the client perspective, not the database schema:
+Default fields to non-nullable (`String!`) and only mark them
+nullable when null is a meaningful state — the inverse of most REST
+APIs. Define custom scalars for domain values like `DateTime` and
+`Email`. Always use `input` types for mutation arguments so they can
+evolve independently of output types.
 
-- **Types**: domain entities as nouns (`User`, `Order`).
-- **Queries**: read operations — `user(id: ID!)`, `orders(filter: OrderFilter)`.
-- **Mutations**: write operations — verb-object naming: `createOrder`, `cancelOrder`.
-- **Subscriptions**: real-time streams — `orderStatusChanged(orderId: ID!)`.
+### Resolver patterns
 
-Prefer non-nullable fields (`String!`) by default. Use custom scalars for domain values
-(`DateTime`, `Email`). Define `input` types for mutation arguments.
+- **Root resolvers** handle top-level Query and Mutation fields.
+- **Field resolvers** handle nested fields that come from a different
+  source than the parent.
+- **Default resolvers** return `parent[fieldName]` automatically — do
+  not write trivial passthrough resolvers.
 
-### Resolver Patterns
+Resolvers stay thin: they call into a service or domain layer. Never
+embed business logic, validation, or SQL inside a resolver.
 
-- **Root resolvers** handle top-level Query/Mutation fields.
-- **Field resolvers** handle nested fields from a different data source than the parent.
-- **Default resolvers** return `parent[fieldName]` — do not write trivial resolvers.
+### DataLoader and N+1
 
-Keep resolvers thin: extract business logic into service/domain layers.
-
-### N+1 Problem and DataLoader
-
-A list query triggering one query per item is the N+1 problem. **DataLoader** batches
-and caches within a single request:
+A list query that triggers one extra query per item is the N+1
+problem. Solve it with DataLoader, which batches and caches reads
+within a single request:
 
 ```javascript
 const orderLoader = new DataLoader(async (userIds) => {
@@ -61,81 +63,117 @@ const orderLoader = new DataLoader(async (userIds) => {
 // In User.orders resolver: (user) => orderLoader.load(user.id)
 ```
 
-- Create a new DataLoader instance **per request** (prevents cross-request cache leaks).
-- Batch function must return results in the **same order** as input keys.
+Two non-negotiable rules:
 
-### Pagination (Relay Connection Spec)
+1. Create a new DataLoader instance **per request**. Sharing across
+   requests leaks data between users.
+2. The batch function must return results in the **same order** as
+   the input keys, with `null` for missing entries.
 
-Use cursor-based pagination for list fields:
+### Pagination (Relay Connection spec)
+
+Use cursor-based connections for every list field:
 
 ```graphql
 type OrderConnection {
   edges: [OrderEdge!]!
   pageInfo: PageInfo!
 }
-type OrderEdge { cursor: String!; node: Order! }
-type PageInfo { hasNextPage: Boolean!; hasPreviousPage: Boolean!; endCursor: String }
+type OrderEdge   { cursor: String!  node: Order! }
+type PageInfo    { hasNextPage: Boolean!  hasPreviousPage: Boolean!  endCursor: String }
 ```
 
-Cursors should be opaque (base64-encoded). Default `first` to 20, enforce max 100.
+Cursors are opaque base64 tokens. Default `first` to 20, enforce a
+hard maximum of 100 to prevent unbounded queries.
 
-### Error Handling
+### Errors
 
-**Domain errors as union types** (preferred for expected errors):
+Prefer **typed union results** for expected, domain-level errors so
+clients pattern-match in a type-safe way:
+
 ```graphql
 union CreateOrderResult = Order | ValidationError | InsufficientStock
 ```
-Clients handle errors with type-safe pattern matching instead of parsing error strings.
 
-Use top-level `errors` array for unexpected failures (auth, server errors). Include
-`extensions.code` (e.g., `UNAUTHENTICATED`) for machine-readable classification.
+Reserve the top-level `errors` array for unexpected failures
+(authentication, server errors, transport). Always include
+`extensions.code` (e.g. `UNAUTHENTICATED`, `INTERNAL_SERVER_ERROR`)
+so clients can branch on a stable string.
+
+### Schema evolution
+
+- **Adding** types, fields, and enum values is always safe.
+- **Deprecating**: mark with `@deprecated(reason: "Use newField")`,
+  monitor field-usage telemetry, then remove once usage is near zero.
+- **Never** change a field's type, and never make a nullable field
+  non-nullable — both are silently breaking.
+
+## Level 3 — Full reference
 
 ### Federation
 
-For microservice architectures (Apollo Federation):
-- Each service owns a subgraph with `@key` directives on shared entities.
-- Gateway composes subgraphs into a supergraph at build time.
-- A subgraph only extends fields it can resolve.
+For microservice architectures using Apollo Federation:
 
-### Schema Evolution
+- Each service owns a subgraph and marks shared entities with
+  `@key(fields: "id")`.
+- The gateway composes subgraphs into a supergraph at build time, not
+  at request time, so composition errors fail fast in CI.
+- A subgraph only extends fields it can resolve from its own data —
+  never reach across subgraphs from a resolver.
 
-- **Adding** fields/types/enum values is always safe.
-- **Deprecating**: `@deprecated(reason: "Use newField")`. Monitor usage before removal.
-- **Never** change a field's type or make a nullable field non-nullable.
+This keeps each subgraph independently deployable and avoids the
+distributed-monolith trap.
 
-### Persisted Queries
+### Persisted queries
 
-Use automatic persisted queries (APQ) in production: client sends a query hash, server
-looks it up. Reduces bandwidth and enables query allowlisting for security.
+In production, prefer **automatic persisted queries (APQ)**: the
+client first sends only the SHA-256 hash of the query; the server
+looks it up and executes the cached query. Benefits:
 
-## Examples
+- Reduced bandwidth (hash, not full query string).
+- Allowlisting becomes possible — reject any query whose hash is not
+  in the registry, blocking arbitrary or hostile queries.
+- Easier query-level caching at the edge.
 
-### Example 1: Design a schema for a task management app
+### Performance and depth limits
 
-```
-User: Design a GraphQL schema for projects, tasks, and team members.
+Reject queries that exceed a sensible depth (e.g. 10) and complexity
+score. Without limits, a malicious client can request a deeply
+recursive graph and exhaust the server. Most GraphQL servers ship a
+depth-limit middleware — turn it on.
 
-Agent: Designs types (Project, Task, User, Comment), queries (projects,
-  project(id), myTasks), mutations (createTask, assignTask, addComment),
-  subscription (taskUpdated). Relay-style pagination on task lists, union
-  result types for mutation errors, input types for all arguments.
-```
+Rate-limit by query cost, not by request count. A single GraphQL
+request can be cheap or catastrophically expensive depending on the
+selection set.
 
-### Example 2: Fix N+1 performance problem
+### Subscriptions
 
-```
-User: Fetching 50 projects takes 3 seconds.
+Subscriptions push events over WebSockets. Use them sparingly: each
+subscription holds a connection, so the server pays for every
+connected client. Prefer polling for low-frequency updates and
+reserve subscriptions for genuinely real-time UX (live order status,
+chat, collaborative editing).
 
-Agent: Identifies N+1: 1 query for projects + 50 for owner + 50 for
-  taskCount. Implements DataLoader for both fields — ownerLoader batches
-  user IDs, taskCountLoader batches project IDs. Response drops to 120ms.
-```
+### Anti-patterns to avoid
 
-### Example 3: Evolve schema to replace a deprecated field
+- **CRUD resolvers that mirror database tables.** Design from the
+  client's needs, not from the schema migration file.
+- **One mutation that does everything.** Split into named
+  intent-specific mutations (`shipOrder`, `cancelOrder`) instead of
+  `updateOrder(input)` with twenty optional fields.
+- **Returning `Boolean` from mutations.** Return the affected entity
+  or a result union so the client can update its cache.
+- **DataLoader shared across requests.** Per-request, always.
+- **Throwing strings or generic `Error` from resolvers.** Use the
+  result-union pattern for expected errors.
+- **Letting clients send arbitrary queries in production.** Use APQ
+  + allowlisting.
 
-```
-User: Split User.name into firstName and lastName without breaking clients.
+### When to break the rules
 
-Agent: Adds firstName/lastName, marks name as @deprecated, resolver returns
-  concatenation for compatibility. Monitors usage, removes after adoption >98%.
-```
+Internal-only APIs with a single trusted client can skip persisted
+queries, depth limits, and federation. Tiny schemas (under ~20 types)
+can skip DataLoader if every resolver hits an in-memory cache. The
+result-union error pattern adds verbosity that may not be worth it
+for a small admin UI — top-level `errors` is fine there. As always,
+understand the rule first; only then break it deliberately.

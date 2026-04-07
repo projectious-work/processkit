@@ -4,99 +4,119 @@ kind: Skill
 metadata:
   id: SKILL-prompt-engineering
   name: prompt-engineering
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Prompt design patterns for LLMs including few-shot, chain-of-thought, structured output, and injection defense. Use when crafting prompts, optimizing LLM outputs, or building prompt-based features."
+  description: "Prompt design patterns — few-shot, chain-of-thought, structured output, injection defense."
   category: ai
   layer: null
+  when_to_use: "Use when crafting or refining LLM prompts, designing system prompts for agents, requesting structured output, defending against prompt injection, building reusable prompt templates, or iterating on prompt quality."
 ---
 
 # Prompt Engineering
 
-## When to Use
+## Level 1 — Intro
 
-- Crafting or refining prompts for LLM-based features
-- Improving output quality, consistency, or reliability
-- Designing system prompts for AI agents or chatbots
-- Implementing structured output (JSON, specific formats)
-- Defending against prompt injection attacks
-- Building prompt templates for reusable workflows
-- Evaluating and iterating on prompt performance
+Good prompts are explicit, structured, and tested. Write them with
+the same discipline as code: define inputs and outputs, version the
+template, and run them against an eval set. The biggest quality
+wins come from structure (role, task, constraints, examples,
+input), few-shot examples, and chain-of-thought — not from clever
+phrasing.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Prompt Structure Fundamentals
+### Prompt structure
 
-A well-structured prompt has these components (in order of importance):
+A well-structured prompt has these components, in order of
+importance:
 
-1. **Role/Context** — Who is the model? What domain expertise applies?
-2. **Task** — What exactly should it do? Be specific and unambiguous.
-3. **Constraints** — Format, length, tone, what to avoid.
-4. **Examples** — Input/output pairs demonstrating desired behavior.
-5. **Input** — The actual data to process.
+1. **Role / context** — who is the model, what domain expertise
+   applies.
+2. **Task** — what exactly to do, specific and unambiguous.
+3. **Constraints** — format, length, tone, what to avoid.
+4. **Examples** — input/output pairs showing the desired pattern.
+5. **Input** — the data to process, clearly delimited.
 
-Principles:
-- Be explicit. LLMs do not read minds — state what you want and what you do not want.
-- Put the most important instructions first and last (primacy and recency effects).
-- Use delimiters to separate sections: `###`, `---`, XML tags, triple backticks.
-- Shorter is not always better — a well-structured 500-word prompt beats an ambiguous 50-word one.
+Principles: be explicit (LLMs don't read minds), put the most
+important instructions first and last (primacy and recency),
+delimit sections (`###`, `---`, XML tags, triple backticks). A
+well-structured 500-word prompt beats an ambiguous 50-word one.
 
-### 2. Core Techniques
+### Core techniques
 
-See `references/techniques-catalog.md` for detailed templates and examples.
+**Zero-shot.** Direct instruction, no examples. Good for simple,
+well-defined tasks.
 
-**Zero-shot:** Direct instruction with no examples. Works for simple, well-defined tasks.
+**Few-shot.** Provide 2–5 input/output examples before the actual
+input. Choose diverse, representative examples. Order matters —
+put the most similar example last.
 
-**Few-shot:** Provide 2-5 input/output examples before the actual input. The model learns the pattern from examples. Choose diverse, representative examples. Order matters — put the most similar example last.
+**Chain-of-Thought (CoT).** Add "Let's think step by step" or
+provide reasoning examples. Big wins on math, logic, and multi-step
+tasks. Combines well with few-shot.
 
-**Chain-of-Thought (CoT):** Add "Let's think step by step" or provide reasoning examples. Dramatically improves math, logic, and multi-step tasks. Can be combined with few-shot (show reasoning in examples).
+**Self-consistency.** Generate N responses with temperature > 0
+and take the majority answer. Useful when there's one correct
+answer and individual CoT runs sometimes err. Costs N API calls.
 
-**Self-consistency:** Generate multiple responses with temperature > 0, then take the majority answer. Best for factual or reasoning tasks where there is one correct answer.
+**Structured output.** Request JSON/XML/specific formats. Provide
+the exact schema in the prompt. Use the API's JSON mode when
+available. Validate output programmatically and reject malformed
+responses.
 
-**Structured output:** Request JSON, XML, or specific formats. Use JSON mode when available. Provide the exact schema in the prompt. Validate output programmatically.
+See `references/techniques-catalog.md` for templates and worked
+examples.
 
-### 3. System Prompt Design
+### System prompt design
 
-System prompts set persistent behavior for the entire conversation:
-
-- Define the persona, expertise, and communication style
-- Set hard constraints (what the model must never do)
-- Establish output format expectations
-- Include domain-specific knowledge or rules
+System prompts set persistent behavior. Define persona, expertise,
+and communication style; set hard constraints (what the model must
+never do); establish output format expectations; include
+domain-specific rules.
 
 Best practices:
-- Keep system prompts focused — one clear role, not five
-- Use positive instructions ("always do X") over negative ("never do Y") where possible
-- Test with adversarial inputs to ensure constraints hold
-- Version your system prompts and track changes like code
 
-### 4. Temperature and Sampling Parameters
+- Keep focused — one clear role, not five.
+- Prefer positive instructions ("always do X") over negative
+  ("never do Y") where possible.
+- Test with adversarial inputs to verify constraints hold.
+- Version system prompts and track changes like code.
 
-- **Temperature (0.0 - 2.0):** Controls randomness. 0.0 = deterministic, 1.0 = default creative, >1.0 = very random.
-  - Use 0.0-0.3 for factual tasks, code generation, structured output
-  - Use 0.5-0.8 for creative writing, brainstorming
-  - Use 0.0 for reproducible evaluations
-- **Top-p (0.0 - 1.0):** Nucleus sampling. 0.9 means consider tokens comprising top 90% probability. Alternative to temperature — do not adjust both simultaneously.
-- **Max tokens:** Set to expected output length + buffer. Too low truncates output; too high wastes quota.
-- **Stop sequences:** Define strings that halt generation. Useful for structured extraction.
+### Sampling parameters
 
-### 5. Prompt Injection Defense
+- **Temperature (0.0–2.0)** — controls randomness. 0.0–0.3 for
+  factual tasks, code, structured output. 0.5–0.8 for creative
+  writing. 0.0 for reproducible evaluation.
+- **Top-p (0.0–1.0)** — nucleus sampling; 0.9 = top 90% probability
+  mass. Don't tune top-p and temperature simultaneously.
+- **Max tokens** — set to expected output length plus a buffer. Too
+  low truncates; too high wastes quota.
+- **Stop sequences** — strings that halt generation. Useful for
+  structured extraction and preventing runaway output.
 
-Prompt injection is when user input manipulates the model's behavior by overriding instructions.
+### Prompt injection defense
 
-Defense layers:
-1. **Input sanitization:** Strip or escape known injection patterns. Detect `ignore previous instructions` type phrases.
-2. **Delimited input:** Wrap user input in clear delimiters and instruct the model to treat the delimited content as data only, never as instructions.
-3. **Output validation:** Verify output conforms to expected format. Reject unexpected formats.
-4. **Privilege separation:** Use separate LLM calls for different trust levels. Do not mix system logic and user input in one prompt.
-5. **Canary tokens:** Include a secret token in the system prompt. If it appears in output, injection may have occurred.
+Injection happens when user input overrides your instructions.
+Layer defenses; assume breach.
 
-No defense is perfect. Layer multiple approaches and assume breach.
+1. **Input sanitization** — strip or escape known injection
+   patterns. Detect "ignore previous instructions" type phrases.
+2. **Delimited input** — wrap user input in clear delimiters and
+   instruct the model to treat the content as data only.
+3. **Output validation** — verify output conforms to expected
+   format. Reject anything that doesn't.
+4. **Privilege separation** — separate LLM calls for different
+   trust levels. Don't mix system logic and user input in one
+   prompt.
+5. **Canary tokens** — include a secret token in the system
+   prompt. If it appears in output, injection may have occurred.
 
-### 6. Prompt Templates and Iteration
+No defense is perfect; combine all five.
 
-Build reusable templates with variable slots:
+### Reusable templates and iteration
+
+Templates with variable slots:
 
 ```
 You are a {role} specializing in {domain}.
@@ -106,36 +126,144 @@ Analyze the following {input_type}:
 {input}
 ---
 
-Provide your analysis in the following format:
+Provide your analysis in this format:
 - Summary: (1-2 sentences)
 - Key findings: (bullet points)
 - Recommendations: (numbered list)
 ```
 
-Iteration process:
-1. Start with a simple prompt that captures the core task
-2. Test on 10-20 diverse inputs
-3. Identify failure modes (wrong format, missing info, hallucination)
-4. Add constraints or examples to address each failure mode
-5. Retest — ensure fixes do not break previously working cases
-6. Document the prompt version and test results
+Iteration loop: simple prompt -> test on 10–20 inputs -> identify
+failure modes -> add constraints or examples -> retest (don't break
+previously working cases) -> document version and results.
 
-### 7. Evaluation
+## Level 3 — Full reference
 
-Measure prompt quality systematically:
-- Build an eval set of 20-50 input/expected-output pairs
-- Score each output (binary pass/fail, or rubric-based 1-5)
-- Track metrics across prompt versions: accuracy, format compliance, latency
-- Use LLM-as-judge for subjective quality (see llm-evaluation skill)
-- Automate eval runs in CI when prompt changes are deployed
+### Technique catalog
 
-## Examples
+| Technique | When |
+|---|---|
+| Zero-shot | Simple, well-defined; default behavior is close enough |
+| Few-shot | Specific format/style hard to describe; zero-shot inconsistent |
+| Chain-of-thought | Math, logic, multi-step reasoning, complex analysis |
+| Self-consistency | Single correct answer; CoT sometimes errs |
+| Structured output | Output must be parsed programmatically |
+| Persona / role | Domain expertise matters; specific tone needed |
+| Stop sequences | Extracting a single value; preventing runaway output |
+| Prompt chaining | Multi-step task too complex for one prompt |
 
-### Designing a Classification Prompt
-User needs to classify support tickets into categories. Design a few-shot prompt with 3-5 example tickets per category. Include edge cases. Use temperature 0.0 for consistency. Request JSON output: `{"category": "...", "confidence": "high|medium|low"}`. Validate output schema programmatically. Measure accuracy against labeled test set.
+### Few-shot template
 
-### Building a Code Review Agent
-User wants an LLM-powered code review assistant. Design a system prompt defining the reviewer persona (senior engineer, specific language expertise). Include review criteria: correctness, performance, readability, security. Use structured output for findings. Add injection defense for code that might contain adversarial comments. Test with intentionally bad code to verify the agent catches issues.
+```
+[Task instruction]
 
-### Optimizing an Underperforming Prompt
-User reports their summarization prompt produces inconsistent output. Diagnose: test on 20 inputs, categorize failures (too long, misses key points, wrong tone). Add length constraints, provide few-shot examples of ideal summaries, add chain-of-thought for complex documents. A/B test the old vs. new prompt on the eval set. Track improvement in format compliance and content accuracy.
+Example 1:
+Input: [example input]
+Output: [example output]
+
+Example 2:
+Input: [example input]
+Output: [example output]
+
+Now process:
+Input: [actual input]
+Output:
+```
+
+Use 3–5 examples. Include edge cases. Order from simple to
+complex, with the most similar to the actual input last.
+
+### Chain-of-thought template (few-shot)
+
+```
+[Task instruction]
+
+Q: [example question]
+A: Let's think step by step.
+[step 1]
+[step 2]
+Therefore, the answer is [answer].
+
+Q: [actual question]
+A: Let's think step by step.
+```
+
+### Structured output template
+
+```
+Extract the following information and return as JSON.
+Use exactly this schema (no additional fields):
+
+{
+  "field_name": "type — description",
+  "field_name": "type — description"
+}
+
+If a field is not present in the input, use null.
+
+Input:
+---
+[input text]
+---
+```
+
+Provide the exact schema. Use the API's JSON mode where available.
+Validate with a schema validator before consuming.
+
+### Prompt chaining
+
+Break complex tasks into sequential steps where each output feeds
+the next.
+
+```
+Prompt 1: Extract key facts from document    -> facts
+Prompt 2: Identify contradictions in facts   -> issues
+Prompt 3: Write summary given facts + issues -> final output
+```
+
+Each step can use a different model, temperature, or strategy.
+Validate intermediate outputs before passing them on. Smaller, faster
+models often suffice for early steps.
+
+### Anti-patterns
+
+- **Vague instructions.** "Write a good summary" is not a prompt.
+- **Negative-only constraints.** "Don't do X" without telling the
+  model what to do instead.
+- **Examples that contradict the instructions.** Models will follow
+  the examples; align them.
+- **Mixing instructions and user input without delimiters.** This
+  is how injections succeed.
+- **No output validation.** Structured outputs always need
+  programmatic validation.
+- **Tuning the prompt against the test set.** Same data leakage
+  problem as in classical ML.
+- **No version control.** Prompts should live next to code in git
+  with diffs and PRs.
+
+### Evaluation
+
+Measure prompt quality systematically: build a 20–50 example eval
+set, score with binary pass/fail or a 1–5 rubric, track accuracy /
+format compliance / latency across versions, use LLM-as-judge for
+subjective quality (see `llm-evaluation` skill), and automate eval
+runs in CI on prompt change.
+
+### Worked scenarios
+
+**Classification prompt.** Few-shot with 3–5 example tickets per
+category, including edge cases. Temperature 0. Request JSON:
+`{"category": "...", "confidence": "high|medium|low"}`. Validate
+schema programmatically. Measure accuracy on a labeled test set.
+
+**Code-review agent.** System prompt defines a senior-engineer
+persona with specific language expertise. Review criteria:
+correctness, performance, readability, security. Structured output
+for findings. Injection defense for code with adversarial comments.
+Test with intentionally bad code to verify the agent catches
+issues.
+
+**Underperforming summarization prompt.** Test on 20 inputs and
+categorize failures (too long, misses key points, wrong tone). Add
+length constraints, few-shot ideal summaries, CoT for complex
+documents. A/B test old vs. new on the eval set. Track improvement
+in format compliance and content accuracy.

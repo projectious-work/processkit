@@ -4,30 +4,28 @@ kind: Skill
 metadata:
   id: SKILL-webhook-integration
   name: webhook-integration
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Webhook design and consumption including signature verification, idempotency, retry handling, and security. Use when implementing webhooks, designing event notification systems, or debugging webhook deliveries."
+  description: "Webhook design and consumption — payload format, HMAC signatures, idempotency, retries, dead-letter queues, security."
   category: api
   layer: null
+  when_to_use: "Use when implementing a webhook consumer, designing an event-notification system, adding signature verification, or debugging duplicate or failed webhook deliveries."
 ---
 
 # Webhook Integration
 
-Design, implement, and consume webhooks reliably — payload format, signature
-verification, idempotency, retry handling, and security.
+## Level 1 — Intro
 
-## When to Use
+Webhooks deliver at least once, in no particular order, over a
+network that fails. A correct webhook integration verifies HMAC
+signatures on the raw body, deduplicates by event ID, returns 2xx
+immediately and processes asynchronously, and retries with
+exponential backoff into a dead-letter queue.
 
-- Designing a webhook system for event notifications.
-- Implementing a webhook consumer for a third-party service.
-- Adding HMAC-SHA256 signature verification.
-- Debugging failed deliveries or duplicate processing.
-- Setting up dead letter queues for undeliverable events.
+## Level 2 — Overview
 
-## Instructions
-
-### Payload Design
+### Payload envelope
 
 ```json
 {
@@ -38,94 +36,151 @@ verification, idempotency, retry handling, and security.
 }
 ```
 
-- Unique event `id` for idempotency. Dotted `type` for categorization (`resource.action`).
-- ISO 8601 timestamp. Domain payload nested under `data` for a stable envelope.
+- A unique event `id` for idempotency.
+- A dotted `type` of the form `resource.action`
+  (`order.shipped`, `invoice.payment_failed`).
+- ISO 8601 `created_at` for ordering and replay-window enforcement.
+- Domain payload nested under `data` so the envelope stays stable as
+  the domain model evolves.
 
-### Signature Verification (HMAC-SHA256)
+### Signature verification (HMAC-SHA256)
 
-**Sender:** compute HMAC over raw body, send as `X-Webhook-Signature: sha256=<hex>`.
+Senders compute an HMAC over the **raw request body** using a shared
+secret and send it in a header (e.g. `X-Webhook-Signature: sha256=<hex>`).
+Consumers recompute and compare in constant time:
 
-**Consumer:**
 ```python
 expected = hmac.new(secret.encode(), raw_body, hashlib.sha256).hexdigest()
 if not hmac.compare_digest(expected, received_signature):
     return 401
 ```
 
-- Sign the **raw request body**, not parsed JSON (parsing may reorder fields).
-- Use constant-time comparison to prevent timing attacks.
-- Include a timestamp to prevent replay attacks; reject events older than 5 minutes.
-- Support multiple active secrets during rotation.
+Three things matter:
+
+1. **Sign the raw body**, not parsed JSON. Re-serializing reorders
+   keys and breaks the signature.
+2. **Constant-time comparison** (`hmac.compare_digest`) — never
+   `==` — to avoid timing attacks.
+3. **Replay protection.** Include a timestamp in the signed payload
+   or as a separate signed header, and reject anything older than
+   ~5 minutes.
+
+Support multiple active secrets so you can rotate without downtime.
 
 ### Idempotency
 
-Webhooks deliver **at least once** — consumers must handle duplicates:
-- Store processed event IDs in a database/cache with unique constraint.
-- Check before processing; use `INSERT ... ON CONFLICT DO NOTHING`.
-- TTL on the idempotency store (e.g., 7 days) to bound storage.
+Webhook delivery is at-least-once. Consumers must dedupe:
 
-### Retry Handling
+- Store processed event IDs in a database or cache with a unique
+  constraint.
+- Check before processing — `INSERT ... ON CONFLICT DO NOTHING` is
+  the canonical pattern.
+- TTL the idempotency store (e.g. 7 days) to bound storage. Senders
+  should not retry beyond that window.
 
-**As sender:** retry with exponential backoff (1min, 5min, 30min, 2hr, 8hr, 24hr).
-Treat 2xx as success, 4xx (except 429) as permanent failure, 5xx/timeouts as transient.
-Include `X-Webhook-Retry-Count` header.
+### Retry handling
 
-**As consumer:** return 200/202 immediately after signature validation. Process
-asynchronously — never do heavy work in the handler or the sender will time out.
+**As a sender:** retry on transient failure with exponential backoff
+(1 min, 5 min, 30 min, 2 hr, 8 hr, 24 hr is a typical schedule).
+Treat 2xx as success, 5xx and timeouts as transient, and 4xx (except
+429) as permanent failure. Include `X-Webhook-Retry-Count` so
+consumers can log it.
 
-### Dead Letter Queues
+**As a consumer:** verify the signature, enqueue the event for
+asynchronous processing, and return 200/202 immediately. Never do
+heavy work in the HTTP handler — the sender will time out and retry,
+amplifying load.
 
-Move events that exhaust retries to a DLQ with full context (payload, headers, error).
-Provide tools to inspect and replay. Alert on DLQ growth. Retain for 30+ days.
+### Dead-letter queues
 
-### Ordering
-
-Webhooks do **not** guarantee ordering. Use `created_at` to detect out-of-order events.
-For state changes, include a version/sequence number; discard stale events.
-
-### Testing
-
-- **Local dev:** `ngrok` or `cloudflared tunnel` to expose local endpoints.
-- **Inspection:** `webhook.site` or `requestbin` for payload inspection.
-- **Automated:** test with invalid signatures, duplicate IDs, out-of-order events, malformed payloads.
+Events that exhaust the retry schedule move to a DLQ with full
+context: payload, headers, last error, attempt count. Provide
+operator tooling to inspect and replay. Alert when the DLQ grows
+unexpectedly. Retain DLQ entries for at least 30 days so you can
+recover from outages discovered after the fact.
 
 ### Security
 
-- Always verify HMAC signatures. Restrict by sender IP ranges if published.
-- TLS only — never accept webhooks over plain HTTP.
-- Enforce payload size limits (e.g., 1MB). Rate-limit the consumer endpoint.
-- Store secrets in a vault, not in code or environment variables.
+- TLS only. Never accept webhooks over plain HTTP.
+- Always verify HMAC signatures, even if the source IP is
+  allowlisted.
+- Restrict by sender IP ranges when the source publishes them
+  (Stripe, GitHub, etc.).
+- Enforce a payload size limit (1 MB is typical) and rate-limit the
+  consumer endpoint.
+- Store secrets in a vault (AWS Secrets Manager, Vault, etc.), not
+  in code or environment variables checked into source control.
 
-## Examples
+## Level 3 — Full reference
 
-### Example 1: Implement a Stripe webhook consumer
+### Ordering
 
-```
-User: Handle Stripe payment webhooks in our Node.js service.
+Webhooks do **not** guarantee delivery order. A consumer that assumes
+"shipped" must arrive after "created" will eventually be wrong. Two
+options:
 
-Agent: Implements POST /webhooks/stripe: reads raw body for signature
-  verification, stores event ID in Redis (7-day TTL) for idempotency,
-  queues for async processing, returns 200 immediately. Handles
-  payment_intent.succeeded, charge.refunded, invoice.payment_failed.
-```
+1. **Use `created_at`** to detect out-of-order events and ignore the
+   stale one.
+2. **Embed a monotonic version or sequence number** on stateful
+   resources, then discard any event whose version is older than
+   what's already applied.
 
-### Example 2: Design a webhook system for a SaaS platform
+Both work; pick the one that fits the resource model.
 
-```
-User: Notify customers when resources change in our platform.
+### Testing webhooks locally
 
-Agent: Designs registration API (POST /webhooks with url, events[], auto
-  secret), envelope format, HMAC-SHA256 signing, exponential retry up to
-  24hr then DLQ, admin dashboard for delivery status and replay.
-```
+- **Tunnels:** `ngrok` and `cloudflared tunnel` expose a local
+  endpoint to a public URL so the sender can reach it.
+- **Inspection:** `webhook.site` and `requestbin` capture raw
+  requests for offline debugging when the sender doesn't expose a
+  test mode.
+- **Automated tests** must cover: invalid signature (reject), valid
+  signature (accept), duplicate event ID (idempotent — process
+  once), out-of-order events, malformed JSON, oversized payload,
+  expired timestamp.
 
-### Example 3: Debug webhook delivery failures
+### Failure modes worth designing for
 
-```
-User: Consumer processes some events twice and misses others.
+| Symptom                            | Likely cause                   |
+|------------------------------------|--------------------------------|
+| Events processed twice             | No idempotency check           |
+| Sender reports timeouts            | Synchronous heavy processing   |
+| Signature verification fails       | Parsed body re-serialized      |
+| Random 401s after secret rotation  | Old secret no longer accepted  |
+| State diverges from sender         | Out-of-order delivery ignored  |
+| DLQ grows unexpectedly             | Downstream system degraded     |
 
-Agent: Finds two issues: no idempotency check (retries reprocessed) and
-  synchronous heavy processing causing sender timeouts. Adds event ID
-  dedup with DB unique constraint, moves processing to background queue,
-  returns 202 immediately. Success rate rises from 74% to 99.8%.
-```
+The fix for the first two is the same on every platform: dedupe by
+event ID with a unique constraint, and move processing to a
+background queue so the HTTP handler returns in milliseconds.
+
+### Webhook registration API (when designing your own)
+
+If you're publishing webhooks rather than consuming them, expose a
+simple registration API:
+
+- `POST /webhooks` — register a `url`, an `events[]` filter, and
+  receive a generated signing secret in the response (shown once).
+- `GET /webhooks/{id}/deliveries` — recent delivery attempts with
+  status, latency, and response body for debugging.
+- `POST /webhooks/{id}/deliveries/{delivery_id}/replay` — manual
+  replay for ops recovery.
+- Admin dashboard with delivery success rate, latency percentiles,
+  and DLQ depth per subscription.
+
+### Anti-patterns to avoid
+
+- **Synchronous processing in the HTTP handler.** Always enqueue and
+  return immediately.
+- **Verifying the signature against parsed JSON.** Sign and verify
+  the raw bytes the sender produced.
+- **`==` for signature comparison.** Use a constant-time function.
+- **No idempotency store.** "It probably won't happen twice" is
+  wrong on the day it matters.
+- **Returning 200 from a handler that errored internally.** The
+  sender will not retry. Return 500 so retry happens, after the
+  signature has been verified.
+- **No replay-window check.** A leaked recording can be replayed
+  weeks later.
+- **Single signing secret with no rotation path.** Plan rotation
+  before you need it.

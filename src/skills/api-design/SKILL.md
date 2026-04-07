@@ -4,60 +4,61 @@ kind: Skill
 metadata:
   id: SKILL-api-design
   name: api-design
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "REST API design including resource naming, HTTP methods, status codes, pagination, versioning, and OpenAPI specs. Use when designing APIs, reviewing API contracts, or writing OpenAPI/Swagger documentation."
+  description: "REST API design — resource naming, HTTP methods, status codes, pagination, versioning, OpenAPI."
   category: api
   layer: null
+  when_to_use: "Use when designing a new REST API, reviewing API contracts, writing OpenAPI/Swagger documentation, or choosing pagination, versioning, or error-format strategies."
 ---
 
 # API Design
 
-Design and review RESTful APIs following industry conventions. Produce consistent,
-well-documented API contracts using OpenAPI 3.1.
+## Level 1 — Intro
 
-## When to Use
+REST APIs follow well-established conventions: plural-noun resources,
+HTTP methods that match their semantics, correct status codes, cursor
+pagination, URI versioning, and a consistent error envelope. Document
+the contract in OpenAPI 3.1 with reusable components.
 
-- Designing a new REST API or extending an existing one.
-- Reviewing API contracts for consistency and correctness.
-- Writing or generating OpenAPI / Swagger documentation.
-- Choosing pagination, filtering, or versioning strategies.
-- Defining error response formats.
+## Level 2 — Overview
 
-## Instructions
+### Resource naming
 
-### Resource Naming
+Use plural nouns for collections (`/users`, `/orders`). Nest
+sub-resources to express ownership (`/users/{id}/orders`) but cap
+nesting at three levels — go flat once the relationship is clear.
+Avoid verbs in URIs; the HTTP method is the verb. Use kebab-case for
+multi-word segments (`/line-items`), lowercase only, no trailing
+slash, no file extensions.
 
-- Use plural nouns for collections: `/users`, `/orders`.
-- Nest sub-resources to express ownership: `/users/{id}/orders`.
-- Avoid verbs in URIs — the HTTP method conveys the action.
-- Use kebab-case for multi-word segments: `/line-items`.
-- Keep URIs shallow (max 3 levels of nesting).
+When CRUD doesn't fit, model the action as a sub-resource POST:
+`POST /v1/orders/{id}/cancel`, `POST /v1/users/{id}/verify-email`.
 
-See `references/rest-conventions.md` for the full naming and method reference.
+### HTTP methods and status codes
 
-### HTTP Methods and Status Codes
+Map operations to methods consistently and return the right success
+code:
 
-Map CRUD operations to methods consistently:
+| Operation | Method | Success | Notes                  |
+|-----------|--------|---------|------------------------|
+| List      | GET    | 200     | Collection endpoint    |
+| Read      | GET    | 200     | Single resource        |
+| Create    | POST   | 201     | Return Location header |
+| Replace   | PUT    | 200     | Full replacement       |
+| Patch     | PATCH  | 200     | Partial update         |
+| Delete    | DELETE | 204     | No body                |
 
-| Operation | Method | Success Code | Notes                  |
-|-----------|--------|--------------|------------------------|
-| List      | GET    | 200          | Collection endpoint    |
-| Read      | GET    | 200          | Single resource        |
-| Create    | POST   | 201          | Return Location header |
-| Replace   | PUT    | 200          | Full replacement       |
-| Patch     | PATCH  | 200          | Partial update         |
-| Delete    | DELETE | 204          | No body returned       |
-
-Always return the correct 4xx/5xx status codes. Never return 200 for errors.
+GET is safe and idempotent. PUT and DELETE are idempotent. Never
+return 200 with an error payload — use the right 4xx/5xx code.
 
 ### Pagination
 
-Choose cursor-based pagination for large or real-time datasets. Use offset-based
-pagination only for small, stable datasets where page-jumping is needed.
-
-Return pagination metadata in the response body:
+Default to **cursor-based** pagination. It is correct under concurrent
+writes, scales to large datasets, and is what every serious API uses.
+Reserve offset-based pagination for small, stable datasets where users
+need to jump to page N.
 
 ```json
 {
@@ -69,22 +70,19 @@ Return pagination metadata in the response body:
 }
 ```
 
-### Filtering and Sorting
+Cursors are opaque (base64-encoded). Clients must not parse them.
 
-- Filter via query parameters: `GET /orders?status=shipped&created_after=2025-01-01`.
-- Sort with a `sort` parameter: `GET /users?sort=-created_at,name`.
-- Prefix with `-` for descending order.
+### Filtering, sorting, versioning
 
-### Versioning
+- Filter via query params: `GET /orders?status=shipped&created_after=2025-01-01`.
+- Sort with `sort=`, prefix with `-` for descending: `?sort=-created_at,name`.
+- Version in the URI path for public APIs (`/v1/users`). Use the
+  `Accept` header for internal APIs that need URL stability.
+- Within a version, only additive changes — never break clients.
 
-Prefer URI path versioning (`/v1/users`) for public APIs. Use `Accept` header
-versioning for internal APIs where URL stability matters.
+### Error responses
 
-Never break existing clients — additive changes only within a version.
-
-### Error Responses
-
-Use a consistent error envelope:
+Use one error envelope across every endpoint:
 
 ```json
 {
@@ -93,14 +91,18 @@ Use a consistent error envelope:
     "message": "Email is required.",
     "details": [
       { "field": "email", "reason": "required" }
-    ]
+    ],
+    "request_id": "req_abc123"
   }
 }
 ```
 
-### Rate Limiting
+`code` is machine-readable; `message` is human-readable; `details`
+holds per-field errors; `request_id` makes support tickets debuggable.
 
-Return rate limit headers on every response:
+### Rate limiting
+
+Return rate-limit headers on every response, not just 429s:
 
 ```
 X-RateLimit-Limit: 1000
@@ -110,84 +112,115 @@ X-RateLimit-Reset: 1672531200
 
 Return 429 Too Many Requests when the limit is exceeded.
 
-### HATEOAS
+### OpenAPI 3.1
 
-For discoverable APIs, include links to related actions:
+Document the API in OpenAPI 3.1. Extract shared schemas, parameters,
+and responses into `components/` and `$ref` them everywhere. Define
+security schemes globally with per-endpoint overrides for public
+routes. See `references/openapi-patterns.md` for the full skeleton
+including reusable parameters, responses, and security schemes.
+
+## Level 3 — Full reference
+
+### Status code reference
+
+| Code | Name                  | When to use                              |
+|------|-----------------------|------------------------------------------|
+| 200  | OK                    | GET / PUT / PATCH with response body     |
+| 201  | Created               | POST that creates a resource (+Location) |
+| 202  | Accepted              | Async operation started                  |
+| 204  | No Content            | DELETE success or empty PUT/PATCH        |
+| 400  | Bad Request           | Malformed syntax, invalid JSON           |
+| 401  | Unauthorized          | Missing/invalid auth                     |
+| 403  | Forbidden             | Authenticated but lacks permission       |
+| 404  | Not Found             | Resource does not exist                  |
+| 405  | Method Not Allowed    | Method not supported for this endpoint   |
+| 409  | Conflict              | Duplicate or version conflict            |
+| 422  | Unprocessable Entity  | Valid syntax, semantic validation failed |
+| 429  | Too Many Requests     | Rate limit exceeded                      |
+| 500  | Internal Server Error | Unhandled exception                      |
+| 502  | Bad Gateway           | Upstream returned bad response           |
+| 503  | Service Unavailable   | Overloaded or in maintenance             |
+| 504  | Gateway Timeout       | Upstream timed out                       |
+
+The full method-semantics table (idempotency, safety, body usage) is
+in `references/rest-conventions.md`.
+
+### Standard error codes
+
+Pair the HTTP status with a stable string code so clients can match
+without parsing prose:
+
+| Code                  | HTTP        | Description                |
+|-----------------------|-------------|----------------------------|
+| VALIDATION_ERROR      | 400 / 422   | Field validation failed    |
+| AUTHENTICATION_ERROR  | 401         | Invalid or missing creds   |
+| AUTHORIZATION_ERROR   | 403         | Insufficient permissions   |
+| NOT_FOUND             | 404         | Resource does not exist    |
+| CONFLICT              | 409         | Resource state conflict    |
+| RATE_LIMITED          | 429         | Too many requests          |
+| INTERNAL_ERROR        | 500         | Unexpected server error    |
+
+### Cursor vs offset pagination
+
+Cursor pagination is preferred because it survives concurrent writes:
+inserting a row at the start of an offset-paginated list shifts every
+subsequent page and causes drift (duplicates and skips). The cursor
+encodes the position in the index, so new rows do not affect pages
+already fetched. Use offset only when the dataset is small, stable,
+and users genuinely need to jump to "page 47."
+
+### HATEOAS (when to bother)
+
+For genuinely discoverable APIs, embed action links in responses:
 
 ```json
 {
   "id": "order-123",
   "status": "shipped",
   "_links": {
-    "self": { "href": "/v1/orders/order-123" },
+    "self":   { "href": "/v1/orders/order-123" },
     "cancel": { "href": "/v1/orders/order-123/cancel", "method": "POST" }
   }
 }
 ```
 
-### OpenAPI Specification
+In practice, most internal and partner APIs skip HATEOAS because
+clients are written against an OpenAPI spec, not a discoverable graph.
+Add it when the API is genuinely browsable (public, long-lived, many
+unknown clients) or you're following a strict HAL/JSON:API standard.
 
-Write OpenAPI 3.1 specs with reusable components. Extract shared schemas into
-`components/schemas`, use `$ref` extensively, and define security schemes globally.
+### OpenAPI component patterns
 
-See `references/openapi-patterns.md` for component patterns and security schemes.
+Define `components/schemas` for every entity, plus `UserCreate`-style
+input variants that omit `readOnly` fields. Define
+`components/parameters` for shared query/path params (cursor, limit,
+path id) and `components/responses` for shared error responses
+(`Unauthorized`, `ValidationError`, `NotFound`). List endpoints use
+`allOf` to compose `PaginatedResponse` with the entity type. See
+`references/openapi-patterns.md` for full YAML examples and security
+scheme definitions (Bearer JWT, API key, OAuth2).
 
-### Review Checklist
+### Review checklist
 
 When reviewing an API design, verify:
 
-1. Resources use plural nouns; no verbs in paths.
-2. HTTP methods match their semantics (GET is safe, PUT is idempotent).
-3. Status codes are correct (201 for creation, 204 for deletion).
-4. Error responses follow the standard envelope.
-5. Pagination is present for all list endpoints.
-6. Versioning strategy is documented and consistent.
-7. Rate limiting headers are included.
-8. OpenAPI spec compiles without errors.
+1. Plural-noun resources, no verbs in paths.
+2. HTTP methods match semantics (GET safe, PUT idempotent).
+3. Status codes are correct (201 + Location on create, 204 on delete).
+4. Errors use the standard envelope with machine-readable codes.
+5. Every list endpoint paginates (cursor preferred).
+6. Versioning strategy is explicit and consistent.
+7. Rate-limit headers on every response.
+8. OpenAPI 3.1 spec compiles, schemas are `$ref`-ed, no copy-paste.
 
-## Examples
+### Anti-patterns to avoid
 
-### Example 1: Design an e-commerce orders API
-
-```
-User: Design a REST API for managing orders in an e-commerce system.
-
-Agent: Reads project context, then designs endpoints:
-
-  POST   /v1/orders                  — Create order (201)
-  GET    /v1/orders                  — List orders with cursor pagination (200)
-  GET    /v1/orders/{id}             — Get order details (200)
-  PATCH  /v1/orders/{id}             — Update order (200)
-  DELETE /v1/orders/{id}             — Cancel order (204)
-  POST   /v1/orders/{id}/payments    — Submit payment (201)
-  GET    /v1/orders/{id}/items       — List line items (200)
-
-Writes OpenAPI 3.1 spec with shared schemas for Order, LineItem, Payment,
-PaginatedResponse. Includes error envelope and rate limit headers.
-```
-
-### Example 2: Review an existing API spec
-
-```
-User: Review this API for issues. [provides OpenAPI spec]
-
-Agent: Reads the spec, identifies problems:
-  - GET /getUsers uses a verb — rename to GET /users
-  - POST /users returns 200 — should return 201 with Location header
-  - No pagination on list endpoints
-  - Error responses use inconsistent formats
-  Produces corrected spec.
-```
-
-### Example 3: Add filtering and sorting to a list endpoint
-
-```
-User: Add filtering by status and date range to GET /v1/orders.
-
-Agent: Adds query parameters to the OpenAPI spec:
-  - status: enum (pending, shipped, delivered, cancelled)
-  - created_after: date-time
-  - created_before: date-time
-  - sort: string (default: -created_at)
-  Updates the spec with parameter definitions and examples.
-```
+- Verbs in URIs (`/getUsers`, `/createOrder`).
+- Singular collections (`/user` instead of `/users`).
+- Deep nesting beyond three levels.
+- 200 responses carrying error payloads.
+- Inconsistent error formats between endpoints.
+- Unpaginated list endpoints ("we'll add pagination later").
+- Breaking changes inside a stable version — bump the version.
+- Inline-duplicated schemas in OpenAPI instead of `$ref`.
