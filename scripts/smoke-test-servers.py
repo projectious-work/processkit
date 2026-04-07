@@ -99,6 +99,7 @@ def run():
         idm = import_server("id-management")
         actor = import_server("actor-profile")
         role = import_server("role-management")
+        scope = import_server("scope-management")
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -243,6 +244,33 @@ def run():
         assert lk["ok"]
         role_binding_id = lk["binding_id"]
 
+        # 4d. scope-management
+        create_scope = get_tool(scope, "create_scope")
+        sc = create_scope(
+            name="Sprint 42",
+            kind="sprint",
+            starts_at="2026-04-01",
+            ends_at="2026-04-14",
+            goals=["Ship lint", "Publish docs-site"],
+        )
+        print("create_scope:", sc)
+        assert "id" in sc and sc["state"] == "planned"
+        scope_id = sc["id"]
+
+        transition_scope = get_tool(scope, "transition_scope")
+        ts = transition_scope(id=scope_id, to_state="active")
+        print("transition_scope active:", ts)
+        assert ts["ok"]
+
+        bad_scope_t = transition_scope(id=scope_id, to_state="planned")
+        print("bad scope transition (expected error):", bad_scope_t)
+        assert "error" in bad_scope_t
+
+        list_scopes = get_tool(scope, "list_scopes")
+        ls = list_scopes(kind="sprint")
+        print("list_scopes sprint:", len(ls))
+        assert any(x["id"] == scope_id for x in ls)
+
         # 5. binding
         create_bind = get_tool(bind, "create_binding")
         b = create_bind(
@@ -267,8 +295,9 @@ def run():
         reindex = get_tool(idx, "reindex")
         stats = reindex()
         print("reindex stats:", stats)
-        # workitem + log + decision + actor + role + role-binding + work-binding
-        assert stats["entities"] >= 7
+        # workitem + log + decision + actor + role + role-binding + scope
+        # + work-binding
+        assert stats["entities"] >= 8
         assert stats["events"] >= 1
 
         query_e = get_tool(idx, "query_entities")

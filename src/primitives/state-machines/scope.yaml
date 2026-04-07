@@ -3,7 +3,7 @@ apiVersion: processkit.projectious.work/v1
 kind: StateMachine
 metadata:
   id: SM-scope
-  target_kind: Scope
+  name: scope
   version: "1.0.0"
   created: 2026-04-07T00:00:00Z
 spec:
@@ -12,15 +12,19 @@ spec:
     become active when work begins, and complete (or are cancelled).
     Reactivation from completed/cancelled is intentionally not allowed
     — create a new scope instead so historical references stay stable.
-  initial_state: planned
-  terminal_states: [completed, cancelled]
+  initial: planned
+  terminal: [completed, cancelled]
   states:
     planned:
       description: "Scope defined but not yet started."
-      transitions: [active, cancelled]
+      transitions:
+        - to: active
+        - to: cancelled
     active:
       description: "Scope is in progress; entities may reference it."
-      transitions: [completed, cancelled]
+      transitions:
+        - to: completed
+        - to: cancelled
     completed:
       description: "Scope reached its end. Historical reference only."
       transitions: []

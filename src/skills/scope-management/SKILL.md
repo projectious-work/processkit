@@ -10,9 +10,14 @@ spec:
   description: "Manage Scope entities — bounded containers grouping related work (sprint, milestone, project, quarter)."
   category: process
   layer: 2
-  uses: [event-log]
+  uses: [event-log, index-management, id-management]
   provides:
     primitives: [Scope]
+    mcp_tools:
+      - create_scope
+      - get_scope
+      - transition_scope
+      - list_scopes
     templates: [scope]
   when_to_use: "Use when creating or updating a grouping boundary — sprint, milestone, quarter, project, release — that other entities will reference."
 ---

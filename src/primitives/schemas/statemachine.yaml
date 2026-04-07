@@ -24,30 +24,20 @@ spec:
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
-    required: [description, states]
+    required: [description, initial, states]
     additionalProperties: true
     properties:
       description:
         type: string
         description: "What this state machine governs."
-      initial_state:
-        type: string
-        description: >
-          Starting state for new entities. Either initial_state or
-          initial must be set.
       initial:
         type: string
-        description: "Alias for initial_state (older convention)."
-      terminal_states:
-        type: array
-        items:
-          type: string
-        description: "States with no outgoing transitions."
+        description: "Starting state for new entities."
       terminal:
         type: array
         items:
           type: string
-        description: "Alias for terminal_states (older convention)."
+        description: "States with no outgoing transitions."
       states:
         type: object
         minProperties: 1
@@ -58,8 +48,21 @@ spec:
             description:
               type: string
             transitions:
+              type: array
+              items:
+                type: object
+                required: [to]
+                additionalProperties: true
+                properties:
+                  to:
+                    type: string
+                  guard:
+                    type: string
+                  on_enter:
+                    type: string
+                  required_role:
+                    type: string
               description: >
-                Either a list of target state names (simple form) or a
-                list of objects with to/guard/on_enter/required_role
-                (rich form).
+                List of {to, guard?, on_enter?, required_role?} objects.
+                Empty list = terminal state.
         description: "Map of state name to {description, transitions}."
