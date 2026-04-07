@@ -4,29 +4,29 @@ kind: Skill
 metadata:
   id: SKILL-excalidraw
   name: excalidraw
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Generates Excalidraw diagrams programmatically as JSON. Use when creating architecture diagrams, flowcharts, or hand-drawn-style visuals for documentation."
+  description: "Generates Excalidraw diagrams programmatically as hand-drawn-style JSON."
   category: design
   layer: null
+  when_to_use: "Use when creating architecture diagrams, flowcharts, or hand-drawn-style visuals for documentation, or when converting existing diagrams to editable Excalidraw JSON."
 ---
 
 # Excalidraw
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Create an architecture diagram, flowchart, or system diagram
-- Generate hand-drawn-style visuals for documentation
-- Produce Excalidraw-compatible JSON for editing in the Excalidraw app
-- Create diagrams that can be embedded in Markdown or docs
+Excalidraw files are JSON with a top-level `elements` array of shapes,
+text, and arrows. Generate them directly to produce hand-drawn-style
+architecture diagrams, flowcharts, and documentation visuals that stay
+editable in the Excalidraw app.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Excalidraw JSON Format
+### File shape
 
-Excalidraw files (`.excalidraw`) are JSON with this top-level structure:
+An `.excalidraw` file has a fixed envelope and a list of elements:
 
 ```json
 {
@@ -42,23 +42,19 @@ Excalidraw files (`.excalidraw`) are JSON with this top-level structure:
 }
 ```
 
-Each element in `elements` is an object with:
-- `id`: unique string (use random alphanumeric, 8+ chars)
-- `type`: `"rectangle"`, `"ellipse"`, `"diamond"`, `"line"`, `"arrow"`, `"text"`, `"freedraw"`, `"image"`
-- `x`, `y`: position (top-left corner)
-- `width`, `height`: dimensions (for shapes)
-- `strokeColor`: border color (default `"#1e1e1e"`)
-- `backgroundColor`: fill color (`"transparent"` or a color)
-- `fillStyle`: `"solid"`, `"hachure"`, `"cross-hatch"`
-- `strokeWidth`: 1, 2, or 4
-- `roughness`: 0 (architect), 1 (artist/hand-drawn), 2 (cartoonist)
-- `opacity`: 0-100
-- `groupIds`: array of group IDs for grouping elements
-- `boundElements`: array linking text labels and arrows to shapes
+Every element carries `id` (unique 8+ char string), `type`, position
+(`x`, `y`), dimensions, and styling: `strokeColor`, `backgroundColor`,
+`fillStyle` (`solid` / `hachure` / `cross-hatch`), `strokeWidth`
+(1/2/4), `roughness` (0 architect, 1 artist, 2 cartoonist), `opacity`
+(0-100), plus `groupIds` and `boundElements` for linking.
 
-### 2. Element Types
+### Element types
 
-**Rectangle** (boxes, containers):
+Use `rectangle` (with `roundness: { type: 3 }` for rounded corners)
+for boxes and containers, `ellipse` for soft nodes, `diamond` for
+decisions, `text` for labels, and `arrow` / `line` for connections.
+`freedraw` and `image` are available but rarely generated.
+
 ```json
 {
   "id": "rect1", "type": "rectangle",
@@ -69,53 +65,37 @@ Each element in `elements` is an object with:
 }
 ```
 
-**Text** (labels, standalone text):
-```json
-{
-  "id": "text1", "type": "text",
-  "x": 140, "y": 130, "width": 120, "height": 25,
-  "text": "API Server", "fontSize": 20, "fontFamily": 1,
-  "textAlign": "center", "verticalAlign": "middle"
-}
-```
+Text elements set `text`, `fontSize`, `fontFamily` (1 = Virgil
+hand-drawn, 2 = Helvetica, 3 = Cascadia mono), `textAlign`, and
+`verticalAlign`. Arrows use `points` relative to `x, y` plus optional
+`startBinding` / `endBinding` linking to target element IDs.
 
-**Arrow** (connections between elements):
-```json
-{
-  "id": "arrow1", "type": "arrow",
-  "x": 300, "y": 140,
-  "points": [[0, 0], [150, 0]],
-  "startBinding": { "elementId": "rect1", "focus": 0, "gap": 5 },
-  "endBinding": { "elementId": "rect2", "focus": 0, "gap": 5 },
-  "endArrowhead": "arrow"
-}
-```
+### Binding text to shapes
 
-**Font families**: 1 = Virgil (hand-drawn), 2 = Helvetica, 3 = Cascadia (code)
+To label a shape, create a text element and bind both sides:
 
-### 3. Binding Text to Shapes
+1. On the container: add `"boundElements": [{"id": "textId", "type":
+   "text"}]`.
+2. On the text: set `"containerId": "shapeId"` and size the text to
+   fit inside the container.
+3. Excalidraw auto-centers the text within the shape.
 
-To label a shape, create a text element and bind it:
+### Layout guidelines
 
-1. On the shape: add `"boundElements": [{"id": "textId", "type": "text"}]`
-2. On the text: add `"containerId": "shapeId"` and set dimensions to fit
-3. Text auto-centers within the container shape
+- Align coordinates to multiples of 20 (matches the default grid).
+- Leave 80-120px between connected elements.
+- Use left-to-right for flows and pipelines, top-to-bottom for
+  hierarchies.
+- Group related elements with a shared `groupIds` entry.
+- Label every shape; keep one idea per diagram and split if it grows
+  beyond a single viewport.
+- Titles 28-32px, labels 20-24px, annotations 16-18px, never below
+  16px.
+- Give similar elements the same width and height for visual rhythm.
 
-### 4. Layout Guidelines
+### Semantic color palette
 
-- **Grid alignment**: Use multiples of 20 for coordinates (matches default grid)
-- **Spacing**: 80-120px between connected elements
-- **Flow direction**: Left-to-right for flows/pipelines; top-to-bottom for hierarchies
-- **Grouping**: Related elements share a `groupIds` entry
-- **One idea per diagram**: If it needs scrolling, split it into multiple diagrams
-- **Label everything**: Every shape gets a text binding or a bound text element
-- **Font sizes**: Titles 28-32px, labels 20-24px, annotations 16-18px
-- **Consistent sizing**: Similar elements should have the same width and height
-- **Readable at 1x zoom**: Minimum text size 16px
-
-### 5. Semantic Color Palette
-
-Use these colors consistently within a diagram:
+Pick from this palette and stay consistent within a diagram:
 
 | Role | Fill (`backgroundColor`) | Stroke (`strokeColor`) |
 |---|---|---|
@@ -126,50 +106,154 @@ Use these colors consistently within a diagram:
 | Danger / error | `#ffc9c9` | `#e03131` |
 | Neutral / container | `#e9ecef` | `#495057` |
 
-Set `"fillStyle": "solid"` for filled shapes.
+Set `"fillStyle": "solid"` when a shape is filled.
 
-### 6. Diagram Types
+### Diagram types
 
-**Architecture Diagram:**
-- Use rectangles for services, databases (with rounded corners)
-- Arrows for data flow with labels
-- Group related services with a larger rectangle container
-- Color-code by layer (frontend = blue, backend = green, data = yellow)
+- **Architecture:** rectangles for services and databases (rounded
+  corners), arrows for data flow with labels, a larger container
+  rectangle grouping related services, colors by layer (frontend
+  blue, backend green, data yellow).
+- **Flowchart:** diamonds for decisions, rectangles for processes,
+  ellipses for start/end, consistent direction, "Yes"/"No" labels on
+  decision arrows.
+- **Sequence-style:** vertical arrangement with horizontal arrows,
+  operation names on each arrow, dashed arrows for responses.
 
-**Flowchart:**
-- Diamonds for decisions, rectangles for processes, ellipses for start/end
-- Consistent arrow direction (top-to-bottom or left-to-right)
-- Label decision arrows with "Yes"/"No"
+### Embedding in docs
 
-**Sequence-style Diagram:**
-- Vertical arrangement with horizontal arrows
-- Label arrows with operation names
-- Use dashed arrows for responses
+Save the `.excalidraw` source for editing, export SVG or PNG for
+embedding. GitHub renders `.excalidraw.png` directly in Markdown. The
+Excalidraw VS Code extension renders `.excalidraw` files in-editor.
 
-### 7. Embedding in Documentation
+## Level 3 — Full reference
 
-- Save as `.excalidraw` file for editable source
-- Export to SVG or PNG for embedding in Markdown
-- In MkDocs or similar: embed the SVG directly or use `![diagram](diagram.svg)`
-- For GitHub: `.excalidraw.png` files render directly in Markdown
-- Excalidraw VS Code extension renders `.excalidraw` files in-editor
+### Full element property reference
 
-## References
+Common properties across all element types:
 
-- `references/json-schema.md` --- Full element type reference, properties, and valid file template
+```
+id              string    Unique identifier (use descriptive IDs)
+type            string    rectangle|ellipse|diamond|text|arrow|
+                          line|freedraw|image
+x, y            number    Position (top-left corner)
+width, height   number    Bounding box size
+angle           number    Rotation in radians (default 0)
+strokeColor     string    Border/line color (hex)
+backgroundColor string    Fill color (hex, or "transparent")
+fillStyle       string    "solid" | "hachure" | "cross-hatch"
+strokeWidth     number    1 (thin), 2 (normal), 4 (bold)
+strokeStyle     string    "solid" | "dashed" | "dotted"
+roughness       number    0 (architect) | 1 (artist) | 2 (cartoonist)
+opacity         number    0-100
+roundness       object    { "type": 3 } for rounded corners, null for sharp
+isDeleted       boolean   Soft-delete flag (default false)
+boundElements   array     [{ "id": "...", "type": "text|arrow" }]
+groupIds        array     Group IDs for visually grouping elements
+```
 
-## Examples
+Text-specific properties:
 
-**User:** "Create an architecture diagram for a web app with React frontend, Node API, and PostgreSQL"
-**Agent:** Generates Excalidraw JSON with three labeled rectangles arranged
-left-to-right, connected by arrows labeled "HTTP/REST" and "SQL". Uses blue for
-frontend, green for API, yellow for database. Saves as `.excalidraw` file.
+```
+text            string    The displayed text
+fontSize        number    Size in px (16-32 typical)
+fontFamily      number    1 (Virgil/hand), 2 (Helvetica), 3 (Cascadia/mono)
+textAlign       string    "left" | "center" | "right"
+verticalAlign   string    "top" | "middle"
+containerId     string    ID of parent container (for bound text)
+```
 
-**User:** "Make a flowchart for this decision process"
-**Agent:** Creates a top-to-bottom flowchart with diamond decision nodes, rectangle
-process nodes, and labeled arrows. Uses consistent colors and grid-aligned positioning.
+Arrow and line properties:
 
-**User:** "Convert this Mermaid diagram to Excalidraw"
-**Agent:** Parses the Mermaid syntax, maps nodes to Excalidraw rectangles/diamonds,
-creates arrows for edges, and arranges with proper spacing. Produces editable
-`.excalidraw` JSON.
+```
+points          array     [[0,0], [dx,dy]] - relative to x,y
+startBinding    object    { "elementId": "id", "focus": 0, "gap": 4 }
+endBinding      object    { "elementId": "id", "focus": 0, "gap": 4 }
+startArrowhead  string    null | "arrow" | "dot" | "bar"
+endArrowhead    string    null | "arrow" | "dot" | "bar"
+```
+
+`focus` ranges from -1 to 1 and controls where the arrow attaches
+(0 = center). `gap` is the space between the arrowhead and the target
+border. Target elements must list the arrow in their `boundElements`.
+
+### Minimal valid file
+
+```json
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "generated",
+  "elements": [
+    {
+      "id": "box1",
+      "type": "rectangle",
+      "x": 100,
+      "y": 100,
+      "width": 200,
+      "height": 80,
+      "strokeColor": "#1971c2",
+      "backgroundColor": "#a5d8ff",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "roughness": 1,
+      "opacity": 100,
+      "angle": 0,
+      "groupIds": [],
+      "roundness": { "type": 3 },
+      "boundElements": [
+        { "id": "label1", "type": "text" }
+      ],
+      "isDeleted": false
+    },
+    {
+      "id": "label1",
+      "type": "text",
+      "x": 140,
+      "y": 125,
+      "width": 120,
+      "height": 30,
+      "text": "Service A",
+      "fontSize": 20,
+      "fontFamily": 1,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "box1",
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 1,
+      "roughness": 1,
+      "opacity": 100,
+      "angle": 0,
+      "groupIds": [],
+      "boundElements": null,
+      "isDeleted": false
+    }
+  ],
+  "appState": {
+    "viewBackgroundColor": "#ffffff",
+    "gridSize": 20
+  },
+  "files": {}
+}
+```
+
+### Common patterns
+
+- **Container with children:** use a large rectangle as a visual
+  container with smaller elements inside. Bind arrows to the
+  container, not to the children.
+- **Labeled arrow:** create an arrow between two shapes, then add a
+  standalone text element positioned near the arrow's midpoint. Arrow
+  labels do not need `containerId`.
+- **Decision diamond:** use `type: "diamond"` with bound text.
+  Connect "Yes" and "No" arrows from different sides and label each
+  arrow with a nearby text element.
+- **Grouping:** assign the same `groupIds` entry to multiple elements
+  to link them as a visual group.
+
+### References
+
+- `references/json-schema.md` — full element schema and minimal file
+  template.

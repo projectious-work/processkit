@@ -4,144 +4,156 @@ kind: Skill
 metadata:
   id: SKILL-embedding-vectordb
   name: embedding-vectordb
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Vector embeddings and vector database patterns including model selection, similarity metrics, and index tuning. Use when building semantic search, choosing vector stores, or optimizing embedding pipelines."
+  description: "Vector embeddings and vector DB patterns — model choice, similarity metrics, index tuning."
   category: data
   layer: null
+  when_to_use: "Use when choosing an embedding model, picking or migrating between vector databases, optimizing semantic search quality or latency, or building a hybrid (dense + sparse) retrieval pipeline."
 ---
 
 # Embedding and Vector Database Patterns
 
-## When to Use
+## Level 1 — Intro
 
-- Choosing an embedding model for a new project
-- Selecting or migrating between vector databases
-- Optimizing semantic search quality or performance
-- Implementing hybrid search (dense + sparse)
-- Tuning vector index parameters for latency or recall
-- Building or scaling an embedding pipeline
+Semantic search lives or dies on three choices: the embedding model,
+the vector store, and the index parameters. Default to cosine
+similarity, hybrid retrieval (dense + BM25), and HNSW indexes — then
+benchmark on your own eval set before tuning.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Embedding Model Selection
+### Embedding model selection
 
-Choose based on your data type, quality needs, and constraints.
+Pick on domain match, dimensionality, context window, latency, and
+cost. MTEB scores are general — benchmark on YOUR data. Smaller
+models (MiniLM) suit real-time; larger ones (e5-mistral) suit batch.
+Open-source is free to run but needs GPU infrastructure.
 
-**Commercial models:**
-| Model | Dims | Max Tokens | Strengths |
-|-------|------|-----------|-----------|
-| OpenAI `text-embedding-3-small` | 1536 | 8191 | Good default, low cost |
-| OpenAI `text-embedding-3-large` | 3072 | 8191 | Higher quality, Matryoshka (dim reduction) |
-| Cohere `embed-v3` | 1024 | 512 | Strong multilingual, search/classify modes |
-| Voyage `voyage-3` | 1024 | 32000 | Long context, strong on code |
+Commercial:
 
-**Open-source models:**
-| Model | Dims | Max Tokens | Strengths |
-|-------|------|-----------|-----------|
-| `nomic-embed-text-v1.5` | 768 | 8192 | Strong MTEB, Matryoshka support |
-| `bge-large-en-v1.5` | 1024 | 512 | Good for English, well-tested |
-| `e5-mistral-7b-instruct` | 4096 | 32768 | Best open-source quality, high compute |
-| `all-MiniLM-L6-v2` | 384 | 256 | Tiny, fast, good for prototyping |
+| Model | Dims | Max tokens | Strengths |
+|---|---|---|---|
+| OpenAI text-embedding-3-small | 1536 | 8191 | Good default, low cost |
+| OpenAI text-embedding-3-large | 3072 | 8191 | Higher quality, Matryoshka |
+| Cohere embed-v3 | 1024 | 512 | Multilingual, search/classify |
+| Voyage voyage-3 | 1024 | 32000 | Long context, strong on code |
 
-Selection criteria:
-- **Domain match:** MTEB leaderboard scores are general; benchmark on YOUR data
-- **Dimensionality:** Higher dims = better quality but more storage and slower search
-- **Context window:** Must fit your chunk size
-- **Latency:** Smaller models (MiniLM) for real-time; larger models (e5-mistral) for batch
-- **Cost:** Open-source is free to run but needs GPU infrastructure
+Open-source:
 
-### 2. Dimensionality and Matryoshka Embeddings
+| Model | Dims | Max tokens | Strengths |
+|---|---|---|---|
+| nomic-embed-text-v1.5 | 768 | 8192 | Strong MTEB, Matryoshka |
+| bge-large-en-v1.5 | 1024 | 512 | English, well-tested |
+| e5-mistral-7b-instruct | 4096 | 32768 | Best open quality, high compute |
+| all-MiniLM-L6-v2 | 384 | 256 | Tiny, fast, prototyping |
 
-Matryoshka embeddings (supported by OpenAI text-embedding-3 and nomic-embed) allow truncating dimensions without retraining:
-- 3072 dims -> truncate to 1024 or 512 for faster search with modest quality loss
-- Test quality at each dimension on your eval set before deciding
+### Dimensionality and Matryoshka
 
-Rule of thumb: 256-512 dims is sufficient for most retrieval tasks. 1024+ dims for fine-grained similarity.
+Matryoshka embeddings (OpenAI text-embedding-3, nomic-embed) allow
+truncating dimensions without retraining: 3072 → 1024 or 512 trades
+modest quality loss for faster search. Test at each dimension on
+your eval set before committing. Rule of thumb: 256–512 dims is
+enough for most retrieval; 1024+ for fine-grained similarity.
 
-### 3. Similarity Metrics
+### Similarity metrics
 
-| Metric | Formula | Range | Best For |
-|--------|---------|-------|----------|
-| Cosine similarity | dot(a,b) / (norm(a) * norm(b)) | [-1, 1] | Normalized embeddings (most common) |
-| Dot product | dot(a,b) | (-inf, inf) | When magnitude matters (relevance scoring) |
-| Euclidean (L2) | sqrt(sum((a-b)^2)) | [0, inf) | Spatial clustering |
+| Metric | Range | Best for |
+|---|---|---|
+| Cosine similarity | [-1, 1] | Normalized embeddings (most common) |
+| Dot product | (-inf, inf) | When magnitude matters |
+| Euclidean (L2) | [0, inf) | Spatial clustering |
 
-Default choice: **cosine similarity**. Most embedding models are trained with cosine. If embeddings are already normalized (unit length), cosine = dot product.
+Default is cosine — most embedding models are trained with it. For
+unit-length embeddings, cosine equals dot product.
 
-### 4. Vector Database Selection
+### Vector database selection
 
-| Database | Architecture | Best For | Scaling |
-|----------|-------------|----------|---------|
-| **FAISS** | In-memory library | Prototyping, batch search, <10M vectors | Single machine |
-| **pgvector** | Postgres extension | Postgres shops, need joins + filtering | Vertical + read replicas |
-| **Chroma** | Embedded DB | Local dev, quick experiments | Single machine, <1M practical |
-| **Qdrant** | Rust-based, client-server | Production workloads, advanced filtering | Horizontal sharding |
-| **Weaviate** | Go-based, built-in vectorizers | Multimodal, auto-vectorization | Horizontal sharding |
-| **Pinecone** | Managed SaaS | Zero ops, serverless option | Fully managed |
-| **Milvus** | Distributed, cloud-native | Large scale (billions of vectors) | Horizontal, cloud-native |
+| Database | Architecture | Best for | Scaling |
+|---|---|---|---|
+| FAISS | In-memory library | Prototyping, < 10M | Single machine |
+| pgvector | Postgres extension | Postgres shops, joins + filtering | Vertical |
+| Chroma | Embedded DB | Local dev, quick experiments | Single, < 1M |
+| Qdrant | Rust client-server | Production, advanced filtering | Horizontal |
+| Weaviate | Go, built-in vectorizers | Multimodal, auto-vectorization | Horizontal |
+| Pinecone | Managed SaaS | Zero-ops, serverless | Fully managed |
+| Milvus | Distributed cloud-native | Billions of vectors | Horizontal |
 
-Decision flow:
-1. Prototyping? Use Chroma or FAISS locally.
-2. Already using Postgres? Start with pgvector.
-3. Need advanced filtering + production reliability? Qdrant or Weaviate.
-4. Want zero ops? Pinecone.
-5. Billions of vectors? Milvus.
+Decision flow: prototyping → Chroma or FAISS. Already on Postgres →
+pgvector. Production with advanced filtering → Qdrant or Weaviate.
+Zero ops → Pinecone. Billions of vectors → Milvus.
 
-### 5. Index Types and Tuning
+### Index types
 
-**HNSW (Hierarchical Navigable Small Worlds):**
-- Default choice for most vector DBs. Good balance of speed and recall.
-- Key parameters: `M` (connections per node, default 16), `ef_construction` (build quality, default 200), `ef_search` (query quality, default 100).
-- Higher M and ef = better recall but more memory and slower build.
-- Start with defaults. Tune ef_search up if recall is too low, down if latency is too high.
+**HNSW** is the default for most vector DBs. Key params: `M`
+(connections per node, default 16), `ef_construction` (build quality,
+default 200), `ef_search` (query quality, default 100). Higher M and
+ef = better recall, more memory, slower build. Start with defaults;
+tune `ef_search` up for recall, down for latency.
 
-**IVF (Inverted File Index):**
-- Clusters vectors, then searches only relevant clusters.
-- Parameter: `nlist` (number of clusters), `nprobe` (clusters to search at query time).
-- Rule of thumb: nlist = sqrt(N), nprobe = nlist/10 to nlist/5.
-- Faster than HNSW for very large datasets (>100M vectors).
+**IVF** clusters vectors and searches only relevant clusters. Params:
+`nlist` ≈ sqrt(N), `nprobe` ≈ nlist/10 to nlist/5. Faster than HNSW
+above ~100M vectors.
 
-**PQ (Product Quantization):**
-- Compresses vectors for memory efficiency. Slight quality loss.
-- Use when dataset does not fit in memory.
-- Often combined with IVF: IVF-PQ.
+**PQ (Product Quantization)** compresses vectors with slight quality
+loss. Use when the dataset will not fit in memory. Often combined as
+IVF-PQ.
 
-### 6. Hybrid Search
+### Hybrid search
 
-Combine dense (semantic) and sparse (keyword) retrieval for best results:
+Combine dense (semantic) and sparse (keyword/BM25) retrieval: dense
+catches "automobile" matching "car," sparse catches exact matches
+(product IDs, acronyms, proper nouns). Fuse with Reciprocal Rank
+Fusion: `RRF = sum(1 / (k + rank_i))` with k typically 60. Hybrid
+almost always outperforms either method alone. Qdrant and Weaviate
+have built-in hybrid; for others, run BM25
+(Elasticsearch/OpenSearch) and vector search separately and fuse.
 
-- Dense retrieval catches semantic matches ("automobile" matches "car")
-- Sparse retrieval (BM25) catches exact matches (product IDs, acronyms, proper nouns)
-- Fusion: Reciprocal Rank Fusion (RRF) is the standard method
-  - RRF score = sum(1 / (k + rank_i)) across retrievers, k typically 60
-- Almost always outperforms either method alone
+## Level 3 — Full reference
 
-Implementation: Qdrant and Weaviate have built-in hybrid search. For others, run BM25 (Elasticsearch/OpenSearch) + vector search separately and fuse results.
+### Metadata filtering and multi-tenancy
 
-### 7. Metadata Filtering and Multi-Tenancy
+Store metadata alongside vectors: source, date, category, tenant_id.
+Pre-filter (filter before vector search) is more efficient than
+post-filter. For multi-tenancy, use a metadata filter on tenant_id
+or separate collections per tenant. Index metadata fields used in
+filters for performance.
 
-- Store metadata alongside vectors: source, date, category, tenant_id
-- Pre-filter (filter before vector search) is more efficient than post-filter
-- For multi-tenancy: use metadata filter on tenant_id, or separate collections per tenant
-- Index metadata fields used in filters for performance
+### Embedding pipeline best practices
 
-### 8. Embedding Pipeline Best Practices
+- **Batch processing** — embed in batches of 100–500 for API
+  efficiency
+- **Caching** — cache by content hash to skip re-embedding unchanged
+  content
+- **Normalization** — normalize to unit length when using cosine
+- **Chunking alignment** — chunk text before embedding, never embed
+  then chunk
+- **Monitoring** — track embedding latency, cache hit rate, and
+  index size over time
 
-- **Batch processing:** Embed in batches of 100-500 for API efficiency
-- **Caching:** Cache embeddings by content hash to avoid re-embedding unchanged content
-- **Normalization:** Normalize to unit length if using cosine similarity
-- **Chunking alignment:** Chunk text before embedding; do not embed then chunk
-- **Monitoring:** Track embedding latency, cache hit rate, and index size over time
+### Worked examples
 
-## Examples
+- **Semantic search for a docs site:** `text-embedding-3-small` for
+  cost-effective embedding; pgvector if already on Postgres,
+  otherwise Qdrant. Hybrid search (BM25 + dense). Chunk by section
+  headers at 512 tokens. Build a 50-query eval set with expected
+  results to tune retrieval.
+- **Slow vector search at 5M vectors (> 500ms):** If flat index,
+  switch to HNSW. If HNSW, lower `ef_search` (recall vs speed).
+  Consider Matryoshka 3072 → 1024. Enable metadata pre-filtering to
+  shrink the search space. Benchmark each change against the eval
+  set.
+- **Migrating Chroma → Qdrant:** Export vectors and metadata.
+  Create Qdrant collection with matching distance metric and
+  dimensions. Batch-upload. Verify record count. Run the eval set
+  against both for recall and latency. Configure Qdrant replication
+  for HA.
 
-### Choosing a Stack for Semantic Search
-User wants to add semantic search to a documentation site. Recommend `text-embedding-3-small` for cost-effective embedding, pgvector if they already use Postgres (otherwise Qdrant). Implement hybrid search: BM25 for exact term matches, dense retrieval for semantic. Chunk docs by section headers at 512 tokens. Set up an eval set of 50 queries with expected results to tune retrieval.
+### Anti-patterns
 
-### Optimizing Vector Search Performance
-User reports vector search is too slow (>500ms at 5M vectors). Check current index type and parameters. If using flat index, switch to HNSW. If HNSW, tune ef_search down (trade recall for speed). Consider Matryoshka dimension reduction (3072 -> 1024). Enable metadata pre-filtering to reduce search space. Benchmark each change against the eval set for recall and latency.
-
-### Migrating Between Vector Databases
-User wants to move from Chroma to Qdrant for production. Export all vectors and metadata from Chroma. Create Qdrant collection with matching distance metric and dimensions. Batch-upload vectors with metadata. Verify record count matches. Run the eval query set against both and compare recall and latency. Set up Qdrant with replication for high availability.
+- Picking a model from MTEB without benchmarking on your domain
+- Using L2 distance with embeddings trained for cosine
+- Embedding raw documents and chunking after the fact
+- Pure dense retrieval for catalogs full of SKUs and proper nouns
+- Production vector store with no eval set to detect regressions

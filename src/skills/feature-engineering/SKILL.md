@@ -4,126 +4,146 @@ kind: Skill
 metadata:
   id: SKILL-feature-engineering
   name: feature-engineering
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Feature engineering for ML including encoding, imputation, scaling, selection, and time-series features. Use when preparing data for ML models, selecting features, or engineering new features from raw data."
+  description: "Feature engineering for ML — encoding, imputation, scaling, selection, time-series features."
   category: data
   layer: null
+  when_to_use: "Use when preparing data for an ML model, encoding categoricals, handling missing data, building time-series features, or selecting features from a wide table."
 ---
 
 # Feature Engineering
 
-## When to Use
+## Level 1 — Intro
 
-When the user is preparing data for machine learning models, encoding categorical
-variables, handling missing data, creating new features from raw data, or asks
-"how should I engineer features for this model?". Also applies when selecting
-features or building time-series features.
+Good features beat clever models. Encode categoricals by cardinality,
+impute missing data with mechanism in mind, scale only when the model
+needs it, and wrap everything in a sklearn Pipeline so you cannot leak
+the test set.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Encoding Categorical Variables
+### Encoding categoricals
 
-- **One-hot encoding**: Use for nominal categories with < 15 unique values. Creates binary columns.
-  Use `pd.get_dummies(drop_first=True)` or `OneHotEncoder(drop="first")` to avoid multicollinearity.
-- **Ordinal encoding**: Use when categories have natural order (low/medium/high, grade levels).
-  Map explicitly: `{"low": 0, "medium": 1, "high": 2}` — never rely on alphabetical order.
-- **Target encoding**: Use for high-cardinality categoricals (city, zip code). Replace category
-  with mean target value. Always use cross-validated encoding to prevent leakage.
-- **Frequency encoding**: Replace category with its count or proportion. Useful when frequency
-  itself is predictive (popular products, common zip codes).
-- Never use label encoding for nominal categories — it implies false ordinal relationships.
+- **One-hot** for nominal categories with < 15 unique values; use
+  `drop_first=True` to avoid multicollinearity.
+- **Ordinal** for natural order (low/medium/high). Map explicitly —
+  never rely on alphabetical sort.
+- **Target encoding** for high-cardinality nominals (city, zip).
+  Replace with mean target value, always with cross-validated
+  encoding to prevent leakage.
+- **Frequency encoding** when category count or proportion is itself
+  predictive (popular products).
+- **Never label-encode nominals** — it implies false ordinal
+  relationships.
 
-### 2. Handling Missing Data
+### Handling missing data
 
-- Understand the missingness mechanism first: MCAR, MAR, or MNAR
-- **Numerical imputation**: Median (robust to outliers) or mean (preserves distribution mean).
-  Add a binary `_is_missing` indicator column when missingness may be informative.
-- **Categorical imputation**: Mode for low-cardinality, or treat missing as its own category `"unknown"`.
-- **Advanced**: KNN imputation or iterative imputation (MICE) when features are correlated.
-- **Drop**: Only when < 5% of rows are affected and missingness is MCAR.
-- Always impute using training set statistics only — fit on train, transform on test.
+Understand the mechanism first: MCAR, MAR, or MNAR. Numerical
+imputation: median (robust to outliers) or mean (preserves
+distribution mean), with a binary `_is_missing` indicator if
+missingness may be informative. Categorical imputation: mode for
+low-cardinality, or treat missing as its own `"unknown"` category.
+Advanced: KNN or iterative (MICE) imputation when features are
+correlated. Drop rows only when < 5% are affected and missingness is
+MCAR. Always fit imputers on training data only.
 
-### 3. Feature Scaling
+### Feature scaling
 
-- **StandardScaler** (z-score): Use for algorithms assuming normal distribution (linear regression,
-  SVM, PCA). Centers to mean=0, std=1.
-- **MinMaxScaler** (0-1): Use for neural networks or when bounded range is needed.
-  Sensitive to outliers.
-- **RobustScaler** (IQR-based): Use when data has outliers. Centers on median, scales by IQR.
-- Tree-based models (Random Forest, XGBoost) do not need scaling.
-- Always fit the scaler on training data only; apply the same transformation to test data.
+- **StandardScaler** (z-score) — linear regression, SVM, PCA
+- **MinMaxScaler** (0–1) — neural networks, bounded range
+  requirements; sensitive to outliers
+- **RobustScaler** (IQR-based) — when outliers are present
+- **No scaling needed** for tree-based models (Random Forest,
+  XGBoost)
 
-### 4. Feature Selection
+Always fit on training data only and apply the same transform to
+test data.
 
-- **Filter methods**: Correlation with target (Pearson, Spearman), mutual information, chi-square.
-  Fast but ignores feature interactions.
-- **Wrapper methods**: Recursive feature elimination (RFE), forward/backward selection.
-  Expensive but considers feature combinations.
-- **Embedded methods**: L1 regularization (Lasso), tree-based feature importance, permutation
-  importance. Best balance of speed and accuracy.
-- Remove zero-variance features first (constant columns).
-- Drop one of highly correlated pairs (r > 0.9) — they add noise without information.
-- Use domain knowledge as the first filter before data-driven methods.
+### Feature selection
 
-### 5. Time-Series Features
+Filter methods (correlation, mutual information, chi-square) are
+fast but ignore interactions. Wrapper methods (RFE, forward/backward)
+consider combinations but are expensive. Embedded methods (Lasso,
+tree importance, permutation importance) are the best
+speed/accuracy balance. Remove zero-variance features first. Drop
+one of each highly correlated pair (r > 0.9). Use domain knowledge
+as the first filter before data-driven methods.
 
-- **Lag features**: Previous values as predictors: `value_lag_1`, `value_lag_7`, `value_lag_30`.
-  Choose lags based on domain (daily seasonality = lag 7 for weekly data).
-- **Rolling statistics**: Rolling mean, std, min, max over windows: `value_rolling_mean_7d`.
-  Window size should match the pattern you want to capture.
-- **Seasonal features**: Extract from timestamps: `hour_of_day`, `day_of_week`, `month`,
-  `is_weekend`, `is_holiday`. Encode cyclical features with sin/cos: `sin(2*pi*hour/24)`.
-- **Difference features**: Period-over-period change: `value - value_lag_1`, percent change.
-- **Expanding statistics**: Cumulative mean, sum, count from the start of the series.
-- Always respect temporal ordering — never use future values as features (data leakage).
+### Time-series features
 
-### 6. Text Features
+- **Lag features** — `value_lag_1`, `value_lag_7`, `value_lag_30`
+  chosen by domain seasonality
+- **Rolling statistics** — `value_rolling_mean_7d`, std, min, max
+  over windows matching the pattern
+- **Seasonal features** — `hour_of_day`, `day_of_week`, `month`,
+  `is_weekend`, `is_holiday`; encode cyclical features as
+  `sin(2*pi*hour/24)` and matching cosine
+- **Difference features** — period-over-period change, percent change
+- **Expanding statistics** — cumulative mean, sum, count
 
-- **TF-IDF**: Baseline text representation. Use `max_features` to limit dimensionality.
-  Works well for classification with traditional ML models.
-- **Count vectorizer**: Simpler than TF-IDF; use when term frequency alone is predictive.
-- **Embeddings**: Pre-trained embeddings (sentence-transformers) for semantic similarity.
-  Superior for nuanced meaning but more expensive.
-- **Extracted features**: Text length, word count, punctuation count, sentiment score,
-  readability score. Often more interpretable than bag-of-words.
-- Combine TF-IDF with extracted features for a strong baseline before using embeddings.
+Respect temporal ordering — never use future values as features.
 
-### 7. Interaction and Derived Features
+### Avoiding data leakage
 
-- Create interaction terms for known relationships: `price * quantity = revenue`
-- Ratio features: `clicks / impressions = CTR`, `revenue / users = ARPU`
-- Polynomial features: use sparingly (degree 2 max), only for known non-linear relationships
-- Binning: Convert continuous to categorical when the relationship is step-wise
-  (age groups, income brackets). Use domain-driven bins, not arbitrary quantiles.
-- Log transform: Apply to right-skewed features (income, prices, counts) to reduce skew
+Never compute features using information from the test set. Fit all
+transformers (scaler, imputer, encoder) on training data only. For
+time series, features must use only data available at prediction
+time. Target encoding must use cross-validation folds, never the
+full training set. Wrap preprocessing in `sklearn.pipeline.Pipeline`
+to enforce ordering.
 
-### 8. Avoiding Data Leakage
+## Level 3 — Full reference
 
-- Never compute features using information from the test set
-- Fit all transformers (scaler, imputer, encoder) on training data only
-- For time-series: features must only use data available at prediction time
-- Target encoding must use cross-validation folds, not the full training set
-- Pipeline your preprocessing: use `sklearn.pipeline.Pipeline` to ensure proper ordering
+### Text features
 
-## Examples
+- **TF-IDF** — baseline text representation; use `max_features` to
+  cap dimensionality. Strong with traditional ML classifiers.
+- **Count vectorizer** — simpler than TF-IDF when raw frequency is
+  enough.
+- **Embeddings** — pre-trained sentence-transformers for semantic
+  similarity; superior for nuance, more expensive.
+- **Extracted features** — text length, word count, punctuation
+  count, sentiment score, readability. Often more interpretable
+  than bag-of-words.
 
-**User:** "I have a dataset with user_id, city, purchase_amount, and timestamp. How should I engineer features?"
-**Agent:** Target-encodes `city` (high cardinality) with cross-validated means,
-extracts `day_of_week`, `hour`, `is_weekend` from timestamp, creates lag features
-for previous purchase amounts per user, adds rolling 7-day and 30-day purchase
-means, and creates a `days_since_last_purchase` feature. Wraps everything in a
-sklearn Pipeline to prevent leakage.
+Combine TF-IDF + extracted features for a strong baseline before
+reaching for embeddings.
 
-**User:** "My model performance is poor. I have 200 features."
-**Agent:** Starts by removing zero-variance and near-constant columns, then drops
-one of each highly correlated pair (r > 0.9). Runs permutation importance on the
-baseline model to rank features, selects the top 30-50, and retrains. Compares
-performance with the reduced set. Checks for data leakage in remaining features.
+### Interaction and derived features
 
-**User:** "How do I handle the 40% missing values in the income column?"
-**Agent:** Investigates whether missingness correlates with other features (MAR check).
-Creates a binary `income_is_missing` indicator feature. Imputes with median from
-training set (robust to the skewed income distribution). Tests KNN imputation as
-an alternative and compares model performance with both approaches.
+- Interaction terms for known relationships (`price * quantity =
+  revenue`)
+- Ratio features (`clicks / impressions`, `revenue / users`)
+- Polynomial features sparingly (degree 2 max), only for known
+  non-linear relationships
+- Binning continuous → categorical when the relationship is
+  step-wise (age groups, income brackets); use domain-driven bins,
+  not arbitrary quantiles
+- Log transform right-skewed features (income, prices, counts)
+
+### Worked examples
+
+- **user_id, city, purchase_amount, timestamp:** Cross-validated
+  target encoding on city; extract day_of_week, hour, is_weekend
+  from timestamp; lag features per user; rolling 7- and 30-day
+  purchase means; days_since_last_purchase. Wrap in a sklearn
+  Pipeline.
+- **200 features, poor performance:** Drop zero-variance and
+  near-constant columns, drop one of each correlated pair (r > 0.9),
+  rank with permutation importance on the baseline, retrain on top
+  30–50, compare. Audit remaining features for leakage.
+- **40% missing income:** Investigate MAR via correlation with
+  other features. Add `income_is_missing` indicator. Impute median
+  from the training set (robust to skew). Compare model performance
+  to KNN imputation as an alternative.
+
+### Anti-patterns
+
+- Fitting a scaler or encoder on the full dataset before splitting
+- Target encoding without cross-validation (silent leakage)
+- Label-encoding nominal categories
+- Imputing nulls with column mean computed across train + test
+- Time-series features that peek at future timestamps
+- Polynomial expansion of every feature "to be safe"

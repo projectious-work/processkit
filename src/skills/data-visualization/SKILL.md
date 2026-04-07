@@ -4,115 +4,179 @@ kind: Skill
 metadata:
   id: SKILL-data-visualization
   name: data-visualization
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Data visualization best practices including chart selection, color accessibility, and dashboard design. Use when creating charts, designing dashboards, or reviewing data presentations."
+  description: "Chart selection, color accessibility, annotation, and dashboard design."
   category: data
   layer: null
+  when_to_use: "Use when creating charts, designing dashboards, choosing visualization types, improving chart readability, or reviewing data presentations for clarity."
 ---
 
 # Data Visualization
 
-## When to Use
+## Level 1 — Intro
 
-When the user is creating charts, designing dashboards, choosing visualization types,
-improving chart readability, or asks "what chart should I use for this data?". Also
-applies when reviewing data presentations for clarity and accessibility.
+A good chart matches the chart type to the data relationship,
+annotates the insight rather than the raw point, and stays readable
+for colorblind viewers. The default fallbacks are bar (categorical)
+and scatter (continuous).
 
-## References
+## Level 2 — Overview
 
-- `references/chart-selection.md` — Decision tree for chart types with when-to-use and when-NOT-to-use guidance
+### Chart type selection
 
-## Instructions
+Match chart to relationship, not to what looks impressive. Quick
+guide: comparison = bar, trend = line, distribution = histogram,
+relationship = scatter. When unsure, default to bar (categorical) or
+scatter (continuous). Never use a pie chart with more than four
+slices — use a horizontal bar instead. Avoid 3D charts entirely
+unless you are visualizing actual three-dimensional data. Full
+decision tree is in Level 3.
 
-### 1. Chart Type Selection
+### Color and accessibility
 
-- Match the chart to the data relationship, not to what looks impressive
-- See `references/chart-selection.md` for the full decision tree
-- Quick guide: comparison = bar, trend = line, distribution = histogram, relationship = scatter
-- When unsure, default to bar chart (categorical) or scatter plot (continuous)
-- Never use a pie chart with more than 4 slices — use a horizontal bar instead
-- Avoid 3D charts entirely unless visualizing actual three-dimensional data
+Use colorblind-friendly palettes: seaborn `"colorblind"`, viridis,
+cividis. Never rely on color alone — add patterns, markers, or
+labels. Sequential data (low-to-high) needs a single-hue gradient or
+viridis. Diverging data (deviation from center) needs coolwarm or
+RdBu centered at zero. Categorical data needs distinct hues with
+sufficient contrast. Limit to seven or fewer colors; group or facet
+beyond that. Test with a colorblindness simulator before sharing.
 
-### 2. Color and Accessibility
+### Annotation
 
-- Use colorblind-friendly palettes: seaborn `"colorblind"`, viridis, cividis
-- Never rely on color alone to convey meaning — add patterns, markers, or labels
-- Sequential data (low-to-high): use a single-hue gradient or viridis
-- Diverging data (deviation from center): use coolwarm or RdBu, centered at zero
-- Categorical data: use distinct hues with sufficient contrast between adjacent items
-- Limit to 7 or fewer colors; group or facet beyond that
-- Test with a colorblindness simulator before sharing
+Annotate the insight, not just the data point. Always annotate
+max/min values that matter, threshold or target lines, and events
+that explain trend changes. Use direct labels instead of legends
+with 2–3 series. Arrows should point from label to data, not the
+reverse. Keep annotation text concise: "Peak: 1,247 (Q3 launch)" not
+"The maximum value occurred in Q3."
 
-### 3. Annotation Practices
+### Dashboard layout
 
-- Annotate the insight, not just the data point
-- Always annotate: max/min values that matter, threshold or target lines, events that explain trend changes
-- Use direct labels instead of legends when there are 2-3 series
-- Arrow annotations should point from the label to the data, not the reverse
-- Keep annotation text concise: "Peak: 1,247 (Q3 launch)" not "The maximum value occurred in Q3"
+Place the most important metric in the top-left (reading order).
+Use a consistent grid: 2–3 columns, cards of equal height per row.
+Group related metrics visually. Filters live at the top, not buried
+in individual charts. Every dashboard needs a title, date range, and
+data freshness indicator. Limit to 6–8 visualizations per dashboard
+— more causes cognitive overload.
 
-### 4. Dashboard Layout
+### Storytelling
 
-- Place the most important metric in the top-left (reading order)
-- Use a consistent grid: 2-3 columns, cards of equal height per row
-- Group related metrics visually: sales in one section, operations in another
-- Include filters at the top, not buried in individual charts
-- Every dashboard needs a title, date range, and data freshness indicator
-- Limit to 6-8 visualizations per dashboard — more causes cognitive overload
+Lead with the conclusion: "Revenue grew 40% in Q3," not "Here is a
+chart of revenue." Structure as context → finding → implication. Use
+progressive disclosure: summary first, then supporting detail.
+Highlight the relevant; dim or remove the irrelevant. Annotate to
+guide the viewer's eye to the key insight.
 
-### 5. Storytelling with Data
+### Static vs interactive
 
-- Lead with the conclusion: "Revenue grew 40% in Q3" not "Here is a chart of revenue"
-- Structure as: context (why we looked) -> finding (what we found) -> implication (what to do)
-- Use progressive disclosure: summary first, then supporting details
-- Highlight the relevant data; dim or remove the irrelevant
-- Annotate the chart to guide the viewer's eye to the key insight
+Static charts (matplotlib, seaborn) for reports, papers,
+presentations. Interactive (plotly, Altair, D3) for dashboards and
+exploratory tools. Interactive needs tooltips, zoom for dense data,
+and filter controls. Static needs readability at print size (12pt+
+fonts, 300 dpi). Always provide a static fallback for interactive
+charts.
 
-### 6. Responsive and Interactive Charts
+## Level 3 — Full reference
 
-- Static charts (matplotlib, seaborn): use for reports, papers, presentations
-- Interactive charts (plotly, Altair, D3): use for dashboards and exploratory tools
-- For interactive: add tooltips with detail, zoom for dense data, filter controls
-- For static: ensure readability at print size (12pt+ fonts, 300 dpi)
-- Always provide a static fallback for interactive charts (screenshot, PDF export)
+### Chart selection decision tree
 
-### 7. Common Mistakes to Avoid
+**Comparison across categories:**
+
+- **Vertical bar** — magnitudes across < 15 categories. Avoid for
+  time series (use line) or > 15 categories (use horizontal).
+- **Horizontal bar** — long labels or > 10 categories. Avoid for
+  time-based or continuous x-axis.
+- **Grouped bar** — comparing 2–3 sub-groups within a category.
+  Avoid > 3 sub-groups (facet instead) or when showing totals
+  (stacked).
+
+**Trend over time:**
+
+- **Line** — continuous time axis, 1–5 series. Avoid with < 5 time
+  points or > 7 lines.
+- **Area** — emphasizing total volume or magnitude. Avoid for
+  similar-magnitude series (lines occlude) or precise reading.
+
+**Distribution:**
+
+- **Histogram** — shape of one continuous variable.
+- **Box plot** — comparing distributions across groups.
+- **Violin** — like box plot but shows full shape; good for bimodal
+  data.
+
+**Relationship:**
+
+- **Scatter** — two continuous variables. Use hexbin or 2D density
+  for > 1000 points.
+- **Bubble** — scatter with size as a third variable. Avoid for
+  precise comparison (humans are bad at areas).
+- **Heatmap** — magnitude across two categorical or ordinal
+  dimensions. Avoid for sparse data or > 20 items per axis.
+
+**Composition (parts of a whole):**
+
+- **Stacked bar** — parts contributing to a total over time or
+  category. Avoid > 5–6 segments.
+- **Pie** — only with 2–4 slices and approximate proportions.
+  Almost always replaceable with a horizontal bar.
+- **Treemap** — hierarchical part-of-whole with many categories.
+  Avoid when precise comparison matters.
+
+**Geographic:**
+
+- **Choropleth** — values for defined regions.
+- **Point/dot map** — individual locations or events.
+
+| Relationship | First choice | Alternative | Avoid |
+|---|---|---|---|
+| Compare categories | Vertical bar | Horizontal bar, lollipop | Pie |
+| Trend over time | Line | Area | Bar (unless few points) |
+| Distribution | Histogram | Box, violin | Pie |
+| Two variables | Scatter | Hexbin, 2D density | Line |
+| Parts of whole | Stacked bar | Treemap | Pie (> 4 slices) |
+| Correlation matrix | Heatmap | Clustered pairs | Table of numbers |
+| Geographic | Choropleth | Point map | Non-geographic |
+
+### Universal rules
+
+1. Start with the simplest chart that answers the question.
+2. If the legend has > 7 entries, redesign.
+3. If a colleague cannot understand it in 10 seconds, simplify.
+4. When comparing, use the same axis scale across panels.
+5. Titles state the insight: "Sales doubled in Q3," not "Sales by
+   Quarter."
+
+### Common mistakes
 
 - Truncated y-axis on bar charts — bars must start at zero
-- Dual y-axes — misleading scale comparison; use two panels instead
-- Overplotting — too many points overlap; use transparency, jitter, or density plots
-- Missing units on axes — every axis needs a label with units
-- Default titles ("Figure 1") — the title should state the finding
-- Legend far from the data it describes — place legends near the relevant series
+- Dual y-axes — misleading; use two panels
+- Overplotting — use alpha, jitter, hexbin, or density
+- Missing units on axes
+- Default titles ("Figure 1") instead of the finding
+- Legend far from the data it describes
 - Too many decimal places — round to meaningful precision
 
-### 8. Export Checklist
+### Export checklist
 
-Before sharing any visualization, verify:
-- Title states the finding or insight, not just the topic
-- Both axes labeled with units
-- Legend present or direct labels used
-- Colorblind-friendly palette applied
-- Saved at appropriate resolution (300 dpi for print, SVG/PDF for scalable)
-- Fonts readable at final display size
+Before sharing, verify: title states the finding; both axes labeled
+with units; legend present or direct labels used; colorblind-friendly
+palette; 300 dpi for print, SVG/PDF for scalable; fonts readable at
+final display size.
 
-## Examples
+### Worked examples
 
-**User:** "I have monthly revenue data for 5 product lines over 2 years. What chart should I use?"
-**Agent:** Recommends a multi-line chart with one line per product, using distinct
-colorblind-safe colors and direct labels at the end of each line instead of a legend.
-Adds a title stating the key trend ("Product A overtook B in mid-2025"), annotates
-the crossover point, and uses a clean white background with light gridlines.
-
-**User:** "This dashboard has 15 charts and stakeholders say it is overwhelming"
-**Agent:** Audits the dashboard for redundancy (removes charts showing the same data
-differently), groups remaining charts by business domain, moves detail charts to a
-drill-down page, and keeps 6 key metrics on the main view. Adds a summary card row
-at the top with KPIs and sparklines.
-
-**User:** "Make this scatter plot more readable — the points overlap too much"
-**Agent:** Reduces marker size and adds transparency (`alpha=0.3`), switches to a
-hexbin or 2D density plot for the densest region, adds marginal histograms to show
-distributions on each axis, and annotates outlier clusters with labels.
+- **5 product lines × 24 months:** Multi-line chart, one line per
+  product, distinct colorblind-safe colors with direct end-of-line
+  labels instead of a legend. Title states the trend ("Product A
+  overtook B in mid-2025"), annotate the crossover point, light
+  gridlines on white background.
+- **15-chart dashboard is overwhelming:** Audit for redundancy,
+  group remaining charts by domain, move detail charts to a
+  drill-down page, keep 6 key metrics on the main view, add a
+  summary KPI row with sparklines at the top.
+- **Overplotted scatter:** Reduce marker size, set `alpha=0.3`,
+  switch dense regions to hexbin or 2D density, add marginal
+  histograms, label outlier clusters.

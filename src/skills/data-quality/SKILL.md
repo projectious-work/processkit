@@ -4,112 +4,124 @@ kind: Skill
 metadata:
   id: SKILL-data-quality
   name: data-quality
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Data quality framework covering completeness, accuracy, consistency, validation rules, and data contracts. Use when implementing data validation, setting up data quality checks, or defining data contracts."
+  description: "Data quality framework — completeness, accuracy, consistency, validation, and contracts."
   category: data
   layer: null
+  when_to_use: "Use when implementing data validation, setting up quality checks for a pipeline, defining data contracts between teams, or investigating data anomalies."
 ---
 
 # Data Quality
 
-## When to Use
+## Level 1 — Intro
 
-When the user is implementing data validation, setting up quality checks for a pipeline,
-defining data contracts between teams, or asks "how do I ensure data quality?" or
-"what checks should I add to this pipeline?". Also applies when investigating data
-anomalies or setting up data observability.
+Data quality is measurable across six dimensions and enforced with
+explicit validation rules at every pipeline boundary. Codify producer
+and consumer expectations as data contracts and run them as automated
+checks rather than relying on manual review.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Data Quality Dimensions
+### The six dimensions
 
-Evaluate data against six dimensions:
+Evaluate data against:
 
-- **Completeness**: Are all expected records and fields present? Measure: null rate per column, row count vs expected.
-- **Accuracy**: Do values reflect reality? Measure: spot checks against source of truth, known reference data.
-- **Consistency**: Do related fields agree? Measure: cross-field validation (end_date >= start_date, city matches zip code).
-- **Timeliness**: Is data available when needed? Measure: freshness (time since last update), SLA adherence.
-- **Uniqueness**: Are there duplicates? Measure: distinct count of natural keys vs total row count.
-- **Validity**: Do values conform to expected formats and ranges? Measure: regex matches, range checks, enum membership.
+- **Completeness** — null rate per column, row count vs expected
+- **Accuracy** — spot checks against a source of truth or reference
+- **Consistency** — cross-field validation (end >= start, city matches
+  zip)
+- **Timeliness** — freshness since last update, SLA adherence
+- **Uniqueness** — distinct count of natural keys vs total rows
+- **Validity** — regex matches, range checks, enum membership
 
-### 2. Validation Rules
+### Validation rules
 
-- **Schema validation**: Column names, data types, nullable flags match the contract
-- **Range checks**: Numeric values within expected bounds (age 0-150, price >= 0)
-- **Format checks**: Dates in ISO 8601, emails match regex, phone numbers normalized
-- **Referential integrity**: Foreign keys resolve to existing records in parent tables
-- **Business rules**: Order total = sum of line items, start_date < end_date
-- **Freshness checks**: Last record timestamp within expected window
-- Categorize rules by severity: `error` (block pipeline) vs `warning` (log and continue)
+Schema validation enforces column names, types, and nullability. Range
+checks bound numerics (age 0–150, price >= 0). Format checks enforce
+ISO 8601 dates, email regexes, normalized phone numbers. Referential
+integrity confirms foreign keys resolve. Business rules express domain
+truths (order total = sum of line items). Freshness checks confirm the
+latest record is within the expected window. Categorize each rule by
+severity: `error` blocks the pipeline, `warning` logs and continues.
 
-### 3. Anomaly Detection
+### Anomaly detection
 
-- Track key metrics over time: row counts, null rates, distinct value counts, mean/median
-- Alert when metrics deviate beyond a threshold (e.g., row count drops > 20% vs previous run)
-- Use statistical methods: z-score for normally distributed metrics, IQR for skewed
-- Monitor distribution shifts: column value distributions should be stable over time
-- Track schema changes: new columns, type changes, dropped columns
-- Check for sudden spikes in null rates or default values
+Track key metrics over time: row counts, null rates, distinct value
+counts, mean and median. Alert when metrics deviate beyond a threshold
+(row count drops > 20% vs previous run). Use z-score for normally
+distributed metrics, IQR for skewed ones. Monitor distribution shifts
+and schema changes (new columns, type changes, dropped columns). Watch
+for sudden spikes in null rates or default values.
 
-### 4. Data Contracts
+### Data contracts
 
-- A data contract is a formal agreement between producer and consumer on data shape and quality
-- Define: schema (columns, types), SLAs (freshness, availability), quality thresholds, ownership
-- Version contracts: breaking changes require a new version with migration period
-- Contracts should be machine-readable (JSON Schema, protobuf, YAML) and enforced automatically
-- Include: who to contact when the contract is violated, escalation path
-- Review contracts quarterly or when business requirements change
+A data contract is a formal agreement between producer and consumer
+specifying schema, SLAs, quality thresholds, and ownership. Make
+contracts machine-readable (JSON Schema, protobuf, YAML) and enforce
+them automatically. Version them — breaking changes require a new
+version with a migration period. Include who to contact when violated
+and the escalation path. Review quarterly or when business
+requirements change.
 
-### 5. Great Expectations Patterns
+### Implementing checks
 
-- Organize expectations into suites: one per table or pipeline stage
-- Core expectations to always include:
-  - `expect_table_row_count_to_be_between` — catch empty or exploding tables
-  - `expect_column_values_to_not_be_null` — for required columns
-  - `expect_column_values_to_be_unique` — for natural keys
-  - `expect_column_values_to_be_in_set` — for enum columns
-- Run validation as a pipeline step; fail the pipeline on critical expectation failures
-- Store validation results for trend analysis and audit trails
+Place checks at pipeline boundaries: after extraction, after
+transformation, after loading. Compare source to destination row
+counts. Store results in a quality metadata table (timestamp, check
+name, result, details). Start with the five critical checks — row
+count, null rate on key columns, duplicate rate, freshness, schema
+match — and add more as issues arise. Keep thresholds in config files,
+not hardcoded.
 
-### 6. Data Observability
+## Level 3 — Full reference
 
-- Instrument pipelines with metadata: row counts, schema snapshots, execution time
-- Build a lineage graph: know where each dataset comes from and what depends on it
-- Dashboard key health indicators: freshness, volume trends, error rates per table
-- Set up alerts for: stale data, volume anomalies, schema drift, quality rule failures
-- Automate root cause analysis: when quality drops, trace back through lineage to find the source
+### Great Expectations patterns
 
-### 7. Implementing Quality Checks
+Organize expectations into suites — one per table or pipeline stage.
+Always include:
 
-- Place checks at pipeline boundaries: after extraction, after transformation, after loading
-- Run checks before and after: compare source row count to destination row count
-- Store check results in a quality metadata table: timestamp, check name, result, details
-- Start with the five critical checks: row count, null rate on key columns, duplicate rate,
-  freshness, schema match. Add more as issues arise.
-- Make checks configurable: thresholds in config files, not hardcoded
+- `expect_table_row_count_to_be_between` — catch empty or exploding
+  tables
+- `expect_column_values_to_not_be_null` — for required columns
+- `expect_column_values_to_be_unique` — for natural keys
+- `expect_column_values_to_be_in_set` — for enum columns
 
-## Examples
+Run validation as a pipeline step and fail on critical expectation
+failures. Store validation results for trend analysis and audit
+trails.
 
-**User:** "Set up data quality checks for our customer table"
-**Agent:** Implements checks across all six dimensions: completeness (null rate for
-email, name, created_at), uniqueness (customer_id has no duplicates), validity
-(email matches regex, status in allowed enum), consistency (country matches
-postal code format), timeliness (most recent created_at within 24 hours), and
-accuracy (spot check sample against CRM export). Categorizes each as error or
-warning severity and stores results in a quality_checks table.
+### Data observability
 
-**User:** "Our daily report numbers look wrong but the pipeline succeeded"
-**Agent:** Adds anomaly detection to the pipeline: tracks row counts and key
-aggregates over time, alerts when values deviate more than 2 standard deviations
-from the 30-day rolling average. Adds cross-field consistency checks (order totals
-match line item sums) and a freshness check to ensure all source tables updated
-before the report runs.
+Instrument pipelines with metadata: row counts, schema snapshots,
+execution time. Build a lineage graph so you know where each dataset
+comes from and what depends on it. Dashboard freshness, volume trends,
+and per-table error rates. Alert on stale data, volume anomalies,
+schema drift, and quality-rule failures. When quality drops, automate
+root-cause traversal back through lineage to find the source.
 
-**User:** "Define a data contract between the events team and analytics"
-**Agent:** Creates a versioned contract in YAML specifying: schema (column names,
-types, nullable), quality thresholds (null rate < 1% for user_id, row count >
-1000/day), freshness SLA (data available by 06:00 UTC), ownership (events team
-as producer, analytics as consumer), and contact/escalation information. Adds
-automated validation that runs on each delivery and notifies both teams on violations.
+### Worked examples
+
+- **Customer table checks:** Completeness on email, name, created_at;
+  uniqueness on customer_id; validity on email regex and status enum;
+  consistency between country and postal-code format; timeliness on
+  most-recent created_at within 24 hours; accuracy via spot check
+  against a CRM export. Store results with severity labels.
+- **Daily report numbers look wrong but pipeline succeeded:** Add
+  anomaly detection that tracks row counts and key aggregates and
+  alerts on > 2σ deviation from the 30-day rolling average. Add
+  cross-field consistency checks and a freshness check before the
+  report runs.
+- **Events-to-analytics contract:** Versioned YAML specifying schema,
+  null rate < 1% for user_id, row count > 1000/day, freshness SLA
+  06:00 UTC, ownership and escalation contacts. Automated validation
+  on each delivery, notifications to both teams on violations.
+
+### Anti-patterns
+
+- Quality checks only at the end of the pipeline
+- Hardcoded thresholds that nobody can tune without a deploy
+- "Soft" warnings that nobody monitors — equivalent to silence
+- Contracts that live in a wiki page instead of as enforceable code
+- Schema drift detection without an alert path to the producer

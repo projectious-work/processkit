@@ -4,110 +4,125 @@ kind: Skill
 metadata:
   id: SKILL-data-pipeline
   name: data-pipeline
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Data pipeline patterns including ETL/ELT, batch vs streaming, idempotency, and orchestration. Use when designing data pipelines, reviewing data workflows, or troubleshooting data processing."
+  description: "Data pipeline patterns — ETL/ELT, batch vs streaming, idempotency, orchestration."
   category: data
   layer: null
+  when_to_use: "Use when designing a data pipeline, choosing between batch and streaming, implementing ingestion or transformation, setting up orchestration, or debugging pipeline failures."
 ---
 
 # Data Pipeline
 
-## When to Use
+## Level 1 — Intro
 
-When the user is designing a data pipeline, choosing between batch and streaming,
-implementing data ingestion or transformation, setting up orchestration, or asks
-"how should I structure this data workflow?". Also applies when debugging pipeline
-failures or improving reliability.
+A reliable data pipeline is idempotent, observable, and stage-validated.
+Default to ELT into a modern warehouse, default to batch over streaming,
+and design every step to be safely re-runnable from day one.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. ETL vs ELT
+### ETL vs ELT
 
-- **ETL** (Extract, Transform, Load): Transform before loading into the target. Use when
-  the target system has limited compute or data must be cleaned before storage.
-- **ELT** (Extract, Load, Transform): Load raw data first, transform in the target. Use
-  when the target is a modern data warehouse (BigQuery, Snowflake, Redshift) with cheap compute.
-- Prefer ELT for analytics workloads — it preserves raw data and allows re-transformation
-- Use ETL when data governance requires filtering PII before it reaches the warehouse
-- Never mix transformation logic between the pipeline and the warehouse without documenting which is source of truth
+ETL (Extract, Transform, Load) transforms before loading; use it when the
+target has limited compute or PII must be filtered before storage. ELT
+(Extract, Load, Transform) loads raw data first and transforms in the
+warehouse; prefer it for analytics on BigQuery, Snowflake, or Redshift
+because it preserves raw data and allows re-transformation. Never split
+transformation logic between pipeline and warehouse without documenting
+which side owns the source of truth.
 
-### 2. Batch vs Streaming
+### Batch vs streaming
 
-- **Batch**: Process data in scheduled intervals (hourly, daily). Simpler to build, debug, and retry.
-- **Streaming**: Process data as it arrives. Required for real-time dashboards, alerting, event-driven systems.
-- Start with batch unless there is an explicit real-time requirement
-- Micro-batch (Spark Structured Streaming, 1-5 min intervals) bridges the gap
-- Streaming adds complexity: ordering, late arrivals, exactly-once semantics — only pay that cost when needed
+Start with batch unless there is an explicit real-time requirement. Batch
+is simpler to build, debug, and retry. Streaming is required for
+real-time dashboards, alerting, and event-driven systems but adds
+ordering, late-arrival, and exactly-once complexity. Micro-batch (Spark
+Structured Streaming, 1–5 minute intervals) bridges the gap when full
+streaming is overkill.
 
-### 3. Idempotency
+### Idempotency
 
-- Every pipeline step must be safely re-runnable without duplicating data
-- Use upserts (INSERT ON CONFLICT UPDATE) or merge statements for loading
-- Partition output by date/run_id; overwrite entire partitions on rerun
-- Include a deduplication step: hash the natural key columns, deduplicate before loading
-- Design so that running the same job twice produces the same result as running it once
+Every step must be safely re-runnable without duplicating data. Use
+upserts (`INSERT ON CONFLICT UPDATE`) or merge statements for loading.
+Partition output by date or run id and overwrite entire partitions on
+rerun. Include a deduplication step that hashes natural-key columns
+before loading. Running a job twice should produce the same result as
+running it once.
 
-### 4. Data Quality Checks
+### Data quality at every stage
 
-- Validate at each stage: after extraction, after transformation, after loading
-- Check row counts: source count should match destination (within tolerance)
-- Check for nulls in required columns, duplicates in unique keys
-- Validate value ranges: dates in expected range, amounts non-negative
-- Fail fast: halt the pipeline on quality violations rather than propagating bad data
-- Log quality metrics for every run: row counts, null rates, duplicate rates
+Validate after extraction, after transformation, and after loading.
+Compare source and destination row counts within tolerance. Check for
+nulls in required columns and duplicates in unique keys. Validate value
+ranges (dates in expected window, amounts non-negative). Fail fast on
+violations rather than propagating bad data downstream, and log row
+counts, null rates, and duplicate rates for every run.
 
-### 5. Schema Management
+### Orchestration
 
-- Use a schema registry for event-driven pipelines (Avro, Protobuf, JSON Schema)
-- Enforce backward compatibility: new fields are optional, never remove or rename
-- Version your schemas: `v1`, `v2` with explicit migration paths
-- Document every field: name, type, description, example value, nullable
-- Test schema changes against consumers before deploying to production
+Use a workflow orchestrator (Airflow, Prefect, Dagster) for scheduling
+and dependency management. Define DAGs with explicit task dependencies,
+configure retries with exponential backoff (3 retries at 1/5/15 minute
+delays), and prefer sensors or triggers over polling. Tag tasks with
+owners and SLA expectations. Keep task definitions thin — business
+logic lives in importable modules so it can be unit-tested.
 
-### 6. Backfill Strategies
+## Level 3 — Full reference
 
-- Design pipelines to accept a date range parameter from the start
-- Use partition overwrite for backfills: reprocess and replace entire partitions
-- Run backfills at lower priority to avoid starving production workloads
-- Test backfills on a small date range first, then scale up
-- Track backfill progress: log which partitions have been reprocessed
+### Schema management
 
-### 7. Orchestration
+Use a schema registry (Avro, Protobuf, JSON Schema) for event-driven
+pipelines. Enforce backward compatibility: new fields are optional,
+existing fields are never removed or renamed. Version schemas
+explicitly (`v1`, `v2`) with documented migration paths. Document each
+field with name, type, description, example value, and nullability.
+Test schema changes against consumers before deploying to production.
 
-- Use a workflow orchestrator (Airflow, Prefect, Dagster) for scheduling and dependency management
-- Define DAGs with explicit dependencies: task B waits for task A
-- Set appropriate retries with exponential backoff: 3 retries, 1/5/15 minute delays
-- Use sensors or triggers rather than polling where possible
-- Tag tasks with owners and SLA expectations
-- Keep task definitions small and testable; business logic lives in separate modules
+### Backfill strategies
 
-### 8. Monitoring and Dead Letter Queues
+Design pipelines to accept a date-range parameter from the start. Use
+partition overwrite for backfills: reprocess and replace entire
+partitions rather than mutating in place. Run backfills at lower
+priority so they do not starve production workloads. Test on a small
+date range before scaling up, and track which partitions have been
+reprocessed.
 
-- Alert on: pipeline failure, SLA breach, unexpected row count changes (> 20% deviation)
-- Log pipeline metadata: start time, end time, rows processed, rows rejected
-- Use dead letter queues (DLQ) for records that fail processing
-- DLQ records must include: original payload, error message, timestamp, source topic/table
-- Review and reprocess DLQ records regularly — they represent data loss until resolved
+### Monitoring and dead letter queues
 
-## Examples
+Alert on pipeline failure, SLA breach, and unexpected row-count
+changes (> 20% deviation). Log start time, end time, rows processed,
+and rows rejected. Use dead letter queues for records that fail
+processing — DLQ entries must include the original payload, error
+message, timestamp, and source topic or table. Review and reprocess
+DLQ records regularly; they represent data loss until resolved.
 
-**User:** "Design a pipeline to load daily sales data from an API into our warehouse"
-**Agent:** Designs an ELT pipeline with three stages: extract (API call with pagination,
-save raw JSON to cloud storage), load (bulk insert raw data into a staging table),
-transform (SQL in the warehouse to clean, deduplicate, and join with dimension tables).
-Adds date-range parameters for backfills, idempotent loads via partition overwrite,
-row-count checks between source and staging, and Airflow DAG with retries.
+### Worked examples
 
-**User:** "Our pipeline keeps producing duplicate records"
-**Agent:** Diagnoses the idempotency gap: checks whether the load step uses insert-only
-(the problem) vs upsert. Adds a natural key hash column, implements INSERT ON CONFLICT
-for the target table, and adds a pre-load deduplication step. Adds a data quality check
-that compares distinct key counts between source and target.
+- **Daily sales API to warehouse:** ELT in three stages — extract
+  (paginated API call, raw JSON to cloud storage), load (bulk insert
+  into a staging table), transform (SQL in the warehouse to clean,
+  deduplicate, and join with dimensions). Date-range parameter for
+  backfills, partition-overwrite loads, source/staging row-count
+  checks, Airflow DAG with retries.
+- **Duplicate records:** Diagnose the idempotency gap — insert-only
+  load is the usual culprit. Add a natural-key hash column,
+  switch to `INSERT ON CONFLICT`, add a pre-load dedupe step, and
+  add a quality check comparing distinct key counts source vs target.
+- **Streaming vs batch for events:** If events only feed daily
+  reports, recommend batch with hourly micro-batches. If real-time
+  alerting is needed, recommend Kafka-based streaming but warn about
+  exactly-once complexity. Either way, design for idempotency and
+  include a DLQ for malformed events.
 
-**User:** "Should we use streaming or batch for our event tracking?"
-**Agent:** Evaluates the requirements: if events only feed daily reports, recommends
-batch with hourly micro-batches as a compromise. If real-time alerting is needed,
-recommends streaming with Kafka, but warns about exactly-once complexity. In either
-case, designs for idempotency and includes a dead letter queue for malformed events.
+### Anti-patterns
+
+- Insert-only loads with no dedupe — guaranteed duplicates on retry
+- Transformation logic split across pipeline and warehouse with no
+  documented owner
+- Streaming chosen for "future-proofing" without a real-time use case
+- Quality checks only at the end of the pipeline (bad data has
+  already propagated)
+- DAGs that hide business logic inside task callables, making them
+  untestable in isolation
