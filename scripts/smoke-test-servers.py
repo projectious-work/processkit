@@ -98,6 +98,7 @@ def run():
         idx = import_server("index-management")
         idm = import_server("id-management")
         actor = import_server("actor-profile")
+        role = import_server("role-management")
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -211,6 +212,37 @@ def run():
         print("bad actor type (expected error):", bad)
         assert "error" in bad
 
+        # 4c. role-management
+        create_role = get_tool(role, "create_role")
+        r = create_role(
+            name="reviewer",
+            description="Reviews code and documentation changes before merge.",
+            responsibilities=[
+                "Read PRs within 48 hours",
+                "Approve or request changes with actionable feedback",
+            ],
+            default_scope="project",
+        )
+        print("create_role:", r)
+        assert "id" in r and r["id"].startswith("ROLE-")
+        role_id = r["id"]
+
+        list_roles = get_tool(role, "list_roles")
+        lr = list_roles()
+        print("list_roles:", len(lr))
+        assert any(x["id"] == role_id for x in lr)
+
+        link_rta = get_tool(role, "link_role_to_actor")
+        lk = link_rta(
+            role_id=role_id,
+            actor_id=actor_id,
+            scope="SCOPE-project-x",
+            valid_from="2026-04-01",
+        )
+        print("link_role_to_actor:", lk)
+        assert lk["ok"]
+        role_binding_id = lk["binding_id"]
+
         # 5. binding
         create_bind = get_tool(bind, "create_binding")
         b = create_bind(
@@ -235,7 +267,8 @@ def run():
         reindex = get_tool(idx, "reindex")
         stats = reindex()
         print("reindex stats:", stats)
-        assert stats["entities"] >= 5  # workitem + log + decision + binding + actor
+        # workitem + log + decision + actor + role + role-binding + work-binding
+        assert stats["entities"] >= 7
         assert stats["events"] >= 1
 
         query_e = get_tool(idx, "query_entities")

@@ -10,9 +10,15 @@ spec:
   description: "Create and maintain Role entities — named sets of responsibilities that actors can fill."
   category: process
   layer: 1
-  uses: [event-log]
+  uses: [event-log, index-management, id-management]
   provides:
     primitives: [Role]
+    mcp_tools:
+      - create_role
+      - get_role
+      - update_role
+      - list_roles
+      - link_role_to_actor
     templates: [role]
   when_to_use: "Use when defining a new role in the project (developer, reviewer, tech-lead, release-manager) or updating an existing role's responsibilities."
 ---
