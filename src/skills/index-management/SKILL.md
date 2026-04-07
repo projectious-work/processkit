@@ -47,8 +47,8 @@ keep the index fresh.
 
 ### Where the database lives
 
-`<project-root>/context/.aibox/index.sqlite`. Gitignored. Rebuildable
-from source files at any time via `reindex()`.
+`<project-root>/context/.cache/processkit/index.sqlite`. Gitignored.
+Rebuildable from source files at any time via `reindex()`.
 
 ## Level 3 — Full reference
 
@@ -94,13 +94,13 @@ The index database path is configurable via:
 
 - `aibox.toml` `[context.index] path = "..."` (relative to project root)
 - The `PROCESSKIT_INDEX_DB` environment variable
-- Default: `context/.aibox/index.sqlite`
+- Default: `context/.cache/processkit/index.sqlite` (gitignored cache)
 
 ### Limitations at v0.3.0
 
-- **Single-writer.** If two MCP servers write at the same time, one will
-  observe `database is locked`. The current design assumes one agent at
-  a time, which is the typical case for AI-assisted dev sessions.
+- **WAL mode enabled (v0.4.0+).** Multiple readers and a single writer
+  are safe; concurrent writes still serialize via WAL. Typical
+  AI-assisted sessions are single-writer anyway.
 - **No FTS.** Search uses `LIKE %text%`. SQLite FTS5 integration lands
   in a later release.
 - **No incremental indexing.** Every reindex is a full sweep.

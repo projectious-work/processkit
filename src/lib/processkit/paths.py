@@ -1,17 +1,22 @@
 """Locate the project root, processkit checkout, and per-kind directories.
 
-Project layout (consumer side):
+Project layout (consumer side, post aibox-handover-v2):
 
     <project-root>/
       aibox.toml
+      aibox.lock
       context/
-        workitems/
-        decisions/
-        logs/
-        ...
-      .claude/skills/...
+        skills/<name>/...           ← installed processkit skills
+        skills/_lib/processkit/...  ← installed processkit lib
+        schemas/<f>.yaml            ← installed primitive schemas
+        state-machines/<f>.yaml     ← installed state machines
+        processes/<f>.md            ← installed process definitions
+        templates/processkit/<v>/   ← full upstream reference templates
+        workitems/, decisions/, logs/, ...
+        .cache/processkit/          ← gitignored runtime cache (index DB)
 
-Processkit checkout layout (this repo, when running servers from a checkout):
+Processkit checkout layout (this repo, when running servers from
+a checkout):
 
     <processkit-root>/
       aibox.toml
@@ -63,7 +68,7 @@ def find_processkit_root(server_path: Path | str) -> Path | None:
     Looks for ``src/lib/processkit/__init__.py`` upward from the given
     server script. Returns the directory containing ``src/`` or None if
     the script is not running from a processkit checkout (e.g. installed
-    by aibox into ``.claude/skills/``).
+    by aibox into ``context/skills/``).
     """
     here = Path(server_path).resolve().parent
     while True:
@@ -90,12 +95,12 @@ def context_dir(kind: str, root: Path | str | None = None) -> Path:
 def primitive_schemas_dir(root: Path | str | None = None) -> Path | None:
     """Where the JSON-Schema YAML files live.
 
-    Tries the consumer's project (``context/.aibox/schemas/``) first,
-    then the processkit checkout (``src/primitives/schemas/``). Returns
-    None if neither exists.
+    Tries the consumer's installed location (``context/schemas/``)
+    first, then the processkit checkout (``src/primitives/schemas/``).
+    Returns None if neither exists.
     """
     root = Path(root) if root else find_project_root()
-    consumer = root / "context" / ".aibox" / "schemas"
+    consumer = root / "context" / "schemas"
     if consumer.is_dir():
         return consumer
     processkit = root / "src" / "primitives" / "schemas"
@@ -105,14 +110,17 @@ def primitive_schemas_dir(root: Path | str | None = None) -> Path | None:
 
 
 def state_machines_dir(root: Path | str | None = None) -> Path | None:
-    """Where state machine YAML files live (consumer override or processkit default)."""
+    """Where state machine YAML files live.
+
+    Tries the consumer's installed location (``context/state-machines/``)
+    first, then the processkit checkout
+    (``src/primitives/state-machines/``). Returns None if neither
+    exists.
+    """
     root = Path(root) if root else find_project_root()
     consumer = root / "context" / "state-machines"
     if consumer.is_dir():
         return consumer
-    fallback = root / "context" / ".aibox" / "state-machines"
-    if fallback.is_dir():
-        return fallback
     processkit = root / "src" / "primitives" / "state-machines"
     if processkit.is_dir():
         return processkit
@@ -120,9 +128,9 @@ def state_machines_dir(root: Path | str | None = None) -> Path | None:
 
 
 def index_db_path(root: Path | str | None = None) -> Path:
-    """Path to the SQLite index database."""
+    """Path to the SQLite index database (gitignored runtime cache)."""
     root = Path(root) if root else find_project_root()
-    db_dir = root / "context" / ".aibox"
+    db_dir = root / "context" / ".cache" / "processkit"
     db_dir.mkdir(parents=True, exist_ok=True)
     return db_dir / "index.sqlite"
 

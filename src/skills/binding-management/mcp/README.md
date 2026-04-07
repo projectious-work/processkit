@@ -33,5 +33,5 @@ See `binding-management` SKILL.md for the rule and examples.
 ## Running
 
 ```bash
-uv run .claude/skills/binding-management/mcp/server.py
+uv run context/skills/binding-management/mcp/server.py
 ```

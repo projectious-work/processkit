@@ -44,14 +44,15 @@ v0.4.0 grew out of a long design discussion in the aibox repo. Quick orientation
    `aibox.toml`. Paired with the new `context-grooming` skill.
 7. **Skill count: 106** (was 103 at v0.3.0). The three new skills are all
    markdown-only (no MCP servers yet).
-8. **Manifest model (NOT YET IMPLEMENTED IN AIBOX):** the agreed design is
-   that each project gets a git-tracked `context/.aibox/processkit.manifest`
-   recording the SHA of every installed file. `aibox sync` does a 3-way
-   comparison (manifest vs cache vs live) to classify changes.
-   **Strawman D + groups + never-auto-overwrite** is the agreed model. The
-   cache (`~/.cache/aibox/processkit/<v>/`) is reproducible from the
-   git-tracked lock + manifest. Implementation lives on the aibox side
-   and is part of the next aibox work front (Phase 4.1+).
+8. **Reference-templates model (LANDED IN AIBOX, see commit 4c8bde3):**
+   `aibox init` copies the upstream cache verbatim to
+   `context/templates/processkit/<version>/`. `aibox sync` reads SHAs
+   from those reference templates on the fly to do its 3-way diff
+   (template vs cache vs live). No `processkit.manifest` file —
+   superseded. Pinned source URL + version + resolved commit live in
+   `aibox.lock` at the project root (Cargo-style). The runtime cache
+   (`~/.cache/aibox/processkit/<v>/`) is reproducible from the
+   git-tracked lock + reference templates.
 9. **Configurable upstream source URL:** `[processkit] source = "..."`
    in `aibox.toml` accepts any git URL. Companies can fork processkit
    and have their projects consume the fork. PROVENANCE.toml's `[source]`
@@ -91,7 +92,8 @@ Coordinate the upgrade with whoever maintains aibox. Until then, stay on aibox 0
 ```
 processkit/
 ├── README.md                  ← what processkit is, the bootstrap loop
-├── CLAUDE.md                  ← agent guidance, the "two meanings of skills" rule
+├── AGENTS.md                  ← canonical agent entry (provider-neutral); the "two meanings of skills" rule
+├── CLAUDE.md                  ← thin pointer to AGENTS.md (Claude Code auto-loads it)
 ├── CONTRIBUTING.md            ← operating manual (read this second)
 ├── LICENSE                    ← MIT
 ├── aibox.toml                 ← pins aibox 0.14.1 (do not edit)
@@ -155,6 +157,7 @@ processkit/
 │   │       └── index.py       ← SQLite indexer + existing_ids helper
 │   │
 │   ├── processes/             ← INDEX.md only (Phase 4 work — see backlog)
+│   ├── scaffolding/           ← project-init templates installed at consumer's project root (AGENTS.md, ...)
 │   └── packages/              ← 5 tier definitions
 │       ├── INDEX.md
 │       ├── minimal.yaml       ← Layer 0 foundations + workitem + hygiene
@@ -185,7 +188,6 @@ processkit/
 │   └── processkit-diff.sh     ← (v0.4.0) generic diff between two tags (text/toml/json)
 │
 ├── context/                   ← THIS REPO's own management artifacts (NOT shipped)
-│   ├── AIBOX.md               ← bootstrap version pinning notes; status
 │   ├── BACKLOG.md             ← BACK-001..BACK-014 deferred items
 │   ├── HANDOVER.md            ← this file
 │   ├── OWNER.md               ← stub — owner to fill in
@@ -230,7 +232,7 @@ If you put repo-internal stuff under `src/`, consumers will get it. If you put s
 | `.claude/skills/`     | Skills for the agent working ON this repo (not shipped)|
 | `context/processes/`  | THIS repo's own process notes (not shipped)             |
 
-When CLAUDE.md says "the agent should call workitem-management", it means a server in `src/skills/workitem-management/mcp/` that consumers use — NOT something in `.claude/skills/`. Don't conflate these.
+When AGENTS.md (or its provider-specific pointer like CLAUDE.md) says "the agent should call workitem-management", it means a server in `src/skills/workitem-management/mcp/` that consumers use — NOT something in `.claude/skills/`. Don't conflate these.
 
 ## 5. Architectural decisions — the "why"
 
@@ -555,11 +557,29 @@ The index is fresh in normal operation because every server `upsert_entity()`s a
 
 ### G7 — `index_db_path` creates parent directories as a side effect
 
-`paths.index_db_path()` calls `db_dir.mkdir(parents=True, exist_ok=True)` to ensure the `context/.aibox/` directory exists. If you call it just to "see what the path would be", you'll create directories. To avoid: construct the path manually instead.
+`paths.index_db_path()` calls `db_dir.mkdir(parents=True, exist_ok=True)` to ensure the `context/.cache/processkit/` directory exists. If you call it just to "see what the path would be", you'll create directories. To avoid: construct the path manually instead.
 
-### G8 — Rebuilding the devcontainer
+### G8 — aibox-sync perimeter
 
-If you ever need to regenerate `.devcontainer/Dockerfile` etc., run `aibox sync` (NOT `aibox init`). `aibox init` would overwrite `aibox.toml` and reset the version pin. **Never run `aibox init` in this repo again.**
+aibox 0.14.1 originally generated several files in this repo when it
+was bootstrapped via `aibox init`. Today, the legitimate scope of
+`aibox sync` is **exactly** these gitignored devcontainer files:
+
+- `.devcontainer/Dockerfile`
+- `.devcontainer/docker-compose.yml`
+- `.devcontainer/devcontainer.json`
+
+**No other file in this repo is in scope for `aibox sync`.** AGENTS.md,
+CLAUDE.md, README.md, `src/`, `context/`, `scripts/` — none of these
+are touched by `aibox sync`. If aibox ever does touch one of them,
+that is an aibox-side bug to fix on the aibox side, not a
+processkit-side concern. Do not pre-block on "but what if aibox sync
+overwrites X" — the answer is "it does not, by definition; if it did,
+it's a bug".
+
+If you ever need to regenerate the devcontainer files, run `aibox sync`
+(NOT `aibox init`). `aibox init` would overwrite `aibox.toml` and
+reset the version pin. **Never run `aibox init` in this repo again.**
 
 ### G9 — Don't edit `.devcontainer/Dockerfile` directly
 
@@ -590,14 +610,21 @@ The current `apiVersion` is `processkit.projectious.work/v1`. Bumping to `v2` tr
   - v0.4.0 = Migration primitive, owner-profiling, context-grooming, PROVENANCE.toml, configurable upstream source, privacy tiers
   - v1.0.0 = first stable release (not yet scheduled)
 - **Releasing a new tag:**
-  1. Update `context/AIBOX.md` status
+  1. Update this file (HANDOVER.md) — add a "What changed in vX.Y.Z" preamble
   2. Update `context/BACKLOG.md` Done section
   3. Update docs-site if user-visible changes shipped
   4. Run `uv run scripts/smoke-test-servers.py`
   5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
   6. Commit, then `git tag -a vX.Y.Z -m "..."`
   7. `git push origin main && git push origin vX.Y.Z`
-  8. Optionally `cd docs-site && npm run deploy` for docs publication
+  8. **Build and upload the release-asset tarball** (DEC-025; aibox's preferred consumption path):
+     ```bash
+     scripts/build-release-tarball.sh vX.Y.Z
+     gh release upload vX.Y.Z \
+         dist/processkit-vX.Y.Z.tar.gz \
+         dist/processkit-vX.Y.Z.tar.gz.sha256
+     ```
+  9. Optionally `cd docs-site && npm run deploy` for docs publication
 
 - **DO NOT push to `gh-pages`** directly. Use `npm run deploy` from docs-site.
 

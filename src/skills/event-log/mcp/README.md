@@ -23,5 +23,5 @@ process-primitive skill.
 ## Running
 
 ```bash
-uv run .claude/skills/event-log/mcp/server.py
+uv run context/skills/event-log/mcp/server.py
 ```

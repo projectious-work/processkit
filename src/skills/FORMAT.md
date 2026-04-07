@@ -223,7 +223,7 @@ When a skill ships an MCP server:
     "mcpServers": {
       "<skill-name>": {
         "command": "uv",
-        "args": ["run", ".claude/skills/<skill-name>/mcp/server.py"]
+        "args": ["run", "context/skills/<skill-name>/mcp/server.py"]
       }
     }
   }

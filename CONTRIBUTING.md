@@ -7,8 +7,10 @@ repo.
 ## Repository orientation (read first)
 
 - **`README.md`** — what processkit is, the bootstrap loop with aibox
-- **`CLAUDE.md`** — agent-specific guidance, including the critical
-  "two meanings of skills/processes" disambiguation
+- **`AGENTS.md`** — canonical agent entry point (provider-neutral),
+  including the critical "two meanings of skills/processes"
+  disambiguation. `CLAUDE.md` is a thin pointer to this file.
+- **`context/HANDOVER.md`** — current state, recent changes, deep briefing
 - **`context/PRD.md`** — product requirements derived from aibox DISC-002
 - **`src/INDEX.md`** — the rule: everything under `src/` is shipped content
 - **`src/primitives/FORMAT.md`** — the entity file format spec
@@ -22,6 +24,26 @@ repo.
 
 Do not put repo-internal stuff under `src/`. Do not put shipped content
 outside `src/`. The two halves never mix.
+
+## Style: line widths
+
+Hard-wrap markdown prose, Python, and YAML at **80 columns**.
+
+Smart exemptions (enforced by author judgment, not by tooling):
+
+- **Tables:** rows may be wide; wrap only between rows, never inside.
+- **Fenced code blocks:** preserve as-is; the language decides.
+- **URLs and link references:** do not break URLs; the line containing
+  one may exceed 80.
+- **YAML frontmatter** in markdown: exempt.
+- **TOML files** (`PROVENANCE.toml`, `aibox.toml`): exempt; some are
+  machine-generated.
+
+The rule is encoded in `.editorconfig` at the repo root for editors that
+respect it. There is no automated enforcement yet — it is applied to
+new and edited content. The 85 migrated skills under `src/skills/` and
+the docs-site catalog pages predate the rule and will be wrapped as
+part of BACK-001 / BACK-009.
 
 ## Developing inside the dev container
 
@@ -167,14 +189,23 @@ processkit releases via semver git tags. The current cadence:
 
 To release a new tag:
 
-1. Update `context/AIBOX.md` status section
+1. Update `context/HANDOVER.md` (preamble for the new version)
 2. Update `context/BACKLOG.md` Done section
 3. Update `docs-site` if user-visible changes shipped
 4. Run `uv run scripts/smoke-test-servers.py` and confirm green
 5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
 6. `git tag -a vX.Y.Z -m "..."`
 7. `git push origin main && git push origin vX.Y.Z`
-8. Optionally trigger docs-site deploy (`cd docs-site && npm run deploy`)
+8. **Build and upload the release-asset tarball:**
+   ```bash
+   scripts/build-release-tarball.sh vX.Y.Z
+   gh release upload vX.Y.Z \
+       dist/processkit-vX.Y.Z.tar.gz \
+       dist/processkit-vX.Y.Z.tar.gz.sha256
+   ```
+   This is the preferred consumption path for aibox (DEC-025); aibox
+   falls back to a git fetch if the asset is missing.
+9. Optionally trigger docs-site deploy (`cd docs-site && npm run deploy`)
 
 ## Backlog and tracked work
 

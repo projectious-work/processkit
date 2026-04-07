@@ -13,23 +13,34 @@ src/
 ├── skills/          ← multi-artifact skill packages
 ├── processes/       ← process definitions (code-review, release, ...)
 ├── packages/        ← package tier definitions (minimal, managed, ...)
-└── lib/             ← shared Python library used by MCP servers (NOT a primitive — internal infra)
+├── lib/             ← shared Python library used by MCP servers (NOT a primitive — internal infra)
+└── scaffolding/     ← project-init templates (AGENTS.md, etc.) installed at consumer's project root
 ```
 
-## Rule
+## Rules
 
-Anything in `src/` is shipped. Anything outside `src/` is about *this repo*
-(its dev environment, its own context, its own docs). Do not mix the two.
+**Rule 1 — `src/` vs everything else.** Anything in `src/` is shipped.
+Anything outside `src/` is about *this repo* (its dev environment, its
+own context, its own docs). Do not mix the two.
 
-- `.devcontainer/`, `aibox.toml`, `CLAUDE.md` → repo infrastructure
+- `.devcontainer/`, `aibox.toml`, `CLAUDE.md`, `AGENTS.md` → THIS repo's
+  infrastructure (the AGENTS.md at the repo root is processkit's own;
+  the shipped template lives at `src/scaffolding/AGENTS.md`)
 - `context/` → this repo's own project-management artifacts
 - `.claude/skills/` → skills the agent uses ON this repo
 - `docs-site/` → processkit's user-facing documentation
 - `scripts/` → developer-facing scripts (release, smoke test, diff)
 - `src/` → **the content shipped to consumers**
 
-When a consumer runs `aibox init` with `processkit_version = "v0.4.0"`, the
-files under `src/` (filtered by selected packages) are what get installed.
+**Rule 2 — provider-neutral and aibox-neutral.** Content under `src/`
+must work for a consumer who never installs aibox and who uses a
+non-Claude agent harness. Reference processkit's own internals (MCP
+servers, the index, the lib, primitives) freely; do not reference
+`aibox.toml`, `aibox sync`, `CLAUDE.md`, or any provider-specific path.
+
+When a consumer installs processkit (e.g. by running `aibox init` with
+`processkit_version = "v0.4.0"`, or by manually copying files from a
+tagged release), the content under `src/` is what gets installed.
 
 ## PROVENANCE.toml
 

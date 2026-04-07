@@ -48,11 +48,15 @@ version = "v0.4.0"
 packages = ["managed"]
 ```
 
-`aibox init` fetches that tag and installs the selected package's skills, primitives,
-and process templates into the project's `context/` and `.claude/` directories. The
-project gets a git-tracked manifest (`context/.aibox/processkit.manifest`) that
-records the SHA of every installed file, so a future `aibox sync` can correctly
-classify what's been changed locally vs upstream.
+`aibox init` fetches that tag and installs the selected package's
+skills, primitives, and process templates into the project's `context/`
+directory (provider-neutral — nothing lands under `.claude/`). The
+project gets `aibox.lock` at the repository root (Cargo-style, pinning
+the resolved source URL + version + commit) and a verbatim reference
+copy of every shipped file at
+`context/templates/processkit/<version>/`. A future `aibox sync` reads
+SHAs from those reference templates on the fly to classify what's been
+changed locally vs upstream — no separate manifest file is needed.
 
 Users can add more skills from any GitHub repo using the same pattern.
 

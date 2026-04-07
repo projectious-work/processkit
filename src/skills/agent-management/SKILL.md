@@ -160,13 +160,16 @@ must load context **selectively**.
 Every directory under `context/` should have an `INDEX.md` (Level 0 per
 the three-level principle). At session start, the agent reads:
 
-1. `CLAUDE.md` (root)
-2. `context/AIBOX.md` (project baseline)
+1. `AGENTS.md` (root) — the canonical agent entry point
+2. `context/HANDOVER.md` — current state and recent changes
 3. `context/owner/identity.md` and `context/owner/working-style.md` (the
-   highest-leverage owner files)
+   highest-leverage owner files, if the project uses owner-profiling)
 4. `context/INDEX.md` and any `context/*/INDEX.md` files
 5. `context/migrations/INDEX.md` (always loaded — the migration state
    summary)
+
+Provider-specific harness files (e.g. `CLAUDE.md`, `CODEX.md`) are thin
+pointers to `AGENTS.md` and do not need to be in the always-load set.
 
 These are short, dense, and tell the agent what exists. The agent does
 NOT slurp `context/skills/`, `context/workitems/`, etc. on session start.
@@ -190,7 +193,10 @@ the user's request is more specific, drop to Level 3 only for edge cases.
 
 ### Respect the configured context budget
 
-Projects can declare a budget in `aibox.toml`:
+Projects can declare a budget in their processkit configuration file
+(the location depends on how processkit was installed — for example
+`aibox.toml` if the project uses aibox, or a standalone
+`processkit.toml` for unmanaged installs):
 
 ```toml
 [context.budget]
@@ -199,8 +205,8 @@ max_tokens = 16000            # hard ceiling — must use lazy loading above thi
 
 [context.budget.always_load]
 files = [
-  "CLAUDE.md",
-  "context/AIBOX.md",
+  "AGENTS.md",
+  "context/HANDOVER.md",
   "context/owner/identity.md",
   "context/owner/working-style.md",
   "context/INDEX.md",

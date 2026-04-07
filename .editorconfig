@@ -1,0 +1,35 @@
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+indent_style = space
+indent_size = 2
+max_line_length = 80
+
+[*.py]
+indent_size = 4
+max_line_length = 80
+
+[*.md]
+# Markdown prose: hard-wrap at 80 cols.
+# Smart exemptions (enforced by author judgment, not by tooling):
+#   - Tables: rows may exceed 80, wrap only between rows.
+#   - Fenced code blocks: preserve as-is, language decides.
+#   - URLs and link references: do not break URLs; the line may exceed.
+#   - YAML frontmatter: exempt.
+max_line_length = 80
+trim_trailing_whitespace = false  # markdown uses two-space line breaks
+
+[*.{yaml,yml}]
+max_line_length = 80
+
+[*.toml]
+# TOML files (PROVENANCE.toml, aibox.toml) may be machine-generated;
+# do not enforce a width.
+max_line_length = unset
+
+[Makefile]
+indent_style = tab

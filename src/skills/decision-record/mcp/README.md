@@ -35,5 +35,5 @@ Source: `src/primitives/state-machines/decisionrecord.yaml`.
 ## Running
 
 ```bash
-uv run .claude/skills/decision-record/mcp/server.py
+uv run context/skills/decision-record/mcp/server.py
 ```

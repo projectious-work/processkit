@@ -69,11 +69,14 @@ fragment:
   "mcpServers": {
     "<skill-name>": {
       "command": "uv",
-      "args": ["run", ".claude/skills/<skill-name>/mcp/server.py"]
+      "args": ["run", "context/skills/<skill-name>/mcp/server.py"]
     }
   }
 }
 ```
 
-`aibox init` (from aibox Phase 4.3) will merge these fragments into the
-consuming project's MCP config file.
+`aibox init` merges these fragments into the consuming project's MCP
+config file. The install path is provider-neutral
+(`context/skills/<skill-name>/`) — provider-specific harness files
+(e.g. `.mcp.json` for Claude Code) are written by aibox at the right
+location for whichever harness the user picked.

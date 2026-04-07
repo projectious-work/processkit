@@ -30,10 +30,22 @@ aibox init \
 produces:
 
 - `aibox.toml` — aibox configuration, pinning aibox and processkit versions
+- `aibox.lock` — Cargo-style lockfile pinning the resolved processkit
+  source URL, version, and commit
 - `.devcontainer/` — Dockerfile, docker-compose.yml, devcontainer.json
-- `CLAUDE.md` — root-level agent guidance
-- `context/` — your project's management artifacts (BACKLOG, DECISIONS, ...)
-- `.claude/skills/` — the skills from the selected processkit package
+- `AGENTS.md` — root-level agent entry point (provider-neutral); a thin
+  `CLAUDE.md` (or other provider-specific file) points at it
+- `context/` — your project's management artifacts and the installed
+  processkit content:
+  - `context/skills/<name>/` — installed processkit skills
+    (provider-neutral path; nothing lands under `.claude/`)
+  - `context/skills/_lib/processkit/` — the shared lib for MCP servers
+  - `context/schemas/`, `context/state-machines/`, `context/processes/`
+    — installed primitives and process definitions
+  - `context/templates/processkit/<version>/` — verbatim reference
+    copies of every shipped file (used for `aibox sync` diffs)
+  - `context/workitems/`, `decisions/`, `logs/`, ... — your project's
+    own entity files
 
 From v0.2.0 onwards, the skills come from the processkit tag pinned in
 `aibox.toml`, not from aibox itself.

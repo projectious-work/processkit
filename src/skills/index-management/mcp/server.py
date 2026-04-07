@@ -23,10 +23,12 @@ Tools provided:
     stats()                                -> counts
 
 Run from a processkit checkout (development) or installed by aibox into
-``.claude/skills/index-management/mcp/server.py`` (production).
+``context/skills/index-management/mcp/server.py`` (consumer install,
+provider-neutral path).
 
 Lib resolution: walks up from this file to find ``src/lib/processkit/``
-or ``_lib/processkit/`` (aibox-installed layout).
+(checkout) or ``_lib/processkit/`` (consumer-install layout — resolves
+to ``context/skills/_lib/processkit/`` after the walk-up).
 """
 from __future__ import annotations
 
@@ -40,8 +42,11 @@ def _find_lib() -> Path:
 
     Search order:
       1. PROCESSKIT_LIB_PATH environment variable
-      2. <ancestor>/src/lib/processkit/__init__.py (running from checkout)
-      3. <ancestor>/_lib/processkit/__init__.py    (aibox-installed)
+      2. <ancestor>/src/lib/processkit/__init__.py (running from
+         a processkit checkout)
+      3. <ancestor>/_lib/processkit/__init__.py    (consumer install,
+         e.g. <project>/context/skills/_lib/processkit/__init__.py
+         when invoked as <project>/context/skills/<name>/mcp/server.py)
     """
     env = os.environ.get("PROCESSKIT_LIB_PATH")
     if env:

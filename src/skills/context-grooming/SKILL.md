@@ -103,7 +103,7 @@ These skills have not been invoked in any session for 60+ days:
 - `flutter-development` (last used: never since project init)
 - `latex-authoring` (last used: 2026-02-08)
 
-[ ] Approve disabling (move from .claude/skills/ to .claude/skills/.disabled/)
+[ ] Approve disabling (move from context/skills/ to context/skills/.disabled/)
 ```
 
 ### The default ruleset
@@ -115,7 +115,7 @@ These skills have not been invoked in any session for 60+ days:
 | Standup entry older than current quarter | Summarize all entries from a quarter into one quarterly summary; archive originals |
 | DecisionRecord superseded for >180 days | Move both the old and the new together to `context/archive/decisions/` |
 | File over 500 lines that hasn't been edited in 30 days | Propose splitting or summarizing |
-| Skill in `.claude/skills/` not invoked in any session for 60 days | Propose disabling (move to `.claude/skills/.disabled/`) |
+| Skill in `context/skills/` not invoked in any session for 60 days | Propose disabling (move to `context/skills/.disabled/`) |
 | Migration in `applied/` older than 1 year | Archive (rare — kept for historical reference) |
 
 These are defaults. Projects can override in `aibox.toml`:

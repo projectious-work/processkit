@@ -48,5 +48,5 @@ returned as a list of human-readable strings.
 ## Running
 
 ```bash
-uv run .claude/skills/workitem-management/mcp/server.py
+uv run context/skills/workitem-management/mcp/server.py
 ```

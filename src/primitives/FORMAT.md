@@ -107,9 +107,10 @@ organizations fork or publish compatible primitives under their own domains.
 | `processkit.projectious.work/v1beta1`   | not used          | Reserved. Use `v1` directly for now.                  |
 | `processkit.projectious.work/v2`        | future            | Introduced when a breaking change requires migration. |
 
-Migrations are handled by `aibox migrate`, which generates a diff between the
-old template snapshot (stored in `context/.aibox/templates/v{version}/`) and the
-new one, producing prompts for the agent to apply with human approval.
+Migrations are handled by `aibox sync`, which generates a diff between
+the old upstream reference templates (stored verbatim in
+`context/templates/processkit/<old-version>/`) and the new ones,
+producing prompts for the agent to apply with human approval.
 
 ### kind registry
 

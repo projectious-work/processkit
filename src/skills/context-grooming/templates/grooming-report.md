@@ -72,13 +72,13 @@ splitting or summarization — not auto-archived.)
 
 ## Unused skills
 
-(Skills in `.claude/skills/` not invoked in any session for 60+ days.)
+(Skills in `context/skills/` not invoked in any session for 60+ days.)
 
 | Skill | Last used |
 |---|---|
 | TODO | TODO |
 
-[ ] Approve disabling (move from `.claude/skills/` to `.claude/skills/.disabled/`)
+[ ] Approve disabling (move from `context/skills/` to `context/skills/.disabled/`)
 
 ## Notes
 

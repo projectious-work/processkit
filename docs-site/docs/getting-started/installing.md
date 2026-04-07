@@ -35,18 +35,24 @@ processkit_version = "v0.2.0"
 aibox init --name my-project --process managed
 ```
 
-On first run, aibox clones processkit at the pinned tag and installs the
-selected package's skills into `.claude/skills/` and the primitive schemas
-into `context/`.
+On first run, aibox fetches processkit at the pinned tag (preferring
+the published release-asset tarball, falling back to a git fetch) and
+installs the selected package's skills into `context/skills/`, the
+shared lib into `context/skills/_lib/processkit/`, primitive schemas
+into `context/schemas/`, state machines into `context/state-machines/`,
+and process definitions into `context/processes/`. The full upstream
+reference templates are copied verbatim to
+`context/templates/processkit/<version>/` and `aibox.lock` is written
+at the project root.
 
 ## 4. Verify
 
 ```bash
-ls .claude/skills/
+ls context/skills/
 aibox lint   # structural validation of context/
 ```
 
-If `aibox lint` passes and the `.claude/skills/` directory contains the
+If `aibox lint` passes and the `context/skills/` directory contains the
 expected skills, you are ready to start working.
 
 ## Compatibility matrix

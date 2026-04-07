@@ -26,8 +26,13 @@ notices a new pinned version, it:
 1. Fetches the new tag into `~/.cache/aibox/processkit/<version>/`
 2. Calls the diff script (or reimplements its logic) to compare the
    currently-installed version against the new one
-3. Compares each affected file's SHA against the project's
-   `context/.aibox/processkit.manifest` to classify it:
+3. For each affected file, computes three SHAs on the fly:
+   - **template SHA** — from the verbatim reference at
+     `context/templates/processkit/<current-version>/<file>`
+   - **cache SHA** — what the new upstream version says
+   - **live SHA** — what's actually in the project right now
+
+   and uses them to classify the file:
    - **changed-upstream-only** — safe to take with one approval
    - **changed-locally-only** — no-op for this migration
    - **conflict** — both sides changed, must be resolved by hand
@@ -47,17 +52,19 @@ for the workflow details.
 
 | Where | Git status | Purpose |
 |---|---|---|
-| `context/.aibox/processkit.lock` | tracked | Pinned source URL + version + resolved commit (like Cargo.lock) |
-| `context/.aibox/processkit.manifest` | tracked | SHA256 of every file as installed (the "as-installed" reference) |
+| `aibox.lock` (project root) | tracked | Pinned source URL + version + resolved commit (Cargo-style) |
+| `context/templates/processkit/<v>/...` | tracked | Verbatim reference copy of every shipped file (the "as-installed" reference for diffs) |
 | `context/migrations/pending/MIG-*.md` | tracked | Pending migration briefings |
 | `context/migrations/in-progress/MIG-*.md` | tracked | Migrations being worked through |
 | `context/migrations/applied/MIG-*.md` | tracked | Historical record |
 | `context/migrations/INDEX.md` | tracked | Always-loaded summary |
-| `~/.cache/aibox/processkit/<v>/...` | NOT tracked | Fetched cache, reproducible from the lock |
+| `context/.cache/processkit/...` | NOT tracked | Per-project runtime cache (e.g. SQLite index) |
+| `~/.cache/aibox/processkit/<v>/...` | NOT tracked | aibox's fetched upstream cache, reproducible from the lock |
 
-A new developer cloning the project gets the lock + manifest + migration
-documents from git. `aibox sync` fetches the cache as needed. Everything
-is reconstructible from the git checkout.
+A new developer cloning the project gets `aibox.lock` + the reference
+templates + migration documents from git. `aibox sync` fetches the
+upstream cache as needed. Everything is reconstructible from the git
+checkout.
 
 ## Upgrading
 

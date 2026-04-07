@@ -5,7 +5,7 @@ Process declarations define WHAT your project does — not HOW.
 Each `.md` file in this directory describes a process: its steps, roles, and
 definition of done. Processes are intentionally thin. The executable details
 (formatting conventions, tool integrations, workflow specifics) live in
-**skills** (see `.claude/skills/`).
+**skills** (see `context/skills/` once aibox has installed processkit).
 
 ## How it works
 

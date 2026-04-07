@@ -63,23 +63,23 @@ def run():
             '[aibox]\nversion = "0.14.1"\n[context]\npackages = ["managed"]\n'
         )
         (workdir / "context").mkdir()
-        # Copy schemas + state machines so paths.py can find them via the
-        # processkit checkout fallback. We point at the processkit source.
-        # The simpler trick: cd into the workdir but keep PROCESSKIT_LIB_PATH;
+        # Seed schemas + state machines at the consumer install paths so
+        # paths.primitive_schemas_dir / state_machines_dir find them.
         # paths.find_project_root walks up looking for aibox.toml — that
-        # finds workdir. For schemas/state machines, paths.primitive_schemas_dir
-        # walks the same root looking for src/primitives/schemas — won't find
-        # it. We seed those into the workdir's context/.aibox/ so the lib
-        # finds them via the consumer-override path.
-        seeds_root = workdir / "context" / ".aibox"
-        seeds_root.mkdir()
+        # finds workdir. The lib then looks for:
+        #   workdir/context/schemas/        (consumer install)
+        #   workdir/context/state-machines/ (consumer install)
+        # falling back to processkit's src/primitives/{schemas,state-machines}
+        # if not present. We seed at the consumer location to exercise that
+        # code path.
+        context_root = workdir / "context"
         shutil.copytree(
             PROCESSKIT / "src" / "primitives" / "schemas",
-            seeds_root / "schemas",
+            context_root / "schemas",
         )
         shutil.copytree(
             PROCESSKIT / "src" / "primitives" / "state-machines",
-            seeds_root / "state-machines",
+            context_root / "state-machines",
         )
 
         os.chdir(workdir)

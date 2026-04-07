@@ -197,17 +197,25 @@ to walk every file. The diff script (`scripts/processkit-diff.sh`) is the
 canonical implementation; aibox calls it (or reimplements its logic in Rust)
 during sync.
 
-### Interaction with the manifest
+### Interaction with the upstream reference templates
 
-The project's `context/.aibox/processkit.manifest` records the SHA256 of every
-file as it was when last installed. The migration's `affected_files`
-classification is computed by comparing:
-- manifest SHA  (the as-installed reference, git-tracked)
-- cache SHA     (what upstream NOW says)
-- live SHA      (what's in the project right now)
+The project's `context/templates/processkit/<version>/` directory holds
+a verbatim copy of every file shipped by the pinned processkit release
+(installed by `aibox init`, refreshed by `aibox sync`). The migration's
+`affected_files` classification is computed by comparing three SHAs
+on the fly:
 
-Three SHAs → five classifications. See the migration generation logic in
-`aibox sync` for the truth table.
+- **template SHA** — read from
+  `context/templates/processkit/<version>/<file>` (the as-installed
+  reference)
+- **cache SHA** — what upstream NOW says (from aibox's runtime cache,
+  fetched from the pinned processkit tag)
+- **live SHA** — what's in the project right now
+
+Three SHAs → five classifications. See the migration generation logic
+in `aibox sync` for the truth table. The pinned source URL + version +
+resolved commit live in `aibox.lock` at the project root (Cargo-style),
+not in a separate manifest file.
 
 ### What this skill does NOT do (yet, in v0.4.0)
 

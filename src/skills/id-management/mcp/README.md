@@ -49,5 +49,5 @@ id_slug   = false    # true | false
 ## Running
 
 ```bash
-uv run .claude/skills/id-management/mcp/server.py
+uv run context/skills/id-management/mcp/server.py
 ```

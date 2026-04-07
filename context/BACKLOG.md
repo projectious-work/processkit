@@ -16,10 +16,10 @@ existing `references/` material into Level 3 sections where appropriate.
 Estimated scale: 85 files × ~30min each = ~40 hours of careful editing.
 Can be batched by category (process first, then language, then framework, etc.).
 
-### BACK-002 — Remaining 15 primitive schemas
-Only WorkItem, LogEntry, DecisionRecord have full JSON schemas in
-`src/primitives/schemas/`. Add schemas for: Actor, Role, Binding, Scope,
-Category, Gate, Metric, Schedule, Constraint, Context, Discussion,
+### BACK-002 — Remaining 14 primitive schemas
+Only WorkItem, LogEntry, DecisionRecord, Migration have full JSON schemas
+in `src/primitives/schemas/`. Add schemas for: Actor, Role, Binding,
+Scope, Category, Gate, Metric, Schedule, Constraint, Context, Discussion,
 Process, StateMachine, Artifact. CrossReference is intentionally not a
 file primitive.
 
@@ -67,9 +67,10 @@ be auto-generated from the schema files.
 
 ### BACK-009 — Per-skill docs-site pages or auto-generated catalog
 Currently `skills/catalog/` has 13 category pages migrated from aibox.
-Update them to reflect processkit-specific naming and the 16 new
-process-primitive skills. Or auto-generate from `src/skills/*/SKILL.md`
-frontmatter.
+Update them to reflect processkit-specific naming and the 21 new
+process-primitive skills (including migration-management,
+owner-profiling, and context-grooming added in v0.4.0). Or auto-generate
+from `src/skills/*/SKILL.md` frontmatter.
 
 ### BACK-010 — `aibox process install <git-url>` consumer flow
 This depends on aibox Phase 4.6, but processkit needs to publish a
@@ -86,6 +87,12 @@ provider-neutral path is feasible (e.g. `.skills/` or `agent/skills/`)
 and what each provider requires. **Deferred per user — review this
 after the migration work for processkit.**
 
+**Sibling work (already done):** the agent entry file has been split
+into provider-neutral `AGENTS.md` (canonical) plus thin `CLAUDE.md`
+pointer. This BACK-011 is the directory-level equivalent: same
+principle, applied to the `skills/` directory layout. Resolve them
+together — the AGENTS.md/CLAUDE.md split is the precedent.
+
 ### BACK-012 — `processkit-helpers` published as a real Python package
 Currently the lib lives at `src/lib/processkit/` and MCP servers
 import via sys.path manipulation. If it grows or external tools want
@@ -101,6 +108,30 @@ process-primitive skills only reference lower layers.
 Once `workitem-management` MCP server is in use here, convert each
 entry above to a real WorkItem under `context/workitems/`. This file
 becomes a stub pointing at the index.
+
+### BACK-015 — Evaluate full src/ → target-root mirror restructure
+Architectural question deferred to v1.0 planning. Today, `src/` mixes
+two semantically different things:
+
+- **Catalog content** (`src/{primitives,skills,processes,packages,lib}/`)
+  — the processkit library, addressed by tooling and namespaced when
+  installed (e.g. under a consumer's `.processkit/`)
+- **Project-init scaffolding** (`src/scaffolding/`) — files copied
+  verbatim to a consumer project's repo root at install time
+
+A bolder alternative: make `src/` itself a literal mirror of a
+fresh consumer project root. Then `src/AGENTS.md` → target's
+`/AGENTS.md`, `src/context/...` → target's `/context/...`, and catalog
+content moves under `src/.processkit/{primitives,skills,...}` or a
+similar namespace. Pros: src/ becomes self-explanatory ("this is what
+a consumer gets"). Cons: huge breaking move — every reference in
+PROVENANCE.toml, the lib's `_find_lib()`, the smoke test, every
+server, the docs-site, FORMAT.md, INDEX.md files, and consumer
+expectations would change at once.
+
+Decision: keep `src/scaffolding/` as a contained subtree for now.
+Revisit at v1.0 planning when the apiVersion bump (v1) is on the
+table anyway and a coordinated restructure is cheaper.
 
 ## Done
 

@@ -34,19 +34,22 @@ from processkit import entity, ids, paths, state_machine
 then we append `lib`. This is robust as long as the directory layout is
 preserved.
 
-## When aibox Phase 4.3 lands
+## Consumer-install layout (post aibox-handover-v2)
 
-aibox will install the lib alongside skills in the consumer project:
+aibox installs the lib alongside skills in the consumer project, at a
+provider-neutral path under `context/skills/`:
 
 ```
-.claude/skills/_lib/processkit/...
-.claude/skills/event-log/mcp/server.py
+context/skills/_lib/processkit/...
+context/skills/event-log/mcp/server.py
+context/skills/workitem-management/mcp/server.py
+...
 ```
 
-The relative path lookup still works because `parents[3]` from the
-installed location is `.claude/skills/`, and `_lib/processkit/` is found
-under it. Servers may also accept `PROCESSKIT_LIB_PATH` env var as an
-override for non-standard installations.
+The relative path lookup in each server's `_find_lib()` walks up from
+`context/skills/<name>/mcp/` and finds `context/skills/_lib/processkit/`
+on the third hop. Servers may also accept `PROCESSKIT_LIB_PATH` env var
+as an override for non-standard installations.
 
 ## No package install
 

@@ -129,7 +129,7 @@ The SQLite index (parse frontmatter, build tables, serve queries) lives in a pro
 
 ### R9 — Dogfooding
 
-processkit is itself developed using aibox. Its `.devcontainer/`, `context/`, and `.claude/skills/` are scaffolded via `aibox init` pinned to a specific aibox version. The dogfooding loop is resolved by version pinning on both sides; see R7.
+processkit is itself developed using aibox. Its `.devcontainer/` and (eventually, once aibox-side consumption logic lands and we close the loop) its `context/` are scaffolded via `aibox init` pinned to a specific aibox version. The dogfooding loop is resolved by version pinning on both sides; see R7. The install layout is provider-neutral — nothing lands under `.claude/`.
 
 ### R10 — Documentation site
 

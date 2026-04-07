@@ -51,8 +51,9 @@ parts.
 When v2 is introduced:
 
 1. processkit ships both v1 and v2 schemas for a transition period.
-2. `aibox migrate` generates a diff between the old template snapshot
-   (stored in `context/.aibox/templates/v{version}/`) and the new one.
+2. `aibox sync` generates a diff between the old upstream reference
+   templates (stored verbatim in
+   `context/templates/processkit/<old-version>/`) and the new ones.
 3. The diff is presented to the agent as a migration prompt.
 4. The agent applies the changes with human approval.
 5. After a deprecation window, v1 schemas are removed.

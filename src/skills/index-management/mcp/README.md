@@ -18,8 +18,8 @@ processkit MCP servers (which call `upsert_entity` after writing files).
 
 ## Database
 
-`<project-root>/context/.aibox/index.sqlite` — gitignored, rebuildable
-from source files.
+`<project-root>/context/.cache/processkit/index.sqlite` — gitignored,
+rebuildable from source files.
 
 ## Running
 
@@ -30,20 +30,20 @@ cd /path/to/your/project   # contains aibox.toml and context/
 uv run /path/to/processkit/src/skills/index-management/mcp/server.py
 ```
 
-When installed by aibox into a consumer project (Phase 4.3+):
+When installed by aibox into a consumer project:
 
 ```bash
-uv run .claude/skills/index-management/mcp/server.py
+uv run context/skills/index-management/mcp/server.py
 ```
 
 Either form first cold-starts uv (~5–10s), then runs the MCP server on
 STDIO. Subsequent runs are near-instant due to uv's environment cache.
 
-## Limitations at v0.3.0
+## Limitations
 
-- Single-writer (no `WAL` mode yet — agents are sequential)
-- Search is `LIKE %text%`, not FTS5
-- No incremental indexing — `reindex()` is a full sweep
+- WAL mode enabled (v0.4.0+); concurrent writes still serialize.
+- Search is `LIKE %text%`, not FTS5 (BACK-005).
+- No incremental indexing — `reindex()` is a full sweep (BACK-006).
 
 ## Configuration
 
@@ -52,7 +52,7 @@ Override the database path:
 ```toml
 # aibox.toml
 [context.index]
-path = "context/.aibox/index.sqlite"
+path = "context/.cache/processkit/index.sqlite"
 ```
 
 or via env var:
