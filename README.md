@@ -93,7 +93,10 @@ depends on aibox for its dev environment.
 The loop is resolved by **version pinning**:
 
 - `aibox.toml` in this repo pins the aibox version used to generate
-  `.devcontainer/` (currently `0.14.4`).
+  `.devcontainer/` (currently `0.14.1`). Bumping to a newer pure-bug-fix
+  aibox (e.g. 0.14.4) is technically safe but currently a deferred decision —
+  the bump should be coordinated with the in-flight aibox-side processkit
+  consumption work.
 - aibox (starting with the version that adds processkit consumption,
   planned for aibox 0.15+) pins a processkit tag in its own defaults
   and in generated project `aibox.toml`.
@@ -102,7 +105,7 @@ The loop is resolved by **version pinning**:
   Migration entity for the agent and user to walk through.
 
 **Why this works during bootstrap:** The aibox version currently pinned
-here (0.14.4) still ships embedded skills — it does not yet consume
+here (0.14.1) still ships embedded skills — it does not yet consume
 processkit. So this repo can be developed today with aibox's own tooling
 while processkit itself is being built. Once aibox ships the consumer
 logic, the loop closes, but each side still pins a specific counterpart

@@ -160,17 +160,21 @@ processkit releases via semver git tags. The current cadence:
 | Tag    | Theme                                                          |
 |--------|----------------------------------------------------------------|
 | v0.1.0 | Foundation — format spec, 3 schemas, 2 state machines          |
-| v0.2.0 | Skill migration — 102 skills, 5 packages, docs-site bootstrap  |
-| v0.3.0 | MCP servers — 5 foundation servers, SQLite index, lib          |
+| v0.2.0 | Skill migration — 101 skills, 5 packages, docs-site bootstrap  |
+| v0.3.0 | MCP servers — 6 foundation servers, SQLite index, shared lib   |
+| v0.4.0 | **Current** — Migration primitive, owner-profiling, context-grooming, PROVENANCE.toml, configurable upstream source, privacy tiers |
 | v1.0.0 | First stable release (not yet scheduled)                       |
 
 To release a new tag:
 
 1. Update `context/AIBOX.md` status section
-2. Update `docs-site` if user-visible changes shipped
-3. `git tag -a vX.Y.Z -m "..."`
-4. `git push origin main && git push origin vX.Y.Z`
-5. Optionally trigger docs-site deploy (manual)
+2. Update `context/BACKLOG.md` Done section
+3. Update `docs-site` if user-visible changes shipped
+4. Run `uv run scripts/smoke-test-servers.py` and confirm green
+5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
+6. `git tag -a vX.Y.Z -m "..."`
+7. `git push origin main && git push origin vX.Y.Z`
+8. Optionally trigger docs-site deploy (`cd docs-site && npm run deploy`)
 
 ## Backlog and tracked work
 

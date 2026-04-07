@@ -100,19 +100,22 @@ processkit/
 │
 ├── src/                       ← ████ EVERYTHING IN HERE GETS SHIPPED TO CONSUMERS ████
 │   ├── INDEX.md               ← the rule: src/ vs everything else
+│   ├── PROVENANCE.toml        ← (v0.4.0+) file → last-changed-tag map (240 entries)
 │   │
-│   ├── primitives/
+│   ├── primitives/            ← 19 primitives (was 18 — Migration added in v0.4.0)
 │   │   ├── INDEX.md
-│   │   ├── FORMAT.md          ← THE entity file format spec (three-level)
+│   │   ├── FORMAT.md          ← THE entity file format spec (three-level + privacy)
 │   │   ├── schemas/
 │   │   │   ├── workitem.yaml          ← JSON Schema for WorkItem.spec
 │   │   │   ├── logentry.yaml          ← append_only: true
-│   │   │   └── decisionrecord.yaml    ← ADR-style fields
+│   │   │   ├── decisionrecord.yaml    ← ADR-style fields
+│   │   │   └── migration.yaml         ← v0.4.0 — pending/in-progress/applied
 │   │   └── state-machines/
 │   │       ├── workitem.yaml          ← backlog → in-progress → review → done
-│   │       └── decisionrecord.yaml    ← proposed → accepted → superseded
+│   │       ├── decisionrecord.yaml    ← proposed → accepted → superseded
+│   │       └── migration.yaml         ← v0.4.0 — pending → in-progress → applied + rejected
 │   │
-│   ├── skills/                ← 103 skill directories
+│   ├── skills/                ← 106 skill directories (85 migrated + 21 process-primitive)
 │   │   ├── INDEX.md           ← layer hierarchy + status
 │   │   ├── FORMAT.md          ← skill package format spec (three-level)
 │   │   ├── index-management/  ← Layer 0, MCP server (read side)
@@ -131,8 +134,11 @@ processkit/
 │   │   ├── gate-management/            ← Layer 3
 │   │   ├── schedule-management/        ← Layer 3
 │   │   ├── constraint-management/      ← Layer 3
+│   │   ├── migration-management/       ← Layer 3 (v0.4.0)
 │   │   ├── discussion-management/      ← Layer 4
 │   │   ├── metrics-management/         ← Layer 4
+│   │   ├── owner-profiling/            ← Layer 4 (v0.4.0) — interview-driven owner profile
+│   │   ├── context-grooming/           ← Layer 4 (v0.4.0) — periodic context cleanup
 │   │   └── <85 migrated skills>        ← layer: null (technical/language/etc)
 │   │
 │   ├── lib/                   ← shared Python library for MCP servers (NOT a skill)
@@ -171,10 +177,12 @@ processkit/
 │       ├── packages/          ← overview + 5 tier pages
 │       ├── processes/overview.md
 │       ├── mcp-servers/overview.md
-│       └── reference/         ← apiversion-policy, id-formats, migration
+│       └── reference/         ← apiversion-policy, id-formats, migration, privacy (v0.4.0)
 │
 ├── scripts/
-│   └── smoke-test-servers.py  ← end-to-end test for all 6 MCP servers
+│   ├── smoke-test-servers.py  ← end-to-end test for all 6 MCP servers
+│   ├── stamp-provenance.sh    ← (v0.4.0) regenerates src/PROVENANCE.toml at release time
+│   └── processkit-diff.sh     ← (v0.4.0) generic diff between two tags (text/toml/json)
 │
 ├── context/                   ← THIS REPO's own management artifacts (NOT shipped)
 │   ├── AIBOX.md               ← bootstrap version pinning notes; status
@@ -468,17 +476,41 @@ The 2 errors in `reindex stats` are from the test fixture's seeded `INDEX.md` fi
 
 In rough order of "what would I do next":
 
-1. **BACK-002 — Remaining 15 primitive schemas.** Most management skills can't fully validate their entities until their schema exists. Each schema is 50–100 lines of JSON Schema in YAML. Pattern is set by `src/primitives/schemas/workitem.yaml`.
+1. **BACK-002 — Remaining 15 primitive schemas.** v0.4.0 added Migration's
+   schema, so 4 of 19 are done (workitem, logentry, decisionrecord, migration).
+   Most management skills can't fully validate their entities until their
+   schema exists. Each schema is 50–100 lines of JSON Schema in YAML.
+   Pattern is set by `src/primitives/schemas/workitem.yaml` or the v0.4.0
+   `migration.yaml`.
 
-2. **BACK-003 — MCP servers for the other process-primitive skills.** Especially `actor-profile` (everything else references actors) and `scope-management` (scopes are referenced by Bindings). Each server is ~150–250 lines, copy the boilerplate from an existing one.
+2. **BACK-003 — MCP servers for the other process-primitive skills.**
+   Especially `actor-profile` (everything else references actors) and
+   `scope-management` (scopes are referenced by Bindings). The three new
+   v0.4.0 skills (migration-management, owner-profiling, context-grooming)
+   also ship markdown-only and would benefit from MCP servers eventually.
+   Each server is ~150–250 lines, copy the boilerplate from any existing one.
 
-3. **BACK-001 — Three-level rewrite of 85 migrated skills.** Big batch of editing. Can be parallelized by category. The 18 process-primitive skills are the reference style.
+3. **BACK-001 — Three-level rewrite of 85 migrated skills.** Big batch of
+   editing. Can be parallelized by category. The 21 process-primitive skills
+   (v0.4.0 count) are the reference style.
 
 4. **BACK-007 — SQLite WAL mode.** Cheap fix, unlocks parallel agents.
 
-5. **BACK-009 — Refresh skill catalog pages in docs-site.** They were copied from aibox and still describe the aibox 84-skill set, not the processkit 103-skill set.
+5. **BACK-009 — Refresh skill catalog pages in docs-site.** They were copied
+   from aibox and still describe the aibox 84-skill set, not the processkit
+   106-skill set (v0.4.0 count).
 
-6. **BACK-005 — FTS5 search.** Replace `LIKE %text%` with proper tokenized search.
+6. **BACK-005 — FTS5 search.** Replace `LIKE %text%` with proper tokenized
+   search in `src/lib/processkit/index.py`.
+
+7. **(NEW post-v0.4.0)** — wire `aibox lint` validation for the new
+   `privacy:` field once aibox Phase 4.4 lands. The convention is documented
+   but not yet enforced by tooling.
+
+8. **(NEW post-v0.4.0)** — proper test for `scripts/processkit-diff.sh`
+   end-to-end. Currently the script is verified manually (graceful error
+   on missing PROVENANCE.toml at v0.3.0). The first real test happens at
+   v0.5.0 when both tags have a stamped PROVENANCE.toml.
 
 For everything else see `context/BACKLOG.md`.
 

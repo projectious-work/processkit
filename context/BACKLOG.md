@@ -61,9 +61,9 @@ short-lived.
 
 ### BACK-008 — Per-primitive docs-site pages
 Currently the docs-site has one `primitives/overview.md` listing all
-18 primitives. Add a page per primitive: `primitives/workitem.md`,
-`primitives/decisionrecord.md`, etc. Could be auto-generated from
-the schema files.
+19 primitives. Add a page per primitive: `primitives/workitem.md`,
+`primitives/decisionrecord.md`, `primitives/migration.md`, etc. Could
+be auto-generated from the schema files.
 
 ### BACK-009 — Per-skill docs-site pages or auto-generated catalog
 Currently `skills/catalog/` has 13 category pages migrated from aibox.
@@ -111,7 +111,7 @@ becomes a stub pointing at the index.
 - src/ restructure, 101 skills (85 migrated + 16 new), 5 package tiers,
   docs-site bootstrap, apiVersion change to processkit.projectious.work/v1
 
-### v0.3.0 (awaiting push + tag)
+### v0.3.0 (2026-04-06)
 - src/lib/processkit shared library + `index.existing_ids` helper
 - 6 MCP servers: index-management and id-management as Layer 0 peers
   (read/write sides), plus event-log, workitem-management,
@@ -124,7 +124,7 @@ becomes a stub pointing at the index.
 - minimal package now includes both Layer 0 foundations
 - 103 total skill directories (85 migrated + 18 new process-primitive)
 
-### v0.4.0 (current — design-discussion outcomes)
+### v0.4.0 (2026-04-07)
 - **Migration primitive** (the 19th) — schema, state machine,
   registered in `KIND_PREFIXES` (prefix `MIG`), `DEFAULT_DIRS`
   (`migrations`). Skill `migration-management` (Layer 3) ships the
