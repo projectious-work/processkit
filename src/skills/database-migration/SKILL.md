@@ -4,32 +4,30 @@ kind: Skill
 metadata:
   id: SKILL-database-migration
   name: database-migration
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Schema migration workflows including zero-downtime migrations, data backfills, and rollback strategies. Use when planning database migrations, reviewing migration scripts, or troubleshooting migration failures."
+  description: "Schema migration workflows — zero-downtime expand/contract, batched backfills, and rollback strategies."
   category: database
   layer: null
+  when_to_use: "Use when planning a schema migration, reviewing migration scripts, troubleshooting a slow or failed migration, or rolling back a deployed change."
 ---
 
 # Database Migration
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Write or review a schema migration (up/down)
-- Plan a zero-downtime migration for a production database
-- Backfill data after a schema change
-- Set up migration tooling or version tracking
-- Roll back a failed migration
-- Avoid common migration pitfalls (locking, data loss)
+Schema changes are deploys against live state, so they need the same
+discipline as application releases. Use immutable, reversible
+migrations and the expand/contract pattern to keep production reads
+and writes flowing while the schema moves underneath them.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Migration File Structure
+### Migration file structure
 
-Every migration has an `up` (apply) and `down` (revert) script. Use sequential
-versioning or timestamps depending on your tool:
+Every migration has an `up` (apply) and `down` (revert) script. Tools
+order them by sequential version or timestamp:
 
 ```
 migrations/
@@ -39,41 +37,81 @@ migrations/
   002_add_user_email_index.down.sql
 ```
 
-Rules:
-- One logical change per migration (do not mix unrelated alterations)
-- The `down` migration must fully reverse the `up` migration
-- Migrations are immutable once applied — never edit a deployed migration
-- Test both directions: `up` then `down` then `up` again must leave the schema intact
+Rules of the road:
 
-### 2. Zero-Downtime Migrations (Expand/Contract)
+- One logical change per migration; do not mix unrelated alterations.
+- The `down` migration must fully reverse the `up` migration.
+- Migrations are immutable once applied — never edit a deployed
+  migration; write a new one.
+- Test both directions: `up` then `down` then `up` again must leave
+  the schema intact.
 
-Never make a breaking change in a single step. Use the expand/contract pattern:
+### Expand / migrate / contract
+
+Never make a breaking change in a single step. The expand/contract
+pattern decouples schema and code so each can ship independently.
 
 **Phase 1 — Expand:** add the new structure alongside the old.
+
 ```sql
--- Migration: add new column (nullable, no default needed for existing rows)
 ALTER TABLE users ADD COLUMN display_name TEXT;
 ```
 
-**Phase 2 — Migrate:** backfill data and update application code.
-```sql
--- Backfill in batches to avoid locking
-UPDATE users SET display_name = name WHERE display_name IS NULL AND id BETWEEN 1 AND 10000;
-UPDATE users SET display_name = name WHERE display_name IS NULL AND id BETWEEN 10001 AND 20000;
--- ... continue in batches
-```
-Deploy application code that writes to both `name` and `display_name`, reads from `display_name`.
+**Phase 2 — Migrate:** backfill data and update the application to
+write to both columns and read from the new one.
 
-**Phase 3 — Contract:** remove the old structure once fully migrated.
+```sql
+UPDATE users SET display_name = name
+WHERE display_name IS NULL AND id BETWEEN 1 AND 10000;
+```
+
+**Phase 3 — Contract:** remove the old structure once all readers
+have moved over.
+
 ```sql
 ALTER TABLE users ALTER COLUMN display_name SET NOT NULL;
 -- Later, in a separate migration:
 ALTER TABLE users DROP COLUMN name;
 ```
 
-### 3. Safe Operations by Database
+### Batched backfills
 
-Not all ALTER TABLE operations are safe in all databases:
+Large backfills must be batched to avoid long locks, replication lag,
+and runaway WAL growth. Process 1,000–10,000 rows at a time, commit
+between batches, and add a short sleep so replicas can catch up. Run
+during low-traffic windows for very large tables and monitor lag the
+whole way.
+
+### Version tracking
+
+Migration tools record applied versions in a metadata table:
+
+```sql
+CREATE TABLE schema_migrations (
+    version TEXT PRIMARY KEY,
+    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+Common tools — Flyway, Liquibase, golang-migrate, Alembic, Knex,
+Diesel, Ecto — all follow the same pattern: ordered files plus a
+tracking table.
+
+### Example: rename a column with no downtime
+
+To rename `username` to `handle`:
+
+1. Add `handle` (nullable), backfill from `username` in batches.
+2. Deploy code that writes both columns and reads from `handle`.
+3. Add `NOT NULL` on `handle`, then drop `username` in a later
+   migration once nothing reads it.
+
+## Level 3 — Full reference
+
+### Safe operations by database
+
+Not all `ALTER TABLE` operations are safe; the same statement can be
+free on one engine and table-rewriting on another.
 
 | Operation | PostgreSQL | MySQL (InnoDB) |
 |-----------|-----------|----------------|
@@ -84,17 +122,17 @@ Not all ALTER TABLE operations are safe in all databases:
 | Rename column | Fast | Fast (8.0+) |
 | Change column type | Rewrites table, locks | Rewrites table, locks |
 
-**PostgreSQL-specific tips:**
-- Always use `CREATE INDEX CONCURRENTLY` to avoid blocking writes
-- `CONCURRENTLY` cannot run inside a transaction; set migration tool accordingly
-- Adding a `NOT NULL` constraint with `NOT VALID` skips checking existing rows; validate later with `VALIDATE CONSTRAINT`
+PostgreSQL-specific tips:
 
-### 4. Data Backfills
+- Always use `CREATE INDEX CONCURRENTLY` to avoid blocking writes.
+- `CONCURRENTLY` cannot run inside a transaction; configure the
+  migration tool to disable transaction wrapping for that file.
+- Add `NOT NULL` constraints with `NOT VALID` to skip checking
+  existing rows, then `VALIDATE CONSTRAINT` later in a separate step.
 
-Large backfills require care to avoid locking and overwhelming the database:
+### Backfill recipe
 
 ```sql
--- Batch update pattern (do this in application code or a script)
 DO $$
 DECLARE
     batch_size INT := 5000;
@@ -112,56 +150,56 @@ BEGIN
 END $$;
 ```
 
-Guidelines:
-- Process in batches of 1,000-10,000 rows
-- Add a short sleep between batches to let replication catch up
-- Run during low-traffic periods for large tables
-- Monitor replication lag and pause if it exceeds your threshold
+Most teams run backfills from application code or a one-off script
+rather than inside the migration tool, so they can pause, resume, and
+report progress.
 
-### 5. Rollback Strategies
+### Rollback strategies
 
-Plan for failure before running any migration:
+Plan for failure before running anything in production:
 
-- **Down migration**: the standard rollback path. Must be tested before deploying.
-- **Forward-fix**: sometimes rolling back is riskier than fixing forward (e.g., after a destructive migration). Write a new migration that corrects the issue.
-- **Point-in-time recovery (PITR)**: last resort. Restores the entire database to a timestamp. Data written after that point is lost.
+- **Down migration** — the standard path. Must be tested before
+  deploying.
+- **Forward-fix** — sometimes rolling back is riskier than fixing
+  forward (especially after a destructive migration). Write a new
+  migration that corrects the issue.
+- **Point-in-time recovery (PITR)** — last resort. Restores the entire
+  database to a timestamp; everything written after that point is
+  lost.
 
-Before running migrations in production:
-1. Take a backup or confirm PITR is enabled
-2. Run the migration on a staging copy with production-like data
-3. Measure execution time on staging (a 2-second migration on staging may take 20 minutes on production)
-4. Have the rollback command ready to execute
+Pre-flight checklist:
 
-### 6. Version Tracking
+1. Take a backup or confirm PITR is enabled.
+2. Run the migration on a staging copy with production-like data.
+3. Measure execution time on staging — a 2-second migration on
+   staging may take 20 minutes on production.
+4. Have the rollback command ready to execute before you start.
 
-Migration tools track which migrations have been applied in a metadata table:
+### Concurrent index example
 
 ```sql
-CREATE TABLE schema_migrations (
-    version TEXT PRIMARY KEY,
-    applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+-- up
+CREATE INDEX CONCURRENTLY idx_orders_customer
+    ON orders (customer_id);
+
+-- down
+DROP INDEX CONCURRENTLY idx_orders_customer;
 ```
 
-Common tools: Flyway, Liquibase, golang-migrate, Alembic (Python), Knex (Node),
-Diesel (Rust), Ecto (Elixir). All follow the same pattern: ordered migrations
-with a tracking table.
+### Anti-patterns
 
-### 7. Common Pitfalls
-
-- **Locking a large table**: `ALTER TABLE ... ADD COLUMN ... DEFAULT x` rewrites the table in older PostgreSQL/MySQL. Use nullable + backfill instead.
-- **Missing index creation for new FKs**: foreign keys without indexes cause slow deletes on the parent table.
-- **Running DDL inside a long transaction**: in PostgreSQL, DDL takes `ACCESS EXCLUSIVE` locks; if combined with long-running queries, this causes cascading lock waits.
-- **Forgetting to handle NULL during backfill**: application code deployed before backfill completes must handle NULL in the new column.
-- **Irreversible migrations without backup**: dropping columns or tables with no backup and no down migration is data loss waiting to happen.
-
-## Examples
-
-**User:** "I need to rename the `username` column to `handle` without downtime"
-**Agent:** Plans a 3-step expand/contract migration: (1) add `handle` column, (2) deploy code that writes to both and reads from `handle`, backfill `handle` from `username`, (3) drop `username` once all reads are migrated. Writes the three migration files with up/down scripts and a backfill script that processes 5,000 rows per batch.
-
-**User:** "This migration is taking forever on production"
-**Agent:** Checks the migration SQL for table-rewriting operations (column type changes, adding a column with a volatile default). Identifies that `ALTER TABLE orders ADD COLUMN total DECIMAL NOT NULL DEFAULT 0` is rewriting a 50M-row table. Recommends splitting into: add nullable column (instant), backfill in batches, then add NOT NULL constraint with `NOT VALID` + `VALIDATE CONSTRAINT`.
-
-**User:** "How do I add an index to a 100M row table without locking?"
-**Agent:** Writes `CREATE INDEX CONCURRENTLY idx_orders_customer ON orders (customer_id);` and explains that this must run outside a transaction block. Configures the migration tool to disable transaction wrapping for this migration. Estimates build time based on table size and recommends running during low-traffic hours. Includes the down migration: `DROP INDEX CONCURRENTLY idx_orders_customer;`.
+- **Locking a large table** with `ADD COLUMN ... DEFAULT x` on older
+  PostgreSQL/MySQL. Use nullable + backfill instead.
+- **Missing index on a new foreign key.** PostgreSQL does not create
+  one automatically; deletes on the parent table will become slow
+  scans.
+- **DDL inside a long transaction.** PostgreSQL DDL takes
+  `ACCESS EXCLUSIVE` locks; combined with long-running queries this
+  cascades into lock waits across the cluster.
+- **Forgetting NULL during backfill.** Application code deployed
+  before the backfill completes must handle NULL in the new column.
+- **Irreversible migrations without a backup.** Dropping columns or
+  tables with no down migration and no PITR is data loss waiting to
+  happen.
+- **Editing a deployed migration.** Add a new one instead — staging
+  and production hashes will diverge otherwise.

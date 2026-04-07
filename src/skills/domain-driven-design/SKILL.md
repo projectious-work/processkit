@@ -4,129 +4,257 @@ kind: Skill
 metadata:
   id: SKILL-domain-driven-design
   name: domain-driven-design
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Domain-Driven Design strategic and tactical patterns. Bounded contexts, aggregates, value objects, and context mapping. Use when modeling complex domains, designing microservice boundaries, or reviewing domain models."
+  description: "Domain-Driven Design strategic and tactical patterns — bounded contexts, aggregates, value objects, context mapping."
   category: architecture
   layer: null
+  when_to_use: "Use when modeling a complex business domain, defining microservice boundaries, designing aggregates, establishing a ubiquitous language, or refactoring a big ball of mud into well-defined contexts."
 ---
 
 # Domain-Driven Design
 
-## When to Use
+## Level 1 — Intro
 
-- Modeling a complex business domain where the logic is the core differentiator
-- Defining microservice boundaries based on business capabilities
-- Reviewing an existing domain model for aggregate design or invariant violations
-- Creating a ubiquitous language to align developers and domain experts
-- Deciding how bounded contexts should communicate (context mapping)
-- Refactoring a big ball of mud into well-defined domain boundaries
+DDD has two halves: strategic design (bounded contexts, context maps,
+ubiquitous language) and tactical design (aggregates, entities, value
+objects, domain events, repositories). Use it when the business logic
+is the differentiator and the cost of getting the model wrong is
+high.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Establish Ubiquitous Language
+### Ubiquitous language
 
-Before writing any code, build a shared vocabulary with domain experts.
+Before writing any code, build a shared vocabulary with domain
+experts. Identify key terms and write down precise definitions.
+Reject technical jargon in the model — use `Order`, `Shipment`,
+`PolicyRenewal`, not `EntityManager` or `ServiceHandler`. If two
+teams use the same word differently, that is a strong signal of two
+distinct bounded contexts. Maintain a glossary in the project docs;
+class names, method names, and variable names should all reflect the
+language.
 
-- Identify key domain terms and write them down with precise definitions
-- Reject technical jargon in the domain model (no `EntityManager`, `ServiceHandler` — use domain terms like `Order`, `Shipment`, `PolicyRenewal`)
-- If two teams use the same word differently, you likely have two bounded contexts
-- Maintain a glossary in the project docs; update it as understanding evolves
-- Code must use exactly the same terms — class names, method names, variable names all reflect the ubiquitous language
+### Strategic design — bounded contexts
 
-### 2. Strategic Design — Bounded Contexts
+A bounded context is a boundary within which a single domain model
+and ubiquitous language apply. To find them:
 
-A bounded context is a boundary within which a domain model is consistent and a ubiquitous language applies.
+- Map the business capabilities (ordering, billing, shipping,
+  inventory).
+- Look for linguistic boundaries — where the same word means
+  different things (`Product` in catalog vs warehouse).
+- Align with team ownership — one team per context is ideal.
+- Start coarse, split later. Merging contexts is harder than
+  splitting.
 
-How to identify bounded contexts:
-- Map the business capabilities (ordering, billing, shipping, inventory)
-- Look for linguistic boundaries — where the same word means different things (`Product` in catalog vs. warehouse)
-- Align with team ownership — one team per bounded context is ideal
-- Start coarse, split later — merging contexts is harder than splitting
+Each bounded context has its own domain model (its own `Customer`
+class, not shared), its own data store or schema, and communicates
+with others through well-defined interfaces.
 
-Each bounded context:
-- Has its own domain model (its own `Customer` class, not shared across contexts)
-- Has its own data store (or at minimum its own schema)
-- Communicates with other contexts through well-defined interfaces
+### Context mapping
 
-### 3. Context Mapping
+Define how bounded contexts relate. The deeper reference lives in
+`references/ddd-building-blocks.md`.
 
-Define relationships between bounded contexts. See `references/ddd-building-blocks.md` for details.
-
-| Pattern | Relationship | Use When |
+| Pattern | Relationship | Use when |
 |---|---|---|
-| Shared Kernel | Two contexts share a small common model | Tightly coupled teams that co-evolve a small shared piece |
-| Customer-Supplier | Upstream supplies, downstream consumes | Clear dependency direction, upstream accommodates downstream |
-| Conformist | Downstream conforms to upstream's model | Cannot influence upstream (third-party API) |
-| Anti-Corruption Layer (ACL) | Downstream translates upstream's model | Protecting your model from a legacy or external system |
-| Open Host Service | Upstream provides a well-defined protocol | Many consumers; upstream publishes a stable API |
-| Published Language | Shared interchange format (e.g., JSON schema) | Cross-context communication needs a neutral format |
+| Shared Kernel | Two contexts share a small common model | Tightly coupled teams co-evolving a shared piece |
+| Customer-Supplier | Upstream supplies, downstream consumes | Clear dependency, upstream accommodates downstream |
+| Conformist | Downstream conforms to upstream's model | You cannot influence upstream (third-party API) |
+| Anti-Corruption Layer | Downstream translates upstream's model | Protecting your model from a legacy or external system |
+| Open Host Service | Upstream provides a well-defined protocol | Many consumers, upstream publishes a stable API |
+| Published Language | Shared interchange format (JSON schema, Avro) | Cross-context communication needs a neutral format |
 | Separate Ways | No integration | Contexts have no meaningful interaction |
 
-Default recommendation: use an Anti-Corruption Layer when integrating with any external system or legacy context. It prevents foreign concepts from leaking into your domain model.
+Default recommendation: use an Anti-Corruption Layer when integrating
+with any external or legacy system. It prevents foreign concepts from
+leaking into your domain.
 
-### 4. Tactical Design — Aggregates
+### Tactical design — aggregates
 
-An aggregate is a cluster of domain objects treated as a single unit for data changes.
+An aggregate is a cluster of domain objects treated as a single unit
+for data changes. Rules:
 
-Rules for aggregate design:
-- **One aggregate root** per aggregate — external references point only to the root
-- **Protect invariants** — the aggregate enforces all business rules within its boundary
-- **Small aggregates** — prefer smaller aggregates that reference each other by ID, not by object reference
-- **Transactional boundary** — one transaction modifies one aggregate. Cross-aggregate consistency is eventual.
-- **Identity** — aggregate roots have a globally unique ID; internal entities have locally unique IDs
+- **One aggregate root** — external references point only at the
+  root.
+- **Protect invariants** — the aggregate enforces business rules
+  within its boundary.
+- **Small aggregates** — prefer small aggregates that reference each
+  other by ID, not by object reference.
+- **One transaction modifies one aggregate** — cross-aggregate
+  consistency is eventual.
+- **Identity** — aggregate roots have a globally unique ID; internal
+  entities have locally unique IDs.
 
-Common mistake: making aggregates too large. If `Order` contains `Customer` contains `Address`, any change to an address locks the entire order. Instead: `Order` references `customerId`.
+The classic mistake is making aggregates too large. If `Order`
+contains `Customer` contains `Address`, any address change locks the
+entire order. Reference `customerId` instead.
 
-### 5. Tactical Design — Entities, Value Objects, Domain Events
+### Entities, value objects, and domain events
 
-**Entities** have identity and lifecycle. Two entities with the same attributes but different IDs are different.
-- Example: `Order(id: OrderId)`, `User(id: UserId)`
-- Implement equality by ID, not by attribute comparison
+**Entities** have identity and a lifecycle. Two entities with
+identical attributes but different IDs are different. Implement
+equality by ID.
 
-**Value Objects** have no identity. They are defined by their attributes and are immutable.
-- Example: `Money(amount: Decimal, currency: Currency)`, `Address(street, city, zip)`
-- Two value objects with the same attributes are equal
-- Prefer value objects over primitives (use `EmailAddress` not `String`)
+**Value objects** are defined entirely by their attributes and are
+immutable. Two value objects with the same attributes are equal.
+Prefer `EmailAddress` over `String`, `Money` over `float`.
 
-**Domain Events** represent something meaningful that happened in the domain.
-- Named in past tense: `OrderPlaced`, `PaymentReceived`, `InventoryReserved`
-- Immutable once created
-- Carry enough data for consumers to react without querying back
-- Published after the aggregate state change is persisted
+**Domain events** record something meaningful that has happened.
+Named in past tense (`OrderPlaced`, `PaymentReceived`,
+`InventoryReserved`), immutable, carry enough data for consumers to
+react without querying back, and published only after the state
+change is persisted.
 
-### 6. Tactical Design — Repositories, Services, Factories
+### Repositories, services, factories
 
-**Repositories** provide collection-like access to aggregates. One repository per aggregate root.
-- Interface defined in the domain layer, implementation in infrastructure
-- Methods: `find_by_id`, `save`, `find_by_criteria` — domain-oriented, not SQL-oriented
-- Never expose query builders or ORM details through the repository interface
+- **Repositories** provide collection-like access to aggregates. One
+  per aggregate root. Interface in the domain layer, implementation
+  in infrastructure. Methods speak domain (`find_pending_by_customer`),
+  not SQL.
+- **Domain services** hold logic that does not naturally belong to a
+  single entity (e.g. `TransferService.transfer(from, to, amount)`).
+  Stateless. Use sparingly — most logic should live on aggregates.
+- **Factories** encapsulate complex creation when validation,
+  defaults, or multi-step initialization are involved.
 
-**Domain Services** contain business logic that does not naturally belong to a single entity or value object.
-- Example: `TransferService.transfer(from: Account, to: Account, amount: Money)`
-- Stateless — all state lives in entities and value objects
-- Use sparingly — most logic should live on aggregates
+### Example workflows
 
-**Factories** encapsulate complex object creation.
-- Use when aggregate creation involves validation, default values, or multi-step initialization
-- Can be a static method on the aggregate root or a separate factory class
+- **E-commerce domain:** identify contexts (Catalog, Ordering,
+  Payment, Shipping, Inventory). Aggregates: `Product` in Catalog,
+  `Order` with `OrderLine` in Ordering, `Shipment` in Shipping. Value
+  objects: `Money`, `Address`, `SKU`. Ordering integrates with
+  Inventory through events (reserve stock); Payment uses an ACL to
+  the gateway.
+- **Reviewing a god aggregate:** a `Customer` containing `Orders`,
+  `Addresses`, `PaymentMethods`, and `Preferences` locks the world on
+  any address change. Split into `Customer` (profile), `Order`
+  (references customerId), `PaymentMethod` (references customerId),
+  each its own aggregate.
+- **Splitting a monolith:** map existing code to business
+  capabilities via event storming. Identify contexts by linguistic
+  boundaries and team ownership. Propose a context map with ACLs at
+  legacy boundaries and pub/sub between contexts. Extract the most
+  independent context first.
 
-### 7. Common Anti-Patterns
+## Level 3 — Full reference
 
-- **Anemic domain model:** Entities are data bags with getters/setters; all logic in services. Fix: move behavior onto entities and aggregates.
-- **God aggregate:** One massive aggregate that locks everything. Fix: split into smaller aggregates connected by ID references.
-- **Leaking context:** Using another context's types directly. Fix: introduce an ACL or map to local types.
-- **Premature abstraction:** Defining bounded contexts before understanding the domain. Fix: start with a monolith, discover boundaries through usage.
-- **Shared database:** Multiple bounded contexts reading/writing the same tables. Fix: give each context its own data store or schema.
+### Aggregate example
 
-## Examples
+```python
+class Order:  # Aggregate root
+    def __init__(self, order_id, customer_id):
+        self.id = order_id
+        self.customer_id = customer_id  # reference by ID, not object
+        self.lines = []                  # internal entities
+        self.status = "draft"
 
-### Modeling an E-Commerce Domain
-User asks to design a domain model for an online store. Identify bounded contexts: Catalog (product browsing), Ordering (cart + checkout), Payment, Shipping, Inventory. Define aggregates: `Product` (in Catalog), `Order` with `OrderLine` (in Ordering), `Shipment` (in Shipping). Use value objects for `Money`, `Address`, `SKU`. Map contexts: Ordering is customer of Inventory (reserve stock), Payment is separate with ACL to payment gateway.
+    def add_line(self, product_id, quantity, unit_price):
+        if self.status != "draft":
+            raise DomainError("Cannot modify a submitted order")
+        self.lines.append(OrderLine(product_id, quantity, unit_price))
 
-### Reviewing Aggregate Boundaries
-User has a `Customer` aggregate that contains `Orders`, `Addresses`, `PaymentMethods`, and `Preferences`. Identify that this is a god aggregate — modifying an address locks the entire customer. Recommend splitting: `Customer` (profile + preferences), `Order` (references customerId), `PaymentMethod` (references customerId). Each is its own aggregate with its own repository.
+    def submit(self):
+        if not self.lines:
+            raise DomainError("Cannot submit empty order")
+        self.status = "submitted"
+        return OrderSubmitted(self.id, self.total())
+```
 
-### Designing Microservice Boundaries
-User wants to split a monolith into microservices. Map the existing code to business capabilities using event storming or domain narrative. Identify bounded contexts by looking for linguistic boundaries and team ownership. Propose context map showing relationships (ACLs at legacy boundaries, pub/sub events between contexts). Start by extracting the most independent context first.
+External code should reference only `Order` and call `add_line` /
+`submit`; nothing reaches into `OrderLine` directly. The root
+enforces every invariant in the cluster.
+
+### Value object example
+
+```python
+@dataclass(frozen=True)
+class Money:
+    amount: Decimal
+    currency: str
+
+    def __post_init__(self):
+        if self.amount < 0:
+            raise ValueError("Amount cannot be negative")
+        if self.currency not in VALID_CURRENCIES:
+            raise ValueError(f"Invalid currency: {self.currency}")
+
+    def add(self, other: "Money") -> "Money":
+        if self.currency != other.currency:
+            raise DomainError("Cannot add different currencies")
+        return Money(self.amount + other.amount, self.currency)
+```
+
+Self-validating, immutable, equal-by-attributes. To "change" a value,
+construct a new instance.
+
+### Domain event example
+
+```python
+@dataclass(frozen=True)
+class OrderSubmitted:
+    order_id: str
+    customer_id: str
+    total: Money
+    items: list[OrderLineSnapshot]
+    occurred_at: datetime
+```
+
+Past tense. Immutable. Carries the data consumers need so they do
+not have to call back to the producing service. Published only after
+the state change is persisted.
+
+### Repository example
+
+```python
+# Domain layer — interface
+class OrderRepository(Protocol):
+    def find_by_id(self, order_id: OrderId) -> Order | None: ...
+    def save(self, order: Order) -> None: ...
+    def find_pending_by_customer(
+        self, customer_id: CustomerId
+    ) -> list[Order]: ...
+
+# Infrastructure layer — implementation
+class PostgresOrderRepository:
+    def find_by_id(self, order_id: OrderId) -> Order | None:
+        row = self.db.query("SELECT ... WHERE id = %s", order_id)
+        return self._to_aggregate(row) if row else None
+```
+
+The interface speaks domain language and returns fully reconstituted
+aggregates. The infrastructure implementation hides SQL and ORM
+details.
+
+### Anti-patterns
+
+- **Anemic domain model** — entities are data bags with
+  getters/setters and all logic lives in services. Move behavior onto
+  entities and aggregates.
+- **God aggregate** — one massive aggregate that locks everything.
+  Split into smaller aggregates connected by ID references.
+- **Leaking context** — using another context's types directly.
+  Introduce an ACL or map to local types.
+- **Premature contexts** — defining bounded contexts before
+  understanding the domain. Start with a modular monolith and
+  discover boundaries through usage.
+- **Shared database** — multiple contexts reading and writing the
+  same tables. Each context owns its own store or at least its own
+  schema.
+- **Technical event names** (`OrderUpdatedEvent`) instead of domain
+  names (`OrderSubmitted`).
+- **Publishing events before persisting state** — leads to
+  inconsistency on failure. Use the outbox pattern.
+- **Comparing entities by attributes** instead of ID.
+- **Exposing setters** — use intention-revealing methods like
+  `change_email`, not `set_email`.
+
+### Pattern selection notes
+
+- **Shared Kernel** is high-coupling. Use only within a single team.
+- **Anti-Corruption Layer** is the default for external integrations
+  — it isolates your model from foreign concepts.
+- **Open Host Service + Published Language** is best when many
+  consumers depend on a stable upstream API.

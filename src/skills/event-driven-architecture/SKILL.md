@@ -4,116 +4,240 @@ kind: Skill
 metadata:
   id: SKILL-event-driven-architecture
   name: event-driven-architecture
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Event-driven system design including event sourcing, CQRS, pub/sub, saga patterns, and message broker selection. Use when designing event-driven systems, implementing messaging, or reviewing async architectures."
+  description: "Event-driven systems — pub/sub, event sourcing, CQRS, sagas, broker selection, reliability."
   category: architecture
   layer: null
+  when_to_use: "Use when designing or migrating to an event-driven system, choosing a message broker, implementing event sourcing or CQRS, designing sagas, or reviewing async architectures for reliability and ordering."
 ---
 
 # Event-Driven Architecture
 
-## When to Use
+## Level 1 — Intro
 
-- Designing a new event-driven system or migrating from synchronous to asynchronous
-- Choosing between message brokers (Kafka, RabbitMQ, NATS)
-- Implementing event sourcing or CQRS
-- Designing saga patterns for distributed transactions
-- Reviewing an existing async architecture for reliability or ordering issues
-- Handling dead letters, schema evolution, or idempotency concerns
+Event-driven design decouples producers from consumers via a message
+broker. Done well it scales independently, audits naturally, and
+absorbs bursts; done badly it creates implicit, untraceable spaghetti.
+Pick it only when synchronous request-response would not be simpler
+and sufficient.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Identify Event-Driven Suitability
+### When event-driven fits
 
-Not every system benefits from event-driven design. Evaluate fit:
+Good fit:
 
-- **Good fit:** Loose coupling needed between services, complex workflows spanning multiple services, real-time processing requirements, independent scaling of producers and consumers, audit trail requirements (event sourcing).
-- **Poor fit:** Simple CRUD with strong consistency needs, low throughput where synchronous calls are fine, small monolith with no distribution requirement.
+- Loose coupling needed between services
+- Complex workflows spanning multiple services
+- Real-time processing requirements
+- Independent scaling of producers and consumers
+- Audit-trail requirements (event sourcing)
 
-Ask: "Would synchronous request-response be simpler and sufficient?" If yes, do not introduce events just for the sake of it.
+Poor fit:
 
-### 2. Choose the Right Messaging Pattern
+- Simple CRUD with strong consistency needs
+- Low throughput where synchronous calls are perfectly fine
+- Small monolith with no distribution requirement
 
-See `references/messaging-patterns.md` for detailed patterns with diagrams.
+The honest test: "Would synchronous request-response be simpler and
+sufficient?" If yes, do not introduce events for their own sake.
 
-| Pattern | Use Case | Guarantee |
+### Messaging patterns
+
+The deeper diagrams live in `references/messaging-patterns.md`.
+
+| Pattern | Use case | Guarantee |
 |---|---|---|
 | Pub/Sub | Fan-out notifications, event broadcasting | At-least-once per subscriber |
-| Point-to-Point | Task distribution, work queues | Exactly-once with ack |
+| Point-to-Point | Task distribution, work queues | At-least-once with ack |
 | Request-Reply | Async RPC, query with callback | Correlation-based |
-| Competing Consumers | Load balancing across workers | At-least-once, single delivery |
+| Competing Consumers | Load balancing across workers | At-least-once, single delivery in group |
 
-### 3. Select a Message Broker
+### Choosing a broker
 
-Match the broker to your requirements:
+- **Apache Kafka** — log-based, very high throughput, replay
+  capability. Best for event sourcing, stream processing, high-volume
+  pipelines. Operationally heavy; prefer managed (Confluent, MSK).
+- **RabbitMQ** — mature, flexible routing via exchanges and bindings.
+  Best for task queues, complex topologies, RPC-style patterns.
+  Lower throughput than Kafka but richer routing.
+- **NATS** — lightweight, low latency, simple ops. Best for
+  microservice communication, IoT, edge. JetStream adds persistence.
+- **Amazon SQS/SNS** — fully managed, zero ops. SQS for queues, SNS
+  for pub/sub. Limited features but reliable.
+- **Redis Streams** — good for lightweight streaming when Redis is
+  already in the stack. Not a Kafka replacement at scale.
 
-- **Apache Kafka** — Log-based, high throughput, replay capability. Best for event sourcing, stream processing, and high-volume pipelines. Operational complexity is high; use managed (Confluent, MSK) when possible.
-- **RabbitMQ** — Mature, flexible routing (exchanges, bindings). Best for task queues, complex routing topologies, and RPC-style patterns. Lower throughput than Kafka but richer routing.
-- **NATS** — Lightweight, low latency, simple ops. Best for microservice communication, IoT, and edge. JetStream adds persistence and exactly-once. Minimal operational overhead.
-- **Amazon SQS/SNS** — Fully managed, zero ops. Best for AWS-native workloads. SQS for queues, SNS for pub/sub. Limited features but reliable.
-- **Redis Streams** — Good for lightweight streaming when Redis is already in the stack. Not a replacement for Kafka at scale.
+Decision factors: throughput, ordering guarantees, replay, ops
+budget, existing infrastructure.
 
-Decision factors: throughput needs, ordering guarantees, replay requirements, operational budget, existing infrastructure.
+### Event sourcing and CQRS
 
-### 4. Implement Event Sourcing
+**Event sourcing** stores state as an append-only sequence of
+immutable events (`OrderPlaced`, `ItemAdded`, `OrderShipped`).
+Current state is derived by replaying events; snapshots avoid
+replaying full history. Never delete events — emit compensating
+events (`OrderCancelled`) instead.
 
-Store state as an append-only sequence of events rather than mutable records.
+**CQRS** separates the write model (commands, validation, business
+rules) from read models (denormalized projections optimized per query
+shape). Read models lag writes; design UIs to handle eventual
+consistency. CQRS without event sourcing is valid and simpler — only
+add event sourcing when you genuinely need full audit or temporal
+queries.
 
-Key principles:
-- Events are immutable facts: `OrderPlaced`, `ItemAdded`, `OrderShipped`
-- Current state is derived by replaying events (or from snapshots + subsequent events)
-- Never delete events; use compensating events (`OrderCancelled`) instead
-- Snapshot periodically to avoid replaying entire history (every 100-500 events)
+### Sagas for distributed transactions
 
-Pitfalls:
-- Schema evolution is hard — use a schema registry (Avro, Protobuf) and additive-only changes
-- Event replay can be slow without snapshots
-- Querying event stores directly is painful — use CQRS read models
+For workflows spanning multiple services, use sagas instead of 2PC:
 
-### 5. Design CQRS (Command Query Responsibility Segregation)
+- **Orchestration** — a central coordinator tells each service what
+  to do and handles compensation on failure. Easier to understand and
+  debug; the flow is in one place. Risk: orchestrator becomes a god
+  service.
+- **Choreography** — services react to each other's events with no
+  central coordinator. Better decoupling. Risk: hard to track the
+  overall flow without distributed tracing.
 
-Separate the write model (commands) from read models (queries):
+Choose orchestration when the workflow logic is complex, visibility
+matters, and there are fewer than ~5-6 steps. Choose choreography
+when services are truly independent, the flow is simple, and teams
+own their services independently.
 
-- **Write side:** Validates commands, emits events, enforces business rules. Optimized for consistency.
-- **Read side:** Projects events into denormalized views. Optimized for query patterns. Can have multiple read models for different query needs.
-- **Eventual consistency:** Read models lag behind writes. Design UIs to handle this (optimistic updates, "processing" states).
+### Reliability essentials
 
-CQRS without event sourcing is valid and simpler. Use event sourcing only when you need full audit trail or temporal queries.
+- **Idempotent consumers** — every consumer must handle duplicates
+  safely. Use idempotency keys (event ID + consumer ID) with a
+  dedup store.
+- **Dead letter queues** — route messages that fail processing after
+  N retries to a DLQ. Monitor depth. Build tooling to inspect and
+  replay.
+- **Outbox pattern** — write events to an outbox table in the same
+  DB transaction as the state change, then publish asynchronously.
+  Prevents lost events when the broker is down.
+- **Schema evolution** — use a schema registry. Make changes
+  additive: add fields, never remove or rename. Version event types.
+- **Ordering** — Kafka guarantees order within a partition, RabbitMQ
+  does not guarantee cross-queue order. Design consumers to tolerate
+  out-of-order delivery where possible.
 
-### 6. Implement Saga Patterns
+### Example workflows
 
-For distributed transactions spanning multiple services, use sagas:
+- **Order processing pipeline:** Kafka backbone, event sourcing on
+  the order aggregate. Orchestration saga for fulfillment with
+  compensating actions (refund on payment failure, release inventory
+  on shipment failure). Avro schemas in a registry.
+- **Sync to async migration:** map the call graph; identify
+  fire-and-forget interactions vs queries. Pub/sub for notifications,
+  request-reply for queries. Start with the outbox pattern to avoid
+  dual-write issues. RabbitMQ if routing is rich.
+- **Debugging duplicates / out-of-order:** check consumer
+  idempotency keys. Verify Kafka partition key strategy (related
+  events on the same partition?). Inspect consumer group rebalancing
+  and commit/ack strategy. Drain the DLQ for poison messages.
 
-**Orchestration (centralized coordinator):**
-- A saga orchestrator tells each service what to do and handles compensation on failure
-- Easier to understand and debug; the flow is visible in one place
-- Risk: orchestrator becomes a single point of failure or a god service
+## Level 3 — Full reference
 
-**Choreography (event-based):**
-- Each service listens for events and reacts independently, emitting its own events
-- Better decoupling; no central coordinator
-- Risk: hard to track the overall flow, debugging requires distributed tracing
+### Pub/Sub topology
 
-Choose orchestration when: workflow logic is complex, visibility matters, fewer than 5-6 steps.
-Choose choreography when: services are truly independent, workflow is simple, teams own services independently.
+```
+                    +-> [Subscriber A]
+[Producer] -> [Topic]
+                    +-> [Subscriber B]
+                    +-> [Subscriber C]
+```
 
-### 7. Ensure Reliability
+Each subscriber maintains its own offset. At-least-once per
+subscriber. Slow subscribers can cause backpressure or lag — monitor
+consumer lag per subscription. Broker support: Kafka topics, RabbitMQ
+fanout exchanges, NATS subjects, SNS topics.
 
-- **Idempotent consumers:** Every consumer must handle duplicate messages safely. Use idempotency keys (event ID + consumer ID) with a deduplication store.
-- **Dead letter queues (DLQ):** Route messages that fail processing after N retries to a DLQ. Monitor DLQ depth. Build tooling to inspect and replay DLQ messages.
-- **Ordering guarantees:** Kafka guarantees order within a partition. RabbitMQ does not guarantee cross-queue order. Design consumers to tolerate out-of-order delivery where possible.
-- **Outbox pattern:** Write events to an outbox table in the same DB transaction as the state change, then publish asynchronously. Prevents lost events when the broker is down.
-- **Schema evolution:** Use a schema registry. Make all changes backward-compatible (add fields, never remove or rename). Version your event types.
+### Point-to-Point work queue
 
-## Examples
+```
+[Producer] -> [Queue] -> [Consumer A]  (msg 1, 3, 5)
+                      -> [Consumer B]  (msg 2, 4, 6)
+```
 
-### Designing an Order Processing System
-User wants to build an async order pipeline. Analyze the workflow (order placed, payment processed, inventory reserved, shipment created). Recommend Kafka for event backbone with event sourcing on the order aggregate. Design an orchestration saga for the order fulfillment flow with compensating actions (refund on payment failure, release inventory on shipment failure). Define event schemas with Avro and a schema registry.
+Exactly one consumer processes each message. At-least-once with
+acknowledgment — unacked messages return to the queue. Ordering is
+not guaranteed across consumers; use a single consumer or partition
+keys when order matters.
 
-### Migrating from Sync to Async
-User has a monolith where service A calls service B and C synchronously. Map the current call graph and identify which interactions are fire-and-forget (notifications, logging) vs. requiring a response. Introduce pub/sub for fire-and-forget, request-reply for queries. Start with the outbox pattern to avoid dual-write issues. Suggest RabbitMQ for the mixed routing needs.
+### Request-Reply
 
-### Debugging Event Pipeline Issues
-User reports messages being processed multiple times or out of order. Check for missing idempotency keys in consumers. Verify partition key strategy in Kafka (are related events on the same partition?). Check consumer group configuration and rebalancing behavior. Inspect DLQ for poison messages. Review consumer commit/ack strategy (auto-commit vs. manual).
+```
+[Requester] --request--> [Queue A] --> [Responder]
+[Requester] <--reply---- [Queue B] <-- [Responder]
+            (correlation ID matches request to reply)
+```
+
+Correlation ID links request to reply. Always set a timeout for
+missing replies. Use only when the decoupling benefit is real;
+otherwise prefer a synchronous call.
+
+### Dead letter queue
+
+```
+[Queue] -> [Consumer] --fail (retry 1)--> [Consumer]
+                      --fail (retry 2)--> [Consumer]
+                      --fail (retry 3)--> [DLQ]
+                                            |
+                                    [Inspect / replay]
+```
+
+Configure max retries (typically 3-5) with exponential backoff. Alert
+on DLQ depth > 0. Build inspection and replay tooling. Broker
+support: RabbitMQ dead-letter exchanges, SQS DLQ, Kafka requires
+custom retry topics.
+
+### Event sourcing example stream
+
+Order #42:
+
+```
+1: OrderPlaced   { items: [...], total: 99.00 }
+2: PaymentTaken  { method: "card", ref: "abc" }
+3: ItemRemoved   { item: "widget", new_total: 79.00 }
+4: OrderShipped  { tracking: "XYZ123" }
+```
+
+Replay events 1-4 to reconstruct current state. Snapshot every N
+events (commonly 100-500) to avoid full replay. Add fields freely;
+never remove fields from published events. The event store is not a
+query database — use CQRS projections for read patterns.
+
+### CQRS topology
+
+```
+[Client]
+   |
+   +--command--> [Command Handler] -> [Write Model / Event Store]
+   |                                       |
+   |                                 (events projected)
+   |                                       |
+   +--query---> [Query Handler] -> [Read Model DB]
+```
+
+Multiple read models are common — one for list views, one for
+search, one for analytics — each rebuilt from events and optimized
+for its query shape. Typical projection lag is milliseconds to
+seconds.
+
+### Anti-patterns
+
+- **Events for everything** — synchronous calls are fine when
+  request-response is the natural shape.
+- **Non-idempotent consumers** — duplicate delivery is inevitable.
+- **No DLQ** — poison messages block the queue forever.
+- **Dual writes** — writing to DB and broker without an outbox
+  loses events on failure.
+- **Removing or renaming event fields** — breaks every consumer
+  pinned to old schema.
+- **Querying the event store** for read patterns — that is what CQRS
+  projections exist for.
+- **Choreographed sagas with no tracing** — debugging becomes
+  archaeology.
+- **Orchestrator god service** — when one orchestrator owns every
+  workflow, it becomes the new monolith.

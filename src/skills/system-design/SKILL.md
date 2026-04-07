@@ -4,119 +4,257 @@ kind: Skill
 metadata:
   id: SKILL-system-design
   name: system-design
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "System design methodology from requirements through capacity estimation to component design and trade-offs. Use when designing distributed systems, evaluating architectures, or preparing system design discussions."
+  description: "System design methodology — requirements, capacity estimation, component design, trade-offs."
   category: architecture
   layer: null
+  when_to_use: "Use when designing a new distributed system, evaluating an existing architecture for scalability or cost, performing back-of-envelope capacity estimation, or preparing for a system design review."
 ---
 
 # System Design
 
-## When to Use
+## Level 1 — Intro
 
-- Designing a new distributed system from scratch
-- Evaluating an existing architecture for scalability, reliability, or cost
-- Performing capacity estimation (QPS, storage, bandwidth)
-- Discussing trade-offs between different architectural approaches
-- Preparing for or conducting system design reviews
+System design starts with requirements, not boxes. Estimate capacity
+on the back of an envelope, draw a small high-level architecture,
+then deep-dive only the components that are unique or risky. Make
+trade-offs explicit — every design decision has a cost.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Gather Requirements
+### Gather requirements
 
-Always start with requirements before drawing boxes. Split into functional and non-functional.
+Always start with requirements. Split them into functional and
+non-functional.
 
-**Functional requirements:** What does the system do?
-- Core use cases (2-4 most important)
-- User-facing features vs. internal features
-- Data input/output formats
-- Key workflows end-to-end
+**Functional:** what does the system do? Core use cases (2-4 most
+important), user-facing vs internal features, data formats, and key
+end-to-end workflows.
 
-**Non-functional requirements:** How well must it do it?
-- Scale: DAU, peak QPS, data volume
-- Latency: p50, p99 targets
-- Availability: 99.9%? 99.99%? (minutes of downtime per year)
-- Consistency: strong or eventual? Which parts?
-- Durability: can we lose data? RPO/RTO targets
-- Security: auth, encryption, compliance constraints
-- Cost: budget constraints, managed vs. self-hosted preference
+**Non-functional:** how well must it do it?
 
-Do not over-specify. Focus on what differentiates this system from a generic CRUD app.
+- **Scale** — DAU, peak QPS, data volume
+- **Latency** — p50 and p99 targets
+- **Availability** — 99.9%, 99.99%, or higher (and the downtime
+  budget that implies)
+- **Consistency** — strong or eventual, and which parts need which
+- **Durability** — RPO/RTO targets, can we lose data
+- **Security** — auth, encryption, compliance constraints
+- **Cost** — budget, managed vs self-hosted preference
 
-### 2. Capacity Estimation
+Do not over-specify. Focus on what differentiates this system from a
+generic CRUD app.
 
-See `references/estimation-cheatsheet.md` for numbers and formulas.
+### Capacity estimation
 
-Back-of-envelope estimation framework:
-1. **Users:** DAU -> peak concurrent -> requests per second
-2. **Storage:** data per record * records per day * retention period
-3. **Bandwidth:** request size * QPS (inbound) + response size * QPS (outbound)
-4. **Compute:** QPS / requests-per-instance = instance count
+Numbers and formulas live in `references/estimation-cheatsheet.md`.
 
-Key assumptions to state explicitly:
-- Read:write ratio (most systems are 10:1 to 100:1)
-- Peak to average ratio (typically 3x-10x)
-- Data growth rate (linear, exponential?)
-- Cache hit rate assumption (80-95% for read-heavy)
+Back-of-envelope framework:
 
-### 3. High-Level Design
+1. **Users** — DAU -> peak concurrent -> requests per second
+2. **Storage** — data per record * records per day * retention
+3. **Bandwidth** — request size * QPS in + response size * QPS out
+4. **Compute** — QPS / requests-per-instance = instance count
 
-Draw the system as 5-10 major components:
+State assumptions explicitly: read:write ratio (most systems are
+10:1 to 100:1), peak-to-average ratio (typically 3x-10x), data
+growth rate (linear or exponential), and cache hit rate (often
+80-95% for read-heavy workloads).
 
-- Start with the client and work inward
-- Identify the data flow for each core use case
-- Place standard infrastructure: load balancer, API gateway, CDN, cache, database, queue
-- Show the primary data flow with numbered arrows
-- Identify the data store for each type of data (relational, document, blob, cache, search index)
+### High-level design
 
-Keep it simple first. Add complexity only when requirements demand it.
+Draw 5-10 major components. Start with the client and work inward.
+For each core use case, trace the data flow with numbered arrows.
+Place standard infrastructure where it belongs: load balancer, API
+gateway, CDN, cache, database, queue. For each kind of data, choose
+a store (relational, document, blob, cache, search index). Keep it
+simple first; add complexity only when requirements demand it.
 
-### 4. Component Deep Dives
+### Component deep dives
 
 For each critical component, detail:
 
-- **API design:** endpoints, request/response formats, pagination strategy
-- **Data model:** schema, indexing strategy, partitioning/sharding key
-- **Scaling strategy:** horizontal vs. vertical, stateless vs. stateful
-- **Failure handling:** what happens when this component goes down?
-- **Caching:** what is cached, where (client, CDN, application, database), TTL, invalidation
+- **API design** — endpoints, request/response formats, pagination
+- **Data model** — schema, indexing, partitioning/sharding key
+- **Scaling strategy** — horizontal vs vertical, stateless vs
+  stateful
+- **Failure handling** — what happens when this component dies
+- **Caching** — what is cached, where (client, CDN, app, DB), TTL,
+  invalidation
 
-Focus deep dives on the components that are most unique to this system or most likely to be bottlenecks.
+Focus deep dives on components that are unique to this system or
+most likely to be bottlenecks. Don't deep-dive a stock load
+balancer.
 
-### 5. Trade-Off Analysis
+### Trade-off analysis
 
-Every design decision involves trade-offs. Make them explicit:
+Every decision has trade-offs. State the side you chose and why,
+given the requirements:
 
-- **Consistency vs. availability:** CAP theorem — in a partition, choose C or A
-- **Latency vs. throughput:** batching increases throughput but adds latency
-- **Simplicity vs. scalability:** simpler designs are easier to operate but may not scale
-- **Cost vs. performance:** caching reduces latency but increases infrastructure cost
-- **Flexibility vs. optimization:** denormalization speeds reads but complicates writes
+- **Consistency vs availability** — CAP theorem; in a partition you
+  pick C or A
+- **Latency vs throughput** — batching raises throughput at the cost
+  of latency
+- **Simplicity vs scalability** — simpler designs are easier to
+  operate but may not scale
+- **Cost vs performance** — caching reduces latency but raises
+  infrastructure cost
+- **Flexibility vs optimization** — denormalization speeds reads but
+  complicates writes
 
-For each trade-off: state which side you chose and why, given the requirements.
+### Scalability patterns
 
-### 6. Scalability Patterns
+- **Horizontal scaling** — stateless services behind a load balancer
+- **Database sharding** — partition by user ID, tenant ID, or region
+- **Read replicas** — offload reads, accept replication lag
+- **Caching layers** — local cache -> distributed cache (Redis) ->
+  CDN
+- **Async processing** — push non-critical work onto background
+  queues
+- **Event-driven decoupling** — pub/sub between producers and
+  consumers
+- **Rate limiting** — token bucket, sliding window
+- **Circuit breakers** — prevent cascade failures when downstream is
+  unhealthy
 
-Common patterns to apply when scaling:
+### Example workflows
 
-- **Horizontal scaling:** stateless services behind a load balancer
-- **Database sharding:** partition by user ID, tenant ID, or geographic region
-- **Read replicas:** offload reads to replicas; accept replication lag
-- **Caching layers:** local cache -> distributed cache (Redis) -> CDN
-- **Async processing:** move non-critical work to background queues
-- **Event-driven decoupling:** pub/sub to decouple producers from consumers
-- **Rate limiting:** protect services from overload (token bucket, sliding window)
-- **Circuit breaker:** prevent cascade failures when downstream is unhealthy
+- **URL shortener:** create / redirect / analytics. 100M URLs/month,
+  <100ms redirect, 99.99% availability. ~40 writes/s, ~4000 reads/s,
+  ~10 TB over 5 years. Stateless API service -> Redis cache (hot
+  URLs) -> sharded DB. Base62 encode a unique ID for short codes,
+  CDN for redirect caching, async event stream for analytics.
+- **Real-time chat:** 1:1 and group messaging, presence, history.
+  50M DAU, <200ms delivery, eventual consistency for history. ~500K
+  concurrent connections at peak, ~100K messages/s. WebSocket
+  gateway sharded by user, message routing service, Cassandra
+  (partitioned by chat_id) for storage, Redis for presence, push
+  notifications for offline users.
+- **Social news feed:** post creation, feed generation, follow
+  relationships. 500M DAU, feed loads <500ms, eventual consistency
+  acceptable. ~10K posts/s writes, ~500K feed reads/s. Fan-out on
+  write for users with <10K followers (precompute feeds in Redis),
+  fan-out on read for celebrities (merge at read time). Sharded
+  post storage, feed cache in Redis sorted sets, media in object
+  storage behind a CDN.
 
-## Examples
+## Level 3 — Full reference
 
-### URL Shortener Design
-User asks to design a URL shortener. Functional: create short URL, redirect, analytics. Non-functional: 100M URLs/month, <100ms redirect, 99.99% availability. Estimate: ~40 writes/s, ~4000 reads/s (100:1 ratio), ~10TB storage over 5 years. Design: API service (stateless) -> Redis cache (hot URLs) -> database (URL mapping, sharded by hash). Base62 encode a unique ID for short codes. CDN for redirect caching. Analytics via async event stream.
+### Powers of 2
 
-### Chat System Design
-User asks to design a real-time chat system. Functional: 1:1 and group messaging, online status, message history. Non-functional: 50M DAU, <200ms delivery, eventual consistency for history. Estimate: 500K concurrent connections at peak, ~100K messages/s. Design: WebSocket gateway (stateful, sharded by user), message routing service, Cassandra for message storage (partitioned by chat_id), Redis for presence, push notification service for offline users.
+| Power | Value | Approx | Common usage |
+|-------|-------|--------|--------------|
+| 2^10  | 1,024 | 1 Thousand | 1 KB |
+| 2^20  | 1,048,576 | 1 Million | 1 MB |
+| 2^30  | 1,073,741,824 | 1 Billion | 1 GB |
+| 2^40  | ~1.1 Trillion | 1 Trillion | 1 TB |
 
-### News Feed Design
-User asks to design a social media news feed. Functional: post creation, feed generation, follow relationships. Non-functional: 500M DAU, feed loads in <500ms, eventual consistency acceptable. Estimate: 10K posts/s writes, 500K feed reads/s. Design: fan-out on write for users with <10K followers (precompute feeds in Redis), fan-out on read for celebrities (merge at read time). Post storage in sharded database, feed cache in Redis sorted sets, media in object storage behind CDN.
+Useful shortcuts: 1 million seconds ~ 12 days. 1 billion seconds ~
+32 years.
+
+### Latency numbers every engineer should know
+
+| Operation | Time |
+|-----------|------|
+| L1 cache reference | 1 ns |
+| L2 cache reference | 4 ns |
+| Main memory reference | 100 ns |
+| Mutex lock/unlock | 17 ns |
+| SSD random read | 16 us |
+| Read 1 MB from memory | 3 us |
+| Read 1 MB sequentially from SSD | 50 us |
+| Read 1 MB sequentially from HDD | 825 us |
+| HDD random read | 2 ms |
+| Round trip within same datacenter | 500 us |
+| Round trip CA to Netherlands | 150 ms |
+
+Key takeaways: memory is ~100x faster than SSD for random access,
+SSD ~100x faster than HDD, intra-DC network ~0.5 ms,
+cross-continent ~150 ms.
+
+### DAU to QPS conversion
+
+Formula: `QPS = DAU * actions_per_user_per_day / 86400`
+
+| DAU  | Actions/User/Day | QPS (avg) | QPS (peak, 3x) |
+|------|------------------|-----------|----------------|
+| 1M   | 10               | ~115      | ~350           |
+| 10M  | 10               | ~1,150    | ~3,500         |
+| 100M | 10               | ~11,500   | ~35,000        |
+| 1B   | 10               | ~115,000  | ~350,000       |
+
+Rule of thumb: 1M DAU * 10 actions/day ~ 100 QPS average, 300-500
+QPS peak.
+
+### Storage estimation
+
+| Data type | Typical size |
+|-----------|--------------|
+| User profile (text) | 1-5 KB |
+| Tweet / short post | 250 B - 1 KB |
+| Chat message | 100-500 B |
+| Photo (compressed) | 200 KB - 2 MB |
+| Video (1 min, compressed) | 5-50 MB |
+| Log entry | 200-500 B |
+| DB row (typical) | 500 B - 2 KB |
+
+Formula: `total = records_per_day * avg_size * retention_days`.
+Example: 10M messages/day * 500 bytes * 365 days * 5 years ~ 9 TB.
+
+### Bandwidth
+
+Formula: `bandwidth = QPS * avg_size`. Example: 10K QPS * 5 KB
+average response = 50 MB/s = 400 Mbps outbound.
+
+### Common capacity patterns
+
+- **1M DAU social app:** ~100 QPS avg, ~500 QPS peak. ~10 GB/day
+  new data. ~5 TB over 2 years. 2-5 app servers, 1-2 DB servers,
+  Redis cache.
+- **100M DAU messaging app:** ~50K QPS avg, ~200K QPS peak. ~500
+  GB/day messages. ~500 TB over 3 years. Sharded DB cluster,
+  dedicated cache layer, WebSocket gateway fleet.
+- **1B DAU read-heavy platform:** ~500K QPS avg, ~2M QPS peak.
+  Multi-region CDN mandatory. Read replicas plus 95%+ cache hit
+  rate. Terabytes of bandwidth per day.
+
+### Server capacity rules of thumb
+
+| Resource | Typical limit |
+|----------|---------------|
+| Single web server (simple API) | 1K-10K QPS |
+| Single Redis instance | 100K+ ops/s |
+| Single PostgreSQL (tuned) | 5K-20K QPS |
+| Single Kafka broker | 100K+ messages/s |
+| Single machine network | 1-10 Gbps |
+| Single machine connections | 10K-100K concurrent |
+
+### Quick estimation framework
+
+1. Start with DAU and read:write ratio.
+2. Compute average and peak QPS.
+3. Estimate storage per year.
+4. Estimate bandwidth (QPS * size).
+5. Divide QPS by per-server capacity to get instance count.
+6. Add 2-3x headroom for growth and spikes.
+7. Consider geographic distribution needs.
+
+### Anti-patterns
+
+- **Drawing boxes before requirements** — leads to designs that
+  solve the wrong problem.
+- **Skipping estimation** — "we'll scale when we get there" usually
+  means the design cannot.
+- **Picking strong consistency by default** — most systems can
+  tolerate eventual consistency for most operations, and the cost
+  of strong consistency is high.
+- **Single point of failure hidden in plain sight** — usually the
+  database, the load balancer, or a "smart" orchestrator.
+- **Caching without invalidation strategy** — stale reads outlive
+  the bug that introduced them.
+- **Premature sharding** — shard when you have to, not before. The
+  operational cost is real.
+- **Synchronous chains of more than 2-3 services** — latency
+  multiplies and any one failure takes the chain down.

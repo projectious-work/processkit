@@ -4,64 +4,67 @@ kind: Skill
 metadata:
   id: SKILL-software-architecture
   name: software-architecture
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Analyzes codebases for architectural patterns and quality. Use when designing systems, creating ADRs, reviewing structure, or generating architecture diagrams."
+  description: "Codebase architecture analysis — patterns, ADRs, structural review, C4 diagrams."
   category: architecture
   layer: null
+  when_to_use: "Use when evaluating a codebase's architecture, choosing a pattern for a new project, writing an Architecture Decision Record, reviewing for layer violations, or generating C4 diagrams."
 ---
 
 # Software Architecture
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Analyze or evaluate a codebase's architecture
-- Choose an architecture pattern for a new project or module
-- Create an Architecture Decision Record (ADR)
-- Review code for architectural violations or drift
-- Generate architecture diagrams (C4, dependency graphs)
-- Apply SOLID, DRY, or KISS principles at the structural level
+Architecture is the set of structural decisions that are expensive
+to change. Map what exists, name the pattern, check the dependency
+directions, and document significant decisions in ADRs. Choose
+patterns based on team size, domain complexity, and operational
+maturity — not fashion.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Analyze Existing Architecture
+### Analyzing existing architecture
 
 Before suggesting changes, map the current structure:
 
-1. Identify the top-level module/directory organization
-2. Trace dependency directions (which modules import from which)
-3. Classify the current pattern: layered, hexagonal, modular monolith, microservices, or ad-hoc
-4. Look for architectural violations:
+1. Identify the top-level module or directory organization.
+2. Trace dependency directions (which modules import from which).
+3. Classify the current pattern: layered, hexagonal, modular
+   monolith, microservices, or ad-hoc.
+4. Look for architectural violations such as:
    - Circular dependencies between modules
    - Domain logic leaking into infrastructure (DB queries in handlers)
-   - Presentation layer directly accessing data layer
+   - Presentation layer directly accessing the data layer
    - Shared mutable state across boundaries
 
-### 2. Suggest Patterns Based on Project Type
+### Choosing a pattern
 
-Match patterns to project characteristics (see `references/patterns.md` for details):
+Match the pattern to the project. The full pattern catalog is in
+`references/patterns.md`.
 
-| Project Type | Recommended Patterns |
+| Project type | Recommended patterns |
 |---|---|
-| CLI tool / small utility | Layered or pipeline |
+| CLI tool / small utility | Layered or pipe-and-filter |
 | REST API / web service | Hexagonal (ports & adapters) or clean architecture |
-| Complex business domain | Domain-driven design + hexagonal |
+| Complex business domain | DDD + hexagonal |
 | Data processing pipeline | Pipe-and-filter or event-driven |
 | Distributed system | Microservices or event-driven |
 | Monolith needing structure | Modular monolith with clear boundaries |
 
-Key principles that apply to all patterns:
-- **Dependency Inversion**: depend on abstractions, not concretions
-- **Separation of Concerns**: each module has one reason to change
-- **SOLID**: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
-- **DRY**: Don't Repeat Yourself (but prefer duplication over wrong abstraction)
-- **KISS**: Keep It Simple, Stupid (avoid speculative generality)
+Principles that apply across all patterns:
 
-### 3. Create Architecture Decision Records (ADRs)
+- **Dependency Inversion** — depend on abstractions, not concretions
+- **Separation of Concerns** — each module has one reason to change
+- **SOLID** — Single Responsibility, Open/Closed, Liskov,
+  Interface Segregation, Dependency Inversion
+- **DRY** — but prefer duplication over the wrong abstraction
+- **KISS** — avoid speculative generality
 
-When a significant architectural decision is made, create an ADR:
+### Architecture Decision Records
+
+When a significant decision is made, write an ADR:
 
 ```markdown
 # ADR-NNN: Title
@@ -73,35 +76,37 @@ Proposed | Accepted | Deprecated | Superseded by ADR-XXX
 What forces are at play? What is the problem or opportunity?
 
 ## Decision
-What is the change that we're proposing or have agreed to implement?
+What is the change we're proposing or have agreed to implement?
 
 ## Consequences
 What becomes easier or harder? What are the trade-offs?
 ```
 
-Guidelines:
-- One decision per ADR, numbered sequentially
-- Store in `docs/adr/` or `context/decisions/` depending on project convention
-- Keep context factual and concise (3-5 sentences)
-- List both positive and negative consequences
-- Link to related ADRs when decisions interact
+Guidelines: one decision per ADR, numbered sequentially, stored in
+`docs/adr/` or `context/decisions/`. Keep context to 3-5 sentences.
+List both positive and negative consequences. Link related ADRs.
 
-### 4. Review Code for Architectural Violations
+### Reviewing for violations
 
-Check for these common violations:
+Common architectural smells:
 
-- **Layer skipping**: presentation calling data layer directly
-- **Dependency direction**: outer layers importing inner layer types (should be reversed)
-- **God modules**: single module with too many responsibilities
-- **Leaky abstractions**: implementation details exposed in public interfaces
-- **Missing boundaries**: no clear separation between domain, application, and infrastructure
-- **Tight coupling**: concrete types used where interfaces/traits should be
+- **Layer skipping** — presentation calling the data layer directly
+- **Wrong dependency direction** — outer layers being imported by
+  inner layers (should be reversed)
+- **God modules** — one module with too many responsibilities
+- **Leaky abstractions** — implementation details exposed in public
+  interfaces
+- **Missing boundaries** — no clear separation between domain,
+  application, and infrastructure
+- **Tight coupling** — concrete types used where interfaces or
+  traits should be
 
-### 5. Generate C4 Diagrams
+### C4 diagrams
 
-Use Mermaid syntax for text-based diagrams at each C4 level:
+Use Mermaid for text-based diagrams at each C4 level. Label every
+arrow with the interaction type, briefly describe each element, and
+note the technology used.
 
-**Level 1 - System Context** (who uses the system, what external systems it talks to):
 ```mermaid
 graph TB
     User[User] --> System[My System]
@@ -109,7 +114,109 @@ graph TB
     System --> DB[(Database)]
 ```
 
-**Level 2 - Container** (deployable units: web app, API, database, queue):
+### Example workflows
+
+- **CLI architecture choice:** layered structure separating
+  arg-parsing, business logic, and I/O. Directory proposal plus a
+  short ADR documenting the decision.
+- **Project architecture review:** map the dependency graph; flag
+  controllers importing DB models directly (layer violation);
+  introduce a service layer with repository traits; produce a C4
+  Level 3 component diagram of the proposed structure.
+- **REST -> gRPC ADR:** context (latency, type-safety needs),
+  decision (gRPC for internal services, REST for the public API),
+  consequences (faster internal calls, added tooling complexity).
+
+## Level 3 — Full reference
+
+### Pattern catalog
+
+#### Layered (N-Tier)
+
+Horizontal layers (presentation, business, data), each calling only
+the layer below. Simple and familiar; prone to the "sinkhole"
+anti-pattern where layers just pass data through unchanged. Best for
+traditional business apps and legacy migrations.
+
+#### Hexagonal (Ports & Adapters)
+
+Domain at the center, ports (interfaces) and adapters
+(implementations) around it. External systems plug in through
+adapters. Excellent testability and infrastructure independence at
+the cost of more boilerplate. Domain never imports from
+infrastructure; infrastructure implements domain-defined ports.
+
+#### Clean Architecture
+
+Concentric rings: Entities, Use Cases, Interface Adapters, Frameworks
+& Drivers. Dependencies point inward only. Shares the dependency-
+inversion core with hexagonal and onion architectures. Strong
+separation of concerns; can feel over-engineered for simple CRUD.
+
+#### Microservices
+
+Small, independently deployable services, each owning its data and
+implementing a bounded context. Independent scaling and deployment,
+technology diversity — at the cost of significant operational
+complexity (service discovery, distributed tracing, data
+consistency). Requires mature DevOps.
+
+#### Event-Driven
+
+Components communicate through events. Producers emit without
+knowing consumers. Excellent decoupling and scalability; harder to
+debug (implicit flows), eventual-consistency challenges, ordering
+issues. Variants: event sourcing, CQRS.
+
+#### CQRS
+
+Separate read and write models, potentially in different stores.
+Pairs naturally with event sourcing. Use when read and write
+workloads differ sharply in scale or complexity.
+
+#### Pipe-and-Filter
+
+Data flows through a chain of filters connected by pipes. Highly
+composable; ideal for ETL, compilers, CLI stream processors. Filters
+must be independent; not for interactive or stateful work.
+
+#### Modular Monolith
+
+Single deployable unit with strict module boundaries enforced
+through interfaces, not direct internal access. Simpler ops than
+microservices, clearer than a traditional monolith, and a sensible
+stepping stone toward extraction later.
+
+#### Service-Oriented Architecture (SOA)
+
+Reusable services with well-defined contracts, often connected
+through an enterprise service bus. Promotes reuse but the ESB can
+become a bottleneck and a single point of failure. Heavier
+governance than microservices.
+
+#### Serverless / FaaS
+
+Individual functions triggered by events, fully managed by the
+provider. Zero infrastructure management and pay-per-execution at
+the cost of cold-start latency, vendor lock-in, limited execution
+duration, and harder local testing. Best for variable-traffic
+event-driven workloads and glue code.
+
+### C4 levels
+
+**Level 1 — System Context** (who uses the system, what external
+systems it talks to):
+
+```mermaid
+graph TB
+    User[User] --> System[My System]
+    System --> ExtAPI[External API]
+    System --> DB[(Database)]
+```
+
+**Level 2 — Container** (deployable units: web app, API, database,
+queue):
+
 ```mermaid
 graph TB
     WebApp[Web App] --> API[API Service]
@@ -118,7 +225,8 @@ graph TB
     Queue --> Worker[Background Worker]
 ```
 
-**Level 3 - Component** (major components within a container):
+**Level 3 — Component** (major components within a container):
+
 ```mermaid
 graph TB
     Handler[HTTP Handler] --> Service[Domain Service]
@@ -126,15 +234,41 @@ graph TB
     Repo --> PostgresAdapter[Postgres Adapter]
 ```
 
-For each diagram: label all arrows with the interaction type, include a brief description of each element, and note the technology used.
+### Pattern selection checklist
 
-## Examples
+1. **Team size and skill** — smaller teams benefit from simpler
+   patterns (layered, modular monolith).
+2. **Domain complexity** — complex domains need stronger boundaries
+   (hexagonal, clean).
+3. **Scale requirements** — high scale favors microservices or
+   event-driven.
+4. **Deployment frequency** — frequent deploys favor microservices
+   or serverless.
+5. **Data consistency needs** — strong consistency favors monoliths;
+   eventual consistency enables distribution.
+6. **Operational maturity** — microservices and event-driven require
+   mature DevOps.
+7. **Existing codebase** — migrations favor incremental patterns
+   (modular monolith as stepping stone).
 
-**User:** "What architecture should I use for this Rust CLI?"
-**Agent:** Analyzes the CLI's responsibilities, suggests a layered architecture with clear separation between CLI parsing, business logic, and I/O. Creates a directory structure proposal and an ADR documenting the decision.
+### ADR tips
 
-**User:** "Review this project's architecture"
-**Agent:** Maps the dependency graph, identifies that controllers directly import database models (layer violation), suggests introducing a service layer with repository traits. Provides a C4 Level 3 component diagram of the proposed structure.
+- One decision per ADR. Numbered sequentially. Never edit accepted
+  ADRs in place — supersede them.
+- Keep the context factual: what forces are at play, what
+  constraints exist. Avoid editorializing.
+- The decision section is short: state what you are doing.
+- Consequences must list both wins and costs. An ADR with only
+  positives is propaganda, not documentation.
+- Link to related ADRs when decisions interact.
 
-**User:** "Create an ADR for switching from REST to gRPC"
-**Agent:** Writes an ADR documenting the context (performance requirements, type safety needs), the decision (adopt gRPC for internal services, keep REST for public API), and consequences (faster internal communication, but added complexity in tooling).
+### Further reading
+
+- Alistair Cockburn, "Hexagonal Architecture" (2005) —
+  https://alistair.cockburn.us/hexagonal-architecture/
+- Robert C. Martin, "Clean Architecture" (2017)
+- Martin Fowler, "Patterns of Enterprise Application Architecture"
+  (2002)
+- Sam Newman, "Building Microservices" (2nd ed., 2021)
+- Simon Brown, "The C4 Model" — https://c4model.com/
+- Michael Nygard, "Documenting Architecture Decisions" (2011)

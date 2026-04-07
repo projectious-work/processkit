@@ -4,61 +4,90 @@ kind: Skill
 metadata:
   id: SKILL-nosql-patterns
   name: nosql-patterns
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "NoSQL database patterns for document, key-value, graph, and wide-column stores. Access-pattern-driven design and consistency models. Use when choosing or designing NoSQL data models."
+  description: "NoSQL patterns for document, key-value, wide-column, and graph stores. Access-pattern-driven design and consistency models."
   category: database
   layer: null
+  when_to_use: "Use when choosing between NoSQL store types, designing a document or single-table model, picking a consistency level, or migrating between relational and NoSQL."
 ---
 
 # NoSQL Patterns
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Choose between NoSQL database types for a use case
-- Design a document, key-value, graph, or wide-column data model
-- Optimize access patterns in a NoSQL database
-- Understand consistency models (eventual, strong, causal)
-- Migrate from relational to NoSQL or vice versa
+NoSQL is a family of stores, not a single technology — document,
+key-value, wide-column, and graph databases each solve different
+problems. The unifying design rule is the inverse of relational
+modeling: start from the queries you must answer, then shape the
+data to serve them.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Choose the Right Store Type
+### Choose the right store type
 
-NoSQL is not a single thing. Match the database type to the access pattern:
+Match the database type to the access pattern:
 
-| Type | Best For | Examples |
+| Type | Best for | Examples |
 |------|----------|---------|
 | Document | Variable-schema entities, nested data, content management | MongoDB, Couchbase, Firestore |
 | Key-Value | Caching, sessions, feature flags, counters | Redis, DynamoDB (simple), Memcached |
-| Wide-Column | Time-series, IoT telemetry, high-write analytical workloads | Cassandra, ScyllaDB, HBase |
-| Graph | Relationship-heavy queries: social networks, recommendations, fraud | Neo4j, Neptune, ArangoDB |
+| Wide-Column | Time-series, IoT telemetry, high-write analytics | Cassandra, ScyllaDB, HBase |
+| Graph | Relationship-heavy queries: social, recommendations, fraud | Neo4j, Neptune, ArangoDB |
 
-**Default to PostgreSQL** unless the use case clearly benefits from a specialized store.
-Signs that NoSQL is warranted:
-- Schema varies significantly per record (document store)
-- Sub-millisecond latency required for simple lookups (key-value)
-- Write volume exceeds what a single relational node can handle (wide-column)
-- Queries traverse many relationships at variable depth (graph)
+**Default to PostgreSQL** unless the use case clearly benefits from a
+specialized store. Signs that NoSQL is warranted:
 
-### 2. Design for Access Patterns, Not Entities
+- Schema varies significantly per record (document store).
+- Sub-millisecond latency for simple lookups (key-value).
+- Write volume exceeds what a single relational node can handle
+  (wide-column).
+- Queries traverse many relationships at variable depth (graph).
 
-In relational databases you model entities and normalize. In NoSQL you start with
-the queries you need to answer, then design the data to serve those queries directly.
+### Design for access patterns, not entities
 
-Process:
-1. List every read and write operation the application performs
-2. For each read, define the exact key or query that retrieves the data
-3. Design documents/rows/keys so each read is a single lookup or scan
-4. Accept data duplication as a feature, not a bug
+Relational modeling normalizes around entities. NoSQL inverts this:
 
-### 3. Document Store Patterns (MongoDB)
+1. List every read and write the application performs.
+2. For each read, define the exact key or query that retrieves it.
+3. Shape documents, rows, or keys so each read is one lookup or one
+   bounded scan.
+4. Accept duplication as a feature — the cost of a denormalized read
+   is paid by writes, which you can control.
 
-**Embedding vs. referencing:**
-- **Embed** when: child data is always read with the parent, child count is bounded, child is not shared across parents
-- **Reference** when: child is shared, child count is unbounded, child is updated independently
+### Consistency models
+
+| Model | Guarantee | Use when |
+|-------|-----------|----------|
+| Strong | Read always returns latest write | Financial, inventory |
+| Eventual | Reads may be briefly stale | Feeds, analytics, caches |
+| Causal | Respects happens-before ordering | Chat, collaborative edit |
+| Read-your-writes | Writer sees own updates immediately | Profile updates, forms |
+
+CAP forces a choice during a network partition: availability (AP) or
+consistency (CP). Most NoSQL stores default to AP with tunable
+consistency. Use strong consistency where stale reads cause harm,
+eventual elsewhere, and make writes idempotent so retries are safe.
+
+### Example: caching layer in Redis
+
+A cache-aside pattern with TTL-based expiration. Keys follow
+`resource:id:variant` naming, individual resources use `SET` with
+`EX`, paginated lists go in sorted sets, and writes invalidate via
+`DEL`. A circuit breaker keeps the API alive when Redis is
+unreachable.
+
+## Level 3 — Full reference
+
+### Document stores (MongoDB)
+
+**Embed vs reference:**
+
+- **Embed** when child data is always read with the parent, child
+  count is bounded, and the child is not shared across parents.
+- **Reference** when the child is shared, the count is unbounded, or
+  the child is updated independently.
 
 ```javascript
 // Embedded: order with line items (always read together, bounded)
@@ -74,30 +103,30 @@ Process:
 }
 
 // Referenced: user with posts (unbounded, queried independently)
-// users collection
 { _id: "user_123", name: "Alice", email: "alice@example.com" }
-// posts collection
 { _id: "post_001", author_id: "user_123", title: "...", body: "..." }
 ```
 
-**Bucket pattern** for time-series data:
+**Bucket pattern** for time-series data — group measurements into
+hourly (or similar) documents to keep document count manageable:
+
 ```javascript
-// Instead of one document per measurement, bucket by hour
 {
   sensor_id: "temp-01",
   bucket: ISODate("2025-06-15T10:00:00Z"),
   measurements: [
     { ts: ISODate("2025-06-15T10:00:12Z"), value: 23.5 },
     { ts: ISODate("2025-06-15T10:01:45Z"), value: 23.7 }
-    // ... up to ~200 per bucket
   ],
   count: 2
 }
 ```
 
-### 4. Key-Value Patterns (Redis)
+### Key-value stores (Redis)
 
-**Naming convention:** use colons as separators for hierarchical keys.
+Use colons as separators for hierarchical keys so prefixes group
+naturally:
+
 ```
 user:123:profile        -> JSON blob
 user:123:sessions       -> Set of session IDs
@@ -105,16 +134,20 @@ session:abc-def-ghi     -> JSON blob with expiry
 rate_limit:api:user:123 -> Counter with TTL
 ```
 
-**Common structures:**
-- `SET/GET` with TTL for caching and sessions
-- `INCR` with `EXPIRE` for rate limiting
-- Sorted sets (`ZADD/ZRANGEBYSCORE`) for leaderboards and time-ordered feeds
-- Streams (`XADD/XREAD`) for event processing
-- Pub/Sub for real-time notifications (but no persistence; use Streams for durability)
+Common structures:
 
-### 5. DynamoDB Single-Table Design
+- `SET`/`GET` with TTL for caching and sessions.
+- `INCR` with `EXPIRE` for rate limiting.
+- Sorted sets (`ZADD`/`ZRANGEBYSCORE`) for leaderboards and
+  time-ordered feeds.
+- Streams (`XADD`/`XREAD`) for durable event processing.
+- Pub/Sub for fire-and-forget notifications (no persistence — use
+  Streams when durability matters).
 
-Store multiple entity types in one table using composite keys:
+### DynamoDB single-table design
+
+Store multiple entity types in one table using composite keys
+(`PK` partition + `SK` sort):
 
 ```
 PK                  SK                      Attributes
@@ -126,37 +159,45 @@ PRODUCT#456         REVIEW#USER#123         {rating, comment}
 ```
 
 Query patterns served:
-- Get user profile: `PK = USER#123, SK = PROFILE`
-- List user orders: `PK = USER#123, SK begins_with ORDER#`
-- Orders in date range: `PK = USER#123, SK between ORDER#2025-06-01 and ORDER#2025-06-30`
 
-Use Global Secondary Indexes (GSIs) for access patterns that need a different key structure.
+- Get user profile: `PK = USER#123, SK = PROFILE`.
+- List user orders: `PK = USER#123, SK begins_with ORDER#`.
+- Orders in date range: `PK = USER#123,
+  SK between ORDER#2025-06-01 and ORDER#2025-06-30`.
 
-### 6. Consistency Models
+Add Global Secondary Indexes (GSIs) for access patterns that need a
+different key structure — for example, a GSI keyed on activity type
+to support admin dashboards, with a TTL attribute to age out old
+records.
 
-| Model | Guarantee | Use When |
-|-------|-----------|----------|
-| Strong | Read always returns latest write | Financial transactions, inventory counts |
-| Eventual | Reads may return stale data temporarily | Social feeds, analytics, caches |
-| Causal | Respects happens-before ordering | Chat messages, collaborative editing |
-| Read-your-writes | Writer sees own updates immediately | User profile updates, form submissions |
+### Wide-column stores (Cassandra-style)
 
-In distributed systems, the CAP theorem constrains choices: during a network
-partition, choose availability (AP) or consistency (CP). Most NoSQL databases
-default to AP with tunable consistency.
+Model one table per query. The partition key determines locality;
+the clustering key determines on-disk order within a partition.
+Avoid hot partitions by including a high-cardinality component in
+the partition key (often a time bucket). Wide-column stores reward
+write-optimized denormalization — duplicate data into multiple
+tables instead of joining at read time.
 
-**Practical guidance:**
-- Use strong consistency for operations where stale reads cause financial or safety harm
-- Use eventual consistency for everything else (it is simpler and faster)
-- Implement idempotent writes so retries during failures are safe
+### Graph stores
 
-## Examples
+Use a graph database when traversal depth is variable (friends-of-
+friends, fraud rings, dependency chains) and traversal patterns
+dominate. For simple hierarchies, recursive CTEs in PostgreSQL are
+usually enough; reach for Neo4j or Neptune when you need shortest
+paths, weighted traversals, or pattern matching across many hops.
 
-**User:** "Should I use MongoDB or PostgreSQL for this product catalog?"
-**Agent:** Asks about access patterns: if products have highly variable attributes per category (electronics vs. clothing vs. books), MongoDB's flexible schema avoids sparse columns. If the catalog needs complex cross-product queries, joins, and transactional updates across inventory and orders, PostgreSQL with JSONB for variable attributes is simpler. Recommends PostgreSQL with JSONB unless the schema variance is extreme and cross-entity queries are rare.
+### Anti-patterns
 
-**User:** "Design a Redis caching layer for our API"
-**Agent:** Proposes a cache-aside pattern with TTL-based expiration. Keys follow `resource:id:variant` naming. Uses `SET` with `EX` for individual resources, sorted sets for paginated list caches, and `DEL` on write-through for invalidation. Includes a circuit breaker so the API falls back to the database if Redis is unreachable.
-
-**User:** "We need to model user activity feeds in DynamoDB"
-**Agent:** Designs a single-table model with `PK = USER#id` and `SK = ACTIVITY#timestamp#type` for chronological feeds. Adds a GSI with `PK = ACTIVITY_TYPE` and `SK = timestamp` for admin dashboards that query by activity type across all users. Recommends a TTL attribute to auto-expire activities older than 90 days.
+- **Modeling NoSQL like a relational schema** — normalized documents
+  with cross-collection joins defeat the point.
+- **Unbounded arrays inside a document** — they grow until the
+  document hits a size limit; bucket or split.
+- **Hot partitions in DynamoDB/Cassandra** — concentrating writes on
+  one partition key throttles the whole table.
+- **Strong consistency by default everywhere** — costs latency and
+  availability without measurable benefit for most reads.
+- **Pub/Sub used for durable events** — messages are dropped if no
+  subscriber is connected; use Streams.
+- **Forgetting idempotency** — retries during failover will produce
+  duplicates without dedupe keys.

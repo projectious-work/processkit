@@ -4,41 +4,42 @@ kind: Skill
 metadata:
   id: SKILL-database-modeling
   name: database-modeling
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Data modeling approaches including ER diagrams, normalization, denormalization trade-offs, and schema evolution. Use when designing database schemas, evaluating data models, or planning schema migrations."
+  description: "Data modeling — ER diagrams, normalization, denormalization trade-offs, relationship patterns, and schema evolution."
   category: database
   layer: null
+  when_to_use: "Use when designing a new schema, critiquing an existing data model, choosing between normalized and denormalized designs, or modeling complex relationships like polymorphism, hierarchy, or temporal data."
 ---
 
 # Database Modeling
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Design a database schema for a new feature or project
-- Evaluate or critique an existing data model
-- Choose between normalized and denormalized designs
-- Model complex relationships (polymorphic, hierarchical, temporal)
-- Plan schema evolution for a growing system
-- Decide between relational and non-relational storage for a specific use case
+A good schema is shaped by access patterns, invariants, and expected
+growth — not by the first ER diagram that comes to mind. Start from
+the requirements, normalize to 3NF, and only denormalize against a
+measured problem with a documented sync strategy.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Gather Requirements Before Modeling
+### Gather requirements first
 
-Before drawing any schema, clarify:
+Before drawing any schema, pin down five things:
 
-1. **Entities and relationships** — what are the nouns and how do they relate?
+1. **Entities and relationships** — what are the nouns and how do
+   they relate?
 2. **Cardinality** — one-to-one, one-to-many, many-to-many?
-3. **Access patterns** — what queries will run most often? Read/write ratio?
-4. **Data volume** — rows per table now and in 2 years?
-5. **Consistency requirements** — which invariants must the database enforce?
+3. **Access patterns** — what queries run most often, and what is
+   the read/write ratio?
+4. **Data volume** — rows per table now and in two years?
+5. **Consistency requirements** — which invariants must the database
+   itself enforce?
 
-### 2. Build the Conceptual Model
+### Conceptual model
 
-Start with an ER diagram (use Mermaid for text-based diagrams):
+Start with an ER diagram. Mermaid keeps it text-based and reviewable:
 
 ```mermaid
 erDiagram
@@ -58,79 +59,211 @@ erDiagram
     }
 ```
 
-Notation: `||` = exactly one, `o{` = zero or more, `|{` = one or more.
+Notation: `||` = exactly one, `o{` = zero or more, `|{` = one or
+more.
 
-### 3. Apply Normalization
+### Normalize to 3NF
 
-Normalize to 3NF by default:
-- **1NF**: Every column holds a single atomic value. No arrays or comma-separated lists.
-- **2NF**: Every non-key column depends on the entire primary key (relevant for composite keys).
-- **3NF**: No transitive dependencies — non-key columns depend only on the key.
+- **1NF** — every column holds a single atomic value. No arrays,
+  comma-separated lists, or repeating groups.
+- **2NF** — every non-key column depends on the entire primary key
+  (relevant for composite keys).
+- **3NF** — no transitive dependencies. Non-key columns depend only
+  on the key.
 
-Test each table: "Does every non-key column describe the key, the whole key, and nothing but the key?"
+Test each table with the rhyme: "every non-key column describes the
+key, the whole key, and nothing but the key."
 
-### 4. Evaluate Denormalization Trade-offs
+### Denormalize deliberately
 
 Denormalize only when you can answer "yes" to all of:
+
 - Have you measured a real performance problem?
 - Is the duplicated data updated infrequently?
-- Do you have a strategy to keep copies in sync?
+- Do you have a strategy to keep copies in sync (trigger, app code,
+  scheduled job)?
 
-Common denormalization techniques:
-- **Summary tables** — precomputed aggregates refreshed periodically
-- **Embedded lookups** — store `category_name` alongside `category_id` to avoid joins
-- **Materialized views** — database-managed denormalization with auto-refresh
+Common techniques:
 
-### 5. Handle Relationship Patterns
+- **Summary tables** — precomputed aggregates refreshed on a
+  schedule.
+- **Embedded lookups** — store `category_name` alongside
+  `category_id` to skip a join.
+- **Materialized views** — database-managed denormalization with
+  refresh control.
 
-See `references/modeling-patterns.md` for detailed patterns. Summary:
+### Relationship patterns at a glance
 
-| Pattern | Use When |
+| Pattern | Use when |
 |---------|----------|
 | Junction table | Many-to-many (standard) |
 | Polymorphic associations | One table references multiple parent types |
 | Single-table inheritance | Few subtypes, similar columns |
 | Class-table inheritance | Many subtypes, different columns |
-| Adjacency list | Simple tree, few levels |
+| Adjacency list | Simple tree, frequent edits |
 | Nested sets | Read-heavy tree, rare updates |
-| Materialized path | Tree with path queries |
+| Materialized path | Tree with path queries / breadcrumbs |
 | JSONB column | Sparse or schema-less attributes |
 
-### 6. Plan Schema Evolution
+See `references/modeling-patterns.md` for full implementations.
 
-Schemas change. Design for evolution:
+### Plan for schema evolution
 
-- Add columns as nullable or with defaults — never lock the table
-- Prefer additive changes (new columns, new tables) over destructive ones
-- Version your API and your schema independently
-- Use expand/contract for non-trivial changes:
-  1. **Expand** — add new structure alongside old
-  2. **Migrate** — backfill data, update application
-  3. **Contract** — remove old structure once fully migrated
+Schemas always change. Design for it:
 
-### 7. Polyglot Persistence Decisions
+- Add columns as nullable or with safe defaults — never lock the
+  table.
+- Prefer additive changes (new columns, new tables) over destructive
+  ones.
+- Version your API and your schema independently.
+- Use expand/contract for non-trivial changes: add new structure,
+  backfill, then remove the old.
 
-Not everything belongs in a relational database. Consider:
+## Level 3 — Full reference
 
-| Data Type | Storage |
+### Polymorphic associations
+
+Three approaches when one table references rows in multiple parents:
+
+**Type + ID columns (application-enforced):**
+
+```sql
+CREATE TABLE comments (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    body TEXT NOT NULL,
+    commentable_type TEXT NOT NULL,  -- 'post', 'image', 'video'
+    commentable_id BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_comments_target
+    ON comments (commentable_type, commentable_id);
+```
+
+Simple, single table — but no foreign-key enforcement.
+
+**Separate nullable foreign keys:**
+
+```sql
+CREATE TABLE comments (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    body TEXT NOT NULL,
+    post_id BIGINT REFERENCES posts(id),
+    image_id BIGINT REFERENCES images(id),
+    video_id BIGINT REFERENCES videos(id),
+    CONSTRAINT chk_single_parent CHECK (
+        (post_id IS NOT NULL)::int + (image_id IS NOT NULL)::int
+        + (video_id IS NOT NULL)::int = 1
+    )
+);
+```
+
+Real foreign keys, but grows awkward beyond 3-4 parent types.
+
+**Shared base table:** every parent has a row in
+`commentable_entities`; the comment FK points there. Adds a join but
+keeps integrity and stays extensible.
+
+### Hierarchies
+
+| Approach | Best for | Trade-off |
+|---|---|---|
+| Adjacency list (`parent_id`) | Frequent inserts/moves, shallow trees | Subtree queries need recursive CTEs |
+| Nested sets (`lft`/`rgt`) | Read-heavy trees, deep subtree queries | Inserts/moves renumber many rows |
+| Materialized path (`/1/4/10/`) | Breadcrumbs, prefix queries | Path updates cascade to descendants |
+
+Adjacency list with a recursive CTE handles most application-level
+hierarchies; reach for nested sets only when read patterns clearly
+demand it.
+
+### Temporal data
+
+Track historical state with effective-time ranges:
+
+```sql
+CREATE TABLE prices (
+    product_id BIGINT NOT NULL REFERENCES products(id),
+    price DECIMAL(10,2) NOT NULL,
+    valid_from DATE NOT NULL,
+    valid_to DATE NOT NULL DEFAULT '9999-12-31',
+    PRIMARY KEY (product_id, valid_from),
+    EXCLUDE USING gist (
+        product_id WITH =,
+        daterange(valid_from, valid_to) WITH &&
+    )
+);
+```
+
+The `EXCLUDE` constraint prevents overlapping validity ranges for
+the same product. Bi-temporal designs add a second range for
+transaction time when you need to reconstruct what the system knew
+at any point.
+
+### Star schema for analytics
+
+Separate facts (events/measures) from dimensions (descriptive
+attributes):
+
+```sql
+CREATE TABLE dim_product (
+    product_key SERIAL PRIMARY KEY,
+    name TEXT, category TEXT
+);
+CREATE TABLE dim_date (
+    date_key INT PRIMARY KEY,
+    full_date DATE, year INT, quarter INT, month INT
+);
+CREATE TABLE fact_sales (
+    sale_id BIGINT GENERATED ALWAYS AS IDENTITY,
+    product_key INT REFERENCES dim_product,
+    date_key INT REFERENCES dim_date,
+    quantity INT NOT NULL,
+    revenue DECIMAL(12,2) NOT NULL
+);
+```
+
+Keep fact tables narrow (keys + measures); push descriptive
+attributes into dimensions.
+
+### JSONB for sparse attributes
+
+Prefer JSONB over Entity-Attribute-Value tables when attributes vary
+per row but do not need relational integrity:
+
+```sql
+ALTER TABLE products
+    ADD COLUMN attributes JSONB NOT NULL DEFAULT '{}';
+CREATE INDEX idx_products_attrs
+    ON products USING GIN (attributes);
+
+SELECT * FROM products WHERE attributes @> '{"color": "red"}';
+```
+
+Guidelines: keep JSONB to a handful of varying keys; if a key is
+queried in every request, promote it to a real column; validate
+structure in the application or with `CHECK` constraints.
+
+### Polyglot persistence
+
+Not everything belongs in a relational database — but default to
+PostgreSQL until you have a measured reason otherwise.
+
+| Data type | Storage |
 |-----------|---------|
 | Structured, relational, transactional | PostgreSQL, MySQL |
 | Full-text search | Elasticsearch, PostgreSQL FTS |
-| Session/cache data | Redis |
+| Session / cache | Redis |
 | Time-series metrics | TimescaleDB, InfluxDB |
-| Graph traversals | Neo4j, or recursive CTEs for simple cases |
+| Graph traversals | Neo4j (or recursive CTEs for simple cases) |
 | Unstructured documents | MongoDB, or JSONB in PostgreSQL |
 | Event streams | Kafka, or append-only tables |
 
-Default to PostgreSQL unless there is a specific, measured need for a specialized store.
+### Anti-patterns
 
-## Examples
-
-**User:** "Design a schema for a multi-tenant SaaS project management app"
-**Agent:** Creates an ER diagram with tenants, projects, tasks, users, and team memberships. Uses a `tenant_id` column on every table with row-level security policies. Models task assignments as a junction table to support multiple assignees. Adds a JSONB `metadata` column on tasks for custom fields per tenant. Documents the trade-off of shared-schema multi-tenancy vs. schema-per-tenant.
-
-**User:** "Should I normalize this or keep it flat?"
-**Agent:** Examines the proposed flat table, identifies repeating groups (violation of 1NF) and transitive dependencies (violation of 3NF). Proposes a normalized design with three tables, shows the JOIN query that replaces the flat reads, and estimates the performance impact based on the stated data volume. Recommends the normalized design for the transactional workload but suggests a materialized view for the reporting dashboard.
-
-**User:** "How do I model a comment system where comments can belong to posts, images, or videos?"
-**Agent:** Presents three options: (1) polymorphic association with `commentable_type` + `commentable_id`, (2) separate junction tables per parent type, (3) shared parent table with class-table inheritance. Recommends option 2 for foreign key integrity, with a view that unions all comment sources for display queries.
+- **EAV without strong justification** — use JSONB instead.
+- **Storing money as floats** — use `DECIMAL(19,4)` or integer cents.
+- **Missing foreign keys "for flexibility"** — the database should
+  enforce integrity.
+- **Comma-separated lists in a column** — violates 1NF; use a join
+  table or array type.
+- **Soft deletes everywhere** — adds a `WHERE deleted_at IS NULL` to
+  every query; consider an archive table instead.
