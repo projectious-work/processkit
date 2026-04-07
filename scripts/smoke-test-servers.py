@@ -101,6 +101,7 @@ def run():
         role = import_server("role-management")
         scope = import_server("scope-management")
         gate = import_server("gate-management")
+        disc = import_server("discussion-management")
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -307,6 +308,41 @@ def run():
         print("list_gates blocking:", len(lg))
         assert any(x["id"] == gate_id for x in lg)
 
+        # 4f. discussion-management
+        open_disc = get_tool(disc, "open_discussion")
+        d = open_disc(
+            question="What ID format should processkit-the-repo itself use?",
+            participants=[actor_id],
+            body="# Discussion body\n\nInitial notes go here.\n",
+        )
+        print("open_discussion:", d)
+        assert "id" in d and d["state"] == "active"
+        disc_id = d["id"]
+
+        transition_disc = get_tool(disc, "transition_discussion")
+        td = transition_disc(id=disc_id, to_state="resolved")
+        print("transition_discussion resolved:", td)
+        assert td["ok"]
+
+        add_outcome = get_tool(disc, "add_outcome")
+        ao = add_outcome(id=disc_id, decision_id=dec_id)
+        print("add_outcome:", ao)
+        assert ao["ok"] and dec_id in ao["outcomes"]
+
+        # idempotent
+        ao2 = add_outcome(id=disc_id, decision_id=dec_id)
+        assert ao2["outcomes"] == ao["outcomes"]
+
+        list_disc = get_tool(disc, "list_discussions")
+        ld = list_disc()
+        print("list_discussions:", len(ld))
+        assert any(x["id"] == disc_id for x in ld)
+
+        # reopening allowed
+        td2 = transition_disc(id=disc_id, to_state="active")
+        print("reopen discussion:", td2)
+        assert td2["ok"]
+
         # 5. binding
         create_bind = get_tool(bind, "create_binding")
         b = create_bind(
@@ -332,8 +368,8 @@ def run():
         stats = reindex()
         print("reindex stats:", stats)
         # workitem + 2 logs + decision + actor + role + role-binding +
-        # scope + gate + work-binding
-        assert stats["entities"] >= 10
+        # scope + gate + discussion + work-binding
+        assert stats["entities"] >= 11
         assert stats["events"] >= 1
 
         query_e = get_tool(idx, "query_entities")

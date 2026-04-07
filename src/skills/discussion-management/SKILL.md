@@ -10,9 +10,15 @@ spec:
   description: "Manage Discussion entities — structured, multi-turn conversations that explore questions and produce decisions."
   category: process
   layer: 4
-  uses: [event-log, decision-record]
+  uses: [event-log, decision-record, index-management, id-management]
   provides:
     primitives: [Discussion]
+    mcp_tools:
+      - open_discussion
+      - get_discussion
+      - transition_discussion
+      - add_outcome
+      - list_discussions
     templates: [discussion]
   when_to_use: "Use when a question or design choice needs multi-turn exploration before a decision is reached — RFCs, design debates, trade-off analyses."
 ---
