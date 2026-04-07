@@ -4,153 +4,176 @@ kind: Skill
 metadata:
   id: SKILL-latex-authoring
   name: latex-authoring
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Comprehensive LaTeX document authoring with LuaLaTeX, modern packages, math, TikZ, and bibliography management. Use when writing or editing LaTeX documents."
+  description: "LaTeX authoring with LuaLaTeX — document classes, math, TikZ, BibLaTeX."
   category: language
   layer: null
+  when_to_use: "Use when writing or editing LaTeX documents, setting up preambles, typesetting math, building TikZ diagrams, or managing bibliographies."
 ---
 
 # LaTeX Authoring
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Write or edit LaTeX documents (.tex, .bib, .sty)
-- Set up document classes, packages, or preambles
-- Create math equations, tables, figures, or diagrams
-- Manage bibliographies with BibLaTeX
-- Use TikZ for programmatic graphics
-- Choose between LuaLaTeX and pdfLaTeX
+Prefer LuaLaTeX for new documents — native Unicode, system fonts
+via `fontspec`, and better TikZ performance. Use modern packages
+(`tabularray`, `siunitx`, `biblatex`, `cleveref`) and structure
+documents for reviewable diffs: one sentence per line, sections in
+their own files.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Document Classes
+### Document classes
 
-| Class | Use For |
-|---|---|
-| `article` | Papers, short documents (no chapters) |
-| `book` | Books, theses (chapters, front/back matter) |
-| `report` | Technical reports (chapters without front/back matter) |
-| `extarticle` | Articles with extended font sizes (8pt-20pt) |
-| `memoir` | Flexible class combining book+article features |
-| `beamer` | Presentations and slides |
-| `standalone` | Single figures or TikZ diagrams for inclusion |
+| Class         | Use for                                              |
+|---------------|------------------------------------------------------|
+| `article`     | Papers, short documents (no chapters)                |
+| `book`        | Books, theses (chapters, front/back matter)          |
+| `report`      | Technical reports (chapters, no front/back matter)   |
+| `extarticle`  | Articles needing 8pt–20pt font sizes                 |
+| `memoir`      | Flexible class combining book and article features  |
+| `beamer`      | Presentations and slides                             |
+| `standalone`  | Single figures or TikZ diagrams for inclusion        |
 
-### 2. LuaLaTeX vs pdfLaTeX
+### LuaLaTeX vs pdfLaTeX
 
-**Prefer LuaLaTeX** for new projects:
-- Native Unicode support (no input encoding issues)
-- System font access via `fontspec` (OpenType, TrueType)
-- Lua scripting for programmatic content
-- Better `tikz` performance for complex diagrams
-- Required by: `fontspec`, `emoji`
+Prefer LuaLaTeX for new projects — native Unicode, OpenType/TrueType
+fonts via `fontspec`, Lua scripting, better TikZ performance on
+complex diagrams, and packages like `fontspec` and `emoji` require
+it. Stick with pdfLaTeX only when a legacy project or publisher
+requires it, or when compile speed matters on trivial documents.
 
-**Use pdfLaTeX** when:
-- Legacy project requires it
-- Publisher mandates pdfLaTeX
-- Faster compile times needed for simple documents
+Build with `latexmk -lualatex main.tex` (or `-pdf` for pdfLaTeX).
+`latexmk` runs biber and reruns the engine as needed.
 
-Build command: `latexmk -lualatex main.tex` (or `-pdf` for pdfLaTeX)
+### Essential packages
 
-### 3. Essential Packages
+**Layout and typography:** `geometry` (margins), `fancyhdr`
+(headers/footers), `fontspec` (system fonts, LuaLaTeX only),
+`babel` (multilingual), `enumitem` (custom lists).
 
-See `references/packages.md` for detailed usage of each package.
+**Math and science:** `amsmath` (environments and commands),
+`siunitx` (units and number formatting).
 
-**Layout and typography:**
-- `geometry` --- Page margins and dimensions
-- `fancyhdr` --- Custom headers and footers
-- `fontspec` --- System fonts (LuaLaTeX only)
-- `babel` --- Multilingual support
-- `enumitem` --- Customizable lists
+**Tables and figures:** `tabularray` (modern tables, replaces
+`tabular`/`booktabs`), `graphicx` (images), `svg` (SVG inclusion,
+requires Inkscape).
 
-**Math and science:**
-- `amsmath` --- Advanced math environments and commands
-- `siunitx` --- SI units and number formatting
+**Graphics and color:** `tikz` (programmatic vector graphics),
+`pgfkeys` (key-value interface), `xcolor` (extended color),
+`tcolorbox` (colored boxes, theorems, code listings).
 
-**Tables and figures:**
-- `tabularray` --- Modern table typesetting (replaces tabular/booktabs)
-- `graphicx` --- Image inclusion
-- `svg` --- SVG file inclusion (requires Inkscape)
+**Bibliography:** `biblatex` with the Biber backend — modern
+replacement for `bibtex` and `natbib`.
 
-**Graphics and color:**
-- `tikz` --- Programmatic vector graphics
-- `pgfkeys` --- Key-value interface for TikZ and custom packages
-- `xcolor` --- Extended color support
-- `tcolorbox` --- Colored boxes, theorems, code listings
+**Specialty:** `bytefield` (protocol diagrams), `xskak` (chess),
+`emoji` (LuaLaTeX only).
 
-**Bibliography:**
-- `biblatex` --- Modern bibliography management (use with Biber backend)
+See `references/packages.md` for detailed usage and configuration
+of each package.
 
-**Specialty:**
-- `bytefield` --- Protocol byte/bit field diagrams
-- `xskak` --- Chess game notation and board diagrams
-- `emoji` --- Emoji in LaTeX (LuaLaTeX only)
+### Document structure
 
-### 4. Document Structure Best Practices
+Write one sentence per line — it produces cleaner git diffs and
+makes review much easier. Split large documents with
+`\input{sections/introduction}` per section. Keep the preamble in
+a separate `preamble.tex` so you can reuse it. Put `\label{}` on
+every float, section, and equation, and reference with `\cref{}`
+(from `cleveref`) rather than bare `\ref{}`.
 
-- One sentence per line (better git diffs, easier review)
-- Split large documents: `\input{sections/introduction}` per section
-- Keep preamble in a separate `preamble.tex` for reuse
-- Use `\label{}` on every float, section, and equation
-- Reference with `\ref{}` or `\cref{}` (cleveref package)
-
-### 5. Bibliography with BibLaTeX
+### Bibliography with BibLaTeX
 
 ```latex
 \usepackage[backend=biber, style=authoryear]{biblatex}
 \addbibresource{references.bib}
+
 % In text:
-\textcite{Knuth1984} writes that...  % Knuth (1984) writes that...
-As shown before \autocite{Knuth1984}  % As shown before (Knuth, 1984)
+\textcite{Knuth1984} writes that...     % Knuth (1984) writes that...
+As shown before \autocite{Knuth1984}    % As shown before (Knuth, 1984)
+
 % At end:
 \printbibliography
 ```
 
-Build: `latexmk -lualatex main.tex` (latexmk handles biber automatically)
+Build with `latexmk -lualatex main.tex` — it handles biber runs
+automatically.
 
-### 6. Math (see references/math-reference.md)
+### Math
 
-- Inline: `$...$` or `\(...\)`
-- Display: `\[...\]` (never `$$...$$`)
-- Multi-line: `align`, `gather`, `cases` (from amsmath)
-- Define custom commands: `\newcommand{\vect}[1]{\mathbf{#1}}`
-- Use `siunitx` for units: `\qty{9.8}{m/s^2}`, `\num{1.23e4}`
+Inline math uses `$...$` or `\(...\)`; display math uses `\[...\]`
+(never `$$...$$`). Use `align`, `gather`, and `cases` from
+`amsmath` for multi-line equations. Define reusable commands in
+the preamble (`\newcommand{\vect}[1]{\mathbf{#1}}`). Use `siunitx`
+for all units: `\qty{9.8}{m/s^2}`, `\num{1.23e4}`. See
+`references/math-reference.md` for a symbol and environment
+reference.
 
-### 7. TikZ (see references/tikz-reference.md)
+### TikZ
 
-- Load with `\usepackage{tikz}` and `\usetikzlibrary{...}`
-- Use `standalone` class for standalone diagrams
-- Common libraries: `arrows.meta`, `positioning`, `calc`, `shapes`, `fit`
-- For complex diagrams, define styles in the preamble
+Load with `\usepackage{tikz}` plus `\usetikzlibrary{...}`. Common
+libraries: `arrows.meta`, `positioning`, `calc`, `shapes`, `fit`.
+Use the `standalone` class for diagrams you want to include from
+multiple documents. Define styles once in the preamble to keep
+picture bodies readable. See `references/tikz-reference.md` for
+drawing patterns.
 
-### 8. Common Mistakes to Avoid
+## Level 3 — Full reference
 
-- Using `$$...$$` for display math (use `\[...\]`)
-- Not using `\qty` from siunitx for units
-- Manual spacing instead of proper environments
-- Bitmap images where vector (PDF/SVG) would work
-- Not running biber when bibliography doesn't appear
-- Missing `\label` after `\caption` in floats
+### Minimal LuaLaTeX preamble
 
-## References
+```latex
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{fontspec}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage[backend=biber, style=authoryear]{biblatex}
+\usepackage{cleveref}
+\addbibresource{references.bib}
+```
 
-- `references/packages.md` --- Detailed package usage and configuration
-- `references/math-reference.md` --- Math symbols, environments, and formulas
-- `references/tikz-reference.md` --- TikZ drawing commands and patterns
+### Common mistakes
 
-## Examples
+- Using `$$...$$` for display math — it is not plain-TeX in
+  LaTeX. Use `\[...\]` or an `equation` environment.
+- Manual spacing with `\,` and `~` instead of proper environments.
+- Forgetting `\label` immediately after `\caption` inside a float
+  — the label must come after the caption, or it references the
+  enclosing section instead.
+- Including bitmap images where vector (PDF or SVG) would produce
+  crisper output at no cost.
+- Forgetting to run biber when the bibliography does not appear —
+  use `latexmk` and it is handled automatically.
+- Using `\ref{}` alone when `\cref{}` would produce "Figure 3"
+  instead of just "3".
+- Writing multi-sentence lines, which makes git diffs unreadable.
+- Building with pdfLaTeX when the preamble loads `fontspec`,
+  `unicode-math`, or `emoji`.
 
-**User:** "Set up a LaTeX paper with LuaLaTeX"
-**Agent:** Creates a main.tex with `\documentclass{article}`, a preamble.tex loading
-geometry, fontspec, amsmath, biblatex, and siunitx. Sets up section structure with
-`\input{}` and provides a latexmk build command.
+### Tables with tabularray
 
-**User:** "Add a table of results"
-**Agent:** Uses `tabularray` for a properly formatted table with caption, label,
-and column alignment. Places in a `table` float environment.
+`tabularray` replaces the older `tabular`/`booktabs` combo with a
+key-value interface and saner defaults. Use `tblr` for tables in a
+`table` float and the `booktabs` library for rules.
 
-**User:** "Draw a system architecture diagram"
-**Agent:** Creates a TikZ diagram using the `positioning` library, with labeled
-nodes connected by arrows. Uses `standalone` class for easy inclusion.
+### Standalone diagrams
+
+When a TikZ diagram will be reused or is complex enough to warrant
+its own file, build it with the `standalone` class so it produces a
+cropped PDF you can `\includegraphics` from the main document. This
+keeps the main compile fast and lets you iterate on diagrams
+independently.
+
+### Further reading
+
+- `references/packages.md` — per-package usage and configuration
+- `references/math-reference.md` — math symbols, environments, and
+  formulas
+- `references/tikz-reference.md` — TikZ drawing commands and
+  patterns

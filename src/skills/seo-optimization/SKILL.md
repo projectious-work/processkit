@@ -4,125 +4,237 @@ kind: Skill
 metadata:
   id: SKILL-seo-optimization
   name: seo-optimization
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "SEO optimization including on-page SEO, technical SEO, Core Web Vitals, structured data, and mobile-first indexing. Use when optimizing websites for search engines, implementing structured data, or improving page performance."
+  description: "SEO — on-page, technical, structured data, Core Web Vitals, and mobile-first indexing."
   category: meta
   layer: null
+  when_to_use: "Use when optimizing a website for search engines, adding meta tags or structured data, fixing Core Web Vitals, or auditing technical SEO."
 ---
 
 # SEO Optimization
 
-## When to Use
+## Level 1 — Intro
 
-When the user is optimizing a website for search engines, asks about meta tags,
-structured data, page speed, or says "improve SEO" or "add schema markup" or
-"fix my Core Web Vitals".
+SEO is two jobs: make the page understandable to crawlers (titles,
+headings, structured data, sitemap, canonicals) and make it fast and
+usable for humans (Core Web Vitals, mobile, HTTPS). Both feed the
+same ranking signals.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. On-Page SEO
+### On-page SEO
 
-- **Title tags**: unique per page, 50-60 characters, primary keyword near the start
-- **Meta descriptions**: 120-160 characters, include a call to action, unique per page
-- **Headings**: one `<h1>` per page matching the topic, logical `<h2>`-`<h6>` hierarchy
-- **Alt text**: descriptive, concise (125 chars max), include keywords naturally
-- **Internal links**: link to related content with descriptive anchor text (not "click here")
-- **URL structure**: short, readable, hyphen-separated, include primary keyword
-- **Content**: answer the user's query comprehensively; use related terms naturally
+- **Title tags:** unique per page, 50–60 characters, primary
+  keyword near the start.
+- **Meta descriptions:** 120–160 characters, with a call to action,
+  unique per page.
+- **Headings:** one `<h1>` per page matching the topic; logical
+  `<h2>`–`<h6>` hierarchy without skipping levels.
+- **Alt text:** descriptive, concise (≤125 chars), keywords used
+  naturally. Decorative images use `alt=""`.
+- **Internal links:** descriptive anchor text — never "click here".
+- **URLs:** short, lowercase, hyphen-separated, include the
+  primary keyword.
+- **Content:** answer the user's query comprehensively; use
+  related terms naturally rather than keyword-stuffing.
 
-### 2. Technical SEO — Crawling and Indexing
+### Crawling and indexing
 
-- **robots.txt**: allow important paths, block admin/staging; place at site root
-- **XML sitemap**: include all indexable pages, exclude noindex pages, submit to Search Console
-- **Canonical URLs**: set `<link rel="canonical">` on every page to prevent duplicate content
-- **Hreflang**: for multilingual sites, add `<link rel="alternate" hreflang="en">` per language
-- **HTTP status codes**: 200 for live pages, 301 for permanent redirects, 404 for gone pages
-- **Redirect chains**: no more than one hop; fix chains to point directly to the final URL
-- **Index control**: use `<meta name="robots" content="noindex">` for pages that should not rank
+- **robots.txt** at the site root: allow important paths, block
+  admin and staging.
+- **XML sitemap** lists all indexable pages, excludes `noindex`
+  pages, submitted to Search Console.
+- **Canonicals** on every page (`<link rel="canonical">`) to
+  prevent duplicate content.
+- **Hreflang** for multilingual sites
+  (`<link rel="alternate" hreflang="en">` per language) with a
+  self-referencing entry and `x-default`.
+- **HTTP status codes:** 200 for live, 301 for permanent redirects,
+  404 for gone. No soft 404s.
+- **Redirect chains:** at most one hop. Fix chains to point
+  directly to the final URL.
+- **Index control:** `<meta name="robots" content="noindex">` on
+  pages that should not rank.
 
-### 3. Structured Data (JSON-LD)
+### Structured data (JSON-LD)
 
-- Add JSON-LD in `<script type="application/ld+json">` in the `<head>`
-- Common types: `Article`, `Product`, `FAQ`, `BreadcrumbList`, `Organization`, `LocalBusiness`
-- Match structured data to visible page content — do not add data not shown on the page
-- Validate with Google Rich Results Test before deploying
-- Use `@context: "https://schema.org"` and the most specific `@type` available
-- BreadcrumbList helps search engines understand site hierarchy
+- Use JSON-LD in `<script type="application/ld+json">` in the
+  `<head>`. Prefer it over Microdata or RDFa.
+- Common types: `Article`, `Product`, `FAQPage`, `BreadcrumbList`,
+  `Organization`, `LocalBusiness`.
+- `@context: "https://schema.org"` and the most specific `@type`
+  available.
+- Match structured data to visible page content — never add data
+  that is not shown on the page.
+- Validate with Google Rich Results Test before deploying.
+- Add `BreadcrumbList` for hierarchical navigation.
 
-### 4. Core Web Vitals
+### Core Web Vitals
 
-- **LCP (Largest Contentful Paint)**: target <2.5s
-  - Preload the LCP image: `<link rel="preload" as="image" href="...">`
-  - Use responsive images with `srcset` and appropriate sizes
-  - Inline critical CSS, defer non-critical stylesheets
-- **INP (Interaction to Next Paint)**: target <200ms
-  - Break up long tasks (>50ms) with `requestIdleCallback` or `scheduler.yield()`
-  - Minimize main thread work during interaction handlers
-  - Debounce rapid input events
-- **CLS (Cumulative Layout Shift)**: target <0.1
-  - Set explicit `width` and `height` on images and video
-  - Reserve space for ads, embeds, and late-loading content
-  - Avoid inserting content above the fold after initial render
-  - Use `font-display: swap` with preloaded fonts
+- **LCP (Largest Contentful Paint):** target < 2.5s. Preload the
+  LCP image, use responsive `srcset`, inline critical CSS, defer
+  non-critical stylesheets.
+- **INP (Interaction to Next Paint):** target < 200ms. Break up
+  long tasks (>50ms) with `requestIdleCallback` or
+  `scheduler.yield()`. Minimize main-thread work in interaction
+  handlers. Debounce rapid input events.
+- **CLS (Cumulative Layout Shift):** target < 0.1. Set explicit
+  `width` and `height` on images and video. Reserve space for ads
+  and embeds. Avoid inserting content above the fold after initial
+  render. Use `font-display: swap` with preloaded fonts.
 
-### 5. Page Speed Optimization
+### Page speed
 
-- Minimize render-blocking resources: inline critical CSS, defer JS
-- Compress images: use WebP/AVIF with fallbacks; lazy-load below-fold images
-- Enable HTTP/2 or HTTP/3 for multiplexed requests
-- Use a CDN for static assets — reduce time to first byte (TTFB)
-- Minify HTML, CSS, and JS; enable Brotli/gzip compression
-- Audit with Lighthouse: `npx lighthouse <url> --output=json`
+- Inline critical CSS and defer non-critical JS.
+- Compress images with WebP/AVIF and provide fallbacks; lazy-load
+  below-fold images.
+- Enable HTTP/2 or HTTP/3 for multiplexed requests.
+- Serve static assets from a CDN to reduce TTFB.
+- Minify HTML/CSS/JS and enable Brotli or gzip.
+- Audit with Lighthouse: `npx lighthouse <url> --output=json`.
 
-### 6. Mobile-First Indexing
+### Mobile-first indexing
 
-- Google indexes the mobile version of the page — ensure content parity with desktop
-- Responsive design preferred: same URL, same HTML, CSS adapts
-- Viewport meta tag: `<meta name="viewport" content="width=device-width, initial-scale=1">`
-- Text readable without zooming: 16px minimum base font size
-- No horizontal scrolling — content fits within the viewport
-- Touch targets at least 48x48 CSS pixels with 8px spacing
-- Test with Chrome DevTools device emulation and Google Mobile-Friendly Test
+- Google indexes the mobile version, so ensure content parity with
+  desktop.
+- Responsive design preferred: same URL, same HTML, CSS adapts.
+- Viewport tag:
+  `<meta name="viewport" content="width=device-width, initial-scale=1">`.
+- Base font size at least 16px so text is readable without zooming.
+- No horizontal scrolling at any viewport width.
+- Touch targets ≥ 48×48 CSS pixels with 8px spacing.
+- Verify with Chrome DevTools device emulation and Google's
+  Mobile-Friendly Test.
 
-### 7. Internal Linking Strategy
+## Level 3 — Full reference
 
-- Link from high-authority pages to important pages that need ranking signals
-- Use descriptive anchor text that reflects the target page's topic
-- Create content hubs: pillar page linking to cluster pages and back
-- Limit links per page to a reasonable number (under 100 for most pages)
-- Fix orphan pages — every indexable page should be reachable via internal links
-- Use breadcrumbs for hierarchical navigation and search engine context
+### Internal linking
 
-### 8. Security and Trust Signals
+- Link from high-authority pages to important pages that need
+  ranking signals.
+- Create content hubs: a pillar page links to cluster pages and
+  back.
+- Limit links per page to a reasonable number (under ~100).
+- Fix orphan pages — every indexable page should be reachable via
+  internal links.
+- Use breadcrumbs for hierarchical navigation and search engine
+  context.
 
-- Serve all pages over HTTPS — required for ranking and user trust
-- Set HSTS header: `Strict-Transport-Security: max-age=31536000; includeSubDomains`
-- Avoid mixed content (HTTP resources on HTTPS pages)
-- Add clear authorship (E-E-A-T): author bios, about pages, contact information
-- Display trust elements: reviews, certifications, security badges where relevant
+### Security and trust
 
-## References
+- Serve every page over HTTPS.
+- Set HSTS:
+  `Strict-Transport-Security: max-age=31536000; includeSubDomains`.
+- No mixed content (HTTP resources on HTTPS pages).
+- Set `X-Content-Type-Options: nosniff` and `X-Frame-Options`.
+- Configure a Content Security Policy.
+- Surface E-E-A-T signals: author bios, about pages, contact info,
+  reviews and certifications where relevant.
 
-- `references/technical-seo-checklist.md` — Actionable checklist by category
+### Technical SEO checklist
+
+A condensed actionable checklist (full version in
+`references/technical-seo-checklist.md`):
+
+**Crawling and indexing**
+
+- [ ] `robots.txt` exists; allows important paths, blocks admin
+- [ ] XML sitemap lists indexable pages and is submitted to
+  Search Console and Bing Webmaster Tools
+- [ ] No orphan pages
+- [ ] Redirect chains resolved (max 1 hop), no loops
+- [ ] 404s return real 404 status (not soft 404)
+- [ ] Removed pages return 410 or redirect to relevant content
+
+**Canonicals and duplicates**
+
+- [ ] Every page has a self-referencing or preferred canonical
+- [ ] Pagination uses sensible canonical strategy (not all to
+  page 1)
+- [ ] WWW vs non-WWW redirects configured to one canonical
+- [ ] Trailing-slash behavior consistent
+- [ ] HTTP redirects to HTTPS
+
+**Performance**
+
+- [ ] LCP < 2.5s, INP < 200ms, CLS < 0.1
+- [ ] Images have explicit `width`/`height`
+- [ ] Above-fold images preloaded; below-fold use `loading="lazy"`
+- [ ] Fonts preloaded with `font-display: swap`
+- [ ] Critical CSS inlined; non-critical CSS deferred
+- [ ] JavaScript deferred or async where possible
+- [ ] Brotli/gzip enabled, static assets from CDN
+
+**Structured data**
+
+- [ ] JSON-LD format
+- [ ] `@context` is `https://schema.org`
+- [ ] Most specific `@type` used
+- [ ] Fields match visible content
+- [ ] Validates clean in Google Rich Results Test
+- [ ] `BreadcrumbList` on hierarchical pages
+
+### JSON-LD examples
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Article Title",
+  "author": { "@type": "Person", "name": "Author Name" },
+  "datePublished": "2025-01-15",
+  "image": "https://example.com/image.jpg"
+}
+```
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Product Name",
+  "image": "https://example.com/product.jpg",
+  "description": "Product description",
+  "offers": {
+    "@type": "Offer",
+    "price": "29.99",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock"
+  }
+}
+```
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{
+    "@type": "Question",
+    "name": "What is the return policy?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "You can return items within 30 days."
+    }
+  }]
+}
+```
+
+### Anti-patterns
+
+- Stuffing keywords into titles, alt text, or body copy
+- Adding structured data that does not match visible content
+- Using "click here" or bare URLs as anchor text
+- Letting redirect chains accumulate over time
+- Lazy-loading the LCP image (defeats the preload)
+- Treating mobile as an afterthought when Google indexes mobile
+  first
+- Blocking CSS or JS in `robots.txt` — Googlebot needs them to
+  render
+
+### References
+
+- `references/technical-seo-checklist.md` — full checklist by
+  category
 - [Google Search Central](https://developers.google.com/search)
 - [web.dev Core Web Vitals](https://web.dev/vitals/)
-
-## Examples
-
-**User:** "Audit the SEO of my Next.js site"
-**Agent:** Checks for meta tags on key pages, verifies sitemap.xml and robots.txt
-exist and are correct, validates structured data with Rich Results Test, runs
-Lighthouse for Core Web Vitals, checks canonical URLs, and produces a prioritized
-list of fixes sorted by expected impact.
-
-**User:** "Add structured data to my product pages"
-**Agent:** Creates a `Product` JSON-LD schema with name, description, image, price,
-availability, and aggregateRating. Places it in the page `<head>`, ensures all
-fields match visible content, and validates with Google's Rich Results Test.
-
-**User:** "My LCP score is 4.5 seconds — help me fix it"
-**Agent:** Identifies the LCP element (usually a hero image or heading), adds a
-preload hint for the LCP image, converts it to WebP with responsive srcset, inlines
-critical CSS, defers non-essential JS, and verifies improvement with Lighthouse.

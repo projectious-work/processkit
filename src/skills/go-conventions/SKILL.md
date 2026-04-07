@@ -4,104 +4,246 @@ kind: Skill
 metadata:
   id: SKILL-go-conventions
   name: go-conventions
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Go idioms and conventions including error handling, interfaces, goroutine patterns, and testing. Use when writing Go code, reviewing Go projects, or designing Go package layouts."
+  description: "Go idioms — error wrapping, small interfaces, goroutine lifecycle, table-driven tests."
   category: language
   layer: null
+  when_to_use: "Use when writing or reviewing Go code, designing package layouts, or working through concurrency, error handling, and testing decisions."
 ---
 
 # Go Conventions
 
-## When to Use
+## Level 1 — Intro
 
-When the user is working with Go code and asks about idiomatic patterns, error handling,
-concurrency, package organization, testing strategies, or says "how should I structure
-this in Go?". Also applies when reviewing Go code for correctness and style.
+Idiomatic Go is small interfaces, explicit error wrapping, clear
+goroutine ownership, and domain-oriented packages. Follow `gofmt`,
+respect `context.Context`, and never start a goroutine without
+knowing how it stops.
 
-## References
+## Level 2 — Overview
 
-- `references/go-patterns.md` — Common patterns with code: functional options, builder, middleware, graceful shutdown
+### Error handling
 
-## Instructions
+Return errors as the last return value; never panic in library code.
+Wrap with context using `fmt.Errorf("loading config: %w", err)` so
+callers can unwrap with `errors.Is` (sentinel errors) or `errors.As`
+(typed errors). Define sentinel errors at package level:
+`var ErrNotFound = errors.New("not found")`. Use custom error types
+only when callers need structured fields. Never silently ignore an
+error — assigning to `_` requires a comment explaining why.
 
-### 1. Error Handling
+### Interfaces
 
-- Return errors as the last return value; never panic in library code
-- Wrap errors with context: `fmt.Errorf("loading config: %w", err)`
-- Use `errors.Is(err, target)` for sentinel errors, `errors.As(err, &target)` for typed errors
-- Define sentinel errors with `var ErrNotFound = errors.New("not found")` at package level
-- Use custom error types only when callers need to extract structured information
-- Never ignore errors silently; assign to `_` only with a comment explaining why
+Accept interfaces, return concrete types. Keep interfaces small —
+1–3 methods is ideal ("the bigger the interface, the weaker the
+abstraction"). Define interfaces where they are consumed, not where
+they are implemented. Reach for stdlib interfaces (`io.Reader`,
+`io.Writer`, `fmt.Stringer`) before inventing new ones. Name
+single-method interfaces with the `-er` suffix.
 
-### 2. Interfaces
+### Goroutine patterns
 
-- Accept interfaces, return concrete types
-- Keep interfaces small: 1-3 methods is ideal (the Go proverb: "the bigger the interface, the weaker the abstraction")
-- Define interfaces where they are consumed, not where they are implemented
-- Use `io.Reader`, `io.Writer`, `fmt.Stringer` and other stdlib interfaces before inventing new ones
-- Name single-method interfaces with the `-er` suffix: `Reader`, `Closer`, `Validator`
+Pass `context.Context` as the first parameter to any function that
+blocks or does I/O. Use `errgroup.Group` for fan-out/fan-in — it
+handles error propagation and cancellation. Every goroutine must
+have a clear owner responsible for its lifecycle. Always select on
+`ctx.Done()` alongside channel operations.
 
-### 3. Goroutine Patterns
+### Package layout
 
-- Always pass `context.Context` as the first parameter to functions that may block or do I/O
-- Use `errgroup.Group` for fan-out/fan-in — it handles error propagation and cancellation
-- Launch goroutines with clear ownership: the creator is responsible for lifecycle
-- Use buffered channels for worker pools; size the buffer based on expected throughput
-- Always select on `ctx.Done()` alongside channel operations to respect cancellation
-- Never start a goroutine without knowing how it will stop
+Organize by domain, not by layer: `user/`, `order/`, not `models/`,
+`handlers/`. Package names are short, lowercase, and singular
+(`http`, `user`, `config`). Avoid catch-all `util`, `common`, and
+`helpers` packages. Keep `main.go` minimal — parse flags, wire
+dependencies, call `run(ctx)`. Put implementation details under
+`internal/` to block external imports.
 
-### 4. Package Layout
+### Testing
 
-- Organize by domain, not by layer: `user/`, `order/`, not `models/`, `handlers/`
-- Package names should be short, lowercase, singular: `http`, `user`, `config`
-- Avoid `util`, `common`, `helpers` packages — find a more specific home
-- Keep `main.go` minimal: parse flags, wire dependencies, call `run(ctx)`
-- Internal packages go under `internal/` to prevent external imports
-- One package per directory; no multi-package directories
+Use table-driven tests with named subtests for multi-case coverage.
+`testify/assert` for readable checks, `testify/require` for fatal
+ones. Use `httptest.NewServer` for client tests, `NewRecorder` for
+handler tests. Call `t.Helper()` in helpers so failures point at the
+caller. Run `go test -race ./...` in CI. Use `t.Parallel()` for
+independent tests.
 
-### 5. Testing
+### Code style
 
-- Use table-driven tests for any function with multiple input/output combinations
-- Name test cases descriptively: `{name: "empty input returns error", ...}`
-- Use `testify/assert` for readable assertions, `testify/require` for fatal checks
-- Use `httptest.NewServer` for HTTP client testing; `httptest.NewRecorder` for handler testing
-- Use `t.Helper()` in test helper functions so failure line numbers point to the caller
-- Run `go test -race ./...` in CI to catch data races
-- Use `t.Parallel()` for independent tests to speed up the suite
+`gofmt` is non-negotiable; `goimports` handles import grouping
+(stdlib, blank line, third-party, blank line, internal). Exported
+names get doc comments that start with the name. Use named return
+values sparingly. Prefer early returns and guard clauses over deep
+nesting.
 
-### 6. Go Proverbs
+## Level 3 — Full reference
 
-- Don't communicate by sharing memory; share memory by communicating
-- A little copying is better than a little dependency
-- Clear is better than clever
-- Make the zero value useful
-- Errors are values — handle them, don't just check them
-- The empty interface says nothing
+### Functional options
 
-### 7. Code Style
+Extensible constructors that stay backward compatible:
 
-- Follow `gofmt` unconditionally; use `goimports` for import grouping
-- Group imports: stdlib, then a blank line, then third-party, then internal
-- Exported names get doc comments: `// UserService manages user lifecycle.`
-- Use named return values sparingly — only when they clarify the API
-- Prefer early returns to reduce nesting: guard clauses at the top
+```go
+type Server struct {
+    addr    string
+    timeout time.Duration
+    logger  *slog.Logger
+}
 
-## Examples
+type Option func(*Server)
 
-**User:** "This function has a lot of if err != nil blocks, can you clean it up?"
-**Agent:** Wraps errors with `fmt.Errorf` and `%w` for context at each call site,
-extracts repeated setup into helper functions that return errors, and ensures the
-caller receives enough context to diagnose failures without reading the source.
+func WithTimeout(d time.Duration) Option {
+    return func(s *Server) { s.timeout = d }
+}
 
-**User:** "I need a worker pool that processes jobs from a channel"
-**Agent:** Creates a pool using `errgroup.Group` with a configurable number of workers,
-each reading from a shared job channel. Uses `context.Context` for cancellation and
-returns the first error encountered. Includes a graceful shutdown that drains
-remaining jobs. See `references/go-patterns.md` for the full pattern.
+func NewServer(addr string, opts ...Option) *Server {
+    s := &Server{addr: addr, timeout: 30 * time.Second, logger: slog.Default()}
+    for _, opt := range opts {
+        opt(s)
+    }
+    return s
+}
+```
 
-**User:** "How should I organize this Go microservice?"
-**Agent:** Proposes a domain-driven layout with `internal/` for business logic, `cmd/`
-for the entry point, interfaces defined at consumption sites, and dependency injection
-via constructor functions. Adds a `Makefile` with `build`, `test`, `lint` targets.
+Use when a constructor has 3+ optional parameters or when backward
+compatibility matters on a public API.
+
+### Worker pool with errgroup
+
+```go
+func ProcessItems(ctx context.Context, items []Item, workers int) error {
+    g, ctx := errgroup.WithContext(ctx)
+    jobs := make(chan Item, workers)
+
+    g.Go(func() error {
+        defer close(jobs)
+        for _, item := range items {
+            select {
+            case jobs <- item:
+            case <-ctx.Done():
+                return ctx.Err()
+            }
+        }
+        return nil
+    })
+
+    for range workers {
+        g.Go(func() error {
+            for item := range jobs {
+                if err := process(ctx, item); err != nil {
+                    return fmt.Errorf("processing %s: %w", item.ID, err)
+                }
+            }
+            return nil
+        })
+    }
+    return g.Wait()
+}
+```
+
+`errgroup.WithContext` cancels all goroutines on first error. Size
+the buffer to the worker count. Always select on `ctx.Done()` in the
+producer.
+
+### Graceful shutdown
+
+```go
+func run(ctx context.Context) error {
+    srv := &http.Server{Addr: ":8080", Handler: mux}
+    errCh := make(chan error, 1)
+    go func() { errCh <- srv.ListenAndServe() }()
+
+    select {
+    case err := <-errCh:
+        return err
+    case <-ctx.Done():
+    }
+
+    shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+    return srv.Shutdown(shutdownCtx)
+}
+
+func main() {
+    ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+    defer stop()
+    if err := run(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+        slog.Error("server failed", "error", err)
+        os.Exit(1)
+    }
+}
+```
+
+`signal.NotifyContext` for OS signals, `srv.Shutdown` to drain
+in-flight requests, timeout on shutdown so it never hangs forever.
+
+### Middleware chain
+
+```go
+type Middleware func(http.Handler) http.Handler
+
+func Chain(h http.Handler, mw ...Middleware) http.Handler {
+    for i := len(mw) - 1; i >= 0; i-- {
+        h = mw[i](h)
+    }
+    return h
+}
+```
+
+First listed is outermost. See `references/go-patterns.md` for
+complete logging and recovery middleware examples.
+
+### Table-driven tests
+
+```go
+func TestParseSize(t *testing.T) {
+    tests := []struct {
+        name    string
+        input   string
+        want    int64
+        wantErr bool
+    }{
+        {name: "bytes", input: "100B", want: 100},
+        {name: "kilobytes", input: "2KB", want: 2048},
+        {name: "empty string", input: "", wantErr: true},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            t.Parallel()
+            got, err := ParseSize(tt.input)
+            if tt.wantErr {
+                require.Error(t, err)
+                return
+            }
+            require.NoError(t, err)
+            assert.Equal(t, tt.want, got)
+        })
+    }
+}
+```
+
+Always use `t.Run` with named subtests. Put expected-error cases
+last for readability.
+
+### Go proverbs worth tattooing
+
+- Don't communicate by sharing memory; share memory by communicating.
+- A little copying is better than a little dependency.
+- Clear is better than clever.
+- Make the zero value useful.
+- Errors are values — handle them, don't just check them.
+- The empty interface says nothing.
+
+### Anti-patterns
+
+- Goroutines with no visible stop condition.
+- `panic` in library code for non-programmer-error conditions.
+- Large interfaces defined alongside their sole implementation.
+- `util`/`common`/`helpers` packages that accrete unrelated code.
+- Ignoring errors without a `_ =` plus justification comment.
+- Naked returns in long functions where named returns obscure flow.
+
+### Further reading
+
+- `references/go-patterns.md` — full functional options, middleware,
+  worker pool, and graceful shutdown examples.

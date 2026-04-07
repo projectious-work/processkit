@@ -4,35 +4,34 @@ kind: Skill
 metadata:
   id: SKILL-dependency-management
   name: dependency-management
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Cross-language dependency management including lockfiles, version pinning, update strategies, and license compliance. Use when managing project dependencies, reviewing dependency changes, or setting up automated updates."
+  description: "Cross-language dependency management — lockfiles, version pinning, automated updates, security, and licenses."
   category: meta
   layer: null
+  when_to_use: "Use when setting up or reviewing lockfile strategy, configuring automated dependency updates, auditing dependencies for security or license issues, handling monorepo dependencies, or deciding whether to vendor."
 ---
 
 # Dependency Management
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Set up or review lockfile strategy
-- Choose a version pinning approach
-- Configure automated dependency updates (Dependabot, Renovate)
-- Handle monorepo dependency management
-- Audit dependencies for security or license issues
-- Decide whether to vendor dependencies
+Dependencies are the largest unmaintained surface in most projects.
+Pin them, lock them, scan them, and update them on a schedule. The
+defaults differ by language, but the principles are universal: commit
+the lockfile, automate the updates, gate on CI, and review every
+change.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Lockfiles
+### Lockfiles
 
-Lockfiles pin the exact resolved versions of all direct and transitive dependencies.
-
-- **Always commit lockfiles** for applications and services
-- For libraries, commit the lockfile for CI reproducibility but do not publish it
-- Never manually edit lockfiles -- regenerate with the package manager
+Lockfiles pin the exact resolved versions of all direct and
+transitive dependencies. Always commit lockfiles for applications and
+services. For libraries, commit the lockfile for CI reproducibility
+but do not publish it. Never edit lockfiles by hand — regenerate them
+through the package manager.
 
 | Ecosystem | Manifest | Lockfile |
 |-----------|----------|----------|
@@ -42,82 +41,87 @@ Lockfiles pin the exact resolved versions of all direct and transitive dependenc
 | Node.js (pnpm) | `package.json` | `pnpm-lock.yaml` |
 | Go | `go.mod` | `go.sum` |
 
-### 2. Version Pinning Strategies
+### Version pinning
 
-- **Exact pins** (`==1.2.3`): Maximum reproducibility. Use for applications and Docker images.
-- **Compatible range** (`^1.2.3` or `~=1.2`): Allow patch/minor updates. Use for libraries to avoid conflicts with consumers.
-- **Minimum bound** (`>=1.2.0`): Widest compatibility. Use sparingly -- can lead to untested combinations.
+- **Exact pins** (`==1.2.3`): maximum reproducibility. Use for
+  applications and Docker images.
+- **Compatible range** (`^1.2.3` or `~=1.2`): allow patch/minor
+  updates. Use for libraries to avoid conflicts with consumers.
+- **Minimum bound** (`>=1.2.0`): widest compatibility, but can lead
+  to untested combinations. Use sparingly.
 
 Rule of thumb: pin tightly in applications, pin loosely in libraries.
 
-### 3. Automated Update Workflows
+### Automated updates
 
-**Dependabot** (GitHub native):
-- Configure `.github/dependabot.yml` with ecosystems, schedule, and reviewers
-- Set `open-pull-requests-limit` to avoid PR floods (5-10 is reasonable)
-- Group minor/patch updates to reduce noise
+**Dependabot** is GitHub-native. Configure
+`.github/dependabot.yml` with ecosystems, schedule, and reviewers.
+Set `open-pull-requests-limit` (5–10) to avoid PR floods. Group
+minor/patch updates to reduce noise.
 
-**Renovate** (more flexible):
-- Supports monorepos, grouping by package pattern, auto-merge for patch updates
-- Configure `renovate.json` with `extends: ["config:recommended"]` as a baseline
-- Use `matchPackagePatterns` to group related packages (e.g., all `@aws-sdk/*`)
+**Renovate** is more flexible: monorepos, package-pattern grouping,
+auto-merge for patch updates. Use `extends: ["config:recommended"]`
+in `renovate.json` as a baseline. Use `matchPackagePatterns` to
+group related packages (e.g. all `@aws-sdk/*`).
 
-For both tools:
-- Require CI to pass before merging update PRs
-- Auto-merge patch updates for well-tested projects
-- Review major updates manually -- read the changelog
+For both: require CI to pass before merging. Auto-merge patch
+updates for well-tested projects. Review major updates manually and
+read the changelog.
 
-### 4. Monorepo Dependencies
+### Monorepos
 
-- Use workspace features: Cargo workspaces, npm/pnpm workspaces, uv workspaces
-- Share common dependency versions at the workspace root
-- Pin shared tooling (linters, formatters) at the root level
-- Let individual packages specify their own domain-specific dependencies
-- Run `cargo update --workspace` or equivalent to update all packages together
+Use the workspace features your toolchain provides — Cargo
+workspaces, npm/pnpm workspaces, uv workspaces. Share common
+dependency versions at the workspace root. Pin shared tooling
+(linters, formatters) at the root. Let individual packages declare
+their own domain-specific deps. Update everything together with
+`cargo update --workspace` or the equivalent.
 
-### 5. Security Scanning
+### Security and licenses
 
-Integrate vulnerability scanning into CI:
+Integrate vulnerability scanning into CI. Block merges on
+critical/high vulnerabilities and track accepted risks with ignore
+rules and expiry dates. For licenses, maintain an SPDX-based
+allow-list and flag copyleft licenses (GPL, AGPL) in proprietary
+projects for legal review.
 
-- `cargo audit` (Rust) -- checks against RustSec advisory database
-- `npm audit` / `pnpm audit` (Node.js) -- checks against npm advisory database
-- `pip-audit` or `uv pip audit` (Python) -- checks against OSV/PyPI advisories
-- `govulncheck` (Go) -- checks against Go vulnerability database
+| Tool | Ecosystem |
+|---|---|
+| `cargo audit` / `cargo-deny` | Rust |
+| `npm audit` / `pnpm audit` | Node.js |
+| `pip-audit` / `uv pip audit` | Python |
+| `govulncheck` | Go |
+| `license-checker` | Node.js |
+| `pip-licenses` | Python |
 
-Block merges on critical/high vulnerabilities. Track accepted risks with ignore rules and expiry dates.
+## Level 3 — Full reference
 
-### 6. License Compliance
-
-- Use SPDX identifiers for consistency (`MIT`, `Apache-2.0`, `GPL-3.0-only`)
-- Maintain an allow-list of acceptable licenses for your project
-- Tools: `cargo-deny` (Rust), `license-checker` (Node.js), `pip-licenses` (Python)
-- Flag copyleft licenses (GPL, AGPL) in proprietary projects for legal review
-- Document exceptions in a `deny.toml` or `.licensrc` with justification
-
-### 7. Vendoring
-
-Copy dependencies into the repository for offline builds or supply-chain control:
-
-- Rust: `cargo vendor` + `.cargo/config.toml` with `[source.vendored-sources]`
-- Go: `go mod vendor` + build with `-mod=vendor`
-- Node.js: rarely vendored; use `npm pack` + local tarball if needed
-
-Vendor when: building in air-gapped environments, pinning against registry outages, or needing full audit of dependency source.
-
-### 8. Dependency Review Process
+### Dependency review checklist
 
 For every PR that changes dependencies:
 
-1. Check **what changed**: new dependency, version bump, or removal
-2. Verify **why**: is there a clear reason (feature, security fix, deprecation)?
-3. Review **license**: does the new dependency's license fit the project?
-4. Check **size/scope**: is the dependency proportional to the problem it solves?
-5. Look for **alternatives**: is there a lighter or stdlib-based option?
-6. Run **security scan**: does the new version have known vulnerabilities?
+1. **What changed** — new dependency, version bump, removal?
+2. **Why** — feature, security fix, deprecation?
+3. **License** — does it fit the project's allow-list?
+4. **Size and scope** — proportional to the problem it solves?
+5. **Alternatives** — is there a lighter or stdlib-based option?
+6. **Security** — does the new version have known advisories?
 
-## Examples
+### Vendoring
 
-### Example 1: Dependabot Configuration
+Copy dependencies into the repository for offline builds or
+supply-chain control:
+
+- Rust: `cargo vendor` plus `.cargo/config.toml` with
+  `[source.vendored-sources]`
+- Go: `go mod vendor` plus `-mod=vendor` at build time
+- Node.js: rarely vendored; use `npm pack` plus a local tarball if
+  needed
+
+Vendor when building in air-gapped environments, pinning against
+registry outages, or needing a full audit of dependency source.
+
+### Dependabot example
 
 ```yaml
 # .github/dependabot.yml
@@ -144,7 +148,7 @@ updates:
         patterns: ["react*", "@types/react*"]
 ```
 
-### Example 2: cargo-deny for License and Advisory Checks
+### cargo-deny example
 
 ```toml
 # deny.toml
@@ -168,7 +172,7 @@ deny = [
 ]
 ```
 
-### Example 3: Renovate with Auto-Merge (renovate.json)
+### Renovate auto-merge example
 
 ```json
 {
@@ -194,3 +198,14 @@ deny = [
   ]
 }
 ```
+
+### Anti-patterns
+
+- Hand-editing lockfiles instead of regenerating them
+- Ignoring Dependabot PRs until they pile up into an unreviewable
+  backlog
+- Auto-merging major updates without reading the changelog
+- Pinning loosely in applications "to stay current" — that is what
+  the update workflow is for
+- Adding a 200-package dependency for a five-line utility
+- Treating a security advisory as "we'll get to it" — set an SLA

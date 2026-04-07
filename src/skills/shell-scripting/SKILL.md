@@ -4,45 +4,44 @@ kind: Skill
 metadata:
   id: SKILL-shell-scripting
   name: shell-scripting
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Bash scripting best practices including error handling, argument parsing, and shellcheck compliance. Use when writing shell scripts, reviewing bash code, or automating tasks with shell commands."
+  description: "Bash scripting — strict mode, quoting, arg parsing, traps, shellcheck compliance."
   category: language
   layer: null
+  when_to_use: "Use when writing or reviewing bash scripts, adding error handling and argument parsing, or fixing shellcheck warnings."
 ---
 
 # Shell Scripting
 
-## When to Use
+## Level 1 — Intro
 
-- Writing new shell scripts or functions
-- Reviewing existing bash code for correctness and safety
-- Adding error handling and input validation to scripts
-- Parsing command-line arguments
-- Automating tasks with portable shell commands
-- Fixing shellcheck warnings or improving script reliability
+Every bash script starts with `#!/usr/bin/env bash` and
+`set -euo pipefail`, quotes every variable expansion, traps for
+cleanup, and passes `shellcheck -o all` cleanly. Anything less is
+a bug in waiting.
 
-## Instructions
+## Level 2 — Overview
 
-### Script Header
-
-Every script must start with a shebang and strict mode:
+### Script header
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 ```
 
-- `set -e` -- exit on any command failure
-- `set -u` -- error on unset variables
-- `set -o pipefail` -- propagate pipe failures
+- `set -e` — exit on any command failure
+- `set -u` — error on unset variables
+- `set -o pipefail` — propagate failures through pipes
 
-Use `#!/usr/bin/env bash` instead of `#!/bin/bash` for portability.
+Use `#!/usr/bin/env bash` rather than `#!/bin/bash` for
+portability across macOS and Linux.
 
-### Variable Quoting
+### Variable quoting
 
-Always double-quote variable expansions to prevent word splitting and globbing:
+Always double-quote variable expansions to prevent word splitting
+and glob expansion:
 
 ```bash
 # Correct
@@ -51,28 +50,22 @@ for file in "$dir"/*; do
   echo "Processing: $file"
 done
 
-# Wrong -- breaks on paths with spaces
+# Wrong — breaks on paths with spaces
 cp $source $dest
 ```
 
-Use `${var:-default}` for defaults, `${var:?error message}` for required variables:
+Use `${var:-default}` for defaults and `${var:?error message}`
+for required variables:
 
 ```bash
 config_file="${1:?Usage: $0 <config-file>}"
 log_dir="${LOG_DIR:-/var/log/myapp}"
 ```
 
-### Argument Parsing
+### Argument parsing
 
-For simple positional arguments:
-
-```bash
-readonly PROG="$(basename "$0")"
-readonly ARG1="${1:?Usage: $PROG <input> <output>}"
-readonly ARG2="${2:?Usage: $PROG <input> <output>}"
-```
-
-For options, use getopts:
+For simple positional arguments use `${1:?...}`. For options use
+`getopts`:
 
 ```bash
 verbose=false
@@ -91,7 +84,10 @@ shift $((OPTIND - 1))
 
 ### Functions
 
-Define functions with the `name()` syntax. Use `local` for all function variables:
+Define functions with `name()`. Use `local` for every function
+variable. Return data via stdout (captured with `$()`), not via
+return codes — codes are limited to 0–255 and conflate errors
+with values.
 
 ```bash
 log() {
@@ -100,36 +96,25 @@ log() {
   printf '[%s] [%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$level" "$*" >&2
 }
 
-die() {
-  log "ERROR" "$@"
-  exit 1
-}
+die() { log "ERROR" "$@"; exit 1; }
 ```
 
-Return values via stdout (capture with `$()`), not via return codes (which are limited to 0-255).
-
-### Error Handling and Cleanup
-
-Use trap for cleanup on exit:
+### Cleanup with trap
 
 ```bash
-cleanup() {
-  rm -rf "${tmpdir:-}"
-}
+cleanup() { rm -rf "${tmpdir:-}"; }
 trap cleanup EXIT
 
 tmpdir="$(mktemp -d)"
 ```
 
-The EXIT trap fires on normal exit, errors (set -e), and signals. For additional signal handling:
-
-```bash
-trap 'echo "Interrupted" >&2; exit 130' INT TERM
-```
+`EXIT` fires on normal exit, errors (via `set -e`), and signals.
+Add `trap 'echo Interrupted >&2; exit 130' INT TERM` when you
+need distinct handling for user interrupts.
 
 ### Arrays
 
-Use arrays for lists of items, especially file paths:
+Use arrays for lists of items — never a space-separated string:
 
 ```bash
 files=()
@@ -137,18 +122,151 @@ while IFS= read -r -d '' file; do
   files+=("$file")
 done < <(find /path -name "*.txt" -print0)
 
-# Iterate safely
 for file in "${files[@]}"; do
   process "$file"
 done
-
-# Array length
 echo "Found ${#files[@]} files"
 ```
 
-### Here-Documents
+### Shellcheck
 
-Use here-docs for multi-line strings. Quote the delimiter to prevent variable expansion when needed:
+Run `shellcheck -o all script.sh` on every script before
+committing. When a warning is a genuine false positive, disable
+it locally with a comment, never globally:
+
+```bash
+# shellcheck disable=SC2034  # variable used in sourced file
+unused_var="value"
+```
+
+## Level 3 — Full reference
+
+### Common pitfalls
+
+- Never parse `ls` output — use globs (`for f in *.txt`) or
+  `find -print0` with `read -d ''`.
+- Use `[[ ]]` instead of `[ ]` — safer, supports regex and
+  pattern matching.
+- Use `$(command)` instead of backticks.
+- Always use `"$@"` (quoted) to forward arguments, never `$*`.
+- Check for commands with `command -v cmd`, not `which cmd`.
+- Use `printf` instead of `echo` for portable output (`echo`
+  behavior varies across shells).
+
+### Structured logging with levels
+
+```bash
+readonly LOG_LEVEL="${LOG_LEVEL:-INFO}"
+
+log() {
+  local level="$1"; shift
+  local -A levels=([DEBUG]=0 [INFO]=1 [WARN]=2 [ERROR]=3)
+  local threshold="${levels[$LOG_LEVEL]:-1}"
+  local current="${levels[$level]:-1}"
+  (( current >= threshold )) || return 0
+  printf '[%s] [%-5s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$level" "$*" >&2
+}
+```
+
+### Lock file (prevent concurrent runs)
+
+```bash
+readonly LOCKFILE="/var/lock/$(basename "$0").lock"
+
+acquire_lock() {
+  if ! mkdir "$LOCKFILE" 2>/dev/null; then
+    local pid
+    pid="$(cat "$LOCKFILE/pid" 2>/dev/null || echo unknown)"
+    echo "Already running (PID: $pid)" >&2
+    exit 1
+  fi
+  echo $$ > "$LOCKFILE/pid"
+  trap 'rm -rf "$LOCKFILE"' EXIT
+}
+```
+
+`mkdir` is atomic, which works reliably on NFS where `flock`
+sometimes does not.
+
+### Retry with exponential backoff
+
+```bash
+retry() {
+  local max_attempts="$1" delay="$2"
+  shift 2
+  local attempt=1
+  until "$@"; do
+    if (( attempt >= max_attempts )); then
+      echo "Failed after $attempt attempts: $*" >&2
+      return 1
+    fi
+    echo "Attempt $attempt failed, retrying in ${delay}s..." >&2
+    sleep "$delay"
+    (( attempt++ ))
+    (( delay *= 2 ))
+  done
+}
+
+retry 5 2 curl -sSf "https://api.example.com/health"
+```
+
+### Safe file writing (atomic)
+
+```bash
+safe_write() {
+  local target="$1"
+  local tmpfile
+  tmpfile="$(mktemp "${target}.tmp.XXXXXXXXXX")"
+  cat > "$tmpfile"
+  mv "$tmpfile" "$target"
+}
+
+generate_config | safe_write /etc/myapp/config.toml
+```
+
+### Command existence check
+
+```bash
+require_commands() {
+  local missing=()
+  for cmd in "$@"; do
+    command -v "$cmd" &>/dev/null || missing+=("$cmd")
+  done
+  if (( ${#missing[@]} > 0 )); then
+    echo "Missing required commands: ${missing[*]}" >&2
+    return 1
+  fi
+}
+
+require_commands curl jq git docker
+```
+
+### Script self-identification
+
+```bash
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
+
+source "$SCRIPT_DIR/lib/utils.sh"
+config="$SCRIPT_DIR/../config/defaults.toml"
+```
+
+### Color output with NO_COLOR support
+
+```bash
+if [[ -t 2 ]] && [[ -z "${NO_COLOR:-}" ]]; then
+  readonly RED=$'\033[0;31m' GREEN=$'\033[0;32m' RESET=$'\033[0m'
+else
+  readonly RED="" GREEN="" RESET=""
+fi
+info()  { echo "${GREEN}[INFO]${RESET} $*" >&2; }
+error() { echo "${RED}[ERROR]${RESET} $*" >&2; }
+```
+
+Respects the `NO_COLOR` convention (<https://no-color.org/>) and
+detects non-TTY output.
+
+### Here-documents
 
 ```bash
 # With variable expansion
@@ -156,97 +274,12 @@ cat << EOF
 Hello, $USER. Today is $(date).
 EOF
 
-# Without expansion (literal content)
+# Without expansion (quote the delimiter)
 cat << 'EOF'
 This $variable is not expanded.
 EOF
 ```
 
-### Common Pitfalls
+### Further reading
 
-- Never parse `ls` output -- use globs (`for f in *.txt`) or `find -print0` with `read -d ''`
-- Use `[[ ]]` instead of `[ ]` for conditionals (safer, supports regex and pattern matching)
-- Use `$(command)` instead of backticks for command substitution
-- Always use `"$@"` (quoted) to pass arguments through, never `$*`
-- Check command existence with `command -v cmd` instead of `which cmd`
-- Use `printf` instead of `echo` for portable output (echo behavior varies)
-
-### Shellcheck Compliance
-
-Run shellcheck on every script before committing:
-
-```bash
-shellcheck -o all script.sh        # enable all optional checks
-shellcheck -s bash script.sh       # explicit bash dialect
-```
-
-When a shellcheck warning is a false positive, disable it locally with a comment:
-
-```bash
-# shellcheck disable=SC2034  # variable used in sourced file
-unused_var="value"
-```
-
-Never disable shellcheck globally. Fix warnings rather than suppressing them.
-
-See `references/bash-patterns.md` for reusable pattern library.
-
-## Examples
-
-### Write a script with argument parsing and validation
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-readonly PROG="$(basename "$0")"
-usage() { echo "Usage: $PROG [-v] [-o output] <input-file>" >&2; }
-
-verbose=false
-output="/dev/stdout"
-while getopts ":vo:h" opt; do
-  case $opt in
-    v) verbose=true ;;
-    o) output="$OPTARG" ;;
-    h) usage; exit 0 ;;
-    *) usage; exit 1 ;;
-  esac
-done
-shift $((OPTIND - 1))
-
-input="${1:?$(usage)}"
-[[ -f "$input" ]] || { echo "File not found: $input" >&2; exit 1; }
-
-$verbose && echo "Processing $input -> $output" >&2
-wc -l < "$input" > "$output"
-```
-
-### Add safe temp file handling to an existing script
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-tmpdir="$(mktemp -d)"
-trap 'rm -rf "$tmpdir"' EXIT
-
-# All temp files go in the managed directory
-curl -sS "https://example.com/data" > "$tmpdir/raw.json"
-jq '.items[]' "$tmpdir/raw.json" > "$tmpdir/filtered.json"
-wc -l < "$tmpdir/filtered.json"
-# tmpdir is automatically cleaned up on exit
-```
-
-### Review and fix a script with common mistakes
-
-```bash
-# Before (problematic):
-#   files=$(ls *.txt)
-#   for f in $files; do cat $f; done
-
-# After (correct):
-for f in *.txt; do
-  [[ -e "$f" ]] || continue   # handle no-match case
-  cat "$f"
-done
-```
+- `references/bash-patterns.md` — full reusable pattern library.

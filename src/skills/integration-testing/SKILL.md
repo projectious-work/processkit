@@ -4,108 +4,132 @@ kind: Skill
 metadata:
   id: SKILL-integration-testing
   name: integration-testing
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Integration and E2E testing patterns including testcontainers, database fixtures, API mocking, and CI isolation. Use when writing integration tests, setting up test infrastructure, or debugging flaky tests."
+  description: "Integration and E2E testing patterns — testcontainers, fixtures, API mocking, snapshots, and CI isolation."
   category: meta
   layer: null
+  when_to_use: "Use when writing integration tests against databases, APIs, or queues; setting up testcontainers or fixture infrastructure; mocking external APIs; or debugging flaky tests."
 ---
 
 # Integration Testing
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Write integration tests against databases, APIs, or message queues
-- Set up test containers or fixture infrastructure
-- Mock external APIs in tests (wiremock, MSW, nock)
-- Debug or prevent flaky tests
-- Configure CI test isolation and parallelism
-- Write snapshot or E2E tests
+Integration tests verify that your code works against real
+collaborators — databases, APIs, queues — not just mocks. The trick
+is keeping them fast, isolated, and reproducible. Disposable
+containers, per-test fixtures, and strict API mocks are the
+primary tools.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Testcontainers
+### Testcontainers
 
-Spin up real databases and services as disposable containers during tests:
+Spin up real services as disposable containers for the duration of
+the test suite:
 
-- Each test suite gets its own container -- no shared state between suites
-- Use fixed image tags (not `latest`) for reproducibility
-- Set health checks or wait strategies so tests start only after the service is ready
-- Tear down containers after the suite completes (most libraries handle this via RAII or `afterAll`)
+- Each suite gets its own container — no shared state.
+- Use fixed image tags (not `latest`) for reproducibility.
+- Set health checks or wait strategies so tests start only after
+  the service is ready.
+- Tear down after the suite (most libraries handle this via RAII
+  or `afterAll`).
 
-Supported in: Python (`testcontainers`), Rust (`testcontainers`), JS/TS (`testcontainers`), Java (`testcontainers`), Go (`testcontainers-go`).
+Supported in Python (`testcontainers`), Rust (`testcontainers`),
+JS/TS (`testcontainers`), Java (`testcontainers`), and Go
+(`testcontainers-go`).
 
-### 2. Database Fixtures
+### Database fixtures
 
-See `references/test-fixtures.md` for language-specific patterns.
+Three core strategies:
 
-Core strategies:
-- **Factories** -- Generate objects with sensible defaults, override only what matters per test
-- **Fixtures** -- Predefined datasets loaded before tests; good for read-heavy tests
-- **Seeds** -- Baseline data loaded once for the full suite; reset per test via transactions
+- **Factories** — generate objects with sensible defaults; override
+  only what matters per test.
+- **Fixtures** — predefined datasets loaded before tests; good for
+  read-heavy tests.
+- **Seeds** — baseline data loaded once for the suite; reset per
+  test via transactions.
 
 Cleanup approaches (pick one per project):
-- **Transaction rollback** -- Wrap each test in a transaction, roll back after. Fast but limited to single-connection tests.
-- **Truncate tables** -- Clear all tables between tests. Works with multi-connection scenarios.
-- **Recreate schema** -- Drop and recreate per suite. Slowest but guarantees clean state.
 
-### 3. API Mocking
+| Approach | Speed | Isolation | Multi-Connection |
+|----------|-------|-----------|------------------|
+| Transaction rollback | Fast | Per-test | No (single conn) |
+| TRUNCATE + CASCADE | Medium | Per-test | Yes |
+| DROP + CREATE schema | Slow | Per-suite | Yes |
+| Disposable container | Slow | Per-suite | Yes |
 
-Mock external HTTP APIs so integration tests run without network dependencies:
+Default to transaction rollback. Fall back to truncation when you
+need multiple connections (e.g. concurrent access tests). Use
+disposable containers for full isolation in CI.
+
+### API mocking
+
+Mock external HTTP APIs so integration tests run without network
+dependencies:
 
 | Tool | Language | Approach |
 |------|----------|----------|
-| **WireMock** | Java, standalone | Runs as a local HTTP server, matches requests by URL/body |
-| **MSW** | JS/TS | Intercepts at the network level via Service Workers or node interceptors |
-| **nock** | Node.js | Patches `http`/`https` modules to intercept outbound requests |
-| **httpmock** | Rust | Starts a mock server, register expectations before the test |
-| **responses** | Python | Decorates tests to intercept `requests` library calls |
+| **WireMock** | Java, standalone | Local HTTP server matching by URL/body |
+| **MSW** | JS/TS | Network-level interception via Service Workers / node interceptors |
+| **nock** | Node.js | Patches `http`/`https` modules |
+| **httpmock** | Rust | Local mock server with registered expectations |
+| **responses** | Python | Decorators that intercept `requests` calls |
 
 Best practices:
-- Assert on what the code sent (method, headers, body), not just what it received
-- Use strict mode -- fail if an unexpected request is made
-- Record real API responses once, replay in CI (contract tests)
 
-### 4. Snapshot Testing
+- Assert on what the code sent (method, headers, body), not just
+  the response.
+- Use strict mode — fail on any unexpected request.
+- Record real API responses once and replay in CI (contract
+  tests).
 
-Capture the output of a function or component and compare against a stored baseline:
+### Snapshot and E2E
 
-- Good for: serialized JSON, rendered HTML, CLI output, error messages
-- Update snapshots intentionally (`--update-snapshots` / `-u`) and review diffs in PRs
-- Store snapshots in version control next to tests
-- Avoid snapshotting volatile data (timestamps, random IDs) -- normalize first
+Snapshot tests capture function or component output and compare
+against a stored baseline. Good for serialized JSON, rendered HTML,
+CLI output, and error messages. Update intentionally
+(`--update-snapshots` / `-u`) and review diffs in PRs. Store
+snapshots next to tests in version control. Normalize volatile
+data (timestamps, random IDs) before snapshotting.
 
-### 5. E2E Testing Patterns
+For E2E:
 
-- **Page Object Model** -- Encapsulate page interactions behind an API; tests read like user stories
-- **Arrange-Act-Assert** -- Set up state, perform the action, verify the outcome; keep each phase obvious
-- **Test user journeys**, not individual pages -- one E2E test should cover a meaningful flow
-- Use dedicated test accounts and isolated environments; never test against production data
+- **Page Object Model** — encapsulate page interactions; tests
+  read like user stories.
+- **Arrange-Act-Assert** — set up state, perform the action,
+  verify the outcome.
+- Test user journeys, not individual pages. One E2E test should
+  cover a meaningful flow.
+- Use dedicated test accounts and isolated environments. Never
+  test against production data.
 
-### 6. CI Test Isolation and Parallelism
+### CI isolation and flaky tests
 
-- Run integration tests in a separate CI job with longer timeouts
-- Use testcontainers or Docker Compose to provide backing services
-- Assign each parallel worker a unique database/schema to avoid collisions
-- Set a per-test timeout (not just per-job) to catch hangs early
-- Cache container images in CI to speed up startup
+- Run integration tests in a separate CI job with longer timeouts.
+- Use testcontainers or Docker Compose for backing services.
+- Give each parallel worker a unique database/schema.
+- Set per-test timeouts (not just per-job) to catch hangs.
+- Cache container images in CI to speed up startup.
 
-### 7. Flaky Test Prevention
+Common flaky-test causes and fixes:
 
-Common causes and fixes:
-- **Shared state** -- Isolate tests with per-test databases or transaction rollback
-- **Timing/race conditions** -- Replace `sleep` with explicit wait-for conditions
-- **Non-deterministic ordering** -- Randomize test order in CI to surface hidden dependencies
-- **Network flakiness** -- Mock all external APIs; use testcontainers for internal services
-- **Resource exhaustion** -- Limit parallelism, close connections/files after use
+- **Shared state** — per-test databases or transaction rollback.
+- **Timing/race conditions** — replace `sleep` with explicit
+  wait-for conditions.
+- **Non-deterministic ordering** — randomize test order in CI to
+  surface hidden dependencies.
+- **Network flakiness** — mock all external APIs.
+- **Resource exhaustion** — limit parallelism, close connections.
 
-Tag known flaky tests and track them. A flaky test that is ignored is worse than no test.
+A flaky test that is ignored is worse than no test at all. Tag
+known flaky tests and track them.
 
-## Examples
+## Level 3 — Full reference
 
-### Example 1: Testcontainers with Database (Python)
+### Testcontainers with Postgres (Python)
 
 ```python
 import pytest
@@ -116,7 +140,6 @@ from sqlalchemy import create_engine, text
 def db_engine():
     with PostgresContainer("postgres:16-alpine") as pg:
         engine = create_engine(pg.get_connection_url())
-        # Run migrations
         with engine.begin() as conn:
             conn.execute(text("CREATE TABLE users (id SERIAL, name TEXT)"))
         yield engine
@@ -128,7 +151,7 @@ def test_insert_and_query_user(db_engine):
     assert result[0] == "Alice"
 ```
 
-### Example 2: API Mocking with MSW (TypeScript)
+### API mocking with MSW (TypeScript)
 
 ```typescript
 import { http, HttpResponse } from "msw";
@@ -153,13 +176,9 @@ test("returns weather for known city", async () => {
   const weather = await fetchWeather("Berlin");
   expect(weather.temp).toBe(18);
 });
-
-test("throws for unknown city", async () => {
-  await expect(fetchWeather("Atlantis")).rejects.toThrow("City not found");
-});
 ```
 
-### Example 3: Testcontainers with httpmock (Rust)
+### httpmock (Rust)
 
 ```rust
 use httpmock::prelude::*;
@@ -180,6 +199,44 @@ async fn test_client_sends_auth_header() {
     let result = client.fetch_data().await.unwrap();
 
     assert_eq!(result.items, vec![1, 2, 3]);
-    mock.assert(); // Verify the expected request was made
+    mock.assert();
 }
 ```
+
+### Fixture patterns
+
+For deeper fixture and factory patterns across Python, TypeScript,
+and Rust, see `references/test-fixtures.md`. Key takeaways:
+
+- **pytest fixtures** — use `scope="session"` for an engine and
+  `scope="function"` with transaction rollback for a per-test
+  session. `factory_boy` handles complex object graphs via
+  `SubFactory`.
+- **TypeScript** — pair `beforeEach` truncation with builder
+  functions or a `Builder` class for complex fixtures. Order
+  truncations to respect foreign keys.
+- **Rust** — implement a `TestUserBuilder` with `.insert(pool)` or
+  `.insert_tx(&mut tx)` methods. `#[sqlx::test]` plus
+  per-test transactions gives automatic rollback on drop.
+
+### Database seeding strategies
+
+- **Minimal seed** (recommended) — each test creates only the data
+  it needs through factories. Tests stay independent and easy to
+  read.
+- **Shared baseline seed** — load reference data (countries,
+  roles) once per suite; tests add their own records on top. Good
+  for read-heavy suites.
+- **Snapshot seed** — dump a known-good database state to a SQL
+  file or container image and restore before each suite. Fastest
+  for large datasets but harder to maintain.
+
+### Anti-patterns
+
+- Sharing a single database across parallel test workers
+- Using `sleep()` to wait for async behavior
+- Mocking the unit under test instead of its boundary
+- Asserting only on response shape, never on the request the code
+  sent
+- Snapshotting timestamps or random IDs without normalization
+- Marking flaky tests as skipped without an owner or follow-up

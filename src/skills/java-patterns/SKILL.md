@@ -4,115 +4,149 @@ kind: Skill
 metadata:
   id: SKILL-java-patterns
   name: java-patterns
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Modern Java 17+ patterns including records, sealed classes, Stream API, and Spring Boot conventions. Use when writing Java code, reviewing Java projects, or modernizing legacy Java."
+  description: "Modern Java 17+ — records, sealed types, pattern matching, streams, Spring Boot."
   category: language
   layer: null
+  when_to_use: "Use when writing or reviewing Java 17+ code, modernizing legacy Java, or working in Spring Boot services."
 ---
 
 # Java Patterns
 
-## When to Use
+## Level 1 — Intro
 
-When the user is working with Java code and asks about modern language features,
-Spring Boot conventions, Stream API patterns, testing strategies, or says "how should
-I modernize this Java code?". Also applies when reviewing Java for idiomatic usage.
+Modern Java leans on records, sealed types, pattern matching, and
+streams. Prefer immutable data carriers, exhaustive switches, and
+constructor injection over the Java-EE-era boilerplate.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Modern Java Language Features (17+)
+### Language features (17+)
 
-- Use **records** for immutable data carriers: `record Point(int x, int y) {}`
-- Use **sealed classes** to restrict type hierarchies: `sealed interface Shape permits Circle, Rectangle {}`
-- Use **pattern matching** with `instanceof`: `if (obj instanceof String s)` — no cast needed
-- Use **switch expressions** with pattern matching for exhaustive type handling
-- Use **text blocks** for multi-line strings: `""" ... """` with proper indentation
-- Prefer `var` for local variables when the type is obvious from the right-hand side
+Use `record` for immutable data carriers — you get `equals`,
+`hashCode`, `toString` for free. Use `sealed` interfaces to restrict
+hierarchies and unlock exhaustive `switch`. Use pattern matching
+with `instanceof` to skip casts. Use text blocks (`"""..."""`) for
+multi-line strings. Prefer `var` for locals when the right-hand
+side makes the type obvious.
 
-### 2. Records and Sealed Classes
+### Records and sealed classes
 
-- Records replace boilerplate DTOs: automatic `equals`, `hashCode`, `toString`
-- Add validation in the compact constructor: `record Age(int value) { Age { if (value < 0) throw new IllegalArgumentException(); } }`
-- Sealed classes + records create algebraic data types:
-  ```java
-  sealed interface Result<T> permits Success, Failure {}
-  record Success<T>(T value) implements Result<T> {}
-  record Failure<T>(String error) implements Result<T> {}
-  ```
-- Use sealed hierarchies with switch expressions for exhaustive handling
+Records replace boilerplate DTOs. Validate in the compact
+constructor:
 
-### 3. Stream API Patterns
+```java
+record Age(int value) {
+    Age {
+        if (value < 0) throw new IllegalArgumentException();
+    }
+}
+```
 
-- Prefer streams for transformations, not for side effects
-- Use `toList()` (Java 16+) instead of `Collectors.toList()`
-- Chain: `filter` -> `map` -> `collect` is the most common pipeline
-- Use `flatMap` to flatten nested collections
-- Use `groupingBy` and `partitioningBy` for aggregation
-- Avoid `.get()` on Optional — use `orElseThrow()`, `orElse()`, or `ifPresent()`
-- Never use streams for simple iteration where a for-loop is clearer
+Sealed hierarchies plus records create algebraic data types:
 
-### 4. Optional Usage
+```java
+sealed interface Result<T> permits Success, Failure {}
+record Success<T>(T value) implements Result<T> {}
+record Failure<T>(String error) implements Result<T> {}
+```
 
-- Return `Optional<T>` from methods that may not produce a result
-- Never use `Optional` as a field type or method parameter
-- Chain with `map`, `flatMap`, `filter` instead of `isPresent()` + `get()`
-- Use `orElseThrow(() -> new NotFoundException(...))` for required values
-- Use `Optional.empty()` instead of returning `null`
+Combined with pattern-matching `switch`, the compiler enforces
+exhaustiveness — adding a variant breaks the build at every
+consumer.
 
-### 5. Spring Boot Conventions
+### Stream API
 
-- Use constructor injection (not field injection with `@Autowired`)
-- Keep controllers thin: validate input, delegate to service, return response
-- Use `@Transactional` at the service layer, not the controller
-- Define configuration in `application.yml` with typed `@ConfigurationProperties` classes
-- Use profiles (`application-dev.yml`, `application-prod.yml`) for environment differences
-- Return `ResponseEntity<T>` from controllers for explicit status codes
-- Use `@RestControllerAdvice` for centralized exception handling
+Use streams for transformations, not side effects. Prefer `toList()`
+(Java 16+) over `Collectors.toList()`. The common pipeline is
+`filter → map → collect`. Use `flatMap` to flatten nested
+collections and `groupingBy`/`partitioningBy` for aggregation. Drop
+back to a `for` loop when it reads more clearly than a stream.
 
-### 6. Dependency Injection
+### Optional
 
-- Prefer constructor injection: makes dependencies explicit and enables testing
-- Use interfaces for service contracts; inject the interface, not the implementation
-- Avoid circular dependencies — they indicate a design problem
-- Use `@Qualifier` or custom annotations to disambiguate multiple implementations
-- Keep the number of constructor parameters small (< 5); too many suggests the class does too much
+Return `Optional<T>` from methods that may not produce a result.
+Never use `Optional` as a field or parameter type. Chain with `map`,
+`flatMap`, and `filter` rather than `isPresent()` + `get()`. Use
+`orElseThrow(() -> new NotFoundException(...))` for required values
+and `Optional.empty()` instead of returning `null`.
 
-### 7. Testing with JUnit 5 and Mockito
+### Spring Boot conventions
 
-- Use `@Test`, `@DisplayName("descriptive name")` for readable test output
-- Use `@ParameterizedTest` with `@CsvSource` or `@MethodSource` for data-driven tests
-- Mock dependencies with `@Mock` and inject with `@InjectMocks`
-- Use `@ExtendWith(MockitoExtension.class)` instead of the runner
-- Use `assertThrows(Exception.class, () -> ...)` for exception testing
-- Prefer `AssertJ` fluent assertions: `assertThat(result).isEqualTo(expected)`
-- Test slices: `@WebMvcTest` for controllers, `@DataJpaTest` for repositories
+Use constructor injection, not field injection with `@Autowired`.
+Keep controllers thin — validate input, delegate to service, return
+a response. Put `@Transactional` on the service layer, not the
+controller. Configure via `application.yml` with typed
+`@ConfigurationProperties` classes and environment-specific
+profiles. Return `ResponseEntity<T>` for explicit status codes and
+centralize error handling in `@RestControllerAdvice`.
 
-### 8. Code Organization
+### Testing
 
-- Package by feature (`com.app.order`, `com.app.user`), not by layer
-- Keep classes focused: one primary responsibility per class
-- Use `final` on classes and fields where immutability is intended
-- Avoid deep inheritance hierarchies — prefer composition and interfaces
-- Use `module-info.java` for explicit module boundaries in larger projects
+Use JUnit 5 with `@DisplayName` for readable output. Use
+`@ParameterizedTest` with `@CsvSource` or `@MethodSource` for
+data-driven cases. Mock with `@Mock` and `@ExtendWith(MockitoExtension.class)`
+rather than the legacy runner. Use AssertJ's fluent assertions
+(`assertThat(result).isEqualTo(expected)`). Use Spring test slices
+— `@WebMvcTest` for controllers, `@DataJpaTest` for repositories —
+to keep tests fast.
 
-## Examples
+## Level 3 — Full reference
 
-**User:** "Convert this class with getters/setters to modern Java"
-**Agent:** Replaces the POJO with a `record`, removes boilerplate getters, setters,
-equals, hashCode, and toString methods. Adds a compact constructor for validation
-if the original had validation logic. Updates all call sites to use the record's
-accessor methods (no `get` prefix).
+### Dependency injection
 
-**User:** "This switch statement handling message types keeps growing, how do I fix it?"
-**Agent:** Introduces a sealed interface for the message types with record
-implementations for each variant. Replaces the switch statement with a switch
-expression using pattern matching, which the compiler checks for exhaustiveness.
-Adding a new type now forces handling at compile time.
+Prefer constructor injection — it makes dependencies explicit and
+enables testing without Spring. Inject interfaces, not concrete
+implementations. Use `@Qualifier` or custom annotations to
+disambiguate multiple beans. If a constructor has more than ~5
+parameters, the class is probably doing too much — split it.
 
-**User:** "Write tests for this Spring Boot service"
-**Agent:** Creates a test class with `@ExtendWith(MockitoExtension.class)`, mocks
-the repository dependency, and writes tests for the happy path, not-found case,
-and validation failure. Uses `@DisplayName` for readable names and AssertJ for
-assertions. Adds a `@ParameterizedTest` for the validation rules.
+### Code organization
+
+Package by feature (`com.app.order`, `com.app.user`), not by layer
+(`com.app.controllers`, `com.app.services`). Keep one primary
+responsibility per class. Mark classes and fields `final` when you
+mean them to be immutable. Prefer composition and interfaces over
+deep inheritance. For larger systems, use `module-info.java` to
+enforce explicit module boundaries.
+
+### Pattern matching switch
+
+```java
+String describe(Shape s) {
+    return switch (s) {
+        case Circle c    -> "circle r=" + c.radius();
+        case Rectangle r -> "rect " + r.width() + "x" + r.height();
+    };
+}
+```
+
+With a sealed hierarchy, the compiler requires every permitted
+type to be handled — no `default` branch needed.
+
+### Anti-patterns
+
+- Field injection with `@Autowired` — hides dependencies and
+  requires reflection to test.
+- `Optional` parameters or fields — use overloads or nullable with
+  documentation instead.
+- `.get()` on `Optional` without checking presence — use
+  `orElseThrow`.
+- Streams for trivial iteration where a `for` loop is clearer.
+- Deep inheritance hierarchies of abstract classes — prefer
+  composition and interfaces.
+- Wide `@Transactional` annotations on controllers that cross
+  business operations.
+- `Collectors.toList()` on Java 16+ — use `toList()`.
+
+### Common migrations
+
+- POJO with getters/setters and equals/hashCode → `record`.
+- Visitor pattern over an open hierarchy → sealed interface +
+  pattern-matching switch.
+- `if/else if` instanceof chains → pattern matching instanceof.
+- Manual null-checks → `Optional` chains.
+- Reflection-based DTO mappers between layers → records with
+  explicit conversion methods.

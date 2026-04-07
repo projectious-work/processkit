@@ -4,68 +4,76 @@ kind: Skill
 metadata:
   id: SKILL-error-handling
   name: error-handling
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-06T00:00:00Z
 spec:
-  description: "Error handling patterns across languages including Result types, exceptions, retry strategies, and circuit breakers. Use when designing error handling, reviewing error-prone code, or implementing resilience patterns."
+  description: "Error handling across languages — Result types, exceptions, retries, circuit breakers, and structured error responses."
   category: meta
   layer: null
+  when_to_use: "Use when designing error handling for a module or service, choosing between Result types and exceptions, building error hierarchies, implementing retries or circuit breakers, or reviewing code for missing or poor error handling."
 ---
 
 # Error Handling
 
-## When to Use
+## Level 1 — Intro
 
-When the user asks to:
-- Design error handling for a module or service
-- Choose between Result types and exceptions
-- Build error hierarchies or structured error responses
-- Implement retry logic, exponential backoff, or circuit breakers
-- Distinguish user-facing errors from internal errors
-- Review code for missing or poor error handling
+Errors are part of the type system, not an afterthought. Make
+failure paths explicit, separate user-facing messages from internal
+diagnostics, and reach for retries and circuit breakers only when
+the failure is genuinely transient.
 
-## Instructions
+## Level 2 — Overview
 
-### 1. Result/Option Types
+### Result types vs exceptions
 
-Use algebraic types where the language supports them -- they make error paths explicit in the type signature.
+Use algebraic types where the language supports them — they make
+error paths explicit in the signature.
 
-**Rust:** `Result<T, E>` for recoverable errors, `Option<T>` for missing values. Use `?` for propagation. Define domain error enums with `thiserror`.
+- **Rust:** `Result<T, E>` for recoverable errors, `Option<T>` for
+  missing values. Propagate with `?`. Define domain error enums
+  with `thiserror`.
+- **TypeScript:** discriminated unions or a `Result<T, E>` library.
+  Avoid `throw` for expected failures (validation, not-found).
+  Reserve exceptions for truly unexpected conditions.
+- **Python:** exceptions are idiomatic, but consider returning
+  `None` or a result tuple in tight loops where try/except overhead
+  matters.
+- **Java:** checked exceptions for recoverable conditions the
+  caller must handle, unchecked (`RuntimeException`) for
+  programming errors. Prefer specific types over `Exception`.
 
-**TypeScript:** Use discriminated unions or a `Result<T, E>` library. Avoid `throw` for expected failures (validation, not-found). Reserve exceptions for truly unexpected conditions.
-
-**Python:** Use exceptions as the primary mechanism (idiomatic), but consider returning `None` or a result tuple for functions called in tight loops where try/except overhead matters.
-
-**Java:** Use checked exceptions for recoverable conditions the caller must handle. Use unchecked (`RuntimeException`) for programming errors. Prefer specific exception types over `Exception`.
-
-### 2. Error Hierarchies
+### Error hierarchies
 
 Design errors in layers:
 
-1. **Domain errors** -- Business rule violations (`InsufficientFunds`, `ItemOutOfStock`)
-2. **Application errors** -- Workflow failures (`OrderNotFound`, `Unauthorized`)
-3. **Infrastructure errors** -- External system failures (`DatabaseUnavailable`, `TimeoutError`)
+1. **Domain errors** — business rule violations
+   (`InsufficientFunds`, `ItemOutOfStock`).
+2. **Application errors** — workflow failures (`OrderNotFound`,
+   `Unauthorized`).
+3. **Infrastructure errors** — external system failures
+   (`DatabaseUnavailable`, `TimeoutError`).
 
-Each layer should only expose errors meaningful at that level. Infrastructure errors should be mapped to application errors before reaching the domain.
+Each layer exposes only errors meaningful at that level.
+Infrastructure errors are mapped to application errors before
+reaching the domain.
 
-### 3. User-Facing vs Internal Errors
+### User-facing vs internal
 
-Never leak internal details (stack traces, SQL queries, file paths) to end users.
+Never leak stack traces, SQL, or file paths to end users.
 
-- **Internal errors**: Full context for debugging -- stack trace, request ID, input values
-- **User-facing errors**: Human-readable message, error code, optional field-level details
-- Map internal errors to user-facing ones at the boundary (HTTP handler, CLI output)
-- Log the internal error with a correlation ID; return the ID to the user for support
+- **Internal errors:** full context for debugging — stack trace,
+  request ID, input values.
+- **User-facing errors:** human-readable message, error code,
+  optional field-level details.
+- Map at the boundary (HTTP handler, CLI output). Log the internal
+  error with a correlation ID; return the ID to the user for
+  support.
 
-### 4. Error Codes
+### Error codes and structured responses
 
-Use structured error codes for machine-readable error handling:
-
-- Namespaced: `PAYMENT.DECLINED`, `AUTH.TOKEN_EXPIRED`, `VALIDATION.FIELD_REQUIRED`
-- Documented in a central registry (enum, constants file, or docs page)
-- Stable across versions -- never reuse or rename codes
-
-### 5. Structured Error Responses
+Use namespaced, stable error codes (`PAYMENT.DECLINED`,
+`AUTH.TOKEN_EXPIRED`, `VALIDATION.FIELD_REQUIRED`). Document them
+in a central registry. Never reuse or rename codes once shipped.
 
 For APIs, return a consistent error shape:
 
@@ -82,41 +90,38 @@ For APIs, return a consistent error shape:
 }
 ```
 
-### 6. Retry Strategies
+### Retries and circuit breakers
 
-Use retries only for transient failures (network timeouts, 503s, lock contention).
+Retry only transient failures (network timeouts, 503s, lock
+contention). Use exponential backoff with jitter: base delay
+100–500ms, multiply by 2 each attempt, add random jitter (0–100% of
+delay) to prevent thundering herd. Cap retries (3–5) and total
+timeout. **Never retry** 4xx client errors (except 429), validation
+failures, or auth errors.
 
-**Exponential backoff with jitter:**
-- Base delay: 100-500ms
-- Multiply by 2 each attempt: 200ms, 400ms, 800ms, ...
-- Add random jitter (0-100% of delay) to prevent thundering herd
-- Set a max retry count (3-5) and a max total timeout
+Circuit breakers prevent cascading failures when a downstream
+service is unhealthy:
 
-**Never retry:**
-- 4xx client errors (except 429 Too Many Requests)
-- Validation failures
-- Authentication errors (retry after re-auth, not blindly)
+- **Closed** (normal): requests flow through; track failure rate.
+- **Open** (tripped): requests fail immediately; return a fallback.
+- **Half-open** (probing): allow one request after a timeout. On
+  success, close. On failure, reopen.
 
-### 7. Circuit Breakers
+Configure failure threshold (e.g. 5 failures in 30s), open duration
+(e.g. 60s), and half-open probe count.
 
-Prevent cascading failures when a downstream service is unhealthy:
+## Level 3 — Full reference
 
-- **Closed** (normal): Requests flow through. Track failure rate.
-- **Open** (tripped): Requests fail immediately without calling the downstream. Return a fallback or error.
-- **Half-open** (probing): After a timeout, allow one request through. If it succeeds, close the circuit. If it fails, reopen.
+### Error reporting
 
-Configure: failure threshold (e.g., 5 failures in 30s), open duration (e.g., 60s), half-open probe count.
+- Log with structured fields: `level`, `error_code`, `message`,
+  `stack`, `request_id`, `user_id`.
+- Send unhandled exceptions to an error tracker (Sentry, Datadog,
+  Honeybadger).
+- Alert on error rate spikes, not individual errors.
+- Group errors by root cause, not by message string.
 
-### 8. Error Reporting
-
-- Log errors with structured fields: `level`, `error_code`, `message`, `stack`, `request_id`, `user_id`
-- Send unhandled exceptions to an error tracker (Sentry, Datadog, Honeybadger)
-- Alert on error rate spikes, not individual errors
-- Group errors by root cause, not by message string
-
-## Examples
-
-### Example 1: Domain Error Enum (Rust)
+### Domain error enum (Rust)
 
 ```rust
 use thiserror::Error;
@@ -144,7 +149,7 @@ pub fn charge(amount: u64, balance: u64) -> Result<Receipt, PaymentError> {
 }
 ```
 
-### Example 2: Retry with Exponential Backoff (Python)
+### Retry with backoff (Python)
 
 ```python
 import time
@@ -170,7 +175,7 @@ def fetch_with_retry(url: str, max_retries: int = 4) -> httpx.Response:
     raise httpx.HTTPError(f"Failed after {max_retries} retries")
 ```
 
-### Example 3: Structured API Error Response (TypeScript)
+### Structured API error response (TypeScript)
 
 ```typescript
 class AppError extends Error {
@@ -212,3 +217,14 @@ app.post("/orders", async (req, res) => {
   }
 });
 ```
+
+### Anti-patterns
+
+- Catching `Exception` (or bare `except:`) and swallowing it
+- Returning sentinel values (`-1`, empty string) instead of an
+  explicit error
+- Leaking SQL, stack traces, or filesystem paths in HTTP responses
+- Retrying non-idempotent operations without a deduplication key
+- Retrying 4xx errors as if they were transient
+- Renaming or reusing error codes after shipping them
+- Alerting on every individual error instead of rate spikes
