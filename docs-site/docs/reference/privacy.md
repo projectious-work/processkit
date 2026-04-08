@@ -103,3 +103,35 @@ that case `public` files are fine to syndicate to a public mirror or
 include in a generated README, while `project-private` files are not.
 For projects in public repos, `public` and `project-private` are
 functionally identical.
+
+## Docs-site filtering
+
+Projects that build a Docusaurus docs site from their context content
+must exclude private subtrees from the build. Add this to the `docs`
+preset in `docusaurus.config.js`:
+
+```js
+docs: {
+  exclude: ['**/private/**'],
+}
+```
+
+This is the same rule processkit's own docs-site carries. The rule
+matches `private/` directories at any depth, so `context/private/`,
+`context/owner/private/`, and any deeper nesting are all excluded.
+
+## Multi-user projects
+
+For projects where multiple people work from the same repository, the
+current convention is **flat `context/private/`**: a single gitignored
+directory that is personal to whoever is running the agent locally.
+
+A per-user subdirectory convention (`context/private/<username>/`) is
+**not yet standardized**. The actor primitive (`actor-profile`) captures
+identity but the privacy directory layout does not yet key on it.
+Defer the multi-user convention until a real project asks for it —
+at that point, `context/private/<username>/` is the natural extension
+and requires no schema changes, only a new gitignore pattern.
+
+*This decision was recorded in response to aibox DEC-030 /
+[processkit#1](https://github.com/projectious-work/processkit/issues/1).*

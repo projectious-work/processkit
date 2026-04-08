@@ -19,6 +19,11 @@ const config = {
     docs: {
       sidebarPath: './sidebars.js',
       editUrl: 'https://github.com/projectious-work/processkit/tree/main/docs-site/',
+      // Exclude any private/ subtrees from the published docs build.
+      // This is the processkit convention: any directory named `private/`
+      // anywhere under `context/` is user-private and must not be published.
+      // Projects that build their own docs site should carry this same rule.
+      exclude: ['**/private/**'],
     },
     blog: false,
     theme: { customCss: './src/css/custom.css' },
