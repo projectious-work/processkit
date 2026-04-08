@@ -239,12 +239,37 @@ have a layer; technical/language/framework skills (e.g.
 
 ### Categories
 
-The `category` field groups skills in the docs site and in `aibox skill
-list`:
+The `category` field is declared at `metadata.processkit.category` and is
+the canonical machine-readable grouping for tooling consumers (docs site,
+`aibox kit skill list`, skill-finder). Read it with:
 
-`process`, `language`, `framework`, `infrastructure`, `architecture`,
-`design`, `data`, `ai`, `api`, `security`, `observability`, `database`,
-`performance`, `meta`.
+```
+skill_frontmatter → metadata → processkit → category
+```
+
+The registered vocabulary (closed set — propose additions via processkit
+issue before using a new value):
+
+| Value | Typical skills |
+|---|---|
+| `process` | workitem-management, decision-record, event-log, note-management, release-semver |
+| `meta` | skill-builder, skill-reviewer, skill-finder, research-with-confidence, morning-briefing |
+| `architecture` | software-architecture, system-design, api-design, software-modularization, microservice-creation |
+| `language` | python-best-practices, typescript-patterns, go-conventions, rust-conventions |
+| `framework` | fastapi-patterns, graphql-patterns, grpc-protobuf, flutter-development |
+| `infrastructure` | kubernetes-basics, terraform-basics, ci-cd-setup, dockerfile-review |
+| `data` | data-science, data-pipeline, pandas-polars, data-quality |
+| `ai` | rag-engineering, llm-evaluation, prompt-engineering, embedding-vectordb |
+| `api` | api-design, webhook-integration, grpc-protobuf |
+| `security` | secure-coding, threat-modeling, secret-management, auth-patterns |
+| `observability` | logging-strategy, metrics-monitoring, distributed-tracing, alerting-oncall |
+| `database` | database-modeling, database-migration, sql-patterns, nosql-patterns |
+| `performance` | performance-profiling, load-testing, caching-strategies |
+| `design` | excalidraw, logo-design, mobile-app-design, infographics, frontend-design |
+
+`category` is optional. Consumers fall back to `"uncategorized"` when absent.
+Tooling that wants coarser display groups should map from this vocabulary
+rather than asking processkit to coarsen it — processkit is the source of truth.
 
 ## Full reference
 

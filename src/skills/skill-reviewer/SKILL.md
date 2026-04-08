@@ -195,6 +195,16 @@ patterns to consider:
   in `uses:` should be referenced at least once in the body with its
   purpose explained.
 
+#### 9. skill-finder registration
+
+- The skill has at least 1 entry in the trigger-phrase table in
+  `src/skills/skill-finder/SKILL.md`.
+- The skill has a one-liner in the appropriate by-category section of
+  `skill-finder`.
+- If the skill is new and neither entry exists, flag as must-fix — a
+  skill not in skill-finder is invisible to agents who don't already
+  know its name.
+
 ### The findings report
 
 After running through the 8 categories, output a structured report:

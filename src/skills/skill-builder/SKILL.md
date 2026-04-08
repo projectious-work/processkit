@@ -226,6 +226,18 @@ Should NOT trigger:
 If you can't write at least 3 positive and 3 negative cases, the
 description is too vague — go back to Step 4.
 
+### Step 8 — Update skill-finder
+
+After the skill passes the self-check, add it to `skill-finder`:
+
+1. Add 1–3 trigger phrases to the trigger-phrase table in
+   `src/skills/skill-finder/SKILL.md`
+2. Add a one-liner under the appropriate category in the by-category section
+3. If no existing category fits, add a new one
+
+This step is not optional — a skill that is not in skill-finder is
+invisible to agents who do not already know its name.
+
 ## Gotchas
 
 These are agent-specific failure modes you (the agent USING
