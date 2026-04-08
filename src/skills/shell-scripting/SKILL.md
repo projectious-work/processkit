@@ -137,6 +137,18 @@ it locally with a comment, never globally:
 unused_var="value"
 ```
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Missing `set -euo pipefail` at the top of every script.** Without `set -e`, a command that fails silently allows the script to continue and produce incorrect results or corrupt state. Without `set -u`, an unset variable expands to an empty string, which can turn `rm -rf "${dir}/"` into `rm -rf "/"`. Without `set -o pipefail`, a failed command in a pipe is masked by the exit code of the last command. These three flags are non-optional.
+- **Unquoted variable expansions.** `cp $source $dest` splits on whitespace and expands globs — a path with spaces becomes multiple arguments, and a path containing `*` expands to matching files. Every variable expansion must be double-quoted: `cp "$source" "$dest"`. The only exception is when word-splitting is explicitly desired, which is rare.
+- **Parsing `ls` output.** `ls` output is formatted for humans — file names can contain spaces, newlines, and control characters that break any parsing approach. Use `for f in /path/*` for simple iteration, `find -print0` piped to `read -d ''` for robust handling of arbitrary filenames, or `find -exec` to run a command on each result.
+- **Using `[ ]` instead of `[[ ]]` for conditionals.** Single brackets are POSIX `test` — they require quoting of every variable, don't support `&&` and `||` inside the brackets, and treat `<` as file redirection. Double brackets `[[ ]]` are a bash built-in that handles unquoted variables safely, supports pattern matching with `=~`, and behaves predictably. Use `[[ ]]` in bash scripts.
+- **Leaving temporary files without a cleanup trap.** A script that creates a temporary directory with `mktemp -d` and exits early due to an error will leave that directory on disk forever. Set up `trap cleanup EXIT` immediately after creating any temporary resource so cleanup runs on both normal exit and error exit.
+- **Returning data via exit codes.** Bash exit codes are 0–255. Using `return 42` to pass a numeric result and `$?` to read it is limited, conflates success/failure with data values, and does not work for strings. Return data from functions by printing to stdout and capturing with `$(function_call)`. Use the return code only for success (0) or failure (non-zero).
+- **Not running shellcheck before committing.** Shell scripts contain an enormous variety of subtle bugs — quoting issues, portability problems, unused variables, and incorrect conditionals — that are invisible to casual reading but immediately caught by `shellcheck`. Run `shellcheck -o all script.sh` on every script as part of the commit process or CI pipeline.
+
 ## Full reference
 
 ### Common pitfalls

@@ -79,6 +79,18 @@ per-service grouped alerts. Set thresholds from percentile baselines,
 not guesses. Auto-resolve transient spikes within 5 minutes. Silence
 known alerts proactively during deploys and planned maintenance.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Alerting on causes instead of symptoms.** An alert for "CPU > 80%" fires while users are perfectly happy (batch job running) and stays silent while users suffer (single slow database query consuming 0% CPU). Alert on what users experience: latency, error rate, and availability. Surface cause metrics on dashboards for diagnosis, not as alert conditions.
+- **Thresholds chosen by gut feel rather than baseline measurement.** A threshold of 1% error rate will fire constantly on a service that normally runs at 0.8% errors, or stay silent on a service whose normal is 0.1% and which just jumped to 0.9%. Set thresholds from two or more weeks of production baseline, not round numbers.
+- **Alerts without runbooks.** An alert that fires and leaves the on-call engineer to invent the response from scratch means every incident takes longer than it needs to and accumulates inconsistent notes. Every alert that pages must link to a runbook with: what it means, likely causes, diagnosis steps, and mitigation options.
+- **Informational pages — alerts where no action is required.** If the on-call engineer's only response is "acknowledge and wait for it to auto-resolve", the alert should not page. Page only when a human must act immediately. Move monitoring-only signals to dashboards or non-paging tickets.
+- **Per-instance alerts in a horizontally scaled fleet.** Alerting separately for each of N identical pods or instances produces N simultaneous pages for a single incident. Group by service or cluster and alert on the service-level SLO, not on individual instance metrics.
+- **Letting noisy alerts persist because "we'll fix it later."** An alert that fires regularly and is routinely ignored trains the team to ignore all alerts. Track alert-to-action rate: if a team acknowledges an alert and takes no action at least 20% of the time, that alert is noise and must be tuned, downgraded, or deleted.
+- **Not pre-silencing alerts during planned maintenance or deploys.** An alert that fires during a known maintenance window generates noise that obscures real problems and burns on-call attention. Proactively silence or downgrade alerts for the duration of any planned operation that will trigger known threshold violations.
+
 ## Full reference
 
 ### Runbook template

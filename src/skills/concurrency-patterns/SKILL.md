@@ -94,6 +94,18 @@ jobs := make(chan Job, 100)  // blocks producer when 100 items queued
   parallel (typically `NumCPU()`), a collector aggregates results.
   Channel buffer roughly `2 * N` for smooth flow.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Blocking the event loop with CPU-bound work in async code.** An async function that runs a tight computation loop, calls a synchronous file I/O function, or invokes a C extension that holds the GIL will block the entire event loop — other coroutines cannot run until it returns. Offload CPU-bound or blocking work to a thread pool (`asyncio.to_thread`, `tokio::task::spawn_blocking`) so the event loop stays responsive.
+- **Unbounded channels or queues.** A channel with no capacity limit grows without bound when the producer outpaces the consumer, eventually exhausting memory. Always size queues explicitly and design what happens when the queue is full — block the producer, drop low-priority items, or apply backpressure upstream.
+- **Holding a lock across an await point or blocking I/O call.** Acquiring a mutex and then awaiting a network call while holding it blocks all other waiters for the entire I/O duration and can deadlock if a waiter also tries to acquire the lock. Release the lock before any await; restructure to hold it only for the actual state mutation.
+- **Introducing shared mutable state as the first solution.** Shared state protected by a mutex is correct only if the lock is always acquired, never held too long, and acquired in consistent order. Start from message passing — channels, actors, or immutable data passed between workers — and add shared state only when message passing is genuinely awkward.
+- **Manual lock/unlock instead of scoped guards.** A lock acquired with a manual `lock()` call that is only released in a `finally` block is released incorrectly on early returns, panics, or exceptions that bypass the finally. Use scoped guards (RAII in Rust, `with` in Python, `synchronized` in Java) so the lock is always released when the scope exits.
+- **Using parallelism for I/O-bound tasks and concurrency for CPU-bound tasks.** Spawning 100 OS threads for 100 simultaneous database queries wastes memory and scheduler overhead — a single async event loop handles this with far less overhead. Conversely, running CPU-heavy image processing inside an async event loop starves other coroutines. Match the tool to the bottleneck: async/coroutines for I/O, threads/processes for CPU.
+- **No graceful shutdown for worker pools.** A thread or goroutine pool that is not given a shutdown signal when the application exits leaves background workers running indefinitely or drops in-flight work. Use a stop channel, context cancellation, or a sentinel value so all workers drain and exit cleanly on shutdown.
+
 ## Full reference
 
 ### Pattern catalog

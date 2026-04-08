@@ -101,6 +101,18 @@ connections.
 Use k6 or Locust for realistic scenario testing. Use wrk or hey for
 quick single-endpoint benchmarks.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Running the load test from a single client machine that becomes the bottleneck.** A client generating 10,000 concurrent connections can exhaust its own ephemeral ports (typically 28,000), CPU, or memory before the server does, producing results that reflect the client's limits, not the server's. Distribute load generation across multiple machines or use a cloud-native load testing service for high VU counts.
+- **Hammering a single endpoint and declaring the system load-tested.** A test that hits `GET /products` 1000 times per second does not exercise authentication, write paths, search, or checkout — the code paths most likely to have bottlenecks. Model real user journeys with realistic traffic distribution across endpoints; include writes, auth flows, and the paths that touch the most downstream dependencies.
+- **Ignoring warm-up — measuring cold-start metrics as if they are steady-state.** The first 30–60 seconds of a load test often exercises JVM JIT compilation, connection pool warm-up, cold caches, and application initialization. These latencies are real but not representative of steady-state performance. Either discard the warm-up period from analysis or run a dedicated warm-up stage before measuring.
+- **Comparing results across test runs without controlling for environment state.** A latency improvement between Tuesday and Wednesday's runs might reflect cache state, different co-tenant load on a shared cloud host, or CPU frequency scaling — not your change. Run comparison tests back-to-back in the same environment with controlled initial state; treat cross-day comparisons as indicative, not conclusive.
+- **Reporting average latency instead of percentiles.** Average latency hides the long tail. A system with p50=50ms and p99=5000ms has an "average" of roughly 100ms that sounds acceptable — while 1% of users wait 5 seconds. Always report p50, p95, and p99. Use p99 as the primary SLA metric because it captures the worst experience of real users.
+- **Disabling auth, rate limiting, or caching to simplify the test.** Bypassing middleware to make the test simpler also removes the overhead that exists in production, producing results that cannot be extrapolated to real behavior. Test through the full production stack — with auth, rate limiting, and caching as configured — unless the specific goal is to isolate the application tier in isolation.
+- **Running load tests against production.** A load test can overwhelm a production system, spike database connections, corrupt cache state, or produce real charges (payment processors, SMS gateways). Load tests must target a dedicated environment with production-representative data volume but no real users or financial consequences.
+
 ## Full reference
 
 ### Identifying bottlenecks from results

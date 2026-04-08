@@ -161,6 +161,18 @@ services:
 Start with `docker compose --profile debug up` to include debug
 services. Services without a profile always start.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **`depends_on` without health checks.** `depends_on: [db]` only waits for the database container to start — not for PostgreSQL to finish initializing and accept connections. If the app starts before the database is ready, it will fail on the first connection attempt. Always add a `healthcheck` to the dependency and use `condition: service_healthy` in `depends_on`.
+- **Hardcoded secrets in `docker-compose.yml`.** A `docker-compose.yml` checked into version control with secrets in `environment:` keys means every person who clones the repo has production credentials. Use `env_file:` pointing to a git-ignored `.env.local`, or inject via CI environment variables.
+- **`latest` tags for third-party images.** `image: postgres:latest` will silently pick up a major version bump the next time the image is pulled, changing behavior without any visible config change. Pin to a specific version tag (`postgres:16-alpine`) and update intentionally.
+- **Bind-mounting `.` (the entire project root) into a production container.** A bind mount of the full working directory replaces the built image's content with the host filesystem, including `.git`, local credentials, and development artifacts. Bind mounts are for development live-reload; production services should use the built image content only.
+- **Missing `restart:` policy.** The default restart policy is `no`, meaning a crashed container stays down indefinitely until someone notices and manually restarts it. Set `restart: unless-stopped` for long-running services so they recover automatically from crashes and host reboots.
+- **All services on a single default network.** Without explicit network definitions, every service can reach every other service by name. A compromised web container can reach the database directly. Define separate `frontend` and `backend` networks and attach each service only to the networks it legitimately needs.
+- **`docker compose down -v` in a recovery procedure.** The `-v` flag removes all named volumes, which means all database data, uploaded files, and other persistent state is permanently deleted. In a recovery or restart scenario this is a data loss event. Never include `-v` in runbooks or scripts unless data deletion is explicitly the intent.
+
 ## Full reference
 
 ### Common commands

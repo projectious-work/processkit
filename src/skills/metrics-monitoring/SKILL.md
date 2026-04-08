@@ -78,6 +78,18 @@ instance detail. Include deployment markers as vertical annotations.
 For each downstream dependency, show a RED row so failures attribute
 correctly.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Reporting only average latency.** An average latency of 100ms is compatible with 99% of requests at 50ms and 1% at 5100ms — users in the long tail are having a terrible experience that the average hides. Always report p50, p95, and p99. Use histograms (not summaries) so quantiles can be computed at query time and aggregated across instances.
+- **High-cardinality label values breaking the metrics store.** Using user IDs, email addresses, or full URL paths as label values creates a unique time series for every distinct value — potentially millions of series. Most metrics stores have practical limits around 10,000–100,000 active series before memory and query performance degrade significantly. Keep labels to bounded categorical values: `status_code_class="2xx"`, not `status_code="200"`.
+- **Alerting on causes (CPU, memory) rather than symptoms (error rate, latency).** CPU at 80% may be totally fine for a batch job and alarming for a latency-sensitive API. An alert on a resource metric requires the on-call engineer to determine whether it is causing user impact — an unnecessary cognitive step. Alert directly on user-visible symptoms; show cause metrics on dashboards for diagnosis.
+- **Using summaries instead of histograms for latency.** Summary quantiles are computed on the client at collection time and cannot be aggregated across instances — `sum(rate(summary_quantile[5m]))` produces meaningless results when you have multiple replicas. Histograms aggregate correctly: `histogram_quantile(0.99, sum by (le) (rate(histogram_bucket[5m])))`. Prefer histograms for all latency metrics.
+- **Monotonically increasing counters displayed as raw values.** Displaying a counter like `http_requests_total` as an absolute number shows a meaningless cumulative value that grows without bound. Always apply `rate()` or `irate()` to counters to show the per-second rate of change, which is the operationally meaningful signal.
+- **Not setting meaningful SLOs before instrumenting.** Instrumentation without defined SLOs means there is no target to alert against — alerts are based on arbitrary thresholds that may or may not correspond to user impact. Define SLIs (what to measure) and SLO targets (what is acceptable) before writing alert rules, so every alert directly tests whether the service is meeting its commitments.
+- **Instrumenting in-process only without tracking downstream dependency health.** An application that is healthy but whose database is degraded will show normal application-level metrics until requests start timing out — by which time the user impact is already significant. Instrument outbound calls to every downstream dependency with their own rate, error, and duration metrics so dependency degradation is visible before it cascades.
+
 ## Full reference
 
 ### SLIs, SLOs, and SLAs

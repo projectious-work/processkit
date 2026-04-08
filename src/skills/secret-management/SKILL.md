@@ -63,6 +63,18 @@ compromised or on a schedule.
 - Never hardcode secrets — not even temporarily "for testing".
 - Never log secrets; redact them in error messages and stack traces.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Treating a secret that was ever committed to git as safe after deletion.** Removing a secret from the current branch does not remove it from git history — anyone with access to the repository can recover it with `git log -p`. A secret that was committed must be treated as compromised immediately: rotate it, revoke the old value, and verify it is not cached in any deployed system.
+- **Sharing secrets across environments.** Using the same database password, API key, or signing key in development, staging, and production means a leak from any environment exposes production. Provision distinct secrets per environment and rotate them independently. A staging breach should not require production rotation.
+- **Storing secrets in container images at build time via `ARG` or `ENV`.** Build arguments and environment variables baked into an image are visible in the image layer history (`docker history`). Anyone who can pull the image can extract the secret. Inject secrets at runtime via environment variables from a secrets manager or a Kubernetes Secret, not at build time.
+- **Using base64 encoding as if it were encryption.** A secret that is base64-encoded is obfuscated, not protected. Base64 is trivially reversible in one command. Never treat base64 encoding as a security control; it is an encoding format, not encryption.
+- **Long-lived static credentials where short-lived OIDC tokens are available.** Static API keys and passwords that never expire are permanently valid once leaked. Many cloud platforms support OIDC-based workload identity where the CI or runtime system gets a short-lived token that expires in minutes or hours. Use OIDC wherever available; it eliminates the risk of long-lived credential exposure.
+- **Secrets shared over Slack, email, or chat.** Communication platforms retain message history, are accessible to administrators, and may be indexed by third-party search tools. Never transmit a secret value through a chat channel — use a secrets manager with access controls and an audit log so every access is tracked.
+- **No audit of who can read production secrets.** A secrets manager with no access policy review may have dozens of service accounts, developers, and CI jobs with access to production credentials long after those access rights are no longer needed. Review who can read each secret quarterly and apply least-privilege: each service should only be able to read the specific secrets it needs.
+
 ## Full reference
 
 ### Adding a new secret — checklist

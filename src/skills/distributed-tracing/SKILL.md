@@ -87,6 +87,18 @@ strategy:
 Recommended path: head-based probabilistic in apps, tail-based
 error/latency policies in the Collector as traffic grows.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Missing context propagation at async boundaries.** Trace context does not flow automatically through message queues, goroutines, thread pools, or task schedulers. If a service publishes a message without embedding the `traceparent` header, the consumer starts a new disconnected trace — the cross-service journey is invisible. Always pass context explicitly when crossing async boundaries, and inject it into message headers or job metadata.
+- **Over-instrumentation — a span per function call.** Adding a span to every helper function generates enormous trace data, makes waterfalls unreadable, and increases cost with no debugging value. Spans should represent meaningful operations: an HTTP call, a database query, a cache lookup, a business action. Instrument at operation boundaries, not code boundaries.
+- **Sensitive data in span attributes.** Span attributes are stored in the tracing backend and may be visible to anyone with access to traces. Embedding PII (email addresses, user IDs mapped to identities), credentials, or full SQL query parameters in attributes creates a data exposure risk. Log only safe structural identifiers — numeric IDs, status codes, operation names.
+- **100% sampling in production without a plan.** Emitting a span for every request in a service handling thousands of RPS will rapidly overwhelm the tracing backend and budget. Set a sampling rate before going to production — head-based probabilistic at 10-20% is a reasonable starting point; add tail-based error/latency retention in the Collector as traffic grows.
+- **Treating trace_id and request_id as interchangeable.** A `trace_id` is created by the tracing SDK and follows the OpenTelemetry propagation standard. A `request_id` is typically generated at the API boundary for customer-facing correlation. They serve different purposes: `trace_id` links to the tracing backend; `request_id` appears in API responses and error messages. Propagate both and include `trace_id` in log lines so you can pivot from logs to traces.
+- **Ignoring the gaps between spans.** A gap between a parent span's start and its first child's start often represents scheduler delay, queue wait time, or serialization overhead — not actual work. Reading only span durations and missing gaps will misattribute latency. Look at the full waterfall including gaps when diagnosing slowness.
+- **No Collector in production.** Sending spans directly from applications to a tracing backend couples apps to the backend's endpoint, authentication, and retry behavior. A Collector decouples instrumentation from backend, enables tail-based sampling, allows backend migration without redeployment, and buffers spans during backend outages.
+
 ## Full reference
 
 ### Trace analysis for debugging

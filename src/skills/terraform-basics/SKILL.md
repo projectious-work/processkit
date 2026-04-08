@@ -144,6 +144,18 @@ Use `terraform destroy` with extreme caution — review the plan
 output first. For targeted operations, use `-target=resource.name`
 sparingly and only for debugging.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **`terraform apply` without a saved plan.** Running `terraform plan` to review changes and then `terraform apply` (without `-auto-approve tfplan`) runs a fresh plan at apply time, which may differ from the plan you reviewed — a new resource may have appeared, or the plan may have changed due to drift. Always save the plan with `terraform plan -out=tfplan` and apply that exact file with `terraform apply tfplan`.
+- **Unpinned provider or module versions.** A provider block without a `version` constraint will download the latest version on the next `terraform init` on any machine, silently changing behavior. Use `version = "~> 5.0"` for providers (allow patch and minor bumps within the major version) and exact pins for production modules. Lock files (`terraform.lock.hcl`) enforce this in CI.
+- **Editing state files manually.** The state file is a JSON representation of Terraform's understanding of reality. Manual edits corrupt this mapping and cause `plan` to produce incorrect diffs. Use `terraform state mv`, `terraform state rm`, `terraform import`, and `moved` blocks for all state manipulation.
+- **Committing `terraform.tfstate` to version control.** A local state file checked into git will diverge between contributors, has no locking, and exposes sensitive resource attributes in plain text. Use a remote backend (S3 + DynamoDB, GCS, Terraform Cloud) with state locking from the first day of the project.
+- **Monolithic root module with everything in one directory.** A single module managing networking, compute, databases, and IAM in one `terraform apply` means a change to a Lambda function requires a plan that touches the VPC and RDS, increasing plan time and blast radius. Split by lifecycle: network infrastructure rarely changes; application resources change constantly. Separate state per lifecycle group.
+- **`terraform state rm` to "fix" drift instead of `import`.** Removing a resource from state tells Terraform "this resource no longer exists under my management" — the next apply will attempt to create a duplicate. To bring a manually-created resource under Terraform management, use `terraform import`. `state rm` is correct only when deliberately abandoning management of a resource.
+- **Hardcoded secrets in `.tf` files or `terraform.tfvars`.** Secrets committed to version control in Terraform files have the same exposure as any other code repository secret — and Terraform state files may also expose them in plaintext. Pass secrets via environment variables (`TF_VAR_db_password`), a secrets manager data source, or a vault provider — never as literal values in configuration files.
+
 ## Full reference
 
 ### Best practices

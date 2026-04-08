@@ -82,6 +82,18 @@ external calls with downstream service, latency, and status.
   a truncation instead
 - When in doubt, mask: `email=b***@example.com`, `card=****1234`
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Logging at ERROR level for expected operational conditions.** A database query that returns zero results, a user failing authentication, or a cache miss are not errors — they are normal application states. Logging them as ERROR trains the team to ignore error logs and buries actual errors in noise. Match the level to severity: INFO for normal operations, WARN for unexpected-but-recoverable, ERROR for actual failures.
+- **Log and rethrow — logging the same error at every level of the call stack.** When a low-level function logs an error and then throws an exception, and every caller also logs before rethrowing, the same error appears three or four times in the log stream with different (and sometimes contradictory) context. Choose one place to log — typically the outermost handler that decides whether to return an error response or retry.
+- **PII or secrets appearing in log statements.** User email addresses, full names, passwords, API keys, and session tokens written to logs create a compliance liability and a security exposure — log aggregation systems are often less strictly access-controlled than the application itself. Never log these values; log opaque IDs (numeric user IDs, hashed email) and redact sensitive fields in error messages.
+- **No correlation ID or request ID propagated through the request lifecycle.** A log line that says "database query failed" with no request context is useless for debugging — you cannot tell which user, which request, or which code path caused it. Generate a unique request ID at the system boundary and include it in every log line for the duration of that request's handling. In distributed systems, propagate it as a header.
+- **Logging inside tight loops.** A single request that logs once per iteration of a loop processing 10,000 items produces 10,000 log lines — overwhelming the log system and hiding every other log line from concurrent requests. Aggregate counts and log a summary after the loop: "processed 10,000 items, 42 failed" rather than one line per item.
+- **Unstructured log messages that vary format across similar events.** `"User 123 logged in"` and `"Login succeeded for user_id=456"` and `"auth success: {\"id\": 789}"` are the same event with three different formats — impossible to query consistently in a log aggregation system. Define standard event types with consistent field names and use them everywhere the same event occurs.
+- **Missing timestamps or timestamps without timezone.** A log line without a timestamp makes it impossible to correlate with other events or determine the sequence of operations during an incident. A timestamp without a timezone is ambiguous across server locations and daylight saving time transitions. Always log ISO 8601 UTC timestamps.
+
 ## Full reference
 
 ### Common fields for every entry

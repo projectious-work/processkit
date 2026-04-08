@@ -125,6 +125,18 @@ Prefer declarative `apply` over imperative `create`/`edit`. Use
 production rollouts, watch with `kubectl rollout status` and reach
 for `kubectl rollout undo` if something goes wrong.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Not confirming the active context before making changes.** `kubectl apply -f` operates against whichever cluster context is currently active. Running a destructive operation in production because the context was left pointing at prod from a previous debugging session is among the most common Kubernetes incidents. Always run `kubectl config current-context` before any write operation, and use a tool or alias that shows the context in the prompt.
+- **Bare Pods in production instead of Deployments.** A bare Pod that crashes is not rescheduled — it stays in `Error` or `CrashLoopBackOff` until manually deleted and recreated. A Deployment's ReplicaSet controller reschedules it automatically and supports rolling updates and rollbacks. Never create bare Pods for any workload that must stay up.
+- **Missing readiness probes on Services.** A Service will send traffic to all pods that match its selector, including pods that are starting, initializing, or currently unhealthy but have not yet been killed by the liveness probe. Without a readiness probe, traffic hits unready pods and users see errors. The liveness probe kills bad pods; the readiness probe keeps traffic away from them until they are ready.
+- **No resource requests or limits.** Without `resources.requests`, the scheduler has no signal for node placement and a noisy pod can be scheduled on an already-overloaded node. Without `resources.limits`, a memory-leaking pod can OOMKill neighboring pods on the same node. Set both on every container; start with generous values, observe with `kubectl top`, then tighten.
+- **`latest` image tags in Deployment manifests.** A Deployment with `image: myapp:latest` will pull whatever `latest` resolves to at each restart — silently deploying a different version than the one you tested. Always pin to a specific immutable tag (typically a Git SHA or build number) so rollouts are deterministic and `kubectl rollout undo` restores the exact previous version.
+- **Blind `kubectl apply` without reviewing `kubectl diff` first.** `kubectl apply` without a preceding `kubectl diff` is a production change made without preview. Fields set out-of-band (via `kubectl edit`, autoscalers, or admission webhooks) may be silently overwritten. Always `kubectl diff -f manifest.yaml` before `kubectl apply -f manifest.yaml` in production.
+- **Using `-target` or imperative `kubectl edit` as a normal workflow.** Imperative edits (`kubectl edit`, `kubectl scale`) and `-target` applies produce configuration that diverges from the version-controlled manifests. The next declarative apply will overwrite the change without warning. All production changes must go through version-controlled manifests applied via CI/CD.
+
 ## Full reference
 
 ### Control plane architecture

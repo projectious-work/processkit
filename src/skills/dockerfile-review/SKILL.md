@@ -72,6 +72,18 @@ dependencies produce "works in CI, fails in prod" surprises.
 - Use the exec form of `CMD` and `ENTRYPOINT`:
   `["executable", "arg"]`, not the shell form.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **`COPY . .` before installing dependencies.** Copying the full source tree before the dependency install step means any source file change invalidates the install cache, forcing a full reinstall on every build. Copy dependency manifests first (`COPY requirements.txt .`), install, then copy source — this way the install layer is reused unless the manifest changes.
+- **Running the final image as root.** A container running as root inside a compromised container has host-level privileges if the container runtime is misconfigured or if a vulnerability allows container escape. Always create a dedicated non-root user and `USER` into it before `CMD`/`ENTRYPOINT`. This is a single `RUN useradd` and `USER` instruction.
+- **Using `ADD` with a local path instead of `COPY`.** `ADD` with a local file path behaves like `COPY` but also auto-extracts tarballs and fetches URLs — surprising behavior that causes non-obvious build results. Use `COPY` for all local file copies; `ADD` is only appropriate for URL fetching or deliberate tarball extraction.
+- **Unpinned base image tags (`FROM python:latest`).** `latest` resolves to a different image every time the build runs on a new host or after an upstream push, producing non-reproducible builds. Pin to a specific version tag (`python:3.12-slim`) and ideally to a digest (`@sha256:...`) for full supply-chain integrity.
+- **Shell-form `CMD` or `ENTRYPOINT`.** `CMD python app.py` (shell form) runs the command inside `/bin/sh -c`, which means signals from the container runtime (`SIGTERM` on `docker stop`) are sent to the shell, not to the Python process. The process does not shut down gracefully. Use exec form: `CMD ["python", "app.py"]`.
+- **`apt-get install` and `rm -rf /var/lib/apt/lists/*` in separate `RUN` instructions.** Docker layers are immutable snapshots. Removing the apt cache in a later `RUN` does not reclaim the space from the earlier layer — the files exist in the earlier layer's snapshot permanently. Combine `apt-get update`, `apt-get install`, and the cleanup into a single `RUN` command.
+- **Secrets passed via `ARG` or `ENV`.** Build arguments and environment variables are stored in the image's layer history and visible with `docker history` or `docker inspect`. Never pass API keys, passwords, or tokens via `ARG` or `ENV` at build time — use BuildKit's `--mount=type=secret` for build-time secrets, and runtime environment variables for run-time secrets.
+
 ## Full reference
 
 ### Canonical Python Dockerfile

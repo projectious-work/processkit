@@ -143,6 +143,18 @@ dnf install -y package
 dnf autoremove
 ```
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **`usermod -G` without `-a` replaces the entire group list.** `usermod -G docker username` removes the user from every group except `docker` — including `sudo`. Always use `usermod -aG docker username` (append). Losing `sudo` access on a remote server that requires sudo for SSH key management can lock you out.
+- **Editing unit files in `/lib/systemd/system/` instead of `/etc/systemd/system/`.** Files in `/lib/systemd/system/` are owned by the package manager and will be overwritten on the next package upgrade. Override units by copying them to `/etc/systemd/system/` or by creating a drop-in file at `/etc/systemd/system/unit.d/override.conf`. Admin files in `/etc/` always win.
+- **Forgetting `systemctl daemon-reload` after editing a unit file.** systemd caches unit file contents. Editing a `.service` file and then restarting the service with `systemctl restart` will restart the service using the old cached definition. Always run `daemon-reload` after any unit file change.
+- **`kill -9` (SIGKILL) as the first option.** SIGKILL cannot be caught or ignored by the process, so it terminates immediately without flushing buffers, releasing file locks, or running shutdown hooks. This can corrupt data or leave stale lock files. Always try `kill -TERM <pid>` (graceful) first; wait a few seconds; use SIGKILL only if the process refuses to exit.
+- **Not redirecting cron job output.** A cron job that produces output sends it to the local mail spool by default, which fills up silently on systems without a mail server configured. Add `>> /var/log/jobname.log 2>&1` to every cron job so output is captured to a file and errors are included. Alternatively use `systemd` timers which capture output to the journal automatically.
+- **`rm -rf /var/log/*` to free disk space.** Deleting log files while the daemons that own them are running does not actually free disk space — the file descriptors remain open and the blocks are still allocated until the process closes them. The correct approach is log rotation (`logrotate`) or `journalctl --vacuum-size` for journal logs. Files that must be cleared immediately can be truncated with `> /var/log/file.log` while the daemon continues writing.
+- **Setting permissions with `chmod 777` to fix a permission problem.** `chmod 777` (world-readable and world-writable) is almost never the correct fix and makes files accessible to every user and every process on the system. Diagnose which user and group actually need access, set `chown` to the correct owner, and use `chmod 640` or `chmod 755` as appropriate. `777` is a security problem, not a solution.
+
 ## Full reference
 
 ### Systemd unit file reference

@@ -127,6 +127,18 @@ When something does not work, go bottom-up:
 5. **Application** — `curl -vI https://example.com` — does the service
    respond correctly?
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Not lowering TTL before a DNS migration.** Changing an A record with a 24-hour TTL means clients that cached the old value before the change will continue using the old IP for up to 24 hours. Lower the TTL to 300 seconds at least an hour before the change, complete the migration, verify, then raise it back. Skipping this step makes rollback window unpredictably long.
+- **Using a CNAME at the zone apex.** A CNAME at the zone root (`example.com`, not `www.example.com`) conflicts with SOA and MX records and violates the DNS specification — many resolvers will silently drop one or the other. Use an ALIAS or ANAME record if your DNS provider supports it, or an A record pointing at a load balancer IP for the apex.
+- **Diagnosing DNS issues from a cached resolver instead of the authoritative server.** `dig example.com` queries your default recursive resolver which may return a cached (and outdated) answer. Always compare `dig @8.8.8.8 example.com` (public cache) against `dig @ns1.provider.com example.com` (authoritative) to know what the actual current record is versus what is cached.
+- **Enabling a firewall without first allowing SSH.** Adding a firewall rule that blocks all inbound traffic before ensuring port 22 (or the configured SSH port) is explicitly allowed will lock you out of the server. Always verify SSH access persists after adding firewall rules before saving them permanently.
+- **Assuming `* * *` in a traceroute means the host is down.** A hop that shows `* * *` means that router rate-limits or drops ICMP TTL-exceeded messages — it is not forwarding the probe, but it may still be forwarding actual application traffic. Only conclude the path is broken if `* * *` continues from that hop onward with no subsequent hops responding.
+- **Testing TCP port reachability from outside the server without checking whether the service is listening inside.** A port scan from an external client failing does not distinguish between "service not listening", "firewall blocking", or "routing problem". Add a check from inside the server itself (`ss -tlnp sport = :<port>`) to confirm the service is bound before concluding the issue is network-related.
+- **Diagnosing TLS errors without checking the full certificate chain.** A TLS error may be caused by an expired leaf certificate, a missing intermediate CA certificate, or a hostname mismatch — all of which look similar in a browser error. Use `openssl s_client -connect host:443 -showcerts` to see the full chain, not just the end-entity certificate, so you know which certificate in the chain is the problem.
+
 ## Full reference
 
 ### DNS record syntax
