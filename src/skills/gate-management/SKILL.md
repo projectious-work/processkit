@@ -81,6 +81,41 @@ Gates emit LogEntries when they are evaluated:
 - `gate.failed` — validation failed (include failure details)
 - `gate.waived` — validation was bypassed (include `details.waived_by` and reason)
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Defining a Gate without an evaluator.** A Gate that says "code
+  review passed" but doesn't say HOW that's checked is decoration,
+  not a checkpoint. Every Gate must have either an automated check
+  (script, MCP tool, CI job) or a clearly named manual approver.
+- **Auto-approving manual gates.** If a Gate is `kind: manual`, the
+  agent does NOT have authority to mark it passed. Surface the gate
+  to the user, ask for explicit approval, and only then call
+  `evaluate_gate` with the approver's ACTOR-ID.
+- **Missing the rollback path on failure.** Every Gate that can fail
+  must specify what happens when it does — block the process, page
+  oncall, escalate, defer to a different gate. A Gate that fails
+  silently is worse than no gate.
+- **Writing gates that are too coarse.** "Tests pass" is too vague —
+  which suite? Which subset? With what coverage threshold?
+  Granularity matters because the agent needs to know what
+  specifically is being checked when the gate is invoked.
+- **Forgetting to log `gate.passed` / `gate.failed` / `gate.waived`.**
+  These events are how the audit trail tracks process health. If
+  you evaluate a gate without logging the outcome, the index can't
+  answer "how often does this gate fail" or "who waived it last".
+- **Hand-waving "automated" gates that aren't actually wired.** If
+  `kind: automated`, the evaluator must exist and be runnable from
+  the agent's environment. Marking a gate automated when it
+  actually requires a human is a process failure dressed as a
+  technical one.
+- **Treating gate failures as warnings.** Gates are blockers by
+  design. If a Gate fails, the dependent process step does NOT
+  proceed, even under pressure. If the user wants to bypass, that's
+  a `gate.waived` event with the waiver's name and reason — never
+  an unrecorded continuation.
+
 ## Full reference
 
 ### Fields

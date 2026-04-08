@@ -87,6 +87,41 @@ Direct calls are useful when:
 - You want to list all used IDs of a kind for bulk operations or audits.
 - You want to confirm what format the project is configured for.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Hand-rolling an ID instead of calling `generate_id`.** Even if
+  the ID format looks simple ("BACK-1234"), do not synthesize one.
+  Generators handle collisions, prefix configuration, and project-
+  specific format overrides — hand-rolling skips all three and
+  silently produces invalid or colliding IDs.
+- **Reusing an ID from the index without re-checking.** If you
+  cached a "next available ID" earlier in the session, it may
+  already be in use by now. Always call `generate_id` fresh at
+  write time.
+- **Using the wrong prefix for an entity kind.** WorkItems are
+  `BACK-`, DecisionRecords are `DEC-`, LogEntries are `LOG-`, etc.
+  Calling `generate_id(kind="WorkItem")` ensures the right prefix;
+  passing `kind="workitem"` (lowercase) or omitting the kind may
+  produce a generic identifier the index can't categorize.
+- **Generating an ID before the entity is fully drafted.** If you
+  call `generate_id` and then abandon the entity (because the user
+  changed their mind), the generated ID is reserved but unused —
+  a "phantom" that pollutes the index. Generate at the moment you
+  commit to writing.
+- **Treating `generate_id` as idempotent.** It is not. Each call
+  produces a new fresh ID, even for the same kind. Don't call it
+  twice expecting the same answer.
+- **Not validating user-supplied IDs.** When the user types an ID
+  ("delete BACK-42"), call `validate_id` first. Free-text input
+  may have typos, wrong prefix, or be missing entirely.
+- **Skipping `format_info()` for unfamiliar projects.** Different
+  projects can override the ID format (length, separator, prefix
+  case). Before generating IDs in a new project, call
+  `format_info()` to learn the local convention rather than
+  assuming the default.
+
 ## Full reference
 
 ### Prefix registry

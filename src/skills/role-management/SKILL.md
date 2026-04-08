@@ -108,6 +108,42 @@ spec:
 
 See `skills/binding-management`.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Confusing Role with Actor.** A Role is a named set of
+  responsibilities ("tech-lead", "release-manager"). An Actor is a
+  person or agent who can FILL a role. "Alice is the tech lead" is
+  a Binding from `ACTOR-alice` to `ROLE-tech-lead`, not an update
+  to either entity.
+- **Creating a Role for one specific person.** "Alice's
+  responsibilities" is not a Role; it's just Alice. Roles capture
+  responsibilities that can be transferred between people. If only
+  one person could ever fill it, it's a job title, not a Role.
+- **Treating Role membership as RBAC enforcement.** Roles are
+  descriptive, not restrictive. processkit does not check whether
+  an actor is "allowed" to do something based on their Role.
+  Authorization is out of scope — Roles document who SHOULD do
+  what, not who is permitted to.
+- **Renaming a Role instead of creating a new one.** Renaming
+  silently rewrites history — every old Binding now points at a
+  Role with a different meaning. If the responsibilities have
+  genuinely changed, create a new Role and end the old Bindings;
+  don't overwrite.
+- **Putting tasks in `responsibilities` instead of WorkItems.** The
+  `responsibilities` field describes ongoing duties ("review PRs",
+  "approve releases"), not specific to-dos. If you find yourself
+  writing "implement feature X" in responsibilities, that's a
+  WorkItem.
+- **Vague responsibility lists.** "Ensures quality" is not a
+  responsibility; "Reviews every PR before merge to main" is. Each
+  bullet should be concrete enough that you could ask a holder
+  "did you do this last week" and get a yes/no answer.
+- **Forgetting to log `role.created` / `role.updated`.** The audit
+  trail tracks role evolution. Skipping the log makes "when did we
+  add the security-reviewer role" unanswerable.
+
 ## Full reference
 
 ### Fields

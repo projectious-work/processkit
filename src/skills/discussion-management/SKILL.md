@@ -103,6 +103,42 @@ spec:
 Use a Discussion when you don't yet know the answer. Use a DecisionRecord
 when you do.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Opening a Discussion when the choice is already obvious.** If
+  the user already knows what they want, write a DecisionRecord
+  directly. Discussions are for genuinely open questions where the
+  reasoning trail matters; using one for a settled call wastes
+  ceremony.
+- **Letting Discussions go stale.** A Discussion with no activity
+  for weeks should either resolve (with an outcome) or close
+  (state: archived). Open-forever discussions clutter the index
+  and signal pretend-thinking.
+- **Not recording the outcome as a DecisionRecord on convergence.**
+  When a Discussion reaches an answer, the answer must become a
+  DecisionRecord referenced in the discussion's `outcomes` field.
+  Without that promotion, the value of the discussion evaporates
+  the next time someone asks "what did we decide".
+- **Putting decisive content in the body but leaving `outcomes`
+  empty.** The `outcomes` field is what downstream queries read.
+  If the body says "we decided X" but `outcomes: []`, the index
+  doesn't know a decision was made and can't link the discussion
+  to the DecisionRecord.
+- **Confusing Discussion (pre-decisional) with DecisionRecord
+  (post-decisional).** Discussions capture reasoning in flight;
+  DecisionRecords capture settled choices. Don't write reasoning
+  into a DecisionRecord, and don't write conclusions into a
+  Discussion body without also creating the DecisionRecord.
+- **Forgetting to add participants.** The `participants` field is
+  how queries like "what is Alice currently thinking about" work.
+  An unattributed Discussion is invisible to participant queries.
+- **Treating one user message as a "discussion".** A Discussion is
+  multi-turn by definition. If there's only one back-and-forth, it
+  doesn't need the structure — answer directly or write a
+  DecisionRecord.
+
 ## Full reference
 
 ### Fields

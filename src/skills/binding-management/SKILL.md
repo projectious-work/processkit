@@ -134,6 +134,42 @@ and end the old one. The history is what makes Bindings useful.
 
 The Phase 3 MCP server provides `resolve_bindings_for(entity_id, type?, at_time?)`.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Using a Binding when a simple cross-reference would do.** If the
+  relationship has no scope, no time bounds, and no attributes of its
+  own ("this workitem relates to that decision"), use a frontmatter
+  cross-reference, not a Binding. Bindings are overhead — reserve
+  them for relationships that genuinely need their own lifecycle.
+- **Using a cross-reference when scope or time matters.** The inverse
+  trap: "Alice owns this for sprint 42 only" or "the security gate
+  applies on the main branch only" must be a Binding, not an
+  assignee field. Cross-references can't carry temporal validity.
+- **Forgetting `valid_from` / `valid_until` on temporal Bindings.**
+  A Binding without time bounds reads as "forever". If the
+  relationship is bounded ("until end of quarter"), set the bounds
+  at creation. Otherwise queries like "who owns X right now" return
+  stale results.
+- **Forgetting to end a Binding when the relationship ends.** Open
+  Bindings accumulate as orphans. When the underlying relationship
+  ends, call `end_binding` (or set `valid_until`) — don't just
+  delete the entity, since the historical record matters.
+- **Hallucinating subject or target IDs.** Always verify both the
+  subject and the target exist via `index-management.get_entity`
+  before creating a Binding. A Binding pointing at a non-existent
+  entity is structurally invalid and breaks every later resolve
+  query.
+- **Querying current bindings without a time filter.** When asking
+  "who is the tech lead now", filter by current time
+  (`valid_from ≤ now ≤ valid_until`). A naive query returns every
+  Binding ever, including expired ones.
+- **Treating Bindings as RBAC enforcement.** Bindings are
+  descriptive, not restrictive. They record who has which role,
+  not who is allowed to do what. Authorization is out of scope —
+  do not use Bindings as a permission check.
+
 ## Full reference
 
 ### Fields

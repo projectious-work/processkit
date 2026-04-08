@@ -79,6 +79,39 @@ one of the category's defined values.
 5. When you add a new value, write a `category.value_added` LogEntry so
    the change is traceable.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Creating a Category when an enum field would suffice.** If the
+  values are fixed and known at design time (e.g., `priority:
+  low|medium|high|critical`), put them in the entity's schema
+  enum, not in a Category entity. Categories are for taxonomies
+  the project actively curates.
+- **Inventing a new Category when an existing one fits.** Always
+  list existing categories first via `list_categories`. Two
+  Categories with overlapping meaning ("severity" and "priority"
+  both used for bugs) is a maintenance trap.
+- **Categories with overlapping meaning.** If two Categories cover
+  the same axis from different angles, merge them or pick one as
+  canonical. Overlap silently splits the same data into different
+  buckets and breaks reports.
+- **Forgetting to mark a Category as deprecated when superseded.**
+  Don't just stop using a Category and leave it in the catalog —
+  set its state to deprecated so future queries don't surface it
+  as a current option.
+- **Adding categories without examples.** A Category like "Tier 1"
+  with no description of what qualifies is an empty bucket. Each
+  Category value should ship with at least one example so future
+  agents apply it consistently.
+- **Treating Category as a tag.** Categories are structured
+  taxonomies the project curates. Free-form tags belong in
+  `metadata.tags` on the consuming entity, not in a Category
+  entity.
+- **Creating a Category for one-off use.** If the Category will be
+  applied to a single entity and never reused, it's not a
+  Category — it's just metadata on that entity.
+
 ## Full reference
 
 ### Fields

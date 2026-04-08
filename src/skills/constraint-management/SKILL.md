@@ -68,6 +68,42 @@ spec:
 - Processes reference constraints via Bindings (`type: process-constraint`)
   for scoped constraints.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Constraint without a measurable threshold.** "Performance must
+  be good" is not a Constraint; "p99 latency must be under 200ms
+  on the checkout endpoint" is. Without a threshold, you can't
+  know whether the Constraint is satisfied.
+- **Treating Constraints as suggestions.** Constraints are
+  requirements. Decisions and WorkItems should explicitly reference
+  the relevant CONSTRAINT-ID and confirm compliance, not hand-wave.
+  If a Constraint is only sometimes true, it's a guideline, not a
+  Constraint.
+- **Forgetting the source / owner of the Constraint.** Where did
+  this Constraint come from — legal, finance, oncall, the user's
+  preference? The source matters because lifting it requires going
+  back to the source. Always set `source` / `owner` fields.
+- **Creating Constraints that contradict each other.** Two
+  Constraints saying "ship as fast as possible" and "no production
+  changes after 5pm" can both be valid, but the conflict must be
+  noted explicitly so decisions can choose between them. Silent
+  conflicts produce inconsistent behavior.
+- **Hand-waving "complies with X" without referencing the
+  CONSTRAINT-ID.** When a workitem or decision satisfies a
+  Constraint, link the CONSTRAINT-ID explicitly. "We follow GDPR"
+  with no link is unverifiable.
+- **Confusing Constraints with Decisions.** A Constraint is a
+  fixed rule the project respects ("budget ≤ $50k"); a Decision is
+  a choice someone made ("we picked Postgres over MySQL"). If
+  someone could change it tomorrow without external pressure, it's
+  a Decision.
+- **Constraints without expiry or review cadence.** Some
+  Constraints are temporary ("hiring freeze through Q3"). Set a
+  review date so the Constraint doesn't become permanent by
+  default.
+
 ## Full reference
 
 ### Fields

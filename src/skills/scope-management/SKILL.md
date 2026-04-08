@@ -93,6 +93,40 @@ Reference via `spec.scope: SCOPE-...` on WorkItems, or use a Binding
 (`type: work-scope`) when the scope relationship is temporal and an item
 can move in or out of scope during its lifetime.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Treating a Scope like a folder.** Scope is a conceptual
+  container, not a directory. Don't move files based on scope
+  membership; reference the SCOPE-ID from entities and let the
+  index resolve membership.
+- **Creating overlapping Scopes that double-count work.** "Sprint
+  42" and "Q2 OKRs" can both contain the same workitem, but be
+  explicit about which is the primary scope vs which is a
+  secondary categorization. Otherwise reports double-count.
+- **Using `spec.scope` directly when membership is temporal.** If a
+  workitem moves into and out of a sprint over its lifetime, use a
+  Binding (`type: work-scope`) instead of pinning `spec.scope`.
+  The Binding carries `valid_from` / `valid_until`; the field
+  doesn't.
+- **Forgetting to transition Scope state.** Scopes have a
+  lifecycle: `planned → active → completed → cancelled`. A Scope
+  that says `state: active` for six months past its end date
+  poisons every "what's the current sprint" query.
+- **Hallucinating SCOPE-IDs.** When asked to add work to "the
+  current sprint", call `list_scopes(state: active)` first. Don't
+  invent `SCOPE-sprint-42` if it doesn't exist — create it
+  explicitly via `create_scope`.
+- **Reusing a Scope across different timeframes.** "Sprint 42" in
+  Q2 2025 and "Sprint 42" in Q2 2026 are different Scopes — same
+  number, different time. Use distinct IDs
+  (`SCOPE-2025-Q2-sprint-42` and `SCOPE-2026-Q2-sprint-42`) so
+  history is unambiguous.
+- **Naming scopes ambiguously.** "Q1" without a year is meaningless
+  in three months. Always include the year and the kind in the
+  name; the ID can stay short.
+
 ## Full reference
 
 ### Fields
