@@ -66,6 +66,18 @@ agent checks the deploy diff, identifies the breaking change,
 recommends an immediate rollback while preparing a forward fix,
 drafts a stakeholder update, and schedules the postmortem.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Debugging instead of mitigating when a rollback is available.** When a deploy caused the incident and a rollback would restore service in minutes, spending time reproducing and root-causing the failure while users are affected is the wrong priority order. Mitigate first — roll back, toggle the feature flag, or shed traffic — then diagnose once service is restored.
+- **Going silent on stakeholders while investigating.** A status page or incident channel that hasn't been updated in 30 minutes signals to stakeholders that either nothing is happening or the team forgot them. Post an update every 15–30 minutes even if it is "still investigating, no change in scope" — silence is more alarming than bad news delivered regularly.
+- **Combining the incident commander role with hands-on debugging.** An engineer simultaneously writing code and running the incident response makes poor decisions in both roles. The commander's job is to coordinate, gather context, and make calls. The technical lead's job is to dig into the system. These must be separate people or the investigation becomes uncoordinated.
+- **Shipping the fix to production under incident adrenaline without review.** During an incident, the pressure to fix quickly leads to skipping code review, testing, and staging deployment. The incident adrenaline fix that goes straight to production is one of the most common causes of a second, worse incident. Once service is mitigated, apply the permanent fix through normal change-management paths.
+- **Skipping the postmortem because "we know what happened."** The postmortem serves multiple purposes: capturing the full timeline while memory is fresh, identifying contributing factors beyond the surface cause, generating systemic improvements, and sharing learning with the team. Skipping it because the immediate cause is clear means missing contributing factors and losing the opportunity to improve.
+- **Corrective actions that live only in the postmortem document.** Action items that are tracked only in a postmortem document and not moved to the team's task tracker will not be completed. Within 48 hours of the postmortem, every action item must have an owner, a priority, and a ticket in the team's project management system.
+- **Naming individuals in the timeline or root cause.** "Alice pushed a bad config" shifts blame to a person rather than examining the systems that allowed the bad config to reach production without detection. Blameless postmortems focus on process failures, tooling gaps, and systemic weaknesses. People make mistakes; postmortems find the conditions that made the mistake consequential.
+
 ## Full reference
 
 ### Severity levels

@@ -118,6 +118,18 @@ security schemes globally with per-endpoint overrides for public
 routes. See `references/openapi-patterns.md` for the full skeleton
 including reusable parameters, responses, and security schemes.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Verbs in resource URIs.** `POST /createOrder` or `GET /getUserById` bakes the HTTP method into the path, making the URL semantically redundant and breaking the REST constraint that the method alone describes the action. Use noun resources: `POST /orders`, `GET /users/{id}`. When CRUD doesn't fit, model the action as a sub-resource: `POST /orders/{id}/cancel`.
+- **Unpaginated list endpoints shipped as "we'll add it later."** A list endpoint that returns all records works fine in development with 50 records and fails spectacularly in production with 50,000. Pagination cannot be added to a stable API without a breaking change to the response shape. Every list endpoint must paginate from day one, with a default page size that makes the system safe.
+- **200 OK with an error payload.** Returning `{"error": "not found"}` with HTTP 200 means clients cannot use HTTP status codes to distinguish success from failure — they must parse every response body. Return 4xx or 5xx status codes that match the actual error so clients, proxies, monitoring systems, and retry logic all work correctly.
+- **Inconsistent error envelopes across endpoints.** Some endpoints return `{"error": "..."}`, others return `{"message": "..."}`, others return `{"errors": [...]}`. Clients must special-case every endpoint. Define a single error envelope before writing the first endpoint and apply it everywhere.
+- **Breaking changes inside a stable version.** Removing a field, renaming a field, or changing a field's type in a published API version breaks all clients that depend on it without any version signal. Within a version, only additive changes — new optional fields, new endpoints — are permitted. Breaking changes require a new version (`/v2/`).
+- **Offset pagination shipped to production for large datasets.** `?page=5&limit=20` requires the database to scan and discard N rows for every page, performance degrades linearly, and concurrent writes cause rows to appear on multiple pages or be skipped. Use cursor-based pagination from the start on any endpoint that may return more than a few hundred rows.
+- **OpenAPI schemas duplicated inline instead of using `$ref`.** Copy-pasting a schema definition into every endpoint that uses it means a change to the `User` schema must be applied in a dozen places — and will inevitably drift. Define every reusable type in `components/schemas` and reference it everywhere with `$ref`.
+
 ## Full reference
 
 ### Status code reference

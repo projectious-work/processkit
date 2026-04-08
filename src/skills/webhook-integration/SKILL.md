@@ -109,6 +109,18 @@ recover from outages discovered after the fact.
 - Store secrets in a vault (AWS Secrets Manager, Vault, etc.), not
   in code or environment variables checked into source control.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Verifying the HMAC signature against parsed and re-serialized JSON instead of the raw body.** Re-serializing parsed JSON reorders keys, collapses whitespace, and changes the byte sequence — the computed HMAC will not match the sender's signature. Always compute the HMAC against the raw request body bytes, before any parsing.
+- **Non-constant-time signature comparison.** Using `==` to compare HMAC values allows a timing side-channel: an attacker can observe that the comparison returns faster when fewer bytes match, and iteratively guess the correct signature. Always use a constant-time comparison function such as `hmac.compare_digest`.
+- **No idempotency check — processing the same event twice.** Webhook delivery is at-least-once. A network timeout or a 5xx response from your endpoint will cause the sender to retry, delivering the same event multiple times. A consumer that sends an email, charges a payment, or creates a database record without deduplicating by event ID will do so multiple times. Store processed event IDs and check before processing.
+- **Doing heavy processing in the HTTP handler instead of enqueuing.** A handler that makes database queries, calls external APIs, or runs business logic before returning will frequently exceed the sender's request timeout (typically 5–30 seconds), causing the sender to retry — amplifying the work. Return 200 or 202 immediately after signature verification; enqueue the event payload for asynchronous processing.
+- **No replay-window check on the timestamp.** A webhook signature protects the payload in transit but does not prevent replay attacks — a captured request can be replayed weeks later with a valid signature. Include a timestamp in the signed payload (or in a signed header), and reject events older than ~5 minutes to bound the replay window.
+- **Single signing secret with no rotation path.** When a secret is leaked or an employee leaves, the secret must be rotated. If the consumer only accepts one active secret, rotation requires simultaneous updates to both the sender and consumer — a coordination window where webhooks either fail or are unverified. Support multiple active secrets so old events can still be verified during rotation.
+- **Returning 200 from a handler that errored internally.** A handler that catches its own internal error and returns 200 tells the sender "delivery succeeded" — the sender will not retry, and the event is lost. Return 500 (after signature verification) so the sender retries. Reserve 4xx for cases where retrying will never succeed (malformed event, unsupported event type).
+
 ## Full reference
 
 ### Ordering

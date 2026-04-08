@@ -138,6 +138,18 @@ given the requirements:
   post storage, feed cache in Redis sorted sets, media in object
   storage behind a CDN.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Drawing components before gathering requirements.** Starting with boxes and arrows before establishing functional requirements, scale, and consistency needs produces a design that answers "what architecture looks interesting" rather than "what does this system actually need to do." Always gather functional requirements and non-functional constraints first; let them determine the components.
+- **Skipping capacity estimation.** A design without back-of-envelope estimates has no basis for claiming it will work at the stated scale. "We'll add caching if we need it" is not an architecture — it is a hope. Estimate QPS, storage, and bandwidth before deciding on sharding, caching, or whether a single database will suffice.
+- **Defaulting to strong consistency everywhere.** Most operations in most systems can tolerate eventual consistency, and the cost of strong consistency — coordination overhead, reduced availability, latency — is significant. Defaulting to strong consistency "to be safe" means paying that cost unnecessarily. Identify which operations actually require it (financial transactions, inventory decrement) and use eventual consistency for everything else.
+- **Hidden single points of failure.** A design with load-balanced web servers, replicated databases, and a CDN may still have a single point of failure: the database primary, a single cache cluster, or an orchestrator with no failover. Explicitly check every component in the design for what happens if it fails; if the answer is "everything stops," that's a SPOF that needs redundancy.
+- **Premature sharding.** Database sharding adds significant operational complexity: cross-shard queries, resharding when boundaries are wrong, and consistency across shards. Most systems do not need sharding until they are well past what a single well-tuned primary with read replicas can handle. Design for sharding (choose a good shard key) but implement it only when measured data shows the single-node approach is insufficient.
+- **Caching without an invalidation strategy.** Adding a cache without specifying TTL, invalidation triggers, and cache-aside vs write-through strategy means the cache will eventually serve stale data indefinitely. "We'll figure out invalidation later" produces a cache that is harmful rather than helpful. Define the invalidation strategy before implementing the cache.
+- **Ignoring the cost of synchronous chains of services.** A request that calls Service A, which calls Service B, which calls Service C in series has a latency that is the sum of all three, and fails if any one of them fails. Beyond two or three hops, this becomes brittle and slow. Identify serial chains in the design and either parallelize calls, pre-compute results asynchronously, or collapse services.
+
 ## Full reference
 
 ### Powers of 2

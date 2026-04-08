@@ -110,6 +110,18 @@ Map each STRIDE category to common mitigations:
 | Denial of Service      | Rate limiting, autoscaling, CDN, circuit breakers |
 | Elevation of Privilege | Least privilege, input validation, sandboxing     |
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Skipping the data flow diagram and jumping straight to a threat list.** Without a data flow diagram with trust boundaries, threats are enumerated without knowing where data crosses between trust levels — the points where attackers actually operate. The DFD is not optional; it determines which threats are relevant to which components.
+- **Threat modeling once at design time and never revisiting.** A system that has grown to include new external integrations, new microservices, or new data flows has a different attack surface than it did at initial design. A threat model that is not updated when the architecture changes is a threat model of a system that no longer exists.
+- **Treating "low likelihood" as "permanently ignore."** A threat rated low likelihood because it requires insider access or sophisticated skill is not safe to dismiss forever. Circumstances change: attackers gain new capabilities, insiders become disgruntled, and "low likelihood" events happen. Re-rate risks annually or when the environment changes.
+- **Mitigations with no owner or ticket.** A threat model that lists 15 mitigations in a document with no associated tasks means zero of them will be implemented. Every mitigation must be tracked to a ticket or commit with an owner. A mitigation that is only in the threat model document has not been mitigated.
+- **Modeling the intended architecture, not the production system.** The diagram shows a load balancer in front of the API, but production has a debug port open directly to the application server. The threat model of the intended architecture misses the actual attack surface. Threat model what is deployed, not what was planned.
+- **Confusing authentication threats with authorization threats.** Spoofing (STRIDE-S) is about impersonating an identity — a weak login mechanism. Elevation of privilege (STRIDE-E) is about gaining capabilities beyond what the identity is authorized for — a broken access control check. Fixing authentication does not fix authorization. Apply both categories separately to each component.
+- **Stopping at the application boundary and ignoring CI/CD and cloud infrastructure.** The CI/CD pipeline, container registry, cloud console, and IAM configuration are part of the attack surface — a compromised build pipeline can inject code into every deployment. Include infrastructure, supply chain, and human entry points in the attack surface mapping.
+
 ## Full reference
 
 ### Attack surface mapping

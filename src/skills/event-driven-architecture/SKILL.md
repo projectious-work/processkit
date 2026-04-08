@@ -135,6 +135,18 @@ own their services independently.
   events on the same partition?). Inspect consumer group rebalancing
   and commit/ack strategy. Drain the DLQ for poison messages.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Non-idempotent consumers.** Webhook delivery and message broker delivery are both at-least-once. A consumer that processes a payment or sends an email without checking whether it already processed this event ID will charge customers twice or send duplicate notifications when the message is redelivered. Every consumer must check a deduplicated event ID before processing and be safe to run twice on the same event.
+- **No dead letter queue.** A consumer that fails repeatedly on a poison message (malformed payload, an invariant the code cannot handle) will retry indefinitely, blocking the queue for all subsequent messages. Route messages that exceed the retry limit to a DLQ and alert on its depth — otherwise one bad message stops the entire consumer group.
+- **Dual write — writing to the database and the broker without an outbox.** If the broker publish succeeds but the database commit fails (or vice versa), producers and consumers have diverged state. Use the transactional outbox pattern: write the event to a database table in the same transaction as the state change, then publish from the outbox asynchronously.
+- **Publishing events before the state is persisted.** If a service publishes `OrderShipped` and then fails to commit the database update, the event has leaked into the world without a corresponding state change. Consumers will react to a shipment that the system does not record. Commit state first; publish only after a successful commit.
+- **Removing or renaming fields in published event schemas.** A consumer running an old version that reads a field that was renamed will silently process empty data or crash. Published event schemas are a contract — make changes additive only: add new optional fields, never remove or rename existing ones. Use a schema registry to enforce this.
+- **Choreographed sagas with no distributed tracing.** A saga implemented as 6 services reacting to each other's events produces a workflow that is invisible unless you can correlate trace IDs across events. Debugging "why did the payment never succeed" means manually correlating log entries across 6 services and 20 minutes of event history. Wire distributed tracing before deploying choreography-based sagas.
+- **Choosing event-driven architecture when synchronous request-response is simpler.** Events introduce eventual consistency, ordering ambiguity, and significant operational complexity (brokers, schemas, DLQs, monitoring). The threshold question is: "Would synchronous request-response be simpler and sufficient?" If yes, use it. Events are not a default for microservices — they are a tool for specific problems.
+
 ## Full reference
 
 ### Pub/Sub topology

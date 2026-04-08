@@ -137,6 +137,18 @@ change is persisted.
   legacy boundaries and pub/sub between contexts. Extract the most
   independent context first.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Anemic domain model — entities as data bags with all logic in services.** When `Order` is a plain struct with getters and setters and all business logic lives in `OrderService`, you get the complexity of objects without the benefit of encapsulation. The aggregate cannot enforce its own invariants. Move business behavior onto entities and aggregates so they protect their own rules.
+- **God aggregate that locks everything.** An `Order` aggregate that contains the full `Customer`, all their `Addresses`, their `PaymentMethods`, and their `Preferences` means any address change locks the entire customer's orders. Cross-aggregate references should be by ID, not by object reference. One transaction modifies one aggregate.
+- **Defining bounded contexts prematurely before understanding the domain.** Starting with microservices boundaries drawn on a whiteboard before any code is written produces contexts that split along technical lines (auth service, data service) rather than domain lines. Work in a modular monolith first, discover actual linguistic and team-ownership boundaries through usage, then extract.
+- **Shared database tables across bounded contexts.** Two bounded contexts reading and writing the same `users` table are not actually bounded — they are tightly coupled through the database schema. Every schema change must coordinate across contexts. Each bounded context must own its data store or, at minimum, its own schema within a shared database.
+- **Publishing domain events before persisting the state change.** Publishing an `OrderSubmitted` event before the database write commits means the event is out in the world but the state change failed — consumers react to an event whose cause doesn't exist. Use the outbox pattern: write event and state change in the same transaction; publish from the outbox asynchronously.
+- **Using technical event names instead of domain language.** `UserEntityUpdatedEvent` describes an implementation detail. `CustomerEmailVerified` describes something that happened in the domain. Events must be named in past tense using ubiquitous language so they are meaningful to domain experts, not just developers.
+- **Treating value objects as mutable.** A `Money` object that can have its `amount` mutated after construction is not a value object — it is a mutable entity without identity. Value objects must be immutable: to "change" a value, create a new instance. Immutability makes equality-by-value safe and enables value objects to be shared.
+
 ## Full reference
 
 ### Aggregate example

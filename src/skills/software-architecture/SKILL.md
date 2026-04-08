@@ -125,6 +125,18 @@ graph TB
   decision (gRPC for internal services, REST for the public API),
   consequences (faster internal calls, added tooling complexity).
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Recommending a pattern before mapping what already exists.** Proposing a hexagonal architecture for an existing codebase without first understanding its actual dependency graph means the recommendation may conflict with structural constraints that are expensive to change. Always trace the current dependency directions and identify the existing (or ad-hoc) pattern before proposing changes.
+- **Choosing microservices for a small team or early-stage product.** Microservices require mature DevOps, distributed tracing, service discovery, and the ability to make cross-service deployments safely. A team of 3-5 engineers rarely has this operational maturity. The correct default is a modular monolith with clear boundaries that can be extracted into services later, not a microservice fleet on day one.
+- **Layer violations going unaddressed because "it works."** A controller that directly instantiates a database model works but violates layering — when the database changes, the controller breaks. Unchallenged violations compound: the next developer sees the pattern and follows it. Call out layer violations in code review with a concrete alternative.
+- **ADRs without negative consequences.** An ADR that records only the reasons to do something is advocacy, not decision documentation. Future engineers reading it don't know what trade-offs were accepted. Every ADR must list both the benefits and the costs of the decision so readers understand what was knowingly accepted.
+- **Editing an accepted ADR in place when circumstances change.** An accepted ADR is a historical record of what was decided and why at a point in time. Changing it in place loses that history. When a decision is revisited, supersede the old ADR by writing a new one that references the old decision and documents why the situation has changed.
+- **Architectural complexity added speculatively for hypothetical scale.** Event sourcing, CQRS, and message brokers add significant operational complexity. Adding them "in case we need to scale" before you have demonstrated the scaling problem couples the team to complex infrastructure that slows development and introduces failure modes. Add architectural complexity when requirements demand it, not before.
+- **Missing dependency direction arrows on architecture diagrams.** A diagram showing boxes connected by lines without arrows leaves the dependency direction ambiguous — you cannot tell whether the domain imports from infrastructure or vice versa, which is the architectural question that matters most. Every arrow in an architecture diagram must have a direction and ideally a label describing the interaction type.
+
 ## Full reference
 
 ### Pattern catalog

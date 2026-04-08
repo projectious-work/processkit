@@ -104,6 +104,18 @@ Start with a strict CSP and relax only as needed. Never use
 - Audit dependencies regularly: `npm audit`, `pip-audit`, `cargo audit`.
 - Pin versions in lockfiles and minimize the dependency tree.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **String concatenation to build SQL queries.** `"SELECT * FROM users WHERE id = " + user_id` is a SQL injection vulnerability whenever `user_id` comes from an untrusted source. Use parameterized queries or prepared statements unconditionally — not "only for user input", because distinguishing trusted from untrusted input is error-prone. The parameterized form is not harder to write.
+- **Client-side-only input validation.** Validation in JavaScript can be bypassed by anyone who sends a raw HTTP request. Client-side validation is for user experience only; it provides zero security. All security-relevant validation — type, length, range, format — must happen on the server, on every request.
+- **Returning stack traces or internal error details to clients.** An unhandled exception that returns the full stack trace, database query, or file path to the client leaks the internal structure of the application to attackers. All unhandled exceptions must be caught at the boundary and returned as a generic error message; log the full detail internally.
+- **Using GET requests for state-changing operations.** A GET request that creates, modifies, or deletes data can be triggered by a CSRF attack — the browser will follow GET links embedded in a malicious page without any user action. Use POST, PUT, PATCH, or DELETE for state-changing operations and protect them with anti-CSRF tokens.
+- **Trusting the `alg` header in a JWT.** A JWT that claims `"alg": "none"` should be rejected outright — it has no signature. A JWT that claims `"alg": "HS256"` when the server uses `RS256` can be forged by an attacker using the public key as the HMAC secret. Always explicitly specify which algorithms are allowed; never use the algorithm from the token header to choose the validation method.
+- **Hardcoded secrets in source code.** An API key, password, or signing key hardcoded in source code is stored in git history permanently — even after deletion it remains in previous commits. Any user with repository access has the secret. All secrets must be loaded at runtime from environment variables or a secrets manager.
+- **Insufficient authorization checks — checking once at the boundary.** Verifying that a user is logged in at the route level but not checking whether they own the specific resource they are accessing allows authenticated users to read or modify other users' data. Check resource ownership on every protected endpoint: not just "is the user authenticated?" but "does this user own this specific record?"
+
 ## Full reference
 
 ### Security review checklist

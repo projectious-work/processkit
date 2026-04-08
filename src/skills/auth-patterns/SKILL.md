@@ -112,6 +112,18 @@ Refresh tokens must be stored securely (httpOnly cookie or secure
 device storage), single-use (rotated on every refresh), and revocable
 (server-side denylist or family tracking).
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **JWT signature validation skipped or incomplete.** Accepting a JWT without verifying the signature, or without validating `exp` (expiry), `iss` (issuer), and `aud` (audience) claims, means any JWT — including expired, foreign, or forged ones — will be accepted. Always validate all four: signature, expiry, issuer, and audience. Explicitly specify the allowed algorithm list so an attacker cannot switch to `alg: none`.
+- **Storing access tokens in localStorage.** Tokens stored in `localStorage` are accessible to any JavaScript running on the page, including injected scripts via XSS. Keep access tokens in memory only; store refresh tokens in `httpOnly` cookies that JavaScript cannot read.
+- **Returning different error messages for "user not found" vs "wrong password."** `"User does not exist"` vs `"Incorrect password"` allows an attacker to enumerate valid usernames by observing which error they receive. Always return the same generic message: `"Invalid email or password."` regardless of which check failed.
+- **Not regenerating the session ID after login.** If a user has a session cookie before logging in (e.g., from a previous anonymous session) and the same session ID is reused after authentication, an attacker who captured the pre-login session cookie can now use it to access the authenticated session. Regenerate the session ID immediately after successful login.
+- **Using `HS256` for tokens consumed by clients you don't control.** `HS256` uses a shared symmetric key — anyone who knows the key can forge tokens. For public APIs where tokens are validated by multiple parties, use `RS256` or `ES256` (asymmetric), so clients can validate with the public key without being able to forge new tokens.
+- **No rate limiting on authentication endpoints.** A login or password-reset endpoint without rate limiting allows unlimited brute-force attempts. Apply progressive delays, lockout, or CAPTCHA after N failed attempts per IP or per account. Use a token-bucket or sliding-window rate limiter, not a simple counter.
+- **Granting blanket scopes or roles "for now."** Giving every service or user admin-level access because it's easier to configure means a compromised credential gives the attacker the full blast radius. Apply least-privilege from the beginning: each service credential covers only the permissions that service legitimately needs.
+
 ## Full reference
 
 ### API key patterns
