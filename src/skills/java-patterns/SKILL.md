@@ -91,6 +91,18 @@ rather than the legacy runner. Use AssertJ's fluent assertions
 — `@WebMvcTest` for controllers, `@DataJpaTest` for repositories —
 to keep tests fast.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Field injection with `@Autowired` on fields.** Field injection hides dependencies, prevents immutability, and requires Spring's reflection to construct the object — making unit tests without Spring painful. Use constructor injection for all mandatory dependencies.
+- **`Optional.get()` without checking presence.** Calling `.get()` on an empty `Optional` throws `NoSuchElementException` — the same crash you were trying to avoid with null. Use `.orElseThrow(() -> new NotFoundException(...))` or `.ifPresent(...)` instead.
+- **Streams for trivial iteration.** A stream over a single-step `for` loop adds indirection and hurts readability. Use a `for` loop when it's clearer; reach for streams only when the pipeline — `filter → map → collect` — adds genuine expressiveness.
+- **Wide `@Transactional` on controllers.** Transactions should span a single unit of work inside the service layer. Annotating a controller method `@Transactional` creates a transaction that outlives the database interaction and crosses HTTP concern boundaries.
+- **Deep inheritance hierarchies over sealed types.** Adding a new subclass to an open hierarchy requires updating every consumer that switches on type. Model closed sets with sealed interfaces and pattern-matching `switch`; the compiler enforces exhaustiveness.
+- **`Collectors.toList()` on Java 16+.** The `Collectors.toList()` method returns a mutable list; `Stream.toList()` (Java 16+) returns an unmodifiable list and is shorter to write. Prefer `toList()` unless you need mutability.
+- **`Optional` as a field or method parameter.** `Optional` is designed for return types only. Using it as a field adds boxing overhead and breaks serialization; using it as a parameter forces callers to wrap values unnecessarily. Use overloads or nullable with explicit documentation for parameters.
+
 ## Full reference
 
 ### Dependency injection

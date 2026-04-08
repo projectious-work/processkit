@@ -75,6 +75,18 @@ names get doc comments that start with the name. Use named return
 values sparingly. Prefer early returns and guard clauses over deep
 nesting.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Goroutines with no visible stop condition.** Starting a goroutine without a `context.Context` cancellation path or a `done` channel means it may run forever after the caller is gone. Every goroutine must have an owner and a clear termination path.
+- **`panic` in library code for non-programmer-error conditions.** Library code must return errors, not panic, for any condition a caller might encounter in normal use. Reserve `panic` for programmer errors: nil pointers being dereferenced, impossible state. In application code `panic` is still rare; prefer `log.Fatal` + `os.Exit` at the `main` level.
+- **Large interfaces defined alongside their only implementation.** Interfaces should be defined where they are consumed, not where they are produced. A 10-method interface defined next to its sole implementation is not an abstraction — it is added complexity with no benefit.
+- **`util`, `common`, and `helpers` packages.** These names say nothing about what the code does and attract unrelated functions. Name packages by their domain and responsibility; if something doesn't fit a named package, question whether it belongs in the codebase.
+- **Silently ignoring errors with `_ =`.** Discarding an error without even a comment is a bug waiting to happen. When an error genuinely cannot matter, document why: `_ = f.Close() // best-effort cleanup after write; error already reported`.
+- **Implementing the same interface in the same file as the interface definition.** Go's interface satisfaction is implicit; coupling the interface definition to the implementation defeats the decoupling purpose. Keep them in separate packages.
+- **`context.Background()` deep inside a call stack.** Creating a fresh `context.Background()` inside a called function discards cancellation and deadline signals from the caller. Accept `ctx context.Context` as the first parameter and propagate it.
+
 ## Full reference
 
 ### Functional options

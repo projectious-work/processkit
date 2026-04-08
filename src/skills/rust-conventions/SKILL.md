@@ -61,6 +61,18 @@ of each source file. Integration tests go under `tests/`. Use
 `assert_eq!` with a third argument for the failure message when
 the context isn't obvious from the values alone.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **`.unwrap()` in production code.** `.unwrap()` panics on `None` or `Err`, producing an unrecoverable crash with no context. Use `?` to propagate the error or `.expect("reason")` only when the reason documents an invariant that cannot fail in production — and even then, think twice.
+- **`.expect("")` with an empty message.** An empty `.expect("")` panics with no information about why the invariant should hold. The message should explain the assumption: `.expect("config always has a default value")`.
+- **Returning `Box<dyn Error>` from library APIs.** A library that returns `Box<dyn Error>` forces callers to pattern-match on dynamic dispatch and prevents them from handling specific error variants. Use `thiserror`-derived enums so callers get typed error variants.
+- **Using `anyhow::Error` at a library boundary.** `anyhow` is for applications where you want a good error message, not for library code where callers need to match on error type. Use `thiserror` in libraries, `anyhow` in binaries.
+- **Holding a lock across an `.await` point.** A `MutexGuard` (from `std::sync`) held across an `await` causes the future to be `!Send`, breaking async runtimes. Use `tokio::sync::Mutex` for async code, or acquire and release the guard before the await.
+- **Suppressing clippy warnings with `#[allow(...)]` without a comment.** Clippy warnings are almost always correct. When you do need to suppress one, the `#[allow(...)]` must be accompanied by a comment explaining why the warning doesn't apply in this case — otherwise future readers have no basis for trusting the suppression.
+- **`&String` or `&Vec<T>` in function parameters.** `&str` is strictly more general than `&String` (any `&str` can be passed where `&String` is accepted, but not vice versa). Similarly `&[T]` is more general than `&Vec<T>`. Prefer the slice types in function signatures.
+
 ## Full reference
 
 ### Error handling patterns

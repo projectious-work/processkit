@@ -86,6 +86,18 @@ Use `vitest` or `jest` for runtime tests. For type tests, use
 correctly — catching regressions in generic helpers before they
 reach callers.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Using `any` instead of `unknown` for untyped boundaries.** `any` disables type checking for the variable and everything it touches downstream. `unknown` forces you to narrow before use — it's the type-safe alternative for values whose shape is genuinely unknown.
+- **Disabling strict mode "temporarily" in a new project.** A TypeScript project without `strict: true` is a JavaScript project with extra syntax. Enabling strict mode later is painful because the whole codebase has accumulated implicit nulls and anys. Enable it on day one.
+- **Type assertions (`x as Foo`) as a refactoring shortcut.** `as` bypasses the type checker. It is appropriate for narrow cases like DOM element access or JSON parsing, not as a way to silence type errors without fixing them. Fix the real type mismatch.
+- **Skipping runtime validation at process boundaries.** TypeScript's types exist only at compile time. A REST API response, environment variable, or user input that passes type-checking at compile time can still have the wrong shape at runtime. Validate external data with `zod` or equivalent at every boundary.
+- **Using `Record<string, V>` when a `Map<K, V>` is semantically correct.** `Record` is for objects with a known finite set of keys. Dynamic keys, iteration in insertion order, presence checks, and non-string keys all call for `Map`. The wrong choice leads to surprising behavior with `hasOwnProperty` and `for...in`.
+- **`Optional` field (`?:`) when the property is actually required.** Marking a property optional (`email?: string`) says "this property may be absent". If the property is always present but sometimes has no value, use `email: string | null` instead — the distinction affects how callers narrow the type.
+- **No `never` check in `switch` exhaustiveness.** Without an explicit `const _exhaustive: never = s` in the `default` branch, adding a new variant to a discriminated union compiles without error, producing a silent runtime gap. Always add the exhaustiveness check.
+
 ## Full reference
 
 ### Discriminated unions with exhaustive checks

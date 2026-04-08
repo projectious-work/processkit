@@ -70,6 +70,18 @@ custom exception classes per domain (e.g.
 `UserNotFoundError(LookupError)`). Never write a bare `except:` —
 always catch the specific exception type you expect.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Bare `except:` or catching `Exception` and silencing it.** A broad except that does nothing (or just logs) hides bugs, masks KeyboardInterrupt, and makes debugging impossible. Always catch the specific exception type; re-raise anything you didn't expect.
+- **Mutable default arguments.** `def foo(x=[]):` creates the list once at function-definition time, so all callers share the same list. The canonical fix is `def foo(x=None): if x is None: x = []`. This is a Python-specific trap that surprises engineers coming from other languages.
+- **`from module import *` at the top of a module.** Star imports pollute the namespace, hide the origin of names, and prevent tools from detecting unused imports. Use explicit imports; ruff catches violations.
+- **Mixing `os.path` and `pathlib.Path` in the same codebase.** `pathlib.Path` is the modern, readable API. Once adopted, `os.path` usage stands out as a maintenance signal. Pick one; default to `pathlib` for new code.
+- **Constructing SQL queries by string formatting.** f-strings and `%` formatting in SQL produce SQL injection vulnerabilities. Always use parameterized queries, regardless of whether the input comes from a user.
+- **Missing `from __future__ import annotations` in modules with complex types.** Without this import, forward references and complex annotations are evaluated at import time, causing `NameError` on circular references. Add it to every module that uses type hints.
+- **Making a library async by default without a sync entry point.** Sync callers cannot easily wrap an async library; they must run an event loop manually. Default libraries to sync and provide async variants, or offer a sync wrapper via `asyncio.to_thread`.
+
 ## Full reference
 
 ### `pyproject.toml` skeleton
