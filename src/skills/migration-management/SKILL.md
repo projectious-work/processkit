@@ -155,6 +155,39 @@ If the user decides not to take an upstream change:
 - Future `aibox sync` runs see this migration in `applied/` and do NOT
   re-propose the same transition.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Drafting a Migration without a rollback plan.** Every Migration
+  must answer "what happens if this fails halfway through". A
+  Migration without rollback is a one-way door — and one-way
+  doors deserve much more scrutiny than the typical Migration
+  flow allows. State the rollback explicitly even when it's
+  "manual restore from backup".
+- **Running a Migration without a dry-run pass.** Always preview
+  the changes before applying. A dry-run that shows the diff
+  surfaces typos, ordering issues, and unintended scope before
+  they hit the live tree.
+- **Forgetting to log `migration.applied` (and `migration.failed`).**
+  The audit trail is how the next Migration knows where the last
+  one stopped. Skipping the log strands future maintainers.
+- **Sequencing dependent Migrations wrong.** If Migration B
+  assumes the state Migration A produced, applying B before A is
+  guaranteed corruption. Use the `depends_on` field and verify
+  the dependency graph before scheduling.
+- **Migration markers without actual diffs.** Don't create a
+  Migration entity for "fix the thing" if there's no concrete
+  before/after state. Migrations are records of mechanical
+  transitions, not aspirational notes.
+- **Treating "no-op migrations" as harmless.** A Migration that
+  does nothing should not exist — delete it. Otherwise it
+  pollutes the audit trail with phantom transitions.
+- **Editing an applied Migration after the fact.** Migrations are
+  immutable history. If the Migration was wrong, write a NEW
+  Migration that corrects it (`migration.corrected`), don't
+  rewrite the old one.
+
 ## Full reference
 
 ### Migration entity shape

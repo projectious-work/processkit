@@ -77,6 +77,40 @@ spec:
 The index MCP server (Phase 3) joins Metric definitions with their LogEntry
 observations to produce time series.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Defining a Metric without a measurement source.** "We want to
+  improve velocity" is not a Metric; "Story points completed per
+  sprint, measured from `query_workitems(state=done, scope=sprint-N)`"
+  is. Without a source, the Metric can't be measured and becomes
+  decoration.
+- **Setting target values without a baseline.** "Reduce error rate
+  by 50%" is meaningless if you don't know the current rate.
+  Always record the baseline at Metric creation time, and update
+  it explicitly when you reset goals.
+- **Confusing leading vs lagging indicators.** A leading indicator
+  predicts future outcomes (PR review turnaround time); a lagging
+  indicator measures past outcomes (incidents per quarter). Don't
+  optimize a lagging indicator if a leading one is available —
+  feedback loops are slower.
+- **Metrics without owner or cadence.** "Who looks at this and how
+  often" is part of the Metric definition, not an afterthought.
+  Unowned metrics rot.
+- **Storing measurement values inline in the Metric entity.**
+  Metric entities define WHAT is measured, not the measurements
+  themselves. Time-series values belong in an external store
+  (Prometheus, BigQuery, …); the Metric entity references the
+  store, not the data.
+- **Vanity metrics that don't drive decisions.** "Total LOC", "PR
+  count", "tickets closed" sound impressive but don't predict
+  anything actionable. If knowing the number wouldn't change what
+  you do next, it's vanity — drop it.
+- **Hand-waving "trending up" without numbers.** When asked about
+  a Metric's status, fetch the actual value from the source the
+  Metric points at; don't synthesize a trend from memory.
+
 ## Full reference
 
 ### Fields

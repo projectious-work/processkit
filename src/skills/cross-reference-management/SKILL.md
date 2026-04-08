@@ -83,6 +83,46 @@ the *convention* is shared.
 If the link has its own properties worth querying, it's a Binding. Otherwise,
 it's a cross-reference.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Using a cross-reference when scope or time matters.** If the
+  relationship is "Alice owns this for sprint 42" or "this gate
+  applies on main only", that's a Binding, not a cross-reference.
+  Cross-references can't carry temporal validity or scoping —
+  reaching for one when you need a Binding silently loses the
+  qualification.
+- **Forgetting to add the inverse side of an asymmetric pair.**
+  `blocks` / `blocked_by`, `parent` / `children`, `supersedes` /
+  `superseded_by` are all bidirectional. If you set one side
+  without setting the other, the index ends up with a broken
+  half-edge. Always set both.
+- **Cross-referencing a non-existent entity ID.** A typo in a
+  reference (`BACK-1234` vs `BACK-12345`) silently breaks
+  navigation and produces a dangling edge. Verify the target
+  exists via `index-management.get_entity` before writing the
+  reference.
+- **Treating cross-references as authoritative state.** A
+  cross-reference is metadata about a relationship; the
+  authoritative state lives on the entity itself. If a workitem's
+  `parent` says it's part of an epic but the epic's `children`
+  doesn't include it, the parent reference is wrong, not the
+  epic.
+- **Cross-referencing aggressively just because you can.** Every
+  cross-reference is graph clutter for queries. Reserve them for
+  relationships a future agent or human will actually need to
+  navigate, not for "these two things vaguely relate".
+- **Adding cross-references to entities you don't own the schema
+  for.** If you're tempted to put a custom field on a primitive's
+  frontmatter, consider whether it belongs in `metadata.tags` or
+  in a Binding instead. Schema drift across primitives breaks
+  validation.
+- **Confusing cross-references with discussions/decisions.** A
+  cross-reference says "these are related"; it does not capture
+  WHY. If the why matters, write a Discussion or DecisionRecord
+  and cross-reference THAT, not the underlying entities directly.
+
 ## Full reference
 
 ### Bidirectional integrity

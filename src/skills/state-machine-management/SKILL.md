@@ -95,6 +95,51 @@ Overrides must:
    doesn't know about.
 5. Log `state-machine.updated`.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Cycles in the state graph without explicit handling.** A cycle
+  (e.g., `in-review → in-progress → in-review`) is fine if it's
+  intentional, but every cycle should be marked and have an exit
+  criterion. Unmarked cycles cause infinite loops in process
+  execution.
+- **Terminal states with outgoing transitions.** A "terminal"
+  state by definition has no outgoing edges. If `cancelled` has a
+  transition to `re-opened`, then `cancelled` isn't terminal —
+  rename it. Mislabeled terminals confuse downstream queries
+  filtering by lifecycle stage.
+- **Missing initial state declaration.** Every state machine
+  needs an explicit `initial` state. Without it, new entities
+  have no lawful starting point and the validator can't reject
+  malformed creations.
+- **Hand-editing state machine YAML instead of using the MCP
+  tools.** Direct edits skip validation. The state-machine
+  primitive enforces "no orphan states" and "all transitions
+  reference declared states" at write time; bypassing it lets
+  invalid graphs land on disk.
+- **State machine that doesn't match the entity's actual
+  lifecycle.** If the schema says a workitem can be cancelled but
+  the state machine has no `cancelled` state, the two are out of
+  sync and queries break. Schema and state-machine must agree —
+  treat them as one unit when changing either.
+- **Forgetting to update consumers when transitions change.**
+  When you remove a transition (e.g., dropping `in-progress →
+  done` direct), every workitem currently in `in-progress` is
+  stranded. Audit current entities before removing transitions
+  and write a Migration if any are affected.
+- **Adding states without removing dead ones.** State machines
+  accumulate cruft over time. When you introduce a new state
+  that supersedes an old one, remove or deprecate the old one.
+  Otherwise the graph becomes a dictionary of every state anyone
+  ever proposed.
+- **Project-level state machines that diverge silently from
+  defaults.** If a project overrides a default state machine
+  (e.g., `context/state-machines/workitem.yaml`), record the
+  override as a DecisionRecord. Future maintainers need to know
+  why the project's workitem flow differs from processkit's
+  default.
+
 ## Full reference
 
 ### Fields

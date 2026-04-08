@@ -89,6 +89,38 @@ An agent running a process:
 5. Logs `process.step.started` / `process.step.completed`.
 6. Exits when the last step completes or a blocking gate fails.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Defining a Process without ownership.** Every Process needs an
+  owner Actor — the person or role responsible for keeping it
+  current. Unowned Processes drift and become "the way we used to
+  do things".
+- **Process with no termination criteria.** A Process must answer
+  "how do I know this is done". Open-ended processes that never
+  terminate become noise; the agent has no signal to stop
+  participating.
+- **Hand-waving "automated steps" that aren't actually wired.** If
+  a Process step says "CI runs automatically", verify the CI hook
+  exists. A Process that lies about its automation is worse than
+  one that admits everything is manual.
+- **Forgetting to version Process changes.** When a Process
+  definition changes, bump the version. Existing in-flight runs
+  should reference the version they started under, not silently
+  inherit the new rules mid-flight.
+- **Mixing Process steps with WorkItems.** A Process step
+  ("review the PR") is reusable across many runs; a WorkItem
+  ("review BACK-1234") is one specific instance. Don't put
+  workitem-specific data in the Process definition.
+- **Process documentation without examples.** A Process that says
+  "follow the release checklist" without linking to a worked
+  example of a past release is incomplete. Examples are the
+  difference between followable and theoretical.
+- **Authoring a Process for a one-off operation.** If you only run
+  it once, it's a runbook entry or a project log, not a Process.
+  Processes earn their cost through repetition.
+
 ## Full reference
 
 ### Fields

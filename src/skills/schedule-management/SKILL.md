@@ -57,6 +57,42 @@ spec:
 4. Link what it `triggers` — a process name, a reminder text, etc.
 5. Use Bindings to scope a schedule to a specific team or project.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Schedule without timezone.** "Daily at 9am" is meaningless
+  across DST boundaries and timezone-distributed teams. Always
+  specify the timezone explicitly (`UTC`, `Europe/Berlin`, etc.).
+  Schedules without timezone drift twice a year.
+- **Recurring schedule without an end date or `until`.** Some
+  schedules genuinely run forever; others should end with the
+  project, the quarter, or the team member's tenure. Make the
+  termination condition explicit, even if it's "indefinite" — the
+  decision to make it indefinite is itself a decision worth
+  recording.
+- **Forgetting to handle missed runs.** What happens if the
+  schedule fires but the action fails? Does it retry? Skip? Page
+  oncall? A Schedule without a missed-run policy silently
+  accumulates errors.
+- **Schedule fires without an action target.** A Schedule must
+  point at a Process, WorkItem template, or other actionable
+  artifact. "Trigger something at 9am" with no target is a
+  reminder, not a Schedule.
+- **Confusing schedule definition vs schedule execution.** The
+  Schedule entity defines WHEN something fires; the actual fire
+  events should be LogEntries (`schedule.fired`). Don't put
+  execution history in the Schedule entity itself.
+- **Hand-rolled cron expressions instead of using the schema.**
+  Cron strings are infamous for off-by-one errors (every 5
+  minutes vs every minute past the 5th). Use the schema's
+  structured fields (interval, days, hours) when possible;
+  reserve cron strings for cases the schema can't express.
+- **Schedule that overlaps with another.** "Daily standup at 9am"
+  and "weekly review at 9am Monday" both fire at 9am Monday. Be
+  explicit about precedence — does one preempt the other, do
+  both run, or does the agent skip one?
+
 ## Full reference
 
 ### Fields

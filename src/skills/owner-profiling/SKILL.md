@@ -104,6 +104,44 @@ specific person (PR review, email draft, meeting prep).
 This is the entry point for the broader context-efficiency story (see the
 `agent-management` skill's "Context budget and lazy loading" section).
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Updating the owner profile when the relationship is what
+  changed.** If Alice's role on the project shifted, that's a
+  Binding update, not an owner-profile rewrite. The owner profile
+  describes who the owner IS, not what they're currently DOING.
+- **Putting sensitive information in public profile files.**
+  Personal context (home situation, salary, relationship dynamics
+  with specific colleagues) belongs in the user-private files
+  under `context/owner/private/`. Never write sensitive content
+  to `assets/identity.md` or any other public-tier file.
+- **Treating the profile as a static one-shot document.** Owner
+  profiles are living artifacts. Re-run the interview protocol
+  when major life or work changes happen, and update incrementally
+  whenever observable signals warrant it (per the
+  observable-signals reference).
+- **Skipping the interview protocol because "it'll be faster to
+  guess".** Don't infer the owner's preferences from one
+  conversation. The interview exists because preferences are
+  surprising — even self-aware owners frequently say "I didn't
+  realize I cared about that" mid-interview.
+- **Profile fields out of sync with each other.** If
+  `working-style.md` says timezone CET but `goals-and-context.md`
+  says working hours 6am-10am ET, one of them is wrong. Run a
+  consistency check across the four files when updating any of
+  them.
+- **Inferring strong preferences from one interaction.** A
+  one-time annoyance is not a preference. Wait for at least two
+  independent observations of the same pattern before adding it
+  to the profile.
+- **Forgetting privacy tier on new fields.** Every field added to
+  the profile must declare its privacy tier (`public`,
+  `project-private`, or `user-private`). Defaulting to public for
+  convenience leaks information. Default to `user-private` and
+  upgrade visibility deliberately.
+
 ## Full reference
 
 ### The four templates
