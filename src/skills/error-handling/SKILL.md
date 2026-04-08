@@ -108,6 +108,18 @@ service is unhealthy:
 Configure failure threshold (e.g. 5 failures in 30s), open duration
 (e.g. 60s), and half-open probe count.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Catching `Exception` (or bare `except:`) and swallowing it.** Silent error swallowing is the most common cause of production mysteries where "nothing went wrong, but nothing worked either." Catch specific error types; log and re-raise everything else.
+- **Leaking stack traces, SQL, or file paths in HTTP responses.** Internal error details in user-facing responses are both a security vulnerability and a poor user experience. Map internal errors to user-facing codes at the boundary; log the full context internally with a correlation ID.
+- **Retrying non-idempotent operations without a deduplication key.** Retrying a payment, an email send, or an inventory decrement without idempotency protection causes double-charges and double-sends. Add an idempotency key at the call site before wiring retry logic.
+- **Retrying 4xx errors as if they were transient.** A 400 (bad request) or 401 (unauthorized) will not change on retry — it reflects a problem with the request, not the server. Retry only transient failures: 429, 500, 502, 503, 504, and network-level errors.
+- **Retrying without exponential backoff and jitter.** Fixed-interval retries on a struggling service create a thundering herd that prevents recovery. Use exponential backoff with random jitter; cap the total number of retries and the total elapsed time.
+- **Sentinel return values instead of explicit errors.** Returning `-1`, `null`, or an empty string to signal failure requires every caller to know and check the convention. Make failure explicit in the type: `Result<T, E>`, `Option<T>`, or a domain error type.
+- **Renaming or reusing error codes after shipping.** Error codes are a public contract. Consumers build conditional logic on them. Renaming `PAYMENT.DECLINED` or reusing a retired code silently breaks consumer error handling.
+
 ## Full reference
 
 ### Error reporting

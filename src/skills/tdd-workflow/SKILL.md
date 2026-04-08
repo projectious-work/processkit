@@ -93,6 +93,18 @@ Names should describe behavior, not implementation:
 Prefer fakes and stubs over mocks. Excessive mocking couples tests
 to implementation and makes refactoring painful.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Writing the test after the code "to satisfy TDD".** Retrofitting tests to code that already exists does not produce the design benefit TDD promises. The design benefit comes from the constraint of writing a failing test first, which forces the interface to be specified before the implementation.
+- **Red-green cycles that take 30+ minutes.** A long cycle means the behavior being specified is too large. Split the failing test into smaller behaviors; each cycle should describe a single, narrow behavior change.
+- **Skipping the refactor step because "tests pass".** The refactor step is where the design payoff from TDD lives. Skipping it means the code works but accumulates duplication and poor naming with each cycle.
+- **Excessive mocking.** Mocks that replace internal collaborators (not external boundaries) couple tests to implementation details. When the implementation changes, the mocks break even if the behavior did not. Prefer fakes and stubs over mocks; prefer real objects over fakes when feasible.
+- **Naming tests after functions rather than scenarios.** `test_calculate` tells you nothing when it fails. `test_empty_cart_has_zero_total` identifies the broken behavior immediately. Name every test with `test_<scenario>_<expected_outcome>`.
+- **Chasing 100% coverage instead of meaningful behavior coverage.** The last few percentage points of coverage typically cover trivial code, generated code, or defensive paths that cost more to test than they save. Target meaningful branch coverage of business logic, not total line coverage.
+- **Testing implementation details instead of observable behavior.** Tests that assert on private method calls or internal state prevent refactoring — any structural change breaks the tests even when behavior is preserved. Test through the public API.
+
 ## Full reference
 
 ### Property-based testing

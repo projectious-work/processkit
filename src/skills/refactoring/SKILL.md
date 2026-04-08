@@ -84,6 +84,18 @@ distinct responsibilities, extracts each into a named helper
 keeping the original as a high-level orchestrator, runs tests after
 each extraction, and commits each extraction separately.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Mixing refactoring with feature changes in the same commit.** When a commit changes both structure and behavior, reviewers cannot verify that behavior was preserved, and rollback becomes surgical. Keep refactoring commits separate; the commit message should start with `refactor:`.
+- **Starting without a test safety net.** If the code has no tests, changing its structure with no verification is guessing. Write characterization tests first — tests that capture current behavior, not desired behavior — then refactor.
+- **Big-bang rewrite instead of incremental transformation.** Full rewrites take longer, introduce more bugs, and stall new features during the rewrite. Refactor incrementally: one smell, one transformation, one commit, tests green throughout.
+- **Removing code assumed to be dead without verifying.** Dynamic dispatch, reflection, plugin systems, and config-driven loads can call code that static analysis says is unreachable. Search for all invocation paths before deleting anything.
+- **Speculative generality.** Adding extension points, plugin hooks, or configuration flags "just in case" is not refactoring — it is adding untested code for hypothetical future requirements. Refactor to the current need, not the imagined future.
+- **Pattern cargo-culting.** Introducing a design pattern because it sounds clever adds indirection and complexity without value. Apply a pattern only when it solves a concrete, present problem — and only after the "rule of three" (three similar occurrences) is met.
+- **Skipping the refactor step after green.** The refactor step is where the design payoff from TDD-style cycles lives. Skipping it means the test suite is green but the technical debt is accumulating.
+
 ## Full reference
 
 ### Modern considerations

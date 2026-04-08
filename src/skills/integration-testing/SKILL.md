@@ -125,6 +125,18 @@ Common flaky-test causes and fixes:
 A flaky test that is ignored is worse than no test at all. Tag
 known flaky tests and track them.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Sharing a single database across parallel test workers.** Parallel workers reading and writing to the same schema produces ordering-dependent failures and data contamination. Give each worker a unique database or schema, or use per-test transaction rollback.
+- **Using `sleep()` to wait for async behavior.** Fixed delays are both fragile (fail on slow CI runners) and wasteful (over-wait on fast machines). Replace with explicit wait-for conditions that poll until the expected state is reached or a timeout fires.
+- **Mocking the unit under test instead of its boundary.** If the code being tested is itself replaced by a mock, the test verifies nothing. Mocks belong at the boundary — the external API, database, or queue — not inside the module under test.
+- **Asserting only on response shape, never on the request the code sent.** Testing that "we got a 200" but not verifying the request body, headers, or method means outbound contract violations go undetected. Assert on what the code sent, not just what it received.
+- **Snapshotting timestamps or random IDs without normalization.** Snapshots that contain `created_at: 2026-04-08T10:23:11Z` or `id: "f3a2..."` fail on every run. Normalize or mask volatile fields before snapshotting.
+- **Marking flaky tests as skipped without assigning an owner.** A skipped test is a test that never catches anything. Tag the test with the owner's handle and a follow-up date; skipped tests must be fixed before a release.
+- **Using `latest` image tags for testcontainers.** When an upstream container image is updated, CI breaks unpredictably. Pin testcontainer images to fixed tags (`postgres:16-alpine`, not `postgres:latest`) for reproducible CI runs.
+
 ## Full reference
 
 ### Testcontainers with Postgres (Python)

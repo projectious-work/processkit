@@ -75,6 +75,18 @@ this mistake easy to make?" Assume everyone acted with the best
 information available at the time. If anyone feels blamed, the
 postmortem has failed regardless of wording.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Action item bloat.** Twenty action items with no owners mean none get done. Cap at 5–8 actions, assign a named owner and a due date to each, and track them in the team's issue tracker rather than only in the document.
+- **Stopping the 5 Whys at the symptom level.** "The query was slow" is a symptom, not a root cause. Keep asking why until you reach a systemic gap: "no migration performance review step existed." The root cause must be something the team can change.
+- **Blame disguised as systems language.** "The team should have noticed" is still blame. Rewrite as "no automated check existed for this pattern." If the postmortem names individuals in the cause chain rather than systemic gaps, the culture will drift away from blamelessness.
+- **Postmortem written but never referenced.** A document filed and forgotten produces no learning. Link every corrective action to a tracked ticket; schedule a follow-up review at 30 days to check completion.
+- **Scheduling the review too late.** Memories of the incident fade rapidly. Schedule the review within 3–5 business days. Waiting for a "convenient time" usually means the review happens weeks later, if at all.
+- **Author and facilitator being the same person.** The author is defensive about the incident they were in; the facilitator needs to be neutral. Separate the roles even on small teams.
+- **All actions in one category.** A postmortem that produces only "Prevent" actions has no "Detect" or "Mitigate" items, which means the next similar incident will still take too long to detect and contain. Aim for at least one action per category.
+
 ## Full reference
 
 ### Facilitation tips

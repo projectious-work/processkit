@@ -101,6 +101,18 @@ When codegen runs as part of the build:
 - Never hand-edit generated files. Fix the template or input
   instead, then regenerate.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Hand-editing generated files.** Generated files are overwritten on the next regeneration run. All fixes must go to the template or input schema, then regenerate. Without this discipline, edits silently accumulate until the next full regeneration wipes them.
+- **Missing `DO NOT EDIT` header.** Without a clear header, future contributors will edit the output, lose work, and curse the system. Every generated file must declare itself generated with the tool name and source.
+- **No CI check for generator drift.** If CI does not run codegen and diff against committed output, the generator and the checked-in files will silently diverge. Add `git diff --exit-code` after running the generator in CI.
+- **Logic embedded in the template.** Templates with embedded conditionals, loops, and computations are untestable and hard to debug. Push all logic into the data model that feeds the template; keep the template a dumb projection.
+- **Unpinned generator version.** If the generator is invoked without a pinned version, reruns may produce different output. Pin the generator version the same way you pin any other tool dependency.
+- **Generating when a library would do.** The generate-vs-abstract decision defaults to "abstract" when everything is in one language and there is no zero-dependency constraint. Proposing codegen for a same-language, same-repo problem is usually over-engineering.
+- **No single regeneration command.** "Run these eight steps in order" does not survive a year. Every project with codegen needs a single command — `make generate`, `just generate`, or equivalent — that regenerates everything from scratch.
+
 ## Full reference
 
 ### Macro systems

@@ -73,6 +73,18 @@ what went well and what was painful, structures the findings into
 the retro format with concrete action items, and saves it to
 `context/retros/v0.3.md`.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Action items with no owner or due date.** An action item that says "improve testing" with no owner and no date will not happen. Every action must name who is responsible and when it is due — otherwise it is a wish, not a commitment.
+- **Discussing the same blockers retro after retro.** If the same pain point appears in three consecutive retrospectives with no change, the problem is not the retro — it is that action items are not being followed through. Audit completion before the next retro starts.
+- **Letting the loudest voices dominate.** Verbal-first retros favor extroverts and senior voices. Use silent individual input gathering (sticky notes, async docs) before opening group discussion to surface the full range of experience.
+- **Skipping the retro because "we are too busy".** Busyness is the symptom that makes the retro most valuable. A team that never reflects never improves its throughput. Protect the retro time even at the cost of other meetings.
+- **Treating the retro as a complaint session.** The "what didn't work" section creates energy only if it leads to "what to try next." If the output is a list of grievances with no action items, the retro has failed.
+- **Storing retros where nobody looks at them again.** A retrospective document in a folder no one revisits produces no learning. Link to the retro from the next sprint's kickoff so action items feed into planning.
+- **Vague scope for the retrospective.** "Let's reflect on the project" produces generic feedback. "Let's reflect on the v0.5 release, specifically the last two weeks" produces specific, actionable items.
+
 ## Full reference
 
 ### Facilitation patterns

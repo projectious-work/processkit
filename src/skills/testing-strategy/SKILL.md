@@ -71,6 +71,18 @@ tests do I need?" The agent recommends:
 
 One happy path, one boundary, one error case, one limit case.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Testing implementation details (private methods, internal state).** Tests that verify internals couple the test suite to the implementation — any structural change breaks tests even when behavior is correct. Test through the public API at the appropriate level.
+- **Slow unit tests that hit disk or network.** A unit test that opens a file, makes an HTTP call, or connects to a database is an integration test with a misleading name. It will be slow and flaky in CI. Mock or stub at the boundary; keep unit tests pure.
+- **E2E tests for every code path.** E2E tests are expensive to write, slow to run, and flaky to maintain. They should cover the critical user journeys that must work — not every conditional branch. Those belong in unit and integration tests.
+- **Coverage goals as the only quality metric.** 100% line coverage with assertions that never fail (e.g. `assert True`) provides zero confidence. Coverage is a smoke alarm — it tells you what was executed, not whether the behavior was verified.
+- **No test for the unhappy path.** Error cases and edge cases are where bugs live. Happy-path-only tests give false confidence. For every behavior, consider: what happens with empty input, invalid input, a missing dependency, a limit exceeded?
+- **Deviating from the testing pyramid without understanding the trade-offs.** If the test suite is inverted (mostly E2E) or trophy-shaped (mostly integration), that may be appropriate for the architecture — but it should be a deliberate decision with documented trade-offs, not an accident.
+- **Tests that pass when the production code is deleted.** A test suite that stays green after the module is removed was not testing anything. Run a mutation test or delete the module temporarily to verify the suite would actually catch a regression.
+
 ## Full reference
 
 ### Choosing the right level

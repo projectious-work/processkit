@@ -85,6 +85,18 @@ debt immediately; schedule important debt each sprint. Frame debt
 for stakeholders in business terms ("this refactor will reduce
 bug rate by ~30%"). Never let debt accumulate silently.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Single-number estimates at project start.** The cone of uncertainty is ~4x at project start — committing to a single date this early guarantees being wrong. Always present ranges; re-estimate as unknowns resolve.
+- **Promising fixed date AND fixed scope simultaneously.** When both are fixed, the only variable left is quality, and quality always loses. When stakeholders want a fixed date, negotiate scope; when they want fixed scope, negotiate the date. Never fix both.
+- **Converting story points to hours.** Story points measure relative complexity across a team; hours measure elapsed time for an individual. Converting destroys the relative signal and creates false precision. If hours are needed, use hours-based estimation from the start.
+- **Comparing velocity across teams.** Each team calibrates its "1-point" differently. Cross-team velocity comparison is not meaningful and creates perverse pressure to inflate estimates.
+- **Padding estimates secretly.** Hidden contingency destroys trust when discovered and eliminates the feedback loop that improves future estimates. Surface the risk explicitly: "This estimate includes 20% buffer for the unknown authentication integration."
+- **Re-estimating done work to match actuals.** Retroactively adjusting estimates to make the velocity look better destroys the historical calibration that makes forecasting useful. Leave done work at its original estimate.
+- **Treating velocity as a performance metric.** Velocity is a planning tool, not a KPI. Using it to compare or rank engineers causes gaming, inflated estimates, and team dysfunction.
+
 ## Full reference
 
 ### Three-point estimation (PERT)

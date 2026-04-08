@@ -53,6 +53,18 @@ Sort each finding into one bucket and label it explicitly:
 Always include specific line references and concrete suggestions.
 Acknowledge what was done well — review is not adversarial.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Burying must-fix items after style comments.** When a security issue or correctness bug appears three paragraphs into a review, the author may miss it. Lead with must-fix items; put nits at the end.
+- **Vague comments without line references or concrete suggestions.** "This looks weird" is not actionable. Every finding needs a specific line reference and a concrete suggestion — what is the problem and what would fix it.
+- **Stamp-of-approval review.** Skimming the diff and approving to move it along defeats the purpose of review and gives the team false confidence. If you cannot read the changed lines, say so and ask to review in a smaller chunk.
+- **Reviewing huge diffs in one pass.** Large diffs cause reviewer fatigue and cause real issues to be missed. Either push back on PR scope or break the review into sessions (security first, then logic, then style).
+- **Missing the escalation trigger.** Line-by-line comments on a diff that has fundamental design issues waste both sides' time. When the design is wrong, stop the line review and raise the design concern first.
+- **Rewriting in review.** Proposing complete rewrites of code that works demotivates authors and overreaches the reviewer's role. Propose the improvement once; the author owns the code.
+- **No acknowledgment of what was done well.** All-negative reviews are adversarial over time and reduce the quality of future work. Code review should also surface what was done right.
+
 ## Full reference
 
 ### Example output shape

@@ -60,6 +60,18 @@ vulnerable code path is actually reached, and whether a workaround
 - Enable Dependabot, Renovate, or equivalent for automated update PRs.
 - Document any deliberately pinned versions inline with the reason.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Running the audit once and never repeating it.** Vulnerabilities are added to advisory databases daily. A clean audit today may have critical findings tomorrow. Schedule monthly audits and integrate the scanner into CI.
+- **Conflating audit with outdated check.** The vulnerability scanner (`cargo audit`, `npm audit`) catches known CVEs in current versions. The outdated checker (`cargo outdated`, `npm outdated`) flags stale packages. They answer different questions and should both run.
+- **Auto-merging Dependabot PRs without running tests.** A Dependabot PR can introduce a breaking API change even in a patch bump. Require CI to pass and spot-check major bumps manually before merging.
+- **Treating "0 vulnerabilities" as proof of security.** Known-CVE scans miss typosquatting, abandoned maintainers, license risks, and malicious updates. A clean audit is a necessary condition, not a sufficient one.
+- **Suppressing findings without documenting the reason.** Future auditors cannot tell whether a suppressed advisory was intentional or forgotten. Every ignore rule needs a rationale and an expiry date.
+- **Batching many dependency updates into one PR.** When a multi-update PR breaks something, you cannot attribute the breakage to the specific dependency. Update one dependency at a time, run the tests, then merge.
+- **Treating a major version bump the same as a patch bump.** Major bumps require changelog review for breaking changes before merging. A quick major-bump merge is how silent regressions reach production.
+
 ## Full reference
 
 ### What "audit" actually checks

@@ -92,6 +92,18 @@ projects for legal review.
 | `license-checker` | Node.js |
 | `pip-licenses` | Python |
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Hand-editing lockfiles.** Lockfiles are generated artifacts — their format is designed for machines and manual edits are easily invalid. Regenerate them with the package manager; never edit by hand.
+- **Omitting lockfiles from version control for applications.** Without a committed lockfile, different developers (and CI) resolve different transitive versions. Commit lockfiles for all applications and services; the "don't commit lockfile" rule applies only to libraries.
+- **Auto-merging major version bumps.** Major bumps can contain breaking API changes. Auto-merge is appropriate for patches, not majors. Major updates require changelog review before merging.
+- **Ignoring Dependabot or Renovate PRs until they pile up.** A backlog of 40 dependency PRs becomes unreviewable. Each one also causes merge conflicts with the others. Review and merge promptly; set a weekly cadence.
+- **Pinning loosely in applications "to stay current".** Applications should use exact pins and a managed update workflow. Loose ranges in applications lead to unreproducible builds and silent version drift between environments.
+- **Adding a 200-package dependency for a 5-line utility.** Every dependency is a maintenance, security, and license liability. Audit the size and scope of the dependency before adding it; prefer stdlib or a smaller alternative.
+- **No SLA on security advisories.** "We'll get to it" means critical vulnerabilities sit in the codebase for months. Define explicit SLAs: critical/high → fix within 48 hours; medium → within the current sprint.
+
 ## Full reference
 
 ### Dependency review checklist

@@ -53,6 +53,18 @@ test. Skipping steps causes the bug to come back.
   specific failing inputs, add assertions at intermediate steps,
   find where actual diverges from expected, trace back.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Changing multiple things at once.** When more than one variable changes between a broken and fixed state, you cannot know which change fixed the issue — and you may have introduced new bugs alongside the fix. Change one thing at a time.
+- **Skipping the reproduction step.** Starting to diagnose before having a reliable reproduction means you're hunting in the dark. Confirm you can trigger the failure on demand before doing anything else.
+- **Stopping at the first fix that makes the symptom disappear.** The first change that silences the error may be masking the root cause. Verify that the underlying state is correct, not just the visible output.
+- **No regression test after the fix.** A bug that was fixed without a test will return. Add a test that would have caught it before closing the issue.
+- **Adding print statements everywhere without a plan.** Each print should test a specific hypothesis ("is the value non-nil here?"). Random prints produce noise that slows diagnosis.
+- **Confusing correlation with causation in logs.** The last log entry before a crash is rarely the cause — it is just the last thing that ran. Trace the full causal chain; do not assume temporal proximity implies causation.
+- **Treating a CI/local mismatch as mysterious.** Environment differences (OS, timezone, locale, implicit tool version, parallel test ordering) are the most common cause. Diff the CI environment against local systematically rather than guessing.
+
 ## Full reference
 
 ### Anti-patterns

@@ -61,6 +61,18 @@ Follow Conventional Commits:
 - **Rebase** to keep a feature branch up to date before opening
   the PR
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Mega-commits ("various fixes", 40 files changed).** A commit that mixes unrelated changes is impossible to review, impossible to revert selectively, and tells a lie in its message. Each commit should represent one logical change that can stand alone.
+- **Force-pushing to shared branches.** Force-pushing to `main` or any branch others have checked out rewrites history they depend on, causing diverged local states that are painful to recover. Never force-push to a shared branch.
+- **Branches that live for months.** Long-lived branches diverge from main, accumulate merge conflicts, and eventually require heroic merge efforts. Rebase weekly or split long-running work into shorter-lived feature branches.
+- **PRs with no description.** "See commits" is not a description. The PR description is for the reviewer — it explains what changed, why it changed, and how to verify it. Write it before requesting review.
+- **Conventional Commit type misuse.** Using `fix:` for features or `feat:` for refactors corrupts any automation that generates changelogs or determines version bumps from commit types. Match the type to the nature of the change.
+- **Squash-merging a long-lived integration branch.** Squash-merge is for feature branches with noisy "wip" commits. A long-lived branch with meaningful commit history should be merge-committed so the history is preserved for future investigation.
+- **Committing unrelated changes in the same PR to "save time".** Reviewers are slower on unrelated changes combined in one PR; rollback becomes more expensive if one change needs reverting. Split unrelated changes into separate PRs.
+
 ## Full reference
 
 ### General rules

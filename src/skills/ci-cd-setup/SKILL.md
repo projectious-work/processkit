@@ -61,6 +61,18 @@ attacker who compromises a tag cannot inject code into your build.
 - Require CI to pass before merge via branch protection rules.
 - Run expensive checks (E2E suites, deploys) only on main, not on PRs.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Pinning an action to a tag instead of a commit SHA.** Tags are mutable — an attacker who compromises an action's tag can inject code into your build. Pin third-party actions to their full commit SHA, not just `@v4`.
+- **Secrets leaking into build logs.** Printing or echoing an environment variable that contains a secret exposes it in the CI log. Never `echo ${{ secrets.FOO }}` — pass secrets only through inputs or masked env vars.
+- **Running expensive checks on every PR.** E2E tests and deploy jobs on every pull request slow the pipeline and teach contributors to bypass CI. Gate slow jobs behind `if: github.ref == 'refs/heads/main'` or a label.
+- **No `timeout-minutes` on jobs.** A hung step runs indefinitely and eats your minutes budget. Every job and every slow step needs a timeout — not just the slow ones you expect.
+- **CI passes but local fails (or vice versa).** Environment divergence — OS, timezone, locale, file path casing, implicit tool versions — causes mismatch. Make CI reproduce local conditions explicitly; never assume the runner matches the developer's machine.
+- **One mega-job that lints, tests, builds, and deploys.** Failures are hard to locate, reruns are expensive, and the job cannot parallelize. Split into separate jobs; each job should do one thing.
+- **Branch protection not enforcing required status checks.** If CI is advisory rather than required for merge, it stops being trusted. Configure branch protection to require every status check that matters before merge.
+
 ## Full reference
 
 ### Sample workflow shape

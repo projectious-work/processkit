@@ -64,6 +64,18 @@ Keep docs close to code. Doc comments beat wiki pages beat
 external sites. The further docs travel from the code, the faster
 they go stale.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Writing docs before identifying the audience.** Documentation for a developer integrating an API is completely different from documentation for a user running a tool. Write the wrong one and it helps nobody. Identify the reader before writing the first word.
+- **Restating the code in comments.** `# increments i` next to `i += 1` adds noise, not signal. Comments explain why — the business rule, the workaround, the non-obvious constraint — not what, which the code already shows.
+- **Tutorial-as-README.** A README is a map, not a textbook. A 3,000-word introductory walkthrough in the README buries the quick start. Link to a tutorial; don't inline it.
+- **TODO comments without owners or dates.** A TODO without an owner and a deadline becomes permanent infrastructure. Either fix it immediately, file a ticket and link it, or delete the TODO.
+- **Stale comments that contradict the code.** A comment that says one thing while the code does another is actively harmful — it misdirects the reader. Update or delete comments on every change that touches the relevant code.
+- **Undocumented public API.** Every exported symbol is a promise. If a function is worth exporting, it's worth a doc comment that explains what it does, its parameters, its return value, and any surprising behavior.
+- **Docs stored far from the code.** Wiki pages and external sites go stale because the friction of updating them is higher than the friction of updating the code. Keep docs close to code; doc comments beat wikis.
+
 ## Full reference
 
 ### Example doc comment

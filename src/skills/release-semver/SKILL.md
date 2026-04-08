@@ -64,6 +64,18 @@ The agent recommends a minor bump (because of the new feature),
 drafts changelog entries grouped Added/Fixed, updates version
 files, creates the bump commit, and tags it.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Bundling a breaking change into a patch or minor release.** Consumers rely on semver guarantees to control when they take breaking changes. A breaking change in a patch release violates the contract and causes silent runtime failures in consumer code.
+- **Skipping the changelog because "git log has it".** Git log is not a changelog. It lacks context, grouping, and the human judgment that makes a changelog useful. Every release needs a curated changelog with Added/Changed/Fixed/Removed sections.
+- **Bumping all version files in separate commits.** A brief window where `Cargo.toml` says `1.2.0` but `pyproject.toml` still says `1.1.0` is a broken state. Update all version files in a single atomic commit.
+- **Tagging before CI passes.** A tag should point to a commit that has been fully built and tested. Tagging a commit that later fails CI means the published artifact may not match what was verified.
+- **Publishing from a developer machine without a clean checkout.** Uncommitted local changes — WIP files, debug flags, `console.log` statements — may sneak into the artifact. Publish from CI with a clean checkout or from a fresh clone.
+- **Re-tagging a published version to fix a mistake.** Package registries (crates.io, PyPI, npm) prohibit or block re-publishing to an existing version. Cut a new patch version (e.g. `1.2.1`) to fix a mistake in `1.2.0`; never overwrite a tag.
+- **Pre-1.0 projects that promise stability they cannot keep.** If the API is still moving, stay below 1.0 and say so. Cutting `1.0.0` too early creates a compatibility obligation that slows future improvements.
+
 ## Full reference
 
 ### When pre-1.0 ends
