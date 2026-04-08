@@ -1,25 +1,28 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: owner-profiling
+description: |
+  Build and maintain a structured personal-context portfolio for the project owner — identity, working style, goals, team, decision patterns. Includes both an interview protocol for bootstrapping and observable-signal patterns for incremental refinement. Use to bootstrap an owner profile (interview), to refine an existing profile (target one file), or to incrementally update the profile based on observed patterns from a normal session (the agent watches for signals and proposes additions when evidence accrues).
 metadata:
-  id: SKILL-owner-profiling
-  name: owner-profiling
-  version: "1.0.0"
-  created: 2026-04-07T00:00:00Z
-spec:
-  description: "Build and maintain a structured personal-context portfolio for the project owner — identity, working style, goals, team, decision patterns. Includes both an interview protocol for bootstrapping and observable-signal patterns for incremental refinement."
-  category: process
-  layer: 4
-  uses: [event-log, actor-profile]
-  provides:
-    primitives: []
-    templates: [identity, working-style, goals-and-context, team-and-relationships]
-  when_to_use: "Use to bootstrap an owner profile (interview), to refine an existing profile (target one file), or to incrementally update the profile based on observed patterns from a normal session (the agent watches for signals and proposes additions when evidence accrues)."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-owner-profiling
+    version: "1.0.0"
+    created: 2026-04-07T00:00:00Z
+    category: process
+    layer: 4
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: actor-profile
+        purpose: Resolve and validate Actor IDs referenced by this skill's entities.
+    provides:
+      primitives: []
+      templates: [identity, working-style, goals-and-context, team-and-relationships]
 ---
 
 # Owner Profiling
 
-## Level 1 — Intro
+## Intro
 
 `owner-profiling` builds and maintains a four-file personal context portfolio
 for the project owner: who they are, how they want to be communicated with,
@@ -30,7 +33,7 @@ modes: **bootstrap** (interview when no profile exists), **refine** (walk
 through one file to update it), and **observe** (incrementally enrich the
 profile from signals seen during normal work).
 
-## Level 2 — Overview
+## Overview
 
 ### The four files
 
@@ -101,33 +104,33 @@ specific person (PR review, email draft, meeting prep).
 This is the entry point for the broader context-efficiency story (see the
 `agent-management` skill's "Context budget and lazy loading" section).
 
-## Level 3 — Full reference
+## Full reference
 
 ### The four templates
 
-The templates live in `templates/` and are scaffolded into a project's
+The templates live in `assets/` and are scaffolded into a project's
 `context/owner/` and `context/owner/private/` directories during `aibox
 init` (or when the owner-profiling skill is first activated).
 
-- **`templates/identity.md`** — frontmatter (`privacy: public`) + sections:
+- **`assets/identity.md`** — frontmatter (`privacy: public`) + sections:
   Name/Role/Organization, What I Do (one paragraph), What I'm Known For
   (1-3 sentences). The entire file should be under one screen.
 
-- **`templates/working-style.md`** — frontmatter (`privacy: project-private`) +
+- **`assets/working-style.md`** — frontmatter (`privacy: project-private`) +
   sections: Communication style (tone, length, formality), Hard
   constraints (timezone, availability, non-negotiables), Strong preferences
   (formatting, vocabulary, dislikes), Role and responsibilities (weekly
   cadence, decision authority, deliverables), Things I hate (visceral pet
   peeves the agent should avoid).
 
-- **`templates/goals-and-context.md`** — frontmatter (`privacy: project-private`) +
+- **`assets/goals-and-context.md`** — frontmatter (`privacy: project-private`) +
   sections: Current goals (this quarter), Longer-term goals (year+),
   How I think about tradeoffs (default positions), What I'm NOT
   prioritizing, Areas of expertise, Key terminology (jargon I use without
   needing definitions), Where I'm a beginner (topics where I want more
   explanation).
 
-- **`templates/team-and-relationships.md`** — frontmatter (`privacy:
+- **`assets/team-and-relationships.md`** — frontmatter (`privacy:
   user-private`) + per-person blocks: Name, Role, Relationship type, How
   we interact, What they need from me, What I need from them, Context for
   agents (sensitivities, communication style, preferences). **Lives in

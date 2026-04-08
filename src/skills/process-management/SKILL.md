@@ -1,32 +1,37 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: process-management
+description: |
+  Manage Process entities — declarative sequences of steps with roles, gates, and a definition of done. Use when defining a reusable workflow — code review, release, incident response, onboarding — that the project wants to run consistently.
 metadata:
-  id: SKILL-process-management
-  name: process-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Process entities — declarative sequences of steps with roles, gates, and a definition of done."
-  category: process
-  layer: 3
-  uses: [event-log, role-management, gate-management]
-  provides:
-    primitives: [Process]
-    templates: [process]
-  when_to_use: "Use when defining a reusable workflow — code review, release, incident response, onboarding — that the project wants to run consistently."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-process-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: role-management
+        purpose: Resolve Role IDs when entities need role-based assignment.
+      - skill: gate-management
+        purpose: Evaluate gate conditions before allowing transitions.
+    provides:
+      primitives: [Process]
+      templates: [process]
 ---
 
 # Process Management
 
-## Level 1 — Intro
+## Intro
 
 A Process is a declarative definition of a workflow: a sequence of steps,
 the roles involved, the gates that must pass, and the definition of done.
 processkit does NOT execute processes — agents and humans do. processkit
 just defines them.
 
-## Level 2 — Overview
+## Overview
 
 ### Shape
 
@@ -84,7 +89,7 @@ An agent running a process:
 5. Logs `process.step.started` / `process.step.completed`.
 6. Exits when the last step completes or a blocking gate fails.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

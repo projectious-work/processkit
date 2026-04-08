@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: seo-optimization
+description: |
+  SEO — on-page, technical, structured data, Core Web Vitals, and mobile-first indexing. Use when optimizing a website for search engines, adding meta tags or structured data, fixing Core Web Vitals, or auditing technical SEO.
 metadata:
-  id: SKILL-seo-optimization
-  name: seo-optimization
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "SEO — on-page, technical, structured data, Core Web Vitals, and mobile-first indexing."
-  category: meta
-  layer: null
-  when_to_use: "Use when optimizing a website for search engines, adding meta tags or structured data, fixing Core Web Vitals, or auditing technical SEO."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-seo-optimization
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: meta
 ---
 
 # SEO Optimization
 
-## Level 1 — Intro
+## Intro
 
 SEO is two jobs: make the page understandable to crawlers (titles,
 headings, structured data, sitemap, canonicals) and make it fast and
 usable for humans (Core Web Vitals, mobile, HTTPS). Both feed the
 same ranking signals.
 
-## Level 2 — Overview
+## Overview
 
 ### On-page SEO
 
@@ -108,7 +106,7 @@ same ranking signals.
 - Verify with Chrome DevTools device emulation and Google's
   Mobile-Friendly Test.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Internal linking
 

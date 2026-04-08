@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: data-quality
+description: |
+  Data quality framework — completeness, accuracy, consistency, validation, and contracts. Use when implementing data validation, setting up quality checks for a pipeline, defining data contracts between teams, or investigating data anomalies.
 metadata:
-  id: SKILL-data-quality
-  name: data-quality
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Data quality framework — completeness, accuracy, consistency, validation, and contracts."
-  category: data
-  layer: null
-  when_to_use: "Use when implementing data validation, setting up quality checks for a pipeline, defining data contracts between teams, or investigating data anomalies."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-data-quality
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: data
 ---
 
 # Data Quality
 
-## Level 1 — Intro
+## Intro
 
 Data quality is measurable across six dimensions and enforced with
 explicit validation rules at every pipeline boundary. Codify producer
 and consumer expectations as data contracts and run them as automated
 checks rather than relying on manual review.
 
-## Level 2 — Overview
+## Overview
 
 ### The six dimensions
 
@@ -75,7 +73,7 @@ count, null rate on key columns, duplicate rate, freshness, schema
 match — and add more as issues arise. Keep thresholds in config files,
 not hardcoded.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Great Expectations patterns
 

@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: pixijs-gamedev
+description: |
+  PixiJS 2D rendering and game development — sprites, animation loops, interaction, and WebGL/Canvas rendering. Use when building PixiJS apps, creating 2D games, integrating sprites and animations, or implementing interactive graphics in the browser.
 metadata:
-  id: SKILL-pixijs-gamedev
-  name: pixijs-gamedev
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "PixiJS 2D rendering and game development — sprites, animation loops, interaction, and WebGL/Canvas rendering."
-  category: framework
-  layer: null
-  when_to_use: "Use when building PixiJS apps, creating 2D games, integrating sprites and animations, or implementing interactive graphics in the browser."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-pixijs-gamedev
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: framework
 ---
 
 # PixiJS Game Development
 
-## Level 1 — Intro
+## Intro
 
 PixiJS renders 2D scenes through a display-object tree (`Application`
 holds a `stage` `Container`, which holds `Sprite`s, `Graphics`, and
@@ -23,7 +21,7 @@ nested `Container`s). Drive updates from the `Ticker`, load assets
 through `Assets`, and reach for `ParticleContainer` only when raw
 batch performance matters.
 
-## Level 2 — Overview
+## Overview
 
 ### Application setup
 
@@ -90,7 +88,7 @@ via a callback. Supported formats: PNG, JPG, WebP, SVG, JSON
 (spritesheets), and audio via plugins. Preload critical assets before
 showing the game; lazy-load secondary assets in the background.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Application boilerplate
 

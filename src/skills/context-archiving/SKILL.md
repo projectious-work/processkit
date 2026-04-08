@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: context-archiving
+description: |
+  Moves completed backlog items, old decisions, finished projects, and stale session notes from active context files into context/archive/ counterparts. Use when active context files grow large, when closing out completed work, or during periodic context maintenance.
 metadata:
-  id: SKILL-context-archiving
-  name: context-archiving
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Moves completed backlog items, old decisions, finished projects, and stale session notes from active context files into context/archive/ counterparts."
-  category: process
-  layer: 2
-  when_to_use: "Use when active context files grow large, when closing out completed work, or during periodic context maintenance."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-context-archiving
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
 ---
 
 # Context Archiving
 
-## Level 1 — Intro
+## Intro
 
 Archiving moves done work out of active context files into a
 parallel `context/archive/` tree. Active files stay focused on
 current work; archive files preserve full history. Items are never
 deleted — only moved.
 
-## Level 2 — Overview
+## Overview
 
 ### What gets archived
 
@@ -48,7 +47,7 @@ the archive:
 5. Confirm the active file's "Next ID" counter is unchanged
    (archiving must not renumber live items).
 
-## Level 3 — Full reference
+## Full reference
 
 ### Invariants
 

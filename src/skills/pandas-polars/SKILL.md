@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: pandas-polars
+description: |
+  DataFrame operations with pandas and polars — groupby, joins, reshaping, performance. Use when manipulating tabular data, choosing between pandas and polars, optimizing DataFrame code, or translating between the two libraries.
 metadata:
-  id: SKILL-pandas-polars
-  name: pandas-polars
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "DataFrame operations with pandas and polars — groupby, joins, reshaping, performance."
-  category: data
-  layer: null
-  when_to_use: "Use when manipulating tabular data, choosing between pandas and polars, optimizing DataFrame code, or translating between the two libraries."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-pandas-polars
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: data
 ---
 
 # Pandas and Polars
 
-## Level 1 — Intro
+## Intro
 
 Pandas is the mature, broad-ecosystem default for exploratory work
 under ~1 GB; polars is faster, leaner, and lazy-evaluated for
 production pipelines and larger data. Both read the same formats —
 when in doubt, match what the project already uses.
 
-## Level 2 — Overview
+## Overview
 
 ### Choosing between them
 
@@ -107,7 +105,7 @@ use vectorized operations. Use categorical dtype for low-cardinality
 strings. Profile with `%timeit` and check memory with
 `df.estimated_size()` (polars).
 
-## Level 3 — Full reference
+## Full reference
 
 ### API comparison — reading data
 

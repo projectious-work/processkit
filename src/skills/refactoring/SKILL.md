@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: refactoring
+description: |
+  Systematic refactoring with Fowler's catalog, GoF patterns, and code smell detection. Use when restructuring code without changing behavior — cleaning up smells, applying patterns, reducing duplication, or preparing a module for an upcoming feature.
 metadata:
-  id: SKILL-refactoring
-  name: refactoring
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Systematic refactoring with Fowler's catalog, GoF patterns, and code smell detection."
-  category: process
-  layer: 3
-  when_to_use: "Use when restructuring code without changing behavior — cleaning up smells, applying patterns, reducing duplication, or preparing a module for an upcoming feature."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-refactoring
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Refactoring
 
-## Level 1 — Intro
+## Intro
 
 Refactoring is changing the structure of code without changing its
 observable behavior. Do it in small, test-protected steps, one
 transformation at a time, and never mix it with feature changes in
 the same commit.
 
-## Level 2 — Overview
+## Overview
 
 ### Verify the safety net first
 
@@ -85,7 +84,7 @@ distinct responsibilities, extracts each into a named helper
 keeping the original as a high-level orchestrator, runs tests after
 each extraction, and commits each extraction separately.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Modern considerations
 

@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: latex-authoring
+description: |
+  LaTeX authoring with LuaLaTeX — document classes, math, TikZ, BibLaTeX. Use when writing or editing LaTeX documents, setting up preambles, typesetting math, building TikZ diagrams, or managing bibliographies.
 metadata:
-  id: SKILL-latex-authoring
-  name: latex-authoring
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "LaTeX authoring with LuaLaTeX — document classes, math, TikZ, BibLaTeX."
-  category: language
-  layer: null
-  when_to_use: "Use when writing or editing LaTeX documents, setting up preambles, typesetting math, building TikZ diagrams, or managing bibliographies."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-latex-authoring
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: language
 ---
 
 # LaTeX Authoring
 
-## Level 1 — Intro
+## Intro
 
 Prefer LuaLaTeX for new documents — native Unicode, system fonts
 via `fontspec`, and better TikZ performance. Use modern packages
@@ -23,7 +21,7 @@ via `fontspec`, and better TikZ performance. Use modern packages
 documents for reviewable diffs: one sentence per line, sections in
 their own files.
 
-## Level 2 — Overview
+## Overview
 
 ### Document classes
 
@@ -119,7 +117,7 @@ multiple documents. Define styles once in the preamble to keep
 picture bodies readable. See `references/tikz-reference.md` for
 drawing patterns.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Minimal LuaLaTeX preamble
 

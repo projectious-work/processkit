@@ -1,31 +1,32 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: schedule-management
+description: |
+  Manage Schedule entities — time-based triggers and recurring cadences (daily standup, weekly review, monthly retro). Use when defining a recurring cadence — daily/weekly/monthly — that triggers a process or reminder.
 metadata:
-  id: SKILL-schedule-management
-  name: schedule-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Schedule entities — time-based triggers and recurring cadences (daily standup, weekly review, monthly retro)."
-  category: process
-  layer: 3
-  uses: [event-log]
-  provides:
-    primitives: [Schedule]
-    templates: [schedule]
-  when_to_use: "Use when defining a recurring cadence — daily/weekly/monthly — that triggers a process or reminder."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-schedule-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+    provides:
+      primitives: [Schedule]
+      templates: [schedule]
 ---
 
 # Schedule Management
 
-## Level 1 — Intro
+## Intro
 
 A Schedule is a time-based trigger describing when a process should run or
 a reminder should fire — daily standups, weekly retros, monthly ops reviews,
 quarterly planning.
 
-## Level 2 — Overview
+## Overview
 
 ### Shape
 
@@ -56,7 +57,7 @@ spec:
 4. Link what it `triggers` — a process name, a reminder text, etc.
 5. Use Bindings to scope a schedule to a specific team or project.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

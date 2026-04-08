@@ -1,31 +1,32 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: metrics-management
+description: |
+  Manage Metric entities — quantified observations the project cares about (velocity, error rates, lead time, NPS). Use when defining or recording a quantitative measure — team velocity, error rate, lead time, customer satisfaction score.
 metadata:
-  id: SKILL-metrics-management
-  name: metrics-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Metric entities — quantified observations the project cares about (velocity, error rates, lead time, NPS)."
-  category: process
-  layer: 4
-  uses: [event-log]
-  provides:
-    primitives: [Metric]
-    templates: [metric]
-  when_to_use: "Use when defining or recording a quantitative measure — team velocity, error rate, lead time, customer satisfaction score."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-metrics-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 4
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+    provides:
+      primitives: [Metric]
+      templates: [metric]
 ---
 
 # Metrics Management
 
-## Level 1 — Intro
+## Intro
 
 A Metric is a named, quantified observation — something the project measures
 and cares about. Examples: team velocity per sprint, p99 latency, release
 frequency, error rate, customer NPS.
 
-## Level 2 — Overview
+## Overview
 
 ### Metric vs observation
 
@@ -76,7 +77,7 @@ spec:
 The index MCP server (Phase 3) joins Metric definitions with their LogEntry
 observations to produce time series.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

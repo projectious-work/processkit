@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: agent-management
+description: |
+  Multi-agent workflow coordination — task decomposition, role assignment, context sharing, handoff protocols, quality gates, and per-session context budgeting. Use when orchestrating multiple AI agents on a shared task, designing an agent pipeline, defining handoff protocols, or planning how a session should load context within a budget.
 metadata:
-  id: SKILL-agent-management
-  name: agent-management
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Multi-agent workflow coordination — task decomposition, role assignment, context sharing, handoff protocols, quality gates, and per-session context budgeting."
-  category: process
-  layer: 4
-  when_to_use: "Use when orchestrating multiple AI agents on a shared task, designing an agent pipeline, defining handoff protocols, or planning how a session should load context within a budget."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-agent-management
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 4
 ---
 
 # Agent Management
 
-## Level 1 — Intro
+## Intro
 
 Multi-agent workflows are decomposed tasks with explicit roles,
 structured handoffs, and quality gates between stages. The agent
 also has to manage its own session — loading context lazily
 against a declared budget rather than slurping everything at start.
 
-## Level 2 — Overview
+## Overview
 
 ### Task decomposition
 
@@ -201,7 +200,7 @@ needs it. This is the three-level principle in action: start at
 Level 1, drop to Level 2 when the request is more specific, drop
 to Level 3 only for edge cases.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Worked examples
 

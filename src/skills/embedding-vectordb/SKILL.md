@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: embedding-vectordb
+description: |
+  Vector embeddings and vector DB patterns — model choice, similarity metrics, index tuning. Use when choosing an embedding model, picking or migrating between vector databases, optimizing semantic search quality or latency, or building a hybrid (dense + sparse) retrieval pipeline.
 metadata:
-  id: SKILL-embedding-vectordb
-  name: embedding-vectordb
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Vector embeddings and vector DB patterns — model choice, similarity metrics, index tuning."
-  category: data
-  layer: null
-  when_to_use: "Use when choosing an embedding model, picking or migrating between vector databases, optimizing semantic search quality or latency, or building a hybrid (dense + sparse) retrieval pipeline."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-embedding-vectordb
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: data
 ---
 
 # Embedding and Vector Database Patterns
 
-## Level 1 — Intro
+## Intro
 
 Semantic search lives or dies on three choices: the embedding model,
 the vector store, and the index parameters. Default to cosine
 similarity, hybrid retrieval (dense + BM25), and HNSW indexes — then
 benchmark on your own eval set before tuning.
 
-## Level 2 — Overview
+## Overview
 
 ### Embedding model selection
 
@@ -110,7 +108,7 @@ almost always outperforms either method alone. Qdrant and Weaviate
 have built-in hybrid; for others, run BM25
 (Elasticsearch/OpenSearch) and vector search separately and fuse.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Metadata filtering and multi-tenancy
 

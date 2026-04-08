@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: documentation
+description: |
+  Writing effective project documentation — READMEs, API doc comments, and inline comments that explain why. Use when writing or improving documentation — READMEs, doc comments, inline comments, or when code lacks explanation for non-obvious behavior.
 metadata:
-  id: SKILL-documentation
-  name: documentation
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Writing effective project documentation — READMEs, API doc comments, and inline comments that explain why."
-  category: process
-  layer: 3
-  when_to_use: "Use when writing or improving documentation — READMEs, doc comments, inline comments, or when code lacks explanation for non-obvious behavior."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-documentation
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Documentation
 
-## Level 1 — Intro
+## Intro
 
 Good documentation answers the questions a reader actually has:
 what is this, how do I use it, why does it work this way. Identify
 the audience first, then write the smallest doc that serves them.
 Doc comments live with the code; READMEs live with the project.
 
-## Level 2 — Overview
+## Overview
 
 ### Identify the audience
 
@@ -65,7 +64,7 @@ Keep docs close to code. Doc comments beat wiki pages beat
 external sites. The further docs travel from the code, the faster
 they go stale.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Example doc comment
 

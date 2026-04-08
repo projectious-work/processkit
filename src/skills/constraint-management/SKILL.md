@@ -1,32 +1,33 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: constraint-management
+description: |
+  Manage Constraint entities — rules and limits the project must respect (budget, latency SLO, team size, compliance). Use when recording a rule, limit, or boundary that affects decisions — budget ceiling, latency SLO, regulatory requirement, team bandwidth.
 metadata:
-  id: SKILL-constraint-management
-  name: constraint-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Constraint entities — rules and limits the project must respect (budget, latency SLO, team size, compliance)."
-  category: process
-  layer: 3
-  uses: [event-log]
-  provides:
-    primitives: [Constraint]
-    templates: [constraint]
-  when_to_use: "Use when recording a rule, limit, or boundary that affects decisions — budget ceiling, latency SLO, regulatory requirement, team bandwidth."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-constraint-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+    provides:
+      primitives: [Constraint]
+      templates: [constraint]
 ---
 
 # Constraint Management
 
-## Level 1 — Intro
+## Intro
 
 A Constraint is an explicit rule or limit the project must respect: budget
 ceilings, latency SLOs, team capacity, compliance requirements, dependency
 restrictions. Capturing constraints as first-class entities makes them
 referenceable from decisions and visible to trade-off analysis.
 
-## Level 2 — Overview
+## Overview
 
 ### Shape
 
@@ -67,7 +68,7 @@ spec:
 - Processes reference constraints via Bindings (`type: process-constraint`)
   for scoped constraints.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

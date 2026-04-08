@@ -1,27 +1,25 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: python-best-practices
+description: |
+  Python conventions and patterns — typing, testing, project layout, tooling. Use when writing or reviewing Python code, setting up a new Python project, or deciding on tooling, typing, or testing conventions.
 metadata:
-  id: SKILL-python-best-practices
-  name: python-best-practices
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Python conventions and patterns — typing, testing, project layout, tooling."
-  category: language
-  layer: null
-  when_to_use: "Use when writing or reviewing Python code, setting up a new Python project, or deciding on tooling, typing, or testing conventions."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-python-best-practices
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: language
 ---
 
 # Python Best Practices
 
-## Level 1 — Intro
+## Intro
 
 Modern Python is opinionated: `src/` layout, `pyproject.toml`, type
 hints on public APIs, `pytest` for tests, `ruff` for lint and format.
 Apply these conventions when writing or reviewing Python code.
 
-## Level 2 — Overview
+## Overview
 
 ### Project layout
 
@@ -72,7 +70,7 @@ custom exception classes per domain (e.g.
 `UserNotFoundError(LookupError)`). Never write a bare `except:` —
 always catch the specific exception type you expect.
 
-## Level 3 — Full reference
+## Full reference
 
 ### `pyproject.toml` skeleton
 

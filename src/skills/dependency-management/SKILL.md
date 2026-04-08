@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: dependency-management
+description: |
+  Cross-language dependency management — lockfiles, version pinning, automated updates, security, and licenses. Use when setting up or reviewing lockfile strategy, configuring automated dependency updates, auditing dependencies for security or license issues, handling monorepo dependencies, or deciding whether to vendor.
 metadata:
-  id: SKILL-dependency-management
-  name: dependency-management
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Cross-language dependency management — lockfiles, version pinning, automated updates, security, and licenses."
-  category: meta
-  layer: null
-  when_to_use: "Use when setting up or reviewing lockfile strategy, configuring automated dependency updates, auditing dependencies for security or license issues, handling monorepo dependencies, or deciding whether to vendor."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-dependency-management
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: meta
 ---
 
 # Dependency Management
 
-## Level 1 — Intro
+## Intro
 
 Dependencies are the largest unmaintained surface in most projects.
 Pin them, lock them, scan them, and update them on a schedule. The
@@ -23,7 +21,7 @@ defaults differ by language, but the principles are universal: commit
 the lockfile, automate the updates, gate on CI, and review every
 change.
 
-## Level 2 — Overview
+## Overview
 
 ### Lockfiles
 
@@ -94,7 +92,7 @@ projects for legal review.
 | `license-checker` | Node.js |
 | `pip-licenses` | Python |
 
-## Level 3 — Full reference
+## Full reference
 
 ### Dependency review checklist
 

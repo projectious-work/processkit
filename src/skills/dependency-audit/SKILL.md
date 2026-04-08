@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: dependency-audit
+description: |
+  Audit project dependencies for vulnerabilities and outdated packages. Use when checking the security posture of dependencies, planning updates, or running a pre-release dependency review.
 metadata:
-  id: SKILL-dependency-audit
-  name: dependency-audit
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Audit project dependencies for vulnerabilities and outdated packages."
-  category: security
-  layer: null
-  when_to_use: "Use when checking the security posture of dependencies, planning updates, or running a pre-release dependency review."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-dependency-audit
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: security
 ---
 
 # Dependency Audit
 
-## Level 1 — Intro
+## Intro
 
 Third-party dependencies are the largest part of most codebases'
 attack surface. A dependency audit runs the ecosystem's vulnerability
 scanner, triages findings by severity, and produces a concrete update
 plan.
 
-## Level 2 — Overview
+## Overview
 
 ### Run the right tool
 
@@ -62,7 +60,7 @@ vulnerable code path is actually reached, and whether a workaround
 - Enable Dependabot, Renovate, or equivalent for automated update PRs.
 - Document any deliberately pinned versions inline with the reason.
 
-## Level 3 — Full reference
+## Full reference
 
 ### What "audit" actually checks
 

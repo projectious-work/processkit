@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: linux-administration
+description: |
+  Linux sysadmin for developers — permissions, processes, systemd, journald, cron, disks. Use when managing Linux servers, writing systemd units, querying journalctl, debugging disk or process issues, or wiring up cron and timers.
 metadata:
-  id: SKILL-linux-administration
-  name: linux-administration
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Linux sysadmin for developers — permissions, processes, systemd, journald, cron, disks."
-  category: infrastructure
-  layer: null
-  when_to_use: "Use when managing Linux servers, writing systemd units, querying journalctl, debugging disk or process issues, or wiring up cron and timers."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-linux-administration
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: infrastructure
 ---
 
 # Linux Administration
 
-## Level 1 — Intro
+## Intro
 
 Day-to-day Linux admin comes down to a small set of tools: `chmod`,
 `ps`/`ss`, `systemctl`/`journalctl`, `cron` or timers, and `df`/`du`.
 Get comfortable with each and most production incidents resolve with
 a handful of commands.
 
-## Level 2 — Overview
+## Overview
 
 ### File permissions and ownership
 
@@ -145,7 +143,7 @@ dnf install -y package
 dnf autoremove
 ```
 
-## Level 3 — Full reference
+## Full reference
 
 ### Systemd unit file reference
 

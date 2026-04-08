@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: tailwind
+description: |
+  Tailwind CSS v4 — utility-first styling, responsive design, dark mode, and component extraction. Use when building or reviewing Tailwind-based UIs, setting up Tailwind v4, or designing responsive or dark-mode styling.
 metadata:
-  id: SKILL-tailwind
-  name: tailwind
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Tailwind CSS v4 — utility-first styling, responsive design, dark mode, and component extraction."
-  category: framework
-  layer: null
-  when_to_use: "Use when building or reviewing Tailwind-based UIs, setting up Tailwind v4, or designing responsive or dark-mode styling."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-tailwind
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: framework
 ---
 
 # Tailwind CSS
 
-## Level 1 — Intro
+## Intro
 
 Tailwind v4 is CSS-first: install the package, `@import "tailwindcss"`
 once, and declare design tokens inside a `@theme` block. Compose
@@ -23,7 +21,7 @@ styles directly in markup with utility classes, extract components in
 your framework (not with `@apply`), and lean on semantic tokens so
 dark mode and theming don't fight you.
 
-## Level 2 — Overview
+## Overview
 
 ### Project setup (v4)
 
@@ -114,7 +112,7 @@ automatically. Never build class names dynamically
 (`` `text-${color}-500` ``) — the scanner can't see them. Use a
 lookup map or safelist the class with `@source`.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Layout utilities
 

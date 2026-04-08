@@ -1,27 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: debugging
+description: |
+  Systematic debugging — reproduce, read the error, isolate, hypothesize, fix, verify, document. Use when tracking down a bug, unexpected behavior, or test failure — including phrases like "this doesn't work", "why is this failing", or "help me debug".
 metadata:
-  id: SKILL-debugging
-  name: debugging
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Systematic debugging — reproduce, read the error, isolate, hypothesize, fix, verify, document."
-  category: process
-  layer: 3
-  when_to_use: "Use when tracking down a bug, unexpected behavior, or test failure — including phrases like \"this doesn't work\", \"why is this failing\", or \"help me debug\"."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-debugging
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Debugging
 
-## Level 1 — Intro
+## Intro
 
 Debugging is a fixed loop: reproduce the failure, read the error,
 isolate the cause, fix it, verify the fix, and add a regression
 test. Skipping steps causes the bug to come back.
 
-## Level 2 — Overview
+## Overview
 
 ### The debugging loop
 
@@ -54,7 +53,7 @@ test. Skipping steps causes the bug to come back.
   specific failing inputs, add assertions at intermediate steps,
   find where actual diverges from expected, trace back.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Anti-patterns
 

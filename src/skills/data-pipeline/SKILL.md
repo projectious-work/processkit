@@ -1,27 +1,25 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: data-pipeline
+description: |
+  Data pipeline patterns — ETL/ELT, batch vs streaming, idempotency, orchestration. Use when designing a data pipeline, choosing between batch and streaming, implementing ingestion or transformation, setting up orchestration, or debugging pipeline failures.
 metadata:
-  id: SKILL-data-pipeline
-  name: data-pipeline
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Data pipeline patterns — ETL/ELT, batch vs streaming, idempotency, orchestration."
-  category: data
-  layer: null
-  when_to_use: "Use when designing a data pipeline, choosing between batch and streaming, implementing ingestion or transformation, setting up orchestration, or debugging pipeline failures."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-data-pipeline
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: data
 ---
 
 # Data Pipeline
 
-## Level 1 — Intro
+## Intro
 
 A reliable data pipeline is idempotent, observable, and stage-validated.
 Default to ELT into a modern warehouse, default to batch over streaming,
 and design every step to be safely re-runnable from day one.
 
-## Level 2 — Overview
+## Overview
 
 ### ETL vs ELT
 
@@ -69,7 +67,7 @@ delays), and prefer sensors or triggers over polling. Tag tasks with
 owners and SLA expectations. Keep task definitions thin — business
 logic lives in importable modules so it can be unit-tested.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Schema management
 

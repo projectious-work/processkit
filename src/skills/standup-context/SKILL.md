@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: standup-context
+description: |
+  Manages session standup notes in context/STANDUPS.md — done, next, blockers. Use at the start of a new session, or when the user asks to record progress, log a standup, or add a daily check-in entry.
 metadata:
-  id: SKILL-standup-context
-  name: standup-context
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manages session standup notes in context/STANDUPS.md — done, next, blockers."
-  category: process
-  layer: 2
-  when_to_use: "Use at the start of a new session, or when the user asks to record progress, log a standup, or add a daily check-in entry."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-standup-context
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
 ---
 
 # Session Standup Notes (Context-based)
 
-## Level 1 — Intro
+## Intro
 
 A standup note is a one-screen log of what was just done, what is
 about to happen, and what is blocked. Append a fresh entry to
 `context/STANDUPS.md` at the top of each session so the team (and
 future agents) have a continuous timeline of progress.
 
-## Level 2 — Overview
+## Overview
 
 ### How to add an entry
 
@@ -57,7 +56,7 @@ Keep entries concise: one line per item, no paragraphs.
 - None
 ```
 
-## Level 3 — Full reference
+## Full reference
 
 ### Why standups belong in context, not a chat tool
 

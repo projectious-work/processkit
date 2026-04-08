@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: api-design
+description: |
+  REST API design — resource naming, HTTP methods, status codes, pagination, versioning, OpenAPI. Use when designing a new REST API, reviewing API contracts, writing OpenAPI/Swagger documentation, or choosing pagination, versioning, or error-format strategies.
 metadata:
-  id: SKILL-api-design
-  name: api-design
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "REST API design — resource naming, HTTP methods, status codes, pagination, versioning, OpenAPI."
-  category: api
-  layer: null
-  when_to_use: "Use when designing a new REST API, reviewing API contracts, writing OpenAPI/Swagger documentation, or choosing pagination, versioning, or error-format strategies."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-api-design
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: api
 ---
 
 # API Design
 
-## Level 1 — Intro
+## Intro
 
 REST APIs follow well-established conventions: plural-noun resources,
 HTTP methods that match their semantics, correct status codes, cursor
 pagination, URI versioning, and a consistent error envelope. Document
 the contract in OpenAPI 3.1 with reusable components.
 
-## Level 2 — Overview
+## Overview
 
 ### Resource naming
 
@@ -120,7 +118,7 @@ security schemes globally with per-endpoint overrides for public
 routes. See `references/openapi-patterns.md` for the full skeleton
 including reusable parameters, responses, and security schemes.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Status code reference
 

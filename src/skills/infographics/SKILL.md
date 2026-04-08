@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: infographics
+description: |
+  Creates data-driven infographics and charts as accessible SVG. Use when visualizing data, choosing a chart type, generating an SVG chart or infographic, or reviewing a visualization for clarity and accuracy.
 metadata:
-  id: SKILL-infographics
-  name: infographics
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Creates data-driven infographics and charts as accessible SVG."
-  category: design
-  layer: null
-  when_to_use: "Use when visualizing data, choosing a chart type, generating an SVG chart or infographic, or reviewing a visualization for clarity and accuracy."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-infographics
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: design
 ---
 
 # Infographics
 
-## Level 1 — Intro
+## Intro
 
 A good chart starts from a single message, picks the most accurate
 visual encoding for the data relationship, and strips everything that
@@ -23,7 +21,7 @@ does not support it. Generate standalone SVG with explicit `viewBox`,
 semantic text, and accessible metadata so the result is editable,
 responsive, and screen-reader friendly.
 
-## Level 2 — Overview
+## Overview
 
 ### SVG generation principles
 
@@ -94,7 +92,7 @@ sequence/Gantt diagrams embeddable in Markdown, ASCII art for
 terminals and plain-text READMEs, or a CSV plus narrative when the
 user just needs organized data with commentary.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Tufte's core rules
 

@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: decisions-adr
+description: |
+  Records architectural and process decisions in context/DECISIONS.md with rationale and alternatives, in inverse-chronological ADR format. Use when the user makes a significant technical or process decision that should be captured for future readers.
 metadata:
-  id: SKILL-decisions-adr
-  name: decisions-adr
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Records architectural and process decisions in context/DECISIONS.md with rationale and alternatives, in inverse-chronological ADR format."
-  category: process
-  layer: 2
-  when_to_use: "Use when the user makes a significant technical or process decision that should be captured for future readers."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-decisions-adr
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
 ---
 
 # Decision Tracking (ADR format)
 
-## Level 1 — Intro
+## Intro
 
 Decisions are recorded in `context/DECISIONS.md`, one entry per
 choice, numbered `DEC-NNN` in inverse chronological order. Each
 entry captures what was decided, why, and what else was on the
 table.
 
-## Level 2 — Overview
+## Overview
 
 ### Where decisions live
 
@@ -53,7 +52,7 @@ existing team familiarity.
 scale to multi-instance deploys).
 ```
 
-## Level 3 — Full reference
+## Full reference
 
 ### Numbering rules
 

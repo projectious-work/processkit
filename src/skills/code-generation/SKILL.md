@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: code-generation
+description: |
+  Code generation patterns — template engines, AST manipulation, scaffolding, build-step generation. Use when building or extending a code generator, choosing a template engine, deciding whether to generate code or write an abstraction, adding codegen as a build step, or implementing macro/AST transformations.
 metadata:
-  id: SKILL-code-generation
-  name: code-generation
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Code generation patterns — template engines, AST manipulation, scaffolding, build-step generation."
-  category: ai
-  layer: null
-  when_to_use: "Use when building or extending a code generator, choosing a template engine, deciding whether to generate code or write an abstraction, adding codegen as a build step, or implementing macro/AST transformations."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-code-generation
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: ai
 ---
 
 # Code Generation
 
-## Level 1 — Intro
+## Intro
 
 Codegen produces source files from a higher-level input — a schema,
 DSL, AST, or template — instead of having humans hand-write the
@@ -23,7 +21,7 @@ output. It pays off when output spans multiple languages, must be
 zero-dependency, or comes from a mechanical mapping. It's a liability
 when a plain library would do.
 
-## Level 2 — Overview
+## Overview
 
 ### Generate vs. abstract
 
@@ -103,7 +101,7 @@ When codegen runs as part of the build:
 - Never hand-edit generated files. Fix the template or input
   instead, then regenerate.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Macro systems
 

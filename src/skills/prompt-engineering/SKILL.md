@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: prompt-engineering
+description: |
+  Prompt design patterns — few-shot, chain-of-thought, structured output, injection defense. Use when crafting or refining LLM prompts, designing system prompts for agents, requesting structured output, defending against prompt injection, building reusable prompt templates, or iterating on prompt quality.
 metadata:
-  id: SKILL-prompt-engineering
-  name: prompt-engineering
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Prompt design patterns — few-shot, chain-of-thought, structured output, injection defense."
-  category: ai
-  layer: null
-  when_to_use: "Use when crafting or refining LLM prompts, designing system prompts for agents, requesting structured output, defending against prompt injection, building reusable prompt templates, or iterating on prompt quality."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-prompt-engineering
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: ai
 ---
 
 # Prompt Engineering
 
-## Level 1 — Intro
+## Intro
 
 Good prompts are explicit, structured, and tested. Write them with
 the same discipline as code: define inputs and outputs, version the
@@ -24,7 +22,7 @@ wins come from structure (role, task, constraints, examples,
 input), few-shot examples, and chain-of-thought — not from clever
 phrasing.
 
-## Level 2 — Overview
+## Overview
 
 ### Prompt structure
 
@@ -136,7 +134,7 @@ Iteration loop: simple prompt -> test on 10–20 inputs -> identify
 failure modes -> add constraints or examples -> retest (don't break
 previously working cases) -> document version and results.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Technique catalog
 

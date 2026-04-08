@@ -1,25 +1,30 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: context-grooming
+description: |
+  Periodically review and prune the project context — archive completed work, summarize stale entries, propose disabling unused skills. Keeps the context lean so agents load less per session. Run on a regular cadence (weekly or monthly) — or when the user notices session context bloat. Always proposes changes for human approval; never moves or deletes files silently.
 metadata:
-  id: SKILL-context-grooming
-  name: context-grooming
-  version: "1.0.0"
-  created: 2026-04-07T00:00:00Z
-spec:
-  description: "Periodically review and prune the project context — archive completed work, summarize stale entries, propose disabling unused skills. Keeps the context lean so agents load less per session."
-  category: process
-  layer: 4
-  uses: [event-log, context-archiving, index-management]
-  provides:
-    primitives: []
-    templates: [grooming-report]
-  when_to_use: "Run on a regular cadence (weekly or monthly) — or when the user notices session context bloat. Always proposes changes for human approval; never moves or deletes files silently."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-context-grooming
+    version: "1.0.0"
+    created: 2026-04-07T00:00:00Z
+    category: process
+    layer: 4
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: context-archiving
+        purpose: Archive long-form context once it is no longer active.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+    provides:
+      primitives: []
+      templates: [grooming-report]
 ---
 
 # Context Grooming
 
-## Level 1 — Intro
+## Intro
 
 `context-grooming` is the periodic-cleanup skill. Once a week or once a
 month, the agent walks the project's `context/` directory against a set
@@ -27,7 +32,7 @@ of rules and produces a report listing what could be archived, summarized,
 or disabled. The user approves each item before any file moves. This is
 how the project keeps its session context lean over time.
 
-## Level 2 — Overview
+## Overview
 
 ### When to run
 
@@ -128,7 +133,7 @@ unused_skill_age_days = 90           # default 60
 disable_skills_automatically = false # default false (always proposes, never auto-disables)
 ```
 
-## Level 3 — Full reference
+## Full reference
 
 ### Configuration
 

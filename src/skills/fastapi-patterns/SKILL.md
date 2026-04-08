@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: fastapi-patterns
+description: |
+  FastAPI patterns — dependency injection, Pydantic models, async endpoints, middleware, and testing. Use when building FastAPI applications, designing API endpoints, adding authentication, or reviewing FastAPI code.
 metadata:
-  id: SKILL-fastapi-patterns
-  name: fastapi-patterns
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "FastAPI patterns — dependency injection, Pydantic models, async endpoints, middleware, and testing."
-  category: framework
-  layer: null
-  when_to_use: "Use when building FastAPI applications, designing API endpoints, adding authentication, or reviewing FastAPI code."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-fastapi-patterns
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: framework
 ---
 
 # FastAPI Patterns
 
-## Level 1 — Intro
+## Intro
 
 FastAPI leans on type hints, Pydantic models, and `Depends()` to make
 endpoints declarative. Define schemas as `BaseModel` subclasses, inject
 collaborators with `Depends`, and use `async def` only when the work is
 genuinely I/O-bound.
 
-## Level 2 — Overview
+## Overview
 
 ### Routes and routers
 
@@ -86,7 +84,7 @@ Use Starlette's `TestClient(app)` for sync tests and
 in teardown. WebSocket tests use the `client.websocket_connect("/ws")`
 context manager.
 
-## Level 3 — Full reference
+## Full reference
 
 ### CRUD endpoint pattern
 

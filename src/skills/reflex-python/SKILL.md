@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: reflex-python
+description: |
+  Reflex Python web framework for full-stack apps in pure Python — components, state, routing, and deployment. Use when building Reflex apps, designing component hierarchies, managing Reflex state, or deploying a Reflex application.
 metadata:
-  id: SKILL-reflex-python
-  name: reflex-python
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Reflex Python web framework for full-stack apps in pure Python — components, state, routing, and deployment."
-  category: framework
-  layer: null
-  when_to_use: "Use when building Reflex apps, designing component hierarchies, managing Reflex state, or deploying a Reflex application."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-reflex-python
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: framework
 ---
 
 # Reflex Python
 
-## Level 1 — Intro
+## Intro
 
 Reflex lets you build full-stack web apps in pure Python: UI is
 composed from `rx.*` components (Python wrappers over React), state
@@ -23,7 +21,7 @@ lives in `rx.State` subclasses, and event handlers are ordinary
 methods that mutate state. The framework compiles the frontend and
 runs a Python backend that owns all business logic.
 
-## Level 2 — Overview
+## Overview
 
 ### App structure
 
@@ -86,7 +84,7 @@ Reflex ships SQLModel integration: `class User(rx.Model, table=True):
 `reflex db migrate` handles schema migrations. Default SQLite for
 development; configure PostgreSQL in `rxconfig.py` for production.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Layout components
 

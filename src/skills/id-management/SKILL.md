@@ -1,25 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: id-management
+description: |
+  Generate unique entity IDs following the project's configured format. The write-side foundation that every entity-creating skill depends on. Use whenever a new entity is being created and needs an ID, or when validating an ID format, or to inspect the project's ID configuration.
 metadata:
-  id: SKILL-id-management
-  name: id-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Generate unique entity IDs following the project's configured format. The write-side foundation that every entity-creating skill depends on."
-  category: process
-  layer: 0
-  uses: [index-management]
-  provides:
-    primitives: []
-    mcp_tools: [generate_id, validate_id, list_used_ids, format_info]
-  when_to_use: "Use whenever a new entity is being created and needs an ID, or when validating an ID format, or to inspect the project's ID configuration."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-id-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 0
+    uses:
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+    provides:
+      primitives: []
+      mcp_tools: [generate_id, validate_id, list_used_ids, format_info]
 ---
 
 # ID Management
 
-## Level 1 — Intro
+## Intro
 
 `id-management` is the write-side foundation alongside `index-management`.
 Where `index-management` answers "what entities exist?", `id-management`
@@ -35,7 +36,7 @@ creates a new entity calls into this one to allocate a unique ID.
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### What it provides
 
@@ -86,7 +87,7 @@ Direct calls are useful when:
 - You want to list all used IDs of a kind for bulk operations or audits.
 - You want to confirm what format the project is configured for.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Prefix registry
 

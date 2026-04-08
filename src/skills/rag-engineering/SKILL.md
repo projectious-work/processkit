@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: rag-engineering
+description: |
+  Retrieval-Augmented Generation pipelines — ingestion, chunking, embedding, vector stores, retrieval, evaluation. Use when building a RAG pipeline, choosing chunking strategies or embedding models, debugging retrieval quality or hallucinations, evaluating an existing RAG system, or scaling/migrating vector stores.
 metadata:
-  id: SKILL-rag-engineering
-  name: rag-engineering
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Retrieval-Augmented Generation pipelines — ingestion, chunking, embedding, vector stores, retrieval, evaluation."
-  category: ai
-  layer: null
-  when_to_use: "Use when building a RAG pipeline, choosing chunking strategies or embedding models, debugging retrieval quality or hallucinations, evaluating an existing RAG system, or scaling/migrating vector stores."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-rag-engineering
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: ai
 ---
 
 # RAG Engineering
 
-## Level 1 — Intro
+## Intro
 
 A RAG pipeline has two phases: indexing (offline) and
 retrieval+generation (online). Decisions cascade — bad chunking
@@ -24,7 +22,7 @@ retrieval ruins generation no matter how strong your LLM is. Start
 from the data and work forward, and measure with a golden eval set
 from day one.
 
-## Level 2 — Overview
+## Overview
 
 ### Architecture
 
@@ -157,7 +155,7 @@ Common failure modes:
 - **Right docs, bad answer** — model issue. Better prompt,
   stronger model.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Hybrid search and RRF
 

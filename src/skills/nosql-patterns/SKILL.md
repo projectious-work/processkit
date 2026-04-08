@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: nosql-patterns
+description: |
+  NoSQL patterns for document, key-value, wide-column, and graph stores. Access-pattern-driven design and consistency models. Use when choosing between NoSQL store types, designing a document or single-table model, picking a consistency level, or migrating between relational and NoSQL.
 metadata:
-  id: SKILL-nosql-patterns
-  name: nosql-patterns
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "NoSQL patterns for document, key-value, wide-column, and graph stores. Access-pattern-driven design and consistency models."
-  category: database
-  layer: null
-  when_to_use: "Use when choosing between NoSQL store types, designing a document or single-table model, picking a consistency level, or migrating between relational and NoSQL."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-nosql-patterns
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: database
 ---
 
 # NoSQL Patterns
 
-## Level 1 — Intro
+## Intro
 
 NoSQL is a family of stores, not a single technology — document,
 key-value, wide-column, and graph databases each solve different
@@ -23,7 +21,7 @@ problems. The unifying design rule is the inverse of relational
 modeling: start from the queries you must answer, then shape the
 data to serve them.
 
-## Level 2 — Overview
+## Overview
 
 ### Choose the right store type
 
@@ -78,7 +76,7 @@ A cache-aside pattern with TTL-based expiration. Keys follow
 `DEL`. A circuit breaker keeps the API alive when Redis is
 unreachable.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Document stores (MongoDB)
 

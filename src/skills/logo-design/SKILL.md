@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: logo-design
+description: |
+  Creates SVG logos with scalable geometry, color theory, and variant generation. Use when designing logos, icons, or brand marks, generating favicons or social avatars, or reviewing a logo for scalability, color, or variant coverage.
 metadata:
-  id: SKILL-logo-design
-  name: logo-design
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Creates SVG logos with scalable geometry, color theory, and variant generation."
-  category: design
-  layer: null
-  when_to_use: "Use when designing logos, icons, or brand marks, generating favicons or social avatars, or reviewing a logo for scalability, color, or variant coverage."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-logo-design
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: design
 ---
 
 # Logo Design
 
-## Level 1 — Intro
+## Intro
 
 A good logo is simple, memorable, timeless, versatile, and
 appropriate to its audience. Build it as clean SVG geometry, limit
 color to 2-3 hues, and ship the full set of variants (full, mark,
 favicon, monochrome, reversed) before calling it done.
 
-## Level 2 — Overview
+## Overview
 
 ### Design principles
 
@@ -115,7 +113,7 @@ Every logo ships as a set of variants:
 - Trendy gradients or shadows that date the logo quickly.
 - Missing reversed (light-on-dark) variant for dark mode.
 
-## Level 3 — Full reference
+## Full reference
 
 ### The five principles expanded
 

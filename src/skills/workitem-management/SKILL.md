@@ -1,26 +1,33 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: workitem-management
+description: |
+  Create, transition, query, and link WorkItems — tasks, stories, bugs, epics. Use when the user asks to add, update, query, or link work items — backlog items, tasks, bugs, user stories, or epics.
 metadata:
-  id: SKILL-workitem-management
-  name: workitem-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Create, transition, query, and link WorkItems — tasks, stories, bugs, epics."
-  category: process
-  layer: 2
-  uses: [event-log, actor-profile, index-management, id-management]
-  provides:
-    primitives: [WorkItem]
-    mcp_tools: [create_workitem, transition_workitem, query_workitems, link_workitems]
-    templates: [workitem, workitem-bug, workitem-story]
-  when_to_use: "Use when the user asks to add, update, query, or link work items — backlog items, tasks, bugs, user stories, or epics."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-workitem-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: actor-profile
+        purpose: Resolve and validate Actor IDs referenced by this skill's entities.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [WorkItem]
+      mcp_tools: [create_workitem, transition_workitem, query_workitems, link_workitems]
+      templates: [workitem, workitem-bug, workitem-story]
 ---
 
 # WorkItem Management
 
-## Level 1 — Intro
+## Intro
 
 WorkItems are the fundamental tracked unit of work in processkit — tasks,
 stories, bugs, spikes, epics, tickets. This skill creates them, transitions
@@ -36,7 +43,7 @@ them.
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### When to create a WorkItem
 
@@ -122,7 +129,7 @@ Common queries the index MCP server will expose in Phase 3:
 
 Before Phase 3, query via filesystem glob + grep of `context/workitems/`.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Full field list
 

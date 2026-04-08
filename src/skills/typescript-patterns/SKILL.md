@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: typescript-patterns
+description: |
+  TypeScript patterns — strict mode, discriminated unions, runtime validation, Result types. Use when writing or reviewing TypeScript, setting up a project's tsconfig, or designing type-safe data flows.
 metadata:
-  id: SKILL-typescript-patterns
-  name: typescript-patterns
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "TypeScript patterns — strict mode, discriminated unions, runtime validation, Result types."
-  category: language
-  layer: null
-  when_to_use: "Use when writing or reviewing TypeScript, setting up a project's tsconfig, or designing type-safe data flows."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-typescript-patterns
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: language
 ---
 
 # TypeScript Patterns
 
-## Level 1 — Intro
+## Intro
 
 TypeScript earns its keep in strict mode with no `any`.
 Discriminated unions model state, `zod` validates external data at
 the boundary, and Result types keep library code from throwing on
 expected failures.
 
-## Level 2 — Overview
+## Overview
 
 ### Project setup
 
@@ -88,7 +86,7 @@ Use `vitest` or `jest` for runtime tests. For type tests, use
 correctly — catching regressions in generic helpers before they
 reach callers.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Discriminated unions with exhaustive checks
 

@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: ml-pipeline
+description: |
+  ML pipeline design — data versioning, experiment tracking, deployment patterns, drift monitoring. Use when building an ML pipeline from data to deployment, setting up MLOps tooling (DVC, MLflow, model registry), choosing deployment patterns (shadow, canary, A/B), or designing monitoring for drift and degradation.
 metadata:
-  id: SKILL-ml-pipeline
-  name: ml-pipeline
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "ML pipeline design — data versioning, experiment tracking, deployment patterns, drift monitoring."
-  category: ai
-  layer: null
-  when_to_use: "Use when building an ML pipeline from data to deployment, setting up MLOps tooling (DVC, MLflow, model registry), choosing deployment patterns (shadow, canary, A/B), or designing monitoring for drift and degradation."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-ml-pipeline
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: ai
 ---
 
 # ML Pipeline Design
 
-## Level 1 — Intro
+## Intro
 
 A production ML pipeline runs from raw data to a monitored model in
 production. The non-negotiable property is reproducibility: given
@@ -23,7 +21,7 @@ the same data version, feature config, and hyperparameters, you get
 the same model. Without that, debugging is impossible six months
 later.
 
-## Level 2 — Overview
+## Overview
 
 ### Pipeline stages
 
@@ -152,7 +150,7 @@ with rollback triggers.
 Tools: GitHub Actions + DVC + MLflow, or managed platforms like
 Vertex AI Pipelines, SageMaker Pipelines, Kubeflow.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Pipeline orchestration tools
 

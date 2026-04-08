@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: dockerfile-review
+description: |
+  Dockerfile best practices — layer optimization, caching, security, image size. Use when writing, reviewing, or optimizing Dockerfiles, investigating bloated images, or fixing cache-busting build orders.
 metadata:
-  id: SKILL-dockerfile-review
-  name: dockerfile-review
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Dockerfile best practices — layer optimization, caching, security, image size."
-  category: infrastructure
-  layer: null
-  when_to_use: "Use when writing, reviewing, or optimizing Dockerfiles, investigating bloated images, or fixing cache-busting build orders."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-dockerfile-review
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: infrastructure
 ---
 
 # Dockerfile Review
 
-## Level 1 — Intro
+## Intro
 
 A good Dockerfile is small, cache-friendly, reproducible, and does not
 run as root. Most problems come from three mistakes: ordering layers
 wrong (busting the cache), forgetting to clean up package manager
 state, and using `ADD` when `COPY` is what you meant.
 
-## Level 2 — Overview
+## Overview
 
 ### Layer optimization
 
@@ -74,7 +72,7 @@ dependencies produce "works in CI, fails in prod" surprises.
 - Use the exec form of `CMD` and `ENTRYPOINT`:
   `["executable", "arg"]`, not the shell form.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Canonical Python Dockerfile
 

@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: secret-management
+description: |
+  Handle secrets safely — env vars, .env files, vaults, rotation. Use when dealing with API keys, passwords, tokens, database credentials, or any other sensitive value the application needs at runtime.
 metadata:
-  id: SKILL-secret-management
-  name: secret-management
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Handle secrets safely — env vars, .env files, vaults, rotation."
-  category: security
-  layer: null
-  when_to_use: "Use when dealing with API keys, passwords, tokens, database credentials, or any other sensitive value the application needs at runtime."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-secret-management
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: security
 ---
 
 # Secret Management
 
-## Level 1 — Intro
+## Intro
 
 Secrets are anything an attacker could use to impersonate the
 application: API keys, passwords, tokens, database credentials,
@@ -23,7 +21,7 @@ signing keys. They must never be committed to source control, must be
 loaded at runtime from a secure source, and must be rotated when
 compromised or on a schedule.
 
-## Level 2 — Overview
+## Overview
 
 ### Never commit secrets
 
@@ -65,7 +63,7 @@ compromised or on a schedule.
 - Never hardcode secrets — not even temporarily "for testing".
 - Never log secrets; redact them in error messages and stack traces.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Adding a new secret — checklist
 

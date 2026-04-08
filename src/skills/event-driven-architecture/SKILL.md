@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: event-driven-architecture
+description: |
+  Event-driven systems — pub/sub, event sourcing, CQRS, sagas, broker selection, reliability. Use when designing or migrating to an event-driven system, choosing a message broker, implementing event sourcing or CQRS, designing sagas, or reviewing async architectures for reliability and ordering.
 metadata:
-  id: SKILL-event-driven-architecture
-  name: event-driven-architecture
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Event-driven systems — pub/sub, event sourcing, CQRS, sagas, broker selection, reliability."
-  category: architecture
-  layer: null
-  when_to_use: "Use when designing or migrating to an event-driven system, choosing a message broker, implementing event sourcing or CQRS, designing sagas, or reviewing async architectures for reliability and ordering."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-event-driven-architecture
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: architecture
 ---
 
 # Event-Driven Architecture
 
-## Level 1 — Intro
+## Intro
 
 Event-driven design decouples producers from consumers via a message
 broker. Done well it scales independently, audits naturally, and
@@ -23,7 +21,7 @@ absorbs bursts; done badly it creates implicit, untraceable spaghetti.
 Pick it only when synchronous request-response would not be simpler
 and sufficient.
 
-## Level 2 — Overview
+## Overview
 
 ### When event-driven fits
 
@@ -137,7 +135,7 @@ own their services independently.
   events on the same partition?). Inspect consumer group rebalancing
   and commit/ack strategy. Drain the DLQ for poison messages.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Pub/Sub topology
 

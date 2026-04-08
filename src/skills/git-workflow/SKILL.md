@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: git-workflow
+description: |
+  Git workflow conventions — branch naming, conventional commits, PR descriptions, and merge strategy. Use when deciding on a branch name, writing a commit message or PR description, or choosing a merge strategy.
 metadata:
-  id: SKILL-git-workflow
-  name: git-workflow
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Git workflow conventions — branch naming, conventional commits, PR descriptions, and merge strategy."
-  category: process
-  layer: 3
-  when_to_use: "Use when deciding on a branch name, writing a commit message or PR description, or choosing a merge strategy."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-git-workflow
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Git Workflow
 
-## Level 1 — Intro
+## Intro
 
 Use typed branch names, Conventional Commits, and PR descriptions
 that explain the why. Squash-merge feature branches for a clean
 history. Keep commits atomic and never force-push to shared
 branches.
 
-## Level 2 — Overview
+## Overview
 
 ### Branch naming
 
@@ -62,7 +61,7 @@ Follow Conventional Commits:
 - **Rebase** to keep a feature branch up to date before opening
   the PR
 
-## Level 3 — Full reference
+## Full reference
 
 ### General rules
 

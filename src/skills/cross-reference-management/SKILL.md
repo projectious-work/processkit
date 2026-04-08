@@ -1,25 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: cross-reference-management
+description: |
+  Conventions and helpers for lightweight relationships between entities expressed as frontmatter references (not first-class Binding entities). Use when linking two entities with a simple, unscoped, untemporal relationship — 'this work item blocks that one', 'this decision relates to that work item'. For scoped/temporal relationships, use binding-management instead.
 metadata:
-  id: SKILL-cross-reference-management
-  name: cross-reference-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Conventions and helpers for lightweight relationships between entities expressed as frontmatter references (not first-class Binding entities)."
-  category: process
-  layer: 2
-  uses: [event-log]
-  provides:
-    primitives: [CrossReference]
-    templates: []
-  when_to_use: "Use when linking two entities with a simple, unscoped, untemporal relationship — 'this work item blocks that one', 'this decision relates to that work item'. For scoped/temporal relationships, use binding-management instead."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-cross-reference-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+    provides:
+      primitives: [CrossReference]
+      templates: []
 ---
 
 # Cross-Reference Management
 
-## Level 1 — Intro
+## Intro
 
 A CrossReference is a lightweight typed link between two entities, expressed
 as a field in the subject's frontmatter rather than as its own file. It is
@@ -27,7 +28,7 @@ the right choice for simple, unscoped, permanent relationships — "A blocks
 B", "decision X is related to work item Y". When a relationship needs scope,
 time, or its own attributes, use a Binding instead.
 
-## Level 2 — Overview
+## Overview
 
 ### CrossReference is not a file
 
@@ -82,7 +83,7 @@ the *convention* is shared.
 If the link has its own properties worth querying, it's a Binding. Otherwise,
 it's a cross-reference.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Bidirectional integrity
 

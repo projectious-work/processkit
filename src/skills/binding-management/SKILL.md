@@ -1,26 +1,33 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: binding-management
+description: |
+  Manage Binding entities — scoped, temporal, many-to-many relationships between any two primitives. Use when a relationship between two entities needs scope, time, or its own attributes — e.g. 'Alice is the tech lead for project X from Jan to June' or 'the security gate applies to the release process only on the main branch'.
 metadata:
-  id: SKILL-binding-management
-  name: binding-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Binding entities — scoped, temporal, many-to-many relationships between any two primitives."
-  category: process
-  layer: 2
-  uses: [event-log, actor-profile, index-management, id-management]
-  provides:
-    primitives: [Binding]
-    mcp_tools: [create_binding, query_bindings, end_binding, resolve_bindings_for]
-    templates: [binding]
-  when_to_use: "Use when a relationship between two entities needs scope, time, or its own attributes — e.g. 'Alice is the tech lead for project X from Jan to June' or 'the security gate applies to the release process only on the main branch'."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-binding-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: actor-profile
+        purpose: Resolve and validate Actor IDs referenced by this skill's entities.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [Binding]
+      mcp_tools: [create_binding, query_bindings, end_binding, resolve_bindings_for]
+      templates: [binding]
 ---
 
 # Binding Management
 
-## Level 1 — Intro
+## Intro
 
 A Binding is an entity that connects two other entities with optional scope,
 temporality, and conditions. It is the junction-table pattern promoted to
@@ -38,7 +45,7 @@ main branch."
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### When to use a Binding vs a cross-reference
 
@@ -127,7 +134,7 @@ and end the old one. The history is what makes Bindings useful.
 
 The Phase 3 MCP server provides `resolve_bindings_for(entity_id, type?, at_time?)`.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

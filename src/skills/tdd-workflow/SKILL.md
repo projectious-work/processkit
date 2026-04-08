@@ -1,21 +1,20 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: tdd-workflow
+description: |
+  Test-driven development workflow — red-green-refactor, naming, doubles, when to apply. Use when writing code with TDD, practicing the red-green-refactor cycle, deciding between TDD and test-after, naming tests, choosing test doubles, or exploring property-based and mutation testing.
 metadata:
-  id: SKILL-tdd-workflow
-  name: tdd-workflow
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Test-driven development workflow — red-green-refactor, naming, doubles, when to apply."
-  category: process
-  layer: 3
-  when_to_use: "Use when writing code with TDD, practicing the red-green-refactor cycle, deciding between TDD and test-after, naming tests, choosing test doubles, or exploring property-based and mutation testing."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-tdd-workflow
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # TDD Workflow
 
-## Level 1 — Intro
+## Intro
 
 Test-driven development means writing a failing test before any
 production code, then making it pass with the smallest possible
@@ -23,7 +22,7 @@ change, then refactoring with the test as a safety net. The cycle
 is short — a few minutes — and the discipline is what produces the
 design benefit, not the tests themselves.
 
-## Level 2 — Overview
+## Overview
 
 ### Red-green-refactor
 
@@ -94,7 +93,7 @@ Names should describe behavior, not implementation:
 Prefer fakes and stubs over mocks. Excessive mocking couples tests
 to implementation and makes refactoring painful.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Property-based testing
 

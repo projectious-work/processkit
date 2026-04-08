@@ -1,27 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: retrospective
+description: |
+  Facilitates team or project retrospectives — what worked, what didn't, action items. Use at the end of a sprint, milestone, or project phase to reflect on what went well, what didn't, and what to try next.
 metadata:
-  id: SKILL-retrospective
-  name: retrospective
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Facilitates team or project retrospectives — what worked, what didn't, action items."
-  category: process
-  layer: 3
-  when_to_use: "Use at the end of a sprint, milestone, or project phase to reflect on what went well, what didn't, and what to try next."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-retrospective
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Retrospective
 
-## Level 1 — Intro
+## Intro
 
 A retrospective is a short, structured reflection on a completed
 phase of work. Capture what worked, what didn't, and a small set
 of concrete experiments to try next — then act on them.
 
-## Level 2 — Overview
+## Overview
 
 ### Set the scope
 
@@ -74,7 +73,7 @@ what went well and what was painful, structures the findings into
 the retro format with concrete action items, and saves it to
 `context/retros/v0.3.md`.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Facilitation patterns
 

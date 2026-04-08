@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: ai-fundamentals
+description: |
+  Core ML/AI concepts — model types, training pipelines, evaluation metrics, neural architectures. Use when explaining or comparing ML/AI concepts, choosing a model approach for a problem, designing or reviewing a training pipeline, picking evaluation metrics, or debugging issues like overfitting, data leakage, and class imbalance.
 metadata:
-  id: SKILL-ai-fundamentals
-  name: ai-fundamentals
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Core ML/AI concepts — model types, training pipelines, evaluation metrics, neural architectures."
-  category: ai
-  layer: null
-  when_to_use: "Use when explaining or comparing ML/AI concepts, choosing a model approach for a problem, designing or reviewing a training pipeline, picking evaluation metrics, or debugging issues like overfitting, data leakage, and class imbalance."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-ai-fundamentals
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: ai
 ---
 
 # AI Fundamentals
 
-## Level 1 — Intro
+## Intro
 
 The core ideas a practitioner needs to reason about machine learning:
 the four learning paradigms, the standard model families, the training
@@ -23,7 +21,7 @@ pipeline order, the right metrics for the task, and the failure modes
 that bite every project. Start from the data and the problem; pick the
 model last.
 
-## Level 2 — Overview
+## Overview
 
 ### Learning paradigms
 
@@ -119,7 +117,7 @@ per Chinchilla-style ratios).
 - **Confirmation bias in evaluation** — cherry-picking on
   non-representative slices.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Bias-variance decomposition
 

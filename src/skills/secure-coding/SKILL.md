@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: secure-coding
+description: |
+  Secure coding practices grounded in the OWASP Top 10. Use when reviewing code for security issues, implementing input validation, hardening web applications, or adding defenses against injection, XSS, or CSRF.
 metadata:
-  id: SKILL-secure-coding
-  name: secure-coding
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Secure coding practices grounded in the OWASP Top 10."
-  category: security
-  layer: null
-  when_to_use: "Use when reviewing code for security issues, implementing input validation, hardening web applications, or adding defenses against injection, XSS, or CSRF."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-secure-coding
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: security
 ---
 
 # Secure Coding
 
-## Level 1 — Intro
+## Intro
 
 Most application vulnerabilities come from a small set of recurring
 mistakes: trusting input, concatenating strings into queries,
 forgetting to encode output, leaving secrets in source. Apply OWASP
 Top 10 patterns to identify and fix them.
 
-## Level 2 — Overview
+## Overview
 
 ### Input validation
 
@@ -106,7 +104,7 @@ Start with a strict CSP and relax only as needed. Never use
 - Audit dependencies regularly: `npm audit`, `pip-audit`, `cargo audit`.
 - Pin versions in lockfiles and minimize the dependency tree.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Security review checklist
 

@@ -1,32 +1,33 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: state-machine-management
+description: |
+  Define and customize StateMachine entities — the state/transition graphs used by WorkItems, DecisionRecords, and other primitives with lifecycle. Use when a project needs to customize the default state machine for a primitive (add states, change transitions) or define a state machine for a custom entity type.
 metadata:
-  id: SKILL-state-machine-management
-  name: state-machine-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Define and customize StateMachine entities — the state/transition graphs used by WorkItems, DecisionRecords, and other primitives with lifecycle."
-  category: process
-  layer: 3
-  uses: [event-log]
-  provides:
-    primitives: [StateMachine]
-    templates: [statemachine]
-  when_to_use: "Use when a project needs to customize the default state machine for a primitive (add states, change transitions) or define a state machine for a custom entity type."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-state-machine-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+    provides:
+      primitives: [StateMachine]
+      templates: [statemachine]
 ---
 
 # State Machine Management
 
-## Level 1 — Intro
+## Intro
 
 A StateMachine defines the valid states of a primitive and the allowed
 transitions between them. processkit ships default state machines for
 WorkItem and DecisionRecord; projects override these or define new ones
 for custom entities.
 
-## Level 2 — Overview
+## Overview
 
 ### Shape
 
@@ -94,7 +95,7 @@ Overrides must:
    doesn't know about.
 5. Log `state-machine.updated`.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: session-handover
+description: |
+  Generates a structured session handover note at the end of a work session. Use when the user says "handover", "wrap up", "end of session", or asks to document progress so another agent can pick up. Trigger proactively when a session is ending and no handover note exists for today.
 metadata:
-  id: SKILL-session-handover
-  name: session-handover
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Generates a structured session handover note at the end of a work session."
-  category: process
-  layer: 2
-  when_to_use: "Use when the user says \"handover\", \"wrap up\", \"end of session\", or asks to document progress so another agent can pick up. Trigger proactively when a session is ending and no handover note exists for today."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-session-handover
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
 ---
 
 # Session Handover
 
-## Level 1 — Intro
+## Intro
 
 A session handover is a short, structured note that lets the next
 agent (or the same human tomorrow) resume work without re-reading
 the entire git history. Capture what was done, what is open, what
 was decided, and what comes next.
 
-## Level 2 — Overview
+## Overview
 
 ### Gather context
 
@@ -118,7 +117,7 @@ template into new projects via aibox init. The content must be a
 valid fill-in-the-blanks document, not a filled example.
 ```
 
-## Level 3 — Full reference
+## Full reference
 
 ### What makes a handover useful
 

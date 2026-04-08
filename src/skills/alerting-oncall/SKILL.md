@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: alerting-oncall
+description: |
+  Alert design and on-call practices — severity, runbooks, SLO burn-rate alerting, escalation. Use when designing alerts, writing runbooks, reducing alert fatigue, setting up escalation policies, implementing SLO-based alerting, or improving on-call processes.
 metadata:
-  id: SKILL-alerting-oncall
-  name: alerting-oncall
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Alert design and on-call practices — severity, runbooks, SLO burn-rate alerting, escalation."
-  category: observability
-  layer: null
-  when_to_use: "Use when designing alerts, writing runbooks, reducing alert fatigue, setting up escalation policies, implementing SLO-based alerting, or improving on-call processes."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-alerting-oncall
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: observability
 ---
 
 # Alerting & On-Call
 
-## Level 1 — Intro
+## Intro
 
 Good alerting wakes humans only when humans need to act. Severity tiers,
 SLO burn-rate alerting, and runbooks turn noisy thresholds into a calm
 on-call rotation. Alert fatigue is the number one quality problem — fix
 it by tracking page volume and deleting low-value alerts.
 
-## Level 2 — Overview
+## Overview
 
 ### Severity levels
 
@@ -81,7 +79,7 @@ per-service grouped alerts. Set thresholds from percentile baselines,
 not guesses. Auto-resolve transient spikes within 5 minutes. Silence
 known alerts proactively during deploys and planned maintenance.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Runbook template
 

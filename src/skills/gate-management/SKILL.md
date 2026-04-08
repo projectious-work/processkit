@@ -1,30 +1,35 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: gate-management
+description: |
+  Manage Gate entities — validation checkpoints that processes must pass (code review, security scan, tests). Use when defining or updating a checkpoint a process must pass — code review, tests green, security scan, stakeholder approval.
 metadata:
-  id: SKILL-gate-management
-  name: gate-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Gate entities — validation checkpoints that processes must pass (code review, security scan, tests)."
-  category: process
-  layer: 3
-  uses: [event-log, index-management, id-management]
-  provides:
-    primitives: [Gate]
-    mcp_tools:
-      - create_gate
-      - get_gate
-      - list_gates
-      - evaluate_gate
-    templates: [gate]
-  when_to_use: "Use when defining or updating a checkpoint a process must pass — code review, tests green, security scan, stakeholder approval."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-gate-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [Gate]
+      mcp_tools:
+        - create_gate
+        - get_gate
+        - list_gates
+        - evaluate_gate
+      templates: [gate]
 ---
 
 # Gate Management
 
-## Level 1 — Intro
+## Intro
 
 A Gate is a validation checkpoint — "code review passed", "tests green",
 "security scan clean", "stakeholder signed off". Processes reference gates
@@ -39,7 +44,7 @@ to declare what has to be true before a step can complete.
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### Shape
 
@@ -76,7 +81,7 @@ Gates emit LogEntries when they are evaluated:
 - `gate.failed` — validation failed (include failure details)
 - `gate.waived` — validation was bypassed (include `details.waived_by` and reason)
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

@@ -1,25 +1,32 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: migration-management
+description: |
+  Manage Migration entities — pending, in-progress, and applied transitions between upstream source versions. Use when an upstream source bumps version (processkit, aibox, a community package), when a user wants to draft a migration plan, when an agent needs to reason about pending migrations, or when working through an in-progress migration.
 metadata:
-  id: SKILL-migration-management
-  name: migration-management
-  version: "1.0.0"
-  created: 2026-04-07T00:00:00Z
-spec:
-  description: "Manage Migration entities — pending, in-progress, and applied transitions between upstream source versions."
-  category: process
-  layer: 3
-  uses: [event-log, decision-record, index-management, id-management]
-  provides:
-    primitives: [Migration]
-    templates: [migration]
-  when_to_use: "Use when an upstream source bumps version (processkit, aibox, a community package), when a user wants to draft a migration plan, when an agent needs to reason about pending migrations, or when working through an in-progress migration."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-migration-management
+    version: "1.0.0"
+    created: 2026-04-07T00:00:00Z
+    category: process
+    layer: 3
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: decision-record
+        purpose: Record consequential decisions made during this skill's workflow.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [Migration]
+      templates: [migration]
 ---
 
 # Migration Management
 
-## Level 1 — Intro
+## Intro
 
 A Migration is processkit's first-class representation of an upstream version
 bump. When `aibox sync` notices a new processkit (or aibox, or community
@@ -28,7 +35,7 @@ The agent and the user work through it together over one or more sessions —
 drafting a plan, applying changes, then archiving the result. This skill is
 how the agent navigates that lifecycle.
 
-## Level 2 — Overview
+## Overview
 
 ### The migration directory layout
 
@@ -148,7 +155,7 @@ If the user decides not to take an upstream change:
 - Future `aibox sync` runs see this migration in `applied/` and do NOT
   re-propose the same transition.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Migration entity shape
 

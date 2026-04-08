@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: sql-style-guide
+description: |
+  SQL style — snake_case, singular tables, named constraints, one-clause-per-line formatting. Use when writing or reviewing SQL, designing schemas, or naming tables, columns, constraints, and migrations.
 metadata:
-  id: SKILL-sql-style-guide
-  name: sql-style-guide
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "SQL style — snake_case, singular tables, named constraints, one-clause-per-line formatting."
-  category: language
-  layer: null
-  when_to_use: "Use when writing or reviewing SQL, designing schemas, or naming tables, columns, constraints, and migrations."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-sql-style-guide
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: language
 ---
 
 # SQL Style Guide
 
-## Level 1 — Intro
+## Intro
 
 Use `snake_case` everywhere, keep table names singular, name every
 constraint explicitly, and format queries with one clause per line
 and leading commas. Consistency is the point — the exact choices
 matter less than picking them and holding the line.
 
-## Level 2 — Overview
+## Overview
 
 ### Table and column naming
 
@@ -103,7 +101,7 @@ a later migration without hunting for it.
 - Always specify `ORDER BY` when results must be deterministic —
   SQL gives no ordering guarantee otherwise.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Comment conventions
 

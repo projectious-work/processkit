@@ -1,27 +1,25 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: java-patterns
+description: |
+  Modern Java 17+ — records, sealed types, pattern matching, streams, Spring Boot. Use when writing or reviewing Java 17+ code, modernizing legacy Java, or working in Spring Boot services.
 metadata:
-  id: SKILL-java-patterns
-  name: java-patterns
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Modern Java 17+ — records, sealed types, pattern matching, streams, Spring Boot."
-  category: language
-  layer: null
-  when_to_use: "Use when writing or reviewing Java 17+ code, modernizing legacy Java, or working in Spring Boot services."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-java-patterns
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: language
 ---
 
 # Java Patterns
 
-## Level 1 — Intro
+## Intro
 
 Modern Java leans on records, sealed types, pattern matching, and
 streams. Prefer immutable data carriers, exhaustive switches, and
 constructor injection over the Java-EE-era boilerplate.
 
-## Level 2 — Overview
+## Overview
 
 ### Language features (17+)
 
@@ -93,7 +91,7 @@ rather than the legacy runner. Use AssertJ's fluent assertions
 — `@WebMvcTest` for controllers, `@DataJpaTest` for repositories —
 to keep tests fast.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Dependency injection
 

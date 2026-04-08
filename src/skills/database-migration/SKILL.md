@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: database-migration
+description: |
+  Schema migration workflows — zero-downtime expand/contract, batched backfills, and rollback strategies. Use when planning a schema migration, reviewing migration scripts, troubleshooting a slow or failed migration, or rolling back a deployed change.
 metadata:
-  id: SKILL-database-migration
-  name: database-migration
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Schema migration workflows — zero-downtime expand/contract, batched backfills, and rollback strategies."
-  category: database
-  layer: null
-  when_to_use: "Use when planning a schema migration, reviewing migration scripts, troubleshooting a slow or failed migration, or rolling back a deployed change."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-database-migration
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: database
 ---
 
 # Database Migration
 
-## Level 1 — Intro
+## Intro
 
 Schema changes are deploys against live state, so they need the same
 discipline as application releases. Use immutable, reversible
 migrations and the expand/contract pattern to keep production reads
 and writes flowing while the schema moves underneath them.
 
-## Level 2 — Overview
+## Overview
 
 ### Migration file structure
 
@@ -106,7 +104,7 @@ To rename `username` to `handle`:
 3. Add `NOT NULL` on `handle`, then drop `username` in a later
    migration once nothing reads it.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Safe operations by database
 

@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: graphql-patterns
+description: |
+  GraphQL schema design, resolver patterns, DataLoader, pagination, federation, and schema evolution. Use when designing a GraphQL schema, implementing resolvers, diagnosing N+1 problems, adding pagination, setting up federation, or evolving a schema without breaking clients.
 metadata:
-  id: SKILL-graphql-patterns
-  name: graphql-patterns
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "GraphQL schema design, resolver patterns, DataLoader, pagination, federation, and schema evolution."
-  category: api
-  layer: null
-  when_to_use: "Use when designing a GraphQL schema, implementing resolvers, diagnosing N+1 problems, adding pagination, setting up federation, or evolving a schema without breaking clients."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-graphql-patterns
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: api
 ---
 
 # GraphQL Patterns
 
-## Level 1 — Intro
+## Intro
 
 GraphQL schemas are designed from the client's perspective, not the
 database. Resolvers stay thin, DataLoader prevents N+1 fan-out, lists
 use Relay-style cursor pagination, and schemas evolve only by adding
 fields and deprecating the old ones.
 
-## Level 2 — Overview
+## Overview
 
 ### Schema design
 
@@ -108,7 +106,7 @@ so clients can branch on a stable string.
 - **Never** change a field's type, and never make a nullable field
   non-nullable — both are silently breaking.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Federation
 

@@ -1,26 +1,29 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: event-log
+description: |
+  Append-only event log — the probabilistic record of everything that happened in the project. Use whenever something notable happens that the project should remember — work items created/transitioned, decisions recorded, bindings changed, incidents occurred, releases shipped.
 metadata:
-  id: SKILL-event-log
-  name: event-log
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Append-only event log — the probabilistic record of everything that happened in the project."
-  category: process
-  layer: 0
-  uses: [index-management, id-management]
-  provides:
-    primitives: [LogEntry]
-    mcp_tools: [log_event, query_events, recent_events]
-    templates: [logentry]
-  when_to_use: "Use whenever something notable happens that the project should remember — work items created/transitioned, decisions recorded, bindings changed, incidents occurred, releases shipped."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-event-log
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 0
+    uses:
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [LogEntry]
+      mcp_tools: [log_event, query_events, recent_events]
+      templates: [logentry]
 ---
 
 # Event Log
 
-## Level 1 — Intro
+## Intro
 
 The event log is the project's append-only history of significant events. Every
 time a work item changes state, a decision is recorded, an actor is assigned,
@@ -37,7 +40,7 @@ entries.
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### When to write a LogEntry
 
@@ -99,7 +102,7 @@ If you realize a LogEntry was wrong, do not edit it. Write a new LogEntry with
 `event_type: logentry.corrected` and reference the original in `details.corrects`.
 The original stays as historical record.
 
-## Level 3 — Full reference
+## Full reference
 
 ### event_type conventions
 

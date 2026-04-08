@@ -1,31 +1,36 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: actor-profile
+description: |
+  Create and maintain Actor entities — humans and AI agents that participate in the project. Use when adding a new collaborator (human or agent) to the project, updating their preferences/expertise, or querying who does what.
 metadata:
-  id: SKILL-actor-profile
-  name: actor-profile
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Create and maintain Actor entities — humans and AI agents that participate in the project."
-  category: process
-  layer: 1
-  uses: [event-log, index-management, id-management]
-  provides:
-    primitives: [Actor]
-    mcp_tools:
-      - create_actor
-      - get_actor
-      - update_actor
-      - deactivate_actor
-      - list_actors
-    templates: [actor-human, actor-agent]
-  when_to_use: "Use when adding a new collaborator (human or agent) to the project, updating their preferences/expertise, or querying who does what."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-actor-profile
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 1
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [Actor]
+      mcp_tools:
+        - create_actor
+        - get_actor
+        - update_actor
+        - deactivate_actor
+        - list_actors
+      templates: [actor-human, actor-agent]
 ---
 
 # Actor Profile Management
 
-## Level 1 — Intro
+## Intro
 
 Actors are the entities that do things in the project — humans, AI agents, and
 services. This skill creates and maintains their profiles: name, type, contact,
@@ -40,7 +45,7 @@ expertise, preferences, working style.
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### When to create an Actor
 
@@ -95,7 +100,7 @@ Optional Markdown body — bio, context, working-style notes.
 5. Write the Actor file to `context/actors/`.
 6. Log a `LogEntry` with `event_type: actor.created`.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

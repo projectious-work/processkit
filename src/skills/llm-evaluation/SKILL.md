@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: llm-evaluation
+description: |
+  LLM output evaluation — automated metrics, LLM-as-judge, A/B testing, regression testing. Use when measuring LLM output quality, comparing prompt or model versions, building an automated eval pipeline, setting up regression tests for prompt changes, or evaluating RAG systems and bias/safety.
 metadata:
-  id: SKILL-llm-evaluation
-  name: llm-evaluation
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "LLM output evaluation — automated metrics, LLM-as-judge, A/B testing, regression testing."
-  category: ai
-  layer: null
-  when_to_use: "Use when measuring LLM output quality, comparing prompt or model versions, building an automated eval pipeline, setting up regression tests for prompt changes, or evaluating RAG systems and bias/safety."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-llm-evaluation
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: ai
 ---
 
 # LLM Evaluation
 
-## Level 1 — Intro
+## Intro
 
 You can't improve what you don't measure. LLM evaluation combines a
 small high-quality eval dataset, automated metrics where reference
 answers exist, LLM-as-judge for subjective quality, and regression
 tests in CI. Build the eval set first; everything else depends on it.
 
-## Level 2 — Overview
+## Overview
 
 ### Build an evaluation dataset
 
@@ -125,7 +123,7 @@ Build a golden dataset of 50+ question/ideal-context/reference
 triples and score with RAGAS to localize the failing stage
 (retrieval vs. generation).
 
-## Level 3 — Full reference
+## Full reference
 
 ### Human evaluation
 

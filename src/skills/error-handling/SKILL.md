@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: error-handling
+description: |
+  Error handling across languages — Result types, exceptions, retries, circuit breakers, and structured error responses. Use when designing error handling for a module or service, choosing between Result types and exceptions, building error hierarchies, implementing retries or circuit breakers, or reviewing code for missing or poor error handling.
 metadata:
-  id: SKILL-error-handling
-  name: error-handling
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Error handling across languages — Result types, exceptions, retries, circuit breakers, and structured error responses."
-  category: meta
-  layer: null
-  when_to_use: "Use when designing error handling for a module or service, choosing between Result types and exceptions, building error hierarchies, implementing retries or circuit breakers, or reviewing code for missing or poor error handling."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-error-handling
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: meta
 ---
 
 # Error Handling
 
-## Level 1 — Intro
+## Intro
 
 Errors are part of the type system, not an afterthought. Make
 failure paths explicit, separate user-facing messages from internal
 diagnostics, and reach for retries and circuit breakers only when
 the failure is genuinely transient.
 
-## Level 2 — Overview
+## Overview
 
 ### Result types vs exceptions
 
@@ -110,7 +108,7 @@ service is unhealthy:
 Configure failure threshold (e.g. 5 failures in 30s), open duration
 (e.g. 60s), and half-open probe count.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Error reporting
 

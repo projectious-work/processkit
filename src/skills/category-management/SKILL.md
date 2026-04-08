@@ -1,32 +1,33 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: category-management
+description: |
+  Manage Category entities — taxonomies and classification schemes that group other entities by type, area, tier, etc. Use when defining a new classification axis (priority levels, bug severity, feature tier, product area) that other entities will be tagged with.
 metadata:
-  id: SKILL-category-management
-  name: category-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Category entities — taxonomies and classification schemes that group other entities by type, area, tier, etc."
-  category: process
-  layer: 2
-  uses: [event-log]
-  provides:
-    primitives: [Category]
-    templates: [category]
-  when_to_use: "Use when defining a new classification axis (priority levels, bug severity, feature tier, product area) that other entities will be tagged with."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-category-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+    provides:
+      primitives: [Category]
+      templates: [category]
 ---
 
 # Category Management
 
-## Level 1 — Intro
+## Intro
 
 A Category is a named classification — a list of possible values for a
 labeling axis. Examples: priority (critical/high/medium/low), bug severity
 (sev1/sev2/sev3), feature tier (core/enhancement/experiment), product area
 (frontend/backend/infra).
 
-## Level 2 — Overview
+## Overview
 
 ### When to create a Category
 
@@ -78,7 +79,7 @@ one of the category's defined values.
 5. When you add a new value, write a `category.value_added` LogEntry so
    the change is traceable.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

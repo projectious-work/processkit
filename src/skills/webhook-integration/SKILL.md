@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: webhook-integration
+description: |
+  Webhook design and consumption — payload format, HMAC signatures, idempotency, retries, dead-letter queues, security. Use when implementing a webhook consumer, designing an event-notification system, adding signature verification, or debugging duplicate or failed webhook deliveries.
 metadata:
-  id: SKILL-webhook-integration
-  name: webhook-integration
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Webhook design and consumption — payload format, HMAC signatures, idempotency, retries, dead-letter queues, security."
-  category: api
-  layer: null
-  when_to_use: "Use when implementing a webhook consumer, designing an event-notification system, adding signature verification, or debugging duplicate or failed webhook deliveries."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-webhook-integration
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: api
 ---
 
 # Webhook Integration
 
-## Level 1 — Intro
+## Intro
 
 Webhooks deliver at least once, in no particular order, over a
 network that fails. A correct webhook integration verifies HMAC
@@ -23,7 +21,7 @@ signatures on the raw body, deduplicates by event ID, returns 2xx
 immediately and processes asynchronously, and retries with
 exponential backoff into a dead-letter queue.
 
-## Level 2 — Overview
+## Overview
 
 ### Payload envelope
 
@@ -111,7 +109,7 @@ recover from outages discovered after the fact.
 - Store secrets in a vault (AWS Secrets Manager, Vault, etc.), not
   in code or environment variables checked into source control.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Ordering
 

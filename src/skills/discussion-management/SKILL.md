@@ -1,31 +1,38 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: discussion-management
+description: |
+  Manage Discussion entities — structured, multi-turn conversations that explore questions and produce decisions. Use when a question or design choice needs multi-turn exploration before a decision is reached — RFCs, design debates, trade-off analyses.
 metadata:
-  id: SKILL-discussion-management
-  name: discussion-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Discussion entities — structured, multi-turn conversations that explore questions and produce decisions."
-  category: process
-  layer: 4
-  uses: [event-log, decision-record, index-management, id-management]
-  provides:
-    primitives: [Discussion]
-    mcp_tools:
-      - open_discussion
-      - get_discussion
-      - transition_discussion
-      - add_outcome
-      - list_discussions
-    templates: [discussion]
-  when_to_use: "Use when a question or design choice needs multi-turn exploration before a decision is reached — RFCs, design debates, trade-off analyses."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-discussion-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 4
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: decision-record
+        purpose: Record consequential decisions made during this skill's workflow.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [Discussion]
+      mcp_tools:
+        - open_discussion
+        - get_discussion
+        - transition_discussion
+        - add_outcome
+        - list_discussions
+      templates: [discussion]
 ---
 
 # Discussion Management
 
-## Level 1 — Intro
+## Intro
 
 A Discussion is a structured, multi-turn conversation exploring a question.
 It captures the back-and-forth of research, proposals, objections, and
@@ -41,7 +48,7 @@ outcome. Think of it as the audit trail behind a decision.
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### Shape
 
@@ -96,7 +103,7 @@ spec:
 Use a Discussion when you don't yet know the answer. Use a DecisionRecord
 when you do.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

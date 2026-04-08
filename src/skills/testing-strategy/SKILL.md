@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: testing-strategy
+description: |
+  Testing approach — unit vs integration vs E2E, coverage goals, organization. Use when deciding what to test, choosing between unit/integration/E2E tests, planning a test strategy for new functionality, or setting coverage goals.
 metadata:
-  id: SKILL-testing-strategy
-  name: testing-strategy
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Testing approach — unit vs integration vs E2E, coverage goals, organization."
-  category: process
-  layer: 3
-  when_to_use: "Use when deciding what to test, choosing between unit/integration/E2E tests, planning a test strategy for new functionality, or setting coverage goals."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-testing-strategy
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Testing Strategy
 
-## Level 1 — Intro
+## Intro
 
 Pick the cheapest test that gives you confidence the code is
 correct. Many fast unit tests, fewer integration tests, and a thin
 layer of end-to-end tests for the critical paths — that is the
 testing pyramid, and it still works.
 
-## Level 2 — Overview
+## Overview
 
 ### Match the test type to the code
 
@@ -72,7 +71,7 @@ tests do I need?" The agent recommends:
 
 One happy path, one boundary, one error case, one limit case.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Choosing the right level
 

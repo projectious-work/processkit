@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: estimation-planning
+description: |
+  Software estimation and planning — story points, velocity, scope negotiation, technical debt budgeting, and statistical forecasting. Use when estimating effort, planning a sprint, negotiating scope with stakeholders, budgeting for technical debt, or forecasting completion dates.
 metadata:
-  id: SKILL-estimation-planning
-  name: estimation-planning
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Software estimation and planning — story points, velocity, scope negotiation, technical debt budgeting, and statistical forecasting."
-  category: process
-  layer: 3
-  when_to_use: "Use when estimating effort, planning a sprint, negotiating scope with stakeholders, budgeting for technical debt, or forecasting completion dates."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-estimation-planning
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Estimation and Planning
 
-## Level 1 — Intro
+## Intro
 
 Estimation is uncertainty management, not prediction. Use relative
 sizing for stories, track velocity over many sprints, and present
 forecasts as ranges. When dates and scope conflict, negotiate one;
 never fix both.
 
-## Level 2 — Overview
+## Overview
 
 ### Story points vs time estimates
 
@@ -86,7 +85,7 @@ debt immediately; schedule important debt each sprint. Frame debt
 for stakeholders in business terms ("this refactor will reduce
 bug rate by ~30%"). Never let debt accumulate silently.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Three-point estimation (PERT)
 

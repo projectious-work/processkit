@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: data-visualization
+description: |
+  Chart selection, color accessibility, annotation, and dashboard design. Use when creating charts, designing dashboards, choosing visualization types, improving chart readability, or reviewing data presentations for clarity.
 metadata:
-  id: SKILL-data-visualization
-  name: data-visualization
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Chart selection, color accessibility, annotation, and dashboard design."
-  category: data
-  layer: null
-  when_to_use: "Use when creating charts, designing dashboards, choosing visualization types, improving chart readability, or reviewing data presentations for clarity."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-data-visualization
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: data
 ---
 
 # Data Visualization
 
-## Level 1 — Intro
+## Intro
 
 A good chart matches the chart type to the data relationship,
 annotates the insight rather than the raw point, and stays readable
 for colorblind viewers. The default fallbacks are bar (categorical)
 and scatter (continuous).
 
-## Level 2 — Overview
+## Overview
 
 ### Chart type selection
 
@@ -79,7 +77,7 @@ and filter controls. Static needs readability at print size (12pt+
 fonts, 300 dpi). Always provide a static fallback for interactive
 charts.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Chart selection decision tree
 

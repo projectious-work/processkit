@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: database-modeling
+description: |
+  Data modeling — ER diagrams, normalization, denormalization trade-offs, relationship patterns, and schema evolution. Use when designing a new schema, critiquing an existing data model, choosing between normalized and denormalized designs, or modeling complex relationships like polymorphism, hierarchy, or temporal data.
 metadata:
-  id: SKILL-database-modeling
-  name: database-modeling
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Data modeling — ER diagrams, normalization, denormalization trade-offs, relationship patterns, and schema evolution."
-  category: database
-  layer: null
-  when_to_use: "Use when designing a new schema, critiquing an existing data model, choosing between normalized and denormalized designs, or modeling complex relationships like polymorphism, hierarchy, or temporal data."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-database-modeling
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: database
 ---
 
 # Database Modeling
 
-## Level 1 — Intro
+## Intro
 
 A good schema is shaped by access patterns, invariants, and expected
 growth — not by the first ER diagram that comes to mind. Start from
 the requirements, normalize to 3NF, and only denormalize against a
 measured problem with a documented sync strategy.
 
-## Level 2 — Overview
+## Overview
 
 ### Gather requirements first
 
@@ -119,7 +117,7 @@ Schemas always change. Design for it:
 - Use expand/contract for non-trivial changes: add new structure,
   backfill, then remove the old.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Polymorphic associations
 

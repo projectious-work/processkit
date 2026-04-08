@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: metrics-monitoring
+description: |
+  Application metrics with RED/USE methods, Prometheus types, dashboards, and SLO alerting. Use when instrumenting an application with metrics, designing dashboards, setting up alerting, choosing between metric types, defining SLIs/SLOs, or applying RED, USE, or the four golden signals.
 metadata:
-  id: SKILL-metrics-monitoring
-  name: metrics-monitoring
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Application metrics with RED/USE methods, Prometheus types, dashboards, and SLO alerting."
-  category: observability
-  layer: null
-  when_to_use: "Use when instrumenting an application with metrics, designing dashboards, setting up alerting, choosing between metric types, defining SLIs/SLOs, or applying RED, USE, or the four golden signals."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-metrics-monitoring
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: observability
 ---
 
 # Metrics & Monitoring
 
-## Level 1 — Intro
+## Intro
 
 Metrics turn a running system into numbers you can alert and chart on.
 Use the four golden signals (latency, traffic, errors, saturation),
 RED for request paths, USE for resources, and Prometheus histograms
 for latency. Drive alerting from SLO burn rate, not raw thresholds.
 
-## Level 2 — Overview
+## Overview
 
 ### Four golden signals (Google SRE)
 
@@ -80,7 +78,7 @@ instance detail. Include deployment markers as vertical annotations.
 For each downstream dependency, show a RED row so failures attribute
 correctly.
 
-## Level 3 — Full reference
+## Full reference
 
 ### SLIs, SLOs, and SLAs
 

@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: flutter-development
+description: |
+  Flutter and Dart development — widget architecture, state management, navigation, and cross-platform layout. Use when building Flutter apps, choosing a state-management approach, designing responsive layouts, or reviewing widget code.
 metadata:
-  id: SKILL-flutter-development
-  name: flutter-development
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Flutter and Dart development — widget architecture, state management, navigation, and cross-platform layout."
-  category: framework
-  layer: null
-  when_to_use: "Use when building Flutter apps, choosing a state-management approach, designing responsive layouts, or reviewing widget code."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-flutter-development
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: framework
 ---
 
 # Flutter Development
 
-## Level 1 — Intro
+## Intro
 
 In Flutter, everything is a widget — compose small `StatelessWidget`s
 and `StatefulWidget`s into screens, prefer `const` constructors, and
 keep `build()` methods lightweight. Pick the simplest state-management
 solution that fits the complexity, not the most fashionable one.
 
-## Level 2 — Overview
+## Overview
 
 ### Widget architecture
 
@@ -90,7 +88,7 @@ to advance frames. Mock external boundaries with `mocktail` or
 `mockito`. Use golden tests (`matchesGoldenFile`) for visual
 regression on critical screens.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Layout widget recipes
 

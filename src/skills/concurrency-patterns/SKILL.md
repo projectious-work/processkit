@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: concurrency-patterns
+description: |
+  Concurrency and parallelism patterns — async/await, threads, actors, channels, deadlock prevention. Use when choosing a concurrency model, designing concurrent or parallel pipelines, debugging deadlocks or race conditions, or reasoning about shared state and backpressure.
 metadata:
-  id: SKILL-concurrency-patterns
-  name: concurrency-patterns
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Concurrency and parallelism patterns — async/await, threads, actors, channels, deadlock prevention."
-  category: architecture
-  layer: null
-  when_to_use: "Use when choosing a concurrency model, designing concurrent or parallel pipelines, debugging deadlocks or race conditions, or reasoning about shared state and backpressure."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-concurrency-patterns
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: architecture
 ---
 
 # Concurrency Patterns
 
-## Level 1 — Intro
+## Intro
 
 Concurrency is about structuring a program to handle multiple tasks;
 parallelism is about running them on multiple cores simultaneously.
@@ -23,7 +21,7 @@ Pick the model that matches the bottleneck (I/O vs CPU), prefer
 message passing over shared state, and design for backpressure from
 day one.
 
-## Level 2 — Overview
+## Overview
 
 ### Concurrency vs parallelism
 
@@ -96,7 +94,7 @@ jobs := make(chan Job, 100)  // blocks producer when 100 items queued
   parallel (typically `NumCPU()`), a collector aggregates results.
   Channel buffer roughly `2 * N` for smooth flow.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Pattern catalog
 

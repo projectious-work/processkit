@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: code-review
+description: |
+  Structured code review with a checklist covering correctness, clarity, tests, security, performance, and style. Use when reviewing a PR, diff, or set of code changes before merging — including phrases like "review this", "check my changes", or "is this ready to merge".
 metadata:
-  id: SKILL-code-review
-  name: code-review
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Structured code review with a checklist covering correctness, clarity, tests, security, performance, and style."
-  category: process
-  layer: 3
-  when_to_use: "Use when reviewing a PR, diff, or set of code changes before merging — including phrases like \"review this\", \"check my changes\", or \"is this ready to merge\"."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-code-review
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Code Review
 
-## Level 1 — Intro
+## Intro
 
 Code review is a structured pass over a diff against a fixed
 checklist, then a categorized response: must-fix, should-fix, nit.
 The goal is to surface real defects with specific line references,
 not to rewrite the author's code.
 
-## Level 2 — Overview
+## Overview
 
 ### The review checklist
 
@@ -54,7 +53,7 @@ Sort each finding into one bucket and label it explicitly:
 Always include specific line references and concrete suggestions.
 Acknowledge what was done well — review is not adversarial.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Example output shape
 

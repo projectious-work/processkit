@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: terraform-basics
+description: |
+  Infrastructure-as-code with Terraform/OpenTofu — resources, state, modules, plan/apply. Use when writing `.tf` files, managing cloud infrastructure with Terraform or OpenTofu, handling state and backends, or reviewing IaC code.
 metadata:
-  id: SKILL-terraform-basics
-  name: terraform-basics
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Infrastructure-as-code with Terraform/OpenTofu — resources, state, modules, plan/apply."
-  category: infrastructure
-  layer: null
-  when_to_use: "Use when writing `.tf` files, managing cloud infrastructure with Terraform or OpenTofu, handling state and backends, or reviewing IaC code."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-terraform-basics
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: infrastructure
 ---
 
 # Terraform Basics
 
-## Level 1 — Intro
+## Intro
 
 Terraform (and OpenTofu) describes cloud infrastructure declaratively
 and reconciles reality with `plan` and `apply`. Pin provider versions,
 use a remote state backend, and never edit state by hand — get those
 three right and the rest is just resource documentation.
 
-## Level 2 — Overview
+## Overview
 
 ### Resources and providers
 
@@ -146,7 +144,7 @@ Use `terraform destroy` with extreme caution — review the plan
 output first. For targeted operations, use `-target=resource.name`
 sparingly and only for debugging.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Best practices
 

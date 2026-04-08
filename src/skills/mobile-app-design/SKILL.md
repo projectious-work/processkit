@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: mobile-app-design
+description: |
+  Mobile app UX — touch targets, navigation, platform conventions, accessibility. Use when designing mobile interfaces, reviewing mobile UX, adapting web designs for mobile, or reconciling iOS and Android conventions.
 metadata:
-  id: SKILL-mobile-app-design
-  name: mobile-app-design
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Mobile app UX — touch targets, navigation, platform conventions, accessibility."
-  category: design
-  layer: null
-  when_to_use: "Use when designing mobile interfaces, reviewing mobile UX, adapting web designs for mobile, or reconciling iOS and Android conventions."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-mobile-app-design
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: design
 ---
 
 # Mobile App Design
 
-## Level 1 — Intro
+## Intro
 
 Mobile UX is shaped by finger-sized touch targets, one-thumb reach,
 platform conventions, and flaky connectivity. Start with the smallest
 supported screen, respect platform idioms for navigation and
 components, and design for offline-first use from the beginning.
 
-## Level 2 — Overview
+## Overview
 
 ### Touch target sizing
 
@@ -137,7 +135,7 @@ alternatives.
 - Provide a "Skip" option on every onboarding screen.
 - Prefer contextual tooltips and coach marks over upfront tutorials.
 
-## Level 3 — Full reference
+## Full reference
 
 ### iOS HIG vs Material Design — navigation
 

@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: kubernetes-basics
+description: |
+  Kubernetes cluster management — resources, networking, storage, Helm, troubleshooting. Use when writing Kubernetes manifests, running kubectl or helm, debugging pods and services, or configuring ingress, DNS, storage, or network policies.
 metadata:
-  id: SKILL-kubernetes-basics
-  name: kubernetes-basics
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Kubernetes cluster management — resources, networking, storage, Helm, troubleshooting."
-  category: infrastructure
-  layer: null
-  when_to_use: "Use when writing Kubernetes manifests, running kubectl or helm, debugging pods and services, or configuring ingress, DNS, storage, or network policies."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-kubernetes-basics
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: infrastructure
 ---
 
 # Kubernetes Basics
 
-## Level 1 — Intro
+## Intro
 
 Kubernetes is a declarative system: you write manifests, the API
 server stores them in etcd, and controllers reconcile reality toward
@@ -23,7 +21,7 @@ that desired state. Confirm the active context, prefer declarative
 `apply` over imperative commands, and always check events and logs
 before poking at YAML.
 
-## Level 2 — Overview
+## Overview
 
 ### Cluster context
 
@@ -127,7 +125,7 @@ Prefer declarative `apply` over imperative `create`/`edit`. Use
 production rollouts, watch with `kubectl rollout status` and reach
 for `kubectl rollout undo` if something goes wrong.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Control plane architecture
 

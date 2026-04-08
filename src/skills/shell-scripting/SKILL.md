@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: shell-scripting
+description: |
+  Bash scripting — strict mode, quoting, arg parsing, traps, shellcheck compliance. Use when writing or reviewing bash scripts, adding error handling and argument parsing, or fixing shellcheck warnings.
 metadata:
-  id: SKILL-shell-scripting
-  name: shell-scripting
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Bash scripting — strict mode, quoting, arg parsing, traps, shellcheck compliance."
-  category: language
-  layer: null
-  when_to_use: "Use when writing or reviewing bash scripts, adding error handling and argument parsing, or fixing shellcheck warnings."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-shell-scripting
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: language
 ---
 
 # Shell Scripting
 
-## Level 1 — Intro
+## Intro
 
 Every bash script starts with `#!/usr/bin/env bash` and
 `set -euo pipefail`, quotes every variable expansion, traps for
 cleanup, and passes `shellcheck -o all` cleanly. Anything less is
 a bug in waiting.
 
-## Level 2 — Overview
+## Overview
 
 ### Script header
 
@@ -139,7 +137,7 @@ it locally with a comment, never globally:
 unused_var="value"
 ```
 
-## Level 3 — Full reference
+## Full reference
 
 ### Common pitfalls
 

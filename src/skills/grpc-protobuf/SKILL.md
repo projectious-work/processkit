@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: grpc-protobuf
+description: |
+  Protobuf schema design and gRPC service patterns — streaming, error handling, backward compatibility. Use when designing .proto files, implementing gRPC services or clients, choosing a streaming pattern, handling gRPC errors, or evolving a schema without breaking consumers.
 metadata:
-  id: SKILL-grpc-protobuf
-  name: grpc-protobuf
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Protobuf schema design and gRPC service patterns — streaming, error handling, backward compatibility."
-  category: api
-  layer: null
-  when_to_use: "Use when designing .proto files, implementing gRPC services or clients, choosing a streaming pattern, handling gRPC errors, or evolving a schema without breaking consumers."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-grpc-protobuf
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: api
 ---
 
 # gRPC and Protocol Buffers
 
-## Level 1 — Intro
+## Intro
 
 Protobuf schemas are versioned, append-only contracts. gRPC services
 use unary RPCs by default and streaming variants only when the
@@ -23,7 +21,7 @@ workload genuinely needs them. Field numbers are permanent, enum
 zero values are `UNSPECIFIED`, and every RPC gets its own
 Request/Response wrapper.
 
-## Level 2 — Overview
+## Overview
 
 ### Schema basics
 
@@ -123,7 +121,7 @@ detection, and code generation, and reads a single `buf.yaml`. Use
 **grpcurl** for command-line invocation during debugging. Wire
 `buf breaking` into CI to catch incompatible changes before merge.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Naming conventions
 

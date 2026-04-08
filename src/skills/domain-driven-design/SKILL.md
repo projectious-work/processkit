@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: domain-driven-design
+description: |
+  Domain-Driven Design strategic and tactical patterns — bounded contexts, aggregates, value objects, context mapping. Use when modeling a complex business domain, defining microservice boundaries, designing aggregates, establishing a ubiquitous language, or refactoring a big ball of mud into well-defined contexts.
 metadata:
-  id: SKILL-domain-driven-design
-  name: domain-driven-design
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Domain-Driven Design strategic and tactical patterns — bounded contexts, aggregates, value objects, context mapping."
-  category: architecture
-  layer: null
-  when_to_use: "Use when modeling a complex business domain, defining microservice boundaries, designing aggregates, establishing a ubiquitous language, or refactoring a big ball of mud into well-defined contexts."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-domain-driven-design
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: architecture
 ---
 
 # Domain-Driven Design
 
-## Level 1 — Intro
+## Intro
 
 DDD has two halves: strategic design (bounded contexts, context maps,
 ubiquitous language) and tactical design (aggregates, entities, value
@@ -23,7 +21,7 @@ objects, domain events, repositories). Use it when the business logic
 is the differentiator and the cost of getting the model wrong is
 high.
 
-## Level 2 — Overview
+## Overview
 
 ### Ubiquitous language
 
@@ -139,7 +137,7 @@ change is persisted.
   legacy boundaries and pub/sub between contexts. Extract the most
   independent context first.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Aggregate example
 

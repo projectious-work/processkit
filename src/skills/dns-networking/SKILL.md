@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: dns-networking
+description: |
+  DNS records, IP addressing, subnetting, common protocols, and diagnostic tools. Use when configuring DNS records, debugging resolution or connectivity, planning subnets, analyzing HTTPS/TLS errors, or diagnosing latency and routing issues.
 metadata:
-  id: SKILL-dns-networking
-  name: dns-networking
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "DNS records, IP addressing, subnetting, common protocols, and diagnostic tools."
-  category: infrastructure
-  layer: null
-  when_to_use: "Use when configuring DNS records, debugging resolution or connectivity, planning subnets, analyzing HTTPS/TLS errors, or diagnosing latency and routing issues."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-dns-networking
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: infrastructure
 ---
 
 # DNS & Networking
 
-## Level 1 — Intro
+## Intro
 
 Networking problems resolve bottom-up: name, reachability, route, port,
 application. Know which record type, which protocol, and which tool
 answers each question, and most incidents collapse to a handful of
 `dig`/`ss`/`curl` commands.
 
-## Level 2 — Overview
+## Overview
 
 ### DNS fundamentals
 
@@ -129,7 +127,7 @@ When something does not work, go bottom-up:
 5. **Application** — `curl -vI https://example.com` — does the service
    respond correctly?
 
-## Level 3 — Full reference
+## Full reference
 
 ### DNS record syntax
 

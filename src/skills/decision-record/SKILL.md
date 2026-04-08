@@ -1,26 +1,33 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: decision-record
+description: |
+  Record decisions with rationale, alternatives, and consequences — the ADR pattern as a primitive. Use when a consequential choice is made — architecture, tooling, process, scope, trade-off. Capture WHY, not just WHAT.
 metadata:
-  id: SKILL-decision-record
-  name: decision-record
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Record decisions with rationale, alternatives, and consequences — the ADR pattern as a primitive."
-  category: process
-  layer: 2
-  uses: [event-log, actor-profile, index-management, id-management]
-  provides:
-    primitives: [DecisionRecord]
-    mcp_tools: [record_decision, query_decisions, link_decision, supersede_decision]
-    templates: [decisionrecord]
-  when_to_use: "Use when a consequential choice is made — architecture, tooling, process, scope, trade-off. Capture WHY, not just WHAT."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-decision-record
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: actor-profile
+        purpose: Resolve and validate Actor IDs referenced by this skill's entities.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [DecisionRecord]
+      mcp_tools: [record_decision, query_decisions, link_decision, supersede_decision]
+      templates: [decisionrecord]
 ---
 
 # Decision Record
 
-## Level 1 — Intro
+## Intro
 
 A DecisionRecord captures a single consequential choice: what was decided,
 why, what alternatives were rejected, and what consequences are expected.
@@ -36,7 +43,7 @@ to a first-class primitive in processkit.
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### When to record a decision
 
@@ -110,7 +117,7 @@ When a decision is replaced by a later one:
 **Never delete or edit the old record.** Its existence is why we can trace
 the evolution of the decision.
 
-## Level 3 — Full reference
+## Full reference
 
 ### State machine
 

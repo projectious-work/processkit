@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: go-conventions
+description: |
+  Go idioms — error wrapping, small interfaces, goroutine lifecycle, table-driven tests. Use when writing or reviewing Go code, designing package layouts, or working through concurrency, error handling, and testing decisions.
 metadata:
-  id: SKILL-go-conventions
-  name: go-conventions
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Go idioms — error wrapping, small interfaces, goroutine lifecycle, table-driven tests."
-  category: language
-  layer: null
-  when_to_use: "Use when writing or reviewing Go code, designing package layouts, or working through concurrency, error handling, and testing decisions."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-go-conventions
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: language
 ---
 
 # Go Conventions
 
-## Level 1 — Intro
+## Intro
 
 Idiomatic Go is small interfaces, explicit error wrapping, clear
 goroutine ownership, and domain-oriented packages. Follow `gofmt`,
 respect `context.Context`, and never start a goroutine without
 knowing how it stops.
 
-## Level 2 — Overview
+## Overview
 
 ### Error handling
 
@@ -77,7 +75,7 @@ names get doc comments that start with the name. Use named return
 values sparingly. Prefer early returns and guard clauses over deep
 nesting.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Functional options
 

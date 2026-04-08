@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: distributed-tracing
+description: |
+  Distributed tracing with OpenTelemetry — spans, context propagation, sampling. Use when instrumenting a distributed system, debugging requests that span services, setting up OpenTelemetry, choosing a sampling strategy, or understanding latency across service boundaries.
 metadata:
-  id: SKILL-distributed-tracing
-  name: distributed-tracing
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Distributed tracing with OpenTelemetry — spans, context propagation, sampling."
-  category: observability
-  layer: null
-  when_to_use: "Use when instrumenting a distributed system, debugging requests that span services, setting up OpenTelemetry, choosing a sampling strategy, or understanding latency across service boundaries."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-distributed-tracing
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: observability
 ---
 
 # Distributed Tracing
 
-## Level 1 — Intro
+## Intro
 
 Distributed tracing follows a single request through every service it
 touches, exposing latency and error contributions per hop.
@@ -23,7 +21,7 @@ OpenTelemetry is the vendor-neutral standard. Start with
 auto-instrumentation, propagate W3C Trace Context, and sample to
 control cost.
 
-## Level 2 — Overview
+## Overview
 
 ### Core concepts
 
@@ -89,7 +87,7 @@ strategy:
 Recommended path: head-based probabilistic in apps, tail-based
 error/latency policies in the Collector as traffic grows.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Trace analysis for debugging
 

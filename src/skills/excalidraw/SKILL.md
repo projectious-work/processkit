@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: excalidraw
+description: |
+  Generates Excalidraw diagrams programmatically as hand-drawn-style JSON. Use when creating architecture diagrams, flowcharts, or hand-drawn-style visuals for documentation, or when converting existing diagrams to editable Excalidraw JSON.
 metadata:
-  id: SKILL-excalidraw
-  name: excalidraw
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Generates Excalidraw diagrams programmatically as hand-drawn-style JSON."
-  category: design
-  layer: null
-  when_to_use: "Use when creating architecture diagrams, flowcharts, or hand-drawn-style visuals for documentation, or when converting existing diagrams to editable Excalidraw JSON."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-excalidraw
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: design
 ---
 
 # Excalidraw
 
-## Level 1 — Intro
+## Intro
 
 Excalidraw files are JSON with a top-level `elements` array of shapes,
 text, and arrows. Generate them directly to produce hand-drawn-style
 architecture diagrams, flowcharts, and documentation visuals that stay
 editable in the Excalidraw app.
 
-## Level 2 — Overview
+## Overview
 
 ### File shape
 
@@ -126,7 +124,7 @@ Save the `.excalidraw` source for editing, export SVG or PNG for
 embedding. GitHub renders `.excalidraw.png` directly in Markdown. The
 Excalidraw VS Code extension renders `.excalidraw` files in-editor.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Full element property reference
 

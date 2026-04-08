@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: incident-response
+description: |
+  Production incident handling — triage, communicate, mitigate, fix, postmortem. Use when production is broken, users are affected, an outage is in progress, or a deploy has caused regressions and the priority is restoring service.
 metadata:
-  id: SKILL-incident-response
-  name: incident-response
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Production incident handling — triage, communicate, mitigate, fix, postmortem."
-  category: process
-  layer: 3
-  when_to_use: "Use when production is broken, users are affected, an outage is in progress, or a deploy has caused regressions and the priority is restoring service."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-incident-response
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Incident Response
 
-## Level 1 — Intro
+## Intro
 
 When production breaks, restore service first and understand it
 later. Triage user impact, communicate early, mitigate with the
 fastest safe action (often a rollback), then fix the root cause and
 write a blameless postmortem within 48 hours.
 
-## Level 2 — Overview
+## Overview
 
 ### Triage in the first five minutes
 
@@ -67,7 +66,7 @@ agent checks the deploy diff, identifies the breaking change,
 recommends an immediate rollback while preparing a forward fix,
 drafts a stakeholder update, and schedules the postmortem.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Severity levels
 

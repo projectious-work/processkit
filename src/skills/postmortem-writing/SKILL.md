@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: postmortem-writing
+description: |
+  Blameless postmortem writing — timeline, root cause analysis, corrective actions. Use when writing an incident postmortem, conducting a post-incident review, building a postmortem template, or coaching a team toward blameless culture.
 metadata:
-  id: SKILL-postmortem-writing
-  name: postmortem-writing
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Blameless postmortem writing — timeline, root cause analysis, corrective actions."
-  category: process
-  layer: 3
-  when_to_use: "Use when writing an incident postmortem, conducting a post-incident review, building a postmortem template, or coaching a team toward blameless culture."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-postmortem-writing
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Postmortem Writing
 
-## Level 1 — Intro
+## Intro
 
 A good postmortem is a learning artifact, not a punishment. It tells
 the story of an incident factually, traces the root cause to a
 systemic gap (not a person), and produces a small number of owned,
 time-bound corrective actions.
 
-## Level 2 — Overview
+## Overview
 
 ### Standard structure
 
@@ -76,7 +75,7 @@ this mistake easy to make?" Assume everyone acted with the best
 information available at the time. If anyone feels blamed, the
 postmortem has failed regardless of wording.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Facilitation tips
 

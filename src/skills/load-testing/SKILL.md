@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: load-testing
+description: |
+  Load testing methodology — test types, scenario design, capacity planning, CI integration. Use when planning or running a load test, choosing a load testing tool, designing scenarios, analyzing results, setting up performance testing in CI, or estimating capacity from test data.
 metadata:
-  id: SKILL-load-testing
-  name: load-testing
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Load testing methodology — test types, scenario design, capacity planning, CI integration."
-  category: performance
-  layer: null
-  when_to_use: "Use when planning or running a load test, choosing a load testing tool, designing scenarios, analyzing results, setting up performance testing in CI, or estimating capacity from test data."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-load-testing
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: performance
 ---
 
 # Load Testing
 
-## Level 1 — Intro
+## Intro
 
 Load tests answer specific questions: does it work, can it handle
 expected traffic, where does it break, can it survive a spike, is
@@ -23,7 +21,7 @@ there long-term degradation. Always start with a smoke test, model
 real user behavior, and capture latency percentiles — averages hide
 problems.
 
-## Level 2 — Overview
+## Overview
 
 ### Test types
 
@@ -103,7 +101,7 @@ connections.
 Use k6 or Locust for realistic scenario testing. Use wrk or hey for
 quick single-endpoint benchmarks.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Identifying bottlenecks from results
 

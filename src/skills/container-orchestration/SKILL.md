@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: container-orchestration
+description: |
+  Docker Compose patterns for multi-service apps — health checks, networking, volumes, dependencies. Use when writing or editing docker-compose files, designing multi-service architectures, debugging container networking, or managing volumes and service dependencies.
 metadata:
-  id: SKILL-container-orchestration
-  name: container-orchestration
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Docker Compose patterns for multi-service apps — health checks, networking, volumes, dependencies."
-  category: infrastructure
-  layer: null
-  when_to_use: "Use when writing or editing docker-compose files, designing multi-service architectures, debugging container networking, or managing volumes and service dependencies."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-container-orchestration
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: infrastructure
 ---
 
 # Container Orchestration
 
-## Level 1 — Intro
+## Intro
 
 Docker Compose stitches multiple containers into a single declarative
 stack: services, networks, and volumes described in one YAML file. Get
 health checks, dependency conditions, and named volumes right and
 everything else follows.
 
-## Level 2 — Overview
+## Overview
 
 ### Compose file structure
 
@@ -163,7 +161,7 @@ services:
 Start with `docker compose --profile debug up` to include debug
 services. Services without a profile always start.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Common commands
 

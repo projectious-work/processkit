@@ -1,27 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: backlog-context
+description: |
+  Manages a project backlog as a BACKLOG.md file in the context directory using a simple Markdown checkbox format. Use when adding, updating, prioritizing, or reviewing items in context/BACKLOG.md.
 metadata:
-  id: SKILL-backlog-context
-  name: backlog-context
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manages a project backlog as a BACKLOG.md file in the context directory using a simple Markdown checkbox format."
-  category: process
-  layer: 2
-  when_to_use: "Use when adding, updating, prioritizing, or reviewing items in context/BACKLOG.md."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-backlog-context
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
 ---
 
 # Backlog Management (Context-based)
 
-## Level 1 — Intro
+## Intro
 
 The backlog lives in `context/BACKLOG.md` as a checkbox-formatted
 Markdown list. It is grouped by priority and references GitHub issues
 where they exist. Edit it directly when work items change.
 
-## Level 2 — Overview
+## Overview
 
 ### File location and format
 
@@ -45,7 +44,7 @@ Group items under priority headings, in order:
 
 New items default to Ideas unless the user signals otherwise.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Editing rules
 

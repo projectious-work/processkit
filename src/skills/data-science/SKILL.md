@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: data-science
+description: |
+  Data analysis workflow from import through modeling and communication. Use when analyzing a dataset, exploring data, building a statistical model, selecting features, or communicating findings to stakeholders.
 metadata:
-  id: SKILL-data-science
-  name: data-science
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Data analysis workflow from import through modeling and communication."
-  category: data
-  layer: null
-  when_to_use: "Use when analyzing a dataset, exploring data, building a statistical model, selecting features, or communicating findings to stakeholders."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-data-science
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: data
 ---
 
 # Data Science
 
-## Level 1 — Intro
+## Intro
 
 A solid data analysis flows from import through cleaning, tidying,
 exploration, modeling, and communication — in that order. Tidy data,
 honest uncertainty, and plain-language findings beat clever models on
 messy inputs.
 
-## Level 2 — Overview
+## Overview
 
 ### Import and cleaning
 
@@ -92,7 +90,7 @@ reproducibility.
 | ML | scikit-learn | xgboost/lightgbm |
 | Notebooks | jupyter lab | marimo |
 
-## Level 3 — Full reference
+## Full reference
 
 ### Tidy data — messy patterns and fixes
 

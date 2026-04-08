@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: sql-patterns
+description: |
+  SQL query patterns, schema design, and optimization — joins, CTEs, window functions, indexing, and anti-patterns. Use when writing or optimizing SQL queries, designing or reviewing a relational schema, reading EXPLAIN plans, choosing indexes, or implementing pagination, deduplication, or analytical queries.
 metadata:
-  id: SKILL-sql-patterns
-  name: sql-patterns
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "SQL query patterns, schema design, and optimization — joins, CTEs, window functions, indexing, and anti-patterns."
-  category: database
-  layer: null
-  when_to_use: "Use when writing or optimizing SQL queries, designing or reviewing a relational schema, reading EXPLAIN plans, choosing indexes, or implementing pagination, deduplication, or analytical queries."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-sql-patterns
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: database
 ---
 
 # SQL Patterns
 
-## Level 1 — Intro
+## Intro
 
 SQL rewards thinking in sets and reading execution plans. Build
 queries incrementally from the core logic outward, lean on CTEs and
 window functions for clarity, and verify cost with `EXPLAIN` before
 optimizing anything.
 
-## Level 2 — Overview
+## Overview
 
 ### Choose the right join
 
@@ -107,7 +105,7 @@ after `HAVING`.
 See `references/schema-design.md` for full schema-design patterns
 and `references/query-patterns.md` for query recipes.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Pagination: keyset over offset
 

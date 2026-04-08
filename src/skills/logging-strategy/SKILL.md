@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: logging-strategy
+description: |
+  Structured logging strategy — levels, correlation IDs, context propagation, PII avoidance. Use when designing a logging approach, reviewing log statements, setting up log aggregation (ELK, Loki, CloudWatch), adding correlation IDs to a distributed system, or deciding what to log and what to keep out.
 metadata:
-  id: SKILL-logging-strategy
-  name: logging-strategy
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Structured logging strategy — levels, correlation IDs, context propagation, PII avoidance."
-  category: observability
-  layer: null
-  when_to_use: "Use when designing a logging approach, reviewing log statements, setting up log aggregation (ELK, Loki, CloudWatch), adding correlation IDs to a distributed system, or deciding what to log and what to keep out."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-logging-strategy
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: observability
 ---
 
 # Logging Strategy
 
-## Level 1 — Intro
+## Intro
 
 Good logs are structured, leveled, correlated, and free of secrets.
 Pick a JSON logger, generate a `request_id` at every system boundary,
@@ -23,7 +21,7 @@ and propagate it through every downstream call. The cost of bad
 logging is cost itself — most overspend comes from a few noisy
 endpoints logged at INFO.
 
-## Level 2 — Overview
+## Overview
 
 ### Log levels
 
@@ -84,7 +82,7 @@ external calls with downstream service, latency, and status.
   a truncation instead
 - When in doubt, mask: `email=b***@example.com`, `card=****1234`
 
-## Level 3 — Full reference
+## Full reference
 
 ### Common fields for every entry
 

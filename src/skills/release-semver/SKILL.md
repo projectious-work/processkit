@@ -1,28 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: release-semver
+description: |
+  Semantic versioning releases — version bumps, changelogs, tags, publishing. Use when preparing a new release: deciding the version bump, drafting the changelog, tagging the commit, and publishing to the project's distribution channel.
 metadata:
-  id: SKILL-release-semver
-  name: release-semver
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Semantic versioning releases — version bumps, changelogs, tags, publishing."
-  category: process
-  layer: 3
-  when_to_use: "Use when preparing a new release: deciding the version bump, drafting the changelog, tagging the commit, and publishing to the project's distribution channel."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-release-semver
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 3
 ---
 
 # Semantic Versioning Release Process
 
-## Level 1 — Intro
+## Intro
 
 Releases are routine, not heroic. Decide the version bump from the
 nature of the changes, draft a changelog, update version files in
 one commit, tag with `vX.Y.Z`, and publish. The goal is a release
 anyone on the team can perform from the same checklist.
 
-## Level 2 — Overview
+## Overview
 
 ### Determine the version bump
 
@@ -65,7 +64,7 @@ The agent recommends a minor bump (because of the new feature),
 drafts changelog entries grouped Added/Fixed, updates version
 files, creates the bump commit, and tags it.
 
-## Level 3 — Full reference
+## Full reference
 
 ### When pre-1.0 ends
 

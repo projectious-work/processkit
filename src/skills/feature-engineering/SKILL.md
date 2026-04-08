@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: feature-engineering
+description: |
+  Feature engineering for ML — encoding, imputation, scaling, selection, time-series features. Use when preparing data for an ML model, encoding categoricals, handling missing data, building time-series features, or selecting features from a wide table.
 metadata:
-  id: SKILL-feature-engineering
-  name: feature-engineering
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Feature engineering for ML — encoding, imputation, scaling, selection, time-series features."
-  category: data
-  layer: null
-  when_to_use: "Use when preparing data for an ML model, encoding categoricals, handling missing data, building time-series features, or selecting features from a wide table."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-feature-engineering
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: data
 ---
 
 # Feature Engineering
 
-## Level 1 — Intro
+## Intro
 
 Good features beat clever models. Encode categoricals by cardinality,
 impute missing data with mechanism in mind, scale only when the model
 needs it, and wrap everything in a sklearn Pipeline so you cannot leak
 the test set.
 
-## Level 2 — Overview
+## Overview
 
 ### Encoding categoricals
 
@@ -94,7 +92,7 @@ time. Target encoding must use cross-validation folds, never the
 full training set. Wrap preprocessing in `sklearn.pipeline.Pipeline`
 to enforce ordering.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Text features
 

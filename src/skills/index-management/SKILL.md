@@ -1,24 +1,24 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: index-management
+description: |
+  SQLite-backed index over all entity files in the project. The read-side foundation for every other MCP server. Use whenever an agent needs to look up entities by ID, kind, state, or text — instead of grepping the filesystem.
 metadata:
-  id: SKILL-index-management
-  name: index-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "SQLite-backed index over all entity files in the project. The read-side foundation for every other MCP server."
-  category: process
-  layer: 0
-  provides:
-    primitives: []
-    mcp_tools: [reindex, query_entities, get_entity, search_entities, query_events, list_errors, stats]
-  when_to_use: "Use whenever an agent needs to look up entities by ID, kind, state, or text — instead of grepping the filesystem."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-index-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 0
+    provides:
+      primitives: []
+      mcp_tools: [reindex, query_entities, get_entity, search_entities, query_events, list_errors, 
+            stats]
 ---
 
 # Index Management
 
-## Level 1 — Intro
+## Intro
 
 `index-management` is the **read-side** foundation. It walks the project's
 `context/` directory, parses every entity file, and writes a SQLite
@@ -35,7 +35,7 @@ every entity-creating skill.
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### What it provides
 
@@ -59,7 +59,7 @@ keep the index fresh.
 `<project-root>/context/.cache/processkit/index.sqlite`. Gitignored.
 Rebuildable from source files at any time via `reindex()`.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Database schema
 

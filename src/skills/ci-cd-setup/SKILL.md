@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: ci-cd-setup
+description: |
+  CI/CD pipeline setup — GitHub Actions, testing, linting, deployment. Use when setting up CI from scratch, adding GitHub Actions, automating tests, wiring up deployment, or improving an existing build pipeline.
 metadata:
-  id: SKILL-ci-cd-setup
-  name: ci-cd-setup
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "CI/CD pipeline setup — GitHub Actions, testing, linting, deployment."
-  category: infrastructure
-  layer: null
-  when_to_use: "Use when setting up CI from scratch, adding GitHub Actions, automating tests, wiring up deployment, or improving an existing build pipeline."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-ci-cd-setup
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: infrastructure
 ---
 
 # CI/CD Setup
 
-## Level 1 — Intro
+## Intro
 
 A good CI pipeline runs the same checks a developer would run locally, in
 the same order, fast enough that contributors get feedback before they
 context-switch. Lint first, then test, then build, then deploy — and never
 let secrets or unpinned actions sneak in.
 
-## Level 2 — Overview
+## Overview
 
 ### Pipeline stages
 
@@ -63,7 +61,7 @@ attacker who compromises a tag cannot inject code into your build.
 - Require CI to pass before merge via branch protection rules.
 - Run expensive checks (E2E suites, deploys) only on main, not on PRs.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Sample workflow shape
 

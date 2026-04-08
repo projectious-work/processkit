@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: software-architecture
+description: |
+  Codebase architecture analysis — patterns, ADRs, structural review, C4 diagrams. Use when evaluating a codebase's architecture, choosing a pattern for a new project, writing an Architecture Decision Record, reviewing for layer violations, or generating C4 diagrams.
 metadata:
-  id: SKILL-software-architecture
-  name: software-architecture
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Codebase architecture analysis — patterns, ADRs, structural review, C4 diagrams."
-  category: architecture
-  layer: null
-  when_to_use: "Use when evaluating a codebase's architecture, choosing a pattern for a new project, writing an Architecture Decision Record, reviewing for layer violations, or generating C4 diagrams."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-software-architecture
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: architecture
 ---
 
 # Software Architecture
 
-## Level 1 — Intro
+## Intro
 
 Architecture is the set of structural decisions that are expensive
 to change. Map what exists, name the pattern, check the dependency
@@ -23,7 +21,7 @@ directions, and document significant decisions in ADRs. Choose
 patterns based on team size, domain complexity, and operational
 maturity — not fashion.
 
-## Level 2 — Overview
+## Overview
 
 ### Analyzing existing architecture
 
@@ -127,7 +125,7 @@ graph TB
   decision (gRPC for internal services, REST for the public API),
   consequences (faster internal calls, added tooling complexity).
 
-## Level 3 — Full reference
+## Full reference
 
 ### Pattern catalog
 

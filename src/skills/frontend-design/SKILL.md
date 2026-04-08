@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: frontend-design
+description: |
+  Frontend architecture and UI design — component hierarchies, accessibility, performance, state management. Use when designing frontend architecture, building component hierarchies, making something accessible, optimizing Core Web Vitals, or choosing a state management approach.
 metadata:
-  id: SKILL-frontend-design
-  name: frontend-design
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Frontend architecture and UI design — component hierarchies, accessibility, performance, state management."
-  category: design
-  layer: null
-  when_to_use: "Use when designing frontend architecture, building component hierarchies, making something accessible, optimizing Core Web Vitals, or choosing a state management approach."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-frontend-design
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: design
 ---
 
 # Frontend Design
 
-## Level 1 — Intro
+## Intro
 
 Good frontend design starts with semantic HTML, small
 single-responsibility components, and WCAG 2.2 AA accessibility, then
@@ -23,7 +21,7 @@ layers on performance, state management, and rendering strategy as the
 app grows. Apply these conventions when designing or reviewing any
 frontend application.
 
-## Level 2 — Overview
+## Overview
 
 ### Component architecture
 
@@ -150,7 +148,7 @@ Group by feature for large apps, by type for small ones. Keep
 `components/ui/` framework-agnostic where possible, and export barrel
 files (`index.ts`) only for public component APIs.
 
-## Level 3 — Full reference
+## Full reference
 
 ### WCAG 2.2 AA checklist
 

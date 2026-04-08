@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: system-design
+description: |
+  System design methodology — requirements, capacity estimation, component design, trade-offs. Use when designing a new distributed system, evaluating an existing architecture for scalability or cost, performing back-of-envelope capacity estimation, or preparing for a system design review.
 metadata:
-  id: SKILL-system-design
-  name: system-design
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "System design methodology — requirements, capacity estimation, component design, trade-offs."
-  category: architecture
-  layer: null
-  when_to_use: "Use when designing a new distributed system, evaluating an existing architecture for scalability or cost, performing back-of-envelope capacity estimation, or preparing for a system design review."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-system-design
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: architecture
 ---
 
 # System Design
 
-## Level 1 — Intro
+## Intro
 
 System design starts with requirements, not boxes. Estimate capacity
 on the back of an envelope, draw a small high-level architecture,
 then deep-dive only the components that are unique or risky. Make
 trade-offs explicit — every design decision has a cost.
 
-## Level 2 — Overview
+## Overview
 
 ### Gather requirements
 
@@ -140,7 +138,7 @@ given the requirements:
   post storage, feed cache in Redis sorted sets, media in object
   storage behind a CDN.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Powers of 2
 

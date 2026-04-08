@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: integration-testing
+description: |
+  Integration and E2E testing patterns — testcontainers, fixtures, API mocking, snapshots, and CI isolation. Use when writing integration tests against databases, APIs, or queues; setting up testcontainers or fixture infrastructure; mocking external APIs; or debugging flaky tests.
 metadata:
-  id: SKILL-integration-testing
-  name: integration-testing
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Integration and E2E testing patterns — testcontainers, fixtures, API mocking, snapshots, and CI isolation."
-  category: meta
-  layer: null
-  when_to_use: "Use when writing integration tests against databases, APIs, or queues; setting up testcontainers or fixture infrastructure; mocking external APIs; or debugging flaky tests."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-integration-testing
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: meta
 ---
 
 # Integration Testing
 
-## Level 1 — Intro
+## Intro
 
 Integration tests verify that your code works against real
 collaborators — databases, APIs, queues — not just mocks. The trick
@@ -23,7 +21,7 @@ is keeping them fast, isolated, and reproducible. Disposable
 containers, per-test fixtures, and strict API mocks are the
 primary tools.
 
-## Level 2 — Overview
+## Overview
 
 ### Testcontainers
 
@@ -127,7 +125,7 @@ Common flaky-test causes and fixes:
 A flaky test that is ignored is worse than no test at all. Tag
 known flaky tests and track them.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Testcontainers with Postgres (Python)
 

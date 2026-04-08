@@ -1,27 +1,25 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: auth-patterns
+description: |
+  Authentication and authorization patterns — OAuth2, JWT, sessions, RBAC/ABAC. Use when implementing login flows, securing APIs, managing tokens, designing permission systems, or reviewing auth code.
 metadata:
-  id: SKILL-auth-patterns
-  name: auth-patterns
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Authentication and authorization patterns — OAuth2, JWT, sessions, RBAC/ABAC."
-  category: security
-  layer: null
-  when_to_use: "Use when implementing login flows, securing APIs, managing tokens, designing permission systems, or reviewing auth code."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-auth-patterns
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: security
 ---
 
 # Authentication & Authorization Patterns
 
-## Level 1 — Intro
+## Intro
 
 Authentication proves who a caller is; authorization decides what they
 can do. Use industry-standard protocols (OAuth2, OIDC, JWT) and proven
 patterns (session cookies, RBAC, ABAC) rather than inventing your own.
 
-## Level 2 — Overview
+## Overview
 
 ### OAuth2 flow selection
 
@@ -114,7 +112,7 @@ Refresh tokens must be stored securely (httpOnly cookie or secure
 device storage), single-use (rotated on every refresh), and revocable
 (server-side denylist or family tracking).
 
-## Level 3 — Full reference
+## Full reference
 
 ### API key patterns
 

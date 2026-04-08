@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: threat-modeling
+description: |
+  Threat modeling with STRIDE — data flow diagrams, trust boundaries, risk. Use when designing a new system, reviewing architecture for security, conducting a security review, or prioritizing security work by risk.
 metadata:
-  id: SKILL-threat-modeling
-  name: threat-modeling
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Threat modeling with STRIDE — data flow diagrams, trust boundaries, risk."
-  category: security
-  layer: null
-  when_to_use: "Use when designing a new system, reviewing architecture for security, conducting a security review, or prioritizing security work by risk."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-threat-modeling
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: security
 ---
 
 # Threat Modeling
 
-## Level 1 — Intro
+## Intro
 
 A threat model is a structured analysis of how a system could be
 attacked. STRIDE walks each component and data flow through six
 threat categories, producing a prioritized list of risks and
 mitigations.
 
-## Level 2 — Overview
+## Overview
 
 ### STRIDE categories
 
@@ -112,7 +110,7 @@ Map each STRIDE category to common mitigations:
 | Denial of Service      | Rate limiting, autoscaling, CDN, circuit breakers |
 | Elevation of Privilege | Least privilege, input validation, sandboxing     |
 
-## Level 3 — Full reference
+## Full reference
 
 ### Attack surface mapping
 

@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: performance-profiling
+description: |
+  Performance analysis and profiling for CPU, memory, and I/O — flame graphs, benchmarks, regression detection. Use when identifying performance bottlenecks, profiling CPU/memory/I/O, interpreting flame graphs, setting up benchmarking or regression detection, or optimizing a slow function or endpoint.
 metadata:
-  id: SKILL-performance-profiling
-  name: performance-profiling
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Performance analysis and profiling for CPU, memory, and I/O — flame graphs, benchmarks, regression detection."
-  category: performance
-  layer: null
-  when_to_use: "Use when identifying performance bottlenecks, profiling CPU/memory/I/O, interpreting flame graphs, setting up benchmarking or regression detection, or optimizing a slow function or endpoint."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-performance-profiling
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: performance
 ---
 
 # Performance Profiling
 
-## Level 1 — Intro
+## Intro
 
 Intuition about performance is unreliable — always profile before
 optimizing. Work the cycle: identify the symptom, measure the
 baseline, profile the right resource, optimize the top bottleneck,
 verify the improvement. One change at a time.
 
-## Level 2 — Overview
+## Overview
 
 ### Performance analysis cycle
 
@@ -88,7 +86,7 @@ Identify disk, network, or database bottlenecks:
 5. What is the **acceptable target**? (p99 < 200 ms, RSS < 512 MB —
    you need a goal to know when you are done)
 
-## Level 3 — Full reference
+## Full reference
 
 ### Profiling tools by language
 

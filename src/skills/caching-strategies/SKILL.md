@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: caching-strategies
+description: |
+  Caching patterns — cache-aside, write-through, TTL strategies, invalidation, HTTP caching. Use when adding caching to reduce latency or DB load, choosing between caching patterns, configuring HTTP cache headers, debugging stale data or stampedes, or designing an invalidation strategy.
 metadata:
-  id: SKILL-caching-strategies
-  name: caching-strategies
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Caching patterns — cache-aside, write-through, TTL strategies, invalidation, HTTP caching."
-  category: performance
-  layer: null
-  when_to_use: "Use when adding caching to reduce latency or DB load, choosing between caching patterns, configuring HTTP cache headers, debugging stale data or stampedes, or designing an invalidation strategy."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-caching-strategies
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: performance
 ---
 
 # Caching Strategies
 
-## Level 1 — Intro
+## Intro
 
 Pick a caching pattern from read/write ratio and consistency
 requirements, bound staleness with TTLs, and accept that invalidation
 is hard. Always set a TTL as a safety net even when you invalidate
 explicitly. Protect popular keys from stampedes.
 
-## Level 2 — Overview
+## Overview
 
 ### Choose the right pattern
 
@@ -94,7 +92,7 @@ unchanged. Use `s-maxage` to control CDN TTL independently of the
 browser TTL. Use `Surrogate-Key` for tag-based purging on
 Fastly/Varnish.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Stampede prevention
 

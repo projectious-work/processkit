@@ -1,30 +1,35 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: scope-management
+description: |
+  Manage Scope entities — bounded containers grouping related work (sprint, milestone, project, quarter). Use when creating or updating a grouping boundary — sprint, milestone, quarter, project, release — that other entities will reference.
 metadata:
-  id: SKILL-scope-management
-  name: scope-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Manage Scope entities — bounded containers grouping related work (sprint, milestone, project, quarter)."
-  category: process
-  layer: 2
-  uses: [event-log, index-management, id-management]
-  provides:
-    primitives: [Scope]
-    mcp_tools:
-      - create_scope
-      - get_scope
-      - transition_scope
-      - list_scopes
-    templates: [scope]
-  when_to_use: "Use when creating or updating a grouping boundary — sprint, milestone, quarter, project, release — that other entities will reference."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-scope-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
+    uses:
+      - skill: event-log
+        purpose: Log events to keep the audit trail accurate after every write.
+      - skill: index-management
+        purpose: Query existing entities and keep the SQLite index fresh after writes.
+      - skill: id-management
+        purpose: Allocate unique entity identifiers via central ID generation.
+    provides:
+      primitives: [Scope]
+      mcp_tools:
+        - create_scope
+        - get_scope
+        - transition_scope
+        - list_scopes
+      templates: [scope]
 ---
 
 # Scope Management
 
-## Level 1 — Intro
+## Intro
 
 A Scope is a named, bounded container that groups related entities — a sprint,
 a milestone, a project, a release, a quarter. WorkItems, Processes, and
@@ -39,7 +44,7 @@ Bindings reference scopes to say "I apply within this container."
 > that wiring is the installer's responsibility; if processkit was
 > installed manually, the project owner must do it by hand.
 
-## Level 2 — Overview
+## Overview
 
 ### Kinds of scopes
 
@@ -88,7 +93,7 @@ Reference via `spec.scope: SCOPE-...` on WorkItems, or use a Binding
 (`type: work-scope`) when the scope relationship is temporal and an item
 can move in or out of scope during its lifetime.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Fields
 

@@ -4,148 +4,253 @@ kind: Documentation
 metadata:
   id: SKILL-FORMAT
   title: "Skill Package Format Specification"
-  version: "1.0.0"
+  version: "2.0.0"
 spec:
   level: 3
 ---
 
 # Skill Package Format
 
-## Level 1 — What and why
+## Intro
 
 A **skill** in processkit is a directory, not a single file. It bundles
-instructions (SKILL.md), examples, entity templates, and optionally a Python
-MCP server into one versioned, composable package. Skills are the primary way
-processkit gives agents new capabilities.
+agent instructions (`SKILL.md`), supporting documentation (`references/`),
+output assets (`assets/`), executable scripts (`scripts/`), example
+outputs (`examples/`), and optionally a Python MCP server (`mcp/`) into
+one composable package. Skills are the primary way processkit gives
+agents new capabilities.
 
-## Level 2 — Package layout and frontmatter
+processkit's skills follow the **[Agent Skills](https://agentskills.io)**
+open standard (donated by OpenAI and Anthropic to the Linux Foundation's
+Agentic AI Foundation in December 2025) so they load identically in
+Claude.ai, Claude Code, Cursor, Codex, Gemini CLI, and any other
+harness that consumes the standard. processkit-specific metadata
+(category, layer, dependencies, primitives, MCP tools) lives under an
+optional `metadata.processkit:` sub-block that other harnesses ignore.
+
+## Overview
 
 ### Directory layout
 
 ```
 src/skills/<skill-name>/
-  SKILL.md              ← required — three-level agent instructions
-  INDEX.md              ← optional — human-readable overview (Level 0)
-  examples/             ← recommended — example outputs (code, entity files, dialog)
-    <example>.md
-  templates/            ← recommended — YAML entity scaffolds used by this skill
-    <entity>.yaml
-  references/           ← optional — deep-dive reference material
-    <topic>.md
-  mcp/                  ← optional — Python MCP server for mechanical tools
+  SKILL.md              ← REQUIRED — the only file Claude reads automatically
+  scripts/              ← optional — executable code (Python, Bash); may be empty
+  references/           ← optional — deep-dive reference docs, loaded on demand
+  assets/               ← optional — templates, fonts, icons used in output
+  examples/             ← optional — example outputs (kept; not in Anthropic canonical layout)
+  mcp/                  ← optional — Python MCP server (processkit-specific)
     server.py           ← PEP 723 inline deps, STDIO transport, official SDK
-    mcp-config.json     ← config fragment merged into consumer's mcp config
-    README.md           ← what tools/resources the server provides
+    mcp-config.json     ← config fragment merged by the installer into the harness
+    SERVER.md           ← what tools / resources / env / limitations the server provides
 ```
 
-`<skill-name>` is a kebab-case identifier unique across processkit (and any
-community skill packages a project installs).
+`<skill-name>` is a kebab-case identifier unique across processkit (and
+any community skill packages a project installs).
 
-### SKILL.md frontmatter
+**Two prohibitions:**
 
-Every `SKILL.md` starts with YAML frontmatter:
+- **No `README.md` inside the skill folder** — Anthropic's hard rule. All
+  documentation belongs in `SKILL.md` or `references/`. The MCP server
+  documentation lives at `mcp/SERVER.md` instead.
+- **No `INDEX.md` inside the skill folder** — the parent
+  `src/skills/INDEX.md` indexes the whole catalog; per-skill indexing
+  would be redundant.
+
+### SKILL.md frontmatter (Agent Skills standard)
+
+Every `SKILL.md` starts with YAML frontmatter following the open
+[Agent Skills](https://agentskills.io) standard:
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: workitem-management
+description: |
+  Create, transition, query, and link WorkItems — tasks, stories, bugs,
+  spikes, epics, chores. Use when the user asks to add, update, query,
+  or link work items, or says things like "add to backlog", "mark this
+  done", "what's blocked", "create a bug for X", or "what's in review".
 metadata:
-  id: SKILL-<skill-name>
-  name: <skill-name>
-  version: "1.0.0"
-  created: <iso8601>
-spec:
-  description: "One-sentence description of what this skill does."
-  layer: 2                             # 0..4 — see hierarchy below
-  category: process                    # process | language | framework | infrastructure | ...
-  uses: [event-log, actor-profile]     # skills this skill depends on (strictly lower layer)
-  provides:                            # what an agent gets by activating this skill
-    primitives: [WorkItem]             # primitive kinds this skill manages
-    mcp_tools: [create_workitem, transition_workitem, query_workitems]
-  when_to_use: "Use this skill when the user asks to create, update, or query work items."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-workitem-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
+    uses:
+      - skill: event-log
+        purpose: "Log workitem events to keep the audit trail accurate after every write."
+      - skill: index-management
+        purpose: "Query existing workitems before proposing new ones; reindex after writes."
+      - skill: id-management
+        purpose: "Allocate unique BACK-<id> identifiers via central ID generation."
+    provides:
+      primitives: [WorkItem]
+      mcp_tools: [create_workitem, transition_workitem, query_workitems, link_workitems]
+      assets: [workitem, workitem-bug, workitem-story]
 ---
-
-# <Skill Title>
-
-## Level 1 — Intro (1-3 sentences)
-
-Brief description of the skill's purpose. Just enough for the agent to decide
-whether this skill is relevant to the current request.
-
-## Level 2 — Overview
-
-Key concepts, workflows, and the most common operations. Enough for the agent
-to act in typical cases without consulting Level 3 or the reference material.
-
-## Level 3 — Full reference
-
-Edge cases, complete field specs, rare workflows, error modes. This section
-can be long; the agent only reads it when Level 2 doesn't answer the question.
 ```
 
-### Frontmatter fields
+### Top-level (Agent Skills) fields
 
-| Field                 | Required | Purpose                                                  |
-|-----------------------|----------|----------------------------------------------------------|
-| `apiVersion`          | yes      | Always `processkit.projectious.work/v1` at v0.x.         |
-| `kind`                | yes      | Always `Skill`.                                          |
-| `metadata.id`         | yes      | `SKILL-<skill-name>`.                                    |
-| `metadata.name`       | yes      | Kebab-case name — must match directory name.             |
-| `metadata.version`    | yes      | Semver. Independent of processkit's release version.     |
-| `metadata.created`    | yes      | ISO 8601 UTC.                                            |
-| `spec.description`    | yes      | One-sentence summary. Shown in skill listings.           |
-| `spec.layer`          | yes      | Integer 0–4. See hierarchy below.                        |
-| `spec.category`       | yes      | One of the registered categories. See below.             |
-| `spec.uses`           | no       | List of skills this depends on. Strictly lower layer.    |
-| `spec.provides`       | no       | What the agent gains: primitive kinds, MCP tools, etc.   |
-| `spec.when_to_use`    | recommended | Trigger description — helps agent routing.            |
-| `spec.replaces`       | no       | For customized community forks: ID of the skill this overrides. |
+| Field         | Required | Purpose |
+|---------------|----------|---------|
+| `name`        | yes | Kebab-case identifier — must match the directory name. No spaces, no capitals, no underscores. |
+| `description` | yes | What the skill does **and** when to use it. Anthropic's loader uses this to decide whether to load the skill. Must include trigger phrases users would actually say. Under 1024 characters. No XML angle brackets (`<` `>`). |
+| `license`     | no  | Optional. Use if making the skill open source (MIT, Apache-2.0, …). |
+| `compatibility` | no | Optional, 1-500 chars. Indicates environment requirements. |
+| `metadata`    | no  | Optional. Free-form custom key/value pairs. processkit puts everything under `metadata.processkit:` (see below). |
 
-### Skill hierarchy
+### `metadata.processkit:` fields (processkit-specific)
 
-Skills reference lower-layer skills via `uses:`. The graph is a DAG; cycles are
-validation errors.
+| Field             | Required | Purpose |
+|-------------------|----------|---------|
+| `apiVersion`      | yes | Always `processkit.projectious.work/v1` at v0.x. |
+| `id`              | yes | `SKILL-<skill-name>` — used by the index. |
+| `version`         | yes | Per-skill semver. Independent of processkit's release version. |
+| `created`         | yes | ISO 8601 UTC. |
+| `category`        | yes | One of the registered categories — see below. |
+| `layer`           | depends | Integer 0–4 for entity-management/process skills (see hierarchy). Omit (or use `null`) for category=`language`/`framework`/etc. |
+| `uses`            | no  | List of objects with `skill` + `purpose` — see below. Strictly lower-layer for layered skills. |
+| `provides`        | no  | What the agent gains: primitives, MCP tools, asset templates, processes. |
+| `replaces`        | no  | For customized community forks: ID of the skill this overrides. |
 
-| Layer | Role                      | Examples                                                       |
-|-------|---------------------------|----------------------------------------------------------------|
-| 0     | Foundation                | event-log                                                      |
-| 1     | Primitive management      | role-management, actor-profile                                 |
-| 2     | Core entity management    | workitem-management, decision-record, scope-management         |
-| 3     | Process orchestration     | process-management, gate-management, schedule-management       |
-| 4     | Cross-cutting concerns    | discussion-management, metrics-management                      |
+### `uses:` — list of objects with explicit purpose
 
-Technical and language skills (e.g. `python-best-practices`, `fastapi-patterns`)
-do not fit this hierarchy — they are category `language`, `framework`, etc.,
-with `layer: null`.
+`uses` is a list of skills this skill **delegates to** at runtime. Each
+entry is an object with two fields:
+
+- `skill` — the kebab-case name of the dependency
+- `purpose` — one sentence explaining **why** this skill uses the other
+
+The `purpose` field is mandatory. The Zettelkasten community's principle
+applies here too: *"If you just add links without any explanation you
+will not create knowledge."* Without `purpose`, the agent has to guess
+why the dependency exists, and the index has no way to surface the
+relationship meaningfully.
+
+```yaml
+uses:
+  - skill: event-log
+    purpose: "Log decision.recorded events to keep the audit trail accurate."
+  - skill: index-management
+    purpose: "Query existing decisions before recording a new one to surface duplicates."
+```
+
+The `uses` field is also a **convention-only delegation marker**:
+when an agent reads skill A and sees `uses: [B]`, it knows it can
+read skill B's `SKILL.md` for the underlying methodology. Skill A's
+SKILL.md should explicitly tell the agent to do so when the
+delegation matters (e.g., *"To create a workitem, follow
+`workitem-management/SKILL.md`'s create_workitem flow."*). The
+harness does not auto-load skill B; the agent does, when skill A
+tells it to.
+
+This makes `uses` the **knowledge delegation** field — the
+processkit-specific innovation that lets one skill defer methodology
+and MCP-tool usage to another instead of duplicating it.
+
+### SKILL.md body structure
+
+After the frontmatter, every `SKILL.md` follows this section structure:
+
+```markdown
+# <Skill Title>
+
+## Intro
+
+1-3 sentences. What this skill is and when it applies. Just enough for
+the agent to decide whether the skill is relevant to the current task.
+
+## Overview
+
+Key concepts, workflows, and the most common operations. Enough for the
+agent to act in typical cases without consulting the Full reference or
+the bundled `references/` files.
+
+## Gotchas
+
+REQUIRED. Failure modes specific to AI agents — recurring across providers
+(Claude, Gemini, ChatGPT, etc.). Pause-and-self-check items, NOT general
+practitioner anti-patterns. The Skills Master Class calls this "the
+highest-signal content" — where the model goes wrong. Provider-neutral:
+what is obvious to Claude may not be obvious to Gemini.
+
+## Full reference
+
+Edge cases, complete field specs, rare workflows, error modes, anti-patterns
+that apply to humans and agents alike. May link to deeper material in
+`references/<topic>.md`.
+```
+
+The historical "Level 1 / Level 2 / Level 3" headings have been retired.
+"Level" now refers to Anthropic's file-level progressive disclosure model
+(see below), not section markers inside SKILL.md.
+
+### Progressive disclosure (Anthropic's model)
+
+processkit follows Anthropic's three-level progressive disclosure pattern,
+which is **file-level**, not section-level:
+
+| Level | Lives in | Always loaded? |
+|-------|----------|----------------|
+| 1 | YAML frontmatter (`name`, `description`) | YES — in the harness's system prompt |
+| 2 | `SKILL.md` body (Intro / Overview / Gotchas / Full reference) | Loaded when the description triggers |
+| 3 | Files in `references/`, `scripts/`, `assets/` | Loaded only when SKILL.md tells the agent to fetch them |
+
+This minimizes token usage while keeping deep material available on
+demand. **Keep `SKILL.md` under 5000 words** — Anthropic's recommendation.
+For longer skills, push detail into `references/<topic>.md` and link
+to it from `SKILL.md`.
+
+### The Gotchas section is mandatory
+
+Every SKILL.md MUST have a `## Gotchas` section. This is processkit's
+version of the Skills Master Class's "highest-signal content" rule.
+
+A good Gotchas section:
+
+- Lists **agent-specific** failure modes — things the model gets wrong, not
+  things humans would.
+- Is **provider-neutral** — what's obvious to Claude may not be obvious to
+  Gemini, ChatGPT, or whatever harness loads the skill.
+- Is **specific** — "Don't be sloppy" is useless; "Always check call sites
+  before approving a function signature change" is useful.
+- Does NOT duplicate the general anti-patterns subsection in Full reference.
+  Anti-patterns are practitioner pitfalls that apply to humans and agents
+  alike; Gotchas are agent-only.
+- Cross-references the Full reference's Anti-patterns when relevant.
+
+### Skill hierarchy (process category only)
+
+Layered skills reference lower-layer skills via `uses:`. The graph is a
+DAG; cycles are validation errors. Only skills in the `process` category
+have a layer; technical/language/framework skills (e.g.
+`python-best-practices`, `fastapi-patterns`) have no layer.
+
+| Layer | Role                      | Examples                                                 |
+|-------|---------------------------|----------------------------------------------------------|
+| 0     | Foundation                | event-log, index-management, id-management               |
+| 1     | Primitive management      | role-management, actor-profile                           |
+| 2     | Core entity management    | workitem-management, decision-record, scope-management   |
+| 3     | Process orchestration     | process-management, gate-management, schedule-management |
+| 4     | Cross-cutting concerns    | discussion-management, metrics-management                |
 
 ### Categories
 
-The category field groups skills in the docs-site and in `aibox skill list`:
+The `category` field groups skills in the docs site and in `aibox skill
+list`:
 
 `process`, `language`, `framework`, `infrastructure`, `architecture`,
 `design`, `data`, `ai`, `api`, `security`, `observability`, `database`,
 `performance`, `meta`.
 
-## Level 3 — Full reference
-
-### The three-level principle in SKILL.md
-
-Agents read skills top-down and stop as soon as they have enough context.
-Structure each SKILL.md so that:
-
-- **Level 1** answers "should I use this skill at all?" — 1 to 3 sentences.
-- **Level 2** answers "how do I do the common thing?" — key workflows, typical
-  invocations, default behavior. Roughly 1–3 screens.
-- **Level 3** answers "what about the edge case?" — full field-by-field
-  reference, rare transitions, interop with other skills, troubleshooting.
-
-Level 3 may be further subdivided (e.g. a `references/` directory for
-deep-dive topics). The index MCP server (Phase 3) exposes level-aware queries
-so agents can fetch just the level they need.
+## Full reference
 
 ### The `provides` block
 
-`spec.provides` is a promise to consumers. It lists:
+`metadata.processkit.provides` is a promise to consumers. It lists:
 
 ```yaml
 provides:
@@ -155,7 +260,7 @@ provides:
     - create_workitem
     - transition_workitem
     - query_workitems
-  templates:            # entity template names shipped in templates/
+  assets:               # asset names shipped in assets/ (templates, fonts, icons, ...)
     - workitem
     - workitem-bug
     - workitem-story
@@ -164,28 +269,37 @@ provides:
 ```
 
 A consumer's `aibox lint` cross-checks `provides.primitives` against the
-`kind` values in the directory's `templates/`, and `provides.mcp_tools`
+`kind` values in the directory's `assets/`, and `provides.mcp_tools`
 against the server's `list_tools()` response.
 
-### examples/
+### `examples/`
 
 Each example is a Markdown file demonstrating a complete good output for a
-realistic task. Examples are NOT tests — they are patterns. The skill points
-the agent at the nearest example when Level 2 gives a hint like "see the
-create-feature example for the full flow."
+realistic task. Examples are **not** tests — they are patterns. SKILL.md
+points the agent at the nearest example when Overview gives a hint like
+"see the create-feature example for the full flow."
 
 Naming convention: `<action>-<subject>.md` — e.g. `create-feature.md`,
 `transition-to-review.md`, `link-related-decisions.md`.
 
-### templates/
+processkit keeps `examples/` even though it's not in Anthropic's
+canonical layout. It's additive — Anthropic's loader ignores
+unrecognized subdirectories.
 
-Each template is a complete YAML frontmatter entity (no body) that the skill
-(or its MCP server) uses as a scaffold for new entities. Templates should
-include sensible defaults and leave `TODO` markers where the agent must fill
-in context-specific values.
+### `assets/`
+
+Assets are anything the skill ships for use in its output: templates,
+fonts, icons, reference images, brand kits, JSON schemas, prompt
+fragments. Most processkit skills use `assets/` for entity YAML
+scaffolds (the original `templates/` use case).
+
+A YAML entity template is a complete frontmatter block (no body) used as
+a scaffold for new entities. Templates should include sensible defaults
+and leave `TODO` markers where the agent must fill in context-specific
+values:
 
 ```yaml
-# templates/workitem.yaml
+# assets/workitem.yaml
 ---
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
@@ -200,7 +314,48 @@ spec:
 ---
 ```
 
-### mcp/
+### `references/`
+
+Deep-dive reference material that doesn't fit in SKILL.md's body without
+exceeding the 5000-word limit. Each file documents one focused topic.
+SKILL.md points at them by relative path:
+
+```markdown
+For the full state-machine transition table, see
+`references/transitions.md`.
+```
+
+Anthropic's loader treats files under `references/` as Level 3 — they
+are loaded only when SKILL.md tells the agent to fetch them. This is the
+right place for: complete schemas, edge-case workflows, troubleshooting
+playbooks, integration notes, historical decisions.
+
+### `scripts/`
+
+Executable code that ships with the skill — Python, Bash, or any other
+interpreter the environment supports. Anthropic's canonical layout
+includes `scripts/` at the same level as `references/` and `assets/`.
+
+processkit creates an empty `scripts/` (with a `.gitkeep`) in every
+skill, even if the skill doesn't currently ship any. The convention
+makes the dir easy to find when the skill author wants to add one
+later, and it surfaces the option to skill-builder/skill-reviewer.
+
+Use `scripts/` when:
+
+- The skill needs a deterministic operation that's easier to verify in
+  code than to instruct the agent to perform.
+- The operation involves parsing, validation, formatting, or any task
+  where language-model interpretation is unreliable.
+- The Anthropic guide's "advanced technique" applies: *"For critical
+  validations, consider bundling a script that performs the checks
+  programmatically rather than relying on language instructions."*
+
+For Python scripts, use PEP 723 inline metadata so they are
+self-contained (`#!/usr/bin/env -S uv run` shebang + `# /// script` block
+declaring dependencies). Same pattern as MCP servers.
+
+### `mcp/`
 
 When a skill ships an MCP server:
 
@@ -217,8 +372,8 @@ When a skill ships an MCP server:
   if __name__ == "__main__":
       server.run(transport="stdio")
   ```
-- `mcp-config.json` is the fragment a consumer-side installer merges into the
-  agent harness's MCP config:
+- `mcp-config.json` is the fragment a consumer-side installer merges
+  into the agent harness's MCP config:
   ```json
   {
     "mcpServers": {
@@ -229,16 +384,18 @@ When a skill ships an MCP server:
     }
   }
   ```
-- `README.md` documents: tools provided, resources exposed, required
-  environment, known limitations.
+- `SERVER.md` documents tools provided, resources exposed, required
+  environment, known limitations. **Not `README.md`** — Anthropic's
+  no-README rule applies inside the skill folder, including
+  subdirectories.
 
 #### MCP server naming: the `processkit-` prefix is mandatory
 
 The MCP server name — the string passed to `FastMCP(...)` and the key
 under `mcpServers` in `mcp-config.json` — **must** be prefixed with
 `processkit-`. The skill directory name itself stays unprefixed
-(`src/skills/workitem-management/`), as does the `metadata.name` field
-in `SKILL.md`. The prefix applies only to the MCP wire identifier.
+(`src/skills/workitem-management/`), as does the `name` field in
+`SKILL.md`. The prefix applies only to the MCP wire identifier.
 
 The reason is collision avoidance with user-added MCP servers.
 Consumer-side installers merge processkit-shipped MCP servers into the
@@ -255,7 +412,7 @@ identifiers:
 | Identifier               | Example                            | Used by                                                  |
 |--------------------------|------------------------------------|----------------------------------------------------------|
 | Skill directory          | `src/skills/workitem-management/`  | processkit source layout, install paths                  |
-| `metadata.name` (SKILL.md) | `workitem-management`            | skill listings, `uses:` references between skills        |
+| `name` (SKILL.md)        | `workitem-management`              | skill listings, `uses:` references between skills        |
 | MCP server name          | `processkit-workitem-management`   | `FastMCP(...)`, `mcp-config.json`, harness config files  |
 
 Documentation referring to the **skill** uses the unprefixed form ("the
@@ -266,15 +423,28 @@ prefixed form ("the harness loads `processkit-workitem-management` from
 
 ### Versioning
 
-`metadata.version` is per-skill semver, independent of processkit's overall
-release version. A skill's version bumps when its behavior or interface
-changes. The processkit release tag (e.g. `v0.2.0`) is a coordinated snapshot
-of all skill versions at a point in time.
+`metadata.processkit.version` is per-skill semver, independent of
+processkit's overall release version. A skill's version bumps when its
+behavior or interface changes. The processkit release tag (e.g.
+`v0.5.1`) is a coordinated snapshot of all skill versions at a point in
+time.
 
 ### Overriding skills in community packages
 
-A community skill package (installed via `aibox process install <git-url>`)
-can override a processkit-shipped skill by setting `spec.replaces: <skill-name>`.
-The consumer project sees the community skill at `<skill-name>`; the original
-is shadowed. This is the extension mechanism for forking or customizing
-opinionated defaults without monkey-patching.
+A community skill package (installed via `aibox process install
+<git-url>`) can override a processkit-shipped skill by setting
+`metadata.processkit.replaces: <skill-name>`. The consumer project sees
+the community skill at `<skill-name>`; the original is shadowed. This
+is the extension mechanism for forking or customizing opinionated
+defaults without monkey-patching.
+
+### Migration from the legacy K8s-style frontmatter
+
+processkit skills before v0.6.0 used a Kubernetes-style frontmatter
+(`apiVersion` / `kind` / `metadata` / `spec` at the top level). That
+format was incompatible with Anthropic's Agent Skills loader, which
+reads top-level `name` and `description`. The migration to the current
+flat format was performed mechanically by
+`scripts/migrate-skill-frontmatter.py` — see the script for the exact
+transformation. The legacy fields are preserved verbatim under
+`metadata.processkit.*`; nothing is lost.

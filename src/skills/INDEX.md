@@ -68,12 +68,15 @@ Layer 4 (cross-cutting):
 
 ```
 <skill-name>/
-  SKILL.md              ← three-level instructions
-  examples/             ← example outputs
-  templates/            ← YAML frontmatter entity scaffolds
-  references/           ← optional deep-dive material (Level 3 extension)
-  mcp/                  ← optional Python MCP server
+  SKILL.md              ← Intro / Overview / Gotchas / Full reference
+  scripts/              ← optional executable code (Python, Bash) — may be empty
+  references/           ← optional deep-dive reference docs loaded on demand
+  assets/               ← optional templates, fonts, icons used in output
+  examples/             ← optional example outputs (kept; not in Anthropic canonical layout)
+  mcp/                  ← optional Python MCP server (processkit-specific)
 ```
+
+For the canonical specification, see [`FORMAT.md`](FORMAT.md).
 
 ## Skill hierarchy
 

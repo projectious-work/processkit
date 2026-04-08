@@ -1,28 +1,26 @@
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: rust-conventions
+description: |
+  Rust conventions — error handling with anyhow/thiserror, module layout, clippy. Use when writing or reviewing Rust code, organizing modules, or deciding on error handling, naming, and testing conventions.
 metadata:
-  id: SKILL-rust-conventions
-  name: rust-conventions
-  version: "1.1.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "Rust conventions — error handling with anyhow/thiserror, module layout, clippy."
-  category: language
-  layer: null
-  when_to_use: "Use when writing or reviewing Rust code, organizing modules, or deciding on error handling, naming, and testing conventions."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-rust-conventions
+    version: "1.1.0"
+    created: 2026-04-06T00:00:00Z
+    category: language
 ---
 
 # Rust Conventions
 
-## Level 1 — Intro
+## Intro
 
 Idiomatic Rust uses `anyhow` for applications and `thiserror` for
 libraries, pays its `cargo clippy -- -D warnings` bill on every
 build, and organizes modules by domain. No `.unwrap()` in
 production code.
 
-## Level 2 — Overview
+## Overview
 
 ### Error handling
 
@@ -63,7 +61,7 @@ of each source file. Integration tests go under `tests/`. Use
 `assert_eq!` with a third argument for the failure message when
 the context isn't obvious from the values alone.
 
-## Level 3 — Full reference
+## Full reference
 
 ### Error handling patterns
 
