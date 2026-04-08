@@ -1,0 +1,5 @@
+source = "https://github.com/projectious-work/processkit.git"
+version = "v0.5.1"
+src_path = "src"
+release_asset_sha256 = "a6306d5f45d2d72d6ad4ab3faebe718d3f5048ee84abf4d206e9ec9751816ab3"
+installed_at = "2026-04-08T02:34:42.067335+00:00"

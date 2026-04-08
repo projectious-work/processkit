@@ -1,23 +1,12 @@
 # CLAUDE.md — processkit
 
-This file exists because Claude Code auto-loads `CLAUDE.md` at startup.
+> **Pointer file.** Canonical instructions live in [`AGENTS.md`](./AGENTS.md).
+>
+> Claude Code auto-loads `CLAUDE.md` on startup, so this thin file exists
+> only to satisfy that convention. Edit `AGENTS.md` (shipped by
+> processkit) — not this file. Any changes here will not be picked up by
+> other agent harnesses (Codex CLI, Continue, OpenCode, …).
 
-The canonical agent instructions for this repo are **provider-neutral**
-and live at **`AGENTS.md`** (at the repository root). Read that file
-first. After AGENTS.md, the next deeper briefing is
-`context/HANDOVER.md`.
-
-## Why two files?
-
-processkit aims to be consumable by any agent harness, not just Claude
-Code. Following the [agents.md](https://agents.md/) ecosystem
-convention, the authoritative agent instructions live in `AGENTS.md`.
-Provider-specific files (`CLAUDE.md`, future `CODEX.md`, etc.) are thin
-pointers that exist only because each harness auto-loads its own
-filename. Add genuinely Claude-Code-specific content here only — slash
-command bindings, settings.json guidance, Claude-Code-only skills under
-`.claude/skills/`. Everything else belongs in `AGENTS.md`.
-
-## Claude-Code-specific notes
-
-(Currently none. This file is a pointer only.)
+Read **[`AGENTS.md`](./AGENTS.md)** in the project root for project
+instructions. It is the single, provider-neutral entry point for any AI
+agent (or human) working on this project.

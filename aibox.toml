@@ -5,7 +5,7 @@
 # =============================================================================
 
 [aibox]
-version = "0.14.1"             # Set by aibox — do not edit manually
+version = "0.16.2"             # Set by aibox — do not edit manually
 base    = "debian"             # Base image flavor. Options: debian
 
 # =============================================================================
@@ -25,13 +25,13 @@ user     = "aibox"              # User inside the container (controls mount path
 # =============================================================================
 [context]
 schema_version = "1.0.0"      # Context schema version — updated automatically by `aibox sync`
-# Presets (use one of these):
-#   managed          core + tracking + standups + handover  (recommended default)
-#   software         managed + code + architecture
-#   research-project managed + research + documentation
-#   full-product     managed + code + architecture + design + product + security + operations
-# Individual packages (advanced): core, tracking, standups, handover, code, architecture,
-#   design, product, security, data, operations, research, documentation
+# processkit packages (one or more, choose by tier):
+#   minimal   solo developers and small side projects
+#   managed   small teams with a shared backlog (recommended default)
+#   software  software engineering teams (extends managed)
+#   research  research, data science, ML projects (extends managed)
+#   product   full product development (extends software)
+# See context/templates/processkit/<version>/packages/ for the YAML definitions.
 packages = ["product"]
 
 # =============================================================================
@@ -63,6 +63,10 @@ packages = ["product"]
 
 [addons.ai-claude.tools]
 
+[addons.docs-docusaurus.tools]
+
+[addons.node.tools]
+
 [addons.python.tools]
 
 # =============================================================================
@@ -74,22 +78,61 @@ packages = ["product"]
 providers = ["claude"]
 
 # =============================================================================
+# [processkit] — content layer source (skills, primitives, processes)
+# =============================================================================
+# processkit ships the skills and primitives that aibox installs into the
+# project. The default upstream is the canonical projectious-work/processkit
+# repo. Companies can fork processkit and have their projects consume the fork
+# by changing `source` to point at their fork.
+#
+# `version` is the git tag of the processkit source to consume. The sentinel
+# value "unset" means "no version pinned yet" — the project doesn't yet
+# consume processkit content.
+[processkit]
+source   = "https://github.com/projectious-work/processkit.git"
+version  = "v0.5.1"
+src_path = "src"
+# branch = "main"   # optional — for tracking a moving branch (discouraged)
+#
+# Optional release-asset URL template for non-GitHub hosts (Gitea, GitLab,
+# self-hosted). When unset, the fetcher uses the GitHub-style default:
+#   {source}/releases/download/{version}/{name}-{version}.tar.gz
+# Placeholders: {source} (.git stripped), {version}, {org}, {name}.
+# release_asset_url_template = "https://gitea.example.com/{org}/{name}/releases/download/{version}/payload.tar.gz"
+
+# =============================================================================
+# [agents] — canonical AGENTS.md + provider-specific entry files
+# =============================================================================
+# AGENTS.md is the canonical, provider-neutral instruction document for AI
+# coding agents. Provider files (CLAUDE.md, future CODEX.md, …) are thin
+# pointers that simply say "see AGENTS.md". This matches the agents.md
+# ecosystem convention and avoids keeping N copies of the same instructions.
+#
+# `provider_mode` options:
+#   pointer (default) — provider files are thin pointers to AGENTS.md
+#   full              — provider files contain rich provider-flavored content
+#                       (use only when you genuinely need different content per harness)
+[agents]
+canonical     = "AGENTS.md"
+provider_mode = "pointer"
+
+# =============================================================================
 # [customization] — color theme, shell prompt, and zellij layout
 # =============================================================================
 # Theme is applied consistently across Zellij, Vim, Yazi, lazygit, and bat.
 # Options: gruvbox-dark | catppuccin-mocha | catppuccin-latte | dracula | tokyo-night | nord | projectious
 [customization]
-theme  = "gruvbox-dark"
+theme  = "nord"
 # Starship prompt preset.
 # Options: default | plain | minimal | nerd-font | pastel | bracketed | arrow
 prompt = "default"
-# Default zellij layout. Options: dev | focus | cowork | browse
-layout = "dev"
+# Default zellij layout. Options: dev | focus | cowork | cowork-swap | browse | ai
+layout = "ai"
 
 # =============================================================================
 # [audio] — PulseAudio bridging for voice features (e.g., Claude Code voice)
 # =============================================================================
 # Requires host-side setup: run `aibox audio setup` on the host first.
 [audio]
-enabled = false
+enabled = true
 # pulse_server = "tcp:host.docker.internal:4714"  # PulseAudio TCP endpoint (default port: 4714)
