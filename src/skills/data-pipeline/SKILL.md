@@ -67,6 +67,18 @@ delays), and prefer sensors or triggers over polling. Tag tasks with
 owners and SLA expectations. Keep task definitions thin — business
 logic lives in importable modules so it can be unit-tested.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Insert-only loads with no deduplication.** Running a pipeline twice — due to a retry, a bug fix re-run, or an overlapping schedule — produces duplicate rows if the load step is not idempotent. Design loads to upsert or deduplicate on a natural key, or use insert-if-not-exists semantics so re-runs are safe by default.
+- **Transformation logic split between the pipeline and the warehouse.** When some transforms happen in pipeline code and others in warehouse SQL views, neither place is the full truth. A change in one layer silently breaks the other. Put all business logic in one layer — ideally SQL in the warehouse where it's versioned and queryable — and keep the pipeline as pure extraction and loading.
+- **Adding streaming "for future-proofing" when batch suffices.** Streaming infrastructure (brokers, consumers, exactly-once semantics, late-arrival handling) adds substantial operational complexity. Unless the business requires sub-minute latency, start with scheduled batch and migrate to streaming only when latency is a demonstrated problem.
+- **Quality checks only at the end of the pipeline.** Validating data only after full transformation means a bad upstream record causes the entire pipeline run to fail or produce corrupt output. Add checks immediately after ingestion on raw data so bad records are caught and quarantined before they propagate.
+- **No date-range parameter for backfills.** A pipeline that hardcodes "process yesterday's data" cannot be used to reprocess a historical window without code changes. Parameterize the date range from day one so backfills are operational procedures, not engineering tasks.
+- **DAGs hiding business logic in orchestration code.** Using the DAG framework (Airflow operators, etc.) to implement transformation logic couples business rules to infrastructure. Keep DAGs as wiring — trigger, sequence, and retry — and keep transformation logic in testable Python or SQL that runs outside the orchestrator.
+- **Silently dropping malformed records.** A `try/except` that logs a warning and continues means corrupt or schema-violating records disappear without anyone being paged. Always count rejects, surface the count as a metric, and alert when it exceeds a threshold.
+
 ## Full reference
 
 ### Schema management

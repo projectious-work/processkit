@@ -92,6 +92,18 @@ unchanged. Use `s-maxage` to control CDN TTL independently of the
 browser TTL. Use `Surrogate-Key` for tag-based purging on
 Fastly/Varnish.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Per-instance in-memory cache in a horizontal fleet.** Each replica holds a different cache state, so the same key returns different values depending on which instance handles the request. Either use a shared external cache or accept that per-instance caches are only valid for data that is safe to be inconsistent across replicas (e.g., non-critical local rate limiting).
+- **Updating cached values instead of invalidating them.** A write path that updates the cache entry directly while the database write is in-flight creates a window where the cache holds a value that the database doesn't yet confirm. Invalidate on write; let the next read repopulate from the authoritative source.
+- **No TTL with manual invalidation as the only expiry mechanism.** When invalidation logic is missed in any write path, stale data lives forever. Always set a TTL as a safety net — even a long one (hours or days) — so the worst case is bounded. Manual invalidation is a supplement, not a replacement.
+- **Caching error responses.** Caching a 404 or 500 from an upstream service means a transient failure becomes permanent until the entry expires or is manually cleared. Never cache error responses; only cache successful results from authoritative sources.
+- **No jitter on TTLs for a large key population.** If every key expires at the same second (e.g., all set with TTL 3600 at the same time), the resulting cache miss storm hits the origin simultaneously. Add per-key random jitter (±10–20%) to TTLs to spread expiry events.
+- **Key collisions across environments or tenants.** Using bare entity IDs as cache keys (`user:123`) without a namespace prefix causes staging data to collide with production data, or one tenant's data to collide with another's. Always prefix keys with environment and tenant identifiers.
+- **Not warming the cache before routing traffic.** A cold cache after a deployment or restart causes a thundering herd — all requests miss simultaneously and hammer the origin. Pre-warm critical keys before switching traffic, or use a staggered rollout that lets the cache fill naturally.
+
 ## Full reference
 
 ### Stampede prevention

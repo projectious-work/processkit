@@ -117,6 +117,18 @@ Schemas always change. Design for it:
 - Use expand/contract for non-trivial changes: add new structure,
   backfill, then remove the old.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Premature denormalization for performance.** Denormalizing before you have measured a query performance problem introduces update anomalies — the same fact stored in multiple places must be kept in sync, and it will eventually drift. Model normalized first; denormalize only specific read paths after profiling shows the join is actually slow.
+- **Storing monetary values as FLOAT or DOUBLE.** Floating-point types cannot represent most decimal fractions exactly, so `0.10 + 0.20` may evaluate to `0.30000000000000004`. Always use a fixed-point type (`DECIMAL`, `NUMERIC`) or store amounts as integer cents in the application's smallest currency unit.
+- **Omitting foreign key constraints "for flexibility."** Foreign keys without database-enforced referential integrity allow orphaned rows to accumulate silently — orders with no customer, line items with no product. The constraint is not optional; it is the mechanism that makes the relationship reliable. Add them unless you have a specific, documented reason not to.
+- **Comma-separated lists in a column.** Storing `"tag1,tag2,tag3"` in a TEXT column means queries must parse strings rather than use indexes, and adding or removing a value requires a string manipulation that cannot be done atomically. Use a junction table or, if the database supports it, an array or JSONB column with a GIN index.
+- **Entity-Attribute-Value (EAV) tables without considering JSONB.** An EAV table (`entity_id`, `attribute_name`, `value`) is a hand-rolled sparse schema that requires joining for every attribute read and prevents meaningful indexing. Modern databases (PostgreSQL, MySQL 8) offer JSONB/JSON columns with indexes that achieve the same flexibility with far better query performance.
+- **Not modeling for the actual access patterns.** A schema designed only from domain entities without considering how the application queries it often leads to expensive multi-table joins on the hot path. Before finalizing the schema, list the top 5 queries by frequency and write them out — then design the schema so each can use an index.
+- **Storing hierarchies without choosing the correct hierarchy pattern.** Representing a tree with a naive `parent_id` self-reference makes querying all descendants require a recursive CTE or application-side recursion. For deep or frequently-traversed hierarchies, consider a closure table, nested sets, or ltree, depending on the read/write balance.
+
 ## Full reference
 
 ### Polymorphic associations

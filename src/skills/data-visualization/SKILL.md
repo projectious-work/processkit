@@ -77,6 +77,18 @@ and filter controls. Static needs readability at print size (12pt+
 fonts, 300 dpi). Always provide a static fallback for interactive
 charts.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Truncating the bar chart y-axis to make differences look larger.** A bar chart with a y-axis starting at 85% makes a 3-percentage-point difference look enormous. Bar charts must start at zero unless the baseline is explicitly labeled and well understood by the audience. Use a dot plot or connected line for before/after comparisons where zero is not meaningful.
+- **Dual y-axes implying a relationship that doesn't exist.** Two series on dual axes can be made to look correlated or anti-correlated purely by scaling. The chart becomes a tool for misleading rather than informing. Use small multiples or index both series to a common baseline instead.
+- **Overplotting on scatter plots hiding the actual distribution.** With more than a few hundred points, overlapping markers make density invisible — a dense cluster and a sparse one look identical. Use alpha transparency, 2D density (hexbin, KDE), or aggregate before plotting when the point count is large.
+- **Pie charts with more than four slices.** Humans cannot accurately compare arc lengths or areas beyond four segments. Use a horizontal bar chart ordered by value; it is easier to read, easier to label, and easier to extend.
+- **Relying on color alone to encode information.** Color-blind viewers (roughly 8% of men) cannot distinguish red from green or blue from yellow. Always pair color with a second encoding — position, shape, pattern, or direct label — so the chart is readable in grayscale.
+- **Default titles that describe the chart, not the finding.** A title like "Monthly Revenue by Region" tells the viewer what data is shown but not what to conclude. A title like "Northeast revenue grew 34% while all other regions declined" tells them what to look for. Lead with the insight.
+- **Missing units on axes.** "Revenue" on the y-axis without a currency and scale (thousands? millions?) forces the viewer to guess. Every axis must have a label that includes units. Every chart must specify the time range if time is involved.
+
 ## Full reference
 
 ### Chart selection decision tree

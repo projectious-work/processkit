@@ -101,6 +101,18 @@ a later migration without hunting for it.
 - Always specify `ORDER BY` when results must be deterministic —
   SQL gives no ordering guarantee otherwise.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Plural table names that break join-table conventions.** When entity tables are plural (`users`, `orders`), a join table becomes `users_orders` — ambiguous about direction and ownership. Either use singular names for all tables (so join tables are `user_order`) or adopt a consistent convention and document it; mixing plural and singular across the schema is the worst outcome.
+- **Unnamed constraints relying on database-generated names.** A foreign key or check constraint created without an explicit name gets a generated name like `fk_17a3b2`. When a migration needs to drop or alter that constraint, the name must be looked up per-environment and may differ between production and staging. Always name constraints explicitly: `CONSTRAINT fk_orders_user_id FOREIGN KEY (user_id) REFERENCES users(id)`.
+- **SELECT * in production code.** Selecting all columns in application queries breaks when columns are added (extra data transmitted) or removed (runtime errors), and prevents the planner from using covering indexes. Name every column the application actually uses.
+- **Quoting reserved words instead of renaming the column.** Writing `SELECT "order"` or `` SELECT `order` `` works around a reserved word collision but requires quoting every reference to that column forever, breaks cross-database portability, and signals a naming problem. Rename the column to `order_date`, `order_number`, or any non-reserved alternative.
+- **Comma-style joins in the FROM clause.** `FROM users, orders WHERE users.id = orders.user_id` is implicit cross join syntax from SQL-89. It is visually easy to mistake for a cross join if the WHERE clause is missing, and it cannot express LEFT JOIN or other join types cleanly. Use explicit `JOIN ... ON` syntax for all joins.
+- **String concatenation to build SQL.** Constructing query text by concatenating user-supplied values is a SQL injection vulnerability. Use parameterized queries or prepared statements unconditionally, even for internal tooling where the input is "trusted."
+- **Mixing schema DDL and data backfills in the same migration.** A migration that both adds a column and backfills data in one transaction holds a DDL lock for the entire backfill duration, blocking all writers. Split migrations: one for the schema change, a separate migration (or out-of-band script) for the data backfill, run after the schema migration completes.
+
 ## Full reference
 
 ### Comment conventions

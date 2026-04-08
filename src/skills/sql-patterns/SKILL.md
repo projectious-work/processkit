@@ -105,6 +105,18 @@ after `HAVING`.
 See `references/schema-design.md` for full schema-design patterns
 and `references/query-patterns.md` for query recipes.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **SELECT * in production queries.** Selecting all columns returns data the application doesn't use, breaks when columns are added or removed, and prevents index-only scans. Always name the columns you need explicitly so the query is stable, the network payload is minimal, and the planner can use covering indexes.
+- **Functions on indexed columns in WHERE clauses.** Writing `WHERE LOWER(email) = ?` or `WHERE DATE(created_at) = ?` forces the planner to evaluate the function on every row, making the index on `email` or `created_at` unusable. Use a functional index, normalize the data at write time, or rewrite the predicate to operate on the raw column.
+- **NOT IN with a subquery that can return NULLs.** `WHERE id NOT IN (SELECT user_id FROM orders)` returns zero rows if any `user_id` in `orders` is NULL, because `x NOT IN (..., NULL, ...)` evaluates to NULL for every x. Use `NOT EXISTS` or filter out NULLs in the subquery explicitly.
+- **Correlated subqueries that execute once per row.** A subquery in the SELECT list or WHERE clause that references the outer query's row runs once for every row in the outer result set — O(n) database round-trips. Rewrite as a JOIN or a lateral join so the planner can execute it once.
+- **Missing LIMIT on exploratory queries run against production.** A full-table scan without a LIMIT clause can lock up a production database for minutes and saturate I/O. Add `LIMIT 100` to any ad hoc query until you know the cardinality, and run exploratory queries against a read replica.
+- **Implicit type coercions in join conditions.** Joining `orders.user_id` (INTEGER) to `users.id` (BIGINT) or `VARCHAR` forces the planner to cast one side for every comparison, often disabling index use. Match column types on both sides of every join; fix mismatches in the schema rather than relying on implicit casting.
+- **OFFSET pagination for deep pages.** `LIMIT 20 OFFSET 10000` forces the database to scan and discard 10,000 rows to return 20. For large offsets, performance degrades linearly. Use keyset (cursor) pagination — `WHERE id > last_seen_id ORDER BY id LIMIT 20` — which uses the index and runs in constant time regardless of page depth.
+
 ## Full reference
 
 ### Pagination: keyset over offset

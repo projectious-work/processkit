@@ -104,6 +104,18 @@ To rename `username` to `handle`:
 3. Add `NOT NULL` on `handle`, then drop `username` in a later
    migration once nothing reads it.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Locking a large table with ADD COLUMN ... DEFAULT.** In databases that rewrite the table to fill in the default (older PostgreSQL, MySQL without INSTANT algorithm), adding a column with a non-null default on a multi-million-row table takes a full table lock for minutes. Use a nullable column first, backfill in batches, then add the NOT NULL constraint once all rows are populated.
+- **Missing index on a foreign key column.** Adding a foreign key constraint without a corresponding index on the referencing column means every delete or update on the referenced table causes a full sequential scan of the child table to check referential integrity. Always create the index before or with the foreign key.
+- **DDL inside a long transaction with other writes.** A migration that runs inside the same transaction as application writes holds DDL locks for the entire transaction duration, blocking all other writers. Run DDL in short, isolated transactions; use concurrent index builds where the database supports them.
+- **Forgetting NULL during a backfill before NOT NULL constraint.** The sequence is: add column nullable → backfill → add NOT NULL. If the backfill script misses any rows (e.g., soft-deleted records, rows in an archive table), adding NOT NULL will fail or silently coerce nulls to a default. Verify zero nulls remain before adding the constraint.
+- **Irreversible migrations without a backup or rollback plan.** A migration that drops a column, truncates a table, or changes a type destructively cannot be undone after the fact. Always take a point-in-time backup, write a down migration before running the up migration, and validate the down migration on a staging copy before touching production.
+- **Editing a deployed migration instead of writing a new one.** Changing a migration file that has already run on any environment means that environment's schema history no longer matches the file. Write a new corrective migration; treat deployed migrations as immutable history.
+- **No dry-run on staging before production.** Running a migration directly on production without first running it on a staging environment of similar size means that unexpected lock durations, constraint violations, or data issues surface in production. Always run on staging with production-representative data volume first.
+
 ## Full reference
 
 ### Safe operations by database

@@ -73,6 +73,18 @@ count, null rate on key columns, duplicate rate, freshness, schema
 match — and add more as issues arise. Keep thresholds in config files,
 not hardcoded.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Checks only at the end of the pipeline.** Validating data after full transformation means a bad upstream record travels the entire pipeline before failing, corrupting intermediate outputs along the way. Add checks at ingestion on raw data and at each transformation boundary so failures are caught and quarantined early.
+- **Hardcoded thresholds disconnected from historical baselines.** A null rate threshold of 5% chosen arbitrarily will either fire constantly on a column that naturally has 4% nulls, or miss a regression on a column that usually has 0%. Derive thresholds from historical distributions — mean ± N standard deviations — and update them as the data evolves.
+- **Soft warnings that nobody monitors.** A check that logs a warning but does not block the pipeline or alert anyone is not a data quality gate — it is documentation that the data is wrong. Quality checks must have a defined consequence: block the run, quarantine the records, or page on-call. Unmonitored warnings become noise within a week.
+- **Data contracts in a wiki instead of enforceable code.** A contract documented in Confluence can drift silently from the actual schema for months before anyone notices. Enforce contracts as code — schema validation in tests or a contract-testing framework — so that upstream changes that violate the contract fail the pipeline immediately.
+- **Schema drift detection without alerting the producer.** Detecting that an upstream schema changed is only half the job. If the alert goes only to the pipeline owner, the producer never learns they broke a downstream consumer. Schema drift alerts should notify both the pipeline owner and the upstream team so the source of the change is aware.
+- **Validating only schema, not values.** A column typed as INTEGER passes schema validation even when it contains -1 where only positive values are valid, or 0 where null is the intended sentinel. Value-level checks (range, enum membership, referential integrity) catch a different class of errors than schema checks and are equally important.
+- **No lineage tracking for quarantined records.** When records fail quality checks and are quarantined, there must be a way to trace which source records were rejected, why, and what downstream impact the rejection had. Without lineage, quarantined records are invisible holes in the data that are nearly impossible to audit or recover.
+
 ## Full reference
 
 ### Great Expectations patterns

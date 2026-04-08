@@ -76,6 +76,18 @@ A cache-aside pattern with TTL-based expiration. Keys follow
 `DEL`. A circuit breaker keeps the API alive when Redis is
 unreachable.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Modeling a document store with a relational schema.** Designing documents as flat, normalized records and then joining them in application code recreates the worst of both worlds — no join support from the database and no embedding benefit from the document model. If entities are always queried together, embed them; if they are queried independently, separate them.
+- **Unbounded arrays inside documents.** Storing all comments, tags, or events inside a parent document's array field means the document grows without limit over time, eventually exceeding document size limits and causing reads to return megabytes of data for a simple lookup. Apply a growth bound: cap the array, move to a sub-collection, or use a separate collection for high-cardinality child entities.
+- **Hot partition keys in distributed stores.** Choosing a partition key like `date` or `country_code` concentrates write traffic on one shard when writes cluster by time or geography. Distribute load with a high-cardinality key — user ID, entity UUID — or composite key with a random suffix. A hot partition is a throughput ceiling that is expensive to undo after data is written.
+- **Requesting strong consistency by default everywhere.** Strong consistency requires coordination across replicas, adding latency and reducing availability. Most reads tolerate eventual consistency — a profile page, a product listing — and should use it. Reserve strong consistency for operations where stale reads would produce incorrect behavior (e.g., inventory decrement, financial balances).
+- **Using Pub/Sub or a message queue as a durable event store.** Message brokers designed for fan-out have limited retention and no replay-from-offset semantics in the same sense as an append-only log. Replaying events after a consumer bug, or querying historical event sequences, requires a separate event store. Use a dedicated event store when durability and replay are requirements.
+- **Forgetting that NoSQL writes require idempotency.** Retries under network failures can result in duplicate writes to a document store that has no unique constraint by default. Design write operations to be idempotent by using a client-generated idempotency key, a conditional write (update-if-version), or an upsert pattern so re-running the operation produces the same state.
+- **Choosing a NoSQL store without measuring the relational database's limitation.** The assumption "SQL won't scale" is often made without load testing the relational option with proper indexing and connection pooling. Most applications under 10M rows and moderate write rates perform well on a relational database. Choose NoSQL for a specific, measured reason — not as a default for new projects.
+
 ## Full reference
 
 ### Document stores (MongoDB)
