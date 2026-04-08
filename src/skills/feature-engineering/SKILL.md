@@ -92,6 +92,18 @@ time. Target encoding must use cross-validation folds, never the
 full training set. Wrap preprocessing in `sklearn.pipeline.Pipeline`
 to enforce ordering.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Fitting transformers on the full dataset before splitting.** Fitting a scaler, imputer, or target encoder on train + test leaks test-set statistics into the model. Fit all transformers on training data only, then transform test data with the training-fitted transformer.
+- **Target encoding without cross-validation.** Replacing a categorical with its mean target value on the same fold creates direct leakage: the model learns to associate the target with... the target. Use cross-validated target encoding where each fold is encoded using only the other folds' statistics.
+- **Label-encoding nominal categories.** Label encoding implies an ordinal relationship (e.g., `Red=0, Blue=1, Green=2` implies `Green > Blue > Red`). Linear models and neural networks will learn a false ordering. Use one-hot or target encoding for nominals with no natural order.
+- **Time-series features that peek at future data.** A lag-3 feature computed from row `t` includes data from rows `t+1`, `t+2`, `t+3` if the DataFrame is sorted descending. Verify temporal direction and always use only data available at prediction time.
+- **Applying MinMaxScaler when the test set contains values outside the training range.** MinMaxScaler clips values to `[0, 1]` based on training min/max. Out-of-range test values produce values outside `[0, 1]` or are clipped, corrupting the distribution. Use RobustScaler or StandardScaler for data with outliers or uncertain ranges.
+- **Polynomial feature expansion on all features "to be safe".** Degree-2 expansion on 100 features produces ~5,000 features. Most of these will be noise, increasing training time and overfitting risk dramatically. Use polynomial features only for specific known non-linear relationships.
+- **Feature selection before splitting.** Running mutual information or correlation-based selection on the full dataset lets test-set information guide which features are retained. Select features using only training data, ideally inside a sklearn Pipeline.
+
 ## Full reference
 
 ### Text features

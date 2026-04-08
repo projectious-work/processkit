@@ -117,6 +117,18 @@ per Chinchilla-style ratios).
 - **Confirmation bias in evaluation** — cherry-picking on
   non-representative slices.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Data leakage through preprocessing before the split.** Fitting a scaler, imputer, or encoder on the full dataset before splitting means test statistics influence the training fit — the test set is no longer held out. Always split first, then fit transformers on training data only.
+- **Evaluating hyperparameters on the test set.** Tuning hyperparameters against the test set makes the test set part of the training process. Use a validation set or nested cross-validation; reserve the test set for a single final evaluation.
+- **Choosing metrics based on framework defaults, not business goals.** A model optimized for accuracy on an imbalanced dataset can be 95% accurate by predicting the majority class on every sample. Choose metrics that match the actual cost of errors: F1 for imbalanced classes, AUC-ROC for ranking, RMSE vs. MAE depending on whether large errors matter disproportionately.
+- **Shuffling a time series before splitting.** A shuffled time-series train/test split leaks future data into training. Use a time-based split where all training data precedes all test data, and never use cross-validation without a time-aware splitter.
+- **Reporting only a single point estimate without variance.** A model that is 90% accurate on one fold may be 78% on another. Single-number metrics hide variance. Always report variance across folds or confidence intervals, not just the mean.
+- **Skipping a baseline model.** Starting with a complex neural network when a logistic regression or a mean predictor hasn't been tried yet means you don't know how much complexity you actually need. Build and evaluate a simple baseline before adding sophistication.
+- **Treating distribution shift as a training problem.** When production inputs drift from the training distribution (different season, different user base, different data pipeline), retraining on more of the original data won't fix it. Detect shift explicitly via feature distribution monitoring and collect representative production data for retraining.
+
 ## Full reference
 
 ### Bias-variance decomposition

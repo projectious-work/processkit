@@ -108,6 +108,18 @@ almost always outperforms either method alone. Qdrant and Weaviate
 have built-in hybrid; for others, run BM25
 (Elasticsearch/OpenSearch) and vector search separately and fuse.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Choosing an embedding model based solely on MTEB leaderboard scores.** MTEB benchmarks general-purpose retrieval; your domain may have different vocabulary, query patterns, or document lengths. Always benchmark candidate models on a small eval set from your own data before committing to one.
+- **Using L2 (Euclidean) distance with embeddings trained for cosine similarity.** Most embedding models are trained with cosine similarity as the loss. Using L2 distance with them produces incorrect similarity rankings. Check the model card for the intended distance metric before configuring the vector store index.
+- **Embedding raw documents and chunking after the fact.** An embedding represents the full input as a single vector. Embedding a 10,000-word document produces one vector that represents everything and nothing specifically. Chunk first, then embed each chunk.
+- **Pure dense retrieval for catalogs with exact identifiers.** Dense (semantic) retrieval fails on product SKUs, proper nouns, acronyms, and precise version numbers — it is too fuzzy. Combine with sparse (BM25 / keyword) retrieval using reciprocal rank fusion for these use cases.
+- **No eval set to detect retrieval regressions.** Without a golden set of queries with expected results, there is no way to know whether a change to chunking, embedding model, or index parameters improved or degraded retrieval quality. Build an eval set before the first production deployment.
+- **Single embedding model for both query and document without asymmetric fine-tuning.** Queries and documents have different linguistic patterns. Some models (e.g., Voyage, `e5-instruct`) require instruction prefixes like `"Represent this document:"` for passages and `"Represent this query:"` for queries. Using the wrong prefix produces poorer retrieval.
+- **Sharing one DataLoader (or equivalent batch object) instance across search requests.** Results from a cached retrieval object may belong to a different request's context. Always create per-request retrieval objects when batching or caching at the database layer.
+
 ## Full reference
 
 ### Metadata filtering and multi-tenancy

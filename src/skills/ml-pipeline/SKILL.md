@@ -150,6 +150,18 @@ with rollback triggers.
 Tools: GitHub Actions + DVC + MLflow, or managed platforms like
 Vertex AI Pipelines, SageMaker Pipelines, Kubeflow.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Notebook in production.** A Jupyter notebook is not a production artifact: it has hidden cell-execution-order state, no unit tests, and no parameter injection. Convert training pipelines to parameterized scripts with a config file before any production deployment.
+- **Training-serving skew.** Features computed differently in the offline training pipeline and the online serving path produce a distribution mismatch that degrades model performance silently. Use shared transformation code or a feature store so training and serving use the exact same feature logic.
+- **Going to 100% traffic without shadow or canary.** Deploying a new model version to 100% of traffic immediately is the most common production incident in ML. Always shadow-deploy first to compare outputs, then canary with automated rollback, then ramp.
+- **Monitoring only operational metrics, not model quality.** Latency and error rate going green while model outputs degrade silently is the canonical production failure. Monitor input feature distributions (data drift), output prediction distributions (concept drift), and delayed ground-truth labels alongside p99 latency.
+- **Overwriting datasets in place.** "Re-running the ETL" on the same data path destroys lineage. Use immutable versioned datasets — a new path or object key for every version — so any training run can reference the exact data it was trained on.
+- **No rollback plan for model deployment.** If the new model underperforms after reaching 100% traffic, "how do we revert?" must be answered before the first deployment. The model registry should have a clear previous-production version tagged and the deployment system must support traffic routing back to it.
+- **Retraining too rarely without drift monitoring.** A model trained on 2024 data may quietly degrade as 2025 data arrives. Without drift monitoring and a retraining trigger, the team only discovers the degradation through user complaints or business metric drops.
+
 ## Full reference
 
 ### Pipeline orchestration tools

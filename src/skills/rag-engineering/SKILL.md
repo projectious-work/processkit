@@ -155,6 +155,18 @@ Common failure modes:
 - **Right docs, bad answer** — model issue. Better prompt,
   stronger model.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Tuning the prompt to fix a retrieval problem.** If the retrieved chunks are wrong, rewriting the generation prompt will not fix the underlying retrieval failure — it just masks symptoms. Isolate which stage is failing (retrieval vs. generation) before making changes. Never tune the prompt to compensate for poor retrieval.
+- **Chunks too large relative to query granularity.** A 2,000-token chunk contains many facts. The embedding represents the average of all of them, so it will be a mediocre match for any specific fact inside the chunk. Match chunk size to the granularity of expected queries — FAQ answers need small chunks; technical explanations need larger ones.
+- **Pure dense retrieval for catalogs with exact identifiers.** Dense semantic search fails on product SKUs, version numbers, proper nouns, and acronyms. These need exact term matching via sparse (BM25) retrieval. Hybrid dense + sparse is the correct default for production.
+- **Stuffing low-scoring retrieved chunks into the context.** When no relevant content exists, returning the top-k chunks regardless of relevance score causes hallucinations — the model will try to construct an answer from irrelevant content. Set a similarity threshold; if no chunk passes it, tell the LLM explicitly that no relevant information was found.
+- **No faithfulness evaluation before production.** A RAG system that produces fluent, confident answers that contradict the retrieved context is worse than one that says "I don't know." Measure faithfulness (answer grounded in context?) from the first prototype, not as an afterthought.
+- **Re-indexing for every iteration when debugging chunking.** Rebuilding the full vector index to test every chunking change is expensive and slow. Maintain a small representative test corpus that re-indexes in seconds; use the full corpus only for final validation.
+- **Building without a golden eval set.** Without a ground-truth set of queries and expected context passages, "does the retrieval work?" is a feeling, not a measurement. Build the eval set from real user questions before the first production deployment and run it after every change.
+
 ## Full reference
 
 ### Hybrid search and RRF

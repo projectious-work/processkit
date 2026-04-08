@@ -123,6 +123,18 @@ Build a golden dataset of 50+ question/ideal-context/reference
 triples and score with RAGAS to localize the failing stage
 (retrieval vs. generation).
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Eval set built entirely from synthetic data.** Synthetic data captures what you think can go wrong, not what actually goes wrong in production. A chatbot eval set built from GPT-generated questions will miss the real distribution of user queries. Mix production examples into the eval set before using it to make decisions.
+- **Tuning prompts against the test set.** Choosing prompts based on test-set performance makes the test set part of the development loop — it no longer measures generalization. Keep a true held-out test set; iterate on a separate dev set.
+- **Single-number metric hiding subgroup regressions.** A new prompt version with an overall accuracy of 92% may be 80% on billing questions even though it is 99% on FAQ questions. Always slice metrics by category, difficulty, and edge-case subsets before declaring a winner.
+- **LLM-as-judge without calibration.** Judge models have biases: position bias (preferring the first option), verbosity bias (preferring longer answers), and self-preference (preferring their own outputs). Use swap-order evaluation and calibrate the judge on a small set of human-labeled examples before trusting its scores.
+- **No reproducibility on eval runs.** LLM evaluation at temperature > 0 produces different results on every run. Set temperature = 0 for evaluation and pin all model versions and prompt hashes. Without this, you can't tell whether a score change is a real improvement or noise.
+- **Treating automated metrics as ground truth for open-ended tasks.** BLEU and ROUGE measure n-gram overlap, not quality. A correct answer phrased differently from the reference scores poorly; a fluent but wrong answer may score well. Use automated metrics only where reference answers exist; use LLM-as-judge for open-ended tasks.
+- **Reporting only means without distributions.** A mean faithfulness score of 0.85 is compatible with half the responses being hallucinated (0.7) and half being perfect (1.0). Always report p50, p90, p99 and the fraction of responses below a minimum acceptable threshold.
+
 ## Full reference
 
 ### Human evaluation

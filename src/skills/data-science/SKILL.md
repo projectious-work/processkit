@@ -90,6 +90,18 @@ reproducibility.
 | ML | scikit-learn | xgboost/lightgbm |
 | Notebooks | jupyter lab | marimo |
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Starting with a complex model before a simple baseline.** Training an XGBoost model before computing a mean predictor or running a logistic regression means you can't know how much of the model's value came from complexity vs. data. Build a baseline first; complexity is only justified when the baseline is inadequate.
+- **Evaluating on training data.** "The model is 98% accurate" on the data it trained on is not a finding — it is a description of memorization. Always evaluate on held-out data and report the held-out metric.
+- **Confusing statistical significance with practical significance.** With n > 10,000, almost any real difference is statistically significant. A p-value of 0.001 on a 0.1% conversion difference means "this is real" but does not mean "this matters." Always report effect size alongside p-values.
+- **Choosing a statistical test before checking its assumptions.** Running a t-test on non-normally distributed data with small samples produces unreliable p-values. Check normality (Shapiro-Wilk for n < 5000), equal variance (Levene), and independence before choosing a parametric test; fall back to non-parametric alternatives when assumptions fail.
+- **Reporting findings without uncertainty.** "Feature X predicts churn" without a confidence interval or cross-validation variance means the finding might not replicate. Always communicate uncertainty ranges alongside point estimates.
+- **Truncating the bar chart y-axis to make differences look larger.** A bar chart with a y-axis starting at 0.85 makes a 0.03 difference look dramatic. Unless the baseline is well-understood (like conversion rate from 30% to 32%), bar charts should start at zero.
+- **Not setting random seeds before any analysis.** Non-reproducible analysis is not science. Set `random_state=42` (or equivalent) on all sampling, model initialization, and cross-validation calls. Document the seed in the notebook or script so results can be reproduced exactly.
+
 ## Full reference
 
 ### Tidy data — messy patterns and fixes
