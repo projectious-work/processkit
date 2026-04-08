@@ -106,6 +106,18 @@ same ranking signals.
 - Verify with Chrome DevTools device emulation and Google's
   Mobile-Friendly Test.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Writing generic or duplicate title tags across pages.** Title tags must be unique per page and lead with the primary keyword. Duplicate or generic titles ("Home | Acme" on every page) reduce click-through rate and confuse crawlers about which page to rank for a given query.
+- **Adding structured data that does not match visible page content.** A `Product` schema with a price not shown on the page, or an `Article` schema on a non-article page, fails Google's validation and may trigger manual actions. Structured data must reflect exactly what the user sees.
+- **Creating redirect chains longer than one hop.** Each additional hop adds latency and loses link equity. A chain A → B → C → D should be collapsed to a direct A → D redirect. Check for chains after any URL restructuring.
+- **Deploying pages without a canonical tag.** Without `<link rel="canonical">`, a page accessible at multiple URLs (HTTP vs HTTPS, trailing slash, query parameters) fragments its link equity across variants. Every indexable page needs a self-referencing canonical even when there are no obvious duplicates.
+- **Optimizing for average load time instead of Core Web Vitals p75.** Google's ranking signals are p75 LCP, INP, and CLS — not average page load time. A fast average with a slow p75 LCP still ranks poorly. Measure and optimize the 75th-percentile field data, not only Lighthouse scores.
+- **Using `noindex` together with `Disallow` in robots.txt on the same URLs.** `Disallow` prevents crawling; if the page is also `noindex`, crawlers cannot discover the directive. Index control via `noindex` requires the page to remain crawlable. Use one or the other, not both.
+- **Shipping structured data changes without validating in the Rich Results Test.** Syntax errors in JSON-LD prevent rich results from appearing, but the page itself renders normally and the error is invisible without explicit testing. Always validate in the Rich Results Test before deploying.
+
 ## Full reference
 
 ### Internal linking

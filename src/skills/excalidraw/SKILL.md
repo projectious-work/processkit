@@ -124,6 +124,18 @@ Save the `.excalidraw` source for editing, export SVG or PNG for
 embedding. GitHub renders `.excalidraw.png` directly in Markdown. The
 Excalidraw VS Code extension renders `.excalidraw` files in-editor.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Using short or sequential element IDs like "1", "2", "3".** Element IDs must be globally unique across the file. Duplicate or predictable IDs cause Excalidraw to silently overwrite or misrender elements. Use random 8+ character strings as the spec requires.
+- **Placing coordinates without snapping to the 20px grid.** Elements at arbitrary coordinates (e.g., `x: 73, y: 117`) appear misaligned when the file is opened and manually edited. Snap all positions to multiples of 20 to match the default grid.
+- **Omitting `boundElements` or `containerId` for labeled shapes.** A text element placed visually on top of a shape is not bound to it — moving the shape leaves the label behind. To label a shape, both the container's `boundElements` and the text's `containerId` must reference each other.
+- **Generating bindings that reference non-existent element IDs.** Arrows with `startBinding` or `endBinding` pointing to IDs not present in the `elements` array fail to render their connections. Always verify that every binding target ID exists in the file before emitting.
+- **Using `image` elements without populating the `files` object.** Excalidraw image elements reference a file ID that must appear as a key in the top-level `files` object with base64-encoded content. Omitting this entry renders a broken image placeholder.
+- **Generating all elements at the same coordinates.** Without a deliberate layout plan — left-to-right for flows, top-to-bottom for hierarchies, 80-120px between nodes — elements overlap on open and the diagram is unusable. Plan the coordinate layout before emitting any elements.
+- **Emitting incomplete JSON that omits required top-level keys.** A file missing `type`, `version`, `appState`, or `files` (even as an empty `{}`) fails validation when loaded in Excalidraw. Always emit the complete v2 envelope even for minimal diagrams.
+
 ## Full reference
 
 ### Full element property reference

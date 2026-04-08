@@ -133,6 +133,18 @@ unused_skill_age_days = 90           # default 60
 disable_skills_automatically = false # default false (always proposes, never auto-disables)
 ```
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Moving or deleting files without user approval.** Grooming is a propose-then-act workflow: generate the report, surface it to the user, act only on approved items. Silently moving files based on the ruleset — even files that clearly qualify — bypasses the user's judgment. Nothing moves without approval.
+- **Proposing to disable a skill that is currently being used.** The "not invoked in 60 days" rule may fire on a skill that was used extensively until recently, or that is central to a project the user is about to resume. Before proposing to disable a skill, check recent session notes and the backlog for references to that skill.
+- **Grooming the current quarter's standups or in-progress work.** The ruleset explicitly skips anything in-progress or less than 30 days old. Proposing to archive a standup from last week, or a workitem currently being worked on, produces a report that damages trust in the grooming process. Always apply the age and status filters strictly.
+- **Summarizing standups without preserving specific work item references.** A quarterly summary that replaces eight individual standup entries must retain all workitem IDs, decision references, and blocker resolutions mentioned in the originals. A summary that says "worked on various items" loses the audit trail. Summarizations are compressions, not erasures.
+- **Running grooming too frequently, making every report feel like noise.** If the user is asked to approve a grooming report every session, they will start ignoring or dismissing them reflexively. Respect the configured cadence. If the user has declined grooming three sessions in a row, offer to change the cadence rather than repeating the offer.
+- **Treating the default ruleset as mandatory even when the project has overrides.** The `aibox.toml` configuration can change thresholds — a project may archive workitems after 60 days instead of 30, or may never disable skills. Always read the configuration before applying any rule, and apply the project-specific values.
+- **Not recording the grooming event in the event log.** Every grooming session that results in file moves must be recorded as a `LogEntry` with `event_type: context.groomed`, listing which items were moved and when. Without this, the next grooming pass cannot determine when the last grooming ran.
+
 ## Full reference
 
 ### Configuration

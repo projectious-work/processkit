@@ -86,6 +86,18 @@ Identify disk, network, or database bottlenecks:
 5. What is the **acceptable target**? (p99 < 200 ms, RSS < 512 MB —
    you need a goal to know when you are done)
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Optimizing before establishing a baseline measurement.** Without a concrete before number (p50/p95/p99, RSS, throughput), there is no way to tell whether the change helped, hurt, or made no difference. Establish the baseline first — then optimize — then verify with the same measurement.
+- **Profiling under trivial or synthetic load.** A profiler run against a tight loop with no I/O tells you nothing about production behavior. Collect a workload representative of real traffic — replay production logs, replicate actual access patterns, or drive realistic concurrency before reading the profiler output.
+- **Chasing secondary bottlenecks before exhausting the primary one.** After a profiling pass, fix the top bottleneck first and re-profile. Fixing the second-biggest bottleneck while the primary one still saturates the resource often produces no measurable improvement.
+- **Reporting wall-clock time when the constrained resource is CPU.** A function that takes 200ms wall-clock while waiting for a database query uses almost no CPU. Profiling the wrong resource leads to wrong conclusions. Distinguish CPU time, wall-clock, I/O wait, and memory allocation — they require different tools and different fixes.
+- **Declaring success after a microbenchmark without re-running under realistic load.** Verifying a change with a tight loop under no concurrency and then shipping it is not a verification. Re-run the same realistic workload used for the baseline before declaring the goal met.
+- **Fixing a performance regression without adding a regression test.** A regression fixed once will recur unless a benchmark or load-test encodes the boundary. After every performance fix, add a test that would catch reversion to the slow path.
+- **Running high-rate sampling profilers against production.** Profilers at 100% sampling rate or instrumenting every function call introduce measurable overhead that can itself degrade the system under investigation. Use a low-overhead sampling approach in production; reserve high-rate profiling for staging.
+
 ## Full reference
 
 ### Profiling tools by language

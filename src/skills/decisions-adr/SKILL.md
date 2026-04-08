@@ -52,6 +52,18 @@ existing team familiarity.
 scale to multi-instance deploys).
 ```
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Recording only the decision, not the alternatives considered.** A decision that says "we chose Postgres" without recording that MySQL and SQLite were also evaluated gives future maintainers no context for why the choice was made. The "Alternatives" field is not optional — it documents what was consciously rejected and prevents re-litigating the same options.
+- **Recording only the positives of the chosen option.** A decision record that describes only why the chosen option is good is advocacy, not documentation. Future readers need to understand what was knowingly accepted. List the trade-offs and costs of the chosen option alongside its benefits.
+- **Editing an accepted decision in place when circumstances change.** An accepted decision is a permanent historical record. Changing it in place erases the original rationale and leaves future readers uncertain whether the current content reflects the original decision or a revision. When a decision is revisited, write a new entry that references and supersedes the old one.
+- **Recording implementation details as decisions.** Decisions are for choices that a future maintainer might reasonably ask "why did we do it this way?" — not for routine implementation choices, refactors, or bug fixes. "We added error handling to the payment module" is not a decision. "We chose to use retry-on-idempotent-methods only, not retry-all, for payment requests" is a decision.
+- **Using a decision record for a rejected approach that was never seriously considered.** A decision record should reflect an actual deliberation, not a post-hoc rationalization. Recording "we considered a microservices approach but chose a monolith" when microservices were never seriously evaluated creates a misleading impression of the decision process.
+- **Leaving decisions unreferenced — captured but never linked.** A decision that isn't referenced from the code comment, PR description, or context file that it explains is at risk of being forgotten. After writing a decision record, add a reference to it from the place in the code or documentation where the decision manifests.
+- **Reusing or skipping decision IDs.** IDs are sequential and permanent. Reusing a deleted ID creates confusion about which entry is the real one. Skipping IDs (e.g., jumping from DEC-041 to DEC-043) creates gaps that are hard to explain. Assign the next sequential ID from the "Next ID" counter every time, with no exceptions.
+
 ## Full reference
 
 ### Numbering rules

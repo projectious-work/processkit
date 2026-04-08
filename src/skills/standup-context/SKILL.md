@@ -56,6 +56,18 @@ Keep entries concise: one line per item, no paragraphs.
 - None
 ```
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Appending the new entry at the bottom instead of the top.** The skill requires most-recent-first ordering. An entry appended at the end requires scrolling the entire file to find today's standup. Always insert immediately below the file header, not at the bottom.
+- **Writing Done in future tense.** Done is for what was actually completed since the last session, not plans. "Will fix the login bug" in the Done section is wrong — future intentions belong in Next. If nothing was completed, write "None" rather than inventing done items.
+- **Conflating slow progress with blockers.** "It's taking longer than expected" is not a blocker. A blocker is a specific external dependency or obstacle that cannot be resolved without another person or decision. Vague blockers provide no actionable information.
+- **Writing multi-paragraph standup entries.** Standups are one line per item, not prose. Detailed explanations belong in workitems, decision records, or code comments. Multi-paragraph entries dilute the signal for readers scanning recent activity.
+- **Skipping the standup when there is nothing visible to report.** A session with no commits still has a standup: what was read, what was investigated, what was ruled out. Gaps in the standup log make the project timeline harder to reconstruct.
+- **Back-filling standups with invented entries for missed sessions.** If a session was missed, leave the gap visible rather than manufacturing an entry with a past date. An invented entry misrepresents the project timeline and creates confusion if audited.
+- **Not reading STANDUPS.md before appending.** Failing to read the file first risks duplicating the most recent date heading or inserting the new entry in the wrong location. Always read the file before adding an entry.
+
 ## Full reference
 
 ### Why standups belong in context, not a chat tool

@@ -44,6 +44,18 @@ Group items under priority headings, in order:
 
 New items default to Ideas unless the user signals otherwise.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Adding items directly to "Next Up" without user confirmation.** The "Next Up" group represents actively staged work for the current iteration. Moving a speculative idea there without the user's explicit direction may displace or confuse the actual prioritized work. New items default to "Ideas" unless the user explicitly signals otherwise.
+- **Duplicating an item instead of moving it between groups.** When an item's priority changes, the correct action is to move it from one group to another — not to create a second entry in the target group. Duplicates fragment the backlog, make status tracking unreliable, and require manual reconciliation later.
+- **Marking items completed in the backlog instead of letting context-archiving handle removal.** This skill marks `[x]` in place; archiving completed items to `context/archive/` is the responsibility of the `context-archiving` skill. Don't conflate the two: mark done here, archive later through the separate skill.
+- **Expanding item descriptions inline instead of linking to a workitem or issue.** A single line is the correct granularity for a backlog item. If the item requires a spec, acceptance criteria, or detailed notes, link to a tracked workitem or GitHub issue rather than expanding the backlog entry into a multi-paragraph description.
+- **Letting the backlog grow without periodic grooming.** A backlog with 200 items in "Ideas" that haven't been touched in a year provides no signal about priorities. Stale backlogs erode trust in the document as an authoritative source. Periodically (via the `context-grooming` skill or manual review) prune ideas that are no longer viable and promote items that have become urgent.
+- **Using the backlog as a task tracker for in-progress work.** The backlog tracks what exists and its priority tier, not who is working on it or what sub-tasks it entails. Detailed task decomposition and status tracking belong in a workitem, GitHub issue, or a project management system. The backlog is an inventory, not a project board.
+- **Not updating the backlog at session end when items changed status.** The handover note becomes misleading if it claims an item is done while the backlog still shows it as in-progress, or vice versa. The rule is: update the backlog at the end of the session when any item's status changed — before writing the handover note.
+
 ## Full reference
 
 ### Editing rules

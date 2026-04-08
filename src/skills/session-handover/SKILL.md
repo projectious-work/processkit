@@ -117,6 +117,18 @@ template into new projects via aibox init. The content must be a
 valid fill-in-the-blanks document, not a filled example.
 ```
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Writing the handover before work is complete.** A handover written at the start of the session predicts a future state, not actual outcomes. Write the handover after commits are made, tests pass, and the backlog is updated — so the record reflects what actually happened.
+- **Omitting Open Threads for unfinished work.** "I fixed the auth bug" without noting what was started but not finished leaves the next agent with no trail to follow. Every incomplete item needs an explicit next action in the Open Threads section.
+- **Not including branch name and last commit hash.** A handover that omits the branch and HEAD commit forces the next agent to run `git log` before they can do anything. Always include the exact branch, commit, and any uncommitted changes.
+- **Writing vague next steps.** "Finish the refactor" is not an action. Next steps must be specific enough that a fresh agent can start without asking questions — which file, which function, what the acceptance criterion is.
+- **Updating the backlog after writing the handover.** The handover's status summary must match the backlog at the moment of writing. If items are updated in the backlog after the handover is written, the handover is immediately stale. Update the backlog first, then write the handover.
+- **Saving the handover inside an active context file.** Handovers are historical records, not active work. Saving to `context/archive/sessions/` prevents them from loading into every session's context and inflating the token budget.
+- **Starting work without reading the previous handover.** Skipping the last handover misses open threads, blockers, and decisions from the previous session that are not visible in the git log. Always read the most recent handover before beginning work.
+
 ## Full reference
 
 ### What makes a handover useful

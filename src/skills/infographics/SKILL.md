@@ -92,6 +92,18 @@ sequence/Gantt diagrams embeddable in Markdown, ASCII art for
 terminals and plain-text READMEs, or a CSV plus narrative when the
 user just needs organized data with commentary.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Omitting the `viewBox` attribute.** An SVG without `viewBox` does not scale responsively — it renders at a fixed pixel size that overflows narrow containers and documentation embeds. Always emit `viewBox="0 0 W H"` with explicit dimensions and use `width="100%"` and `height="auto"`.
+- **Positioning `<text>` elements without explicit coordinates and alignment attributes.** SVG text without `x`, `y`, `text-anchor`, and `dominant-baseline` renders at the origin or at browser-specific defaults. Lay out every text element explicitly with all four positioning attributes.
+- **Encoding data in color alone.** Roughly 8% of men have red-green color vision deficiency. A chart that differentiates categories only by color is inaccessible. Always pair color with a second encoding: pattern, label, shape, or position.
+- **Choosing a pie chart for more than 5 slices.** The human eye is poor at comparing angles; with many slices, most segments become indistinguishable. Prefer a horizontal bar chart, which exposes differences via length — the most accurate quantitative encoding.
+- **Omitting `<title>` and `<desc>` elements.** Screen readers have no way to announce the chart's content without these elements. Include a `<title>` stating the chart's finding (not just its topic) and a `<desc>` summarizing the key data.
+- **Starting a bar chart's y-axis at a non-zero value.** Truncating the axis to exaggerate small differences distorts the viewer's perception of magnitude. For bar charts, the y-axis baseline must be zero.
+- **Hardcoding `width` and `height` pixel attributes on the root SVG element.** A chart with fixed pixel dimensions overflows its container on mobile and cannot be embedded responsively. Use `width="100%"` and `height="auto"` and let `viewBox` drive the aspect ratio.
+
 ## Full reference
 
 ### Tufte's core rules

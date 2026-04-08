@@ -200,6 +200,18 @@ needs it. This is the three-level principle in action: start at
 Level 1, drop to Level 2 when the request is more specific, drop
 to Level 3 only for edge cases.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Context overload — passing the entire codebase or conversation to every agent.** Each agent should receive only the files and context it needs for its specific subtask. Passing everything to every agent balloons token usage, produces vague responses, and hits context limits. Reference specific file paths and line ranges in handoffs rather than dumping full file contents.
+- **Circular delegation with no forward progress.** Agent A asks Agent B for help, which asks Agent A. The hallmark is growing context with repeated handoffs and no new artifacts. Enforce a strict pipeline direction: every handoff moves the task forward. If an agent cannot proceed, escalate to the user with full context — not back to the previous agent.
+- **Premature fan-out before confirming task independence.** Starting parallel agents before the planner has verified that subtasks touch different files and modules leads to merge conflicts and duplicated work. Always run a planning stage first and confirm independence; limit fan-out to 3-4 parallel subtasks.
+- **Skipping the reviewer role because the coder "did a good job."** Self-confidence bias is highest immediately after writing code. The reviewer role exists precisely because authors miss their own errors. Even a self-review pass — running tests, linting, reading the diff against the spec — catches errors that accumulate into bugs when skipped.
+- **Vague handoffs without specific artifacts, paths, or line numbers.** "I made some changes, please review" tells the receiving agent almost nothing. Use the structured handoff format every time: status, list of file paths changed, what was verified, any blockers, and the exact next action. Include absolute paths and line numbers for all referenced code.
+- **Loading all context at session start instead of selectively.** A project with 100 skills, 5 years of decisions, and hundreds of backlog items contains far more context than any session needs. Read INDEX files to understand what exists, then load on demand when the specific task requires it. The three-level principle applies: start at the overview, drill down only when needed.
+- **Leaving scratch files (`_agent_notes.md`, `_blackboard.md`) in the repository.** Temporary agent collaboration files are not part of the project's permanent record. Every multi-agent workflow that creates scratch files must clean them up when the workflow completes. Committed scratch files confuse future agents and humans about what is authoritative context.
+
 ## Full reference
 
 ### Worked examples

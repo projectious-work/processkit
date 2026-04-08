@@ -113,6 +113,18 @@ Every logo ships as a set of variants:
 - Trendy gradients or shadows that date the logo quickly.
 - Missing reversed (light-on-dark) variant for dark mode.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Leaving text as `<text>` elements in the distribution SVG.** Text elements depend on the font being installed on the viewer's system. If the font is not available, the wordmark renders in a fallback typeface and breaks the intended design. Always convert text to paths before delivering a logo SVG.
+- **Delivering only the color variant.** A logo used on dark backgrounds, in single-color print, or as a browser favicon requires dedicated variants. The minimum set is: full color, monochrome, reversed, and favicon. Delivering one variant forces the client to improvise — usually badly.
+- **Embedding raster effects (drop shadows, blur) in the SVG.** SVG filters are renderer-dependent and often look different across browsers; they also fail to scale and print cleanly. Logos must be built from clean vector geometry only.
+- **Not verifying legibility at favicon scale.** A logo that reads well at 512px may become an indistinct blob at 16×16px. Test at 16px, 32px, and 512px before delivering. Simplify until the mark is distinct at the smallest size.
+- **Including `width` and `height` attributes on the root SVG element.** Fixed pixel dimensions prevent the logo from scaling to its container. Set only `viewBox` on the root element; omit `width` and `height` so the logo scales fluidly.
+- **Choosing colors for RGB screens without verifying CMYK reproduction.** Brand colors selected purely for screen display may shift significantly when converted to CMYK for print. For any logo intended for print, verify that the chosen colors have acceptable CMYK equivalents before finalizing.
+- **Using red and green as the only differentiators.** Approximately 8% of men cannot distinguish red from green. A mark whose meaning depends on this distinction is invisible to a significant share of the audience. Always verify colorblind safety before finalizing a palette.
+
 ## Full reference
 
 ### The five principles expanded

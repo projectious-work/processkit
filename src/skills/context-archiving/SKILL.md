@@ -47,6 +47,18 @@ the archive:
 5. Confirm the active file's "Next ID" counter is unchanged
    (archiving must not renumber live items).
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Deleting items instead of moving them.** Archiving is a move operation — the content goes to `context/archive/`, never disappears. Deletion destroys history that may be needed months later to understand why something was built or decided. If in doubt, archive; never delete.
+- **Renumbering items during the archive move.** IDs like `DEC-042` or `BACK-007` are permanent identifiers referenced from code comments, PR descriptions, and other context files. Changing the ID during archiving breaks those references silently. IDs are stable across active and archive — the content moves, the ID stays the same.
+- **Archiving an item that is still referenced by an open ticket or active context file.** A backlog item linked from an open GitHub issue should stay active even if it is marked `done`, until the issue closes. Before archiving, check whether the item is referenced from any live document or issue.
+- **Reformatting content during the move.** A table row that archives as bullet points, or a section heading that becomes plain text, corrupts the document's structure and makes the archive harder to read and audit. Preserve the original format exactly: tables stay tables, headings stay headings.
+- **Breaking bidirectional links.** Active files should link to their archive counterpart, and the archive should link back. Archiving without maintaining both directions means context becomes unreachable — a future reader may not know that a history of older decisions exists in the archive.
+- **Archiving in-progress work because it "looks old."** The status of an item — not its age — determines archive eligibility. A decision from three years ago that is still actively referenced is not eligible for archiving. A workitem that has been in "in-progress" state for six months is also not eligible — it needs to be addressed or explicitly cancelled first.
+- **Running archiving without first checking the invariants.** Before moving any item, verify: the active file's "Next ID" counter is unchanged, no open references will be broken, and the archive file exists (or needs to be created). Archiving without these checks leaves the context in a partially consistent state.
+
 ## Full reference
 
 ### Invariants

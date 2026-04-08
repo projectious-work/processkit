@@ -117,6 +117,18 @@ multiple documents. Define styles once in the preamble to keep
 picture bodies readable. See `references/tikz-reference.md` for
 drawing patterns.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Using `$$...$$` for display math instead of `\[...\]`.** `$$` is a plain TeX primitive that does not integrate with LaTeX's vertical spacing or equation numbering systems. Use `\[...\]` or `equation`/`align` environments; `$$` produces subtle spacing bugs and incompatibilities with `amsmath`.
+- **Defaulting to pdfLaTeX for new projects.** pdfLaTeX does not support Unicode source natively or OpenType fonts without workarounds. New projects should use LuaLaTeX with `fontspec`; reserve pdfLaTeX for legacy compatibility or publisher requirements that specifically mandate it.
+- **Loading packages without checking known conflict order rules.** Package load order matters: `hyperref` must almost always be loaded last, and combinations like `babel` with `fontspec` have documented interaction requirements. When packages conflict, changing load order is the first fix to try before reaching for hacks.
+- **Using `{\large ...}` or `{\small ...}` to adjust font sizes inline.** Hardcoded size switches do not adapt to document class changes and break if the base font size changes. Define named semantic commands in the preamble and apply them consistently throughout.
+- **Writing units via string concatenation instead of `siunitx`.** `$9.8 m/s^2$` produces inconsistent spacing and formatting; `\qty{9.8}{m/s^2}` from `siunitx` formats consistently across locales and handles magnitude formatting automatically. Use `siunitx` for all quantities and units.
+- **Running the LaTeX engine once instead of `latexmk`.** A single engine pass leaves cross-references, table of contents, and bibliography stale. `latexmk -lualatex` reruns the engine and biber as many times as needed until the output stabilizes.
+- **Relying on locally installed fonts without documenting the dependency.** A document that compiles on one machine because a specific OpenType font is installed will fail elsewhere. Document all font dependencies and prefer fonts available via a standard TeX distribution or bundled with the project.
+
 ## Full reference
 
 ### Minimal LuaLaTeX preamble

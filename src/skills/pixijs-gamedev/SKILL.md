@@ -88,6 +88,18 @@ via a callback. Supported formats: PNG, JPG, WebP, SVG, JSON
 (spritesheets), and audio via plugins. Preload critical assets before
 showing the game; lazy-load secondary assets in the background.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Accessing `app.canvas` or `app.stage` before `await app.init()` resolves.** PixiJS v8 requires the async init to complete before the renderer is ready. Accessing canvas or stage properties before init resolves throws an error. Always `await app.init({...})` before any further setup.
+- **Multiplying movement by raw frame deltas instead of `ticker.deltaTime`.** Raw frame time varies with device refresh rate — objects move twice as fast on a 120Hz display if you use raw milliseconds. `ticker.deltaTime` is normalized to 1.0 at the target FPS, making movement frame-rate independent. Always multiply speeds by `deltaTime`.
+- **Constructing sprites by passing a URL string directly instead of using `Assets.load()`.** Bypassing the `Assets` cache reloads the file on every construction call. Use `await Assets.load('hero.png')` once and construct sprites from the returned texture to benefit from caching.
+- **Leaving off-screen objects in the display tree instead of removing them.** Hidden or off-screen objects that remain in the scene still receive render calls. For games with many projectiles or particles, accumulated off-screen objects are a primary cause of frame rate degradation. Remove from parent when no longer needed.
+- **Setting `eventMode = 'static'` on containers without disabling it on non-interactive children.** Every object with event mode enabled participates in hit-testing on each pointer event. Enabling it on containers whose children need no interaction inflates hit-testing cost. Only enable interaction on objects that actually handle pointer events.
+- **Applying the same filter to many individual objects instead of to a shared parent container.** Each filter application is a separate GPU pass. A blur applied individually to 50 sprites costs 50 GPU passes; the same blur applied once to their parent container costs one pass. Group objects and apply filters at the container level.
+- **Showing the game scene before critical assets have finished loading.** Displaying a scene before its textures are loaded results in sprites rendering as white squares or as invisible objects. Preload all assets required by the first visible scene before transitioning out of the loading screen.
+
 ## Full reference
 
 ### Application boilerplate

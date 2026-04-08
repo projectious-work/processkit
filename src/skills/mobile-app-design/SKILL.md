@@ -135,6 +135,18 @@ alternatives.
 - Provide a "Skip" option on every onboarding screen.
 - Prefer contextual tooltips and coach marks over upfront tutorials.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Designing for the largest screen first and scaling down.** Starting with a wide screen allows fitting too much content, which breaks on the common 375pt iPhone viewport. Design for the smallest supported screen first, then progressively enhance for larger displays.
+- **Using touch targets smaller than platform minimums.** Anything below 44×44 points (iOS) or 48×48 dp (Android) causes mis-taps and generates disproportionate accessibility complaints. Apply the minimums to every interactive element, including secondary and icon-only buttons.
+- **Placing destructive actions in the high-frequency thumb zone.** The lower two-thirds of the screen is the easiest reach area. Putting "Delete" or "Log out" near frequently tapped actions causes accidental destructive interactions. Keep destructive actions away from high-frequency zones and require confirmation.
+- **Requesting permissions on first launch.** Users who have not yet experienced the app's value deny permissions at high rates, and iOS/Android only allow one native prompt per permission. Request permissions at a contextually relevant moment after the user has seen the benefit.
+- **Not testing with the system font at maximum scale.** Dynamic Type (iOS) and font scaling (Android) can triple the effective font size. Fixed-height containers, truncated labels, and overflowing text are only visible when tested at the maximum system accessibility font scale.
+- **Designing for online-only without an offline state.** Users regularly use apps in low-signal environments. An app that silently fails or shows blank screens when offline creates broken experiences. Design the offline state explicitly: show cached content, queue writes, and display clear "offline" indicators.
+- **Making gestures the only way to perform an action.** Swipe-to-delete or pull-to-refresh as the sole access method excludes users who cannot perform those gestures. Always pair gestures with a discoverable alternative — a button, long-press menu, or context action.
+
 ## Full reference
 
 ### iOS HIG vs Material Design — navigation
