@@ -6,34 +6,45 @@ slug: /
 
 # processkit
 
-**processkit is the content layer for [aibox](https://github.com/projectious-work/aibox).**
-Where aibox provides the containerized runtime for AI-assisted development, processkit
-provides everything that runs inside it: process primitives, skills, process templates,
-and Model Context Protocol (MCP) servers.
+**processkit gives AI agents domain-specific intelligence.**
+It is the content layer for [aibox](https://github.com/projectious-work/aibox) —
+structured skills, process primitives, and MCP servers that make agents reliably
+good at specific tasks rather than generically capable at all of them.
 
-## The analogy
+## The design
 
-- `aibox` is to AI work environments as `uv` is to Python environments — it sets up the box.
-- `processkit` is what goes *in* the box.
+Anthropic's agent-skill framework identifies five patterns for how skills add
+value. processkit is built around **Pattern 5 — domain-specific intelligence**:
+every skill packages the conventions, gotchas, and decision rules that a domain
+expert would carry in their head, so the agent doesn't have to reconstruct them
+from first principles on every task.
+
+> Pattern 5 skills add specialized knowledge *beyond* raw tool access.
+> The agent using a skill reasons like a domain expert, not like a generalist
+> who happens to have the right tools available.
+
+This is what separates a processkit skill from a plain system prompt: the skill
+is the domain expert. The agent is the executor.
 
 ## What processkit ships
 
-- **19 process primitives** — WorkItem, LogEntry, DecisionRecord, Migration *(new in v0.4.0)*,
-  Actor, Role, Binding, Scope, Category, Constraint, Gate, Schedule, Process, StateMachine,
-  Metric, Discussion, Artifact, Context, CrossReference. Framework-agnostic building blocks.
-- **106 skills** — 85 technical and language skills migrated from aibox, plus 21 new
-  process-primitive skills (`event-log`, `workitem-management`, `decision-record`,
-  `owner-profiling`, `context-grooming`, `migration-management`, ...) that wrap the
-  primitives.
+- **20 process primitives** — WorkItem, LogEntry, DecisionRecord, Note *(new in v0.5.1)*,
+  Migration, Actor, Role, Binding, Scope, Category, Constraint, Gate, Schedule, Process,
+  StateMachine, Metric, Discussion, Artifact, Context, CrossReference.
+  Framework-agnostic building blocks shipped as YAML schemas + state machines.
+- **125 skills** — engineering, language, framework, infrastructure, design, data,
+  security, AI/ML, process-primitive, document/asset creation, meta-cognitive,
+  and role-specific skills (PRD writing, user research, legal review, data storytelling).
+  Each skill follows the Anthropic Agent Skills spec: YAML frontmatter, three-section
+  body (Intro / Overview / Full reference), 7 agent-specific gotchas, and an
+  optional Python MCP server.
 - **5 package tiers** — `minimal`, `managed`, `software`, `research`, `product` — curated
   bundles of skills for common use cases.
 - **Python MCP servers** (from v0.3.0) — mechanical-correctness tools for foundation skills,
   delivered via the official MCP SDK with PEP 723 inline dependencies.
-- **Configurable upstream + diff script** *(new in v0.4.0)* — `[processkit] source` in
+- **Configurable upstream + diff script** *(from v0.4.0)* — `[processkit] source` in
   `aibox.toml` accepts any git URL (GitHub, GitLab, Gitea, self-hosted), so companies
   can fork processkit, customize it, and have their projects consume the fork.
-  `scripts/processkit-diff.sh` is the generic version-comparison tool that drives
-  migration generation.
 
 ## How it's used
 
@@ -42,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.4.0"
+version = "v0.5.1"
 
 [context]
 packages = ["managed"]
@@ -74,17 +85,22 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
 ## Where to go next
 
 - [Getting Started](./getting-started/overview) — install aibox, consume processkit, create your first entity
-- [Primitives](./primitives/overview) — the 19 building blocks and the entity file format
+- [Primitives](./primitives/overview) — the 20 building blocks and the entity file format
 - [Skills](./skills/overview) — the skill package format and the catalog
 - [Packages](./packages/overview) — the five tiers and how to pick one
 - [Reference → Privacy Tiers](./reference/privacy) — public, project-private, user-private
-- [Reference → Migration](./reference/migration) — the v0.4.0 migration model
+- [Reference → Migration](./reference/migration) — the migration model
 
 ## Status
 
 - **v0.1.0** — foundation (entity format, three primitives, two state machines)
 - **v0.2.0** — skill migration (85 + 16 skills, packages, this docs site)
 - **v0.3.0** — MCP servers (six servers, shared lib, smoke tests)
-- **v0.4.0** *(current)* — Migration primitive, owner-profiling, context-grooming,
+- **v0.4.0** — Migration primitive, owner-profiling, context-grooming,
   PROVENANCE.toml + diff script, configurable upstream source URL, privacy tiers
+- **v0.5.0** — Anthropic Agent Skills spec alignment, Gotchas discipline (7 per skill),
+  Intro/Overview/Full reference structure, FORMAT.md, skill-builder + skill-reviewer,
+  scripts/ subdirectory, assets/, session-handover, backlog-context, standup-context
+- **v0.5.1** *(current)* — 30 new skills (document creation, meta-cognitive, role-specific),
+  Note primitive + note-management skill, morning-briefing, 5 Pattern 5 starter kit skills
 - **v1.0.0** — first stable release (not yet scheduled)

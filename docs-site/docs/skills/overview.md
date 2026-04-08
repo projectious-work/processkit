@@ -6,68 +6,84 @@ title: "Overview"
 # Skills — Overview
 
 A **skill** in processkit is a directory containing agent instructions,
-examples, entity templates, and optionally a Python MCP server. Skills are
-how processkit teaches agents to do things.
+examples, assets, and optionally a Python MCP server. Skills are how processkit
+gives agents domain-specific intelligence — not just instructions, but the
+conventions, gotchas, and decision rules of a domain expert.
 
 ## Skill package layout
 
 ```
 src/skills/<skill-name>/
-  SKILL.md              ← three-level agent instructions
+  SKILL.md              ← agent instructions (Intro / Overview / Gotchas / Full reference)
   examples/             ← example outputs
-  templates/            ← YAML frontmatter entity scaffolds
-  references/           ← optional deep-dive material
+  assets/               ← templates, reference data, reusable artifacts
+  references/           ← optional deep-dive material (keeps SKILL.md under 5 000 words)
+  scripts/              ← optional helper scripts
   mcp/                  ← optional Python MCP server
 ```
 
-## The three-level principle
+## The four-section structure
 
 Every `SKILL.md` is organized so agents can stop reading as soon as they
 have enough context:
 
-| Level   | Content                                                           |
-|---------|-------------------------------------------------------------------|
-| Level 1 | 1–3 sentences — enough to decide "is this skill relevant?"        |
-| Level 2 | Key workflows and common operations — enough to act on typical cases |
-| Level 3 | Full reference: edge cases, field-by-field specs, troubleshooting |
+| Section            | Content                                                                |
+|--------------------|------------------------------------------------------------------------|
+| **Intro**          | 1–3 sentences — enough to decide "is this skill relevant?"             |
+| **Overview**       | Key workflows and common operations — enough to act on typical cases   |
+| **Gotchas**        | 7 agent-specific failure modes — where agents most often go wrong      |
+| **Full reference** | Edge cases, field-by-field specs, troubleshooting                      |
 
-Directories contain an `INDEX.md` (Level 0) describing what lives there.
+The Gotchas section is the highest-signal content: 7 provider-neutral failure
+modes, each with a bold title, the specific failure pattern, and the specific
+countermeasure.
 
 ## Frontmatter
 
+Skills follow the [Anthropic Agent Skills spec](https://anthropic.com/). Each
+`SKILL.md` opens with YAML frontmatter:
+
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
-kind: Skill
+name: workitem-management
+description: |
+  Creates, transitions, and queries WorkItems — the task-tracking primitive
+  in processkit. Use when managing backlog items, updating work item state,
+  or querying items by status, owner, or priority.
 metadata:
-  id: SKILL-workitem-management
-  name: workitem-management
-  version: "1.0.0"
-  created: 2026-04-06T00:00:00Z
-spec:
-  description: "..."
-  category: process
-  layer: 2
-  uses: [event-log, actor-profile]
-  provides:
-    primitives: [WorkItem]
-    mcp_tools: [create_workitem, transition_workitem, query_workitems]
-    templates: [workitem, workitem-bug, workitem-story]
-  when_to_use: "..."
+  processkit:
+    apiVersion: processkit.projectious.work/v1
+    id: SKILL-workitem-management
+    version: "1.0.0"
+    created: 2026-04-06T00:00:00Z
+    category: process
+    layer: 2
+    uses:
+      - skill: event-log
+        purpose: "records state transitions as auditable log entries"
+    provides:
+      primitives: [WorkItem]
+      mcp_tools: [create_workitem, transition_workitem, query_workitems]
+      assets: [workitem, workitem-bug, workitem-story]
 ---
 ```
 
 See [Skills → Format](./format) for the complete specification.
 
-## v0.2.0 catalog (101 skills)
+## v0.5.1 catalog (125 skills)
 
-- **85 migrated from aibox** — technical, language, framework, architecture,
-  infrastructure, database, data, AI, security, observability, performance, design
-- **16 new process-primitive skills** — one per primitive kind
+| Category | Count | Examples |
+|---|---|---|
+| Engineering (language, framework, architecture, infra, security) | ~70 | python-best-practices, fastapi-patterns, terraform-basics |
+| Process-primitive | ~20 | workitem-management, decision-record, event-log, note-management |
+| Document / asset creation | 4 | docx-authoring, pptx-authoring, xlsx-modeling, pdf-workflow |
+| Meta-cognitive | 4 | research-with-confidence, devils-advocate, board-of-advisors, morning-briefing |
+| Role-specific | 4 | prd-writing, user-research, data-storytelling, legal-review |
+| Data, design, AI/ML | ~23 | data-science, excalidraw, rag-engineering, llm-evaluation |
 
-The migrated skills have `layer: null` (the hierarchy only applies to
-process-primitive skills). They were mechanically migrated in v0.2.0 and
-will get an explicit three-level rewrite in a later release.
+All skills are **Pattern 5 (domain-specific intelligence)**: they encode
+what an expert in the domain carries in their head — conventions, gotchas,
+and decision rules — so the agent reasons like a specialist, not a generalist.
 
 ## Where to go next
 
