@@ -105,6 +105,18 @@ use vectorized operations. Use categorical dtype for low-cardinality
 strings. Profile with `%timeit` and check memory with
 `df.estimated_size()` (polars).
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Using `apply()` with a Python function in pandas for performance-sensitive code.** `apply()` drops to a Python loop, which is 10–100x slower than vectorized operations. Use built-in string methods, `map()`, `np.where()`, or Polars expressions instead.
+- **Joining without checking for duplicates first.** A join on a key that has duplicates in either table causes a row explosion (M × N rows for M and N matching rows). Check `df["key"].is_unique` before joining; validate with `validate="m:1"` in pandas.
+- **Auto-detecting date formats or dtypes on read.** Pandas' auto-detection of dates and dtypes is unreliable across file versions and locales. Always specify `dtype=` and `parse_dates=` (pandas) or `schema=` (polars) explicitly on read. A column that auto-parsed as `datetime64` in development may parse as `object` on a slightly different CSV in production.
+- **Ignoring naive datetimes and timezone bugs.** A naive datetime (no timezone) compared to a tz-aware datetime raises an error in polars and silently produces wrong results in some pandas operations. Always be explicit about timezones — parse with an explicit `time_zone=` and convert to UTC at the boundary.
+- **Using polars with pandas `apply()` mental model.** Polars expressions are lazy and operate on the whole column — there is no row-by-row loop. Translating pandas `apply()` to polars `map_elements()` (element-wise Python) negates polars' performance advantage. Rewrite in terms of polars expression API.
+- **Not using lazy evaluation in polars for large datasets.** Calling `pl.read_csv(...)` eagerly loads the entire file into memory. Use `pl.scan_csv(...).lazy()` and chain `.filter()`, `.select()`, `.collect()` so polars can push projections and filters down and avoid materializing intermediate results.
+- **Storing multiple logical tables in one DataFrame.** Mixing two different entities (orders and line items) in one DataFrame with repeated parent-level columns produces confusing GroupBy results and joins. Separate into clean normalized DataFrames and join when needed.
+
 ## Full reference
 
 ### API comparison — reading data

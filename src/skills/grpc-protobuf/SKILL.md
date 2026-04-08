@@ -121,6 +121,18 @@ detection, and code generation, and reads a single `buf.yaml`. Use
 **grpcurl** for command-line invocation during debugging. Wire
 `buf breaking` into CI to catch incompatible changes before merge.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Reusing a deleted field number.** Field numbers are permanent wire-format identifiers. Reusing a number that was previously assigned to a different field causes old binary-encoded messages to decode the field into the wrong destination. When removing a field, always mark it `reserved`.
+- **Enum zero value not named `UNSPECIFIED`.** In proto3, the zero value is the default for any unset enum field. If zero is a real semantic value (e.g., `STATUS_PENDING = 0`), unset and "pending" are indistinguishable on the wire. The zero value must always be `<ENUM_NAME>_UNSPECIFIED`.
+- **Using the same domain type as both request and response.** Passing an `Order` directly as a request body means adding request-specific metadata (pagination tokens, field masks, idempotency keys) requires modifying the domain type. Always wrap in `XxxRequest` / `XxxResponse` messages.
+- **Returning status `OK` with an error payload in the response body.** Embedding error information inside an OK response breaks client error-handling libraries, monitoring dashboards, and retry logic. Return the appropriate gRPC status code and attach structured error detail using `google.rpc.Status`.
+- **No `buf breaking` check in CI.** Without automated breaking-change detection, it is easy to accidentally change a field type, reuse a field number, or remove an RPC and not notice until a client breaks in production. Add `buf breaking --against` to CI.
+- **Making every service bidirectionally streaming by default.** Bidirectional streaming holds a connection open for the entire duration of the stream, consuming server resources per client. Use unary RPCs by default and move to streaming only when the workload genuinely requires it.
+- **Hand-rolling `int64` timestamps instead of using `google.protobuf.Timestamp`.** Custom timestamp encoding (epoch seconds, epoch milliseconds, strings) produces inconsistency across services and loses timezone awareness. Use the well-known `Timestamp` type and let the SDK handle serialization.
+
 ## Full reference
 
 ### Naming conventions

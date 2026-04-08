@@ -88,6 +88,18 @@ to advance frames. Mock external boundaries with `mocktail` or
 `mockito`. Use golden tests (`matchesGoldenFile`) for visual
 regression on critical screens.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Nested `Scaffold` widgets.** A `Scaffold` inside another `Scaffold` produces double app bars, broken navigation behavior, and unpredictable layout. Each route gets exactly one `Scaffold` at the top level.
+- **`setState` called after `dispose()`.** Calling `setState` on a widget that has been removed from the tree throws a `FlutterError` in debug mode and causes silent bugs in release mode. Guard all async callbacks with `if (!mounted) return;` before calling `setState`.
+- **Forgetting to call `dispose()` on controllers, animations, and stream subscriptions.** Objects that own platform resources or listeners are not garbage-collected automatically. Not disposing them causes memory leaks and "stream already closed" errors. Override `dispose()` and clean up every controller and subscription.
+- **Using helper methods instead of top-level `StatelessWidget` classes for sub-widgets.** A helper method returning a `Widget` rebuilds on every parent rebuild regardless of whether its inputs changed. A top-level widget class enables `const` instantiation and independent rebuild boundaries.
+- **Unbounded `Text` or `Column` inside a `Row`.** A `Text` widget without a size constraint in a `Row` throws a "RenderFlex overflowed" error. Wrap with `Expanded` or `Flexible` to constrain it, or use `SizedBox` with a fixed width.
+- **Blocking the event loop in a widget's `build()` method.** `build()` is called every frame. Any synchronous heavy computation inside it drops frames and causes jank. Move expensive work into `initState`, an async handler, or a compute isolate.
+- **Using `ListView()` with all items materialized for a long list.** `ListView()` with a `children` list builds all items up front. Use `ListView.builder` so only the visible items are built; this scales to thousands of items.
+
 ## Full reference
 
 ### Layout widget recipes

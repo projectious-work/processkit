@@ -106,6 +106,18 @@ so clients can branch on a stable string.
 - **Never** change a field's type, and never make a nullable field
   non-nullable — both are silently breaking.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **DataLoader shared across requests.** A DataLoader caches results for the lifetime of the instance. Sharing one instance across requests means user A's query result can be returned to user B. Always create a new DataLoader instance per request.
+- **N+1 resolvers without DataLoader.** A list resolver that triggers one database query per item will fan out to N+1 queries for a list of N items. This is the most common GraphQL performance failure mode. Every nested field resolver that fetches from a database or external service needs to be batched with DataLoader.
+- **Making nullable fields non-nullable in a schema update.** A nullable field made non-nullable is a breaking change for any client that previously received `null` and handled it. Schema evolution only goes in one direction: add fields, deprecate old ones, never tighten nullability.
+- **Returning `Boolean` from mutations.** A mutation that returns `true/false` forces the client to re-fetch the entity to update its cache. Return the affected entity or a result union so the client has the data it needs without a round-trip.
+- **No depth or complexity limits in production.** A deeply nested recursive query can cause exponential database fan-out. Without depth and complexity limits, a single malicious or buggy query can exhaust the server. Enable depth limiting and cost-based rate limiting.
+- **CRUD resolvers that mirror the database schema.** GraphQL APIs should be designed from the client's consumption needs, not from the storage model. A mutation called `updateOrder(id, status, tracking_number, shipped_at, ...)` with 10 optional fields is a database operation disguised as an intent; model it as `shipOrder(id, tracking_number)` instead.
+- **One mutation that does everything with optional fields.** Large mutations with many optional fields make it impossible for the client to know which fields are required for which operations and make server-side validation complex. Split into intent-specific, focused mutations.
+
 ## Full reference
 
 ### Federation

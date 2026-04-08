@@ -84,6 +84,18 @@ Use Starlette's `TestClient(app)` for sync tests and
 in teardown. WebSocket tests use the `client.websocket_connect("/ws")`
 context manager.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Calling blocking I/O from an `async def` handler.** A `requests.get(...)` or synchronous database call inside `async def` stalls the entire event loop and serializes all concurrent requests behind it. Use `async def` only with async-native libraries (`httpx`, async SQLAlchemy drivers, `aiofiles`); use plain `def` for synchronous work and let FastAPI run it in a thread pool.
+- **Sharing one schema model for create, update, and response.** A single model leaks server-generated fields (`id`, `created_at`) into create payloads and loses PATCH semantics (all fields required vs. all optional). Define `XxxCreate`, `XxxUpdate`, and `XxxResponse` as separate Pydantic models.
+- **Sharing a single database `Session` across requests.** A session shared between requests bleeds state from one request into another and causes race conditions in concurrent usage. Always inject a per-request session via a `Depends(get_db)` yield dependency.
+- **Not setting `response_model=` on routes.** Without `response_model`, FastAPI returns the raw object including internal fields (passwords, internal IDs, server-only metadata) that were never meant to be serialized. Always set `response_model=` explicitly.
+- **Forgetting to clear `app.dependency_overrides` between tests.** A dependency override set in one test leaks into subsequent tests, causing mysterious failures that depend on test execution order. Clear overrides in teardown.
+- **Returning errors with status 200 and an error payload.** Embedding error information in a 200 response breaks client error handling, monitoring, and the framework's automatic error envelope. Raise `HTTPException` for client errors; let FastAPI format the response.
+- **Not setting `model_config = ConfigDict(from_attributes=True)` on response schemas.** Without this, Pydantic V2 cannot construct a response model from a SQLAlchemy ORM instance, causing a `ValidationError` at runtime rather than a type error at authoring time.
+
 ## Full reference
 
 ### CRUD endpoint pattern

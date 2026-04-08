@@ -112,6 +112,18 @@ automatically. Never build class names dynamically
 (`` `text-${color}-500` ``) — the scanner can't see them. Use a
 lookup map or safelist the class with `@source`.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Building class names dynamically with template literals.** Tailwind's scanner detects class names by static string matching. A class like `` `text-${color}-500` `` or `"bg-" + shade` is invisible to the scanner and will be missing from the production build. Use a lookup object with full class name strings, or add the generated classes to a safelist.
+- **Overusing arbitrary values.** `w-[347px]` or `text-[13px]` signals a design token that is missing from `@theme`. One arbitrary value is a problem to fix; many arbitrary values mean the design system has diverged from the implementation. Add the value to `@theme` and reference it by name.
+- **Using `@apply` for everything instead of component extraction.** `@apply` scatters styles across CSS files and breaks the direct relationship between markup and styling that makes Tailwind easy to maintain. Extract reusable patterns as framework components (React, Vue, Svelte), not as CSS utilities.
+- **Not using `focus-visible:` for focus styles.** `focus:outline-none` removes focus styles for all users, including keyboard users who depend on them. Use `focus-visible:ring-2 focus-visible:ring-blue-500` to show focus indicators for keyboard navigation while hiding them for mouse users.
+- **Skipping `@theme` and hardcoding colors inline.** Using arbitrary color values like `text-[#3b82f6]` instead of defining `--color-brand-primary` in `@theme` makes dark mode and multi-brand theming require global search-and-replace instead of a single token change.
+- **Not testing at 320px viewport width.** Tailwind's mobile-first default base styles apply at all widths. A layout that works at 375px may break at 320px, which is the WCAG 1.4.10 (Reflow) minimum. Always check that no horizontal scrolling appears at 320px.
+- **Using the v3 `tailwind.config.js` pattern with v4.** Tailwind v4 removes `tailwind.config.js`; configuration moves to CSS `@theme` blocks. Mixing v3 config with v4 styles causes tokens to be silently ignored. Check the version and use the appropriate configuration pattern.
+
 ## Full reference
 
 ### Layout utilities

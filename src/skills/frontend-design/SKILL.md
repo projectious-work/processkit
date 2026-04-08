@@ -148,6 +148,18 @@ Group by feature for large apps, by type for small ones. Keep
 `components/ui/` framework-agnostic where possible, and export barrel
 files (`index.ts`) only for public component APIs.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Using `<div onClick>` instead of `<button>` for interactive elements.** A `<div>` is not keyboard-focusable, has no implicit ARIA role, and does not fire click events on Enter/Space. Keyboard users and assistive technology users cannot interact with it. Use the correct semantic HTML element first.
+- **Putting all state in a global store.** Global stores cause unrelated components to re-render on every update and make the data flow hard to trace. Most state is local; lift it up only when genuinely shared; use a dedicated data-fetching library for server state.
+- **Adding `"use client"` to a Next.js component to "make it work" without understanding why.** Every `"use client"` boundary ships JavaScript to the browser. Adding it to a parent makes every descendant a client component. Diagnose why the component needs interactivity and push the boundary as far down the tree as possible.
+- **Hardcoding colors, font sizes, or spacing values in components.** Hardcoded values bypass the design token system and make theming, dark mode, and accessibility changes require a search-and-replace across the codebase. Define tokens in one place and reference them everywhere.
+- **Omitting `alt` on images or using generic text like "image".** An `<img alt="image">` is meaningless to a screen reader user. Decorative images need `alt=""` to be skipped; meaningful images need descriptive text that conveys their content.
+- **No `aria-live` for dynamic updates.** When content changes without a page reload (search results, error messages, toast notifications), assistive technology does not announce the change unless a live region is used. Wrap dynamic status updates in an `aria-live="polite"` region.
+- **Optimizing Core Web Vitals last.** LCP, INP, and CLS regressions are cheapest to fix when the component is first written. Setting explicit `width`/`height` on images, using `priority` on above-fold images, and avoiding long main-thread tasks are design decisions, not afterthoughts.
+
 ## Full reference
 
 ### WCAG 2.2 AA checklist

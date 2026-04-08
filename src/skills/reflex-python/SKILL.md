@@ -84,6 +84,18 @@ Reflex ships SQLModel integration: `class User(rx.Model, table=True):
 `reflex db migrate` handles schema migrations. Default SQLite for
 development; configure PostgreSQL in `rxconfig.py` for production.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Mutating state outside an event handler.** Reflex tracks state mutations only inside event handler methods. Changing a state var directly from a background task or external callback without `async with self:` silently drops the mutation — the UI never updates. All state mutations must go through event handlers or the `async with self:` context manager in background tasks.
+- **Missing type annotations on state vars.** Reflex uses type annotations for serialization and code generation. A state var without a type annotation (`count = 0` instead of `count: int = 0`) causes runtime serialization errors or is silently ignored. Every state var requires a type annotation.
+- **Non-serializable values in state.** Reflex must serialize state to JSON to sync it between backend and frontend. Storing a SQLAlchemy model instance, a file handle, or a datetime object without a JSON-compatible type in a state var causes silent failures or serialization errors. State vars must be JSON-serializable; derive and cache computed values via `@rx.var`.
+- **Blocking the event loop with CPU or I/O work inside a regular event handler.** A slow synchronous event handler (network call, database query, heavy computation) blocks all other events for that session. Move blocking work into `@rx.event(background=True)` async handlers.
+- **One giant global state class for the entire app.** All components subscribed to the same state class rebuild on any change. A single large state means unrelated UI panels rebuild together. Split state by feature domain into substates (`class CartState(rx.State)`, `class UserState(rx.State)`) to isolate rebuilds.
+- **Not calling `yield` in a long-running synchronous handler.** A handler that runs for several seconds without `yield` blocks UI updates for the entire duration — the user sees a frozen screen. `yield` between steps to push intermediate state updates to the frontend.
+- **Hardcoding route paths as strings in multiple places.** Route paths like `"/dashboard"` scattered across `rx.redirect(...)` calls and `@rx.page(route=...)` decorators become maintenance debt when routes change. Define route constants once and reference them everywhere.
+
 ## Full reference
 
 ### Layout components
