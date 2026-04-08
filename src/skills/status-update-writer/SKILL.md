@@ -11,10 +11,10 @@ metadata:
     category: process
     layer: 2
     uses:
-      - skill: backlog-context
+      - skill: workitem-management
         purpose: Query current workitem state and priorities to populate the update accurately.
-      - skill: session-handover
-        purpose: Extract recent session work from handover notes when generating periodic updates.
+      - skill: agent-management
+        purpose: Extract recent session context when generating periodic updates.
 ---
 
 # Status Update Writer

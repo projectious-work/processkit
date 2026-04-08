@@ -13,8 +13,6 @@ metadata:
     uses:
       - skill: event-log
         purpose: Log events to keep the audit trail accurate after every write.
-      - skill: context-archiving
-        purpose: Archive long-form context once it is no longer active.
       - skill: index-management
         purpose: Query existing entities and keep the SQLite index fresh after writes.
     provides:
@@ -163,15 +161,6 @@ decision_archive_age_days = 180
 oversize_file_threshold_lines = 500
 unused_skill_age_days = 60
 ```
-
-### Interaction with `context-archiving`
-
-`context-archiving` (the older skill) is the underlying "move file to
-archive" capability. `context-grooming` is the periodic-review wrapper
-that decides WHAT to move and proposes it. After approval, the actual
-file moves are performed via `context-archiving`'s instructions. They
-work together — `context-grooming` is the strategy; `context-archiving`
-is the mechanism.
 
 ### What grooming will NOT touch
 

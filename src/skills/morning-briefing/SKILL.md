@@ -15,8 +15,8 @@ metadata:
         purpose: Understand what context files to read at session start (HANDOVER, BACKLOG, INDEX).
       - skill: status-update-writer
         purpose: Pull current project state when generating the today's priorities section.
-      - skill: backlog-context
-        purpose: Read current BACKLOG.md for in-progress and next-up items.
+      - skill: workitem-management
+        purpose: Query in-progress and next-up WorkItems for the today's priorities section.
 ---
 
 # Morning Briefing
@@ -169,13 +169,12 @@ Briefings are ephemeral by design. Do not archive them unless the
 user requests it. The handover note is the persistent record;
 the morning briefing is a generated view of it.
 
-### Integration with standup-context
+### Integration with event-log
 
-The `standup-context` skill writes a record of what was done and
-what comes next. The `morning-briefing` skill reads that record
-(plus HANDOVER and BACKLOG) and synthesizes it into an actionable
-briefing. They complement each other: standup-context is the write
-path; morning-briefing is the read path.
+The `event-log` skill records session activity as log entries.
+`morning-briefing` reads recent entries (plus HANDOVER and WorkItem
+state) and synthesizes them into an actionable briefing. event-log
+is the write path; morning-briefing is the read path.
 
 ### Briefing cadence
 

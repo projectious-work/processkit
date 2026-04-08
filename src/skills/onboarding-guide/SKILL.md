@@ -13,8 +13,8 @@ metadata:
     uses:
       - skill: agent-management
         purpose: Understand context budget principles and what files to include in the always-load set.
-      - skill: session-handover
-        purpose: Reference the most recent session context as the starting point for new joiners.
+      - skill: agent-management
+        purpose: Reference the most recent session context (HANDOVER.md) as the starting point for new joiners.
 ---
 
 # Onboarding Guide
