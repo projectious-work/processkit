@@ -162,6 +162,27 @@ oversize_file_threshold_lines = 500
 unused_skill_age_days = 60
 ```
 
+### Archiving entities vs. archiving files
+
+In the entity-sharded world, "archiving" an entity means **transitioning
+it to a terminal state** in its state machine — `done`, `cancelled`, or
+`archived` depending on the kind. This is the primary archive operation:
+
+- WorkItem → `done` or `cancelled`
+- DecisionRecord → `superseded` or `archived`
+- Note → `archived` or `promoted`
+
+Once in a terminal state, the entity is filtered out of active queries
+by the MCP server (`query_entities(state=active)` returns nothing in
+terminal states). The file stays in place — no move needed for functional
+purposes.
+
+**Physical compaction** (moving terminal-state files to
+`context/<kind>/archive/`) is an optional aesthetic operation that
+context-grooming can propose when directories grow unwieldy for human
+browsing. The threshold is configured via `oversize_file_threshold_lines`
+or a simple entity count. Propose compaction — never act without approval.
+
 ### What grooming will NOT touch
 
 To stay safe and predictable, grooming explicitly skips:

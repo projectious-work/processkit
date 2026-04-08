@@ -34,18 +34,30 @@ minutes of reading it.
 
 ### Sources to read before generating
 
-Pull from these sources in order of authority:
+Pull from these sources in order, weighting by freshness:
 
 ```
-1. context/HANDOVER.md       — current state, recent changes, open threads
-2. context/BACKLOG.md        — in-progress and next-up items
-3. context/STANDUPS.md       — last 1-2 standup entries
-4. git log --oneline -5      — recent commits
-5. Any time-sensitive flags  — deadlines, blockers, scheduled events
+1. session.handover LogEntry  — most recent; weight by age (see below)
+2. WorkItems (in_progress + blocked)  — current state via workitem-management
+3. session.standup LogEntries — last 1-3 entries since last handover
+4. git log --oneline -5       — recent commits
+5. DecisionRecords (proposed) — open decisions needing attention
+6. Any time-sensitive flags   — deadlines, blockers, scheduled events
 ```
 
-If the project uses processkit's MCP server, query for open workitems
-and pending decisions rather than reading flat files.
+**Handover staleness rule** — before using the most recent `session.handover`
+entry, check `details.session_date` and weight accordingly:
+
+| Handover age | How to use it |
+|---|---|
+| < 24 hours | Primary source for "what happened last session" and "open threads" |
+| 1–7 days | Secondary source — include content but flag as stale in the briefing |
+| > 7 days | Skip — reconstruct from git log and WorkItem state only; note absence |
+
+The two-pattern reality: some users write handovers every session (the
+handover will usually be < 24h old); others write handovers only on
+container restart (may be days old). The staleness rule handles both without
+the user configuring anything.
 
 ### The briefing format
 
@@ -142,7 +154,8 @@ Length signals:
 
 Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
-- **Reading only the handover note without checking the backlog.** HANDOVER.md captures what was true at session end; BACKLOG.md shows what the user has actively prioritized since then. A briefing that contradicts the current backlog (e.g., listing an item as "next up" when it was completed) will erode trust immediately. Always cross-check both.
+- **Treating a stale handover as current.** A `session.handover` written 10 days ago reflects a state that may have completely changed. Always check `details.session_date` before using a handover as a source. If it is more than 7 days old, skip it and reconstruct from git log and WorkItem state instead. Presenting stale handover content as "what happened last session" when the last session was a week ago misleads the user.
+- **Reading only the handover note without checking WorkItem state.** The handover captures what was true at session end; WorkItem state shows what has been actively changed since. A briefing that contradicts current WorkItem state (e.g., listing an item as "next up" when it is now done) will erode trust immediately. Always cross-check both.
 - **Listing everything instead of prioritizing.** A briefing that reports all 12 open workitems is not a briefing — it's a dump. The value of a morning briefing is triage: surface the 3 things that matter today, not an inventory of everything that exists. If in doubt about what to prioritize, ask — do not pad.
 - **Making the "state of play" section too optimistic.** Briefings written by the agent often smooth over problems to avoid delivering bad news. If the project is blocked, at risk, or behind, the state of play must say so clearly — not "making good progress with a few items to resolve." The user is about to spend their session on this; accurate state matters.
 - **Not including a one-liner.** The "one-liner to carry" section is the hardest to write and the most valuable. Skipping it produces a briefing that reports status without providing orientation. Every briefing must end with one sentence that captures the dominant constraint or priority for the session.

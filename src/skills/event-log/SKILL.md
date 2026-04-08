@@ -161,6 +161,8 @@ well-established:
 | `incident.started` / `incident.resolved` | Incident lifecycle                            |
 | `release.shipped`         | A release was published                                      |
 | `logentry.corrected`      | Correction of an earlier LogEntry (referenced in details)    |
+| `session.handover`        | End-of-session handover written before container shutdown    |
+| `session.standup`         | Standup update recording what was done and what comes next   |
 
 ### Fields
 
@@ -177,6 +179,43 @@ well-established:
 - `summary` (required): One line. Human-readable. Appears in timelines.
 - `details` (optional): Structured object with event-specific fields.
 - `correlation_id` (optional): Links related events across a workflow run.
+
+### Session entry types
+
+`session.handover` and `session.standup` are the two session-lifecycle
+entry types. They have a fixed `details` schema:
+
+**`session.handover`** — written at container shutdown or at the user's
+request before stopping work. Use the `session-handover` skill to author
+these; do not write them manually.
+
+```yaml
+details:
+  session_date: "2026-04-08"        # ISO date of the session being closed
+  current_state: |                  # 2-4 sentences on where things stand
+    ...
+  open_threads:                     # list of unresolved items
+    - "BACK-042 blocked on auth review"
+  next_recommended_action: |        # what the next session should pick up first
+    ...
+  branch: "main"                    # git branch at handover time
+  commit: "d56f4c8"                 # git SHA at handover time
+```
+
+**`session.standup`** — written at the user's request to record progress.
+Use the `standup-context` skill to author these.
+
+```yaml
+details:
+  session_date: "2026-04-08"
+  done:                             # what was completed in this session
+    - "Built session-handover skill"
+  doing:                            # what is in progress right now
+    - "Extending event-log"
+  next:                             # what comes next
+    - "Build standup-context skill"
+  blockers: []                      # anything blocking progress
+```
 
 ### Directory layout
 
