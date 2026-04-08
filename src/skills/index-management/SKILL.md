@@ -59,6 +59,38 @@ keep the index fresh.
 `<project-root>/context/.cache/processkit/index.sqlite`. Gitignored.
 Rebuildable from source files at any time via `reindex()`.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Grepping the filesystem instead of calling `query_entities`.** The
+  index is faster, context-cheaper, and reflects parsed semantics
+  (state, kind, links) that grep can't see. Reach for `query_entities`
+  first; fall back to grep only if the query you need isn't supported.
+- **Trusting the index immediately after a hand-edit.** When you edit
+  an entity file directly (bypassing the MCP write tools), the index
+  is stale until the next `reindex()` call. Either go through the
+  write tools, or call `reindex()` yourself before querying.
+- **Forgetting to call `reindex` after writing a new entity.** Every
+  entity-creating MCP server should call `index_management.reindex`
+  (or the lighter `upsert_entity`) after a write. Not doing so means
+  the next query won't see the just-created entity.
+- **Treating index queries as transactional.** The index is eventually
+  consistent. A query immediately after a write may or may not return
+  the new row depending on whether reindex completed. If you need
+  strict consistency, reindex explicitly first.
+- **Trusting `list_errors()` as proof of correctness.** A clean errors
+  table means parsing succeeded, not that the entities are
+  semantically valid. Schema validation is a separate concern from
+  parse success.
+- **Using `search_entities` for exact-ID lookup.** `search_entities`
+  is full-text — it ranks by relevance and may miss exact ID matches
+  if the ID appears in many bodies. Use `get_entity(id)` for exact
+  lookup.
+- **Re-indexing inside a hot loop.** A full reindex walks the whole
+  `context/` tree and is expensive. Batch your writes and reindex
+  once at the end, not after every entity.
+
 ## Full reference
 
 ### Database schema

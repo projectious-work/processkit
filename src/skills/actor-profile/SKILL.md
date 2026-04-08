@@ -100,6 +100,43 @@ Optional Markdown body — bio, context, working-style notes.
 5. Write the Actor file to `context/actors/`.
 6. Log a `LogEntry` with `event_type: actor.created`.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Creating an Actor for every name mentioned in a commit or
+  comment.** Actors are for collaborators with ongoing involvement,
+  not for every string that looks like a name. If the person doesn't
+  have at least one upcoming WorkItem, decision, or Binding pointing
+  at them, don't create the Actor yet.
+- **Putting personal or sensitive information in a public Actor file.**
+  Personal context (relationship dynamics, private preferences,
+  personal contact info) belongs in `context/owner/private/...` with
+  `privacy: user-private`, not in the Actor entity which defaults to
+  project-visible. Check the privacy field on the entity before
+  writing sensitive content.
+- **Setting `type` wrong.** `human` / `ai-agent` / `service` aren't
+  cosmetic — other skills filter on type (e.g., to send a Slack ping
+  only to humans, or to auto-promote service-account actions). Wrong
+  type causes silent miscategorization downstream.
+- **Updating an Actor when the relationship is what changed.** If
+  Alice's role on the project changed, that's a new Binding (or
+  ending the old one), NOT an update to her Actor. The Actor is
+  who she IS; the Binding is what she's DOING.
+- **Reusing a name as an ID for two distinct people.** Two
+  collaborators named "Alice" need distinct Actor IDs
+  (`ACTOR-alice-pm` vs `ACTOR-alice-eng`). The ID is forever; the
+  display name is mutable. Disambiguate at creation time, not later.
+- **Hallucinating Actor IDs when other skills reference them.** If
+  workitem-management is asked to assign a workitem to "Bob", look
+  up `ACTOR-bob` (or all `ACTOR-bob-*`) via `index-management` first.
+  Inventing an ID like `ACTOR-bob` without verifying creates a
+  dangling reference that breaks at the next index validation.
+- **Forgetting to log `actor.created`.** Use `event-log` after every
+  Actor creation. The audit trail tracks "who joined when", and
+  skipping the log makes "when did Alice start working on this?"
+  unanswerable.
+
 ## Full reference
 
 ### Fields

@@ -117,6 +117,41 @@ When a decision is replaced by a later one:
 **Never delete or edit the old record.** Its existence is why we can trace
 the evolution of the decision.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Recording a decision before it has actually been made.** A
+  proposal in a discussion is not a DecisionRecord. Open a Discussion
+  if reasoning is still in flight; only record when the choice is
+  settled. Recording too early creates a fictional history.
+- **Capturing WHAT but not WHY.** A DecisionRecord without rationale
+  is just a workitem in the wrong directory. The whole value of the
+  ADR pattern is the reasoning trail — what was considered, why this
+  was picked, what was rejected.
+- **Omitting the rejected alternatives.** "We decided X" is half a
+  decision; "We picked X over Y and Z because …" is a decision.
+  Future-you needs the alternatives to know whether the call still
+  holds when context changes.
+- **Editing an old DecisionRecord instead of superseding it.**
+  Decisions are immutable history. If the call needs to change, write
+  a NEW DecisionRecord with `supersedes:` pointing at the old one
+  and set the old one's state to `superseded`. Never overwrite — the
+  old reasoning is part of the audit trail.
+- **Recording trivial choices as DecisionRecords.** A DecisionRecord
+  is overhead; reserve it for choices a future agent or human will
+  ask about in six months. Variable naming inside one function is
+  not a DecisionRecord.
+- **Putting the rationale in the Discussion body instead of the
+  DecisionRecord.** Discussions are pre-decisional reasoning;
+  DecisionRecords are post-decisional summary. The rationale must
+  be copied (not linked) into the DecisionRecord so the latter is
+  self-contained when read in isolation.
+- **Hallucinating decision history when the user asks "what did we
+  decide about X".** Run `query_decisions` and `search_entities`
+  against the actual store before answering. Do not synthesize an
+  answer from memory; it will be wrong.
+
 ## Full reference
 
 ### State machine

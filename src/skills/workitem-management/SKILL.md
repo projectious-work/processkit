@@ -129,6 +129,48 @@ Common queries the index MCP server will expose in Phase 3:
 
 Before Phase 3, query via filesystem glob + grep of `context/workitems/`.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Creating a WorkItem when the user hasn't asked to track work yet.**
+  Sometimes the user is just thinking out loud. Don't translate every
+  mention of "we should X" into a backlog entry. Ask: did the user
+  explicitly say to track it, or did you decide to? If you decided, ask
+  first. The Note primitive (when available) is the right home for
+  half-formed ideas; WorkItem is for committed work.
+- **Transitioning state without checking the state machine.** State
+  changes that aren't allowed by `state-machines/workitem.yaml` will be
+  rejected by the index, but a hand-edit can create an invalid state
+  on disk. Always go through `transition_workitem` (the MCP tool),
+  never edit `spec.state` directly. If the MCP server says no, the
+  state machine is the source of truth — escalate to the user about
+  the rule, don't bypass it.
+- **Forgetting to log the transition event.** If you transition outside
+  the MCP server (hand-editing for some reason), you must also write
+  the corresponding LogEntry via `event-log`. The audit trail relies
+  on this. Skipping it makes the index drift and breaks every later
+  "what changed" query.
+- **Creating duplicate workitems because you didn't query first.**
+  Before `create_workitem`, run `query_workitems` against title and
+  tags. The cost of one query is much smaller than the cost of an
+  orphaned duplicate the user has to merge later.
+- **Setting `priority: critical` on every bug.** "Critical" means
+  drop-everything urgency. If everything is critical, nothing is.
+  Default to `medium` and let the user upgrade.
+- **Linking with `blocks` / `blocked_by` and forgetting the inverse.**
+  These are bidirectional. If A blocks B, B is blocked_by A. The MCP
+  server `link_workitems` enforces both sides — hand-edits often miss
+  the inverse, leaving the index inconsistent.
+- **Setting `assignee` on a WorkItem when the assignment is temporal.**
+  "Alice owns this for sprint 42 only" is a Binding, not an assignee.
+  Use a Binding entity for any time-bounded or scope-bounded
+  assignment. Assignee is for "this is fundamentally Alice's
+  responsibility, indefinitely".
+
+(See also "Anti-patterns" in Full reference and the parent
+state-machine documentation for the canonical transition rules.)
+
 ## Full reference
 
 ### Full field list

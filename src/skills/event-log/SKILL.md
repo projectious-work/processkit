@@ -102,6 +102,40 @@ If you realize a LogEntry was wrong, do not edit it. Write a new LogEntry with
 `event_type: logentry.corrected` and reference the original in `details.corrects`.
 The original stays as historical record.
 
+## Gotchas
+
+Agent-specific failure modes — provider-neutral pause-and-self-check items:
+
+- **Editing a LogEntry instead of writing a correction.** LogEntries
+  are append-only. If you discover a previous entry was wrong, write
+  a NEW entry with `event_type: logentry.corrected` and reference
+  the original via `details.corrects`. Editing the original silently
+  rewrites history.
+- **Skipping LogEntry writes after hand-edits.** When you bypass an
+  MCP server and edit an entity file directly, you also have to
+  write the corresponding LogEntry yourself. The audit trail relies
+  on it. Forgetting causes the index and the event log to disagree
+  about what happened.
+- **Logging every file save as an event.** LogEntries are signal,
+  not noise. If you save the same file three times in a minute
+  fixing typos, that's one logical edit, not three events. Log the
+  logical operation, not the keystrokes.
+- **Using vague event_type values.** Use dotted lowercase
+  `<noun>.<verb-past>` (e.g., `workitem.transitioned`,
+  `decision.recorded`). Free-form strings like "stuff happened"
+  break event filtering and make the audit trail un-queryable.
+- **Putting structured data in the body instead of `details`.** The
+  `details` field is the structured payload that downstream queries
+  parse. Putting "transitioned from backlog to in-progress" in the
+  body and leaving `details` empty hides the data from
+  `query_events`.
+- **Hand-rolling timestamps.** Use the current UTC time in ISO 8601
+  format from a real clock, never a fabricated value. Wrong
+  timestamps poison time-range queries.
+- **Logging events for entities that don't exist.** Verify via
+  `get_entity(subject)` before logging — referencing a non-existent
+  ID creates an orphaned event the index can't link back to anything.
+
 ## Full reference
 
 ### event_type conventions
