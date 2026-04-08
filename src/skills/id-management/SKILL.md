@@ -26,6 +26,15 @@ Where `index-management` answers "what entities exist?", `id-management`
 answers "what should this new entity be called?". Every skill that
 creates a new entity calls into this one to allocate a unique ID.
 
+> **MCP server.** This skill ships a self-contained MCP server at
+> `mcp/server.py` (PEP 723 script — requires `uv` and Python ≥ 3.10 on
+> PATH). Agent harnesses reach its tools by reading a single MCP config
+> file at startup, so the contents of `mcp/mcp-config.json` must be merged
+> into the harness's MCP config and placed at the harness-specific path
+> before this skill is usable. If processkit was installed by an installer,
+> that wiring is the installer's responsibility; if processkit was
+> installed manually, the project owner must do it by hand.
+
 ## Level 2 — Overview
 
 ### What it provides
