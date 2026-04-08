@@ -212,16 +212,17 @@ When a skill ships an MCP server:
   # dependencies = ["mcp[cli]>=1.0"]
   # ///
   from mcp.server.fastmcp import FastMCP
-  server = FastMCP("<skill-name>")
+  server = FastMCP("processkit-<skill-name>")
   ...
   if __name__ == "__main__":
       server.run(transport="stdio")
   ```
-- `mcp-config.json` is the fragment merged into the consumer's mcp config:
+- `mcp-config.json` is the fragment a consumer-side installer merges into the
+  agent harness's MCP config:
   ```json
   {
     "mcpServers": {
-      "<skill-name>": {
+      "processkit-<skill-name>": {
         "command": "uv",
         "args": ["run", "context/skills/<skill-name>/mcp/server.py"]
       }
@@ -230,6 +231,38 @@ When a skill ships an MCP server:
   ```
 - `README.md` documents: tools provided, resources exposed, required
   environment, known limitations.
+
+#### MCP server naming: the `processkit-` prefix is mandatory
+
+The MCP server name — the string passed to `FastMCP(...)` and the key
+under `mcpServers` in `mcp-config.json` — **must** be prefixed with
+`processkit-`. The skill directory name itself stays unprefixed
+(`src/skills/workitem-management/`), as does the `metadata.name` field
+in `SKILL.md`. The prefix applies only to the MCP wire identifier.
+
+The reason is collision avoidance with user-added MCP servers.
+Consumer-side installers merge processkit-shipped MCP servers into the
+agent harness's single MCP config file alongside any servers the project
+owner adds themselves. The merge is **non-destructive**: the installer
+owns and re-renders the entries whose names start with `processkit-`
+(the managed set), and leaves any other entries strictly alone. Without
+the prefix, a user-added server that happened to share a name with a
+processkit-shipped one would be silently overwritten on every sync.
+
+Skill name, directory name, and MCP server name are three distinct
+identifiers:
+
+| Identifier               | Example                            | Used by                                                  |
+|--------------------------|------------------------------------|----------------------------------------------------------|
+| Skill directory          | `src/skills/workitem-management/`  | processkit source layout, install paths                  |
+| `metadata.name` (SKILL.md) | `workitem-management`            | skill listings, `uses:` references between skills        |
+| MCP server name          | `processkit-workitem-management`   | `FastMCP(...)`, `mcp-config.json`, harness config files  |
+
+Documentation referring to the **skill** uses the unprefixed form ("the
+`workitem-management` skill provides the `create_workitem` tool").
+Documentation referring to the **MCP server registration** uses the
+prefixed form ("the harness loads `processkit-workitem-management` from
+`.mcp.json`").
 
 ### Versioning
 
