@@ -42,6 +42,7 @@ KIND_PREFIXES = {
     "StateMachine": "SM",
     "Artifact": "ART",
     "Migration": "MIG",
+    "Note": "NOTE",
 }
 
 # Default subdirectory under context/ for each primitive kind
@@ -67,4 +68,5 @@ DEFAULT_DIRS = {
     # mirrors the entity's spec.state. The migration-management skill
     # places files in the correct subdirectory.
     "Migration": "migrations",
+    "Note": "notes",
 }

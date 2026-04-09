@@ -5,7 +5,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-20260408_0000-NoteManagement
+    id: SKILL-note-management
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: process
@@ -55,24 +55,25 @@ frontmatter:
 
 ```
 context/notes/
-  NOTE-001-better-error-messages.md
-  NOTE-002-rag-chunking-question.md
+  NOTE-20260408_1432-amber-fox-better-error-messages.md
+  NOTE-20260408_1455-silver-wolf-rag-chunking-question.md
   ...
-  INDEX.md         ← summary of all active notes
 ```
 
-File naming: `NOTE-{id}-{kebab-title}.md` where `{id}` is the
-sequential NOTE ID from the index.
+File naming: `{id}.md` where `{id}` is the full ID returned by
+`generate_id("Note", slug_text=title)`. No separate INDEX.md —
+the SQLite index (via `index-management`) replaces it.
 
 ```yaml
 ---
 apiVersion: processkit.projectious.work/v1
 kind: Note
 metadata:
-  id: NOTE-003
+  id: NOTE-20260408_1501-amber-fox-error-field-names
   created: 2026-04-08
 spec:
-  title: "Error messages should cite the field that caused the error, not just the error code"
+  title: "Error messages should cite the field that caused the \
+error, not just the error code"
   type: insight
   state: captured
   tags: [ux, error-handling, api-design]
@@ -90,7 +91,8 @@ in Stripe's and GitHub's APIs — it's the right model.
 When the user says something note-worthy ("remember this", "I had
 an idea", "note that"):
 
-1. **Assign the next NOTE ID** from `context/notes/INDEX.md`
+1. **Generate the Note ID** via `generate_id("Note", slug_text=title)`
+   → e.g. `NOTE-20260408_1432-amber-fox-better-error-messages`
 2. **Pick the type**: fleeting (quick thought) or one of the specific
    types if already clear
 3. **Write the title as a self-contained claim or question** — not
@@ -98,30 +100,17 @@ an idea", "note that"):
    a note title; "Error messages" is a topic, not a note.
 4. **Set `review_due`**: today + 7 days for fleeting, today + 30 days
    for insight/question, none for reference
-5. **Update INDEX.md** with the new entry
+5. **Write `context/notes/{id}.md`** — no INDEX.md update needed
 
-```markdown
-# Notes Index
+Notes are discovered and queried via the SQLite index
+(`index-management`). To list active notes, use:
 
-Next ID: NOTE-004
-
-## Active
-
-| ID | Title | Type | State | Review Due |
-|---|---|---|---|---|
-| NOTE-003 | Error messages should cite the field that caused the error | insight | captured | 2026-04-15 |
-| NOTE-002 | How does RAG chunking affect retrieval precision? | question | captured | 2026-04-14 |
-
-## Promoted
-
-| ID | Title | Promoted To |
-|---|---|---|
-| NOTE-001 | Add dark mode toggle | BACK-042 |
-
-## Archived
-
-(empty)
 ```
+query_entities(kind="Note")
+search_entities(text="<keyword>")
+```
+
+There is no hand-maintained INDEX.md — the index is authoritative.
 
 ### Running a review session
 
@@ -132,11 +121,12 @@ For each overdue note, make one of four decisions:
 
 **Promote** — the idea is ready to become a real primitive:
 1. Create the downstream entity (WorkItem, DecisionRecord, etc.)
-2. Add `promotes_to: { kind: WorkItem, id: BACK-042 }` to the note frontmatter
+2. Add `promotes_to: { kind: WorkItem, id: BACK-042 }` to the
+   note frontmatter
 3. Transition the note to `promoted`
-4. Update INDEX.md
 
-**Keep as permanent** — the note is worth keeping but not yet actionable:
+**Keep as permanent** — the note is worth keeping but not yet
+actionable:
 1. Refine the body if the capture was rough
 2. Set type to `insight` or `reference`
 3. Transition state to `permanent`
@@ -145,7 +135,6 @@ For each overdue note, make one of four decisions:
 
 **Archive** — the note is no longer useful:
 1. Transition state to `archived`
-2. Move to the Archived section of INDEX.md
 
 **Defer** — not ready to decide yet:
 1. Keep state at `captured`
@@ -183,16 +172,25 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Never archiving notes.** A notes index that only grows and never shrinks stops being useful. Not every idea deserves to become permanent — many are superseded, wrong in retrospect, or simply no longer interesting. Archive aggressively; promoted and permanent notes are the signal.
 - **Promoting a fleeting note without refining it first.** A rough, first-draft thought promoted directly to a DecisionRecord or WorkItem brings the roughness with it. Before promoting, read the note and refine: does the title accurately capture the claim? Is the body complete enough for a newcomer to understand without the original context?
 - **Writing notes that require the original context to make sense.** "The thing we discussed about the API" is meaningless six weeks later. A note must be self-contained: include enough context that the note makes sense to the author (or an agent) who has no memory of the conversation or session where the idea was captured.
-- **Not updating INDEX.md after a review session.** The index is the primary way to discover notes and track the review cadence. If notes are transitioned to `promoted` or `archived` without updating the index, the index becomes a stale liability rather than a useful tool.
+- **Not writing the review decision back to the file.** After a
+  review session, every note that was touched must have its `state`,
+  `review_due`, and (if promoted) `promotes_to` fields updated in
+  the file. The SQLite index is kept current by re-indexing, but
+  the file is the source of truth.
 - **Using notes as a dumping ground for everything instead of a capture layer for non-backlog ideas.** Notes are for ideas not yet ready to be backlog items. Things that are clearly tasks should go directly into a WorkItem. Things that are clearly decisions should go into a DecisionRecord. Notes are the intermediate capture for things that haven't crystallized yet — not a general-purpose inbox for all project work.
 
 ## Full reference
 
 ### Note ID assignment
 
-IDs are sequential and permanent: `NOTE-001`, `NOTE-002`, etc. The
-`Next ID` counter in INDEX.md determines the next number. IDs are
-never reused, even when notes are archived.
+IDs are generated by `generate_id("Note", slug_text=title)` and
+follow the standard processkit timestamp-word-pair format:
+`NOTE-YYYYMMDD_HHMM-word-pair[-slug]`
+
+Example: `NOTE-20260408_1432-amber-fox-better-error-messages`
+
+IDs encode the capture time and are globally unique. No counter or
+INDEX.md is needed — the SQLite index replaces both.
 
 ### State transitions
 
@@ -227,7 +225,7 @@ responsibility on a weekly basis.
 apiVersion: processkit.projectious.work/v1
 kind: Note
 metadata:
-  id: NOTE-{{id}}
+  id: NOTE-{{YYYYMMDD_HHMM}}-{{word-pair}}[-{{slug}}]
   created: {{date}}
 spec:
   title: "{{self-contained claim or question}}"
@@ -237,8 +235,11 @@ spec:
   review_due: {{date + 7 days for fleeting, + 30 for others}}
 ---
 
-{{Note body — enough context to understand without memory of the session}}
+{{Note body — enough context to understand without memory of the
+session}}
 ```
+
+File name: `context/notes/{id}.md` (the full ID, no extra suffix).
 
 ### Relationship to other primitives
 
