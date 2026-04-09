@@ -1,9 +1,13 @@
 """ID generation for entity files.
 
-Two configurable axes:
+Three configurable axes:
 
 - format: ``word`` (adjective + noun) or ``uuid``
+- word_style: ``camel`` (CamelCase, e.g. ``CalmFox``) or ``kebab``
+  (lowercase kebab, e.g. ``calm-fox``). Only applies to ``word`` format.
 - slug: append a content-derived slug or not
+- datetime_prefix: if True, prepend ``YYYYMMDD_HHMM`` before the word
+  pair so the creation time is embedded in the ID.
 
 The kind prefix (BACK, LOG, DEC, ...) is fixed by `processkit.KIND_PREFIXES`
 and is not configurable.
@@ -17,6 +21,7 @@ from __future__ import annotations
 import random
 import re
 import uuid as _uuid
+from datetime import datetime, timezone
 from typing import Iterable
 
 from . import KIND_PREFIXES
@@ -50,9 +55,11 @@ def _slugify(text: str, max_words: int = 4) -> str:
     return "-".join(parts[:max_words])
 
 
-def _word_pair(rng: random.Random) -> str:
+def _word_pair(rng: random.Random, style: str = "kebab") -> str:
     adj = rng.choice(_ADJECTIVES)
     noun = rng.choice(_NOUNS)
+    if style == "camel":
+        return f"{adj.capitalize()}{noun.capitalize()}"
     return f"{adj}-{noun}"
 
 
@@ -60,6 +67,9 @@ def generate_id(
     kind: str,
     *,
     format: str = "word",
+    word_style: str = "kebab",
+    datetime_prefix: bool = False,
+    datetime_str: str | None = None,
     slug_text: str | None = None,
     existing: Iterable[str] = (),
     rng: random.Random | None = None,
@@ -72,6 +82,16 @@ def generate_id(
         The primitive kind (e.g. "WorkItem"). Determines the prefix.
     format:
         ``word`` or ``uuid``.
+    word_style:
+        ``camel`` (e.g. ``CalmFox``) or ``kebab`` (e.g. ``calm-fox``).
+        Only applies when ``format="word"``.
+    datetime_prefix:
+        If True, prepend a ``YYYYMMDD_HHMM`` timestamp before the word
+        pair. Use ``datetime_str`` to supply a specific value; if omitted
+        the current UTC time is used.
+    datetime_str:
+        A pre-formatted datetime string to embed (e.g. ``"20260409_1449"``).
+        Only used when ``datetime_prefix=True``.
     slug_text:
         If provided, a slug derived from this text is appended (e.g. the
         title of a WorkItem).
@@ -87,8 +107,18 @@ def generate_id(
     rng = rng or random.Random()
     used = {_strip_prefix(x, prefix) for x in existing}
 
+    # Build datetime prefix component
+    dt_part = ""
+    if datetime_prefix:
+        if datetime_str:
+            dt_part = datetime_str
+        else:
+            dt_part = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
+
     for _ in range(50):
-        body = _generate_body(format, rng)
+        body = _generate_body(format, rng, word_style)
+        if dt_part:
+            body = f"{dt_part}-{body}"
         if slug_text:
             slug = _slugify(slug_text)
             if slug:
@@ -98,7 +128,9 @@ def generate_id(
     # Fallback: append a hex tag until unique
     while True:
         suffix = rng.randrange(16 ** 4)
-        body = f"{_word_pair(rng)}-{suffix:04x}"
+        body = f"{_word_pair(rng, word_style)}-{suffix:04x}"
+        if dt_part:
+            body = f"{dt_part}-{body}"
         if slug_text:
             slug = _slugify(slug_text)
             if slug:
@@ -107,9 +139,11 @@ def generate_id(
             return f"{prefix}-{body}"
 
 
-def _generate_body(format: str, rng: random.Random) -> str:
+def _generate_body(
+    format: str, rng: random.Random, word_style: str = "kebab"
+) -> str:
     if format == "word":
-        return _word_pair(rng)
+        return _word_pair(rng, word_style)
     if format == "uuid":
         return str(_uuid.UUID(int=rng.getrandbits(128)))[:18]
     raise ValueError(f"unknown id format: {format!r}")

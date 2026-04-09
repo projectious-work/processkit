@@ -35,6 +35,20 @@ class EntityError(ValueError):
     """Raised when an entity file is structurally invalid."""
 
 
+class NotAnEntityError(EntityError):
+    """Raised when a file is not a processkit entity and should be silently skipped.
+
+    This covers two cases:
+    - The file has no YAML frontmatter block at all (README, INDEX, …).
+    - The file has frontmatter but none of the processkit top-level keys
+      (``apiVersion``, ``kind``, ``metadata``, ``spec``), meaning it is some
+      other YAML-frontmatter file (e.g. a SKILL.md in Agent Skills format).
+
+    Distinct from ``EntityError``, which is reserved for files that *claim*
+    to be processkit entities (``apiVersion`` present) but are malformed.
+    """
+
+
 @dataclass
 class Entity:
     """A parsed entity file.
@@ -127,7 +141,8 @@ def from_text(text: str, path: Path | str | None = None) -> Entity:
     try:
         data, body = parse(text)
     except FrontmatterError as e:
-        raise EntityError(str(e)) from e
+        # No YAML frontmatter at all — not an entity, skip silently.
+        raise NotAnEntityError(str(e)) from e
     return _from_dict(data, body, Path(path) if path else None)
 
 
@@ -137,13 +152,21 @@ def load(path: Path | str) -> Entity:
     text = p.read_text(encoding="utf-8")
     try:
         return from_text(text, p)
+    except NotAnEntityError:
+        raise  # preserve type so callers can silently skip non-entities
     except EntityError as e:
         raise EntityError(f"{p}: {e}") from e
 
 
 def _from_dict(data: dict[str, Any], body: str, path: Path | None) -> Entity:
-    missing = [k for k in ("apiVersion", "kind", "metadata", "spec") if k not in data]
+    _ENTITY_KEYS = ("apiVersion", "kind", "metadata", "spec")
+    missing = [k for k in _ENTITY_KEYS if k not in data]
     if missing:
+        if "apiVersion" not in data:
+            # No apiVersion — this is not a processkit entity (e.g. SKILL.md
+            # in Agent Skills format, or another YAML-frontmatter file).
+            raise NotAnEntityError(f"missing required keys: {', '.join(missing)}")
+        # Has apiVersion but is otherwise malformed — a real error worth recording.
         raise EntityError(f"missing required keys: {', '.join(missing)}")
     metadata = data["metadata"]
     spec = data["spec"]

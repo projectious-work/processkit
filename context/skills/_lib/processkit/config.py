@@ -37,6 +37,8 @@ from . import paths
 class Config:
     id_format: str = "word"
     id_slug: bool = False
+    id_word_style: str = "kebab"
+    id_datetime_prefix: bool = False
     directory_overrides: dict[str, str] = field(default_factory=dict)
     sharding: dict[str, dict[str, Any]] = field(default_factory=dict)
     index_path: str | None = None
@@ -86,8 +88,12 @@ def load_config(root: Path | None = None) -> Config:
     if id_cfg is not None:
         id_format = id_cfg.get("format", "word")
         id_slug = bool(id_cfg.get("slug", False))
+        id_word_style = id_cfg.get("word_style", "kebab")
+        id_datetime_prefix = bool(id_cfg.get("datetime_prefix", False))
     else:
         id_format, id_slug = _legacy_id_settings(root)
+        id_word_style = "kebab"
+        id_datetime_prefix = False
 
     # ── Index/directory settings (index-management skill) ─────────────────
     idx_cfg = _load_toml(
@@ -103,6 +109,8 @@ def load_config(root: Path | None = None) -> Config:
     return Config(
         id_format=id_format,
         id_slug=id_slug,
+        id_word_style=id_word_style,
+        id_datetime_prefix=id_datetime_prefix,
         directory_overrides=directory_overrides,
         sharding=sharding,
         index_path=index_path,

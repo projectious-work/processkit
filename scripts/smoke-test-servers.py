@@ -26,13 +26,13 @@ import shutil
 from pathlib import Path
 
 PROCESSKIT = Path(__file__).resolve().parent.parent
-LIB = PROCESSKIT / "src" / "lib"
+LIB = PROCESSKIT / "src" / "context" / "skills" / "_lib"
 sys.path.insert(0, str(LIB))
 
 
 def import_server(name: str):
     """Import a server.py module by skill name without running its main()."""
-    path = PROCESSKIT / "src" / "skills" / name / "mcp" / "server.py"
+    path = PROCESSKIT / "src" / "context" / "skills" / name / "mcp" / "server.py"
     spec = importlib.util.spec_from_file_location(f"server_{name}", path)
     module = importlib.util.module_from_spec(spec)
     # Server modules call _find_lib() at import — they need cwd to be inside processkit
@@ -74,11 +74,11 @@ def run():
         # code path.
         context_root = workdir / "context"
         shutil.copytree(
-            PROCESSKIT / "src" / "primitives" / "schemas",
+            PROCESSKIT / "src" / "context" / "schemas",
             context_root / "schemas",
         )
         shutil.copytree(
-            PROCESSKIT / "src" / "primitives" / "state-machines",
+            PROCESSKIT / "src" / "context" / "state-machines",
             context_root / "state-machines",
         )
 

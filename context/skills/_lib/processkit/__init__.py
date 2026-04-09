@@ -12,7 +12,7 @@ The public modules are:
 - `paths` — find project root, resolve per-kind directories
 - `schema` — load schemas, validate spec against JSON Schema
 - `state_machine` — load state machines, validate transitions
-- `config` — read aibox.toml settings
+- `config` — read processkit.toml settings
 - `index` — SQLite indexer (used by the index-management MCP server)
 
 See `src/lib/README.md` for the import strategy from MCP server scripts.
