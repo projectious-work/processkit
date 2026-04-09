@@ -18,6 +18,16 @@ metadata:
     provides:
       primitives: []
       templates: [identity, working-style, goals-and-context, team-and-relationships]
+    commands:
+      - name: owner-profiling-bootstrap
+        args: "owner-name"
+        description: "Run the initial profiling interview for a new project owner"
+      - name: owner-profiling-refine
+        args: "owner-name"
+        description: "Refine an existing owner profile from new observations"
+      - name: owner-profiling-observe
+        args: "owner-name observation"
+        description: "Record a behavioural observation about a project owner"
 ---
 
 # Owner Profiling
@@ -103,6 +113,12 @@ specific person (PR review, email draft, meeting prep).
 
 This is the entry point for the broader context-efficiency story (see the
 `agent-management` skill's "Context budget and lazy loading" section).
+
+### Commands
+
+- `/owner-profiling-bootstrap owner-name` — run the initial profiling interview for a new project owner
+- `/owner-profiling-refine owner-name` — refine an existing owner profile from new observations
+- `/owner-profiling-observe owner-name observation` — record a behavioural observation about a project owner
 
 ## Gotchas
 

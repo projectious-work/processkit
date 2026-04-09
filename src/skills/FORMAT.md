@@ -39,6 +39,8 @@ src/skills/<skill-name>/
   references/           ← optional — deep-dive reference docs, loaded on demand
   assets/               ← optional — templates, fonts, icons used in output
   examples/             ← optional — example outputs (kept; not in Anthropic canonical layout)
+  commands/             ← optional — slash-command adapter files; one per user-invocable workflow
+    <skill-name>-<workflow>.md  ← provider-specific frontmatter + one-liner invoking the skill
   mcp/                  ← optional — Python MCP server (processkit-specific)
     server.py           ← PEP 723 inline deps, STDIO transport, official SDK
     mcp-config.json     ← config fragment merged by the installer into the harness
@@ -114,6 +116,7 @@ metadata:
 | `layer`           | depends | Integer 0–4 for entity-management/process skills (see hierarchy). Omit (or use `null`) for category=`language`/`framework`/etc. |
 | `uses`            | no  | List of objects with `skill` + `purpose` — see below. Strictly lower-layer for layered skills. |
 | `provides`        | no  | What the agent gains: primitives, MCP tools, asset templates, processes. |
+| `commands`        | no  | List of user-invocable command descriptors; enables `commands/` adapter files. See `commands/` below. |
 | `replaces`        | no  | For customized community forks: ID of the skill this overrides. |
 
 ### `uses:` — list of objects with explicit purpose
@@ -297,6 +300,55 @@ A consumer's `aibox lint` cross-checks `provides.primitives` against the
 `kind` values in the directory's `assets/`, and `provides.mcp_tools`
 against the server's `list_tools()` response.
 
+### `commands/`
+
+When a skill has workflows that benefit from direct user invocation (without
+relying on context-based auto-loading), ship slash-command adapter files in
+`commands/`. Each file corresponds to one entry in `metadata.processkit.commands`.
+
+**Frontmatter schema** (`metadata.processkit.commands` list):
+
+```yaml
+commands:
+  - name: <skill-name>-<workflow>   # namespaced: skill-name prefix is mandatory
+    args: "arg-shape"               # provider-neutral argument hint (no angle brackets)
+    description: "One sentence: what this command does"
+  - name: <skill-name>-<workflow-2>
+    args: ""                        # empty string if the command takes no arguments
+    description: "..."
+```
+
+The `name` field must be prefixed with the skill name (e.g. `model-recommender-profile`,
+not just `profile`) to avoid collision across skills.
+
+**Adapter file format** (Claude Code-specific; other providers use their own format):
+
+```markdown
+---
+argument-hint: arg-shape
+allowed-tools: []
+---
+
+Use the <skill-name> skill, Workflow X, for $ARGUMENTS.
+```
+
+Keep the body to one line — all logic lives in `SKILL.md`, not in the adapter.
+`allowed-tools` should be scoped as narrowly as possible (`Bash(scripts/*)` not
+`Bash(*)`); use `[]` if no tools beyond reading are needed.
+
+**How commands are discovered:**
+
+- SKILL.md declares the `commands:` list → any agent reading the skill at runtime
+  knows the commands exist. This is the provider-neutral baseline.
+- The `commands/*.md` adapter files are read on demand when the agent (or user)
+  invokes the command — same Level 3 loading as `references/`.
+- For harness-level UI registration (tab-complete `/command` in Claude Code), copy
+  the adapter files to `.claude/commands/` in the project root. For standalone use
+  this is a manual step; the skill works without it.
+
+SKILL.md should mention the available commands in its Overview section so agents
+learn about them even before a user triggers them.
+
 ### `examples/`
 
 Each example is a Markdown file demonstrating a complete good output for a
@@ -413,6 +465,51 @@ When a skill ships an MCP server:
   environment, known limitations. **Not `README.md`** — Anthropic's
   no-README rule applies inside the skill folder, including
   subdirectories.
+
+#### Tool annotations are mandatory
+
+Every tool exposed by a processkit MCP server **must** carry explicit annotations.
+The MCP specification defines four boolean hints:
+
+| Annotation | Meaning | Default |
+|---|---|---|
+| `readOnlyHint` | Tool does not modify state — safe to call without confirmation | `false` |
+| `destructiveHint` | Tool may overwrite or delete data — harness should prompt user | `false` |
+| `idempotentHint` | Calling twice has the same effect as once | `false` |
+| `openWorldHint` | Tool makes external network calls (HTTP, APIs) | `true` |
+
+In FastMCP, set annotations on the tool function:
+
+```python
+from mcp.types import Tool
+from mcp.server.fastmcp import FastMCP
+
+server = FastMCP("processkit-example")
+
+@server.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False,
+                 "idempotentHint": True, "openWorldHint": False}
+)
+def query_items(filter: str) -> str:
+    ...
+
+@server.tool(
+    annotations={"readOnlyHint": False, "destructiveHint": True,
+                 "idempotentHint": True, "openWorldHint": False}
+)
+def delete_item(item_id: str) -> str:
+    ...
+```
+
+**Rules of thumb:**
+- Query / list / get / profile tools → `readOnlyHint: true`
+- Create / update / set-config tools → `destructiveHint: false` (additive, not
+  destructive), unless they overwrite without merge
+- Delete / reset / overwrite tools → `destructiveHint: true`
+- Any tool making HTTP requests → `openWorldHint: true`
+- Tools safe to retry → `idempotentHint: true`
+
+Missing annotations are a **must-fix** finding in `skill-reviewer` (Category 11).
 
 #### MCP server naming: the `processkit-` prefix is mandatory
 

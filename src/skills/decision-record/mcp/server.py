@@ -55,6 +55,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths, schema, state_machine  # noqa: E402
 
@@ -80,7 +81,12 @@ def _load_decision(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def record_decision(
     title: str,
     decision: str,
@@ -152,7 +158,12 @@ def record_decision(
     return {"id": new_id, "path": str(target), "state": state}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def transition_decision(id: str, to_state: str) -> dict:
     """Transition a DecisionRecord to a new state.
 
@@ -181,7 +192,12 @@ def transition_decision(id: str, to_state: str) -> dict:
     return {"ok": True, "from_state": from_state, "to_state": to_state}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def query_decisions(state: str | None = None, limit: int = 50) -> list[dict]:
     """List DecisionRecords with optional state filter."""
     db = index.open_db()
@@ -191,7 +207,12 @@ def query_decisions(state: str | None = None, limit: int = 50) -> list[dict]:
         db.close()
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def get_decision(id: str) -> dict | None:
     """Fetch a DecisionRecord by ID."""
     db = index.open_db()
@@ -220,7 +241,12 @@ def get_decision(id: str) -> dict | None:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=True,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def supersede_decision(old_id: str, new_id: str) -> dict:
     """Mark ``old_id`` as superseded by ``new_id``.
 
@@ -253,7 +279,12 @@ def supersede_decision(old_id: str, new_id: str) -> dict:
     return {"ok": True, "old_id": old_id, "new_id": new_id}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def link_decision_to_workitem(decision_id: str, workitem_id: str) -> dict:
     """Add ``workitem_id`` to ``decision.spec.related_workitems``."""
     root = paths.find_project_root()

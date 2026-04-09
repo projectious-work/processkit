@@ -10,6 +10,10 @@ metadata:
     created: 2026-04-08T00:00:00Z
     category: meta
     layer: 2
+    commands:
+      - name: research-with-confidence-investigate
+        args: "topic"
+        description: "Research a topic with explicit confidence labelling on all claims"
 ---
 
 # Research with Confidence
@@ -100,6 +104,8 @@ Stop and check before asserting when:
 - The claim contradicts something the user has said
 - The claim is in a domain where you know your training data may be outdated
 - The claim sounds exactly right without any caveats — that's often when it's wrong
+
+This skill also provides the `/research-with-confidence-investigate` slash command for direct invocation — see `commands/research-with-confidence-investigate.md`.
 
 ### Structuring the output
 

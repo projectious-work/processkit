@@ -50,6 +50,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths, schema, state_machine  # noqa: E402
 
@@ -77,7 +78,12 @@ def _load_scope(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def create_scope(
     name: str,
     kind: str,
@@ -151,7 +157,12 @@ def create_scope(
     return {"id": new_id, "path": str(target_path), "state": "planned"}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def get_scope(id: str) -> dict:
     """Return the full Scope entity by ID."""
     root = paths.find_project_root()
@@ -172,7 +183,12 @@ def get_scope(id: str) -> dict:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def transition_scope(id: str, to_state: str) -> dict:
     """Transition a Scope to a new state per the scope state machine."""
     root = paths.find_project_root()
@@ -198,7 +214,12 @@ def transition_scope(id: str, to_state: str) -> dict:
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def list_scopes(
     kind: str | None = None,
     state: str | None = None,

@@ -52,6 +52,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths, schema, state_machine  # noqa: E402
 
@@ -82,7 +83,12 @@ def _load_workitem(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def create_workitem(
     title: str,
     type: str = "task",
@@ -160,7 +166,12 @@ def create_workitem(
     return {"id": new_id, "path": str(target), "state": initial_state}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def transition_workitem(id: str, to_state: str, note: str | None = None) -> dict:
     """Transition a WorkItem to a new state.
 
@@ -202,7 +213,12 @@ def transition_workitem(id: str, to_state: str, note: str | None = None) -> dict
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def query_workitems(
     state: str | None = None,
     type: str | None = None,
@@ -232,7 +248,12 @@ def query_workitems(
     return out
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def get_workitem(id: str) -> dict | None:
     """Fetch a WorkItem by ID with its full spec."""
     db = index.open_db()
@@ -259,7 +280,12 @@ def get_workitem(id: str) -> dict | None:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def link_workitems(from_id: str, to_id: str, relation: str) -> dict:
     """Add a typed cross-reference between two WorkItems.
 

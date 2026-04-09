@@ -22,6 +22,13 @@ metadata:
       mcp_tools: []
       assets: []
       processes: [skill-review, gotchas-generation]
+    commands:
+      - name: skill-reviewer-audit
+        args: "skill-name"
+        description: "Run a full 11-category review of the named skill"
+      - name: skill-reviewer-bulk-gotchas
+        args: ""
+        description: "Run a bulk Gotchas-generation pass across all skills in the catalog"
 ---
 
 # Skill Reviewer
@@ -54,7 +61,7 @@ is for everything else (auditing, fixing, retrofitting).
 - Bulk operation: **populate Gotchas across the whole catalog** by
   running skill-reviewer over every skill in `src/skills/`.
 
-### The review checklist (8 categories)
+### The review checklist (11 categories)
 
 For each skill, check all 8 categories. Surface findings under one of
 the three severity buckets at the end.
@@ -136,6 +143,10 @@ Check for the four diagnoses:
   `SERVER.md` is present (NOT `README.md`).
 - If `mcp/` exists: the server name in both `mcp-config.json` and the
   `FastMCP(...)` call in `server.py` is prefixed with `processkit-`.
+- If `metadata.processkit.commands` is non-empty: a `commands/`
+  directory exists with one file per entry in the list.
+- If `commands/` exists but `metadata.processkit.commands` is absent
+  or empty: flag as should-fix (orphaned adapter files).
 
 #### 6. Description quality
 
@@ -205,9 +216,61 @@ patterns to consider:
   skill not in skill-finder is invisible to agents who don't already
   know its name.
 
+#### 10. Command adapter hygiene
+
+Run this category only if `metadata.processkit.commands` is non-empty OR
+`commands/` directory exists.
+
+- Every entry in `metadata.processkit.commands` has a corresponding
+  `commands/<name>.md` file. Missing file = must-fix.
+- Every `commands/<name>.md` file has a corresponding entry in
+  `metadata.processkit.commands`. Orphan file = should-fix.
+- Each command name follows the `<skill-name>-<workflow>` convention
+  (skill-name prefix is mandatory). Unprefixed names = must-fix.
+- The `argument-hint` in each adapter file matches the `args` field in
+  the corresponding `metadata.processkit.commands` entry. Mismatch =
+  should-fix.
+- Each adapter file body is exactly one sentence invoking the skill
+  and workflow. Multi-line bodies with workflow steps are should-fix —
+  logic belongs in SKILL.md, not in the adapter.
+- `allowed-tools` in each adapter is present and scoped narrowly.
+  `Bash(*)` without justification = should-fix.
+- SKILL.md Overview mentions the commands (one line per command
+  referencing the adapter path). Absent mention = should-fix.
+
+#### 11. Security and permission audit
+
+Run this category for all skills (not only those with MCP servers).
+
+**MCP tools** (if `mcp/` exists):
+
+- Every `@server.tool()` has explicit annotations. Missing annotations
+  on any tool = must-fix.
+- `readOnlyHint: true` on all query / list / get / profile tools that
+  do not write state. Missing = should-fix.
+- `destructiveHint: true` on any tool that deletes, overwrites, or
+  resets persistent state. Missing = must-fix.
+- `openWorldHint: true` on any tool that makes HTTP or external API
+  calls. Missing = must-fix.
+- `idempotentHint: true` on tools where a duplicate call is harmless
+  (e.g. delete by ID, set-config to same value). Missing = nit.
+
+**SKILL.md permission surface:**
+
+- If the skill calls MCP tools marked `destructiveHint: true`, the
+  Gotchas section mentions that the agent must show the operation to
+  the user and confirm before calling. Missing = should-fix.
+- If the skill calls MCP tools marked `openWorldHint: true`, the
+  Gotchas section notes that external calls are best-effort and
+  failures should not be retried silently. Missing = should-fix.
+- If the skill ships scripts in `scripts/` that write to the
+  filesystem outside the skill's own directory, or make network
+  calls, the Overview section includes a **Permissions** note listing
+  what the scripts touch. Missing = should-fix.
+
 ### The findings report
 
-After running through the 8 categories, output a structured report:
+After running through all 11 categories, output a structured report:
 
 ```markdown
 # Review: <skill-name>
@@ -255,6 +318,15 @@ To populate Gotchas across the catalog in one batch:
 This is the workflow that produced the initial Gotchas content for
 processkit's 100+ pre-existing skills (Thread 1 task #4).
 
+A similar bulk pass can be run for **Category 11 (security audit)**:
+iterate every skill with an `mcp/` directory and check that all tools
+have annotations. Output missing annotations as a patch the user can
+apply to each `server.py`.
+
+This skill also provides the `/skill-reviewer-audit` slash command for direct invocation — see `commands/skill-reviewer-audit.md`.
+
+This skill also provides the `/skill-reviewer-bulk-gotchas` slash command for direct invocation — see `commands/skill-reviewer-bulk-gotchas.md`.
+
 ## Gotchas
 
 Agent-specific failure modes when running skill-reviewer:
@@ -288,9 +360,22 @@ Agent-specific failure modes when running skill-reviewer:
   breaks delegation. This is a must-fix that's easy to miss.
 - **Reviewing your own work without skepticism.** If skill-reviewer
   is being used to review a skill that skill-builder just created,
-  the temptation is to rubber-stamp. Run all 8 categories anyway —
+  the temptation is to rubber-stamp. Run all 11 categories anyway —
   the whole point of the brownfield/greenfield split is independent
   validation.
+- **Skipping Category 10 because no commands/ folder is visible.**
+  Category 10 must also run when `metadata.processkit.commands` is
+  non-empty even if the `commands/` directory is absent — the absence
+  itself is the must-fix finding.
+- **Skipping Category 11 for "knowledge-only" skills.** Even skills
+  without an MCP server can ship scripts or instruct the agent to call
+  external services. Run the SKILL.md permission surface checks for
+  every skill, not only those with `mcp/`.
+- **Treating missing annotations as a nit.** Missing MCP tool
+  annotations are must-fix, not nits. A harness cannot surface
+  confirmation prompts for destructive tools if it doesn't know the
+  tool is destructive. The user may unknowingly approve state-destroying
+  operations.
 
 ## Full reference
 
@@ -306,7 +391,7 @@ Agent-specific failure modes when running skill-reviewer:
 
 Manual flow:
 1. Read the SKILL.md file in full.
-2. Walk through Categories 1-8.
+2. Walk through Categories 1-11.
 3. For each finding, classify severity.
 4. Generate the report in the format above.
 

@@ -20,6 +20,10 @@ metadata:
       mcp_tools: []
       assets: [skill-template]
       processes: [skill-creation]
+    commands:
+      - name: skill-builder-create
+        args: "skill-topic"
+        description: "Start the interactive skill-creation workflow for a given topic"
 ---
 
 # Skill Builder
@@ -138,6 +142,11 @@ metadata:
       primitives: [...]
       mcp_tools: [...]
       assets: [...]
+    # If the skill has user-invocable workflows, add:
+    commands:
+      - name: <skill-name>-<workflow>
+        args: "arg-shape"          # no angle brackets
+        description: "One sentence: what this command does"
 ---
 ```
 
@@ -226,7 +235,44 @@ Should NOT trigger:
 If you can't write at least 3 positive and 3 negative cases, the
 description is too vague — go back to Step 4.
 
-### Step 8 — Update skill-finder
+### Step 8 — Create command adapter files
+
+If the skill's `metadata.processkit.commands` list is non-empty, create one
+adapter file per command under `commands/`:
+
+**File:** `commands/<skill-name>-<workflow>.md`
+
+```markdown
+---
+argument-hint: arg-shape
+allowed-tools: []
+---
+
+Use the <skill-name> skill, Workflow X (name), for $ARGUMENTS.
+```
+
+Rules:
+- File name must exactly match the `name` field in `commands:`.
+- Body is one sentence — no logic, no workflow steps. Everything lives in SKILL.md.
+- `allowed-tools` scoped as narrowly as possible. Use `[]` if no shell access is
+  needed. Never use `Bash(*)` unless the command genuinely runs arbitrary shell.
+- `argument-hint` must match the `args` field from `metadata.processkit.commands`.
+
+Add a one-line mention of the command in SKILL.md's Overview so agents discover it
+when reading the skill, not only when the user types `/command-name`:
+
+```markdown
+This skill also provides the `/model-recommender-profile` command for direct
+invocation — see `commands/model-recommender-profile.md`.
+```
+
+For harness UI registration (Claude Code tab-complete), copy the adapter files to
+`.claude/commands/` in the project root. This is optional and not required for the
+command to work at runtime.
+
+This skill also provides the `/skill-builder-create` slash command for direct invocation — see `commands/skill-builder-create.md`.
+
+### Step 9 — Update skill-finder
 
 After the skill passes the self-check, add it to `skill-finder`:
 
@@ -294,6 +340,20 @@ items.
   obvious".** If you can't write 3 positive and 3 negative test cases,
   the description is not as obvious as you think. The exercise of
   writing the negatives is what surfaces over-triggering risks.
+- **Forgetting command file naming requires the skill-name prefix.**
+  Command files must be named `<skill-name>-<workflow>.md`, not just
+  `<workflow>.md`. Unprefixed names collide across skills once all
+  commands land in `.claude/commands/`. Always include the skill name.
+- **Writing logic into command adapter files.** The adapter's body is
+  one sentence pointing at the skill and workflow. If you find yourself
+  writing workflow steps in the adapter, move them to SKILL.md. The
+  adapter is an invocation shim, not a skill.
+- **Shipping an MCP server without tool annotations.** Every `@server.tool()`
+  must carry explicit `readOnlyHint`, `destructiveHint`, `idempotentHint`,
+  and `openWorldHint` annotations. Missing annotations are a must-fix in
+  skill-reviewer. Default them conservatively: query tools get
+  `readOnlyHint: true`; anything that overwrites state gets
+  `destructiveHint: true`; HTTP-calling tools get `openWorldHint: true`.
 
 ## Full reference
 
@@ -315,6 +375,8 @@ src/skills/<skill-name>/
   references/           ← only if SKILL.md > 5000 words and content was extracted
   assets/               ← only if the skill ships templates / icons / brand assets
   examples/             ← optional, recommended for skills with complex outputs
+  commands/             ← only if metadata.processkit.commands is non-empty
+    <skill>-<workflow>.md  ← one file per command; provider-specific adapter
   mcp/                  ← only if the skill ships an MCP server
 ```
 
@@ -376,6 +438,10 @@ These are pitfalls that go wrong regardless of who is authoring:
   subdirectories. Documentation goes in SKILL.md or references/.
   MCP server documentation goes in `mcp/SERVER.md`, not
   `mcp/README.md`.
+- **Omitting the commands mention from SKILL.md Overview.** If the skill has
+  `commands/` adapter files, the Overview section must reference them so agents
+  learn the commands exist from reading the skill — not only when the user
+  happens to type the slash. One sentence per command is enough.
 
 ### Cross-references
 

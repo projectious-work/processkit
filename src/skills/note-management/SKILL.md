@@ -10,6 +10,16 @@ metadata:
     created: 2026-04-08T00:00:00Z
     category: process
     layer: 2
+    commands:
+      - name: note-management-capture
+        args: "title"
+        description: "Capture a new fleeting note with the given title"
+      - name: note-management-review
+        args: ""
+        description: "Review all fleeting notes and decide what to promote or discard"
+      - name: note-management-promote
+        args: "note-id"
+        description: "Promote a fleeting note to a more permanent artifact"
 ---
 
 # Note Management
@@ -161,6 +171,8 @@ from connections. Link explicitly:
 | insight | DecisionRecord | The insight captures a choice that was made |
 | fleeting | WorkItem (task/chore) | The quick idea turns out to be actionable |
 | reference | Artifact | The source becomes a formal reference material |
+
+This skill also provides the `/note-management-capture` slash command for direct invocation — see `commands/note-management-capture.md`. This skill also provides the `/note-management-review` slash command for direct invocation — see `commands/note-management-review.md`. This skill also provides the `/note-management-promote` slash command for direct invocation — see `commands/note-management-promote.md`.
 
 ## Gotchas
 

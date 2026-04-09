@@ -54,6 +54,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths, schema, state_machine  # noqa: E402
 
@@ -79,7 +80,12 @@ def _load_discussion(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def open_discussion(
     question: str,
     participants: list[str] | None = None,
@@ -140,7 +146,12 @@ def open_discussion(
     return {"id": new_id, "path": str(target_path), "state": "active"}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def get_discussion(id: str) -> dict:
     """Return the full Discussion entity by ID."""
     root = paths.find_project_root()
@@ -160,7 +171,12 @@ def get_discussion(id: str) -> dict:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def transition_discussion(id: str, to_state: str) -> dict:
     """Transition a Discussion through the discussion state machine."""
     root = paths.find_project_root()
@@ -188,7 +204,12 @@ def transition_discussion(id: str, to_state: str) -> dict:
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def add_outcome(id: str, decision_id: str) -> dict:
     """Append a DecisionRecord ID to the discussion's outcomes list.
 
@@ -223,7 +244,12 @@ def add_outcome(id: str, decision_id: str) -> dict:
     return {"ok": True, "id": id, "outcomes": outcomes}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def list_discussions(state: str | None = None, limit: int = 50) -> list[dict]:
     """List Discussion entities, optionally filtered by state."""
     db = index.open_db()

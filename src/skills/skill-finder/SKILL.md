@@ -88,6 +88,7 @@ that skill before proceeding.
 | "embeddings", "vector database" | `embedding-vectordb` |
 | "prompt engineering", "write a prompt" | `prompt-engineering` |
 | "evaluate the LLM", "benchmark the model" | `llm-evaluation` |
+| "which model should I use", "recommend a model", "which LLM is best", "help me pick an AI model", "route tasks to the right model", "which Claude should I use" | `model-recommender` |
 | "ML pipeline", "train a model" | `ml-pipeline` |
 | "feature engineering" | `feature-engineering` |
 | "diagram", "draw", "whiteboard", "Excalidraw" | `excalidraw` |
@@ -189,6 +190,7 @@ For the full 120+ skill catalog, read `src/skills/INDEX.md`.
 - `rag-engineering` — retrieval-augmented generation pipelines
 - `prompt-engineering` — prompt design, few-shot examples, chain-of-thought
 - `llm-evaluation` — benchmarking and red-teaming language models
+- `model-recommender` — pick the right AI model via spider-chart profiles and task-plan routing
 - `data-pipeline` — ETL/ELT design and orchestration
 - `pandas-polars` — dataframe operations and transformations
 

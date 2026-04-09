@@ -47,6 +47,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import KIND_PREFIXES, config, ids, index  # noqa: E402
 
@@ -60,7 +61,12 @@ _WORD_BODY = re.compile(r"^[a-z]+-[a-z]+(?:-[a-z0-9]+)*$")
 _UUID_BODY = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}(?:-[0-9a-f]{4})?(?:-[a-z0-9]+)*$")
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def generate_id(kind: str, slug_text: str | None = None) -> dict:
     """Generate a fresh, collision-free ID for the given primitive kind.
 
@@ -87,7 +93,12 @@ def generate_id(kind: str, slug_text: str | None = None) -> dict:
     return {"id": new_id, "kind": kind}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def validate_id(id: str) -> dict:
     """Validate an ID's format and decompose it into kind/prefix/body.
 
@@ -127,7 +138,12 @@ def validate_id(id: str) -> dict:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def list_used_ids(kind: str | None = None, limit: int = 200) -> list[dict]:
     """List IDs already in use, optionally filtered by kind.
 
@@ -152,7 +168,12 @@ def list_used_ids(kind: str | None = None, limit: int = 200) -> list[dict]:
         db.close()
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def format_info() -> dict:
     """Return the project's ID configuration and the prefix registry."""
     cfg = config.load_config()

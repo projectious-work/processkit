@@ -56,6 +56,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths, schema  # noqa: E402
 
@@ -91,7 +92,12 @@ def _load_actor(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def create_actor(
     name: str,
     type: str,
@@ -170,7 +176,12 @@ def create_actor(
     return {"id": new_id, "path": str(target_path), "type": type, "name": name}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def get_actor(id: str) -> dict:
     """Return the full Actor entity by ID."""
     root = paths.find_project_root()
@@ -193,7 +204,12 @@ def get_actor(id: str) -> dict:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def update_actor(
     id: str,
     name: str | None = None,
@@ -249,7 +265,12 @@ def update_actor(
     return {"ok": True, "id": id, "updated": updated}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=True,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def deactivate_actor(id: str, left_at: str | None = None) -> dict:
     """Mark an Actor inactive. Sets active=false and left_at."""
     root = paths.find_project_root()
@@ -267,7 +288,12 @@ def deactivate_actor(id: str, left_at: str | None = None) -> dict:
     return {"ok": True, "id": id, "left_at": ent.spec["left_at"]}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def list_actors(
     type: str | None = None,
     active_only: bool = True,

@@ -70,6 +70,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import index, paths  # noqa: E402
 
@@ -82,7 +83,12 @@ def _open() -> tuple[Path, "index.sqlite3.Connection"]:  # noqa: F821
     return root, db
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def reindex() -> dict:
     """Rebuild the SQLite index from scratch.
 
@@ -101,7 +107,12 @@ def reindex() -> dict:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def query_entities(
     kind: str | None = None,
     state: str | None = None,
@@ -122,7 +133,12 @@ def query_entities(
         db.close()
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def get_entity(id: str) -> dict | None:
     """Fetch a single entity by ID. Returns None if not found."""
     _, db = _open()
@@ -132,7 +148,12 @@ def get_entity(id: str) -> dict | None:
         db.close()
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def search_entities(text: str, limit: int = 50) -> list[dict]:
     """Full-text search across entity IDs, titles, bodies, and specs."""
     _, db = _open()
@@ -142,7 +163,12 @@ def search_entities(text: str, limit: int = 50) -> list[dict]:
         db.close()
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def query_events(
     event_type: str | None = None,
     subject: str | None = None,
@@ -163,7 +189,12 @@ def query_events(
         db.close()
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def list_errors() -> list[dict]:
     """Return files that failed to parse during the last reindex."""
     _, db = _open()
@@ -173,7 +204,12 @@ def list_errors() -> list[dict]:
         db.close()
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def stats() -> dict:
     """Return counts of indexed entities/events/errors."""
     _, db = _open()

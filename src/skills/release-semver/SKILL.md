@@ -10,6 +10,13 @@ metadata:
     created: 2026-04-06T00:00:00Z
     category: process
     layer: 3
+    commands:
+      - name: release-semver-prepare
+        args: "bump-type"
+        description: "Prepare a release: bump version, draft changelog, create tag (bump-type: major, minor, patch, or auto)"
+      - name: release-semver-publish
+        args: ""
+        description: "Execute the publish phase of the prepared release"
 ---
 
 # Semantic Versioning Release Process
@@ -63,6 +70,8 @@ User says: "Let's release — we fixed two bugs and added a feature."
 The agent recommends a minor bump (because of the new feature),
 drafts changelog entries grouped Added/Fixed, updates version
 files, creates the bump commit, and tags it.
+
+This skill also provides the `/release-semver-prepare` slash command for direct invocation — see `commands/release-semver-prepare.md`. This skill also provides the `/release-semver-publish` slash command for direct invocation — see `commands/release-semver-publish.md`.
 
 ## Gotchas
 

@@ -54,6 +54,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths, schema  # noqa: E402
 
@@ -85,7 +86,12 @@ def _load_role(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def create_role(
     name: str,
     description: str,
@@ -154,7 +160,12 @@ def create_role(
     return {"id": new_id, "path": str(target_path), "name": name}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def get_role(id: str) -> dict:
     """Return the full Role entity by ID."""
     root = paths.find_project_root()
@@ -172,7 +183,12 @@ def get_role(id: str) -> dict:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def update_role(
     id: str,
     description: str | None = None,
@@ -229,7 +245,12 @@ def update_role(
     return {"ok": True, "id": id, "updated": updated}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def list_roles(
     default_scope: str | None = None,
     limit: int = 50,
@@ -264,7 +285,12 @@ def list_roles(
     return out
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def link_role_to_actor(
     role_id: str,
     actor_id: str,

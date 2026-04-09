@@ -23,6 +23,13 @@ metadata:
       primitives: [DecisionRecord]
       mcp_tools: [record_decision, query_decisions, link_decision, supersede_decision]
       templates: [decisionrecord]
+    commands:
+      - name: decision-record-write
+        args: "decision-title"
+        description: "Record a new architectural or product decision with the given title"
+      - name: decision-record-query
+        args: "filter"
+        description: "Query existing decisions by keyword, status, or topic"
 ---
 
 # Decision Record
@@ -116,6 +123,8 @@ When a decision is replaced by a later one:
 
 **Never delete or edit the old record.** Its existence is why we can trace
 the evolution of the decision.
+
+This skill also provides the `/decision-record-write` slash command for direct invocation — see `commands/decision-record-write.md`. This skill also provides the `/decision-record-query` slash command for direct invocation — see `commands/decision-record-query.md`.
 
 ## Gotchas
 

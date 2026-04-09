@@ -19,6 +19,10 @@ metadata:
         purpose: Write the session.handover LogEntry with the structured details schema.
       - skill: workitem-management
         purpose: Query in-progress and blocked WorkItems to populate open_threads accurately.
+    commands:
+      - name: session-handover-write
+        args: ""
+        description: "Generate a session handover document from current project state"
 ---
 
 # Session Handover
@@ -114,6 +118,8 @@ The agent should write a handover when it hears:
 - "closing the container" / "restarting"
 - "end of session"
 - "write a session summary"
+
+This skill also provides the `/session-handover-write` slash command for direct invocation — see `commands/session-handover-write.md`.
 
 ## Gotchas
 

@@ -49,6 +49,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths  # noqa: E402
 
@@ -90,7 +91,12 @@ def _is_active(spec: dict, at: str | None = None) -> bool:
     return True
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def create_binding(
     type: str,
     subject: str,
@@ -161,7 +167,12 @@ def create_binding(
     return {"id": new_id, "path": str(target_path)}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def end_binding(id: str, end_date: str | None = None) -> dict:
     """End a Binding by setting ``valid_until`` to ``end_date`` (default today)."""
     root = paths.find_project_root()
@@ -178,7 +189,12 @@ def end_binding(id: str, end_date: str | None = None) -> dict:
     return {"ok": True, "id": id, "valid_until": ent.spec["valid_until"]}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def query_bindings(
     type: str | None = None,
     subject: str | None = None,
@@ -215,7 +231,12 @@ def query_bindings(
     return out
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def resolve_bindings_for(
     entity_id: str,
     type: str | None = None,

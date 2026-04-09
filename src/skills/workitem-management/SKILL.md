@@ -23,6 +23,10 @@ metadata:
       primitives: [WorkItem]
       mcp_tools: [create_workitem, transition_workitem, query_workitems, link_workitems]
       templates: [workitem, workitem-bug, workitem-story]
+    commands:
+      - name: workitem-management-create
+        args: "title [--type task|story|bug|epic] [--priority critical|high|medium|low]"
+        description: "Create a new work item in the backlog with the given title"
 ---
 
 # WorkItem Management
@@ -128,6 +132,8 @@ Common queries the index MCP server will expose in Phase 3:
 - Full-text search across title + body
 
 Before Phase 3, query via filesystem glob + grep of `context/workitems/`.
+
+This skill also provides the `/workitem-management-create` slash command for direct invocation — see `commands/workitem-management-create.md`.
 
 ## Gotchas
 

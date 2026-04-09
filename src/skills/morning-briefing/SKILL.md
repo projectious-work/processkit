@@ -17,6 +17,10 @@ metadata:
         purpose: Pull current project state when generating the today's priorities section.
       - skill: workitem-management
         purpose: Query in-progress and next-up WorkItems for the today's priorities section.
+    commands:
+      - name: morning-briefing-generate
+        args: ""
+        description: "Generate a session-start orientation from current project state"
 ---
 
 # Morning Briefing
@@ -141,6 +145,8 @@ Bad examples (too vague):
 
 If you cannot write a specific one-liner for today, the briefing
 itself is probably too generic.
+
+This skill also provides the `/morning-briefing-generate` slash command for direct invocation — see `commands/morning-briefing-generate.md`.
 
 ### Keeping it short
 

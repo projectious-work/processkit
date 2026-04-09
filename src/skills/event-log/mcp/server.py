@@ -43,6 +43,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths  # noqa: E402
 
@@ -53,7 +54,12 @@ def _now_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def log_event(
     event_type: str,
     summary: str,
@@ -116,7 +122,12 @@ def log_event(
     return {"id": new_id, "path": str(target)}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def query_events(
     event_type: str | None = None,
     subject: str | None = None,
@@ -133,7 +144,12 @@ def query_events(
         db.close()
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def recent_events(limit: int = 20) -> list[dict]:
     """Return the most recent events from the index."""
     db = index.open_db()

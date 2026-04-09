@@ -19,6 +19,10 @@ metadata:
         purpose: Write the session.standup LogEntry with the structured details schema.
       - skill: workitem-management
         purpose: Query completed and in-progress WorkItems to populate done/doing accurately.
+    commands:
+      - name: standup-context-write
+        args: ""
+        description: "Generate a standup update (done / doing / next / blockers)"
 ---
 
 # Standup Context
@@ -95,6 +99,8 @@ The agent should write a standup when it hears:
 - "write a status update for the team"
 - "daily update"
 - "end of day summary"
+
+This skill also provides the `/standup-context-write` slash command for direct invocation — see `commands/standup-context-write.md`.
 
 ## Gotchas
 

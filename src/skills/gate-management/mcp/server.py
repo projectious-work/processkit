@@ -51,6 +51,7 @@ def _find_lib() -> Path:
 sys.path.insert(0, str(_find_lib()))
 
 from mcp.server.fastmcp import FastMCP  # noqa: E402
+from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import config, entity, ids, index, paths, schema  # noqa: E402
 
@@ -79,7 +80,12 @@ def _load_gate(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def create_gate(
     name: str,
     description: str,
@@ -154,7 +160,12 @@ def create_gate(
     return {"id": new_id, "path": str(target_path), "name": name}
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def get_gate(id: str) -> dict:
     """Return the full Gate entity by ID."""
     root = paths.find_project_root()
@@ -175,7 +186,12 @@ def get_gate(id: str) -> dict:
     }
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def list_gates(
     kind: str | None = None,
     blocking: bool | None = None,
@@ -213,7 +229,12 @@ def list_gates(
     return out
 
 
-@server.tool()
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def evaluate_gate(
     id: str,
     outcome: str,
