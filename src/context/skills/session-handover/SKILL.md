@@ -9,7 +9,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-session-handover
+    id: SKILL-20260408_0000-SessionHandover
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: process
@@ -96,12 +96,27 @@ closes.
 
 ### Writing the LogEntry
 
+**Step 1 — generate the ID:**
+
+Use `generate_id("LogEntry", slug_text="session-handover")` to get
+a collision-free ID following the project's configured format, e.g.:
+`LOG-20260410_0020-SnowyEmber-session-handover`
+
+**Step 2 — determine the file path:**
+
+Apply date-based sharding (configured in index-management):
+`context/logs/YYYY/MM/{id}.md`
+
+Example: `context/logs/2026/04/LOG-20260410_0020-SnowyEmber-session-handover.md`
+
+**Step 3 — write the file:**
+
 ```yaml
 ---
 apiVersion: processkit.projectious.work/v1
 kind: LogEntry
 metadata:
-  id: LOG-<next-id>
+  id: LOG-{{YYYYMMDD_HHMM}}-{{WordPair}}-session-handover
   created: <ISO 8601 UTC>
 spec:
   event_type: session.handover
@@ -123,8 +138,6 @@ spec:
       - "<observation + what was encoded or filed>"
 ---
 ```
-
-Save to `context/logs/LOG-<id>-session-handover-<date>.md`.
 
 ### Trigger phrases
 
@@ -148,6 +161,10 @@ This skill also provides the `/session-handover-write` slash command for direct 
   "BACK-042 auth refactor is merged; BACK-045 is in review and waiting
   for CI; nothing is broken on main" is a current state. Be specific
   enough that someone who wasn't in the session can orient immediately.
+- **Using a flat path or wrong ID format.** The handover file must go
+  in `context/logs/YYYY/MM/{id}.md` (date-sharded), not flat at
+  `context/logs/`. The ID must come from `generate_id("LogEntry",
+  slug_text="session-handover")` — not a hand-written slug.
 - **Omitting git context.** The branch and commit are the most mechanical
   part of the handover and the easiest to forget. Always include them.
   If there are uncommitted changes, list the files — the next session

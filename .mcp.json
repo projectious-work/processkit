@@ -1,88 +1,100 @@
 {
   "mcpServers": {
     "processkit-actor-profile": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/actor-profile/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-binding-management": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/binding-management/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-decision-record": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/decision-record/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-discussion-management": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/discussion-management/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-event-log": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/event-log/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-gate-management": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/gate-management/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-id-management": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/id-management/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-index-management": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/index-management/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-model-recommender": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/model-recommender/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-role-management": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/role-management/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-scope-management": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/scope-management/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     },
     "processkit-workitem-management": {
+      "command": "uv",
       "args": [
         "run",
         "context/skills/workitem-management/mcp/server.py"
       ],
-      "command": "uv"
+      "cwd": "/workspace"
     }
   }
 }

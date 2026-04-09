@@ -4,9 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260409_1751-GrandLily-src-target-root-mirror
   created: '2026-04-09T17:51:04+00:00'
+  updated: '2026-04-09T21:49:39+00:00'
 spec:
   title: src/ → target-root mirror restructure
-  state: backlog
+  state: done
   type: epic
   priority: high
   description: 'Restructure src/ so it is a literal mirror of a fresh consumer project
@@ -25,4 +26,6 @@ spec:
     — owner coordinates aibox-side update. apiVersion stays at v1. Every cross-reference
     in PROVENANCE.toml, _find_lib(), smoke-test-servers.py, all MCP servers, docs-site,
     FORMAT.md, INDEX.md files, and CONTRIBUTING.md must be updated.'
+  started_at: '2026-04-09T21:49:34+00:00'
+  completed_at: '2026-04-09T21:49:39+00:00'
 ---
