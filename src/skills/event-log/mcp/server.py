@@ -76,8 +76,6 @@ def log_event(
     """
     root = paths.find_project_root()
     cfg = config.load_config(root)
-    log_dir = paths.context_dir("LogEntry", root)
-    log_dir.mkdir(parents=True, exist_ok=True)
 
     db = index.open_db()
     try:
@@ -85,16 +83,19 @@ def log_event(
     finally:
         db.close()
 
+    created_at = timestamp or _now_iso()
     new_id = ids.generate_id(
         "LogEntry",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=event_type if cfg.id_slug else None,
         existing=existing,
     )
 
     spec = {
         "event_type": event_type,
-        "timestamp": timestamp or _now_iso(),
+        "timestamp": created_at,
         "summary": summary,
     }
     if actor:
@@ -109,7 +110,8 @@ def log_event(
         spec["correlation_id"] = correlation_id
 
     ent = entity.new("LogEntry", new_id, spec)
-    target = log_dir / f"{new_id}.md"
+    # entity_path applies date-based sharding when configured
+    target = paths.entity_path("LogEntry", new_id, created_at, root)
     ent.write(target)
 
     # Update the index in place

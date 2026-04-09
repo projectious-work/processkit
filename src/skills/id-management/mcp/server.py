@@ -10,17 +10,19 @@
 """processkit id-management MCP server.
 
 Allocates unique entity IDs following the project's configured format
-(``word``/``uuid`` × with/without slug). Other entity-creating servers
-call into the same lib function (`processkit.ids.generate_id`) directly
-for performance — this MCP server exposes the same capability to agents
-that want to call it explicitly (preview, validate, list, audit).
+(``word``/``uuid`` × with/without slug × camel/kebab × datetime prefix).
+Other entity-creating servers call into the same lib function
+(`processkit.ids.generate_id`) directly for performance — this MCP
+server exposes the same capability to agents that want to call it
+explicitly (preview, validate, list, audit).
 
 Tools:
 
     generate_id(kind, slug_text?)         -> {id, kind}
     validate_id(id)                       -> {valid, kind?, prefix?, body?, reason?}
     list_used_ids(kind?, limit?)          -> [{id, kind}]
-    format_info()                         -> {format, slug, prefixes}
+    format_info()                         -> {format, word_style, datetime_prefix,
+                                              slug, prefixes}
 """
 from __future__ import annotations
 
@@ -57,7 +59,13 @@ server = FastMCP("processkit-id-management")
 _PREFIX_TO_KIND = {prefix: kind for kind, prefix in KIND_PREFIXES.items()}
 
 # Body patterns
-_WORD_BODY = re.compile(r"^[a-z]+-[a-z]+(?:-[a-z0-9]+)*$")
+# Old kebab format:  adj-noun[-slug...]
+_KEBAB_BODY = re.compile(r"^[a-z]+-[a-z]+(?:-[a-z0-9]+)*$")
+# New camel format:  [YYYYMMDD_HHMM-]CamelCase[-slug...]
+_CAMEL_BODY = re.compile(
+    r"^(?:(\d{8}_\d{4})-)?([A-Z][a-z]+[A-Z][a-z]+)(?:-([a-z0-9][a-z0-9-]*))?$"
+)
+# UUID format
 _UUID_BODY = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}(?:-[0-9a-f]{4})?(?:-[a-z0-9]+)*$")
 
 
@@ -70,9 +78,9 @@ _UUID_BODY = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}(?:-[0-9a-f]{4})?(?:-[a-z0-9]+
 def generate_id(kind: str, slug_text: str | None = None) -> dict:
     """Generate a fresh, collision-free ID for the given primitive kind.
 
-    Reads the project's `id_format` and `id_slug` settings from
-    `aibox.toml`. Queries the index for existing IDs of the same kind
-    to avoid collisions.
+    Reads ``word_style``, ``datetime_prefix``, ``format``, and ``slug``
+    from the project's id-management settings. Queries the index for
+    existing IDs of the same kind to avoid collisions.
     """
     if kind not in KIND_PREFIXES:
         return {"error": f"unknown kind {kind!r}; valid: {sorted(KIND_PREFIXES.keys())}"}
@@ -87,6 +95,8 @@ def generate_id(kind: str, slug_text: str | None = None) -> dict:
     new_id = ids.generate_id(
         kind,
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=slug_text if cfg.id_slug else None,
         existing=existing,
     )
@@ -102,8 +112,9 @@ def generate_id(kind: str, slug_text: str | None = None) -> dict:
 def validate_id(id: str) -> dict:
     """Validate an ID's format and decompose it into kind/prefix/body.
 
-    Does NOT check whether the ID is currently in use — for that, use
-    list_used_ids or query the index directly.
+    Accepts both old kebab format (``PREFIX-adj-noun``) and new formats
+    (``PREFIX-YYYYMMDD_HHMM-CamelCase[-slug]``, ``PREFIX-CamelCase[-slug]``).
+    Does NOT check whether the ID is currently in use.
     """
     if not isinstance(id, str) or "-" not in id:
         return {"valid": False, "reason": "id must be a string of the form PREFIX-body"}
@@ -113,28 +124,55 @@ def validate_id(id: str) -> dict:
         return {"valid": False, "reason": f"unknown prefix {prefix!r}"}
     if not body:
         return {"valid": False, "reason": "empty body"}
-    format_guess: str | None = None
-    has_slug = False
-    if _UUID_BODY.match(body):
-        format_guess = "uuid"
-        has_slug = body.count("-") > 2
-    elif _WORD_BODY.match(body):
-        format_guess = "word"
-        has_slug = body.count("-") > 1
-    if format_guess is None:
+
+    # Try new camel format first
+    m = _CAMEL_BODY.match(body)
+    if m:
+        dt_part, word_pair, slug = m.group(1), m.group(2), m.group(3)
         return {
-            "valid": False,
-            "reason": f"body {body!r} does not match a known format",
+            "valid": True,
             "kind": kind,
             "prefix": prefix,
+            "body": body,
+            "format_guess": "word",
+            "word_style": "camel",
+            "datetime_part": dt_part,
+            "slug": slug,
+            "has_slug": slug is not None,
         }
+
+    # Try old kebab format
+    if _KEBAB_BODY.match(body):
+        has_slug = body.count("-") > 1
+        return {
+            "valid": True,
+            "kind": kind,
+            "prefix": prefix,
+            "body": body,
+            "format_guess": "word",
+            "word_style": "kebab",
+            "datetime_part": None,
+            "has_slug": has_slug,
+        }
+
+    # Try UUID format
+    if _UUID_BODY.match(body):
+        return {
+            "valid": True,
+            "kind": kind,
+            "prefix": prefix,
+            "body": body,
+            "format_guess": "uuid",
+            "word_style": None,
+            "datetime_part": None,
+            "has_slug": body.count("-") > 2,
+        }
+
     return {
-        "valid": True,
+        "valid": False,
+        "reason": f"body {body!r} does not match a known format",
         "kind": kind,
         "prefix": prefix,
-        "body": body,
-        "format_guess": format_guess,
-        "has_slug": has_slug,
     }
 
 
@@ -179,7 +217,14 @@ def format_info() -> dict:
     cfg = config.load_config()
     return {
         "format": cfg.id_format,
+        "word_style": cfg.id_word_style,
+        "datetime_prefix": cfg.id_datetime_prefix,
         "slug": cfg.id_slug,
+        "example": (
+            "BACK-20260409_1449-BoldVale-fts5-search"
+            if cfg.id_datetime_prefix and cfg.id_word_style == "camel"
+            else "BACK-bold-vale-fts5-search"
+        ),
         "prefixes": dict(KIND_PREFIXES),
     }
 

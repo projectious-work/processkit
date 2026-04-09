@@ -53,7 +53,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, paths, schema  # noqa: E402
+from processkit import config, entity, ids, index, log, paths, schema  # noqa: E402
 
 server = FastMCP("processkit-gate-management")
 
@@ -126,6 +126,8 @@ def create_gate(
     new_id = ids.generate_id(
         "Gate",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=name if cfg.id_slug else None,
         existing=existing,
     )
@@ -157,6 +159,11 @@ def create_gate(
     finally:
         db.close()
 
+    log.log_side_effect(
+        "Gate", new_id, "gate.created",
+        f"Created Gate {new_id!r}: {name!r}",
+        root=root,
+    )
     return {"id": new_id, "path": str(target_path), "name": name}
 
 
@@ -248,11 +255,6 @@ def evaluate_gate(
     not modified. ``outcome`` must be one of "passed", "failed", or
     "waived"; a "waived" outcome requires a non-empty ``reason`` and
     typically an ``actor`` who waived it.
-
-    The created LogEntry is not picked up by the index until the next
-    reindex (or until event-log's log_event upserts it). For now this
-    server just writes the file; consumers should call event-log's
-    log_event for full integration when they need indexed events.
     """
     if outcome not in _VALID_OUTCOMES:
         return {"error": f"invalid outcome {outcome!r}; must be one of {sorted(_VALID_OUTCOMES)}"}
@@ -270,23 +272,6 @@ def evaluate_gate(
     ):
         return {"error": f"gate {id!r} requires evidence on pass"}
 
-    cfg = config.load_config(root)
-    log_dir = paths.context_dir("LogEntry", root)
-    log_dir.mkdir(parents=True, exist_ok=True)
-
-    db = index.open_db()
-    try:
-        existing = index.existing_ids(db, "LogEntry")
-    finally:
-        db.close()
-
-    log_id = ids.generate_id(
-        "LogEntry",
-        format=cfg.id_format,
-        slug_text=f"gate-{outcome}" if cfg.id_slug else None,
-        existing=existing,
-    )
-
     details: dict = {}
     if evidence:
         details["evidence"] = evidence
@@ -295,34 +280,19 @@ def evaluate_gate(
     if outcome == "waived" and actor:
         details["waived_by"] = actor
 
-    log_spec: dict = {
-        "event_type": f"gate.{outcome}",
-        "timestamp": _now_iso(),
-        "subject": id,
-        "subject_kind": "Gate",
-        "summary": f"Gate {ent.spec.get('name', id)} {outcome}",
-    }
-    if actor:
-        log_spec["actor"] = actor
-    if details:
-        log_spec["details"] = details
-
-    log_ent = entity.new("LogEntry", log_id, log_spec)
-    target_path = log_dir / f"{log_id}.md"
-    log_ent.write(target_path)
-
-    db = index.open_db()
-    try:
-        index.upsert_entity(db, log_ent)
-    finally:
-        db.close()
+    log_id = log.log_side_effect(
+        "Gate", id, f"gate.{outcome}",
+        f"Gate {ent.spec.get('name', id)} {outcome}",
+        root=root,
+        actor=actor,
+        details=details or None,
+    )
 
     return {
         "ok": True,
         "log_id": log_id,
         "gate_id": id,
         "outcome": outcome,
-        "path": str(target_path),
     }
 
 

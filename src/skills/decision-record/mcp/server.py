@@ -57,7 +57,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, paths, schema, state_machine  # noqa: E402
+from processkit import config, entity, ids, index, log, paths, schema, state_machine  # noqa: E402
 
 server = FastMCP("processkit-decision-record")
 
@@ -117,6 +117,8 @@ def record_decision(
     new_id = ids.generate_id(
         "DecisionRecord",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=title if cfg.id_slug else None,
         existing=existing,
     )
@@ -155,6 +157,11 @@ def record_decision(
     finally:
         db.close()
 
+    log.log_side_effect(
+        "DecisionRecord", new_id, "decision.created",
+        f"Created DecisionRecord {new_id!r}: {title!r}",
+        root=root,
+    )
     return {"id": new_id, "path": str(target), "state": state}
 
 
@@ -189,6 +196,12 @@ def transition_decision(id: str, to_state: str) -> dict:
         index.upsert_entity(db, ent)
     finally:
         db.close()
+
+    log.log_side_effect(
+        "DecisionRecord", id, "decision.transitioned",
+        f"Transitioned DecisionRecord {id!r} from {from_state!r} to {to_state!r}",
+        root=root,
+    )
     return {"ok": True, "from_state": from_state, "to_state": to_state}
 
 
@@ -276,6 +289,12 @@ def supersede_decision(old_id: str, new_id: str) -> dict:
         index.upsert_entity(db, new)
     finally:
         db.close()
+
+    log.log_side_effect(
+        "DecisionRecord", old_id, "decision.superseded",
+        f"DecisionRecord {old_id!r} superseded by {new_id!r}",
+        root=root,
+    )
     return {"ok": True, "old_id": old_id, "new_id": new_id}
 
 

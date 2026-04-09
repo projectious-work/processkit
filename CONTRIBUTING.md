@@ -225,6 +225,32 @@ Upgrading the aibox pin in this repo requires coordination — the new
 aibox version must still work with the processkit version it tries to
 consume. See `README.md` for the bootstrap loop.
 
+## Improvements from derived projects
+
+When a processkit consumer (any project using processkit via aibox or
+a manual install) finds a behavioral gap or content improvement in a
+processkit-installed file, they can contribute it back:
+
+1. **Fix locally first.** Edit the file directly under `context/`
+   in the consumer project. The templates mirror at
+   `context/templates/processkit/<version>/` provides the diff
+   baseline — three-way merge at next `aibox sync` will preserve
+   the local edit.
+2. **Decide whether to file upstream.** Is the improvement
+   project-specific, or would it benefit every processkit consumer?
+   If general, open a Discussion entity locally (kind:
+   `upstream-proposal`) then file a GitHub issue at
+   `projectious-work/processkit`.
+3. **What makes a good upstream issue.** Include: the file changed,
+   the specific failure mode it addresses, the proposed fix text,
+   and whether the fix was validated in a real session. Issues with
+   a concrete reproduction ("agent said X, then didn't do Y") are
+   faster to act on than abstract suggestions.
+
+Maintainers will review and, if accepted, merge the improvement into
+the appropriate `src/` file so all consumers benefit at the next
+release.
+
 ## Style notes
 
 - **Markdown:** GitHub-flavored. Tables wherever they help. Code fences

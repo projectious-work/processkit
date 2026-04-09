@@ -5,7 +5,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-devils-advocate
+    id: SKILL-20260408_0000-DevilsAdvocate
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: meta

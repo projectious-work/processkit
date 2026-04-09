@@ -104,7 +104,12 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
     for path in sorted(context_dir.rglob("*.md")):
         try:
             ent = entity_mod.load(path)
+        except entity_mod.NotAnEntityError:
+            # Not a processkit entity (no frontmatter, or no apiVersion key).
+            # Silently skip — README, INDEX, SKILL.md, SERVER.md, etc.
+            continue
         except entity_mod.EntityError as e:
+            # Claims to be a processkit entity (has apiVersion) but is malformed.
             db.execute(
                 "INSERT OR REPLACE INTO errors (path, message) VALUES (?, ?)",
                 (str(path), str(e)),

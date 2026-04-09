@@ -52,11 +52,11 @@ spec:
         description: "Longer context."
       parent:
         type: string
-        pattern: "^SCOPE-[a-zA-Z0-9-]+$"
+        pattern: "^SCOPE-[a-zA-Z0-9_-]+$"
         description: "Optional parent scope (e.g. quarter contains sprints)."
       related_decisions:
         type: array
         items:
           type: string
-          pattern: "^DEC-[a-zA-Z0-9-]+$"
+          pattern: "^DEC-[a-zA-Z0-9_-]+$"
         description: "DecisionRecords related to this scope (retros, planning decisions)."

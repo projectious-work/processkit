@@ -135,6 +135,13 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Logging events for entities that don't exist.** Verify via
   `get_entity(subject)` before logging — referencing a non-existent
   ID creates an orphaned event the index can't link back to anything.
+- **Logging retroactively instead of in the same turn.** Call
+  `log_event` in the same turn as the action it records — when a
+  WorkItem is created, when a decision is made, when a skill is
+  edited. Deferring event logging to "end of session" or "when I
+  remember" produces an incomplete audit trail and risks omission
+  entirely. The same rule applies here as for entity creation: do
+  it now, not later.
 
 ## Full reference
 

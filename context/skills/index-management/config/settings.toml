@@ -15,7 +15,7 @@
 # Binding        = "bindings"
 # Migration      = "migrations"
 
-# Log sharding — uncomment to enable date-based subdirectories.
-# [sharding.LogEntry]
-# scheme  = "date"
-# pattern = "context/logs/{year}/{month}/"
+# Log sharding — date-based subdirectories for high-volume log entries.
+[sharding.LogEntry]
+scheme  = "date"
+pattern = "context/logs/{year}/{month}/"

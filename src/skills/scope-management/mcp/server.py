@@ -52,7 +52,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, paths, schema, state_machine  # noqa: E402
+from processkit import config, entity, ids, index, log, paths, schema, state_machine  # noqa: E402
 
 server = FastMCP("processkit-scope-management")
 
@@ -124,6 +124,8 @@ def create_scope(
     new_id = ids.generate_id(
         "Scope",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=name if cfg.id_slug else None,
         existing=existing,
     )
@@ -154,6 +156,11 @@ def create_scope(
     finally:
         db.close()
 
+    log.log_side_effect(
+        "Scope", new_id, "scope.created",
+        f"Created Scope {new_id!r}: {name!r}",
+        root=root,
+    )
     return {"id": new_id, "path": str(target_path), "state": "planned"}
 
 
@@ -211,6 +218,11 @@ def transition_scope(id: str, to_state: str) -> dict:
     finally:
         db.close()
 
+    log.log_side_effect(
+        "Scope", id, "scope.transitioned",
+        f"Transitioned Scope {id!r} from {from_state!r} to {to_state!r}",
+        root=root,
+    )
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
 

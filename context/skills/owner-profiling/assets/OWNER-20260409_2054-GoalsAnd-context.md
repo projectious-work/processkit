@@ -2,7 +2,7 @@
 apiVersion: processkit.projectious.work/v1
 kind: Context
 metadata:
-  id: OWNER-goals-and-context
+  id: OWNER-20260409_2054-GoalsAnd-context
   privacy: project-private
   created: TODO
 spec:

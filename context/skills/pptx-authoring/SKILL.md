@@ -5,7 +5,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-pptx-authoring
+    id: SKILL-20260408_0000-PptxAuthoring
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: design

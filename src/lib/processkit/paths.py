@@ -82,11 +82,15 @@ def find_processkit_root(server_path: Path | str) -> Path | None:
 
 
 def context_dir(kind: str, root: Path | str | None = None) -> Path:
-    """Return the directory under ``context/`` where entities of ``kind`` live.
+    """Return the base directory under ``context/`` for entities of ``kind``.
 
     Reads directory overrides from processkit.toml (or aibox.toml legacy)
     via config.load_config(); otherwise uses the default subdirectory from
     DEFAULT_DIRS.
+
+    This returns the *root* of the kind's directory, without any sharding
+    subdirectories. Use ``entity_path()`` when writing a new entity so that
+    sharding is applied automatically.
     """
     from . import config  # local import to avoid circular dependency at module level
     root = Path(root) if root else find_project_root()
@@ -94,6 +98,47 @@ def context_dir(kind: str, root: Path | str | None = None) -> Path:
     override = cfg.directory_for(kind)
     sub = override if override else DEFAULT_DIRS.get(kind, kind.lower())
     return root / "context" / sub
+
+
+def entity_path(
+    kind: str,
+    entity_id: str,
+    created_at: str | None = None,
+    root: Path | str | None = None,
+) -> Path:
+    """Return the full file path for a new entity, applying sharding rules.
+
+    When date-based sharding is configured for ``kind``, entities are
+    written into ``context/<subdir>/{year}/{month}/`` rather than the flat
+    ``context/<subdir>/`` directory. The ``created_at`` parameter (an ISO
+    8601 string) is used to derive the year and month. If ``created_at``
+    is None, the current UTC date is used.
+
+    Falls back to ``context_dir(kind) / entity_id.md`` when sharding is
+    not configured.
+    """
+    from . import config  # local import to avoid circular dependency
+    from datetime import datetime, timezone
+
+    root = Path(root) if root else find_project_root()
+    base = context_dir(kind, root)
+    cfg = config.load_config(root)
+
+    shard = cfg.sharding.get(kind)
+    if shard and shard.get("scheme") == "date":
+        if created_at:
+            # Parse ISO 8601 — tolerate both "Z" and "+00:00" suffixes.
+            ts_str = created_at.replace("Z", "+00:00")
+            try:
+                ts = datetime.fromisoformat(ts_str)
+            except ValueError:
+                ts = datetime.now(timezone.utc)
+        else:
+            ts = datetime.now(timezone.utc)
+        shard_dir = base / f"{ts.year:04d}" / f"{ts.month:02d}"
+        return shard_dir / f"{entity_id}.md"
+
+    return base / f"{entity_id}.md"
 
 
 def primitive_schemas_dir(root: Path | str | None = None) -> Path | None:

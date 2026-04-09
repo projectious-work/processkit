@@ -54,21 +54,21 @@ spec:
         type: array
         items:
           type: string
-          pattern: "^ACTOR-[a-zA-Z0-9-]+$"
+          pattern: "^ACTOR-[a-zA-Z0-9_-]+$"
         description: "ACTOR IDs of the people/agents who made the decision."
       supersedes:
         type: string
-        pattern: "^DEC-[a-zA-Z0-9-]+$"
+        pattern: "^DEC-[a-zA-Z0-9_-]+$"
         description: "ID of a prior decision this one replaces."
       superseded_by:
         type: string
-        pattern: "^DEC-[a-zA-Z0-9-]+$"
+        pattern: "^DEC-[a-zA-Z0-9_-]+$"
         description: "ID of a later decision that replaces this one (set when this one becomes superseded)."
       related_workitems:
         type: array
         items:
           type: string
-          pattern: "^BACK-[a-zA-Z0-9-]+$"
+          pattern: "^BACK-[a-zA-Z0-9_-]+$"
         description: "Work items that motivated or implement the decision."
       decided_at:
         type: string

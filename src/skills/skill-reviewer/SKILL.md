@@ -25,7 +25,7 @@ metadata:
     commands:
       - name: skill-reviewer-audit
         args: "skill-name"
-        description: "Run a full 11-category review of the named skill"
+        description: "Run a full 12-category review of the named skill"
       - name: skill-reviewer-bulk-gotchas
         args: ""
         description: "Run a bulk Gotchas-generation pass across all skills in the catalog"
@@ -63,8 +63,8 @@ is for everything else (auditing, fixing, retrofitting).
 
 ### The review checklist (11 categories)
 
-For each skill, check all 8 categories. Surface findings under one of
-the three severity buckets at the end.
+For each skill, check all 12 categories. Surface findings under one
+of the three severity buckets at the end.
 
 #### 1. Frontmatter compliance (Agent Skills standard)
 
@@ -268,9 +268,31 @@ Run this category for all skills (not only those with MCP servers).
   calls, the Overview section includes a **Permissions** note listing
   what the scripts touch. Missing = should-fix.
 
+#### 12. Behavioral completeness
+
+Check that the skill encodes enough to prevent silent execution
+failures — cases where the agent understands the workflow but then
+fails to execute a step.
+
+- **Skills that direct the agent to create entities** (WorkItems,
+  DecisionRecords, Discussions, etc.): the Gotchas section must
+  include a rule about calling the tool in the same turn as the
+  commitment. Missing = should-fix.
+- **Skills with multi-step workflows**: each step that produces a
+  persistent artifact (entity, file, commit) should have a
+  corresponding Gotcha about not deferring the write. Missing =
+  should-fix.
+- **All skills**: are Gotchas specific (failure described +
+  concrete countermeasure), or are they generic encouragements
+  ("be careful", "double-check") with no actionable fix? All-generic
+  Gotchas = should-fix.
+- **Process skills in particular**: at least one Gotcha must cover
+  the gap between verbal commitment ("I'll do X") and execution
+  ("called the tool"). Missing = should-fix.
+
 ### The findings report
 
-After running through all 11 categories, output a structured report:
+After running through all 12 categories, output a structured report:
 
 ```markdown
 # Review: <skill-name>
@@ -322,6 +344,10 @@ A similar bulk pass can be run for **Category 11 (security audit)**:
 iterate every skill with an `mcp/` directory and check that all tools
 have annotations. Output missing annotations as a patch the user can
 apply to each `server.py`.
+
+A bulk pass for **Category 12 (behavioral completeness)** is useful
+after any behavioral norm is added to AGENTS.md — verify that the
+corresponding skill's Gotchas already encode the same rule.
 
 This skill also provides the `/skill-reviewer-audit` slash command for direct invocation — see `commands/skill-reviewer-audit.md`.
 

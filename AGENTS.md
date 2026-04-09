@@ -198,18 +198,58 @@ Configured providers: **claude**. Other agents may be working on this
 project — coordinate through the entity layer (`workitem-management`,
 `event-log`, `discussion-management`) rather than assuming you are alone.
 
+**Commit to actions immediately.** If you decide to create an entity
+(WorkItem, DecisionRecord, etc.), call the tool in the same turn. Do
+not say "I'll track that" and move on — deferred commitments are
+routinely dropped and leave the entity layer out of sync with what was
+discussed.
+
+**Check the skill catalog before acting on domain tasks.** When a
+domain-specific task arrives — writing a PRD, creating a release,
+reviewing a skill, designing a schema — search the processkit skill
+catalog first. Use `search_entities` via index-management or check
+`skill-finder` before falling back to general knowledge. A matching
+skill may exist with processkit-specific conventions (entity storage
+paths, workitem linking, output formats) that general knowledge does
+not know. Missing a skill wastes work and produces non-standard
+output.
+
+### Contributing improvements upstream
+
+When you make a behavioral or content improvement to a file in
+`context/` that was installed from processkit (it has a counterpart
+in `context/templates/processkit/<version>/`), ask whether the
+improvement is general enough to benefit all processkit consumers.
+
+If yes:
+1. Open a Discussion entity locally with `open_discussion` —
+   title it "Upstream proposal: <short description>", note the
+   changed file and the improvement in the body.
+   This creates an audit trail so future sessions can see what
+   was proposed and what was decided.
+2. File an issue at the processkit repository so maintainers can
+   consider it for the upstream catalog.
+
+Nothing is mandatory — the project owner decides what to file
+upstream. The Discussion entity records the decision either way.
+
 ## processkit preferences
 
-Runtime configuration lives in per-skill config files under
-`context/skills/<name>/config/settings.toml`. The agent edits these
-directly; MCP servers read them on every call — no restart needed.
+This table is the authoritative view of active project preferences.
+The `settings.toml` files under `context/skills/<name>/config/` mirror
+these values in TOML form so MCP servers can parse them without reading
+AGENTS.md. When changing a preference, update both this table and the
+corresponding settings.toml. MCP servers read settings.toml on every
+call — no restart needed.
 
-- **ID format** (`context/skills/id-management/config/settings.toml`):
-  `word` pair + content-derived slug from the title.
-  Example: `BACK-calm-fox-fts5-full-text-search`.
-- **Directory layout** (`context/skills/index-management/config/settings.toml`):
-  processkit defaults (`workitems/`, `logs/`, …).
-- **Log sharding:** none (flat `context/logs/`).
+| Preference | Value |
+|---|---|
+| ID word-pair style | `camel` — e.g. `BoldVale` |
+| ID datetime prefix | enabled — format `YYYYMMDD_HHMM` embedded in ID |
+| ID slug | enabled — content-derived from entity title |
+| Example ID | `BACK-20260409_1449-BoldVale-fts5-full-text-search` |
+| Directory layout | processkit defaults (`workitems/`, `logs/`, …) |
+| Log sharding | date-based — `context/logs/{year}/{month}/` |
 
 ---
 

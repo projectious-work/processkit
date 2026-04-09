@@ -5,11 +5,22 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-prd-writing
-    version: "1.0.0"
+    id: SKILL-20260408_0000-PrdWriting
+    version: "1.1.0"
     created: 2026-04-08T00:00:00Z
     category: process
     layer: 2
+    uses:
+      - skill: workitem-management
+        purpose: Link requirements to WorkItems in the project backlog.
+      - skill: decision-record
+        purpose: Reference DecisionRecords that motivated requirements
+          or resolved open questions.
+    provides:
+      primitives: [Artifact]
+      mcp_tools: []
+      assets: []
+      processes: [prd-writing]
 ---
 
 # PRD Writing
@@ -24,7 +35,23 @@ in 15 minutes and leave no major questions unanswered.
 
 ## Overview
 
-### PRD structure
+### Feature PRD vs. product/vision PRD
+
+processkit distinguishes two PRD variants:
+
+**Feature PRD** — scopes a single feature or change. Audience: the
+immediate delivery team. Contains: problem statement, use cases with
+acceptance criteria, functional + non-functional requirements,
+success metrics. Template: see `### Feature PRD template` below.
+
+**Product/vision PRD** — defines the product itself: what it is, who
+it serves, what it must do, and how success is measured. Audience:
+contributors, stakeholders, and agents picking up the project cold.
+Contains: vision, target users, component map, core requirements,
+non-goals, success metrics, milestones, glossary, open questions.
+Template: see `### Product PRD template` below.
+
+### Feature PRD template
 
 ```markdown
 # [Feature Name] — Product Requirements
@@ -119,6 +146,97 @@ Use MoSCoW: Must / Should / Could / Won't.
 analytics data, technical feasibility notes]
 ```
 
+### Product PRD template
+
+For product-level or vision-level PRDs:
+
+~~~markdown
+# [Product Name] — Product Requirements
+
+**Status:** Draft | Review | Approved
+**Owner:** [name or team]
+**Last updated:** [YYYY-MM-DD]
+
+---
+
+## Vision
+
+[2-4 sentences: what is this product, who is it for, and why does
+it exist? Distinct from goals — this is the directional statement.]
+
+## Problem statement
+
+[What problem does this product solve? What evidence confirms it is
+real? Why is this the right solution?]
+
+## Goals
+
+**Primary goal:** [The single most important outcome.]
+
+**Secondary goals:**
+- [Measurable secondary outcome]
+
+**Non-goals:** See Non-goals section.
+
+## Target users
+
+| User | What they get |
+|---|---|
+| [Role] | [Value] |
+
+## Component map
+
+[ASCII diagram or description of how major components relate.]
+
+## Core requirements
+
+### R1 — [Requirement name]
+
+[Requirement description. Reference the format spec or schema where
+applicable rather than reproducing it inline.]
+
+### R2 — ...
+
+## Non-functional requirements
+
+- **Portability:** ...
+- **Offline capability:** ...
+- **Backward compatibility:** ...
+
+## Non-goals
+
+- [Explicitly out of scope]
+
+## Success metrics
+
+| Metric | Status | Target |
+|---|---|---|
+| [Metric] | [Current] | [Goal] |
+
+## Milestones
+
+[What has shipped. What v1.0 / next milestone requires. No date
+commitments unless hard deadlines exist.]
+
+## Glossary
+
+| Term | Definition |
+|---|---|
+| [Term] | [One-line definition] |
+
+## Open questions and constraints
+
+**Technical constraints:**
+- [Hard constraint]
+
+**Open design decisions:**
+- [Decision not yet made]
+
+## Appendix
+
+- [Link to canonical spec files, related decisions, research]
+~~~
+
 ### Before writing — gather the inputs
 
 A PRD written without evidence is advocacy, not requirements. Gather
@@ -170,6 +288,12 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Skipping success metrics.** A PRD without success metrics produces a feature you can ship but never evaluate. If you cannot define what "success" looks like before building, you cannot tell after shipping whether the investment was worth it.
 - **Leaving open questions open at launch.** Questions that are open at PRD approval must be answered before development starts. A PRD with open architecture questions or unresolved design decisions is not ready for development — it will be decided ad-hoc during implementation, usually badly.
 - **Making the PRD too long.** A PRD that takes 2 hours to read will not be read by the team before development starts. Keep it to one focused session (15-30 min) — the full detail belongs in linked design docs, technical specs, and research reports, not in the PRD itself.
+- **Writing a PRD without loading this skill first.** The trigger
+  phrase "PRD" or "product requirements" should load this skill
+  before any writing begins. Writing from general knowledge produces
+  a document that may look correct but misses processkit-specific
+  conventions (Artifact storage, workitem linking, feature vs.
+  product PRD distinction).
 
 ## Full reference
 
@@ -203,3 +327,14 @@ When the project uses processkit, link the PRD to:
 
 Save the PRD as `context/artifacts/prd-[feature-name]-[date].md` or
 link it as an Artifact entity in the index.
+
+The PRD itself should be stored as an `Artifact` entity under
+`context/artifacts/prd-<product-or-feature>-<date>.md` so it is
+indexed and queryable. Create the entity with:
+
+    spec:
+      name: <descriptive name>
+      kind: document
+      location: context/artifacts/prd-<name>-<date>.md
+      format: markdown
+      tags: [prd]

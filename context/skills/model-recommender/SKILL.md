@@ -13,7 +13,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-model-recommender
+    id: SKILL-20260409_0000-ModelRecommender
     version: "1.2.0"
     created: 2026-04-09T00:00:00Z
     category: ai

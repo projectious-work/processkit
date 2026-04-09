@@ -33,19 +33,19 @@ spec:
         type: array
         items:
           type: string
-          pattern: "^ACTOR-[a-zA-Z0-9-]+$"
+          pattern: "^ACTOR-[a-zA-Z0-9_-]+$"
         description: "Actor IDs participating in the discussion."
       related:
         type: array
         items:
           type: string
-          pattern: "^DISC-[a-zA-Z0-9-]+$"
+          pattern: "^DISC-[a-zA-Z0-9_-]+$"
         description: "Related discussion IDs."
       outcomes:
         type: array
         items:
           type: string
-          pattern: "^DEC-[a-zA-Z0-9-]+$"
+          pattern: "^DEC-[a-zA-Z0-9_-]+$"
         description: "DecisionRecord IDs produced by this discussion."
       opened_at:
         type: string

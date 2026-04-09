@@ -56,7 +56,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, paths, schema  # noqa: E402
+from processkit import config, entity, ids, index, log, paths, schema  # noqa: E402
 
 server = FastMCP("processkit-role-management")
 
@@ -131,6 +131,8 @@ def create_role(
     new_id = ids.generate_id(
         "Role",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=name if cfg.id_slug else None,
         existing=existing,
     )
@@ -157,6 +159,11 @@ def create_role(
     finally:
         db.close()
 
+    log.log_side_effect(
+        "Role", new_id, "role.created",
+        f"Created Role {new_id!r}: {name!r}",
+        root=root,
+    )
     return {"id": new_id, "path": str(target_path), "name": name}
 
 
@@ -324,6 +331,8 @@ def link_role_to_actor(
     new_id = ids.generate_id(
         "Binding",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text="role-assignment" if cfg.id_slug else None,
         existing=existing,
     )
@@ -358,6 +367,11 @@ def link_role_to_actor(
     finally:
         db.close()
 
+    log.log_side_effect(
+        "Binding", new_id, "binding.role-assigned",
+        f"Bound Actor {actor_id!r} to Role {role_id!r} via {new_id!r}",
+        root=root,
+    )
     return {
         "ok": True,
         "binding_id": new_id,

@@ -5,7 +5,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-id-management
+    id: SKILL-20260406_0000-IdManagement
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
     category: process
@@ -49,21 +49,31 @@ creates a new entity calls into this one to allocate a unique ID.
 
 Every processkit entity ID has the shape `<PREFIX>-<body>`:
 
-| Part      | Example          | How it is set                                          |
-|-----------|------------------|--------------------------------------------------------|
-| Prefix    | `BACK`           | Determined by the primitive kind (not configurable).   |
-| Body      | `calm-fox`       | Generated from `id_format` × `id_slug` configuration.  |
+| Part      | Example                     | How it is set                         |
+|-----------|-----------------------------|---------------------------------------|
+| Prefix    | `BACK`                      | Determined by the primitive kind.     |
+| Body      | `20260409_1449-CalmFox-foo` | Generated from configuration below.  |
 
-The body has two independent axes (set in `aibox.toml`):
+The body is composed of up to four axes, all configurable in
+`context/skills/id-management/config/settings.toml`:
 
-| `id_format` | `id_slug` | Body shape                          |
-|-------------|-----------|-------------------------------------|
-| `word`      | `false`   | `calm-fox`                          |
-| `word`      | `true`    | `calm-fox-add-aibox-lint`           |
-| `uuid`      | `false`   | `550e8400-e29b-41d4`                |
-| `uuid`      | `true`    | `550e8400-add-aibox-lint`           |
+| Setting          | Values           | Effect on body                              |
+|------------------|------------------|---------------------------------------------|
+| `format`         | `word` / `uuid`  | Word pair (adj+noun) or UUID fragment       |
+| `word_style`     | `camel` / `kebab`| `CalmFox` or `calm-fox`                     |
+| `datetime_prefix`| `true` / `false` | Prepend `YYYYMMDD_HHMM` before the pair     |
+| `slug`           | `true` / `false` | Append content-derived slug from title      |
 
-Default: `word` + no slug.
+Example combinations:
+
+| format | word_style | datetime_prefix | slug  | Result                              |
+|--------|------------|-----------------|-------|-------------------------------------|
+| word   | camel      | true            | true  | `BACK-20260409_1449-CalmFox-fts5-search` |
+| word   | camel      | false           | true  | `BACK-CalmFox-fts5-search`          |
+| word   | kebab      | false           | false | `BACK-calm-fox`                     |
+| uuid   | —          | false           | false | `BACK-550e8400-e29b-41d4`           |
+
+Default (no settings.toml): `word` + `kebab` + no datetime + no slug.
 
 ### Workflow when creating a new entity
 

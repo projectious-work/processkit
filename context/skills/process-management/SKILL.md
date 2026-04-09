@@ -5,7 +5,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-process-management
+    id: SKILL-20260406_0000-ProcessManagement
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
     category: process
@@ -40,7 +40,7 @@ just defines them.
 apiVersion: processkit.projectious.work/v1
 kind: Process
 metadata:
-  id: PROC-code-review
+  id: PROC-20260407_0000-CodeReview
   created: 2026-04-06T00:00:00Z
 spec:
   name: code-review
@@ -164,7 +164,7 @@ project or team:
 kind: Binding
 spec:
   type: process-scope
-  subject: PROC-code-review
+  subject: PROC-20260407_0000-CodeReview
   target: SCOPE-project-x
 ```
 

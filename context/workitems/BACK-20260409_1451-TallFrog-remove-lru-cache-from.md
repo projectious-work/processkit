@@ -2,7 +2,7 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: BACK-tall-frog-remove-lru-cache-from
+  id: BACK-20260409_1451-TallFrog-remove-lru-cache-from
   created: '2026-04-09T14:51:48+00:00'
   labels:
     component: lib

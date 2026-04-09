@@ -5,7 +5,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-flutter-development
+    id: SKILL-20260406_0000-FlutterDevelopment
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z
     category: framework

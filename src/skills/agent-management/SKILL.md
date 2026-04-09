@@ -150,6 +150,23 @@ handoff context:
 
 Update the checklist after each step.
 
+### Encode corrections immediately
+
+When the user corrects agent behavior mid-session, encode the
+correction before continuing:
+
+1. **Classify** — what kind of failure was it? (deferred action,
+   wrong tool, skipped step, scope creep, …)
+2. **Check** — does a skill or AGENTS.md already cover this failure
+   mode? Search the relevant skill's Gotchas and Anti-patterns.
+3. **Encode** — if not covered: edit the relevant file in the same
+   turn. A correction that is only remembered is lost at session end.
+4. **Log** — add a one-liner to `behavioral_retrospective` in the
+   session handover so the session record reflects what was learned.
+
+The same rule applies as for entity creation: do it in the same turn,
+not later.
+
 ### Context budget and lazy loading
 
 processkit projects can grow to dozens of skills, hundreds of
@@ -211,6 +228,12 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Vague handoffs without specific artifacts, paths, or line numbers.** "I made some changes, please review" tells the receiving agent almost nothing. Use the structured handoff format every time: status, list of file paths changed, what was verified, any blockers, and the exact next action. Include absolute paths and line numbers for all referenced code.
 - **Loading all context at session start instead of selectively.** A project with 100 skills, 5 years of decisions, and hundreds of backlog items contains far more context than any session needs. Read INDEX files to understand what exists, then load on demand when the specific task requires it. The three-level principle applies: start at the overview, drill down only when needed.
 - **Leaving scratch files (`_agent_notes.md`, `_blackboard.md`) in the repository.** Temporary agent collaboration files are not part of the project's permanent record. Every multi-agent workflow that creates scratch files must clean them up when the workflow completes. Committed scratch files confuse future agents and humans about what is authoritative context.
+- **Skipping the skill catalog for domain tasks.** Before starting
+  any domain-specific task (writing a PRD, drafting a release,
+  creating a schema), search for a matching processkit skill via
+  `search_entities` or `skill-finder`. Proceeding from general
+  knowledge when a skill exists produces output that misses
+  processkit-specific conventions and entity storage paths.
 
 ## Full reference
 
@@ -308,6 +331,21 @@ long-term impact.
 - **Vague handoffs** — "I made some changes, please review"
   without specifics. Fix: use the structured handoff format
   every time.
+- **Deferred entity creation** — saying "I'll track that" or
+  "I'll file a workitem" without immediately calling the tool.
+  Deferred commitments are routinely dropped across turn
+  boundaries, leaving the entity layer out of sync with what
+  was agreed. Fix: call `create_workitem`, `record_decision`,
+  or the relevant MCP tool in the same turn as the commitment.
+- **Skipping the skill catalog for domain tasks.** When a
+  domain-specific task arrives (writing a PRD, creating a
+  release, reviewing a skill), the agent goes to general
+  knowledge instead of checking `skill-finder` or
+  `search_entities`. The skill catalog exists precisely because
+  processkit has conventions (entity storage paths, output
+  formats, workitem linking) that general knowledge does not
+  know. Fix: run `search_entities(text="<task keyword>")` or
+  consult `skill-finder` before starting any domain task.
 
 ### Practical tips for Claude Code
 

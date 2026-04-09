@@ -46,7 +46,7 @@ spec:
         description: "Optional. The primitive kind of the target."
       scope:
         type: string
-        pattern: "^SCOPE-[a-zA-Z0-9-]+$"
+        pattern: "^SCOPE-[a-zA-Z0-9_-]+$"
         description: "Optional. Scope ID within which this binding applies."
       valid_from:
         type: string

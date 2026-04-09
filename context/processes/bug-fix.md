@@ -2,7 +2,7 @@
 apiVersion: processkit.projectious.work/v1
 kind: Process
 metadata:
-  id: PROC-bug-fix
+  id: PROC-20260407_0000-BugFix
   version: "1.0.0"
   created: 2026-04-07T00:00:00Z
 spec:

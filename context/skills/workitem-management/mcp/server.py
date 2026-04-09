@@ -54,7 +54,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, paths, schema, state_machine  # noqa: E402
+from processkit import config, entity, ids, index, paths, log, schema, state_machine  # noqa: E402
 
 server = FastMCP("processkit-workitem-management")
 
@@ -111,8 +111,6 @@ def create_workitem(
 
     root = paths.find_project_root()
     cfg = config.load_config(root)
-    wi_dir = paths.context_dir("WorkItem", root)
-    wi_dir.mkdir(parents=True, exist_ok=True)
 
     db = index.open_db()
     try:
@@ -123,6 +121,8 @@ def create_workitem(
     new_id = ids.generate_id(
         "WorkItem",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=title if cfg.id_slug else None,
         existing=existing,
     )
@@ -154,7 +154,7 @@ def create_workitem(
         return {"error": "schema validation failed", "details": errors}
 
     ent = entity.new("WorkItem", new_id, spec, labels=labels)
-    target = wi_dir / f"{new_id}.md"
+    target = paths.entity_path("WorkItem", new_id, None, root)
     ent.write(target)
 
     db = index.open_db()
@@ -163,6 +163,11 @@ def create_workitem(
     finally:
         db.close()
 
+    log.log_side_effect(
+        "WorkItem", new_id, "workitem.created",
+        f"Created WorkItem {new_id!r}: {title!r}",
+        root=root,
+    )
     return {"id": new_id, "path": str(target), "state": initial_state}
 
 
@@ -210,6 +215,11 @@ def transition_workitem(id: str, to_state: str, note: str | None = None) -> dict
     finally:
         db.close()
 
+    log.log_side_effect(
+        "WorkItem", id, "workitem.transitioned",
+        f"Transitioned WorkItem {id!r} from {from_state!r} to {to_state!r}",
+        root=root,
+    )
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
 

@@ -53,7 +53,7 @@ spec:
         type: array
         items:
           type: string
-          pattern: "^ROLE-[a-zA-Z0-9-]+$"
+          pattern: "^ROLE-[a-zA-Z0-9_-]+$"
         description: "Roles authorized to sign off on this gate."
       blocking:
         type: boolean

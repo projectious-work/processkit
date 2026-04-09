@@ -53,7 +53,7 @@ spec:
           quarterly, etc.
       owner:
         type: string
-        pattern: "^ACTOR-[a-zA-Z0-9-]+$"
+        pattern: "^ACTOR-[a-zA-Z0-9_-]+$"
         description: "Actor responsible for the metric."
       active:
         type: boolean

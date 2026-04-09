@@ -56,7 +56,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, paths, schema, state_machine  # noqa: E402
+from processkit import config, entity, ids, index, log, paths, schema, state_machine  # noqa: E402
 
 server = FastMCP("processkit-discussion-management")
 
@@ -115,6 +115,8 @@ def open_discussion(
     new_id = ids.generate_id(
         "Discussion",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=question if cfg.id_slug else None,
         existing=existing,
     )
@@ -143,6 +145,11 @@ def open_discussion(
     finally:
         db.close()
 
+    log.log_side_effect(
+        "Discussion", new_id, "discussion.opened",
+        f"Opened Discussion {new_id!r}: {question!r}",
+        root=root,
+    )
     return {"id": new_id, "path": str(target_path), "state": "active"}
 
 
@@ -201,6 +208,11 @@ def transition_discussion(id: str, to_state: str) -> dict:
     finally:
         db.close()
 
+    log.log_side_effect(
+        "Discussion", id, "discussion.transitioned",
+        f"Transitioned Discussion {id!r} from {from_state!r} to {to_state!r}",
+        root=root,
+    )
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
 

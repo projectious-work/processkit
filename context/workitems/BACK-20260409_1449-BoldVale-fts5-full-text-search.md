@@ -2,7 +2,7 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: BACK-bold-vale-fts5-full-text-search
+  id: BACK-20260409_1449-BoldVale-fts5-full-text-search
   created: '2026-04-09T14:49:49+00:00'
   labels:
     component: index

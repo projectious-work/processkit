@@ -5,7 +5,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-context-grooming
+    id: SKILL-20260407_0000-ContextGrooming
     version: "1.0.0"
     created: 2026-04-07T00:00:00Z
     category: process

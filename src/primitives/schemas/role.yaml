@@ -51,5 +51,5 @@ spec:
           without an explicit scope.
       supersedes:
         type: string
-        pattern: "^ROLE-[a-zA-Z0-9-]+$"
+        pattern: "^ROLE-[a-zA-Z0-9_-]+$"
         description: "Role ID this one replaces (for role renames or reorganizations)."

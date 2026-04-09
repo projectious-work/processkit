@@ -5,7 +5,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-logging-strategy
+    id: SKILL-20260406_0000-LoggingStrategy
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z
     category: observability

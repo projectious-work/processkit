@@ -43,35 +43,35 @@ spec:
         description: "Business priority."
       assignee:
         type: string
-        pattern: "^ACTOR-[a-zA-Z0-9-]+$"
+        pattern: "^ACTOR-[a-zA-Z0-9_-]+$"
         description: "ID of the Actor currently responsible. Use a Binding for scoped assignments."
       parent:
         type: string
-        pattern: "^BACK-[a-zA-Z0-9-]+$"
+        pattern: "^BACK-[a-zA-Z0-9_-]+$"
         description: "ID of a parent work item (for hierarchical decomposition)."
       children:
         type: array
         items:
           type: string
-          pattern: "^BACK-[a-zA-Z0-9-]+$"
+          pattern: "^BACK-[a-zA-Z0-9_-]+$"
         description: "IDs of child work items."
       blocks:
         type: array
         items:
           type: string
-          pattern: "^BACK-[a-zA-Z0-9-]+$"
+          pattern: "^BACK-[a-zA-Z0-9_-]+$"
         description: "IDs of work items that cannot proceed until this one is done."
       blocked_by:
         type: array
         items:
           type: string
-          pattern: "^BACK-[a-zA-Z0-9-]+$"
+          pattern: "^BACK-[a-zA-Z0-9_-]+$"
         description: "IDs of work items that must be done before this one can proceed."
       related_decisions:
         type: array
         items:
           type: string
-          pattern: "^DEC-[a-zA-Z0-9-]+$"
+          pattern: "^DEC-[a-zA-Z0-9_-]+$"
         description: "DecisionRecord IDs that motivated or constrained this work."
       scope:
         type: string

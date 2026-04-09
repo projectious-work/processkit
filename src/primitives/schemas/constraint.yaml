@@ -66,5 +66,5 @@ spec:
         type: array
         items:
           type: string
-          pattern: "^DEC-[a-zA-Z0-9-]+$"
+          pattern: "^DEC-[a-zA-Z0-9_-]+$"
         description: "Decisions that established or relaxed this constraint."

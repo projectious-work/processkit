@@ -234,6 +234,41 @@ on this project — coordinate through the entity layer
 (`workitem-management`, `event-log`, `discussion-management`) rather than
 assuming you are alone.
 
+**Commit to actions immediately.** If you decide to create an entity
+(WorkItem, DecisionRecord, etc.), call the tool in the same turn. Do
+not say "I'll track that" and move on — deferred commitments are
+routinely dropped and leave the entity layer out of sync with what was
+discussed.
+
+**Check the skill catalog before acting on domain tasks.** When a
+domain-specific task arrives — writing a PRD, creating a release,
+reviewing a skill, designing a schema — search the processkit skill
+catalog first. Use `search_entities` via index-management or check
+`skill-finder` before falling back to general knowledge. A matching
+skill may exist with processkit-specific conventions (entity storage
+paths, workitem linking, output formats) that general knowledge does
+not know. Missing a skill wastes work and produces non-standard
+output.
+
+### Contributing improvements upstream
+
+When you make a behavioral or content improvement to a file in
+`context/` that was installed from processkit (it has a counterpart
+in `context/templates/processkit/<version>/`), ask whether the
+improvement is general enough to benefit all processkit consumers.
+
+If yes:
+1. Open a Discussion entity locally with `open_discussion` —
+   title it "Upstream proposal: <short description>", note the
+   changed file and the improvement in the body.
+   This creates an audit trail so future sessions can see what
+   was proposed and what was decided.
+2. File an issue at the processkit repository so maintainers can
+   consider it for the upstream catalog.
+
+Nothing is mandatory — the project owner decides what to file
+upstream. The Discussion entity records the decision either way.
+
 ## Project-specific notes
 
 <!-- PLACEHOLDER:NONOBVIOUS_GOTCHAS class=B

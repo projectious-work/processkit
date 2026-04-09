@@ -51,7 +51,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, paths  # noqa: E402
+from processkit import config, entity, ids, index, log, paths  # noqa: E402
 
 server = FastMCP("processkit-binding-management")
 
@@ -134,6 +134,8 @@ def create_binding(
     new_id = ids.generate_id(
         "Binding",
         format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
         slug_text=type if cfg.id_slug else None,
         existing=existing,
     )
@@ -164,6 +166,11 @@ def create_binding(
     finally:
         db.close()
 
+    log.log_side_effect(
+        "Binding", new_id, "binding.created",
+        f"Created Binding {new_id!r}: {type!r} {subject!r} → {target!r}",
+        root=root,
+    )
     return {"id": new_id, "path": str(target_path)}
 
 
@@ -181,11 +188,18 @@ def end_binding(id: str, end_date: str | None = None) -> dict:
         return {"error": f"binding {id!r} not found"}
     ent.spec["valid_until"] = end_date or _today_iso()
     ent.write()
+    root = paths.find_project_root()
     db = index.open_db()
     try:
         index.upsert_entity(db, ent)
     finally:
         db.close()
+
+    log.log_side_effect(
+        "Binding", id, "binding.ended",
+        f"Ended Binding {id!r} (valid_until={ent.spec['valid_until']!r})",
+        root=root,
+    )
     return {"ok": True, "id": id, "valid_until": ent.spec["valid_until"]}
 
 

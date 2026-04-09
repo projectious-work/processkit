@@ -20,9 +20,9 @@ engine.
 
 | File | Process | Purpose |
 |---|---|---|
-| `bug-fix.md` | `PROC-bug-fix` | Diagnose, reproduce, fix, and verify a defect |
-| `code-review.md` | `PROC-code-review` | Review a change before it merges |
-| `feature-development.md` | `PROC-feature-development` | Take a feature from backlog to merged |
+| `bug-fix.md` | `PROC-20260407_0000-BugFix` | Diagnose, reproduce, fix, and verify a defect |
+| `code-review.md` | `PROC-20260407_0000-CodeReview` | Review a change before it merges |
+| `feature-development.md` | `PROC-20260407_0000-FeatureDevelopment` | Take a feature from backlog to merged |
 | `release.md` | `PROC-release` | Cut, tag, and publish a versioned release |
 
 Each process is a `kind: Process` entity validated by

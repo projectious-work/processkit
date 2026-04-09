@@ -363,14 +363,43 @@ def run():
         print("bindings for workitem:", bindings_for_wi)
         assert any(x["id"] == bind_id for x in bindings_for_wi)
 
+        # 5b. assert log entries were written as side effects
+        # log_side_effect indexes immediately, so we can query without reindex.
+        from processkit import index as _index
+        _db = _index.open_db()
+        try:
+            _ev_created = _index.query_events(_db, event_type="workitem.created", subject=wi_id)
+            _ev_transitioned = _index.query_events(_db, event_type="workitem.transitioned", subject=wi_id)
+            _ev_dec = _index.query_events(_db, event_type="decision.created")
+            _ev_scope = _index.query_events(_db, event_type="scope.created")
+            _ev_gate = _index.query_events(_db, event_type="gate.created")
+            _ev_gate_eval = _index.query_events(_db, event_type="gate.passed", subject=gate_id)
+            _ev_disc = _index.query_events(_db, event_type="discussion.opened")
+        finally:
+            _db.close()
+        print("log side effects — workitem.created:", len(_ev_created))
+        print("log side effects — workitem.transitioned:", len(_ev_transitioned))
+        print("log side effects — decision.created:", len(_ev_dec))
+        print("log side effects — scope.created:", len(_ev_scope))
+        print("log side effects — gate.created:", len(_ev_gate))
+        print("log side effects — gate.passed:", len(_ev_gate_eval))
+        print("log side effects — discussion.opened:", len(_ev_disc))
+        assert len(_ev_created) >= 1, "workitem.created log entry missing"
+        assert len(_ev_transitioned) >= 1, "workitem.transitioned log entry missing"
+        assert len(_ev_dec) >= 1, "decision.created log entry missing"
+        assert len(_ev_scope) >= 1, "scope.created log entry missing"
+        assert len(_ev_gate) >= 1, "gate.created log entry missing"
+        assert len(_ev_gate_eval) >= 1, "gate.passed log entry missing"
+        assert len(_ev_disc) >= 1, "discussion.opened log entry missing"
+
         # 6. index management
         reindex = get_tool(idx, "reindex")
         stats = reindex()
         print("reindex stats:", stats)
-        # workitem + 2 logs + decision + actor + role + role-binding +
-        # scope + gate + discussion + work-binding
+        # workitem + decision + actor + role + role-binding +
+        # scope + gate + gate-eval-log + discussion + work-binding + side-effect logs
         assert stats["entities"] >= 11
-        assert stats["events"] >= 1
+        assert stats["events"] >= 7, f"expected at least 7 events (log side effects), got {stats['events']}"
 
         query_e = get_tool(idx, "query_entities")
         wi_rows = query_e(kind="WorkItem")

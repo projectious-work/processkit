@@ -45,4 +45,5 @@ spec:
       # Product ops
       - seo-optimization
       - agent-management
+      - prd-writing
 ---

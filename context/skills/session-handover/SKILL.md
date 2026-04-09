@@ -9,7 +9,7 @@ description: |
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-session-handover
+    id: SKILL-20260408_0000-SessionHandover
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: process
@@ -79,6 +79,21 @@ it's approved and ready to merge."
 Current branch and commit SHA. If there are uncommitted changes, note them.
 If there is a stash, note what is in it.
 
+**5. Behavioral retrospective (brief)**
+Before writing the entry, scan the session for execution gaps:
+
+- What did I commit to ("I'll track that", "I'll file a workitem")
+  but not execute in the same turn?
+- What did I skip, defer, or forget that should not have been
+  deferred?
+- What surprised me, or what did the user have to correct?
+
+For each item: either edit the relevant skill or AGENTS.md directly
+(if it is a clear, reusable rule), or create a WorkItem. Do not
+leave it as a mental note — the next session starts with the lessons
+already encoded only if they are written down before this session
+closes.
+
 ### Writing the LogEntry
 
 ```yaml
@@ -104,6 +119,8 @@ spec:
       <specific next step for the next session>
     branch: "<current branch>"
     commit: "<short SHA>"
+    behavioral_retrospective:  # optional; omit if no gaps observed
+      - "<observation + what was encoded or filed>"
 ---
 ```
 
@@ -149,6 +166,12 @@ This skill also provides the `/session-handover-write` slash command for direct 
 - **Not querying WorkItem state before writing.** Open threads written from
   memory miss things. Always query `workitem-management` for in-progress
   and blocked items before finalizing the open_threads list.
+- **Skipping the behavioral retrospective.** The retrospective is
+  the mechanism that converts session failures into durable
+  improvements. If the session had no corrections, note that
+  explicitly in `behavioral_retrospective`. If corrections happened
+  and are not encoded, the next session agent starts with the same
+  failure modes.
 
 ## Full reference
 
