@@ -66,9 +66,9 @@ Human-readable description, acceptance criteria, notes, history.
 
 ### ID formats
 
-ID format is configurable in the consuming project's `aibox.toml`:
+ID format is configurable in the consuming project's `processkit.toml`:
 
-| Format                   | Example                     | `aibox.toml`                                         |
+| Format                   | Example                     | `processkit.toml`                                    |
 |--------------------------|-----------------------------|------------------------------------------------------|
 | Word-based (default)     | `BACK-calm-fox`             | `id_format = "word"`, `id_slug = false`              |
 | Word-based + slug        | `BACK-calm-fox-add-lint`    | `id_format = "word"`, `id_slug = true`               |

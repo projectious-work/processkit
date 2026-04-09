@@ -17,7 +17,7 @@ process-primitive skill.
   are recorded as new LogEntries with `event_type: logentry.corrected`.
 - Each call writes a Markdown file under `<root>/context/logs/` and
   upserts the row in the SQLite index in one shot.
-- IDs follow the project's `aibox.toml` `id_format` setting (word/uuid +
+- IDs follow the project's `processkit.toml` `id_format` setting (word/uuid +
   optional slug). Default: word.
 
 ## Running

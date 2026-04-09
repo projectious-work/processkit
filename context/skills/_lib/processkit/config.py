@@ -1,27 +1,32 @@
-"""Read processkit-relevant settings from aibox.toml.
+"""Read processkit runtime settings from per-skill config files.
 
-aibox.toml is the consumer project's configuration. The sections relevant
-to MCP servers are:
+Each processkit skill that has configurable behaviour stores its
+settings in a ``config/settings.toml`` file inside its own installed
+directory under ``context/skills/<name>/config/``. The agent edits
+these files during first-time setup (guided by AGENTS.md); the MCP
+servers read them on every call.
 
-    [context]
-    id_format = "word"        # word | uuid
-    id_slug = false
+Skill config locations:
 
-    [context.directories]
-    WorkItem = "workitems"
-    LogEntry = "logs"
-    DecisionRecord = "decisions"
+    context/skills/id-management/config/settings.toml
+        format = "word"   # word | uuid
+        slug   = true     # append content-derived slug from entity title
 
-    [context.sharding.LogEntry]
-    scheme = "date"
-    pattern = "context/logs/{year}/{month}/"
+    context/skills/index-management/config/settings.toml
+        [directories]
+        WorkItem = "workitems"   # override default subdir under context/
 
-If the file is missing or unparseable, defaults apply.
+        [sharding.LogEntry]
+        scheme  = "date"
+        pattern = "context/logs/{year}/{month}/"
+
+Legacy fallback: if skill config files are absent, settings are read
+from the [context] section of aibox.toml. Defaults apply if neither
+source is present.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from functools import lru_cache
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -32,38 +37,91 @@ from . import paths
 class Config:
     id_format: str = "word"
     id_slug: bool = False
-    directory_overrides: dict[str, str] | None = None
-    sharding: dict[str, dict[str, Any]] | None = None
+    directory_overrides: dict[str, str] = field(default_factory=dict)
+    sharding: dict[str, dict[str, Any]] = field(default_factory=dict)
+    index_path: str | None = None
+    context_budget: dict[str, Any] = field(default_factory=dict)
+    grooming_rules: dict[str, Any] = field(default_factory=dict)
 
     def directory_for(self, kind: str) -> str | None:
-        return (self.directory_overrides or {}).get(kind)
+        return self.directory_overrides.get(kind)
 
 
-@lru_cache(maxsize=4)
-def load_config(root: Path | None = None) -> Config:
-    """Load processkit settings from the project's aibox.toml.
-
-    Cached per-root. Returns defaults if the file is missing.
-    """
-    root = root or paths.find_project_root()
-    toml_path = root / "aibox.toml"
-    if not toml_path.is_file():
-        return Config()
+def _load_toml(path: Path) -> dict | None:
+    """Read and parse a TOML file. Returns None on any error."""
+    if not path.is_file():
+        return None
     try:
         import tomllib  # py 3.11+
     except ModuleNotFoundError:
         try:
             import tomli as tomllib  # type: ignore
         except ModuleNotFoundError:
-            return Config()
+            return None
     try:
-        data = tomllib.loads(toml_path.read_text())
+        return tomllib.loads(path.read_text())
     except Exception:
-        return Config()
-    ctx = data.get("context", {}) if isinstance(data, dict) else {}
-    return Config(
-        id_format=ctx.get("id_format", "word"),
-        id_slug=bool(ctx.get("id_slug", False)),
-        directory_overrides=ctx.get("directories"),
-        sharding=ctx.get("sharding"),
+        return None
+
+
+def _skill_config_dir(root: Path, skill: str) -> Path:
+    return root / "context" / "skills" / skill / "config"
+
+
+def load_config(root: Path | None = None) -> Config:
+    """Load processkit settings from per-skill config files.
+
+    Not cached — reads from disk on every call so that edits take
+    effect immediately without restarting MCP servers.
+
+    Search order per setting group:
+    1. context/skills/<skill>/config/settings.toml  (preferred)
+    2. aibox.toml [context] section                 (legacy fallback)
+    3. Built-in defaults
+    """
+    root = root or paths.find_project_root()
+
+    # ── ID settings (id-management skill) ────────────────────────────────
+    id_cfg = _load_toml(_skill_config_dir(root, "id-management") / "settings.toml")
+    if id_cfg is not None:
+        id_format = id_cfg.get("format", "word")
+        id_slug = bool(id_cfg.get("slug", False))
+    else:
+        id_format, id_slug = _legacy_id_settings(root)
+
+    # ── Index/directory settings (index-management skill) ─────────────────
+    idx_cfg = _load_toml(
+        _skill_config_dir(root, "index-management") / "settings.toml"
     )
+    if idx_cfg is not None:
+        directory_overrides = idx_cfg.get("directories", {})
+        sharding = idx_cfg.get("sharding", {})
+        index_path = idx_cfg.get("index", {}).get("path")
+    else:
+        directory_overrides, sharding, index_path = _legacy_index_settings(root)
+
+    return Config(
+        id_format=id_format,
+        id_slug=id_slug,
+        directory_overrides=directory_overrides,
+        sharding=sharding,
+        index_path=index_path,
+    )
+
+
+# ── Legacy fallback readers (aibox.toml [context]) ────────────────────────────
+
+def _legacy_id_settings(root: Path) -> tuple[str, bool]:
+    data = _load_toml(root / "aibox.toml")
+    if data is None:
+        return "word", False
+    ctx = data.get("context", {})
+    return ctx.get("id_format", "word"), bool(ctx.get("id_slug", False))
+
+
+def _legacy_index_settings(root: Path) -> tuple[dict, dict, str | None]:
+    data = _load_toml(root / "aibox.toml")
+    if data is None:
+        return {}, {}, None
+    ctx = data.get("context", {})
+    return ctx.get("directories", {}), ctx.get("sharding", {}), None

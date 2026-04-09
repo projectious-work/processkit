@@ -1,0 +1,88 @@
+{
+  "mcpServers": {
+    "processkit-actor-profile": {
+      "args": [
+        "run",
+        "context/skills/actor-profile/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-binding-management": {
+      "args": [
+        "run",
+        "context/skills/binding-management/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-decision-record": {
+      "args": [
+        "run",
+        "context/skills/decision-record/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-discussion-management": {
+      "args": [
+        "run",
+        "context/skills/discussion-management/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-event-log": {
+      "args": [
+        "run",
+        "context/skills/event-log/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-gate-management": {
+      "args": [
+        "run",
+        "context/skills/gate-management/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-id-management": {
+      "args": [
+        "run",
+        "context/skills/id-management/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-index-management": {
+      "args": [
+        "run",
+        "context/skills/index-management/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-model-recommender": {
+      "args": [
+        "run",
+        "context/skills/model-recommender/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-role-management": {
+      "args": [
+        "run",
+        "context/skills/role-management/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-scope-management": {
+      "args": [
+        "run",
+        "context/skills/scope-management/mcp/server.py"
+      ],
+      "command": "uv"
+    },
+    "processkit-workitem-management": {
+      "args": [
+        "run",
+        "context/skills/workitem-management/mcp/server.py"
+      ],
+      "command": "uv"
+    }
+  }
+}

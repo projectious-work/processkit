@@ -21,7 +21,7 @@ TODO — one line. Example: "12 workitems eligible for archive, 3 unused skills,
 ## Workitems eligible for archive
 
 (WorkItems in terminal state for >30 days. Default rule, override in
-[context.grooming.rules] in aibox.toml.)
+[context.grooming.rules] in processkit.toml.)
 
 | ID | Title | State | Last touched |
 |---|---|---|---|

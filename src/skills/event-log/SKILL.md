@@ -219,7 +219,7 @@ details:
 
 ### Directory layout
 
-Default: `context/logs/` flat. Projects may shard by date in `aibox.toml`:
+Default: `context/logs/` flat. Projects may shard by date in `processkit.toml`:
 
 ```toml
 [context.sharding.LogEntry]
@@ -233,7 +233,7 @@ layout differs.
 ### File naming
 
 Default: `LOG-<generated-id>.md` where the ID format follows the project's
-`aibox.toml` setting. With date-sharded storage, consider including a time
+`processkit.toml` setting. With date-sharded storage, consider including a time
 prefix in the ID (`LOG-2026-04-06T10-30-00-calm-owl.md`) so chronological
 sort matches filesystem order.
 

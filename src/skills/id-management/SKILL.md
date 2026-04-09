@@ -54,7 +54,7 @@ Every processkit entity ID has the shape `<PREFIX>-<body>`:
 | Prefix    | `BACK`           | Determined by the primitive kind (not configurable).   |
 | Body      | `calm-fox`       | Generated from `id_format` × `id_slug` configuration.  |
 
-The body has two independent axes (set in `aibox.toml`):
+The body has two independent axes (set in `processkit.toml`):
 
 | `id_format` | `id_slug` | Body shape                          |
 |-------------|-----------|-------------------------------------|

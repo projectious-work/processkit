@@ -85,10 +85,10 @@ def run():
         os.chdir(workdir)
 
         # Clear caches in lib modules so they pick up the new project
+        # (config.load_config is no longer cached — reads disk on every call)
         from processkit import paths, schema, state_machine, config, index
         schema.load_schema.cache_clear()
         state_machine.load.cache_clear()
-        config.load_config.cache_clear()
 
         # Import servers
         wi = import_server("workitem-management")

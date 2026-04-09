@@ -36,7 +36,7 @@ so consumers know what to install.
 
 ## Configuration
 
-Set in the consumer project's `aibox.toml`:
+Set in the consumer project's `processkit.toml`:
 
 ```toml
 [context]

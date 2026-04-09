@@ -16,7 +16,7 @@ the MCP servers — but it has no SKILL.md and is not in any package tier.
 | `schema.py`     | Load schemas from `src/primitives/schemas/`, validate spec       |
 | `state_machine.py` | Load + validate state machine transitions                     |
 | `index.py`      | SQLite indexer used by the index-management MCP server           |
-| `config.py`     | Read aibox.toml settings (id_format, sharding, directories)      |
+| `config.py`     | Read processkit.toml settings (ids, sharding, directories, …)    |
 
 ## Import strategy
 

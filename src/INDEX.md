@@ -130,6 +130,10 @@ Class B names currently used:
 - `{{CODE_STYLE_NOTES}}` — non-linter conventions
 - `{{PR_CONVENTIONS}}` — PR review and merge process
 - `{{NONOBVIOUS_GOTCHAS}}` — things not visible from the code
+- `{{PROCESSKIT_PREFS}}` — processkit runtime preferences (ID format,
+  directory overrides, sharding). Agent edits per-skill config files
+  under `context/skills/<name>/config/settings.toml` and summarises
+  choices here.
 
 ### Class C — discoverable + owner-confirmable (processkit's vocabulary)
 

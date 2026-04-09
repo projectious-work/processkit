@@ -40,7 +40,7 @@ how the project keeps its session context lean over time.
 
 Triggered by:
 - An explicit user request: "groom the context", "let's clean up"
-- A cadence configured in `aibox.toml`:
+- A cadence configured in `processkit.toml`:
   ```toml
   [context.grooming]
   cadence = "weekly"     # weekly | monthly | quarterly | never
@@ -127,7 +127,7 @@ These skills have not been invoked in any session for 60+ days:
 | Skill in `context/skills/` not invoked in any session for 60 days | Propose disabling (move to `context/skills/.disabled/`) |
 | Migration in `applied/` older than 1 year | Archive (rare — kept for historical reference) |
 
-These are defaults. Projects can override in `aibox.toml`:
+These are defaults. Projects can override in `processkit.toml`:
 
 ```toml
 [context.grooming.rules]
@@ -146,7 +146,7 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Grooming the current quarter's standups or in-progress work.** The ruleset explicitly skips anything in-progress or less than 30 days old. Proposing to archive a standup from last week, or a workitem currently being worked on, produces a report that damages trust in the grooming process. Always apply the age and status filters strictly.
 - **Summarizing standups without preserving specific work item references.** A quarterly summary that replaces eight individual standup entries must retain all workitem IDs, decision references, and blocker resolutions mentioned in the originals. A summary that says "worked on various items" loses the audit trail. Summarizations are compressions, not erasures.
 - **Running grooming too frequently, making every report feel like noise.** If the user is asked to approve a grooming report every session, they will start ignoring or dismissing them reflexively. Respect the configured cadence. If the user has declined grooming three sessions in a row, offer to change the cadence rather than repeating the offer.
-- **Treating the default ruleset as mandatory even when the project has overrides.** The `aibox.toml` configuration can change thresholds — a project may archive workitems after 60 days instead of 30, or may never disable skills. Always read the configuration before applying any rule, and apply the project-specific values.
+- **Treating the default ruleset as mandatory even when the project has overrides.** The `processkit.toml` configuration can change thresholds — a project may archive workitems after 60 days instead of 30, or may never disable skills. Always read the configuration before applying any rule, and apply the project-specific values.
 - **Not recording the grooming event in the event log.** Every grooming session that results in file moves must be recorded as a `LogEntry` with `event_type: context.groomed`, listing which items were moved and when. Without this, the next grooming pass cannot determine when the last grooming ran.
 
 ## Full reference
@@ -215,7 +215,7 @@ agent should propose:
 ### Relationship to context budget (in `agent-management`)
 
 Grooming reduces the LIVE size of the context. The `[context.budget]`
-section in `aibox.toml` (documented in `agent-management/SKILL.md`) tells
+section in `processkit.toml` (documented in `agent-management/SKILL.md`) tells
 the agent how much context to load per session. The two work together:
 grooming makes the corpus smaller; budget tells the agent how to load
 selectively.

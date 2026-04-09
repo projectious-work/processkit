@@ -5,7 +5,7 @@
 # =============================================================================
 
 [aibox]
-version = "0.16.2"             # Set by aibox — do not edit manually
+version = "0.17.3"             # Set by aibox — do not edit manually
 base    = "debian"             # Base image flavor. Options: debian
 
 # =============================================================================
@@ -47,33 +47,39 @@ packages = ["product"]
 # [addons] — language runtimes and tool bundles
 # =============================================================================
 # Each addon installs a tool set into the container at build time.
+# Selected addons land here pre-populated with default-enabled tools at
+# their default versions; edit the version strings to switch.
+#
+# Version strings:
+#   "1.2.3"  — pin to a specific version
+#   "latest" — always install the newest version (skips pinning)
+#   ""       — use the addon's built-in default version
+#
 # Run `aibox addon list` to see all available addons.
-# Run `aibox addon info <name>` for tool details and supported versions.
+# Run `aibox addon info <name>` to see every supported tool/version per addon.
 #
-# Examples (uncomment and adjust versions as needed):
-# [addons.python.tools]
-# python = { version = "3.13" }     # CPython interpreter
-# uv     = { version = "0.7" }      # Fast Python package manager
-#
-# [addons.rust.tools]
-# rust = { version = "stable" }     # Rust toolchain via rustup (stable/beta/nightly)
-#
-# [addons.node.tools]
-# node = { version = "22" }         # Node.js LTS
+# To add an addon after init, edit this file and re-run `aibox sync`,
+# or use `aibox addon add <name>` (which also pulls in transitive `requires`).
 
 [addons.ai-claude.tools]
 
 [addons.docs-docusaurus.tools]
+docusaurus = { version = "3" }
 
 [addons.node.tools]
+node = { version = "22" }
+pnpm = { version = "10" }
 
 [addons.python.tools]
+python = { version = "3.13" }
+uv = { version = "0.7" }
 
 # =============================================================================
 # [ai] — AI coding assistant providers
 # =============================================================================
 # Each provider listed here is automatically installed as an addon.
-# Options: claude, aider, gemini, mistral
+# Options: claude, aider, gemini, mistral, codex, copilot, continue
+# (cursor is MCP-registration only — host-side IDE, no container CLI)
 [ai]
 providers = ["claude"]
 
@@ -90,7 +96,7 @@ providers = ["claude"]
 # consume processkit content.
 [processkit]
 source   = "https://github.com/projectious-work/processkit.git"
-version  = "v0.5.1"
+version  = "v0.7.0"
 src_path = "src"
 # branch = "main"   # optional — for tracking a moving branch (discouraged)
 #
@@ -125,7 +131,7 @@ provider_mode = "pointer"
 theme  = "nord"
 # Starship prompt preset.
 # Options: default | plain | minimal | nerd-font | pastel | bracketed | arrow
-prompt = "default"
+prompt = "arrow"
 # Default zellij layout. Options: dev | focus | cowork | cowork-swap | browse | ai
 layout = "ai"
 

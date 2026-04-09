@@ -1,0 +1,8 @@
+# id-management configuration
+# Edited by the agent during first-time setup (see AGENTS.md).
+# Changes take effect immediately — no MCP server restart required.
+
+format = "word"   # word (e.g. BACK-calm-fox) | uuid (BACK-550e8400)
+slug   = true     # true  → append a content-derived slug from the entity title
+                  #           e.g. BACK-calm-fox-fts5-full-text-search
+                  # false → word/uuid pair only

@@ -112,6 +112,39 @@ have no shared ground to work from.
      should know before opening a PR. -->
 {{PR_CONVENTIONS}}
 
+## processkit preferences
+
+Runtime configuration lives in per-skill config files under
+`context/skills/<name>/config/settings.toml`. The agent edits these
+directly; MCP servers read them on every call — no restart needed.
+
+<!-- PLACEHOLDER:PROCESSKIT_PREFS class=B
+     Ask the owner the following questions, then edit the relevant
+     skill config files directly with their answers:
+
+     1. ID format — "word" (e.g. BACK-calm-fox) or "uuid"?
+        Edit: context/skills/id-management/config/settings.toml
+        Key: format = "word" | "uuid"
+
+     2. ID slug — append a content-derived slug from the entity title?
+        (e.g. BACK-calm-fox-add-fts5-search)
+        Edit: context/skills/id-management/config/settings.toml
+        Key: slug = true | false
+
+     3. Directory overrides — any custom subdirectory names under context/?
+        (e.g. rename "workitems" to "tasks")
+        Edit: context/skills/index-management/config/settings.toml
+        Section: [directories]
+
+     4. Log sharding — date-based subdirectories for log entries?
+        Edit: context/skills/index-management/config/settings.toml
+        Section: [sharding.LogEntry]
+
+     After editing the config files, replace this block with a short
+     bullet list of the choices made (see processkit's own AGENTS.md
+     for an example). -->
+{{PROCESSKIT_PREFS}}
+
 ---
 
 ## How this project is organized: processkit content

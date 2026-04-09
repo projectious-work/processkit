@@ -26,7 +26,7 @@ rebuildable from source files.
 From a processkit checkout:
 
 ```bash
-cd /path/to/your/project   # contains aibox.toml and context/
+cd /path/to/your/project   # contains AGENTS.md and context/
 uv run /path/to/processkit/src/skills/index-management/mcp/server.py
 ```
 
@@ -50,8 +50,8 @@ STDIO. Subsequent runs are near-instant due to uv's environment cache.
 Override the database path:
 
 ```toml
-# aibox.toml
-[context.index]
+# processkit.toml
+[index]
 path = "context/.cache/processkit/index.sqlite"
 ```
 

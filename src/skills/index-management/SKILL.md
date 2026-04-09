@@ -133,7 +133,7 @@ process — they communicate by sharing the same SQLite database file
 
 The index database path is configurable via:
 
-- `aibox.toml` `[context.index] path = "..."` (relative to project root)
+- `processkit.toml` `[index] path = "..."` (relative to project root)
 - The `PROCESSKIT_INDEX_DB` environment variable
 - Default: `context/.cache/processkit/index.sqlite` (gitignored cache)
 

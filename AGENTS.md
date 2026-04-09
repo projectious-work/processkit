@@ -1,130 +1,244 @@
-# AGENTS.md — {{PROJECT_NAME}}
+# AGENTS.md
 
-This is the canonical entry point for any AI agent (or human) working on
-this project. Agent harnesses that auto-load a provider-specific file
-(`CLAUDE.md`, `CODEX.md`, `.cursor/rules`, etc.) should treat that file
-as a **thin pointer** to this one.
+This file is the canonical, provider-neutral entry point for any AI coding
+agent (or human collaborator) working on **processkit**. It follows
+the [agents.md](https://agents.md) open standard.
 
-This template ships with processkit under `src/scaffolding/AGENTS.md`.
-Replace `{{PROJECT_NAME}}` and the project-specific notes section, then
-keep the rest as-is — it encodes the always-on rules processkit-using
-projects rely on.
+If your harness auto-loads a provider-specific file (`CLAUDE.md`,
+`CODEX.md`, `.cursor/rules`, …), that file should be a thin pointer to
+this one. Edit **this** file, not the pointers.
 
-## Read these first
+## About this project
 
-If you are new to this project, in this exact order:
+processkit is a versioned library of **process primitives, skills, and
+MCP servers** for AI-assisted work environments. It ships:
 
-1. **`README.md`** — what {{PROJECT_NAME}} is and why
-2. **`context/HANDOVER.md`** — current state, recent changes, next steps
-3. **This file (`AGENTS.md`)** — the always-on rules below
-4. **`context/BACKLOG.md`** — what's deferred, what's next
+- **19 process primitives** — WorkItem, DecisionRecord, LogEntry, Actor,
+  Role, Scope, Gate, Discussion, Binding, Metric, Migration, and more —
+  each with a JSON Schema, a default state machine, and an MCP server.
+- **128+ skill packages** — multi-artifact bundles (SKILL.md + examples
+  + templates + optional MCP server) covering process orchestration,
+  software engineering, data science, product, design, and more.
+  Organised into five installable package tiers: `minimal`, `managed`,
+  `software`, `research`, `product`.
+- **Process templates** — code-review, bug-fix, feature-development,
+  release — as formal `kind: Process` entities.
+- **A shared Python library** (`src/lib/processkit/`) used by all MCP
+  servers for entity I/O, schema validation, state-machine enforcement,
+  and SQLite indexing.
 
-After those four, dig into specific files as the work demands.
+processkit is itself developed using
+[aibox](https://github.com/projectious-work/aibox) — its devcontainer is
+generated and managed by aibox (dogfooding). aibox is a companion project
+that provides containerised AI development environments and consumes
+processkit as its content layer, installing selected package tiers into
+consumer projects. The two sides coordinate via semver version pinning.
 
-## Always-on rules
+**Why it exists.** processkit is the lowest common denominator for
+building process infrastructure in any AI-assisted environment. It is not
+tied to any specific methodology, tool, or platform: its primitives
+compose into agile workflows, waterfall projects, research pipelines,
+non-software business processes, or anything in between. A team can use
+processkit to replace a task tracker (Jira), a knowledge base (Notion,
+Obsidian), or a lightweight BPM tool — or to build all three from a
+single, forkable source of truth.
 
-### Use the index, not filesystem walks
+The library is deliberately forkable: organisations can maintain a
+private fork with custom skills and primitives, and that fork remains
+consumable by any downstream tool (such as aibox) without changes to the
+consumer. processkit also aims to be a curated, trusted catalog of
+refined skills and MCP servers — providing as complete a foundation as is
+practical, so teams spend time on their domain rather than rebuilding
+common tooling.
 
-This project uses processkit's `index-management` MCP server to discover
-entities (work items, decisions, log entries, bindings, etc.). Call
-`query_entities(kind=..., state=...)` instead of running `ls
-context/workitems/` or grepping the filesystem. The index is faster,
-context-cheaper, and reflects the canonical state.
+## Setup
 
-### Lazy-load skills and references
+```sh
+# No compilation step — content repo.
+# MCP servers are self-contained PEP 723 scripts; uv resolves deps on
+# first run.
+uv run scripts/smoke-test-servers.py --help   # verify uv + Python ≥ 3.10
 
-Do not slurp `context/skills/`, `context/workitems/`, or any large
-context directory at session start. Read `INDEX.md` files first (every
-context directory should have one) and load specific files only when the
-current task needs them. This is the three-level principle: start at
-Level 1 (intro), drop to Level 2 (workflows) when the task is more
-specific, drop to Level 3 (full reference) only for edge cases.
+# Run tests
+uv run scripts/smoke-test-servers.py
 
-### Respect the configured context budget
-
-Projects can declare a context budget in their processkit configuration
-file (the location depends on how processkit was installed — see your
-project's setup notes). The budget specifies which files are always
-loaded vs. loaded on demand:
-
-```toml
-[context.budget]
-target_tokens = 8000          # aim NOT to exceed this on initial load
-max_tokens = 16000            # hard ceiling — must lazy-load above this
-
-[context.budget.always_load]
-files = [
-  "AGENTS.md",
-  "context/HANDOVER.md",
-  "context/INDEX.md",
-]
-
-[context.budget.on_demand]
-patterns = [
-  "context/skills/**",
-  "context/workitems/**",
-  "context/logs/**",
-]
+# Lint (structural validation only — no automated prose-width tool yet)
+# aibox lint                     # checks apiVersion / kind / metadata.id
+# 80-column prose wrap is author-enforced (see .editorconfig)
 ```
 
-If you're approaching the budget on a request, drop into lazy mode: read
-INDEX files, then targeted files only.
+## Code style and conventions
 
-### Write through the MCP servers
+- **80-column hard wrap** on Markdown prose, Python, and YAML.
+  Exemptions: table rows, fenced code blocks, URLs, YAML frontmatter,
+  TOML.
+- **YAML:** 2-space indent, no tabs; quote strings only when required.
+- **Python:** PEP 8, type hints in public APIs,
+  `from __future__ import annotations`. Match `src/lib/processkit/`
+  style.
+- **Skill descriptions:** one-sentence imperative (`"Manage X."`) — not
+  narrative.
+- **Commit messages:** follow Conventional Commits — `feat:`, `fix:`,
+  `refactor:`, `docs:`, `test:`, `chore:`, `ci:`. See the `git-workflow`
+  skill for the full convention. Never use `--no-verify`.
+- **Rule — `src/` vs everything else:** everything under `src/` is
+  shipped to consumers; everything outside is about this repo. Never
+  mix them.
+- **Rule — two meanings of "skills/processes":** `src/skills/` =
+  shipped content; `context/skills/` = skills for the agent working
+  *on* this repo. Do not conflate.
 
-When creating, updating, or transitioning entities, use the relevant MCP
-server tools (e.g. `create_workitem`, `transition_workitem`,
-`record_decision`). Hand-editing entity files works, but bypasses the
-index and the state-machine validation, so the index can go stale and
-invalid transitions can slip through. Reserve hand edits for situations
-the MCP tools genuinely don't cover.
+## Pull requests
 
-## Project structure (typical)
+Trunk-based development — `main` is the only long-lived branch; commit
+directly to `main` for day-to-day work. Releases are semver git tags
+(`v0.x.y`).
 
-A processkit-using project has approximately this layout:
+**Release checklist:**
+
+1. Add "What changed in vX.Y.Z" entry to the context handover /
+   CHANGELOG
+2. Update backlog Done section
+3. Update docs-site for any user-visible changes
+4. `uv run scripts/smoke-test-servers.py` — must be green
+5. `scripts/stamp-provenance.sh vX.Y.Z` — regenerates
+   `src/PROVENANCE.toml`
+6. Commit, then `git tag -a vX.Y.Z -m "..."`
+7. `git push origin main && git push origin vX.Y.Z`
+8. `scripts/build-release-tarball.sh vX.Y.Z` →
+   `gh release upload` the tarball + sha256
+9. `cd docs-site && npm run deploy` *(first public deploy is an open
+   TODO — do NOT push to `gh-pages` directly)*
+
+---
+
+## How this project is organized: processkit content
+
+This project uses **[processkit](https://github.com/projectious-work/processkit.git)**,
+pinned at `v0.7.0`, package tier(s) `product`, to manage process content
+(skills, primitives, processes, schemas). All processkit-installed
+material lives under `context/`:
 
 ```
-{{PROJECT_NAME}}/
-├── AGENTS.md               ← this file
-├── README.md
-├── context/                ← project-management artifacts
-│   ├── HANDOVER.md         ← per-release agent briefing
-│   ├── BACKLOG.md          ← deferred work
-│   ├── INDEX.md            ← what lives in context/
-│   ├── workitems/          ← WorkItem entities
-│   ├── decisions/          ← DecisionRecord entities
-│   ├── logs/               ← LogEntry entities (event log)
-│   └── ...                 ← other entity-kind directories
-└── ...                     ← project-specific source / docs / etc.
+context/
+├── skills/         ← skill packages (SKILL.md, mcp/, references/, templates/)
+├── schemas/        ← JSON schemas for the core primitives
+├── state-machines/ ← state-machine definitions
+├── processes/      ← process definitions (bug-fix, code-review, release, …)
+└── templates/      ← immutable upstream mirror used as a diff baseline
 ```
 
-The exact directories depend on which processkit packages and skills are
-installed. Run `query_entities` against the index to see what kinds are
-in use.
+`context/templates/processkit/<version>/` is the verbatim upstream
+snapshot. **Do not edit it.** Edit the live files at
+`context/skills/<name>/SKILL.md`, `context/processes/<name>.md`, etc.,
+directly. Local edits are detected at the next sync via three-way diff
+against the templates mirror.
+
+Every `context/` subdirectory has an `INDEX.md`. **Read those first** —
+do not slurp `context/skills/` or any large directory at session start.
+Load specific files only when the task demands it. This is the
+three-level principle: start at Level 1 (intro), drop to Level 2
+(workflows) when the task narrows, drop to Level 3 (full reference) for
+edge cases.
+
+## Working with entities
+
+processkit models project state as **entities** — work items, decision
+records, discussions, log entries, scopes, gates, bindings, and so on.
+Each entity is a YAML file under `context/<kind>s/`, created lazily on
+first use.
+
+For each entity kind, processkit ships:
+
+- **A schema** at `context/schemas/<kind>.yaml`
+- **A state machine** at `context/state-machines/<kind>.yaml`
+- **An MCP server** at `context/skills/<kind>-management/mcp/server.py`
+
+### Read entities through the index
+
+`context/skills/index-management/` exposes a SQLite-backed index over
+every entity in `context/`. Call its tools — `query_entities(kind=…,
+state=…)`, `get_entity(id)`, `search_entities(text)` — instead of `ls`
+/ `grep` / filesystem walks. The index is faster, context-cheaper, and
+reflects the canonical state.
+
+### Write entities through the per-kind MCP servers
+
+Use the relevant MCP tool to create or transition entities —
+`create_workitem` and `transition_workitem` from `workitem-management`,
+`record_decision` from `decision-record`, and so on. Hand-editing entity
+files works but bypasses index updates and state-machine validation, so
+the index can drift and invalid transitions can slip through. Reserve
+hand edits for cases the MCP tools genuinely don't cover.
+
+### Wiring the MCP servers into your harness
+
+Each MCP-bearing skill ships its own `mcp/mcp-config.json` declaring how
+to launch the server (typically `uv run …/server.py`). Agent harnesses
+(Claude Code, Codex CLI, Cursor, …) discover MCP servers by reading a
+single config file at startup, so the per-skill configs need to be
+**merged** into the one file your harness reads, and that file needs to
+live at the path your harness expects.
+
+If this project was set up by an installer (e.g. an aibox-managed
+devcontainer), the installer is responsible for that wiring — the merged
+config is generated for you and you should not need to touch it. If
+processkit was installed manually, the project owner is responsible for
+merging the per-skill blocks and placing the result at the
+harness-specific path themselves.
+
+Either way, MCP-bearing skills require **`uv`** and **Python ≥ 3.10** on
+PATH inside the environment where the harness runs the servers — each
+`server.py` is a self-contained PEP 723 script and `uv run` resolves its
+dependencies on first launch.
+
+## AI agents on this project
+
+Configured providers: **claude**. Other agents may be working on this
+project — coordinate through the entity layer (`workitem-management`,
+`event-log`, `discussion-management`) rather than assuming you are alone.
+
+## processkit preferences
+
+Runtime configuration lives in per-skill config files under
+`context/skills/<name>/config/settings.toml`. The agent edits these
+directly; MCP servers read them on every call — no restart needed.
+
+- **ID format** (`context/skills/id-management/config/settings.toml`):
+  `word` pair + content-derived slug from the title.
+  Example: `BACK-calm-fox-fts5-full-text-search`.
+- **Directory layout** (`context/skills/index-management/config/settings.toml`):
+  processkit defaults (`workitems/`, `logs/`, …).
+- **Log sharding:** none (flat `context/logs/`).
+
+---
 
 ## Project-specific notes
 
-<!--
-Add anything specific to {{PROJECT_NAME}} here:
-- Bootstrap version pinning notes
-- Special directory conventions
-- Out-of-scope reminders
-- Project-specific MCP servers
-- Deployment quirks
+- **The lib is NOT a published package.** `src/lib/processkit/` is
+  sys.path-injected via `_find_lib()`. Never list it as a PEP 723
+  dependency.
+- **`paths.find_project_root()` walks up from `cwd`.** Smoke tests call
+  `os.chdir(workdir)` before invoking servers. Calling server functions
+  directly without setting cwd resolves paths against the wrong project.
+- **`lru_cache` on schema/state-machine loaders.** `state_machine.load`
+  and `schema.load_schema` cache their results. In tests spanning
+  multiple temp projects, call `.cache_clear()` between them.
+- **`load_schema` signature is cache-sensitive.** The `schemas_dir`
+  parameter must be hashable (a `Path` or `None`). Do not pass a `dict`
+  or list.
+- **Index freshness.** `index.existing_ids(db, kind)` assumes the index
+  is current. After any out-of-band file edits (not via MCP tools), run
+  `reindex()`.
+- **`index_db_path()` creates directories as a side effect.** Calling it
+  just to inspect the path will create `context/.cache/processkit/`.
+- **Never edit `.devcontainer/Dockerfile` directly.** It is gitignored
+  and regenerated by `aibox sync`. Add custom layers to
+  `.devcontainer/Dockerfile.local` instead.
+- **`apiVersion` changes are breaking.** `processkit.projectious.work/v1`
+  is locked through v1.x. Bumping to `v2` triggers a migration cycle —
+  do not bump without committing to the full migration story.
 
-Keep this section short — anything longer than a few paragraphs belongs
-in context/HANDOVER.md.
--->
+---
 
-(none yet — fill in as the project grows)
-
-## Where to find more
-
-| Question | Where |
-|---|---|
-| What does this project do? | `README.md` |
-| Current state and recent changes | `context/HANDOVER.md` |
-| What's deferred / prioritized | `context/BACKLOG.md` |
-| Entity file format | the processkit `primitives/FORMAT.md` shipped with your install |
-| Skill format | the processkit `skills/FORMAT.md` shipped with your install |
-| What MCP tools are available | the `mcp/README.md` of each installed skill |
+<sub>Scaffolded by processkit `v0.7.0` on `2026-04-09`. Re-rendered on each installer sync.</sub>

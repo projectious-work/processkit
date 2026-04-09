@@ -1,10 +1,10 @@
 """Locate the project root, processkit checkout, and per-kind directories.
 
-Project layout (consumer side, post aibox-handover-v2):
+Project layout (consumer side):
 
     <project-root>/
-      aibox.toml
-      aibox.lock
+      AGENTS.md            ← provider-neutral root marker (preferred)
+      aibox.toml           ← aibox installer config (accepted as fallback marker)
       context/
         skills/<name>/...           ← installed processkit skills
         skills/_lib/processkit/...  ← installed processkit lib
@@ -19,7 +19,7 @@ Processkit checkout layout (this repo, when running servers from
 a checkout):
 
     <processkit-root>/
-      aibox.toml
+      AGENTS.md
       src/
         primitives/
         skills/
@@ -27,10 +27,9 @@ a checkout):
       context/
 
 Servers may be invoked in either context. The functions here resolve
-paths conservatively: walk upward from `cwd` looking for an `aibox.toml`
-file, treat that directory as the project root, and resolve `context/`
-relative to it. If no aibox.toml is found, fall back to the current
-directory.
+paths by walking upward from cwd looking for a project root marker.
+AGENTS.md is the preferred marker; aibox.toml is accepted as a
+fallback for projects that have not yet adopted AGENTS.md.
 """
 from __future__ import annotations
 
@@ -39,15 +38,17 @@ from pathlib import Path
 
 from . import DEFAULT_DIRS
 
-PROJECT_MARKER = "aibox.toml"
+# Markers tried in order. First match wins.
+_PROJECT_MARKERS = ("AGENTS.md", "aibox.toml")
 
 
 def find_project_root(start: Path | str | None = None) -> Path:
-    """Walk upward from ``start`` (default: cwd) looking for ``aibox.toml``.
+    """Walk upward from ``start`` (default: cwd) looking for a project marker.
 
-    Returns the directory containing the marker. If none is found, returns
-    the starting directory itself (so the caller can still proceed with
-    sensible defaults rather than crashing).
+    Tries AGENTS.md, processkit.toml, and aibox.toml in that order.
+    Returns the directory containing the first marker found. If none is
+    found, returns the starting directory so callers can still proceed
+    with sensible defaults rather than crashing.
     """
     here = Path(start) if start else Path.cwd()
     here = here.resolve()
@@ -55,8 +56,9 @@ def find_project_root(start: Path | str | None = None) -> Path:
         here = here.parent
     candidate = here
     while True:
-        if (candidate / PROJECT_MARKER).is_file():
-            return candidate
+        for marker in _PROJECT_MARKERS:
+            if (candidate / marker).is_file():
+                return candidate
         if candidate.parent == candidate:
             return here
         candidate = candidate.parent
@@ -82,14 +84,16 @@ def find_processkit_root(server_path: Path | str) -> Path | None:
 def context_dir(kind: str, root: Path | str | None = None) -> Path:
     """Return the directory under ``context/`` where entities of ``kind`` live.
 
-    Reads `[context.directories.<kind>]` from aibox.toml if present;
-    otherwise uses the default subdirectory from ``DEFAULT_DIRS``.
+    Reads directory overrides from processkit.toml (or aibox.toml legacy)
+    via config.load_config(); otherwise uses the default subdirectory from
+    DEFAULT_DIRS.
     """
+    from . import config  # local import to avoid circular dependency at module level
     root = Path(root) if root else find_project_root()
-    overrides = _read_directory_overrides(root)
-    sub = overrides.get(kind, DEFAULT_DIRS.get(kind, kind.lower()))
-    target = root / "context" / sub
-    return target
+    cfg = config.load_config(root)
+    override = cfg.directory_for(kind)
+    sub = override if override else DEFAULT_DIRS.get(kind, kind.lower())
+    return root / "context" / sub
 
 
 def primitive_schemas_dir(root: Path | str | None = None) -> Path | None:
@@ -128,34 +132,21 @@ def state_machines_dir(root: Path | str | None = None) -> Path | None:
 
 
 def index_db_path(root: Path | str | None = None) -> Path:
-    """Path to the SQLite index database (gitignored runtime cache)."""
+    """Path to the SQLite index database (gitignored runtime cache).
+
+    Reads an override from processkit.toml ``[index] path`` if set.
+    Otherwise uses the default ``context/.cache/processkit/index.sqlite``.
+    Creates the parent directory as a side effect.
+    """
+    from . import config  # local import to avoid circular at module level
     root = Path(root) if root else find_project_root()
-    db_dir = root / "context" / ".cache" / "processkit"
-    db_dir.mkdir(parents=True, exist_ok=True)
-    return db_dir / "index.sqlite"
-
-
-def _read_directory_overrides(root: Path) -> dict[str, str]:
-    toml_path = root / PROJECT_MARKER
-    if not toml_path.is_file():
-        return {}
-    try:
-        import tomllib  # py 3.11+
-    except ModuleNotFoundError:
-        try:
-            import tomli as tomllib  # type: ignore
-        except ModuleNotFoundError:
-            return {}
-    try:
-        data = tomllib.loads(toml_path.read_text())
-    except Exception:
-        return {}
-    return (
-        data.get("context", {})
-        .get("directories", {})
-        if isinstance(data, dict)
-        else {}
-    )
+    cfg = config.load_config(root)
+    if cfg.index_path:
+        db = root / cfg.index_path
+    else:
+        db = root / "context" / ".cache" / "processkit" / "index.sqlite"
+    db.parent.mkdir(parents=True, exist_ok=True)
+    return db
 
 
 def env_override(name: str) -> Path | None:
