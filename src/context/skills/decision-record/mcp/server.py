@@ -73,7 +73,7 @@ def _load_decision(root: Path, id: str) -> entity.Entity | None:
         return entity.load(candidate)
     db = index.open_db()
     try:
-        row = index.get_entity(db, id)
+        row, _ = index.resolve_entity(db, id, kind="DecisionRecord")
         if row and row.get("path"):
             return entity.load(row["path"])
     finally:
@@ -226,15 +226,21 @@ def query_decisions(state: str | None = None, limit: int = 50) -> list[dict]:
     idempotentHint=True,
     openWorldHint=False,
 ))
-def get_decision(id: str) -> dict | None:
-    """Fetch a DecisionRecord by ID."""
+def get_decision(id: str) -> dict:
+    """Fetch a DecisionRecord by ID.
+
+    Accepts a full ID, a prefix (missing slug), or a bare word-pair.
+    Returns ``{"error": "..."}`` if not found or ambiguous.
+    """
     db = index.open_db()
     try:
-        row = index.get_entity(db, id)
+        row, candidates = index.resolve_entity(db, id, kind="DecisionRecord")
     finally:
         db.close()
-    if not row or row.get("kind") != "DecisionRecord":
-        return None
+    if candidates:
+        return {"error": f"ambiguous ID {id!r}; candidates: {candidates}"}
+    if row is None:
+        return {"error": f"DecisionRecord not found: {id!r}"}
     spec = row.get("spec", {})
     return {
         "id": row["id"],

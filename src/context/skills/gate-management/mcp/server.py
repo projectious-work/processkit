@@ -72,7 +72,7 @@ def _load_gate(root: Path, id: str) -> entity.Entity | None:
         return entity.load(candidate)
     db = index.open_db()
     try:
-        row = index.get_entity(db, id)
+        row, _ = index.resolve_entity(db, id, kind="Gate")
         if row and row.get("path"):
             return entity.load(row["path"])
     finally:

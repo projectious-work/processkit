@@ -139,13 +139,22 @@ def query_entities(
     idempotentHint=True,
     openWorldHint=False,
 ))
-def get_entity(id: str) -> dict | None:
-    """Fetch a single entity by ID. Returns None if not found."""
+def get_entity(id: str) -> dict:
+    """Fetch a single entity by ID.
+
+    Accepts a full ID, a prefix (missing slug), or a bare word-pair.
+    Returns ``{"error": "..."}`` if not found or ambiguous.
+    """
     _, db = _open()
     try:
-        return index.get_entity(db, id)
+        row, candidates = index.resolve_entity(db, id)
     finally:
         db.close()
+    if candidates:
+        return {"error": f"ambiguous ID {id!r}; candidates: {candidates}"}
+    if row is None:
+        return {"error": f"entity not found: {id!r}"}
+    return row
 
 
 @server.tool(annotations=ToolAnnotations(

@@ -239,6 +239,83 @@ def get_entity(db: sqlite3.Connection, id: str) -> dict[str, Any] | None:
     return out
 
 
+def resolve_entity(
+    db: sqlite3.Connection,
+    partial_id: str,
+    *,
+    kind: str | None = None,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    """Resolve a partial or word-pair ID to a single entity.
+
+    Agents and humans often refer to entities by a shortened form — either
+    omitting the slug suffix or using just the word-pair component. This
+    function tries three resolution strategies in order:
+
+    1. **Exact match** — ``id = partial_id``
+    2. **Prefix match** — ``id LIKE '{partial_id}-%'`` (handles a missing slug)
+    3. **Word-pair match** — ``id LIKE '%-{partial_id}-%' OR id LIKE
+       '%-{partial_id}'`` (handles a bare word-pair like ``StoutCrow``)
+
+    Returns ``(row, candidates)`` where:
+
+    - ``(row, [])``   — exactly one match; ``row`` is the full entity dict
+    - ``(None, [])``  — no match at all
+    - ``(None, ids)`` — ambiguous; ``ids`` lists all matching entity IDs
+    """
+
+    def _escape_like(s: str) -> str:
+        # Escape LIKE metacharacters so literal underscores in IDs (e.g.
+        # "20260410_1050") are not treated as single-character wildcards.
+        return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+    def _fetch(where: str, params: list[Any]) -> list[dict[str, Any]]:
+        sql = (
+            "SELECT id, kind, title, state, created, updated, path,"
+            " spec_json, labels_json FROM entities WHERE " + where
+        )
+        if kind:
+            sql += " AND kind = ?"
+            params = list(params) + [kind]
+        rows = db.execute(sql, params).fetchall()
+        result = []
+        for row in rows:
+            out = dict(row)
+            if out.get("spec_json"):
+                try:
+                    out["spec"] = json.loads(out["spec_json"])
+                except Exception:
+                    pass
+            result.append(out)
+        return result
+
+    # 1. Exact match.
+    rows = _fetch("id = ?", [partial_id])
+    if rows:
+        return rows[0], []
+
+    # 2. Prefix match — handles a missing slug suffix, e.g.
+    #    "BACK-20260410_1050-StoutCrow" → "BACK-20260410_1050-StoutCrow-create-..."
+    escaped = _escape_like(partial_id)
+    rows = _fetch("id LIKE ? ESCAPE '\\'", [escaped + "-%"])
+    if len(rows) == 1:
+        return rows[0], []
+    if len(rows) > 1:
+        return None, [r["id"] for r in rows]
+
+    # 3. Word-pair / substring match — handles a bare word-pair, e.g.
+    #    "StoutCrow" → "BACK-20260410_1050-StoutCrow-create-brand-design-skill"
+    rows = _fetch(
+        "(id LIKE ? ESCAPE '\\' OR id LIKE ? ESCAPE '\\')",
+        ["%-" + escaped + "-%", "%-" + escaped],
+    )
+    if len(rows) == 1:
+        return rows[0], []
+    if len(rows) > 1:
+        return None, [r["id"] for r in rows]
+
+    return None, []
+
+
 def search_entities(
     db: sqlite3.Connection,
     text: str,

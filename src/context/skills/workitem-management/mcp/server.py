@@ -72,10 +72,10 @@ def _load_workitem(root: Path, id: str) -> entity.Entity | None:
     candidate = wi_dir / f"{id}.md"
     if candidate.is_file():
         return entity.load(candidate)
-    # Try the index for sharded layouts
+    # Try the index; resolve_entity handles partial IDs and word-pair lookups.
     db = index.open_db()
     try:
-        row = index.get_entity(db, id)
+        row, _ = index.resolve_entity(db, id, kind="WorkItem")
         if row and row.get("path"):
             return entity.load(row["path"])
     finally:
@@ -246,7 +246,7 @@ def query_workitems(
     out = []
     for r in rows:
         full = get_workitem(r["id"])
-        if full is None:
+        if full is None or "error" in full:
             continue
         if type and full.get("type") != type:
             continue
@@ -264,15 +264,21 @@ def query_workitems(
     idempotentHint=True,
     openWorldHint=False,
 ))
-def get_workitem(id: str) -> dict | None:
-    """Fetch a WorkItem by ID with its full spec."""
+def get_workitem(id: str) -> dict:
+    """Fetch a WorkItem by ID with its full spec.
+
+    Accepts a full ID, a prefix (missing slug), or a bare word-pair.
+    Returns ``{"error": "..."}`` if not found or ambiguous.
+    """
     db = index.open_db()
     try:
-        row = index.get_entity(db, id)
+        row, candidates = index.resolve_entity(db, id, kind="WorkItem")
     finally:
         db.close()
-    if not row or row.get("kind") != "WorkItem":
-        return None
+    if candidates:
+        return {"error": f"ambiguous ID {id!r}; candidates: {candidates}"}
+    if row is None:
+        return {"error": f"WorkItem not found: {id!r}"}
     spec = row.get("spec", {})
     return {
         "id": row["id"],
