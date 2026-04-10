@@ -5,6 +5,46 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.11.0] — 2026-04-11
+
+### Added
+
+- **Note schema: `links` field** — qualified Zettelkasten note-to-note
+  links with `target`, `relation` (enum: elaborates, contradicts,
+  supports, is-example-of, see-also, refines, sourced-from), and a
+  required `context` sentence explaining *why* the connection matters.
+  Tags group notes by topic; links build arguments.
+- **note-management SKILL.md: linking section** — new "Linking notes"
+  section with a full relation table and usage guidance; note template
+  updated with links example.
+
+### Changed
+
+- **Note schema: type descriptions aligned with Luhmann/Ahrens taxonomy**
+  — `insight` = permanent note (never discarded, part of the knowledge
+  base); `reference` = literature note; `fleeting` = fleeting note.
+  Schema description clarifies that permanent notes are not ephemeral.
+  `type` descriptions and note-management SKILL.md type table updated
+  accordingly.
+- **Artifact schema: self-hosted and pointer patterns both documented** —
+  description updated to acknowledge two valid usage patterns:
+  self-hosted (Markdown body in the file, `location` optional) and
+  pointer (external URL/path, `location` required). `location` removed
+  from the `required` array. Note vs Artifact distinction added.
+- **`config.py` `_skill_config_dir`** — now tries the `processkit/`
+  category subdirectory before falling back to the flat layout, fixing
+  ID generation and config loading after the v0.10.0 skills
+  reorganization.
+- **`.mcp.json`** — all 12 MCP server paths corrected from
+  `context/skills/<name>/` to `context/skills/processkit/<name>/` after
+  the v0.10.0 SteadyLeaf reorganization.
+- **`AGENTS.md`** — added AGENTS.md lean-scope principle; expanded
+  `context/` layout table to all 15 directories including `artifacts/`,
+  `decisions/`, `discussions/`, `notes/`, `workitems/`, `logs/`,
+  `migrations/`, `owner/`, `actors/`, `roles/`.
+
+---
+
 ## [v0.10.0] — 2026-04-10
 
 ### Added
