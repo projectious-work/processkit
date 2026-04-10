@@ -5,7 +5,7 @@
 # =============================================================================
 
 [aibox]
-version = "0.17.3"             # Set by aibox — do not edit manually
+version = "latest"             # Set by aibox — do not edit manually
 base    = "debian"             # Base image flavor. Options: debian
 
 # =============================================================================
@@ -96,7 +96,7 @@ providers = ["claude"]
 # consume processkit content.
 [processkit]
 source   = "https://github.com/projectious-work/processkit.git"
-version  = "v0.7.0"
+version  = "latest"
 src_path = "src"
 # branch = "main"   # optional — for tracking a moving branch (discouraged)
 #
