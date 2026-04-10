@@ -15,4 +15,8 @@ spec:
     output, logo system (7 variants), color system (OKLCH), typography, brand voice,
     social card templates. Use skill-builder. Add to product package tier. Update
     skill-finder.
+
+    Color subsystem is handled by a separate specialist skill — theme-creator
+    (BACK-20260410_1840-SleekSky). brand-design should invoke theme-creator for
+    palette and scale generation rather than embedding color theory directly.
 ---
