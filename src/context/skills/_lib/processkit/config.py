@@ -67,6 +67,9 @@ def _load_toml(path: Path) -> dict | None:
 
 
 def _skill_config_dir(root: Path, skill: str) -> Path:
+    p = root / "context" / "skills" / "processkit" / skill / "config"
+    if p.is_dir():
+        return p
     return root / "context" / "skills" / skill / "config"
 
 

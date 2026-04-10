@@ -114,6 +114,12 @@ directly to `main` for day-to-day work. Releases are semver git tags
 
 ## How this project is organized: processkit content
 
+> **AGENTS.md scope principle.** Keep this file as complete as necessary
+> but as lean as possible. It contains only what an agent needs at session
+> start that cannot be derived from the project structure or entities.
+> Configuration, preferences, and team descriptions that have their own
+> lifecycle belong in entities (Actor, Process, Artifact), not here.
+
 This project uses **[processkit](https://github.com/projectious-work/processkit.git)**,
 pinned at `v0.7.0`, package tier(s) `product`, to manage process content
 (skills, primitives, processes, schemas). All processkit-installed
@@ -125,8 +131,21 @@ context/
 ├── schemas/        ← JSON schemas for the core primitives
 ├── state-machines/ ← state-machine definitions
 ├── processes/      ← process definitions (bug-fix, code-review, release, …)
-└── templates/      ← immutable upstream mirror used as a diff baseline
+├── templates/      ← immutable upstream mirror used as a diff baseline
+├── artifacts/      ← Artifact entities (documents, runbooks, PRDs, …)
+├── decisions/      ← DecisionRecord entities
+├── discussions/    ← Discussion entities
+├── notes/          ← Note entities (Zettelkasten capture layer)
+├── workitems/      ← WorkItem entities
+├── logs/           ← LogEntry entities (date-sharded: logs/{year}/{month}/)
+├── migrations/     ← Migration entities (applied/, pending/)
+├── owner/          ← Owner profile (identity, working-style, goals)
+├── actors/         ← Actor entities (humans and AI agents)
+└── roles/          ← Role entities
 ```
+
+Entity directories (`artifacts/`, `workitems/`, etc.) are created lazily
+on first use — not all will exist in a fresh install.
 
 `context/templates/processkit/<version>/` is the verbatim upstream
 snapshot. **Do not edit it.** Edit the live files at

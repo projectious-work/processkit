@@ -37,16 +37,19 @@ their value — unreviewed notes are just noise.
 
 ### Note types
 
-| Type | When to use | Review horizon |
-|---|---|---|
-| **fleeting** | Quick thought, idea, or observation — not yet refined | Within 1 week |
-| **insight** | A conclusion or realization from experience or reflection | Within 1 month |
-| **reference** | Pointer to an external source, with your own summary | Evergreen |
-| **question** | An open question you want to revisit | Until answered |
+Note types map to the Luhmann/Ahrens Zettelkasten taxonomy:
+
+| Type | Luhmann equivalent | When to use | Review horizon |
+|---|---|---|---|
+| **fleeting** | Fleeting note | Quick thought, idea, or observation — not yet refined | Within 1 week |
+| **insight** | Permanent note | A self-contained conclusion or realization; part of the knowledge base — never discarded | Evergreen (not discarded, only promoted or refined) |
+| **reference** | Literature note | Pointer to an external source, with your own summary | Evergreen |
+| **question** | — | An open question you want to revisit | Until answered |
 
 Start with `fleeting` when in doubt. If a note survives a review
-session unchanged and seems worth keeping, promote to `insight` or
-`reference`.
+session unchanged and seems worth keeping, refine and set to `insight`
+or `reference`. **Insight notes are permanent — they are never
+discarded, only promoted or further refined.**
 
 ### Note file location and format
 
@@ -128,10 +131,12 @@ For each overdue note, make one of four decisions:
 **Keep as permanent** — the note is worth keeping but not yet
 actionable:
 1. Refine the body if the capture was rough
-2. Set type to `insight` or `reference`
+2. Set type to `insight` (permanent note — never discarded) or
+   `reference` (literature note — evergreen)
 3. Transition state to `permanent`
-4. Set a new `review_due` (30-90 days out)
-5. Add links to related notes or entities
+4. Set `review_due` to null (permanent notes don't expire) or to a
+   far-future date if you want a reminder to link it further
+5. Add `links` to related notes with relation and context sentence
 
 **Archive** — the note is no longer useful:
 1. Transition state to `archived`
@@ -143,14 +148,32 @@ actionable:
 
 ### Linking notes
 
-Notes should not stand alone — the value of a knowledge base comes
-from connections. Link explicitly:
+The `links` field is how Zettelkasten insight is built. Every link must
+name the relation and provide a context sentence explaining *why* the
+connection matters — not just *that* it exists. Tags group notes by
+topic; links with context build arguments.
 
-- Reference the note in the primitive it informed:
-  `<!-- originated from NOTE-003 -->`
-- Add related notes in the note body:
-  `Related: NOTE-007 (similar concern about validation in the CLI)`
-- When promoting, add a backlink in the created WorkItem's description
+```yaml
+links:
+  - target: NOTE-20260408_1455-SilverWolf-rag-chunking-question
+    relation: elaborates
+    context: "Both notes address retrieval quality; this note proposes
+      a concrete chunking strategy for the problem identified there."
+```
+
+| Relation | When to use |
+|---|---|
+| **elaborates** | This note expands on or adds depth to the target |
+| **contradicts** | This note challenges or refutes the target |
+| **supports** | This note provides evidence for the target |
+| **is-example-of** | This note is a concrete case of an abstract claim |
+| **see-also** | Loosely related; reader may find the target useful |
+| **refines** | This note improves on or supersedes the target |
+| **sourced-from** | This note's ideas draw from the target (for literature notes) |
+
+Links are directional (from this note → to target). Bidirectional
+linking is intentional — add the reciprocal link in the target note
+when the relationship is symmetric (e.g. two `supports` notes).
 
 ### Promotion patterns
 
@@ -232,7 +255,12 @@ spec:
   type: {{fleeting|insight|reference|question}}
   state: captured
   tags: []
-  review_due: {{date + 7 days for fleeting, + 30 for others}}
+  review_due: {{date + 7 days for fleeting, + 30 for question, null for insight/reference}}
+  # links: optional — add when you know related notes
+  # links:
+  #   - target: NOTE-xxx-yyy
+  #     relation: elaborates  # see relation table above
+  #     context: "One sentence explaining why this connection matters."
 ---
 
 {{Note body — enough context to understand without memory of the
