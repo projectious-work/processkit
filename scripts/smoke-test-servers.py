@@ -32,7 +32,19 @@ sys.path.insert(0, str(LIB))
 
 def import_server(name: str):
     """Import a server.py module by skill name without running its main()."""
-    path = PROCESSKIT / "src" / "context" / "skills" / name / "mcp" / "server.py"
+    # Skills are now organized into category subdirectories. Search all of them.
+    skills_root = PROCESSKIT / "src" / "context" / "skills"
+    path = None
+    for cat_dir in skills_root.iterdir():
+        if not cat_dir.is_dir():
+            continue
+        candidate = cat_dir / name / "mcp" / "server.py"
+        if candidate.is_file():
+            path = candidate
+            break
+    if path is None:
+        # Fallback: flat layout (pre-SteadyLeaf)
+        path = skills_root / name / "mcp" / "server.py"
     spec = importlib.util.spec_from_file_location(f"server_{name}", path)
     module = importlib.util.module_from_spec(spec)
     # Server modules call _find_lib() at import — they need cwd to be inside processkit
