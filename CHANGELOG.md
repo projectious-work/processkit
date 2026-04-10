@@ -5,6 +5,31 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.11.1] — 2026-04-11
+
+### Fixed
+
+- **`ids.py`: `pascal` and `camel` are now distinct word styles** —
+  `pascal` produces PascalCase (`BoldVale`, every word capitalised);
+  `camel` now correctly produces true camelCase (`boldVale`, first word
+  lowercase). Previously `camel` incorrectly generated PascalCase.
+  `id-management/config/settings.toml` updated to `word_style = "pascal"`.
+
+### Changed
+
+- **`context/` dogfood mirror synced** — `resolve_entity()` and
+  partial-ID lookup now live in the installed `context/` copies of
+  `index.py` and all MCP servers, consistent with the `src/`
+  implementation shipped in v0.10.0.
+- **`session-handover` SKILL.md** — log-entry writing steps updated
+  with `generate_id` call, date-sharded path derivation, and word-pair
+  ID template.
+- **`context/skills/INDEX.md`** — expanded with skill package layout
+  section and `_lib/` note.
+- **`aibox.lock`** — updated to aibox v0.17.12, processkit v0.10.0.
+
+---
+
 ## [v0.11.0] — 2026-04-11
 
 ### Added

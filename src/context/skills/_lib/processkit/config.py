@@ -9,8 +9,9 @@ servers read them on every call.
 Skill config locations:
 
     context/skills/id-management/config/settings.toml
-        format = "word"   # word | uuid
-        slug   = true     # append content-derived slug from entity title
+        format     = "word"    # word | uuid
+        word_style = "pascal"  # pascal (BoldVale) | camel (boldVale) | kebab (bold-vale)
+        slug       = true      # append content-derived slug from entity title
 
     context/skills/index-management/config/settings.toml
         [directories]

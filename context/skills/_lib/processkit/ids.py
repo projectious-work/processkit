@@ -3,8 +3,9 @@
 Three configurable axes:
 
 - format: ``word`` (adjective + noun) or ``uuid``
-- word_style: ``camel`` (CamelCase, e.g. ``CalmFox``) or ``kebab``
-  (lowercase kebab, e.g. ``calm-fox``). Only applies to ``word`` format.
+- word_style: ``pascal`` (PascalCase, e.g. ``CalmFox``), ``camel``
+  (camelCase, e.g. ``calmFox``), or ``kebab`` (lowercase kebab,
+  e.g. ``calm-fox``). Only applies to ``word`` format.
 - slug: append a content-derived slug or not
 - datetime_prefix: if True, prepend ``YYYYMMDD_HHMM`` before the word
   pair so the creation time is embedded in the ID.
@@ -58,8 +59,10 @@ def _slugify(text: str, max_words: int = 4) -> str:
 def _word_pair(rng: random.Random, style: str = "kebab") -> str:
     adj = rng.choice(_ADJECTIVES)
     noun = rng.choice(_NOUNS)
-    if style == "camel":
+    if style == "pascal":
         return f"{adj.capitalize()}{noun.capitalize()}"
+    if style == "camel":
+        return f"{adj}{noun.capitalize()}"
     return f"{adj}-{noun}"
 
 
@@ -83,7 +86,8 @@ def generate_id(
     format:
         ``word`` or ``uuid``.
     word_style:
-        ``camel`` (e.g. ``CalmFox``) or ``kebab`` (e.g. ``calm-fox``).
+        ``pascal`` (e.g. ``CalmFox``), ``camel`` (e.g. ``calmFox``),
+        or ``kebab`` (e.g. ``calm-fox``).
         Only applies when ``format="word"``.
     datetime_prefix:
         If True, prepend a ``YYYYMMDD_HHMM`` timestamp before the word

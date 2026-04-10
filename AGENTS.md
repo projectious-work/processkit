@@ -263,7 +263,7 @@ call — no restart needed.
 
 | Preference | Value |
 |---|---|
-| ID word-pair style | `camel` — e.g. `BoldVale` |
+| ID word-pair style | `pascal` — e.g. `BoldVale` (also: `camel` → `boldVale`, `kebab` → `bold-vale`) |
 | ID datetime prefix | enabled — format `YYYYMMDD_HHMM` embedded in ID |
 | ID slug | enabled — content-derived from entity title |
 | Example ID | `BACK-20260409_1449-BoldVale-fts5-full-text-search` |
