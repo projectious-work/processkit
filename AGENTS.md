@@ -96,19 +96,25 @@ directly to `main` for day-to-day work. Releases are semver git tags
 
 **Release checklist:**
 
-1. Add "What changed in vX.Y.Z" entry to the context handover /
+1. **Breaking change audit.** Confirm the bump type matches the
+   changes. processkit commits to minor-version backward
+   compatibility regardless of pre-1.0 status — schemas, state
+   machines, and MCP tool signatures are the public API. Any
+   removal or rename of a schema field, state-machine transition,
+   or MCP tool requires a **major** bump. When in doubt, major.
+2. Add "What changed in vX.Y.Z" entry to the context handover /
    CHANGELOG
-2. Update backlog Done section
-3. Update docs-site for any user-visible changes
-4. `uv run scripts/smoke-test-servers.py` — must be green
-5. `scripts/stamp-provenance.sh vX.Y.Z` — regenerates
+3. Update backlog Done section
+4. Update docs-site for any user-visible changes
+5. `uv run scripts/smoke-test-servers.py` — must be green
+6. `scripts/stamp-provenance.sh vX.Y.Z` — regenerates
    `src/PROVENANCE.toml`
-6. Commit, then `git tag -a vX.Y.Z -m "..."`
-7. `git push origin main && git push origin vX.Y.Z`
-8. `scripts/build-release-tarball.sh vX.Y.Z` →
+7. Commit, then `git tag -a vX.Y.Z -m "..."`
+8. `git push origin main && git push origin vX.Y.Z`
+9. `scripts/build-release-tarball.sh vX.Y.Z` →
    `gh release upload` the tarball + sha256
-9. `cd docs-site && npm run deploy` *(first public deploy is an open
-   TODO — do NOT push to `gh-pages` directly)*
+10. `cd docs-site && npm run deploy` *(first public deploy is an open
+    TODO — do NOT push to `gh-pages` directly)*
 
 ---
 
@@ -216,6 +222,33 @@ dependencies on first launch.
 Configured providers: **claude**. Other agents may be working on this
 project — coordinate through the entity layer (`workitem-management`,
 `event-log`, `discussion-management`) rather than assuming you are alone.
+
+### Mandatory MCP servers
+
+The following MCP servers must always be registered in the agent
+harness, regardless of package tier. Without them, agents cannot use
+the entity layer correctly (schema validation, state-machine
+enforcement, and index sync are tool-side invariants — not replicable
+by manual file edits).
+
+| Server | Purpose |
+|---|---|
+| `index-management` | Entity discovery, query, and full-text search |
+| `id-management` | ID generation for all entity kinds |
+| `workitem-management` | Work tracking |
+| `discussion-management` | Structured deliberation |
+| `decision-record` | Decision capture |
+| `event-log` | Audit trail and event logging |
+
+Tier-specific servers (`actor-profile`, `role-management`,
+`scope-management`, `gate-management`, `binding-management`,
+`model-recommender`) are registered based on the installed package
+tier. If an aibox-managed devcontainer is in use, the installer
+handles all registration — do not edit the merged config by hand.
+
+`skill-finder` has no MCP server. Load it by reading
+`context/skills/processkit/skill-finder/SKILL.md` directly whenever
+you need to discover skills for a domain task.
 
 **Commit to actions immediately.** If you decide to create an entity
 (WorkItem, DecisionRecord, etc.), call the tool in the same turn. Do

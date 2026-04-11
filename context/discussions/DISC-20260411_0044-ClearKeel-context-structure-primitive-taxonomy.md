@@ -4,11 +4,11 @@ kind: Discussion
 metadata:
   id: DISC-20260411_0044-ClearKeel-context-structure-primitive-taxonomy
   created: '2026-04-11T00:44:00+00:00'
-  updated: '2026-04-11T00:44:00+00:00'
+  updated: '2026-04-11T05:03:41+00:00'
 spec:
   question: How should the context/ directory, primitive taxonomy, and Zettelkasten
     linking be structured and clarified in processkit?
-  state: resolved
+  state: archived
   opened_at: '2026-04-11T00:44:00+00:00'
   closed_at: '2026-04-11T00:44:00+00:00'
   participants:

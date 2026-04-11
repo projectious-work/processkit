@@ -4,12 +4,12 @@ kind: Discussion
 metadata:
   id: DISC-20260410_2252-SharpHawk-how-should-context-directory
   created: '2026-04-10T22:52:14+00:00'
-  updated: '2026-04-10T22:53:34+00:00'
+  updated: '2026-04-11T05:03:40+00:00'
 spec:
   question: How should context/ directory structure, primitive taxonomy (Artifact
     vs Note), Zettelkasten linking, and AGENTS.md scope be clarified and improved
     in processkit?
-  state: resolved
+  state: archived
   opened_at: '2026-04-10T22:52:14+00:00'
   participants:
   - ACTOR-claude

@@ -77,7 +77,7 @@ This skill also provides the `/release-semver-prepare` slash command for direct 
 
 Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
-- **Bundling a breaking change into a patch or minor release.** Consumers rely on semver guarantees to control when they take breaking changes. A breaking change in a patch release violates the contract and causes silent runtime failures in consumer code.
+- **Bundling a breaking change into a patch or minor release.** Consumers rely on semver guarantees to control when they take breaking changes. A breaking change in a patch release violates the contract and causes silent runtime failures in consumer code. For processkit specifically: schemas, state-machine transition definitions, and MCP tool signatures are the public API. Any removal or rename in these requires a major bump — regardless of pre-1.0 status. Downstream installers (e.g. aibox) rely on minor-version compatibility to auto-accept upgrades; violating this forces manual re-pinning across all consumer projects.
 - **Skipping the changelog because "git log has it".** Git log is not a changelog. It lacks context, grouping, and the human judgment that makes a changelog useful. Every release needs a curated changelog with Added/Changed/Fixed/Removed sections.
 - **Bumping all version files in separate commits.** A brief window where `Cargo.toml` says `1.2.0` but `pyproject.toml` still says `1.1.0` is a broken state. Update all version files in a single atomic commit.
 - **Tagging before CI passes.** A tag should point to a commit that has been fully built and tested. Tagging a commit that later fails CI means the published artifact may not match what was verified.

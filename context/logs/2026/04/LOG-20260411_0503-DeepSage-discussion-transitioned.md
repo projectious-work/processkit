@@ -1,0 +1,14 @@
+---
+apiVersion: processkit.projectious.work/v1
+kind: LogEntry
+metadata:
+  id: LOG-20260411_0503-DeepSage-discussion-transitioned
+  created: '2026-04-11T05:03:41+00:00'
+spec:
+  event_type: discussion.transitioned
+  timestamp: '2026-04-11T05:03:41+00:00'
+  summary: Transitioned Discussion 'DISC-20260411_0044-ClearKeel-context-structure-primitive-taxonomy'
+    from 'resolved' to 'archived'
+  subject: DISC-20260411_0044-ClearKeel-context-structure-primitive-taxonomy
+  subject_kind: Discussion
+---
