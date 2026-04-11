@@ -59,8 +59,27 @@ IDs: `pascal` word-pair + datetime prefix (`YYYYMMDD_HHMM`) + slug.
 Example: `BACK-20260409_1449-BoldVale-fts5-full-text-search`.
 Logs sharded: `context/logs/{year}/{month}/`.
 
+## Processes
+
+Project-specific process definitions live in `context/processes/`
+(`release.md`, `code-review.md`, `bug-fix.md`, `feature-development.md`).
+Read the relevant file before executing any process-category skill —
+these override skill defaults for this project. Every `context/`
+subdirectory has an `INDEX.md`; read it before loading individual files.
+
+Other agents may be working here — coordinate via workitems and
+discussions, not assumptions.
+
 ## Critical notes
 
+- **`context/templates/` is read-only** — a verbatim upstream snapshot.
+  Edit the live files under `context/skills/`, `context/processes/`,
+  etc. Editing the templates mirror loses work on next `aibox sync`.
+- **After any hand-edit to an entity file, run `reindex()`** — index
+  drifts silently otherwise and `query_entities` returns stale state.
+- **Preferences live in two places** — this file AND the per-skill
+  `context/skills/*/config/settings.toml`. Update both; MCP servers
+  read settings.toml directly and ignore AGENTS.md at runtime.
 - **Never edit `.devcontainer/Dockerfile`** — use `.devcontainer/Dockerfile.local`.
 - **`apiVersion` is locked** through v1.x — bump to `v2` only with full migration.
 - **`_find_lib()` uses cwd** — smoke tests call `os.chdir()` before invoking servers.
