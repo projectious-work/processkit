@@ -12,7 +12,7 @@ utilities (not a public skill category).
 
 ```
 skills/
-  processkit/    — 31 skills for operating the processkit system
+  processkit/    — 32 skills for operating the processkit system
   engineering/   — 46 skills: software design, architecture, backend, languages
   devops/        — 15 skills: infrastructure, CI/CD, ops, monitoring
   data-ai/       — 11 skills: data science, ML, AI/LLM, embeddings
@@ -36,7 +36,7 @@ skills/
 
 ## processkit skill hierarchy
 
-The 30 processkit/ skills form a strict dependency hierarchy (strictly
+The 32 processkit/ skills form a strict dependency hierarchy (strictly
 downward, except for one documented intra-Layer-0 edge):
 
 Layer 0 (foundation):

@@ -53,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.12.0"
+version = "v0.13.0"
 
 [context]
 packages = ["managed"]
@@ -114,7 +114,11 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   after v0.10.0 reorganisation
 - **v0.11.1** — `pascal` and `camel` word styles correctly distinct;
   `context/` dogfood mirror synced with `resolve_entity()`
-- **v0.12.0** *(current)* — `artifact-management` skill and MCP server
-  (Layer 2); `create_artifact`, `get_artifact`, `query_artifacts`,
-  `update_artifact`; Artifact is a catalogue record with no state machine
+- **v0.12.0** — `artifact-management` skill and MCP server (Layer 2);
+  `create_artifact`, `get_artifact`, `query_artifacts`, `update_artifact`;
+  Artifact is a catalogue record with no state machine
+- **v0.13.0** *(current)* — `task-router` and `skill-finder` MCP servers;
+  `route_task()` returns skill + process override + tool in one call;
+  `skill-gate` meta-skill (1% rule); MCP tool prerequisite prompts on all
+  20 entity-mutating tools; one-sentence imperative description convention
 - **v1.0.0** — first stable release (not yet scheduled)

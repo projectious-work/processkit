@@ -23,11 +23,11 @@ In your project's `aibox.toml`:
 ```toml
 [context]
 packages = ["managed"]
-processkit_version = "v0.12.0"
+processkit_version = "v0.13.0"
 ```
 
 `aibox init` and `aibox sync` will fetch that tag and cache it under
-`~/.cache/aibox/processkit/v0.12.0/`.
+`~/.cache/aibox/processkit/v0.13.0/`.
 
 ## 3. Run `aibox init`
 
@@ -63,6 +63,7 @@ expected skills, you are ready to start working.
 | `v0.7.0`   | 0.17.0      | Full skill catalog + MCP servers                |
 | `v0.10.0`  | 0.17.0      | Skills in 7 category subdirectories             |
 | `v0.12.0`  | 0.17.12     | artifact-management MCP; processkit/ layout     |
+| `v0.13.0`  | 0.17.12     | task-router + skill-finder MCP; route_task()    |
 
 aibox ships with a default processkit version pin. Overriding it in
 `aibox.toml` is how you opt into newer content without upgrading aibox (or

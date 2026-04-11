@@ -70,12 +70,12 @@ metadata:
 
 See [Skills → Format](./format) for the complete specification.
 
-## v0.12.0 catalog (128+ skills)
+## v0.13.0 catalog (130+ skills)
 
 | Category | Count | Examples |
 |---|---|---|
 | Engineering (language, framework, architecture, infra, security) | ~70 | python-best-practices, fastapi-patterns, terraform-basics |
-| Process-primitive | ~31 | workitem-management, decision-record, artifact-management, event-log, note-management |
+| Process-primitive | ~32 | workitem-management, decision-record, artifact-management, task-router, skill-gate |
 | Document / asset creation | 4 | docx-authoring, pptx-authoring, xlsx-modeling, pdf-workflow |
 | Meta-cognitive | 4 | research-with-confidence, devils-advocate, board-of-advisors, morning-briefing |
 | Role-specific | 4 | prd-writing, user-research, data-storytelling, legal-review |
@@ -104,9 +104,12 @@ live at:
 
 **In a project using aibox** — After `aibox init`, skills are installed
 under `context/skills/processkit/<skill-name>/SKILL.md` in the project
-root. The `skill-finder` skill (always installed) maps natural-language
-cues to the right skill name. The index-management MCP server's
-`search_entities` tool can query skill metadata from the SQLite index.
+root. The `task-router` MCP server's `route_task(task_description)` call
+returns the matching skill, any project-specific process override, and the
+recommended MCP tool in a single call. `skill-finder` (`find_skill`,
+`list_skills`) is called internally by `task-router` and remains available
+directly. The index-management MCP server's `search_entities` tool can
+query skill metadata from the SQLite index.
 
 ## Where to go next
 

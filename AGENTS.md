@@ -88,4 +88,4 @@ discussions, not assumptions.
 - **`_find_lib()` uses cwd** — smoke tests call `os.chdir()` before invoking servers.
 
 ---
-<sub>processkit v0.11.1 · 2026-04-11</sub>
+<sub>processkit v0.13.0 · 2026-04-11</sub>

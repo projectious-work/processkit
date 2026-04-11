@@ -11,10 +11,10 @@ either edit entity files directly (following the SKILL.md instructions)
 or call an MCP tool (which validates against the schema and state machine).
 Both are first-class; MCP is not required.
 
-## Status at v0.12.0
+## Status at v0.13.0
 
-**Thirteen MCP servers ship** across Layers 0–2 of the processkit skill
-hierarchy. They live under
+**Fifteen MCP servers ship** across Layers 0–2 of the processkit skill
+hierarchy, plus two routing servers. They live under
 `context/skills/processkit/<skill>/mcp/server.py` and share a Python
 utility library at `context/skills/_lib/processkit/`.
 
@@ -45,6 +45,13 @@ utility library at `context/skills/_lib/processkit/`.
 | [`binding-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/binding-management/mcp/) | `create_binding`, `end_binding`, `query_bindings`, `resolve_bindings_for` |
 | [`discussion-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/discussion-management/mcp/) | `open_discussion`, `get_discussion`, `list_discussions`, `transition_discussion`, `add_outcome` |
 | [`model-recommender`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/model-recommender/mcp/) | `list_models`, `get_profile`, `query_models`, `compare_models`, `get_pricing`, `check_availability`, `get_config`, `set_config` |
+
+### Routing (cross-layer)
+
+| Server | Tools |
+|---|---|
+| [`skill-finder`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/skill-finder/mcp/) | `find_skill`, `list_skills` |
+| [`task-router`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/task-router/mcp/) | `route_task` — returns skill + process override + MCP tool in one call |
 
 A standalone smoke test (no MCP transport, just direct function calls)
 runs all servers via:

@@ -5,6 +5,52 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.13.0] — 2026-04-11
+
+### Added
+
+- **`task-router` skill and MCP server** — primary routing entry point
+  for processkit agents. `route_task(task_description)` returns the
+  matching skill, project-specific process override (from
+  `context/processes/`), and recommended MCP tool in a single call
+  without an LLM call. Two-phase heuristic routing: keyword match
+  against 13 domain groups (Phase 1), token-overlap scoring within
+  the group's tools (Phase 2), skill-finder trigger-table fallback for
+  cross-domain tasks. Return shape includes `skill_description_excerpt`
+  (first 150 chars), `tool_qualified` (`{server}__{tool}` collision-safe
+  naming), `confidence`, `routing_basis`, and `candidate_tools[]`.
+- **`skill-finder` MCP server** — new MCP server for the existing
+  skill-finder skill. Tools: `find_skill(task_description)` (trigger-
+  phrase table lookup + token-overlap scoring) and `list_skills(category?)`
+  (catalog browser). Both tools are read-only with `readOnlyHint=true`.
+- **`skill-gate` meta-skill** — provider-neutral prose skill that
+  enforces the 1% rule: if there is even a 1% chance a processkit skill
+  covers the task, check the router first. Includes decision graph,
+  rationalization pre-emption table (5 entries), and escape hatch for
+  agents already operating inside a named skill workflow.
+
+### Changed
+
+- **MCP tool prerequisite prompts (Track C)** — all 20 entity-mutating
+  MCP tools (`create_*`, `transition_*`, `link_*`, `record_*`, `open_*`)
+  now carry a prerequisite sentence in their docstring: call
+  `route_task()` or confirm you are inside a named skill workflow before
+  using the tool. These prompts appear in the tool schema every turn.
+- **`skill-builder` and `skill-reviewer` updated (Track E)** — skill
+  `description:` field convention changed from "Use when…" summaries to
+  one-sentence imperatives (verb-noun, ≤150 chars). Both skills enforce
+  this: skill-builder's step 4 template uses the new format; skill-
+  reviewer's Category 6 and Skill Killer #1 check for violations.
+- **`AGENTS.md` routing reference** — `find_skill()` replaced by
+  `route_task()` as the primary 1% rule entry point. `task-router` added
+  to the mandatory MCP server table.
+- **`context/processes/release.md`** — fleshed out from generic stub to
+  processkit-specific: added `breaking-change-audit`, `update-docs-site`,
+  `stamp-provenance`, `push`, `build-and-upload-release`, `deploy-docs`
+  steps; docs-deploy WildButter/aibox#42 blocker documented.
+
+---
+
 ## [v0.12.0] — 2026-04-11
 
 ### Added
