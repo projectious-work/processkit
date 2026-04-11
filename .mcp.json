@@ -90,6 +90,13 @@
         "context/skills/processkit/workitem-management/mcp/server.py"
       ],
       "command": "uv"
+    },
+    "processkit-skill-finder": {
+      "args": [
+        "run",
+        "context/skills/processkit/skill-finder/mcp/server.py"
+      ],
+      "command": "uv"
     }
   }
 }

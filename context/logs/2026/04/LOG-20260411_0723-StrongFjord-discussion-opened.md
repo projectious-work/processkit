@@ -1,0 +1,15 @@
+---
+apiVersion: processkit.projectious.work/v1
+kind: LogEntry
+metadata:
+  id: LOG-20260411_0723-StrongFjord-discussion-opened
+  created: '2026-04-11T07:23:20+00:00'
+spec:
+  event_type: discussion.opened
+  timestamp: '2026-04-11T07:23:20+00:00'
+  summary: 'Opened Discussion ''DISC-20260411_0723-LivelySwan-how-should-processkit-ensure'':
+    ''How should processkit ensure agents reliably invoke skills that have no MCP
+    server, particularly skill-finder?'''
+  subject: DISC-20260411_0723-LivelySwan-how-should-processkit-ensure
+  subject_kind: Discussion
+---

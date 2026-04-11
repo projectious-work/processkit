@@ -15,6 +15,10 @@ metadata:
     category: processkit
     core: true   # proposed: always install regardless of [skills].include/exclude
                  # pending aibox companion issue for content_install.rs change
+    provides:
+      mcp_tools:
+        - find_skill
+        - list_skills
 ---
 
 # Skill Finder
@@ -124,6 +128,7 @@ that skill before proceeding.
 | "research this", "I'm not sure about this fact" | `research-with-confidence` |
 | "build a new skill", "author a skill" | `skill-builder` |
 | "review this skill", "is this skill good" | `skill-reviewer` |
+| "session start", "which skill applies", "check skill-finder", "1% rule" | `skill-gate` |
 | "dependency audit", "check dependencies" | `dependency-audit` |
 | "dependency management", "update packages" | `dependency-management` |
 | "git workflow", "branching strategy", "commit message" | `git-workflow` |

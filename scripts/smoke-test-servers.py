@@ -96,6 +96,20 @@ def run():
 
         os.chdir(workdir)
 
+        # Seed a minimal skill catalog so skill-finder can parse triggers.
+        # We copy just the skill-finder SKILL.md — enough to test parsing.
+        _skf_src = (
+            PROCESSKIT
+            / "src" / "context" / "skills"
+            / "processkit" / "skill-finder" / "SKILL.md"
+        )
+        _skf_dst = (
+            workdir / "context" / "skills"
+            / "processkit" / "skill-finder"
+        )
+        _skf_dst.mkdir(parents=True, exist_ok=True)
+        shutil.copy(_skf_src, _skf_dst / "SKILL.md")
+
         # Clear caches in lib modules so they pick up the new project
         # (config.load_config is no longer cached — reads disk on every call)
         from processkit import paths, schema, state_machine, config, index
@@ -115,6 +129,7 @@ def run():
         gate = import_server("gate-management")
         disc = import_server("discussion-management")
         art = import_server("artifact-management")
+        skf = import_server("skill-finder")
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -481,6 +496,34 @@ def run():
         ev = events(subject=wi_id)
         print("events for wi:", ev)
         assert len(ev) >= 1
+
+        # 7. skill-finder
+        find_skill = get_tool(skf, "find_skill")
+        list_skills = get_tool(skf, "list_skills")
+
+        fs = find_skill(task_description="create a work item for this bug")
+        print("find_skill workitem:", fs)
+        assert fs.get("skill") == "workitem-management", (
+            f"expected workitem-management, got {fs}"
+        )
+        assert fs.get("match_confidence", 0) > 0
+
+        fs2 = find_skill(task_description="session start")
+        print("find_skill skill-gate:", fs2)
+        assert fs2.get("skill") == "skill-gate", (
+            f"expected skill-gate, got {fs2}"
+        )
+        assert fs2.get("match_confidence") == 1.0
+
+        ls = list_skills()
+        print("list_skills count:", len(ls))
+        # Only skill-finder itself is seeded in this temp workdir
+        assert any(s["skill"] == "skill-finder" for s in ls)
+        assert all("skill" in s and "has_mcp" in s for s in ls)
+
+        ls_pk = list_skills(category="processkit")
+        print("list_skills processkit:", len(ls_pk))
+        assert all(s["category"] == "processkit" for s in ls_pk)
 
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:

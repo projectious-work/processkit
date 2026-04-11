@@ -246,9 +246,14 @@ Tier-specific servers (`actor-profile`, `role-management`,
 tier. If an aibox-managed devcontainer is in use, the installer
 handles all registration — do not edit the merged config by hand.
 
-`skill-finder` has no MCP server. Load it by reading
-`context/skills/processkit/skill-finder/SKILL.md` directly whenever
-you need to discover skills for a domain task.
+`skill-finder` has an MCP server — call `find_skill(task_description)`
+before acting on any domain task. If the MCP server is unavailable,
+read `context/skills/processkit/skill-finder/SKILL.md` directly.
+
+**Session start:** load `context/skills/processkit/skill-gate/SKILL.md`
+at the beginning of every session that may involve processkit work.
+skill-gate enforces the 1% rule — if there is even a 1% chance a
+processkit skill applies to the current task, check skill-finder first.
 
 **Commit to actions immediately.** If you decide to create an entity
 (WorkItem, DecisionRecord, etc.), call the tool in the same turn. Do

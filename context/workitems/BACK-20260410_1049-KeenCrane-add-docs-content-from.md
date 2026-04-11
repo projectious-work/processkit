@@ -4,9 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260410_1049-KeenCrane-add-docs-content-from
   created: '2026-04-10T10:49:35+00:00'
+  updated: '2026-04-11T07:05:03+00:00'
 spec:
   title: Add docs content from aibox to WildButter docs-site
-  state: backlog
+  state: done
   type: task
   priority: high
   description: '5 content blocks from aibox docs belong in processkit''s own docs-site
@@ -33,4 +34,15 @@ spec:
     These blocks currently live in aibox''s docs as stand-ins. Once WildButter ships,
     aibox docs should link to processkit rather than duplicating this content.'
   parent: BACK-20260409_1652-WildButter-create-polish-and-deploy
+  started_at: '2026-04-11T06:58:47+00:00'
+  completed_at: '2026-04-11T07:05:03+00:00'
 ---
+
+## Transition note (2026-04-11T06:58:47+00:00)
+
+All 5 content blocks added: Best-for table, tier composition breakdown, Why this split rationale, skill catalogue browsing instructions, version references updated.
+
+
+## Transition note (2026-04-11T07:05:01+00:00)
+
+All 5 blocks migrated and committed. Ready to mark done.

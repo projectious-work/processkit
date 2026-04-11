@@ -4,9 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260410_1049-SnappyTrout-add-session-start-skill
   created: '2026-04-10T10:49:47+00:00'
+  updated: '2026-04-11T08:03:09+00:00'
 spec:
   title: Add session-start skill-check to AGENTS.md and session-handover skill
-  state: backlog
+  state: in-progress
   type: chore
   priority: medium
   description: 'Behavioral gap identified in session 2026-04-10: after a session reset/compaction,
@@ -27,4 +28,9 @@ spec:
     query the skill index for relevant skills before starting any new workstream.
 
     3. Mirror both changes in src/ counterparts.'
+  started_at: '2026-04-11T08:03:09+00:00'
 ---
+
+## Transition note (2026-04-11T08:03:09+00:00)
+
+Scope expanded per DEC-RoyalComet: now covers Track B — session-start meta-skill with 1% rule and mandatory decision graph. Supersedes original narrower scope.
