@@ -101,6 +101,10 @@ def create_role(
 ) -> dict:
     """Create a new Role entity.
 
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+
     Parameters
     ----------
     name:             kebab-case identifier (matches metadata.id suffix)
@@ -207,7 +211,9 @@ def update_role(
 
     Note: ``name`` is intentionally NOT updatable (the metadata.id suffix
     must match the name; renaming a role means superseding it via a new
-    entity that sets ``spec.supersedes``).
+    entity that sets ``spec.supersedes``). Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool.
     """
     if default_scope is not None and default_scope not in _VALID_SCOPES:
         return {
@@ -310,7 +316,10 @@ def link_role_to_actor(
 
     Use this rather than editing the Actor's ``spec.roles`` field when
     the assignment has scope, time, or its own attributes. The created
-    binding can be queried via binding-management's resolve_bindings_for.
+    binding can be queried via binding-management's
+    resolve_bindings_for. Prerequisite: call find_skill(task_description)
+    or confirm you are already operating within a named processkit skill
+    before using this tool.
     """
     if not actor_id.startswith("ACTOR-"):
         return {"error": f"actor_id must start with ACTOR-, got {actor_id!r}"}

@@ -101,7 +101,9 @@ def record_decision(
     """Create a new DecisionRecord.
 
     The default state is ``proposed``. Set ``state="accepted"`` to record
-    an already-finalized decision.
+    an already-finalized decision. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool.
     """
     root = paths.find_project_root()
     cfg = config.load_config(root)
@@ -174,7 +176,9 @@ def record_decision(
 def transition_decision(id: str, to_state: str) -> dict:
     """Transition a DecisionRecord to a new state.
 
-    Validates against the decisionrecord state machine.
+    Validates against the decisionrecord state machine. Prerequisite:
+    call find_skill(task_description) or confirm you are already
+    operating within a named processkit skill before using this tool.
     """
     root = paths.find_project_root()
     ent = _load_decision(root, id)
@@ -271,7 +275,9 @@ def supersede_decision(old_id: str, new_id: str) -> dict:
 
     Updates both DecisionRecords: the old one transitions to
     ``superseded`` and gets ``superseded_by``; the new one gets
-    ``supersedes``.
+    ``supersedes``. Prerequisite: call find_skill(task_description) or
+    confirm you are already operating within a named processkit skill
+    before using this tool.
     """
     root = paths.find_project_root()
     old = _load_decision(root, old_id)
@@ -311,7 +317,12 @@ def supersede_decision(old_id: str, new_id: str) -> dict:
     openWorldHint=False,
 ))
 def link_decision_to_workitem(decision_id: str, workitem_id: str) -> dict:
-    """Add ``workitem_id`` to ``decision.spec.related_workitems``."""
+    """Add ``workitem_id`` to ``decision.spec.related_workitems``.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+    """
     root = paths.find_project_root()
     ent = _load_decision(root, decision_id)
     if ent is None:

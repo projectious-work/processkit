@@ -94,6 +94,10 @@ def open_discussion(
 ) -> dict:
     """Open a new Discussion in the active state.
 
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+
     Parameters
     ----------
     question:     the driving question, one crisp sentence
@@ -185,7 +189,12 @@ def get_discussion(id: str) -> dict:
     openWorldHint=False,
 ))
 def transition_discussion(id: str, to_state: str) -> dict:
-    """Transition a Discussion through the discussion state machine."""
+    """Transition a Discussion through the discussion state machine.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+    """
     root = paths.find_project_root()
     ent = _load_discussion(root, id)
     if ent is None:
@@ -227,7 +236,9 @@ def add_outcome(id: str, decision_id: str) -> dict:
 
     The DecisionRecord must already exist (use decision-record's
     record_decision first). Idempotent: re-adding the same decision is
-    a no-op.
+    a no-op. Prerequisite: call find_skill(task_description) or confirm
+    you are already operating within a named processkit skill before
+    using this tool.
     """
     if not decision_id.startswith("DEC-"):
         return {"error": f"decision_id must start with DEC-, got {decision_id!r}"}

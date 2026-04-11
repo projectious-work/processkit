@@ -107,7 +107,9 @@ def create_artifact(
     is required. For self-hosted artifacts (content in the Markdown
     body), ``location`` may be omitted.
 
-    Returns ``{id, path}``.
+    Returns ``{id, path}``. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool.
     """
     if kind not in _VALID_KINDS:
         return {
@@ -281,7 +283,9 @@ def update_artifact(
     """Update metadata fields on an existing Artifact.
 
     Only the fields you supply are changed; omitted fields are
-    preserved. Returns ``{ok, id}``.
+    preserved. Returns ``{ok, id}``. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool.
     """
     if kind is not None and kind not in _VALID_KINDS:
         return {

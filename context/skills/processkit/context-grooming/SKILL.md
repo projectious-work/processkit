@@ -1,7 +1,8 @@
 ---
 name: context-grooming
-description: |
-  Periodically review and prune the project context — archive completed work, summarize stale entries, propose disabling unused skills. Keeps the context lean so agents load less per session. Run on a regular cadence (weekly or monthly) — or when the user notices session context bloat. Always proposes changes for human approval; never moves or deletes files silently.
+description: >
+  Review and prune the project context — archive completed work,
+  summarize stale entries, and propose disabling unused skills.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1

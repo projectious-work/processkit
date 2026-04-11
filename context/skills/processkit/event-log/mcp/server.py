@@ -72,7 +72,9 @@ def log_event(
 ) -> dict:
     """Append a new LogEntry to the project's event log.
 
-    Returns ``{id, path}`` for the created file.
+    Returns ``{id, path}`` for the created file. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool.
     """
     root = paths.find_project_root()
     cfg = config.load_config(root)

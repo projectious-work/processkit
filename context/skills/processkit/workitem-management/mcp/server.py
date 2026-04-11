@@ -102,7 +102,9 @@ def create_workitem(
     """Create a new WorkItem in the project's context/workitems/ directory.
 
     Validates ``type``, ``priority``, and the initial state from the
-    workitem state machine. Returns ``{id, path, state}``.
+    workitem state machine. Returns ``{id, path, state}``. Prerequisite:
+    call find_skill(task_description) or confirm you are already
+    operating within a named processkit skill before using this tool.
     """
     if type not in _VALID_TYPES:
         return {"error": f"invalid type {type!r}; must be one of {sorted(_VALID_TYPES)}"}
@@ -182,7 +184,9 @@ def transition_workitem(id: str, to_state: str, note: str | None = None) -> dict
 
     Validates the transition against the workitem state machine. Sets
     ``spec.started_at`` on first entry to ``in-progress`` and
-    ``spec.completed_at`` on entering a terminal state.
+    ``spec.completed_at`` on entering a terminal state. Prerequisite:
+    call find_skill(task_description) or confirm you are already
+    operating within a named processkit skill before using this tool.
     """
     root = paths.find_project_root()
     ent = _load_workitem(root, id)
@@ -308,7 +312,9 @@ def link_workitems(from_id: str, to_id: str, relation: str) -> dict:
     ``relation`` must be one of: blocks, blocked_by, parent, children,
     related_decisions. Bidirectional relations (blocks/blocked_by,
     parent/children) are NOT auto-mirrored — call link_workitems on
-    both sides if you want them.
+    both sides if you want them. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool.
     """
     if relation not in _VALID_RELATIONS:
         return {"error": f"invalid relation {relation!r}; valid: {sorted(_VALID_RELATIONS)}"}

@@ -1,12 +1,8 @@
 ---
 name: software-modularization
-description: |
-  Designs and evaluates module and package boundaries — keeping software in
-  small, independently-loadable units optimised for both maintainability and
-  AI agent context limits. Use when asked to split a monolith, design package
-  structure, evaluate module boundaries, reduce coupling between components,
-  or when a codebase has grown too large for an agent to reason about in one
-  context window.
+description: >
+  Design and evaluate module and package boundaries for maintainability,
+  low coupling, and AI agent context efficiency.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1

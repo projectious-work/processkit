@@ -1,15 +1,9 @@
 ---
 name: model-recommender
-description: |
-  Recommends the right AI model for a task by scoring models across six
-  dimensions (Reasoning, Engineering, Speed, Breadth, Reliability,
-  Governance) and displaying a spider-chart profile. Use when the user
-  says "which model should I use", "recommend a model for this", "what
-  LLM is best for X", "compare these models", "help me pick an AI model",
-  "which Claude should I use", or "route these tasks to the right model".
-  Also analyzes a task plan and clusters subtasks by model fit, showing
-  which work to do with which model — like Dispatch matching heroes to
-  missions by overlapping skill polygons.
+description: >
+  Recommend the right AI model for a task by scoring candidates across
+  six dimensions (Reasoning, Engineering, Speed, Breadth, Reliability,
+  Governance) and displaying a spider-chart profile.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1

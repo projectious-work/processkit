@@ -1,7 +1,8 @@
 ---
 name: prd-writing
-description: |
-  Writes clear, actionable Product Requirements Documents — structured with problem statement, goals, user stories, scope, and success metrics. Use when asked to write a PRD, product spec, feature brief, or requirements document, or when designing a new feature that needs structured requirements.
+description: >
+  Write a Product Requirements Document structured with problem
+  statement, goals, user stories, scope, and success metrics.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1

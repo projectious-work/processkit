@@ -1,11 +1,8 @@
 ---
 name: session-handover
-description: |
-  Writes a structured end-of-session handover as a session.handover LogEntry —
-  capturing current state, open threads, next recommended action, and git
-  context — so the next session can resume without losing track. Use when the
-  user says "write a handover", "prepare for shutdown", "save context before
-  closing", or when a container restart is imminent.
+description: >
+  Write an end-of-session handover LogEntry capturing current state,
+  open threads, next action, and git context for session continuity.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1

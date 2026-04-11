@@ -109,6 +109,10 @@ def create_binding(
 ) -> dict:
     """Create a new Binding entity.
 
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+
     Parameters
     ----------
     type:        binding type (e.g. "role-assignment", "process-gate")
@@ -181,7 +185,12 @@ def create_binding(
     openWorldHint=False,
 ))
 def end_binding(id: str, end_date: str | None = None) -> dict:
-    """End a Binding by setting ``valid_until`` to ``end_date`` (default today)."""
+    """End a Binding by setting ``valid_until`` to ``end_date`` (default today).
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+    """
     root = paths.find_project_root()
     ent = _load_binding(root, id)
     if ent is None:

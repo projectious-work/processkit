@@ -98,6 +98,10 @@ def create_gate(
 ) -> dict:
     """Create a new Gate entity.
 
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+
     Parameters
     ----------
     name:               kebab-case identifier
@@ -254,7 +258,9 @@ def evaluate_gate(
     Gates are immutable rules; evaluations are events. The Gate file is
     not modified. ``outcome`` must be one of "passed", "failed", or
     "waived"; a "waived" outcome requires a non-empty ``reason`` and
-    typically an ``actor`` who waived it.
+    typically an ``actor`` who waived it. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool.
     """
     if outcome not in _VALID_OUTCOMES:
         return {"error": f"invalid outcome {outcome!r}; must be one of {sorted(_VALID_OUTCOMES)}"}

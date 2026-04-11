@@ -1,7 +1,8 @@
 ---
 name: agent-management
-description: |
-  Multi-agent workflow coordination — task decomposition, role assignment, context sharing, handoff protocols, quality gates, and per-session context budgeting. Use when orchestrating multiple AI agents on a shared task, designing an agent pipeline, defining handoff protocols, or planning how a session should load context within a budget.
+description: >
+  Orchestrate multi-agent workflows with task decomposition, role
+  assignment, handoff protocols, and per-session context budgeting.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1

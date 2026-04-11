@@ -1,7 +1,8 @@
 ---
 name: ai-fundamentals
-description: |
-  Core ML/AI concepts — model types, training pipelines, evaluation metrics, neural architectures. Use when explaining or comparing ML/AI concepts, choosing a model approach for a problem, designing or reviewing a training pipeline, picking evaluation metrics, or debugging issues like overfitting, data leakage, and class imbalance.
+description: >
+  Explain and apply core ML/AI concepts — model types, training
+  pipelines, evaluation metrics, and neural architectures.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1

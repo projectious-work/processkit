@@ -1,7 +1,8 @@
 ---
 name: skill-builder
-description: |
-  Interactive guide for creating new processkit skills end-to-end. Walks the user through use-case interview, frontmatter generation in Agent Skills standard format, body section drafting, mandatory Gotchas authoring, the 5 Skill Killers self-check, and trigger test generation. Use when the user says "create a new skill", "build a skill for ...", "scaffold a skill", "I want to teach Claude (or any agent) how to do X", "draft a skill that ...", or "add a skill for ...". Produces a complete skill folder under src/skills/ ready to commit.
+description: >
+  Author a new processkit skill end-to-end — use-case interview,
+  frontmatter, body sections, Gotchas, and trigger-phrase generation.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1

@@ -110,6 +110,10 @@ def create_actor(
 ) -> dict:
     """Create a new Actor entity.
 
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+
     Parameters
     ----------
     name:        display name
@@ -227,7 +231,12 @@ def update_actor(
     preferences: dict | None = None,
     active: bool | None = None,
 ) -> dict:
-    """Update fields on an existing Actor. Only supplied fields change."""
+    """Update fields on an existing Actor. Only supplied fields change.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+    """
     root = paths.find_project_root()
     ent = _load_actor(root, id)
     if ent is None:
@@ -279,7 +288,12 @@ def update_actor(
     openWorldHint=False,
 ))
 def deactivate_actor(id: str, left_at: str | None = None) -> dict:
-    """Mark an Actor inactive. Sets active=false and left_at."""
+    """Mark an Actor inactive. Sets active=false and left_at.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+    """
     root = paths.find_project_root()
     ent = _load_actor(root, id)
     if ent is None:

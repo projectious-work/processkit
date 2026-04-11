@@ -83,6 +83,7 @@ that skill before proceeding.
 | "Flutter", "mobile app" | `flutter-development` |
 | "Tailwind", "CSS utility classes" | `tailwind` |
 | "frontend design", "UI components" | `frontend-design` |
+| "AI fundamentals", "ML concepts", "machine learning basics" | `ai-fundamentals` |
 | "analyse data", "pandas", "polars", "dataframe" | `pandas-polars` |
 | "data pipeline", "ETL", "data engineering" | `data-pipeline` |
 | "data quality", "data validation" | `data-quality` |

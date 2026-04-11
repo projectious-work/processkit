@@ -95,6 +95,10 @@ def create_scope(
 ) -> dict:
     """Create a new Scope entity in the planned state.
 
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+
     Parameters
     ----------
     name:        human-readable name (e.g. "Sprint 42")
@@ -197,7 +201,12 @@ def get_scope(id: str) -> dict:
     openWorldHint=False,
 ))
 def transition_scope(id: str, to_state: str) -> dict:
-    """Transition a Scope to a new state per the scope state machine."""
+    """Transition a Scope to a new state per the scope state machine.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool.
+    """
     root = paths.find_project_root()
     ent = _load_scope(root, id)
     if ent is None:
