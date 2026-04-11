@@ -4,9 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260410_1049-HappyHare-build-artifact-management-skill
   created: '2026-04-10T10:49:56+00:00'
+  updated: '2026-04-11T06:23:46+00:00'
 spec:
   title: Build artifact-management skill and MCP server
-  state: backlog
+  state: done
   type: story
   priority: high
   description: 'The Artifact primitive (schema: src/context/schemas/artifact.yaml,
@@ -31,4 +32,10 @@ spec:
 
     Also still missing: constraint-management, taxonomy-management, state-machine-management
     skills (lower priority).'
+  started_at: '2026-04-11T06:23:39+00:00'
+  completed_at: '2026-04-11T06:23:46+00:00'
 ---
+
+## Transition note (2026-04-11T06:23:46+00:00)
+
+SKILL.md, MCP server (create/get/query/update), SERVER.md, mcp-config.json created. Mirrored to context/. Skill-finder updated. Smoke test extended. .mcp.json wired.

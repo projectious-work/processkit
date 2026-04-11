@@ -3,7 +3,7 @@
 # requires-python = ">=3.10"
 # dependencies = ["mcp[cli]>=1.0", "pyyaml>=6.0", "jsonschema>=4.0"]
 # ///
-"""End-to-end smoke test for all 5 processkit MCP servers.
+"""End-to-end smoke test for processkit MCP servers.
 
 Creates a fresh project directory, imports each server module directly
 (bypassing the MCP transport — we are testing the tool functions, not
@@ -114,6 +114,7 @@ def run():
         scope = import_server("scope-management")
         gate = import_server("gate-management")
         disc = import_server("discussion-management")
+        art = import_server("artifact-management")
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -355,6 +356,56 @@ def run():
         print("reopen discussion:", td2)
         assert td2["ok"]
 
+        # 4g. artifact-management
+        create_art = get_tool(art, "create_artifact")
+        a_doc = create_art(
+            name="Sprint 42 retrospective report",
+            kind="document",
+            produced_by=wi_id,
+            tags=["retro", "sprint-42"],
+            description="# Sprint 42 Retro\n\nWhat went well...",
+        )
+        print("create_artifact (document):", a_doc)
+        assert "id" in a_doc and a_doc["id"].startswith("ART-")
+        art_id = a_doc["id"]
+
+        a_url = create_art(
+            name="Grafana latency dashboard",
+            kind="url",
+            location="https://grafana.internal/d/api-latency",
+            tags=["monitoring"],
+        )
+        print("create_artifact (url):", a_url)
+        assert "id" in a_url
+
+        bad_kind = create_art(name="x", kind="invalid-kind")
+        print("bad artifact kind (expected error):", bad_kind)
+        assert "error" in bad_kind
+
+        get_art_t = get_tool(art, "get_artifact")
+        g_art = get_art_t(id=art_id)
+        print("get_artifact:", g_art["name"], g_art["kind"])
+        assert g_art["kind"] == "document"
+        assert "retro" in g_art["tags"]
+
+        query_art = get_tool(art, "query_artifacts")
+        q_docs = query_art(kind="document")
+        print("query_artifacts document:", len(q_docs))
+        assert any(x["id"] == art_id for x in q_docs)
+
+        q_tagged = query_art(tags=["retro"])
+        print("query_artifacts tagged retro:", len(q_tagged))
+        assert any(x["id"] == art_id for x in q_tagged)
+
+        update_art = get_tool(art, "update_artifact")
+        u = update_art(id=art_id, version="1.0", tags=["retro", "sprint-42", "final"])
+        print("update_artifact:", u)
+        assert u["ok"]
+
+        g_updated = get_art_t(id=art_id)
+        assert g_updated["version"] == "1.0"
+        assert "final" in g_updated["tags"]
+
         # 5. binding
         create_bind = get_tool(bind, "create_binding")
         b = create_bind(
@@ -387,6 +438,7 @@ def run():
             _ev_gate = _index.query_events(_db, event_type="gate.created")
             _ev_gate_eval = _index.query_events(_db, event_type="gate.passed", subject=gate_id)
             _ev_disc = _index.query_events(_db, event_type="discussion.opened")
+            _ev_art = _index.query_events(_db, event_type="artifact.created")
         finally:
             _db.close()
         print("log side effects — workitem.created:", len(_ev_created))
@@ -396,6 +448,7 @@ def run():
         print("log side effects — gate.created:", len(_ev_gate))
         print("log side effects — gate.passed:", len(_ev_gate_eval))
         print("log side effects — discussion.opened:", len(_ev_disc))
+        print("log side effects — artifact.created:", len(_ev_art))
         assert len(_ev_created) >= 1, "workitem.created log entry missing"
         assert len(_ev_transitioned) >= 1, "workitem.transitioned log entry missing"
         assert len(_ev_dec) >= 1, "decision.created log entry missing"
@@ -403,14 +456,15 @@ def run():
         assert len(_ev_gate) >= 1, "gate.created log entry missing"
         assert len(_ev_gate_eval) >= 1, "gate.passed log entry missing"
         assert len(_ev_disc) >= 1, "discussion.opened log entry missing"
+        assert len(_ev_art) >= 1, "artifact.created log entry missing"
 
         # 6. index management
         reindex = get_tool(idx, "reindex")
         stats = reindex()
         print("reindex stats:", stats)
-        # workitem + decision + actor + role + role-binding +
-        # scope + gate + gate-eval-log + discussion + work-binding + side-effect logs
-        assert stats["entities"] >= 11
+        # workitem + decision + actor + role + role-binding + scope + gate +
+        # gate-eval-log + discussion + work-binding + artifacts + side-effect logs
+        assert stats["entities"] >= 13
         assert stats["events"] >= 7, f"expected at least 7 events (log side effects), got {stats['events']}"
 
         query_e = get_tool(idx, "query_entities")

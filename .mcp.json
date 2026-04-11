@@ -77,6 +77,13 @@
       ],
       "command": "uv"
     },
+    "processkit-artifact-management": {
+      "args": [
+        "run",
+        "context/skills/processkit/artifact-management/mcp/server.py"
+      ],
+      "command": "uv"
+    },
     "processkit-workitem-management": {
       "args": [
         "run",

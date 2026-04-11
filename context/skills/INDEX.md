@@ -12,7 +12,7 @@ utilities (not a public skill category).
 
 ```
 skills/
-  processkit/    — 30 skills for operating the processkit system
+  processkit/    — 31 skills for operating the processkit system
   engineering/   — 46 skills: software design, architecture, backend, languages
   devops/        — 15 skills: infrastructure, CI/CD, ops, monitoring
   data-ai/       — 11 skills: data science, ML, AI/LLM, embeddings
@@ -48,8 +48,9 @@ Layer 1 (primitive management):
 - `actor-profile`, `role-management`
 
 Layer 2 (core entities):
-- `workitem-management` **MCP**, `decision-record` **MCP**, `scope-management`,
-  `category-management`, `cross-reference-management`, `binding-management` **MCP**
+- `workitem-management` **MCP**, `decision-record` **MCP**, `artifact-management` **MCP**,
+  `scope-management`, `category-management`, `cross-reference-management`,
+  `binding-management` **MCP**
 
 Layer 3 (process orchestration):
 - `process-management`, `state-machine-management`, `gate-management`,

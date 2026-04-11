@@ -112,6 +112,7 @@ that skill before proceeding.
 | "plan the release", "version bump", "semver" | `release-semver` |
 | "write a decision", "document this decision", "ADR" | `decision-record` |
 | "backlog", "work items", "create a ticket" | `workitem-management` |
+| "register an artifact", "catalog this document", "store this deliverable", "link this design file" | `artifact-management` |
 | "log this event", "audit trail" | `event-log` |
 | "remember this", "note this idea", "capture this" | `note-management` |
 | "write a standup", "daily update" | `standup-context` |
@@ -142,7 +143,7 @@ directory name as the `category:` value when authoring or filtering:
 
 | Directory | Contents |
 |---|---|
-| `processkit/` | 30 skills for operating the processkit system |
+| `processkit/` | 31 skills for operating the processkit system |
 | `engineering/` | 46 skills: software design, architecture, backend, languages |
 | `devops/` | 15 skills: infrastructure, CI/CD, ops, monitoring |
 | `data-ai/` | 11 skills: data science, ML, AI/LLM, embeddings |
@@ -158,6 +159,7 @@ For the full catalog, read `skills/INDEX.md`.
 **Process**
 - `workitem-management` — create, transition, and query WorkItems
 - `decision-record` — capture architectural and product decisions as DecisionRecords
+- `artifact-management` — register and retrieve completed deliverables
 - `event-log` — write auditable log entries for any project event
 - `note-management` — capture, review, and promote fleeting ideas and insights
 - `session-handover` — write an end-of-session handover before shutdown
