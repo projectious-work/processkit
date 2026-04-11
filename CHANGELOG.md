@@ -5,6 +5,27 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.12.0] — 2026-04-11
+
+### Added
+
+- **`artifact-management` skill and MCP server** — new Layer 2
+  processkit primitive for registering and retrieving completed
+  deliverables (documents, datasets, builds, diagrams, URLs, etc.).
+  Supports two usage patterns: self-hosted (Markdown body in the
+  entity file) and pointer (external URL or path via `location`).
+  MCP tools: `create_artifact`, `get_artifact`, `query_artifacts`,
+  `update_artifact`. Artifact has no state machine (`state_machine:
+  null`) — it is a catalogue record, not a work-tracking entity.
+- **`skill-finder` updated** — new trigger phrases for
+  `artifact-management` (`"register an artifact"`, `"catalog this
+  document"`, `"store this deliverable"`, `"link this design file"`)
+  and a one-liner in the Process category.
+- **`context/skills/INDEX.md`** — `processkit/` skill count updated
+  to 31; Layer 2 entry updated to include `artifact-management **MCP**`.
+
+---
+
 ## [v0.11.1] — 2026-04-11
 
 ### Fixed
