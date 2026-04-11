@@ -1,10 +1,10 @@
 [aibox]
 cli_version = "0.17.12"
-synced_at = "2026-04-10T21:51:18.112494+00:00"
+synced_at = "2026-04-11T04:26:18.078355+00:00"
 
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.10.0"
+version = "v0.11.1"
 src_path = "src"
-release_asset_sha256 = "93394a9bd73243dfa7ec273b3169d8bb77a28763995ad9fc88e88c152d96b965"
-installed_at = "2026-04-10T21:51:18.112494+00:00"
+release_asset_sha256 = "bcab56a9f3e70742713d3c28cae5b767dbf05862b7507fbba8276b56f7d9cf93"
+installed_at = "2026-04-11T04:26:18.078355+00:00"

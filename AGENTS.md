@@ -121,7 +121,7 @@ directly to `main` for day-to-day work. Releases are semver git tags
 > lifecycle belong in entities (Actor, Process, Artifact), not here.
 
 This project uses **[processkit](https://github.com/projectious-work/processkit.git)**,
-pinned at `v0.7.0`, package tier(s) `product`, to manage process content
+pinned at `v0.11.1`, package tier(s) `product`, to manage process content
 (skills, primitives, processes, schemas). All processkit-installed
 material lives under `context/`:
 
@@ -300,4 +300,4 @@ call — no restart needed.
 
 ---
 
-<sub>Scaffolded by processkit `v0.7.0` on `2026-04-09`. Re-rendered on each installer sync.</sub>
+<sub>Scaffolded by processkit `v0.11.1` on `2026-04-11`. Re-rendered on each installer sync.</sub>
