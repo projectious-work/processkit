@@ -125,9 +125,8 @@ The shape:
 ```yaml
 ---
 name: <kebab-case-name>
-description: |
-  <one paragraph: what the skill does>. Use when the user says
-  "<trigger 1>", "<trigger 2>", or "<trigger 3>".
+description: >
+  <One-sentence imperative (verb-first): what the skill does.>
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
@@ -155,9 +154,12 @@ metadata:
 
 - `name` must be kebab-case, must match the directory name, must NOT
   contain "claude" or "anthropic" (reserved by Anthropic).
-- `description` must include BOTH what AND when (with literal trigger
-  phrases). Under 1024 characters total. NO XML angle brackets (`<` /
-  `>`) — they would inject into Claude's system prompt.
+- `description` must be a **one-sentence imperative** (verb-first:
+  "Author X", "Review Y for Z", "Generate W"). Under 200 characters.
+  NO "Use when the user says…" — trigger phrases live in
+  skill-finder's trigger table (Step 9), not here. NO XML angle
+  brackets (`<` / `>`) in frontmatter — they inject into the system
+  prompt.
 - Every entry under `uses:` must have a `purpose` field — no bare
   strings.
 
@@ -296,11 +298,12 @@ items.
   SKILL.md. Ask for 2-3 concrete use cases first, even if the user is
   impatient. A skill built without use cases is almost always too vague
   to trigger reliably and ends up rewritten.
-- **Writing the description as a summary instead of a trigger.** The
-  description is what the harness uses to decide whether to load the
-  skill at all. *"This skill does X"* is wrong; *"Use when the user
-  says X, Y, or Z"* is right. Always include literal phrases the user
-  would speak.
+- **Writing the description as narrative or including "Use when…".**
+  The description must be a one-sentence imperative (verb-first, under
+  200 characters). Trigger phrases ("Use when the user says X, Y, or
+  Z") belong in skill-finder's trigger-phrase table (Step 9), NOT in
+  the description field. "Use when…" in a description is a must-fix
+  finding in skill-reviewer.
 - **Padding Gotchas with general anti-patterns.** Gotchas is for
   agent-specific failure modes that recur across providers. If a pitfall
   applies to humans too, it belongs in Anti-patterns under Full
@@ -403,11 +406,14 @@ the more reliably the skill loads.
 
 ### Description length budget
 
-Anthropic's hard limit is 1024 characters. A typical good description
-is 200-400 characters: one sentence of "what" + one sentence of "when"
-with 3-5 trigger phrases. Going over means you're either over-scoping
-the skill (split it) or padding the trigger list (cut to the most
-distinctive phrases).
+Anthropic's hard limit is 1024 characters, but the processkit
+convention is stricter: **one-sentence imperative, under 200
+characters**. Trigger phrases ("when the user says X") live in
+skill-finder's trigger table, not the description. A good description
+is 60-150 characters — short enough to skim in a catalog listing.
+If you find yourself going over 200 characters, you are either
+over-scoping the skill (split it) or smuggling trigger language
+into the wrong field (move it to skill-finder Step 9).
 
 ### When to use skill-reviewer instead
 

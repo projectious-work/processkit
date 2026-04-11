@@ -1,7 +1,9 @@
 ---
 name: skill-reviewer
-description: |
-  Review an existing processkit skill against the 5 Skill Killers, the Agent Skills standard frontmatter rules, processkit's structural conventions, and Anthropic's troubleshooting playbook. Use when the user says "review this skill", "check the X skill", "audit skills/", "is this skill good", "what's wrong with the X skill", "lint the X skill", or "generate gotchas for X". Produces a categorized findings report (must-fix, should-fix, nit) and, when the Gotchas section is missing or weak, generates draft gotchas based on the skill's content.
+description: >
+  Audit an existing processkit skill against the 5 Skill Killers,
+  the Agent Skills standard, and Anthropic's troubleshooting playbook,
+  producing a categorized findings report and draft Gotchas.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
@@ -104,7 +106,7 @@ of the three severity buckets at the end.
 
 | # | Killer | Symptom | Fix |
 |---|---|---|---|
-| 1 | Description doesn't trigger | No literal trigger phrases; reads like a summary. | Rewrite to include "Use when the user says X, Y, or Z" with literal phrases. |
+| 1 | Description doesn't trigger | Reads like a summary or contains "Use when…" clauses. | Rewrite as a one-sentence imperative (verb-first, under 200 chars). Move trigger phrases to skill-finder's trigger table (Category 9). |
 | 2 | Over-defining process | Steps prescribed too rigidly when the agent should have degrees of freedom. | Loosen prescriptive language; distinguish "must" from "should" from "may". |
 | 3 | Stating the obvious | Content the agent already knows from general training. | Cut. (BUT: be careful — what's obvious to Claude may not be to Gemini. Provider neutrality wins ties.) |
 | 4 | Missing Gotchas | No `## Gotchas` section, empty section, or generic "be careful" content. | Generate draft gotchas — see Step 7 below. |
@@ -152,13 +154,18 @@ Check for the four diagnoses:
 
 Beyond the < 1024 char length check:
 
-- Description starts with what the skill DOES, not what it IS.
-- Description includes the word "use" or "when" or similar trigger
-  language.
-- Description names file types if relevant (e.g., "for `.py` files",
-  "for Markdown documents").
-- Description has 3-5 trigger phrases. Fewer is under-triggering risk;
-  more is description-bloat.
+- Description is a **one-sentence imperative** — verb-first (e.g.,
+  "Author X", "Review Y for Z", "Generate W"). NOT narrative ("This
+  skill helps you…") and NOT passive ("A tool for…"). Violation =
+  should-fix.
+- Description is **under 200 characters**. Anything longer is usually
+  a sign of "Use when…" clauses being smuggled in — should-fix.
+- Description does **NOT** contain "Use when the user says…" or
+  similar trigger language. Trigger phrases belong in skill-finder's
+  trigger-phrase table (Category 9), not here. Violation = must-fix.
+- Description starts with the verb, not the noun. "Recommend models"
+  beats "Model recommendation skill that recommends models." Violation
+  = nit.
 
 #### 7. Generate Gotchas (the killer feature)
 
@@ -209,12 +216,14 @@ patterns to consider:
 #### 9. skill-finder registration
 
 - The skill has at least 1 entry in the trigger-phrase table in
-  `src/skills/skill-finder/SKILL.md`.
+  `src/skills/skill-finder/SKILL.md`. Missing = must-fix — a skill
+  not in skill-finder is invisible to agents who don't know its name.
 - The skill has a one-liner in the appropriate by-category section of
-  `skill-finder`.
-- If the skill is new and neither entry exists, flag as must-fix — a
-  skill not in skill-finder is invisible to agents who don't already
-  know its name.
+  `skill-finder`. Missing = should-fix.
+- The skill's `description:` field does NOT contain "Use when the user
+  says…" or similar trigger language — those phrases belong here in
+  the trigger table, not in the description. Violation = must-fix
+  (cross-links with Category 6).
 
 #### 10. Command adapter hygiene
 
