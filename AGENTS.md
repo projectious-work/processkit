@@ -9,15 +9,17 @@ Load `context/skills/processkit/skill-gate/SKILL.md` at the start of
 any session involving processkit work.
 
 **1% rule:** if there is even a 1% chance a processkit skill covers
-this task, call `find_skill(task_description)` before acting. Fall
-back to reading skill-finder SKILL.md if the MCP server is unavailable.
+this task, call `route_task(task_description)` before acting. It
+returns the right skill, any project-specific process override, and
+the recommended MCP tool in one call. Fall back to reading skill-gate
+SKILL.md if the MCP server is unavailable.
 
 | If you are about to… | Do this first |
 |---|---|
-| Edit or create any file under `context/` | `find_skill()` or read skill-finder |
+| Edit or create any file under `context/` | `route_task()` — returns skill + process override |
 | Call `create_*` / `transition_*` / `link_*` / `record_*` / `open_*` | Confirm you are inside a named skill workflow |
 | Write a new entity YAML by hand | Use the `create_*` MCP tool instead |
-| Act on a domain task without a skill loaded | Check skill-finder — 128+ skills in catalog |
+| Act on a domain task without a skill loaded | `route_task()` — 128+ skills + process overrides |
 
 ## Setup
 
@@ -35,7 +37,8 @@ uv run scripts/smoke-test-servers.py   # must be green before any commit
 | `discussion-management` | Structured deliberation |
 | `decision-record` | Decision capture |
 | `event-log` | Audit trail |
-| `skill-finder` | Skill catalog navigation (`find_skill`, `list_skills`) |
+| `skill-finder` | Skill catalog navigation (called internally by task-router) |
+| `task-router` | Primary routing entry point (`route_task`) — skill + process override + tool |
 
 Tier-specific servers registered by aibox installer. Do not edit the
 merged `.mcp.json` by hand.

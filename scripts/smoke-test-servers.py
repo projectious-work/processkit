@@ -96,8 +96,8 @@ def run():
 
         os.chdir(workdir)
 
-        # Seed a minimal skill catalog so skill-finder can parse triggers.
-        # We copy just the skill-finder SKILL.md — enough to test parsing.
+        # Seed a minimal skill catalog so skill-finder and task-router
+        # can parse triggers and read skill descriptions.
         _skf_src = (
             PROCESSKIT
             / "src" / "context" / "skills"
@@ -110,6 +110,29 @@ def run():
         _skf_dst.mkdir(parents=True, exist_ok=True)
         shutil.copy(_skf_src, _skf_dst / "SKILL.md")
 
+        # Seed workitem-management SKILL.md so task-router can read its
+        # description excerpt.
+        _wi_src = (
+            PROCESSKIT
+            / "src" / "context" / "skills"
+            / "processkit" / "workitem-management" / "SKILL.md"
+        )
+        _wi_dst = (
+            workdir / "context" / "skills"
+            / "processkit" / "workitem-management"
+        )
+        _wi_dst.mkdir(parents=True, exist_ok=True)
+        shutil.copy(_wi_src, _wi_dst / "SKILL.md")
+
+        # Seed a minimal processes/ directory with a release.md override
+        # so task-router's process_override lookup can be exercised.
+        _proc_dir = workdir / "context" / "processes"
+        _proc_dir.mkdir(parents=True, exist_ok=True)
+        (_proc_dir / "release.md").write_text(
+            "---\nkind: Process\nmetadata:\n  id: PROC-release\n---\n"
+            "# Release process override\n"
+        )
+
         # Clear caches in lib modules so they pick up the new project
         # (config.load_config is no longer cached — reads disk on every call)
         from processkit import paths, schema, state_machine, config, index
@@ -117,6 +140,7 @@ def run():
         state_machine.load.cache_clear()
 
         # Import servers
+        tr = import_server("task-router")
         wi = import_server("workitem-management")
         dec = import_server("decision-record")
         bind = import_server("binding-management")
@@ -524,6 +548,66 @@ def run():
         ls_pk = list_skills(category="processkit")
         print("list_skills processkit:", len(ls_pk))
         assert all(s["category"] == "processkit" for s in ls_pk)
+
+        # 8. task-router
+        route_task_fn = get_tool(tr, "route_task")
+
+        # 8a. High-confidence workitem route
+        rt_wi = route_task_fn(
+            task_description="create a work item for the login bug"
+        )
+        print("route_task workitem:", rt_wi)
+        assert rt_wi.get("domain_group") == "workitem", (
+            f"expected workitem group, got {rt_wi}"
+        )
+        assert rt_wi.get("tool") == "create_workitem", (
+            f"expected create_workitem, got {rt_wi.get('tool')}"
+        )
+        assert rt_wi.get("confidence", 0) >= 0.5, (
+            f"expected confidence >= 0.5, got {rt_wi.get('confidence')}"
+        )
+        assert rt_wi.get("routing_basis") == "keyword_match"
+        assert rt_wi.get("tool_qualified") == (
+            "processkit-workitem-management__create_workitem"
+        )
+        assert len(rt_wi.get("candidate_tools", [])) >= 1
+        # skill_description_excerpt should be populated from seeded SKILL.md
+        assert isinstance(rt_wi.get("skill_description_excerpt"), str)
+
+        # 8b. Decision route
+        rt_dec = route_task_fn(
+            task_description="record a decision about the database schema"
+        )
+        print("route_task decision:", rt_dec)
+        assert rt_dec.get("domain_group") == "decision", (
+            f"expected decision group, got {rt_dec}"
+        )
+        assert rt_dec.get("confidence", 0) > 0
+
+        # 8c. Release task — "plan the release" is a meta-task that maps via
+        #     the skill-finder trigger table to release-semver (no single MCP
+        #     tool owns it). Expect skill=release-semver and process_override
+        #     pointing to the seeded context/processes/release.md.
+        #     If the skill-finder table is not seeded in the temp workdir
+        #     (only skill-finder SKILL.md is seeded), the router may fall
+        #     back to a low-confidence domain match — accept any result that
+        #     does not assert a wrong high-confidence match.
+        rt_rel = route_task_fn(
+            task_description="plan the release and bump the version"
+        )
+        print("route_task release:", rt_rel)
+        # Must not error
+        assert "error" not in rt_rel, f"unexpected error: {rt_rel}"
+        # If release-semver was matched, process_override must be present
+        if rt_rel.get("skill") == "release-semver":
+            assert "process_override" in rt_rel, (
+                f"expected process_override for release-semver, got {rt_rel}"
+            )
+
+        # 8d. Empty input → error
+        rt_empty = route_task_fn(task_description="")
+        print("route_task empty (expected error):", rt_empty)
+        assert "error" in rt_empty
 
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:

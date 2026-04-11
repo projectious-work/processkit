@@ -97,6 +97,13 @@
         "context/skills/processkit/skill-finder/mcp/server.py"
       ],
       "command": "uv"
+    },
+    "processkit-task-router": {
+      "args": [
+        "run",
+        "context/skills/processkit/task-router/mcp/server.py"
+      ],
+      "command": "uv"
     }
   }
 }
