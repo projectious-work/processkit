@@ -4,11 +4,14 @@ kind: Discussion
 metadata:
   id: DISC-20260411_1738-DeepBadger-what-is-the-right
   created: '2026-04-11T17:38:24+00:00'
+  updated: '2026-04-11T17:57:54+00:00'
 spec:
   question: What is the right architecture for a `task-router` MCP server that reliably
     maps task descriptions to processkit skills, process overrides, and MCP tools?
   state: active
   opened_at: '2026-04-11T17:38:24+00:00'
+  outcomes:
+  - DEC-20260411_1738-BraveStream-build-task-router-mcp
 ---
 
 # Task-Router Design: Research Summary and Proposal

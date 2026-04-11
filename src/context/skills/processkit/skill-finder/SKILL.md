@@ -129,6 +129,7 @@ that skill before proceeding.
 | "research this", "I'm not sure about this fact" | `research-with-confidence` |
 | "build a new skill", "author a skill" | `skill-builder` |
 | "review this skill", "is this skill good" | `skill-reviewer` |
+| "route this task", "what should I do", "which tool", "route_task" | `task-router` |
 | "session start", "which skill applies", "check skill-finder", "1% rule" | `skill-gate` |
 | "dependency audit", "check dependencies" | `dependency-audit` |
 | "dependency management", "update packages" | `dependency-management` |
@@ -163,6 +164,7 @@ A curated selection of the most commonly used skills per task domain.
 For the full catalog, read `skills/INDEX.md`.
 
 **Process**
+- `task-router` — primary routing entry point: maps task to skill + process override + MCP tool
 - `workitem-management` — create, transition, and query WorkItems
 - `decision-record` — capture architectural and product decisions as DecisionRecords
 - `artifact-management` — register and retrieve completed deliverables
