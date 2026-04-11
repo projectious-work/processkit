@@ -5,53 +5,194 @@ title: "Process Skills"
 
 # Process Skills
 
-Skills for managing project workflows, team coordination, and operational processes.
+Skills for managing project workflows, team coordination, and operational
+processes. Most process-primitive skills have an accompanying MCP server
+that enforces schema validation and state-machine rules.
 
 ---
 
-### backlog-context
+### workitem-management
 
-> Manages project backlog as a BACKLOG.md file in the context directory. Creates, prioritizes, and tracks work items in Markdown format.
+> Creates, transitions, and queries WorkItems — the task-tracking
+> primitive in processkit. Use when managing backlog items, updating
+> work item state, or querying items by status, owner, or priority.
 
-**Triggers:** When the user asks to add, update, or review backlog items.
-**Tools:** None
-**References:** None
+**Triggers:** When the user asks to create a ticket, update a work item,
+query the backlog, or track progress on a task.
+**Tools:** `create_workitem`, `transition_workitem`, `query_workitems`,
+`get_workitem`, `link_workitems`
+**Layers:** Layer 2 (depends on `event-log`, `actor-profile`)
 
 Key capabilities:
 
-- Read and update `context/BACKLOG.md`
-- Work items in checkbox format: `- [ ] **Title** -- Description`
-- Group items by priority: Next Up, Planned, Ideas
-- Reference GitHub issues where they exist (`#N`)
-- Mark completed items with `[x]`
+- Create WorkItems with type (`task`, `story`, `bug`, `epic`, `spike`, `chore`)
+  and priority (`critical`, `high`, `medium`, `low`)
+- Transition through the default state machine:
+  `backlog → in-progress → review → done` (with `blocked` as a side state)
+- Link parent/child WorkItems for epics and subtasks
+- Query by state, type, priority, owner, or label
+- All state transitions auto-append a LogEntry via `event-log`
 
 <details><summary>Example usage</summary>
 
-User asks to add a backlog item. The agent reads `context/BACKLOG.md`, adds the new item under the appropriate priority group with checkbox format and a GitHub issue reference if one exists.
+User asks to create a ticket for a new feature. Agent calls
+`generate_id` to get a `BACK-` ID, then `create_workitem` with title,
+type `story`, and priority `high`. Later the user starts work — agent
+calls `transition_workitem` to move it to `in-progress`.
 
 </details>
 
 ---
 
-### decisions-adr
+### decision-record
 
-> Manages architectural decision records in context/DECISIONS.md. Records decisions with rationale, alternatives considered, and implications.
+> Captures architectural and product decisions as DecisionRecord entities
+> (ADR pattern). Use when the team makes a significant choice with
+> rationale, alternatives, and implications.
 
-**Triggers:** When the user makes a significant technical or process decision that should be recorded.
-**Tools:** None
-**References:** None
+**Triggers:** When the user says "write a decision", "document this ADR",
+"record why we chose X", or "capture this architectural decision".
+**Tools:** `record_decision`, `transition_decision`, `query_decisions`,
+`get_decision`, `supersede_decision`, `link_decision_to_workitem`
+**Layers:** Layer 2 (depends on `event-log`)
 
 Key capabilities:
 
-- Read and update `context/DECISIONS.md`
-- Assign next `DEC-NNN` number in inverse chronological order
-- Each entry includes decision, rationale, and alternatives considered
-- Date added in parentheses after the title
-- New decisions placed at the top, below the header
+- Record decisions with status (`proposed`, `accepted`, `rejected`),
+  rationale, alternatives considered, and implications
+- Link decisions to WorkItems for traceability
+- Supersede old decisions when context changes
+- Query by status, tag, or date
 
 <details><summary>Example usage</summary>
 
-User decides to use SQLite instead of PostgreSQL for the local dev environment. The agent assigns the next DEC number, records the decision with rationale and alternatives, and places it at the top of DECISIONS.md.
+Team decides to use SQLite for local dev instead of PostgreSQL. Agent
+records a DecisionRecord with the rationale ("zero-config, no Docker
+dependency for contributors"), alternatives considered, and implications.
+Status starts as `proposed`; on approval it transitions to `accepted`.
+
+</details>
+
+---
+
+### artifact-management
+
+> Registers and retrieves completed deliverables — documents, datasets,
+> builds, diagrams, URLs, runbooks. Use when cataloguing a produced
+> output so future agents and humans can find it.
+
+**Triggers:** When the user says "register an artifact", "catalog this
+document", "store this deliverable", or "link this design file".
+**Tools:** `create_artifact`, `get_artifact`, `query_artifacts`,
+`update_artifact`
+**Layers:** Layer 2 (no state machine — Artifact is a catalogue record)
+
+Key capabilities:
+
+- Two usage patterns: **self-hosted** (Markdown body in the entity file)
+  and **pointer** (external URL or file path via `location`)
+- Tag artifacts for filtering (`kind`, labels)
+- Query by kind, tag, or title substring
+- Update metadata on existing artifacts
+
+<details><summary>Example usage</summary>
+
+After generating a runbook, agent calls `create_artifact` with
+`kind: document`, `title: "Deploy Runbook — v0.12.0"`, and stores the
+Markdown body directly in the artifact file. A design file lives in
+Figma — agent creates a pointer artifact with
+`location: "https://figma.com/..."`.
+
+</details>
+
+---
+
+### event-log
+
+> Writes auditable LogEntry records for any project event. Use when you
+> want an immutable record of something that happened.
+
+**Triggers:** When the user says "log this event", "audit trail",
+"record that we did X", or when any entity-mutating MCP server fires a
+side-effect log.
+**Tools:** `log_event`, `query_events`, `recent_events`
+**Layers:** Layer 0 (foundation — no dependencies)
+
+Key capabilities:
+
+- Append-only — LogEntries are never updated or deleted
+- Entity-mutating MCP servers (create, transition, link) auto-append
+  a LogEntry without the caller doing anything extra
+- Query by actor, entity, event type, or date range
+- `recent_events` returns the last N entries across all entities
+
+<details><summary>Example usage</summary>
+
+Agent explicitly logs a manual step: "Deployed v0.12.0 tarball to GitHub
+Releases". Separately, every `transition_workitem` call automatically
+appends a log entry recording the before/after state.
+
+</details>
+
+---
+
+### note-management
+
+> Captures, reviews, and promotes fleeting ideas and insights using the
+> Zettelkasten method. Use when the user wants to record an observation,
+> link related ideas, or build a personal knowledge base.
+
+**Triggers:** When the user says "remember this", "note this idea",
+"capture this", or "link this to another note".
+**Tools:** None (file-based via SKILL.md instructions)
+**Layers:** Layer 4
+
+Key capabilities:
+
+- Three note types: `fleeting` (raw capture), `insight` (permanent note,
+  never discarded), `reference` (literature note)
+- `links` field for typed Zettelkasten edges:
+  `elaborates`, `contradicts`, `supports`, `is-example-of`, `see-also`,
+  `refines`, `sourced-from`
+- Each link requires a `context` sentence explaining *why* the connection
+  matters — tags group, links argue
+- Notes stored under `context/notes/`
+
+<details><summary>Example usage</summary>
+
+During research the user observes: "FTS5 trigram tokeniser can match
+partial words without prior tokenisation." Agent creates a `fleeting`
+note. Later the user promotes it to an `insight` and links it to a
+related note about search UX with relation `supports`.
+
+</details>
+
+---
+
+### session-handover
+
+> Writes an end-of-session handover document before the agent shuts down
+> or the container restarts. Use to preserve state across context resets.
+
+**Triggers:** When the user says "write a handover", "shutting down",
+"container restart", "end of session", or when context is approaching
+its limit.
+**Tools:** None (file-based via SKILL.md instructions)
+**Layers:** Layer 4
+
+Key capabilities:
+
+- Captures: current task state, open decisions, blockers, what was
+  completed, and suggested next actions
+- Stores as a LogEntry with a generated `LOG-` ID under `context/logs/`
+- Includes a `generate_id` call and date-sharded path derivation
+- Designed to be the first thing the next agent reads at session start
+
+<details><summary>Example usage</summary>
+
+Before shutdown, agent writes a handover capturing the in-progress
+WorkItem IDs, the open Discussion about the schema change, and the
+three concrete next steps for the incoming session.
 
 </details>
 
@@ -59,173 +200,163 @@ User decides to use SQLite instead of PostgreSQL for the local dev environment. 
 
 ### standup-context
 
-> Manages session standup notes in context/STANDUPS.md. Records what was done, what is planned, and any blockers at the start or end of work sessions.
+> Writes a standup update in Done / Doing / Next / Blockers format. Use
+> at the start of a work session, for daily standups, or for async team
+> updates.
 
-**Triggers:** At the start of a new session, or when the user asks to record progress.
-**Tools:** None
-**References:** None
+**Triggers:** When the user says "write a standup", "daily update",
+"what did we do yesterday", or "status update for the team".
+**Tools:** None (file-based via SKILL.md instructions)
+**Layers:** Layer 4
 
 Key capabilities:
 
-- Read and update `context/STANDUPS.md`
-- Add entries with today's date as heading
-- Each entry includes Done, Next, and Blockers sections
-- New entries placed at the top, below the header
-- Keep entries concise -- one line per item
+- Reads open and recently-completed WorkItems to populate Done / Doing
+- Reads Discussion entities for blockers
+- Outputs a clean, copy-pasteable standup
+- Optionally stores as a LogEntry for the audit trail
 
-<details><summary>Example usage</summary>
+---
 
-At the start of a session, the agent reads STANDUPS.md, creates a new entry with today's date, and fills in what was completed last session, what is planned now, and any blockers.
+### morning-briefing
 
-</details>
+> Generates a session-start orientation from the current project state.
+> Use at the beginning of a session to get a fast, structured catch-up.
+
+**Triggers:** When the user says "morning briefing", "catch me up",
+"state of things", or "what's on the board".
+**Tools:** Reads `query_entities`, `recent_events` via index-management
+**Layers:** Layer 4
+
+Key capabilities:
+
+- Summarises open WorkItems by state and priority
+- Surfaces recent LogEntries (what changed since last session)
+- Highlights open Discussions and pending Decisions
+- Reports any pending Migrations
+
+---
+
+### context-grooming
+
+> Periodically prunes and compacts the project context to keep it
+> navigable. Use when `context/` has grown stale or cluttered.
+
+**Triggers:** When the user says "groom the context", "clean up context",
+or when the entity count in any directory is getting unwieldy.
+**Tools:** index-management for enumeration; per-kind MCP servers for
+transitions
+**Layers:** Layer 4
+
+Key capabilities:
+
+- Identifies `done` WorkItems older than N days as candidates for
+  archiving
+- Surfaces Discussions in `open` state that have had no activity
+- Detects Notes in `fleeting` state that have not been promoted
+- Proposes a grooming plan — does not auto-archive without confirmation
 
 ---
 
 ### release-semver
 
-> Manages semantic versioning releases -- version bumps, changelogs, tags, publishing. Use when preparing a new release.
+> Plans and executes a semantic versioning release. Use when preparing a
+> new version of a project or library.
 
-**Triggers:** When the user says "prepare a release", "bump the version", "publish", "cut a release", or asks about versioning.
-**Tools:** None
-**References:** None
-
-Key capabilities:
-
-- Determine version bump type (patch, minor, major) based on changes
-- Pre-release checklist: tests pass, no uncommitted changes, dependencies up to date
-- Prepare changelog grouped by Added, Changed, Fixed, Removed
-- Bump version in all relevant files (Cargo.toml, pyproject.toml, package.json, etc.)
-- Commit with `chore: bump version to vX.Y.Z` and tag `vX.Y.Z`
-- Publish according to the project's distribution channel
-
-<details><summary>Example usage</summary>
-
-User says "Let's release -- we fixed two bugs and added a feature." The agent recommends a minor bump (new feature), drafts changelog entries, updates version files, and creates the tagged commit.
-
-</details>
-
----
-
-### incident-response
-
-> Guides production incident handling -- triage, communicate, fix, postmortem. Use when something is broken in production.
-
-**Triggers:** When the user reports a production issue, outage, or says "production is down", "users are affected", "we have an incident".
-**Tools:** None
-**References:** None
+**Triggers:** When the user says "plan the release", "version bump",
+"cut a release", or "prepare vX.Y.Z".
+**Tools:** None (checklist-driven via SKILL.md instructions)
+**Layers:** Layer 4
 
 Key capabilities:
 
-- Triage within first 5 minutes: assess user impact, identify recent changes, evaluate rollback options
-- Communicate to stakeholders with status, impact, and ETA
-- Mitigate first, fix later: rollback or temporary workaround to restore service
-- Fix: identify root cause, apply and test the fix, deploy with extra monitoring
-- Postmortem within 48 hours: timeline, root cause analysis, action items, blameless approach
-
-<details><summary>Example usage</summary>
-
-User reports "Our API is returning 500 errors after the last deploy." The agent checks the deploy diff, identifies the breaking change, recommends immediate rollback while preparing a fix, and drafts a stakeholder update.
-
-</details>
+- Determine bump type (patch/minor/major) from change audit
+- Update CHANGELOG and PROVENANCE
+- Run smoke tests before tagging
+- Commit, tag, push, build release tarball, create GitHub release
+- processkit-specific: `stamp-provenance.sh` and
+  `build-release-tarball.sh` are the canonical scripts
 
 ---
 
 ### retrospective
 
-> Facilitates team or project retrospectives -- what worked, what didn't, action items. Use at the end of a sprint, milestone, or project phase.
+> Facilitates team or project retrospectives — what worked, what didn't,
+> action items. Use at the end of a sprint, milestone, or project phase.
 
-**Triggers:** When the user says "let's do a retro", "what went well?", "lessons learned", or "end of sprint review".
+**Triggers:** When the user says "let's do a retro", "what went well?",
+"lessons learned", or "end of sprint review".
 **Tools:** None
-**References:** None
+**Layers:** Layer 4
 
 Key capabilities:
 
-- Set the scope of the retrospective (time period or milestone)
-- Gather input in three categories: What Worked, What Didn't Work, What to Try Next
-- Format as a structured Markdown document
+- Scope the retrospective (time period or milestone)
+- Gather input in three categories: What Worked, What Didn't, What to
+  Try Next
 - Action items must be specific, assignable, and time-bound
-- Store the retrospective in `context/` or the project's designated location
-
-<details><summary>Example usage</summary>
-
-User says "Let's do a retro on the v0.3 release." The agent asks what went well and what was painful, then structures findings into the retro format with concrete action items and saves to `context/retros/v0.3.md`.
-
-</details>
+- Store as a LogEntry or Artifact in `context/`
 
 ---
 
-### agent-management
+### incident-response
 
-> Multi-agent workflow coordination including task delegation, context sharing, handoff protocols, and quality gates. Use when orchestrating multiple AI agents, designing agent pipelines, or managing agent-to-agent communication.
+> Guides production incident handling — triage, communicate, fix,
+> postmortem. Use when something is broken in production.
 
-**Triggers:** When coordinating multiple AI agents on a shared task, decomposing large tasks into agent-assignable subtasks, designing agent pipelines, or setting up handoff protocols.
+**Triggers:** When the user reports a production issue or says "production
+is down", "users are affected", "we have an incident".
 **Tools:** None
-**References:** `references/coordination-patterns.md`
+**Layers:** Layer 4
 
 Key capabilities:
 
-- Task decomposition into agent-sized units with clear scope, input/output specs, and success criteria
-- Agent role definitions: Planner, Researcher, Coder, Reviewer
-- Context sharing via file-based handoffs, structured messages, and shared memory (project files)
-- Structured handoff protocol with status, artifacts, verification, blockers, and next action
-- Quality gates between stages (planning, research, coding, review)
-- Error recovery and fallback strategies for failed agent steps
-- Progress tracking via checklists updated after each step
-
-<details><summary>Example usage</summary>
-
-User asks to add authentication to an API using multiple agents. The agent creates a task plan: (1) Researcher reads existing route handlers and middleware patterns, writes findings to a scratch file. (2) Coder implements auth middleware and JWT validation based on findings. (3) Reviewer checks against OWASP guidelines and verifies tests pass. Each handoff includes structured status, artifacts, and next action.
-
-</details>
+- Triage within first 5 minutes: assess user impact, identify recent
+  changes, evaluate rollback options
+- Communicate to stakeholders with status, impact, and ETA
+- Mitigate first, fix later: rollback or temporary workaround
+- Postmortem within 48 hours: timeline, root cause, action items,
+  blameless approach
 
 ---
 
 ### estimation-planning
 
-> Software estimation and planning including story points, velocity tracking, scope negotiation, and technical debt budgeting. Use when estimating work, planning sprints, or negotiating project scope.
+> Software estimation and planning — story points, velocity tracking,
+> scope negotiation, technical debt budgeting. Use when estimating work
+> or planning sprints.
 
-**Triggers:** When estimating work effort, planning sprints, negotiating scope, budgeting for technical debt, or asking "how should I estimate this project?".
+**Triggers:** When the user asks to estimate work, plan a sprint,
+negotiate scope, or asks "how should I estimate this?".
 **Tools:** None
-**References:** None
+**Layers:** Layer 4
 
 Key capabilities:
 
-- Story points vs time estimates: Fibonacci sizing, relative complexity, when to use each
-- Planning poker with anchoring bias prevention and async estimation for remote teams
-- Cone of uncertainty: communicate estimates as ranges with confidence levels
-- Velocity tracking over 5-6 sprints for reliable forecasting
-- Scope negotiation using MoSCoW prioritization and MVP identification
-- Technical debt budgeting: allocate 15-20% of each sprint, categorize as critical/important/minor
-- Three-point estimation with PERT formula and standard deviation
-- Monte Carlo simulation basics for probabilistic completion forecasts
-
-<details><summary>Example usage</summary>
-
-Stakeholder wants all 50 stories done by end of quarter. The agent calculates based on average velocity and remaining sprints, finds the scope exceeds capacity, and presents options: descope to must-haves, extend the deadline, or add capacity. Uses MoSCoW to identify which stories are must-have vs could-have.
-
-</details>
+- Story points vs time estimates: Fibonacci sizing, relative complexity
+- Planning poker with anchoring-bias prevention
+- Cone of uncertainty: communicate estimates as ranges with confidence
+- Velocity tracking and MoSCoW prioritisation
+- Three-point estimation with PERT formula
 
 ---
 
 ### postmortem-writing
 
-> Blameless postmortem writing with timeline, root cause analysis, and corrective actions. Use when writing incident postmortems, conducting post-incident reviews, or creating postmortem templates.
+> Blameless postmortem writing with timeline, root cause analysis, and
+> corrective actions. Use when writing incident postmortems.
 
-**Triggers:** When writing an incident postmortem, conducting a post-incident review, creating a postmortem template, or asking "how do I write a blameless postmortem?".
+**Triggers:** When writing an incident postmortem, conducting a
+post-incident review, or asking "how do I write a blameless postmortem?".
 **Tools:** None
-**References:** None
+**Layers:** Layer 4
 
 Key capabilities:
 
-- Structured postmortem template: title/metadata, summary, impact, timeline, root cause, contributing factors, what went well, corrective actions, lessons learned
-- Timeline writing with UTC timestamps, separating detection time from response time
-- Root cause analysis using 5 Whys technique, drilling to systemic/process issues
-- Corrective actions categorized as prevent, detect, or mitigate -- each with owner and due date
-- Blameless culture practices: systems-focused language, passive voice for human errors
-- Facilitation tips: schedule within 3-5 days, time-box to 60 minutes, separate facilitator from author
-
-<details><summary>Example usage</summary>
-
-User reports a production outage and needs help writing the postmortem. The agent asks for the timeline of events, collects facts, structures the postmortem using the template, guides the 5 Whys analysis from symptom to systemic root cause, and proposes corrective actions in prevent/detect/mitigate categories.
-
-</details>
+- Structured template: summary, impact, timeline, root cause, corrective
+  actions, lessons learned
+- 5 Whys root cause analysis down to systemic/process issues
+- Corrective actions in prevent/detect/mitigate categories, each with
+  owner and due date
+- Blameless culture: systems-focused language, passive voice for human
+  errors

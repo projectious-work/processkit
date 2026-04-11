@@ -41,13 +41,13 @@ spec:
 ---
 ```
 
-## Ships with v0.2.0
+## Formal process definitions
 
-processkit v0.2.0 does not yet ship formal process definitions (only the
-`process-management` skill that describes how to write them). Earlier
-aibox process markdown files (`bug-fix.md`, `code-review.md`,
-`feature-development.md`, `release.md`) will be migrated to the formal
-Process shape in a later release.
+processkit ships the `process-management` skill that describes how to write
+and read Process entities. Formal definitions for the common workflows
+(`bug-fix`, `code-review`, `feature-development`, `release`) are planned
+for a future release — they will appear as YAML files under
+`context/processes/` once shipped.
 
 ## See also
 

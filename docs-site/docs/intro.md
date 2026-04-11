@@ -28,11 +28,11 @@ is the domain expert. The agent is the executor.
 
 ## What processkit ships
 
-- **20 process primitives** — WorkItem, LogEntry, DecisionRecord, Note *(new in v0.5.1)*,
+- **20 process primitives** — WorkItem, LogEntry, DecisionRecord, Note,
   Migration, Actor, Role, Binding, Scope, Category, Constraint, Gate, Schedule, Process,
   StateMachine, Metric, Discussion, Artifact, Context, CrossReference.
   Framework-agnostic building blocks shipped as YAML schemas + state machines.
-- **125 skills** — engineering, language, framework, infrastructure, design, data,
+- **128+ skills** — engineering, language, framework, infrastructure, design, data,
   security, AI/ML, process-primitive, document/asset creation, meta-cognitive,
   and role-specific skills (PRD writing, user research, legal review, data storytelling).
   Each skill follows the Anthropic Agent Skills spec: YAML frontmatter, three-section
@@ -53,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.5.1"
+version = "v0.12.0"
 
 [context]
 packages = ["managed"]
@@ -100,7 +100,21 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   PROVENANCE.toml + diff script, configurable upstream source URL, privacy tiers
 - **v0.5.0** — Anthropic Agent Skills spec alignment, Gotchas discipline (7 per skill),
   Intro/Overview/Full reference structure, FORMAT.md, skill-builder + skill-reviewer,
-  scripts/ subdirectory, assets/, session-handover, backlog-context, standup-context
-- **v0.5.1** *(current)* — 30 new skills (document creation, meta-cognitive, role-specific),
-  Note primitive + note-management skill, morning-briefing, 5 Pattern 5 starter kit skills
+  scripts/ subdirectory, assets/, session-handover, standup-context
+- **v0.5.1** — 30 new skills (document creation, meta-cognitive, role-specific),
+  Note primitive + note-management skill, morning-briefing
+- **v0.7.0–v0.9.0** — `src/context/` mirror restructure; all primitives gain JSON
+  schemas; auto-log side-effects in all entity-mutating MCP servers
+- **v0.10.0** — skills directory reorganised into 7 category subdirectories
+  (`processkit/`, `engineering/`, `devops/`, `data-ai/`, `product/`, `documents/`,
+  `design/`); `resolve_entity()` 3-stage ID lookup (exact → prefix → word-pair);
+  structured error responses from all MCP read tools
+- **v0.11.0** — Note `links` field (Zettelkasten relations with typed edges);
+  Artifact self-hosted and pointer patterns documented; MCP server path fixes
+  after v0.10.0 reorganisation
+- **v0.11.1** — `pascal` and `camel` word styles correctly distinct;
+  `context/` dogfood mirror synced with `resolve_entity()`
+- **v0.12.0** *(current)* — `artifact-management` skill and MCP server
+  (Layer 2); `create_artifact`, `get_artifact`, `query_artifacts`,
+  `update_artifact`; Artifact is a catalogue record with no state machine
 - **v1.0.0** — first stable release (not yet scheduled)

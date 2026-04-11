@@ -70,12 +70,12 @@ metadata:
 
 See [Skills → Format](./format) for the complete specification.
 
-## v0.5.1 catalog (125 skills)
+## v0.12.0 catalog (128+ skills)
 
 | Category | Count | Examples |
 |---|---|---|
 | Engineering (language, framework, architecture, infra, security) | ~70 | python-best-practices, fastapi-patterns, terraform-basics |
-| Process-primitive | ~20 | workitem-management, decision-record, event-log, note-management |
+| Process-primitive | ~31 | workitem-management, decision-record, artifact-management, event-log, note-management |
 | Document / asset creation | 4 | docx-authoring, pptx-authoring, xlsx-modeling, pdf-workflow |
 | Meta-cognitive | 4 | research-with-confidence, devils-advocate, board-of-advisors, morning-briefing |
 | Role-specific | 4 | prd-writing, user-research, data-storytelling, legal-review |
@@ -84,6 +84,29 @@ See [Skills → Format](./format) for the complete specification.
 All skills are **Pattern 5 (domain-specific intelligence)**: they encode
 what an expert in the domain carries in their head — conventions, gotchas,
 and decision rules — so the agent reasons like a specialist, not a generalist.
+
+## Browsing the skill catalog
+
+Three ways to find skills:
+
+**On GitHub** — Browse the source tree directly:
+[`src/context/skills/`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/)
+is organized into 7 category subdirectories (`processkit/`,
+`engineering/`, `devops/`, `data-ai/`, `product/`, `documents/`,
+`design/`). Each skill directory contains a `SKILL.md` with the full
+description, gotchas, and reference.
+
+**From a release tarball** — Every GitHub release includes a
+`processkit-vX.Y.Z.tar.gz` with all `src/` content. Download and unpack
+to inspect or diff skills without cloning the full repo. Release assets
+live at:
+[github.com/projectious-work/processkit/releases](https://github.com/projectious-work/processkit/releases)
+
+**In a project using aibox** — After `aibox init`, skills are installed
+under `context/skills/processkit/<skill-name>/SKILL.md` in the project
+root. The `skill-finder` skill (always installed) maps natural-language
+cues to the right skill name. The index-management MCP server's
+`search_entities` tool can query skill metadata from the SQLite index.
 
 ## Where to go next
 

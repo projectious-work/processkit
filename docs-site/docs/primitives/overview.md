@@ -5,22 +5,22 @@ title: "Overview"
 
 # Primitives — Overview
 
-processkit provides **19 process primitives** as universal building blocks.
+processkit provides **20 process primitives** as universal building blocks.
 They are framework-agnostic — they appear in every serious process methodology
 (SAFe, PMBOK, CMMI, Scrum, Kanban). processkit ships their schemas, default
 state machines, and management skills, but does not impose a methodology on
-top of them. The 19th, **Migration**, was added in v0.4.0 to make
-upstream-version transitions first-class entities.
+top of them.
 
-## The 19 primitives
+## The 20 primitives
 
 | Primitive         | Purpose                                                           | Prefix |
 |-------------------|-------------------------------------------------------------------|--------|
 | **WorkItem**      | Unit of work (task, story, bug, epic, spike, chore)              | BACK   |
 | **LogEntry**      | Immutable record of something that happened                      | LOG    |
 | **DecisionRecord**| A choice with rationale (ADR pattern)                            | DEC    |
-| **Migration**     | *(v0.4.0)* Pending/in-progress/applied transition between upstream versions | MIG |
-| **Artifact**      | Any produced output                                               | ART    |
+| **Migration**     | Pending/in-progress/applied transition between upstream versions | MIG    |
+| **Artifact**      | Completed deliverable (document, dataset, build, URL)            | ART    |
+| **Note**          | Zettelkasten capture layer (fleeting, insight, reference)        | NOTE   |
 | **Actor**         | Person or agent (humans, AI, services)                           | ACTOR  |
 | **Role**          | Named set of responsibilities                                    | ROLE   |
 | **Binding**       | Scoped/temporal relationship between two entities (generalized RoleBinding) | BIND |
@@ -66,18 +66,16 @@ Binding entity. Otherwise → use a cross-reference field in frontmatter.
 
 See [Primitives → Relationships](./relationships) for details.
 
-## v0.2.0 schema coverage
+## Schema coverage
 
-As of v0.2.0, the authoritative JSON-Schema files exist for three primitives:
+All 20 primitives ship with authoritative YAML schema files under
+[`src/context/schemas/`](https://github.com/projectious-work/processkit/tree/main/src/context/schemas/).
+The schemas define the `spec` fields, required vs optional, and enum
+constraints. MCP servers validate against the schema on every write call —
+schema errors surface as structured tool errors rather than silent bad data.
 
-- [WorkItem](https://github.com/projectious-work/processkit/blob/main/src/primitives/schemas/workitem.yaml)
-- [LogEntry](https://github.com/projectious-work/processkit/blob/main/src/primitives/schemas/logentry.yaml)
-- [DecisionRecord](https://github.com/projectious-work/processkit/blob/main/src/primitives/schemas/decisionrecord.yaml)
-
-The remaining 15 primitives have management skills but not yet full JSON
-schemas. Entity files for them can still be created — `aibox lint` validates
-`apiVersion`, `kind`, and `metadata.id` structurally. Full schemas land in
-v0.3.0 alongside the index MCP server.
+`aibox lint` validates `apiVersion`, `kind`, and `metadata.id` structurally
+without requiring MCP servers — useful in CI or offline environments.
 
 ## Next
 
