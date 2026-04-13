@@ -67,3 +67,10 @@ site/
 # aibox generated
 
 context/private/
+
+.aibox-local.env
+.mcp.json
+.cursor/mcp.json
+.gemini/settings.json
+.codex/config.toml
+.continue/mcpServers/
