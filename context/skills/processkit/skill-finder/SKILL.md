@@ -129,6 +129,7 @@ that skill before proceeding.
 | "research this", "I'm not sure about this fact" | `research-with-confidence` |
 | "build a new skill", "author a skill" | `skill-builder` |
 | "review this skill", "is this skill good" | `skill-reviewer` |
+| "route this task", "what should I do", "which tool", "route_task" | `task-router` |
 | "session start", "which skill applies", "check skill-finder", "1% rule" | `skill-gate` |
 | "dependency audit", "check dependencies" | `dependency-audit` |
 | "dependency management", "update packages" | `dependency-management` |
@@ -149,7 +150,7 @@ directory name as the `category:` value when authoring or filtering:
 
 | Directory | Contents |
 |---|---|
-| `processkit/` | 31 skills for operating the processkit system |
+| `processkit/` | 33 skills for operating the processkit system |
 | `engineering/` | 46 skills: software design, architecture, backend, languages |
 | `devops/` | 15 skills: infrastructure, CI/CD, ops, monitoring |
 | `data-ai/` | 11 skills: data science, ML, AI/LLM, embeddings |
@@ -163,6 +164,7 @@ A curated selection of the most commonly used skills per task domain.
 For the full catalog, read `skills/INDEX.md`.
 
 **Process**
+- `task-router` — primary routing entry point: maps task to skill + process override + MCP tool
 - `workitem-management` — create, transition, and query WorkItems
 - `decision-record` — capture architectural and product decisions as DecisionRecords
 - `artifact-management` — register and retrieve completed deliverables
