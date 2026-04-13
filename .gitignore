@@ -74,3 +74,5 @@ context/private/
 .gemini/settings.json
 .codex/config.toml
 .continue/mcpServers/
+
+.claude/settings.local.json
