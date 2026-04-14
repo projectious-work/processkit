@@ -5,7 +5,7 @@
 # =============================================================================
 
 [aibox]
-version = "0.18.2"             # Target aibox CLI version. Update this when intentionally upgrading aibox.
+version = "latest"             # Target aibox CLI version. Update this when intentionally upgrading aibox.
                                # Use "latest" to always track the newest release without pinning.
 base    = "debian"             # Base image flavor. Options: debian
 
