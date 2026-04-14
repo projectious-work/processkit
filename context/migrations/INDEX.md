@@ -19,6 +19,7 @@ None.
 | 2026-04-13 | MIG-20260411T204940 — processkit v0.13.0 → v0.13.0 | AGENTS.md conflict resolved by restoring the filled local file on top of the new scaffold. |
 | 2026-04-13 | MIG-RUNTIME-20260413T112909 — runtime-home 0.18.1 → 0.18.1 | New runtime-home files accepted; snapshots present under context/templates/aibox-home/0.18.1. |
 | 2026-04-13 | MIG-RUNTIME-20260413T113638 — runtime-home 0.18.1 → 0.18.2 | Runtime-home updates accepted; snapshots present under context/templates/aibox-home/0.18.2. |
+| 2026-04-14 | MIG-20260414T085054 — processkit v0.13.0 → v0.13.0 | Same-version re-scan. AGENTS.md conflict: kept local. Four changed-locally-only files: no action. |
 
 ## CLI Migrations
 

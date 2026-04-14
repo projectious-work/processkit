@@ -193,6 +193,21 @@ If yes:
 Nothing is mandatory — the project owner decides what to file
 upstream. The Discussion entity records the decision either way.
 
+## Team
+
+This project has a permanent AI team of eight roles defined under
+`context/roles/`, `context/actors/`, and `context/bindings/`. The
+project manager (`ACTOR-pm-claude`, Opus) is the default session agent:
+owns every incoming request, routes by kind + complexity, reviews
+results, and plays devil's advocate against the owner and the rest of
+the team.
+
+Read [`context/team/roster.md`](context/team/roster.md) at session start
+for the routing heuristic, clone policy (max 5 parallel per role
+without owner sign-off), and budget orientation (Opus ≈5% / Sonnet ≈85%
+/ Haiku ≈10%, not a hard limit). The charter lives in
+`DEC-20260414_0900-TeamRoster-permanent-ai-team-composition`.
+
 ## Project-specific notes
 
 - Load `context/skills/processkit/skill-gate/SKILL.md` at the start of
