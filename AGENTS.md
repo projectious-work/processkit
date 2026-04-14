@@ -109,7 +109,7 @@ directly; MCP servers read them on every call — no restart needed.
 ## How this project is organized: processkit content
 
 This project uses **[processkit](https://github.com/projectious-work/processkit.git)**,
-pinned at `v0.13.0`, package tier(s) `product`, to manage process
+pinned at `v0.14.0`, package tier(s) `product`, to manage process
 content (skills, primitives, processes, schemas). All
 processkit-installed material lives under `context/`:
 
@@ -272,4 +272,4 @@ without owner sign-off), and budget orientation (Opus ≈5% / Sonnet ≈85%
 
 ---
 
-<sub>Scaffolded by processkit `v0.13.0` on `2026-04-13`. Re-rendered on each installer sync.</sub>
+<sub>Scaffolded by processkit `v0.14.0` on `2026-04-14`. Re-rendered on each installer sync.</sub>

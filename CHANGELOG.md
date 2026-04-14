@@ -5,6 +5,52 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.14.0] — 2026-04-14
+
+### Added
+
+- **Compliance contract (Rail 1)** — canonical
+  `context/skills/processkit/skill-gate/assets/compliance-contract.md`
+  is the single source of truth for the eight enforceable rules. AGENTS.md
+  carries a verbatim copy between `<!-- pk-compliance-contract v1 BEGIN -->`
+  and `<!-- pk-compliance-contract v1 END -->` markers at the top of the
+  file (primacy header), so every harness that reads AGENTS.md surfaces
+  the contract before the rest of the project narrative.
+- **`acknowledge_contract()` MCP tool (Rail 3)** — added to the
+  `skill-gate` MCP server. Records a per-session acknowledgement marker
+  under `context/.state/skill-gate/session-<id>.ack`. Paired with the
+  PreToolUse hook script (Rail 2) so writes under `context/` block until
+  the contract has been acknowledged once per session. The server also
+  ships `read_contract()` and `check_acknowledged()`.
+- **Provider-neutral hook scripts (Rail 2)** — stdlib-only Python scripts
+  shipped under `context/skills/processkit/skill-gate/scripts/`:
+  `emit_compliance_contract.py` (SessionStart / UserPromptSubmit) and
+  `check_route_task_called.py` (PreToolUse). Harness wiring (Claude Code
+  `settings.json`, Codex CLI `hooks.json`, etc.) is aibox's responsibility;
+  fixtures captured from a real Claude Code 2.1+ session ship as golden
+  files alongside the scripts. Includes `test_hooks.py` for CI.
+
+### Changed
+
+- **1% rule sentence in 8 MCP tool descriptions (Rail 4)** — the
+  entity-mutating tools on `artifact-management`, `decision-record`,
+  `discussion-management`, `event-log`, `skill-finder`, and
+  `workitem-management` MCP servers now carry a one-line reminder in
+  their docstring: `route_task()` first if there is even a 1% chance a
+  processkit skill applies. Always-on, zero-dependency rail visible in
+  the tool schema every turn.
+
+### Notes
+
+- v0.14.0 is the **processkit (Bucket A) half** of the enforcement
+  rollout. The matching aibox-side wiring (merged MCP config per
+  harness, hook installation, drift report) is tracked as upstream
+  issues #43–#51 on `projectious-work/aibox`. Until aibox ships those,
+  the rails are present in the source tree but only Rail 1 (prose) and
+  Rail 4 (tool descriptions) are visible to derived projects.
+
+---
+
 ## [v0.13.0] — 2026-04-11
 
 ### Added

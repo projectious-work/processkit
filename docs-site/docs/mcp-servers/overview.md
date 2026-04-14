@@ -11,10 +11,10 @@ either edit entity files directly (following the SKILL.md instructions)
 or call an MCP tool (which validates against the schema and state machine).
 Both are first-class; MCP is not required.
 
-## Status at v0.13.0
+## Status at v0.14.0
 
-**Fifteen MCP servers ship** across Layers 0–2 of the processkit skill
-hierarchy, plus two routing servers. They live under
+**Sixteen MCP servers ship** across Layers 0–3 of the processkit skill
+hierarchy, plus two routing servers (and `skill-gate` — see Rail 3). They live under
 `context/skills/processkit/<skill>/mcp/server.py` and share a Python
 utility library at `context/skills/_lib/processkit/`.
 

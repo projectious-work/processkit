@@ -70,7 +70,7 @@ metadata:
 
 See [Skills → Format](./format) for the complete specification.
 
-## v0.13.0 catalog (130+ skills)
+## v0.14.0 catalog (130+ skills)
 
 | Category | Count | Examples |
 |---|---|---|

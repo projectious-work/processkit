@@ -53,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.13.0"
+version = "v0.14.0"
 
 [context]
 packages = ["managed"]
@@ -117,8 +117,13 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
 - **v0.12.0** — `artifact-management` skill and MCP server (Layer 2);
   `create_artifact`, `get_artifact`, `query_artifacts`, `update_artifact`;
   Artifact is a catalogue record with no state machine
-- **v0.13.0** *(current)* — `task-router` and `skill-finder` MCP servers;
+- **v0.13.0** — `task-router` and `skill-finder` MCP servers;
   `route_task()` returns skill + process override + tool in one call;
   `skill-gate` meta-skill (1% rule); MCP tool prerequisite prompts on all
   20 entity-mutating tools; one-sentence imperative description convention
+- **v0.14.0** *(current)* — enforcement Rails 1–4: canonical compliance
+  contract + AGENTS.md primacy header (Rail 1); provider-neutral hook
+  scripts for SessionStart / UserPromptSubmit / PreToolUse (Rail 2);
+  `acknowledge_contract()` MCP tool on `skill-gate` (Rail 3); 1%-rule
+  sentence in 8 entity-mutating MCP tool descriptions (Rail 4)
 - **v1.0.0** — first stable release (not yet scheduled)
