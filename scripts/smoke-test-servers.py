@@ -141,6 +141,7 @@ def run():
 
         # Import servers
         tr = import_server("task-router")
+        sg = import_server("skill-gate")
         wi = import_server("workitem-management")
         dec = import_server("decision-record")
         bind = import_server("binding-management")
@@ -608,6 +609,112 @@ def run():
         rt_empty = route_task_fn(task_description="")
         print("route_task empty (expected error):", rt_empty)
         assert "error" in rt_empty
+
+        # 9. skill-gate: acknowledge_contract + check_contract_acknowledged
+        # Seed the compliance contract asset so the server can find it.
+        _sg_assets_src = (
+            PROCESSKIT
+            / "src" / "context" / "skills"
+            / "processkit" / "skill-gate" / "assets"
+        )
+        _sg_assets_dst = (
+            workdir / "context" / "skills"
+            / "processkit" / "skill-gate" / "assets"
+        )
+        if _sg_assets_src.is_dir():
+            shutil.copytree(_sg_assets_src, _sg_assets_dst, dirs_exist_ok=True)
+
+        os.environ["PROCESSKIT_SESSION_ID"] = "smoke-test-session"
+
+        ack_fn = get_tool(sg, "acknowledge_contract")
+        check_fn = get_tool(sg, "check_contract_acknowledged")
+
+        # Version mismatch → ok=False, no marker written
+        bad_ack = ack_fn(version="v999")
+        print("acknowledge_contract bad version (expected ok=false):", bad_ack)
+        assert not bad_ack["ok"], f"expected ok=false, got {bad_ack}"
+        assert "version mismatch" in bad_ack.get("error", ""), (
+            f"expected 'version mismatch' in error, got {bad_ack}"
+        )
+
+        # Not yet acknowledged → acknowledged=False
+        not_acked = check_fn()
+        print("check_contract_acknowledged before ack:", not_acked)
+        assert not not_acked["acknowledged"], (
+            f"expected acknowledged=false before ack, got {not_acked}"
+        )
+
+        # Valid acknowledgement
+        good_ack = ack_fn(version="v1")
+        print("acknowledge_contract v1:", good_ack)
+        assert good_ack["ok"], f"expected ok=true, got {good_ack}"
+        assert "contract_hash" in good_ack
+        assert "expires_at" in good_ack
+        assert "contract" in good_ack
+        # Verify marker file was written
+        _marker = (
+            workdir / "context" / ".state" / "skill-gate"
+            / "session-smoke-test-session.ack"
+        )
+        assert _marker.is_file(), f"marker file not written: {_marker}"
+        import json as _json
+        _mdata = _json.loads(_marker.read_text())
+        assert "contract_hash" in _mdata and "acknowledged_at" in _mdata, (
+            f"marker missing expected fields: {_mdata}"
+        )
+        print("skill-gate marker file:", _marker.name, "— fields:", list(_mdata))
+
+        # Now acknowledged → acknowledged=True
+        acked = check_fn()
+        print("check_contract_acknowledged after ack:", acked)
+        assert acked["acknowledged"], (
+            f"expected acknowledged=true after ack, got {acked}"
+        )
+        assert acked["contract_hash"] == good_ack["contract_hash"]
+        assert acked["session_id"] == "smoke-test-session"
+        assert isinstance(acked["age_seconds"], int)
+
+        print("skill-gate smoke test: PASSED")
+
+        # ── 1% rule guard (DEC-20260414_1430-SteelLatch / FEAT-InkStamp) ──────
+        # Assert that every locked MCP tool description contains "1% rule".
+        # If any description is missing the string, fail loudly so CI catches it.
+        _1pct_checks = [
+            (tr,   "route_task"),
+            (skf,  "find_skill"),
+            (wi,   "create_workitem"),
+            (wi,   "transition_workitem"),
+            (dec,  "record_decision"),
+            (elog, "log_event"),
+            (disc, "open_discussion"),
+            (art,  "create_artifact"),
+            (sg,   "acknowledge_contract"),
+            (sg,   "check_contract_acknowledged"),
+        ]
+        _1pct_failures = []
+        for _srv_mod, _tool_name in _1pct_checks:
+            _tm = _srv_mod.server._tool_manager
+            _tool_obj = _tm._tools.get(_tool_name)
+            if _tool_obj is None:
+                _1pct_failures.append(
+                    f"  MISSING TOOL: {_tool_name!r} not found in server"
+                )
+                continue
+            _desc = _tool_obj.description or ""
+            if "1% rule" not in _desc:
+                _1pct_failures.append(
+                    f"  MISSING '1% rule' in description of {_tool_name!r}"
+                )
+        if _1pct_failures:
+            raise AssertionError(
+                "1% rule CI guard failed — the following tool descriptions "
+                "are missing the literal string '1% rule':\n"
+                + "\n".join(_1pct_failures)
+                + "\n\nFix: append the canonical 1%-rule sentence to each "
+                "tool's docstring in its server.py."
+            )
+        print("1% rule guard: all 10 locked tools carry the '1% rule' string.")
+        # ── end 1% rule guard ─────────────────────────────────────────────────
 
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:
