@@ -35,6 +35,13 @@ Do not hand-edit the generated harness MCP config — edit the per-skill
 `mcp-config.json` and let the installer re-merge.
 <!-- pk-compliance-contract v1 END -->
 
+## Session start
+
+On session start, run `morning-briefing-generate` before acting. It
+will read AGENTS.md, the most recent `session.handover` log, pending
+migrations under `context/migrations/pending/`, in-progress WorkItems,
+and open DecisionRecords.
+
 This file is the canonical, provider-neutral entry point for any AI coding
 agent (or human collaborator) working on **processkit**. It follows
 the [agents.md](https://agents.md) open standard.
@@ -109,7 +116,7 @@ directly; MCP servers read them on every call — no restart needed.
 ## How this project is organized: processkit content
 
 This project uses **[processkit](https://github.com/projectious-work/processkit.git)**,
-pinned at `v0.14.0`, package tier(s) `product`, to manage process
+pinned at `v0.15.0`, package tier(s) `product`, to manage process
 content (skills, primitives, processes, schemas). All
 processkit-installed material lives under `context/`:
 
@@ -272,4 +279,4 @@ without owner sign-off), and budget orientation (Opus ≈5% / Sonnet ≈85%
 
 ---
 
-<sub>Scaffolded by processkit `v0.14.0` on `2026-04-14`. Re-rendered on each installer sync.</sub>
+<sub>Scaffolded by processkit `v0.15.0` on `2026-04-15`. Re-rendered on each installer sync.</sub>

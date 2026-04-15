@@ -5,6 +5,54 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.15.0] — 2026-04-15
+
+### Added
+
+- **`team-creator` skill** — provider-neutral team composition. Tiers
+  available models into heavy / medium / light using a weighted
+  formula over Capability (0.60), Cost-efficiency (0.20), Latency
+  (0.10), and Governance (0.10), then maps eight role archetypes
+  (PM, sr-architect, jr-architect, developer, sr-researcher,
+  jr-researcher, jr-developer, assistant) onto the tiered models.
+  Three commands: `team-create` (full derivation, writes 24 entities
+  + roster + DecisionRecord), `team-review` (read-only diff vs latest
+  landscape), `team-rebalance` (targeted re-tier of named roles).
+  Composes `model-recommender`, `role-management`, `actor-profile`,
+  `binding-management`, `decision-record-write` — no new primitives,
+  no MCP server. Defaults reproduce the v0.14.0 manually-composed
+  team 8/8 on Anthropic Max 5×. Validated by Phase 3 dogfood
+  (`ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff`).
+- **Session-orientation wiring** — AGENTS.md gains a "Session start"
+  section under the compliance-contract block: agents run
+  `morning-briefing-generate` before acting (provider-neutral, every
+  AGENTS.md-aware harness picks it up). `emit_compliance_contract.py`
+  hook script extended with `--include-session-start` flag for
+  Claude Code / Cursor reinforcement.
+- **6 new artifacts under `context/artifacts/`** — TeamWeaver Phase 1
+  design, OpenWeave Phase 1 design, landscape snapshot (HTML +
+  structured summary), Phase 3 dogfood diff, Rail 5 research.
+- **3 new follow-up WorkItems filed** — `FEAT-OpenWeave` (4-layer
+  override design done; implementation queued), `FEAT-QuietLedger`
+  (Rail 5 L1+L2 implementation), `RES-GapScout` (research closed).
+
+### Changed
+
+- **`morning-briefing` skill bumped 1.0.0 → 1.1.0** — adds
+  `context/migrations/pending/` to "Sources to read" and emits a
+  one-line token-budget-share snapshot (Opus / Sonnet / Haiku
+  actuals vs ≈5/85/10 target, flagging drift > ±10pp per
+  `DEC-20260414_0900-TeamRoster`).
+
+### Closed
+
+- **`ARCH-20260414_1245-FirmFoundation`** — enforcement
+  implementation plan closed. All four originally-blocking FEAT
+  items (Rails 1–4) plus the two reconstructed follow-ups
+  (PathFinder, TeamWeaver) shipped.
+
+---
+
 ## [v0.14.0] — 2026-04-14
 
 ### Added
