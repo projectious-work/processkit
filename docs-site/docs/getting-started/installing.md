@@ -23,11 +23,11 @@ In your project's `aibox.toml`:
 ```toml
 [context]
 packages = ["managed"]
-processkit_version = "v0.15.0"
+processkit_version = "v0.16.0"
 ```
 
 `aibox init` and `aibox sync` will fetch that tag and cache it under
-`~/.cache/aibox/processkit/v0.15.0/`.
+`~/.cache/aibox/processkit/v0.16.0/`.
 
 ## 3. Run `aibox init`
 
@@ -66,6 +66,7 @@ expected skills, you are ready to start working.
 | `v0.13.0`  | 0.17.12     | task-router + skill-finder MCP; route_task()    |
 | `v0.14.0`  | 0.17.12     | enforcement Rails 1–4: contract + hooks + ack   |
 | `v0.15.0`  | 0.17.12     | team-creator skill; session-orientation wiring  |
+| `v0.16.0`  | 0.17.12     | canonical team schema fields; closes aibox #6   |
 
 aibox ships with a default processkit version pin. Overriding it in
 `aibox.toml` is how you opt into newer content without upgrading aibox (or

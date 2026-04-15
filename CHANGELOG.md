@@ -5,6 +5,57 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.16.0] — 2026-04-15
+
+### Added
+
+- **Canonical team-composition schema fields** — closes the aibox field
+  report in issue #6, which requested that processkit land a canonical
+  team primitive in place of their temporary `x_aibox.*` namespaced
+  extension. Three new optional fields on `Role` (`primary_contact`,
+  `clone_cap`, `cap_escalation`) and two on `Actor` (`is_template`,
+  `templated_from`):
+  - `Role.primary_contact` (bool, default `false`) — true for the role
+    that is the single point of contact with the human owner. Exactly
+    zero or one role per team may set this.
+  - `Role.clone_cap` (int, default `5`) — per-role parallelism
+    ceiling. The role with `primary_contact: true` must set
+    `clone_cap: 1` (never cloned).
+  - `Role.cap_escalation` (string, default `"owner"`) — who must
+    approve exceeding `clone_cap`. Literal `"owner"` or an actor-ref.
+  - `Actor.is_template` (bool, default `false`) — true for the
+    canonical seed Actor that defines a role binding; clones derive
+    from it. Enables index queries that separate seed team members
+    from task-specific clones.
+  - `Actor.templated_from` (Actor-ref, default `null`) — back-
+    reference from a clone to its template Actor.
+- **`team-creator` skill bumped 1.0.0 → 1.1.0** — emits the five new
+  canonical fields on every `team-create` / `team-rebalance` run.
+  Deactivation logic now uses `is_template: true` as the canonical
+  seed identifier instead of the prior same-model-same-role heuristic.
+- **Two new applied migrations** — `MIG-20260415T085311` (Role schema
+  + data) and `MIG-20260415T095000` (Actor schema + data). Back-fill
+  every existing Role/Actor entity so v0.15.0-installed teams carry
+  the new fields automatically on upgrade.
+
+### Changed
+
+- **`role-management` skill bumped to v1.0.1** — documents the three
+  new Role fields and their validation invariants.
+- **`actor-profile` skill bumped to v1.0.1** — documents the two new
+  Actor fields and their validation invariants.
+
+### Upstream migration note
+
+Consumers carrying the aibox-style `spec.x_aibox.*` extension can lift
+those fields into the canonical names with a one-to-one mapping:
+`x_aibox.is_template` → `is_template`, `x_aibox.clone_of` →
+`templated_from`, `x_aibox.default_clone_cap` → `clone_cap`,
+`x_aibox.escalate_cap_to` → `cap_escalation`, plus a new field
+`primary_contact` set true on the PM-equivalent role.
+
+---
+
 ## [v0.15.0] — 2026-04-15
 
 ### Added

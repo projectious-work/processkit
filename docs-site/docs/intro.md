@@ -53,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.15.0"
+version = "v0.16.0"
 
 [context]
 packages = ["managed"]
@@ -126,10 +126,15 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   scripts for SessionStart / UserPromptSubmit / PreToolUse (Rail 2);
   `acknowledge_contract()` MCP tool on `skill-gate` (Rail 3); 1%-rule
   sentence in 8 entity-mutating MCP tool descriptions (Rail 4)
-- **v0.15.0** *(current)* — `team-creator` skill (provider-neutral team
-  composition by cost/outcome tier, 3 commands, no new MCP server);
-  session-orientation wiring (AGENTS.md "Session start" block + extended
+- **v0.15.0** — `team-creator` skill (provider-neutral team composition
+  by cost/outcome tier, 3 commands, no new MCP server); session-
+  orientation wiring (AGENTS.md "Session start" block + extended
   SessionStart hook); `morning-briefing` v1.1.0 (pending-migrations
   source + token-budget snapshot); 6 new artifacts; 3 follow-up
   WorkItems including OpenWeave (4-layer overrides) and Rail 5 (L1+L2)
+- **v0.16.0** *(current)* — canonical team-composition schema fields
+  (closes aibox issue #6): `Role.primary_contact` / `clone_cap` /
+  `cap_escalation`, `Actor.is_template` / `templated_from`; `team-creator`
+  v1.1.0 emits them on every run; two applied migrations back-fill
+  existing entities; `role-management` + `actor-profile` bumped to v1.0.1
 - **v1.0.0** — first stable release (not yet scheduled)
