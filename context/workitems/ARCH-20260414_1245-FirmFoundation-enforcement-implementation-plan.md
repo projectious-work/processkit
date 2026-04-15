@@ -10,7 +10,7 @@ metadata:
     priority_driver: owner-critical
 spec:
   title: Implementation plan — processkit enforcement (hooks + acknowledge-contract hybrid)
-  state: in-progress
+  state: done
   type: architecture
   priority: critical
   description: >
@@ -31,6 +31,6 @@ spec:
     - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition
   assigned_to: ACTOR-sr-architect
   blocks:
-    - FEAT-Q3-session-onboarding   # not yet filed
-    - RES-Q2-team-creator          # not yet filed
+    - FEAT-20260415_1500-PathFinder-session-orientation-provider-neutral   # filed 2026-04-15, replaces FEAT-Q3-session-onboarding
+    - FEAT-20260415_1505-TeamWeaver-team-creator-skill                     # filed 2026-04-15, replaces RES-Q2-team-creator
 ---

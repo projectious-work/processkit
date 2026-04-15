@@ -6,7 +6,7 @@ metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
     id: SKILL-morning-briefing
-    version: "1.0.0"
+    version: "1.1.0"
     created: 2026-04-08T00:00:00Z
     category: processkit
     layer: 2
@@ -41,12 +41,13 @@ minutes of reading it.
 Pull from these sources in order, weighting by freshness:
 
 ```
-1. session.handover LogEntry  — most recent; weight by age (see below)
-2. WorkItems (in_progress + blocked)  — current state via workitem-management
-3. session.standup LogEntries — last 1-3 entries since last handover
-4. git log --oneline -5       — recent commits
-5. DecisionRecords (proposed) — open decisions needing attention
-6. Any time-sensitive flags   — deadlines, blockers, scheduled events
+1. session.handover LogEntry         — most recent; weight by age (see below)
+2. WorkItems (in_progress + blocked) — current state via workitem-management
+3. session.standup LogEntries        — last 1-3 entries since last handover
+4. git log --oneline -5              — recent commits
+5. DecisionRecords (proposed)        — open decisions needing attention
+6. context/migrations/pending/       — any pending schema/data migrations
+7. Any time-sensitive flags          — deadlines, blockers, scheduled events
 ```
 
 **Handover staleness rule** — before using the most recent `session.handover`
@@ -108,6 +109,32 @@ the user configuring anything.
 Omit sections that have nothing to report. A briefing with three
 well-chosen items is better than a padded briefing with eight items
 of equal apparent importance.
+
+### Token-budget-share snapshot
+
+Every briefing must include a one-line model-tier share snapshot
+immediately after the "State of play" section. This tells the PM
+at a glance whether model consumption is drifting from the targets
+defined in `context/team/roster.md` and
+`DEC-20260414_0900-TeamRoster-permanent-ai-team-composition`.
+
+Format:
+
+```
+Token share: Opus X % / Sonnet Y % / Haiku Z %
+(target ≈ 5 / 85 / 10) — [OK | ⚠ <tier> drifted ±Npp]
+```
+
+**Source.** Derive from the most recent session log entries,
+`session.standup` records, or any cost/usage data available in
+context. If no session-level data is available, omit the drift
+flag but still emit the target line.
+
+**Drift rule (from roster PM drift-flagging rule).** Flag a tier
+when its actual share deviates more than ±10 percentage points
+from its target (Opus ≈ 5 %, Sonnet ≈ 85 %, Haiku ≈ 10 %). Do
+not auto-throttle — surface to the owner, who decides. Example
+flag text: "⚠ Opus drifted +13 pp (architecture-heavy week)".
 
 ### Calibrating for session type
 

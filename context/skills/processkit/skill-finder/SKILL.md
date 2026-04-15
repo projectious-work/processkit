@@ -123,6 +123,7 @@ that skill before proceeding.
 | "write a standup", "daily update" | `standup-context` |
 | "write a handover", "shutting down", "container restart" | `session-handover` |
 | "morning briefing", "catch me up", "state of things" | `morning-briefing` |
+| "create my AI team", "compose a team", "rebalance the team", "review the team", "team composition", "team-create", "team-rebalance" | `team-creator` |
 | "groom the context", "clean up context" | `context-grooming` |
 | "second opinion", "devil's advocate", "poke holes in this" | `devils-advocate` |
 | "multiple perspectives", "board of advisors" | `board-of-advisors` |
@@ -175,6 +176,7 @@ For the full catalog, read `skills/INDEX.md`.
 - `morning-briefing` — generate a session-start orientation from project state
 - `context-grooming` — periodically prune and compact the project context
 - `release-semver` — plan and execute a semver release
+- `team-creator` — compose a provider-neutral AI team via tiered model scoring
 
 **Architecture**
 - `software-architecture` — high-level system design patterns and trade-offs

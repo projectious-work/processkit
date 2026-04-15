@@ -1,7 +1,9 @@
 """
 emit_compliance_contract.py — processkit SessionStart / UserPromptSubmit hook.
 
-WorkItem: FEAT-20260414_1433-SteadyHand-provider-neutral-hook-scripts
+WorkItems:
+  FEAT-20260414_1433-SteadyHand-provider-neutral-hook-scripts
+  FEAT-20260415_1500-PathFinder-session-orientation-provider-neutral
 Hooks guide: https://code.claude.com/docs/en/hooks-guide
 
 Purpose
@@ -39,6 +41,16 @@ import sys
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
+# Session-start instruction appended when --include-session-start is given.
+# ---------------------------------------------------------------------------
+_SESSION_START_LINE = (
+    "On session start, run `morning-briefing-generate` before acting."
+    " It will read AGENTS.md, the most recent `session.handover` log,"
+    " pending migrations under `context/migrations/pending/`,"
+    " in-progress WorkItems, and open DecisionRecords."
+)
+
+# ---------------------------------------------------------------------------
 # Locate the contract relative to this script, not cwd.
 # ---------------------------------------------------------------------------
 _ASSETS_DIR = Path(__file__).parent.parent / "assets"
@@ -57,6 +69,8 @@ def _is_claude_code() -> bool:
 
 
 def main() -> int:
+    include_session_start = "--include-session-start" in sys.argv[1:]
+
     if not _CONTRACT_PATH.exists():
         print(
             f"ERROR: compliance-contract.md not found at {_CONTRACT_PATH}; "
@@ -69,10 +83,18 @@ def main() -> int:
 
     if _is_claude_code():
         # Claude Code 2.1.0+ preferred form: JSON envelope.
+        additional_context = contract_text
+        if include_session_start:
+            additional_context = (
+                contract_text.rstrip("\n")
+                + "\n\n"
+                + _SESSION_START_LINE
+                + "\n"
+            )
         output = json.dumps(
             {
                 "hookSpecificOutput": {
-                    "additionalContext": contract_text,
+                    "additionalContext": additional_context,
                 }
             },
             ensure_ascii=False,
@@ -81,6 +103,8 @@ def main() -> int:
     else:
         # Plain stdout — works for Claude Code (legacy) and Codex CLI.
         print(contract_text, end="")
+        if include_session_start:
+            print("\n" + _SESSION_START_LINE)
 
     return 0
 
