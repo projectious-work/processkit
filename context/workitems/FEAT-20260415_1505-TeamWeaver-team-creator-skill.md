@@ -184,6 +184,10 @@ spec:
     WorkItem state transitioned from proposed to done. Follow-up:
     FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
     tracks the openness expansion.
+
+    v0.16.0 schema-field support (primary_contact, clone_cap,
+    cap_escalation, is_template, templated_from) added by ACTOR-developer
+    on 2026-04-15. SKILL version 1.0.0 → 1.1.0.
   related_decisions:
     - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition  # to be superseded by phase-3 output
   related_workitems:

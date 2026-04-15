@@ -7,6 +7,9 @@ metadata:
 spec:
   name: senior-architect
   description: "Designs large new features and complex bug fixes; decomposes large work into implementation-sized tasks."
+  primary_contact: false
+  clone_cap: 5
+  cap_escalation: "owner"
   responsibilities:
     - "Produce end-to-end design plans for large or cross-cutting features"
     - "Diagnose complex bugs where root cause is unclear or spans subsystems"

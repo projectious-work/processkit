@@ -7,6 +7,9 @@ metadata:
 spec:
   name: junior-developer
   description: "Implements low-complexity code changes, simple bug fixes, and mechanical refactors from a clear plan."
+  primary_contact: false
+  clone_cap: 5
+  cap_escalation: "owner"
   responsibilities:
     - "Apply well-specified, single-file edits: typos, simple refactors, string renames"
     - "Fix obvious bugs where the failure mode and fix are already identified"

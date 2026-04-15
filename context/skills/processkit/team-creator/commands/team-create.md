@@ -101,12 +101,21 @@ If `context/team/roster.md` already exists:
    team assignments:
    `actor-profile.deactivate_actor(id)`
 4. For each prior Actor whose model IS being re-assigned to the SAME
-   role in the new team: REUSE the existing Actor ID — do not create
-   a new Actor entity.
+   role in the new team: identify the canonical seed by
+   `is_template: true` (not by heuristics such as name or ID prefix).
+   REUSE that Actor ID — do not create a new Actor entity. This
+   ensures reuse targets the authoritative template, never a clone.
 
 ### Step 6 — Write entities
 
 Skip if `--dry-run`.
+
+Per-archetype values for `primary_contact`, `clone_cap`, and
+`cap_escalation` come from `references/role-archetypes.md`.
+Only `project-manager` has `primary_contact: true` and
+`clone_cap: 1`; all others use `primary_contact: false` and
+`clone_cap: 5`. `cap_escalation` is `"owner"` for all roles.
+Seed Actors always receive `is_template: true, templated_from: null`.
 
 For each of the 8 archetypes:
 ```
@@ -115,13 +124,18 @@ role-management.create_role(
   name=<archetype-name>,
   description=<one-line responsibility>,
   responsibilities=[...],
-  default_scope="permanent"
+  default_scope="permanent",
+  primary_contact=<bool per archetype table>,
+  clone_cap=<int per archetype table>,
+  cap_escalation="owner"
 )
 actor-profile.create_actor(
   id=ACTOR-<archetype-alias>,     # reuse existing if same model
   type="ai-agent",
   name=<model-display-name>,      # from model-recommender, not hardcoded
-  active=true
+  active=true,
+  is_template=true,
+  templated_from=null
 )
 binding-management.create_binding(
   type="role-assignment",
@@ -179,8 +193,14 @@ Candidate models scored:
   ...
 
 Role assignments:
-  project-manager   → <model-id>  (heavy, score=0.92)
-  senior-architect  → <model-id>  (heavy, score=0.87)
+  project-manager  → <model-id>  (heavy, score=0.92)
+    Role fields: primary_contact=true  clone_cap=1
+                 cap_escalation="owner"
+    Actor fields: is_template=true  templated_from=null
+  senior-architect → <model-id>  (heavy, score=0.87)
+    Role fields: primary_contact=false clone_cap=5
+                 cap_escalation="owner"
+    Actor fields: is_template=true  templated_from=null
   ...
 
 Entities to write (skipped in dry-run):

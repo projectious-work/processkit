@@ -7,6 +7,9 @@ metadata:
 spec:
   name: assistant
   description: "General-purpose helper: summarises inputs, orders lists, runs repetitive admin, performs small non-code chores."
+  primary_contact: false
+  clone_cap: 5
+  cap_escalation: "owner"
   responsibilities:
     - "Summarise texts, logs, or threads into short briefings"
     - "Sort, dedupe, and tabulate lists of items"

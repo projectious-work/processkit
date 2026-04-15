@@ -9,6 +9,8 @@ spec:
   name: "Senior Researcher (Claude Opus 4.6)"
   active: true
   joined_at: 2026-04-14T09:00:00Z
+  is_template: true
+  templated_from: null
   roles:
     - ROLE-senior-researcher
   expertise:

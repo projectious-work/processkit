@@ -73,15 +73,24 @@ For each role being reassigned:
 - If the incoming model ID matches an existing Actor entity in
   `context/actors/` (active or inactive): reactivate it (set
   `active: true` via `actor-profile.update_actor`). Do not create
-  a duplicate.
-- If no matching Actor exists:
+  a duplicate. The reactivated Actor retains its existing
+  `is_template` and `templated_from` values unchanged.
+- If no matching Actor exists, spawn a new clone Actor. The
+  original seed Actor for this role is the one with
+  `is_template: true` in `context/actors/`. Record its ID as
+  `<seed-actor-id>` and create:
   ```
   actor-profile.create_actor(
     type="ai-agent",
     name=<model-display-name>,
-    active=true
+    active=true,
+    is_template=false,
+    templated_from=<seed-actor-id>
   )
   ```
+  This marks the spawned Actor as a clone of the canonical
+  template, enabling index queries to separate seed team members
+  from rebalance-spawned instances.
 
 ### Step 6 — Create new Bindings
 

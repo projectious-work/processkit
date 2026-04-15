@@ -7,6 +7,9 @@ metadata:
 spec:
   name: developer
   description: "Implements features and bug fixes from architect plans and PM task assignments."
+  primary_contact: false
+  clone_cap: 5
+  cap_escalation: "owner"
   responsibilities:
     - "Implement WorkItems against a written plan; do not re-design silently"
     - "Write and update tests alongside every behavioural change"

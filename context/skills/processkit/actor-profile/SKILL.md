@@ -6,7 +6,7 @@ metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
     id: SKILL-actor-profile
-    version: "1.0.0"
+    version: "1.0.1"
     created: 2026-04-06T00:00:00Z
     category: processkit
     layer: 1
@@ -152,7 +152,16 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 | `preferences`   | map               | Free-form. See conventional keys below.                   |
 | `active`        | bool              | `false` = profile preserved but no new work assigned.     |
 | `joined_at`     | datetime          | When they became part of the project.                     |
-| `left_at`       | datetime          | When they stopped (sets `active: false`).                  |
+| `left_at`       | datetime          | When they stopped (sets `active: false`).                 |
+| `is_template`   | bool              | Seed Actor that defines a role binding. Clones derive.    |
+| `templated_from`| Actor-ref         | Back-reference from a clone to its template Actor.        |
+
+### Template and clone validation
+
+When `is_template: true`, `templated_from` must be null (templates
+cannot have templates). If `templated_from` is non-null, it must
+reference an Actor with `is_template: true`. An Actor may be neither
+a template nor a clone — both fields retain their defaults.
 
 ### Conventional preference keys
 

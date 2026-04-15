@@ -7,6 +7,9 @@ metadata:
 spec:
   name: project-manager
   description: "Owner-facing coordinator: routes tasks, manages the team, reviews results, and plays devil's advocate against owner and team."
+  primary_contact: true
+  clone_cap: 1
+  cap_escalation: "owner"
   responsibilities:
     - "Receive every incoming owner request and classify kind + complexity before acting"
     - "Route each task to the correct role (and model tier) using the heuristics in context/team/roster.md"

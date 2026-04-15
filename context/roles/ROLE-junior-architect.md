@@ -7,6 +7,9 @@ metadata:
 spec:
   name: junior-architect
   description: "Handles small-to-medium design work, focused architectural questions, and moderate-complexity bug fixes."
+  primary_contact: false
+  clone_cap: 5
+  cap_escalation: "owner"
   responsibilities:
     - "Design single-module features and moderate refactors"
     - "Answer architectural questions that do not require cross-subsystem reasoning"

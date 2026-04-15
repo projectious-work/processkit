@@ -6,7 +6,7 @@ metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
     id: SKILL-role-management
-    version: "1.0.0"
+    version: "1.0.1"
     created: 2026-04-06T00:00:00Z
     category: processkit
     layer: 1
@@ -156,6 +156,20 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 | `skills_required`  | list[string]  | Skill IDs or names. Advisory, not enforced.              |
 | `default_scope`    | enum          | `project` / `sprint` / `permanent`. Default assumption for Bindings. |
 | `supersedes`       | string        | Role ID this one replaces (for role renames/reorg).      |
+| `primary_contact`  | boolean       | True for the single owner-facing contact role per team. Default `false`. |
+| `clone_cap`        | integer       | Per-role parallelism ceiling. Default `5`. Must be `1` for PM equivalent. |
+| `cap_escalation`   | string        | Who approves exceeding `clone_cap`: literal `"owner"` or actor-ref. |
+
+### Team contact and clone management
+
+The three new fields (`primary_contact`, `clone_cap`, `cap_escalation`)
+manage team structure and task parallelism. Exactly one Role per team
+sets `primary_contact: true` — this is the owner-facing point of contact,
+typically the PM. The `clone_cap` field sets the maximum concurrent
+instances of a role (default 5; PM must be 1). When `clone_cap > 0`,
+`cap_escalation` names who approves exceeding that ceiling ("owner" or
+an actor-ref). These constraints are validated by the role-management
+MCP server.
 
 ### Roles vs Categories vs Gates
 

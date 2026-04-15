@@ -11,7 +11,7 @@ metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
     id: SKILL-team-creator
-    version: "1.0.0"
+    version: "1.1.0"
     created: 2026-04-15T00:00:00Z
     category: processkit
     layer: null
@@ -180,6 +180,14 @@ DecisionRecord's `progress_notes` are amended instead.
 - **Provider-neutrality.** Never hardcode any model name, provider
   name, or tier label anywhere in this skill. All identifiers flow
   in from `model-recommender`.
+
+- **Canonical schema fields (processkit v0.16.0).** This skill
+  emits five fields introduced in v0.16.0: Role fields
+  `primary_contact` (bool), `clone_cap` (int),
+  `cap_escalation` (string); Actor fields `is_template` (bool),
+  `templated_from` (string, nullable). Seed Actors are always
+  `is_template: true`; rebalance-spawned clones are
+  `is_template: false` with `templated_from` pointing at the seed.
 
 ## No-skill-inflation rationale
 

@@ -2,16 +2,16 @@
 
 ## The 8 processkit role archetypes
 
-| Role archetype | Tier pin | Rationale | Override-when |
-|---|---|---|---|
-| **project-manager** | heavy | Routing quality compounds; every routing error propagates to all downstream work | **Never override.** PM is always heavy; always 1 clone (no parallelism). |
-| **senior-architect** | heavy | Cross-subsystem design; blast radius is high; wrong architecture poisons the entire codebase | Medium only if no heavy candidate clears G-floor AND owner explicitly approves in writing. |
-| **senior-researcher** | heavy | Multi-source synthesis; wrong synthesis poisons downstream decisions at scale | Same as senior-architect. |
-| **junior-architect** | medium | Single-module scope; bounded blast radius | Heavy if median capability gap between medium and heavy tiers exceeds 15pp on SWE-bench Verified for the accessible candidate set. |
-| **developer** | medium | Implementation against a written plan; bounded scope | Heavy for security-critical or regulated subsystems (owner sets `--security-critical` flag). |
-| **junior-researcher** | medium | Bounded single-topic research; output reviewed by senior-researcher | No override. |
-| **junior-developer** | light | Well-specified single-file edits; no architecture decisions | Medium if no light-tier candidate is accessible (escalation fallback). |
-| **assistant** | light | Admin, formatting, summarisation, file management | No override. If no light model is accessible, share the junior-developer model (same ACTOR entity, same Binding target). |
+| Role archetype | Tier pin | Rationale | Override-when | `primary_contact` | `clone_cap` | `cap_escalation` |
+|---|---|---|---|---|---|---|
+| **project-manager** | heavy | Routing quality compounds; every routing error propagates to all downstream work | **Never override.** PM is always heavy; always 1 clone (no parallelism). | `true` | `1` | `"owner"` |
+| **senior-architect** | heavy | Cross-subsystem design; blast radius is high; wrong architecture poisons the entire codebase | Medium only if no heavy candidate clears G-floor AND owner explicitly approves in writing. | `false` | `5` | `"owner"` |
+| **senior-researcher** | heavy | Multi-source synthesis; wrong synthesis poisons downstream decisions at scale | Same as senior-architect. | `false` | `5` | `"owner"` |
+| **junior-architect** | medium | Single-module scope; bounded blast radius | Heavy if median capability gap between medium and heavy tiers exceeds 15pp on SWE-bench Verified for the accessible candidate set. | `false` | `5` | `"owner"` |
+| **developer** | medium | Implementation against a written plan; bounded scope | Heavy for security-critical or regulated subsystems (owner sets `--security-critical` flag). | `false` | `5` | `"owner"` |
+| **junior-researcher** | medium | Bounded single-topic research; output reviewed by senior-researcher | No override. | `false` | `5` | `"owner"` |
+| **junior-developer** | light | Well-specified single-file edits; no architecture decisions | Medium if no light-tier candidate is accessible (escalation fallback). | `false` | `5` | `"owner"` |
+| **assistant** | light | Admin, formatting, summarisation, file management | No override. If no light model is accessible, share the junior-developer model (same ACTOR entity, same Binding target). | `false` | `5` | `"owner"` |
 
 ## Override rules in detail
 
@@ -95,6 +95,18 @@ starting points; projects may extend them.
 | junior-researcher | Research bounded single topics; produce structured summaries for senior-researcher review |
 | junior-developer | Implement well-specified single-file edits; run linters; update changelogs |
 | assistant | Format documents; manage file moves; write standup notes; perform admin tasks |
+
+## Template vs clone
+
+The 8 seed Actors emitted by `team-create` are **templates**
+(`is_template: true`, `templated_from: null`). They represent the
+canonical team roster — one Actor per archetype. When
+`team-rebalance` spawns a new Actor to fill a role (replace or add),
+that spawned Actor is a **clone**: `is_template: false` and
+`templated_from: <seed-actor-id>` pointing at the template it
+derives from. This distinction lets the system separate "the 8
+authoritative team members" from "task-specific parallel instances"
+when querying the actor index.
 
 ## Provider-neutrality invariant
 

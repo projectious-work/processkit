@@ -70,3 +70,18 @@ spec:
         type: string
         format: date-time
         description: "When the actor stopped (typically also sets active: false)."
+      is_template:
+        type: boolean
+        default: false
+        description: >
+          True for the canonical seed Actor that defines a role binding;
+          clones derive from it. Enables index queries that separate "the 8
+          seed team members" from "clones spawned for a specific task." If
+          true, templated_from must be null (templates cannot have templates).
+      templated_from:
+        type: string
+        pattern: "^ACTOR-[a-zA-Z0-9_-]+$|^null$"
+        description: >
+          Back-reference from a clone to its template Actor (Actor-ref).
+          Null for templates themselves and for one-off non-template Actors.
+          If non-null, must reference an Actor that has is_template: true.

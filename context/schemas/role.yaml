@@ -53,3 +53,24 @@ spec:
         type: string
         pattern: "^ROLE-[a-zA-Z0-9_-]+$"
         description: "Role ID this one replaces (for role renames or reorganizations)."
+      primary_contact:
+        type: boolean
+        default: false
+        description: >
+          True if this role is the single point of contact with the human
+          owner. Exactly zero or one Role in any team sets this true.
+          Replaces ad-hoc "PM is owner-facing" prose.
+      clone_cap:
+        type: integer
+        default: 5
+        minimum: 1
+        description: >
+          Per-role parallelism ceiling. The maximum number of concurrent
+          clones (parallel instances) of this role. PM archetype must be 1.
+          Must be paired with cap_escalation when > 0.
+      cap_escalation:
+        type: string
+        default: "owner"
+        description: >
+          Who must approve exceeding clone_cap. Literal string "owner" or
+          an actor-ref like ACTOR-<id>. Required when clone_cap > 0.

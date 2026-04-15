@@ -7,6 +7,9 @@ metadata:
 spec:
   name: senior-researcher
   description: "Conducts deep research on complex or high-stakes questions and produces well-argued research reports."
+  primary_contact: false
+  clone_cap: 5
+  cap_escalation: "owner"
   responsibilities:
     - "Investigate open-ended questions the owner or team has framed"
     - "Produce structured research reports with confidence labels, sources, and trade-off analysis"

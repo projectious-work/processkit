@@ -7,6 +7,9 @@ metadata:
 spec:
   name: junior-researcher
   description: "Handles bounded research and analysis tasks of small-to-medium complexity."
+  primary_contact: false
+  clone_cap: 5
+  cap_escalation: "owner"
   responsibilities:
     - "Answer focused research questions (one topic, a handful of sources)"
     - "Summarise documentation, blog posts, and specs into structured findings"
