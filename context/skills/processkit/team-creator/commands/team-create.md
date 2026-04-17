@@ -13,7 +13,11 @@ team-create
   --parallelism-cap <int>            # max clones per role, default 5
   --governance-floor <0-5>           # G-score floor, default 3
   [--weight-overrides <json>]        # {"C":0.60,"K":0.20,"L":0.10,"G":0.10}
-  [--landscape <artifact-id>]        # default: latest landscape-summary artifact
+                                     # CLI > DEC-*-TeamWeights > skill defaults
+  [--threshold-overrides <json>]     # {"heavy_min":0.70,"medium_min":0.40}
+                                     # CLI > DEC-*-TeamWeights > skill defaults
+  [--landscape-artifact <ART-id>]    # explicit landscape override; skips discovery
+  [--landscape <artifact-id>]        # alias for --landscape-artifact (kept for compat)
   [--dry-run]                        # print plan; write nothing
 ```
 
@@ -21,16 +25,27 @@ team-create
 
 ### Step 1 — Resolve landscape snapshot
 
-Locate the landscape artifact:
-1. If `--landscape <artifact-id>` is supplied, load that artifact.
-2. Otherwise query artifact index for the latest artifact tagged
-   `landscape-summary`. If none found, **abort** with:
-   > "No landscape-summary artifact found. Run the Haiku landscape-
-   > ingest task to produce an ART-*-LandscapeSnapshot artifact before
-   > running team-create."
-3. If the artifact is older than 90 days, emit a warning but continue.
-   Record the artifact ID and its `created` date in the DecisionRecord
-   `inputs_snapshot`.
+Three-level precedence (see `references/landscape-resolution.md`):
+
+1. If `--landscape-artifact <ART-id>` (or alias `--landscape`) is
+   supplied, load that artifact directly. Record
+   `inputs_snapshot.landscape_artifact_source: "explicit"`.
+2. Else query artifact index for the most-recently-created artifact
+   tagged both `landscape-summary` **and** `landscape-summary-project`
+   whose `spec.project_id` matches the current project context.
+   Record `inputs_snapshot.landscape_artifact_source: "project-tag"`.
+3. Else fall back to the most-recently-created artifact tagged
+   `landscape-summary` (kit default). Record
+   `inputs_snapshot.landscape_artifact_source: "kit-default"`.
+
+If no artifact is found at any level, **abort** with:
+> "No landscape-summary artifact found. Run the Haiku landscape-ingest
+> task to produce an ART-*-LandscapeSnapshot artifact before running
+> team-create."
+
+If the resolved artifact is older than 90 days, emit a warning but
+continue. Record the artifact ID and its `created` date in the
+DecisionRecord `inputs_snapshot`.
 
 ### Step 2 — Query accessible models
 
@@ -47,7 +62,36 @@ model-recommender.get_pricing(sort_by="value_score")
 Filter out any model with availability != "operational" unless the
 owner explicitly passes `--allow-degraded`.
 
-### Step 3 — Apply tiering formula
+### Step 3 — Resolve weights + thresholds, then apply tiering formula
+
+**Weight resolution (before scoring):**
+
+```
+CLI --weight-overrides <json>
+  > DEC-*-TeamWeights.weight_overrides (tag: team-weights-override,
+      most recent accepted; see references/team-weights-decision-schema.md)
+    > skill defaults: {C:0.60, K:0.20, L:0.10, G:0.10}
+```
+
+**Threshold resolution (before classification):**
+
+```
+CLI --threshold-overrides <json>
+  > DEC-*-TeamWeights.tier_thresholds (same DEC; validated on load)
+    > skill defaults: {heavy_min:0.70, medium_min:0.40}
+```
+
+Validate any threshold override against the rules in
+`references/team-weights-decision-schema.md` (§Threshold validation
+rules). Violations are hard errors — abort before scoring.
+
+Record `inputs_snapshot.weights_source` and
+`inputs_snapshot.tier_thresholds_source` with the resolution level
+used (`"cli"`, `"dec-team-weights"`, or `"skill-default"`), and
+store the actual values in `inputs_snapshot.weights` and
+`inputs_snapshot.tier_thresholds`.
+
+**Scoring:**
 
 For each accessible candidate model `m`:
 
@@ -62,14 +106,13 @@ For each accessible candidate model `m`:
 2. Min-max normalise each dimension across the full candidate set:
    `norm(x) = clamp((x - min) / (max - min), 0.01, 1.00)`
 
-3. Compute TierScore using weights `{C, K, L, G}` (defaults or
-   `--weight-overrides`):
+3. Compute TierScore using resolved weights `{C, K, L, G}`:
    `TierScore(m) = C×norm(C) + K×norm(K) + L×norm(L) + G×norm(G)`
 
-4. Classify:
-   - TierScore ≥ 0.70 → **heavy**
-   - TierScore 0.40–0.69 → **medium**
-   - TierScore < 0.40 → **light**
+4. Classify using resolved thresholds:
+   - TierScore ≥ `heavy_min` → **heavy**
+   - TierScore ≥ `medium_min` and < `heavy_min` → **medium**
+   - TierScore < `medium_min` → **light**
 
 5. Tier-collapse rule: if fewer than 3 distinct tiers result, promote
    the two highest-scoring light models to medium.
@@ -77,16 +120,34 @@ For each accessible candidate model `m`:
 See `references/tiering-formula.md` for the full formula and worked
 example.
 
-### Step 4 — Map archetypes to candidates
+### Step 4 — Load role-archetypes override (if present), then map archetypes
 
-For each of the 8 role archetypes (see `references/role-archetypes.md`):
+**Layer 4 override (eager validation — before archetype mapping):**
 
-1. Select the archetype's pinned tier.
+If `context/team/role-archetypes.yaml` exists, load it now and
+validate it immediately against the rules in
+`references/role-archetypes-override.md` (§Validation invariants).
+Validation failures are hard errors — abort before any mapping begins.
+This includes: PM pin must remain heavy, PM clone_cap_override ≤ 1,
+all rationales non-empty, all 8 archetypes present in `replace` mode.
+
+Record `inputs_snapshot.archetype_override_file: "present"` (or
+`"absent"`) and list each overridden role with its new pin and
+rationale summary in `inputs_snapshot.archetype_overrides`.
+
+**Archetype mapping:**
+
+For each of the 8 role archetypes:
+
+1. Select the archetype's pinned tier — from the (possibly-overridden)
+   archetype table. Kit defaults (`references/role-archetypes.md`)
+   apply for any archetype not listed in a delta override, or when no
+   override file is present.
 2. From the models classified into that tier, pick the highest TierScore.
 3. If preferred_providers are supplied and two models score within 0.05
    of each other, prefer the model from the preferred provider.
 4. If the pinned tier has no candidates: apply the override-when rule
-   from `references/role-archetypes.md`; if no override applies, fail
+   from the active archetype table; if no override applies, fail
    with a clear message.
 
 ### Step 5 — Deactivate prior team (if re-running)
@@ -168,10 +229,17 @@ decision-record-write(
     governance_floor: ...,
     parallelism_cap: ...,
     weights: {C, K, L, G},
+    weights_source: "cli" | "dec-team-weights" | "skill-default",
+    tier_thresholds: {heavy_min, medium_min},
+    tier_thresholds_source: "cli" | "dec-team-weights" | "skill-default",
     landscape_artifact: <ART-id>,
     landscape_artifact_date: <date>,
+    landscape_artifact_source: "explicit" | "project-tag" | "kit-default",
     tier_scores: {<model-id>: <score>, ...},
-    weight_overrides_applied: <bool>
+    weight_overrides_applied: <bool>,
+    archetype_override_file: "present" | "absent",
+    archetype_override_semantics: "delta" | "replace" | null,
+    archetype_overrides: [...]   # list of {role, kit_default_pin, override_pin}
   }
 )
 ```

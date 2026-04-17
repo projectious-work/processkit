@@ -8,16 +8,18 @@ prevent accidental writes.
 
 ```
 team-rebalance
-  --roles <list|"all">    # comma-separated role names, or "all"
-  --confirm               # required; prevents accidental writes
-  --reason <string>       # recorded in the DecisionRecord amendment
-  [--landscape <artifact-id>]   # default: latest landscape-summary
-  [--weight-overrides <json>]   # override stored weights for this run
+  --roles <list|"all">         # comma-separated role names, or "all"
+  --confirm                    # required; prevents accidental writes
+  --reason <string>            # recorded in the DecisionRecord amendment
+  [--landscape-artifact <ART-id>]  # explicit landscape override
+  [--landscape <artifact-id>]      # alias for --landscape-artifact
+  [--weight-overrides <json>]      # override stored weights for this run
+  [--threshold-overrides <json>]   # override stored thresholds for this run
 ```
 
 ## Process (sequential)
 
-### Step 1 — Load governing DecisionRecord
+### Step 1 — Load governing DecisionRecord + DEC-*-TeamWeights check
 
 ```
 decision-record.get_decision(<governing-DEC-id>)
@@ -28,6 +30,27 @@ Read `spec.inputs_snapshot` to retrieve:
 - `governance_floor`
 - `parallelism_cap`
 - The landscape artifact ID from the prior run
+
+**DEC-*-TeamWeights newer-than-governing-DEC check:**
+
+Query the decision index for the most-recent accepted DecisionRecord
+tagged `team-weights-override` (see
+`references/team-weights-decision-schema.md`). If one exists and its
+`metadata.created` is **newer** than the governing team
+DecisionRecord's `metadata.created`, emit this warning and do NOT
+silently apply the new weights:
+
+```
+WARNING: A newer DEC-*-TeamWeights record (created <ISO-date>)
+post-dates the governing team DecisionRecord (created <ISO-date>).
+Weight policy has changed since the last team-create run. This
+targeted rebalance uses stored weights from the governing DEC.
+To apply the updated weights across all roles, run:
+  team-rebalance --roles all --confirm --reason "<reason>"
+```
+
+CLI `--weight-overrides` and `--threshold-overrides` always override
+stored values regardless of DEC age.
 
 If `--roles all` is specified, re-run the full `team-create` logic
 (steps 1–8 of `team-create`) and write a new DecisionRecord instead

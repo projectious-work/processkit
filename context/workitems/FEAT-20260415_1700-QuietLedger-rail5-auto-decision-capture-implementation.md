@@ -10,7 +10,7 @@ metadata:
     priority_driver: owner-critical
 spec:
   title: Rail 5 implementation — auto-capture of decisions (Lever 1 PreToolUse gate + Lever 2 SessionEnd sweeper)
-  state: proposed
+  state: done
   type: feature
   priority: high
   size: M
@@ -106,3 +106,10 @@ inherited from the research:
    whether L1 is Claude-Code-only or cross-harness).
 
 Schedule: post-v0.15.0 release.
+
+## Progress notes
+
+Implementation completed by ACTOR-developer on 2026-04-15. Ships in
+shadow-mode-ON by default; 20-session calibration required before
+flipping to block. Follow-up calibration item: file separately if
+needed.

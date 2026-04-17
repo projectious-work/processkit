@@ -11,7 +11,7 @@ metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
     id: SKILL-team-creator
-    version: "1.1.0"
+    version: "1.2.0"
     created: 2026-04-15T00:00:00Z
     category: processkit
     layer: null
@@ -85,8 +85,10 @@ existing skills — no new primitives or MCP tools are introduced.
 | `--subscription <provider>:<tier>` | yes | — | e.g. `anthropic:max-5x` |
 | `--governance-floor <0-5>` | no | 3 | Models below excluded before scoring |
 | `--parallelism-cap <1-10>` | no | 5 | PM always capped at 1 |
-| `--weight-overrides <json>` | no | see formula | Must sum to 1.0 ± 0.001 |
-| `--landscape <ART-id>` | no | latest `landscape-summary` artifact | |
+| `--weight-overrides <json>` | no | see formula | Must sum to 1.0 ± 0.001; CLI > DEC-*-TeamWeights > defaults |
+| `--threshold-overrides <json>` | no | `{"heavy_min":0.70,"medium_min":0.40}` | CLI > DEC-*-TeamWeights > defaults |
+| `--landscape-artifact <ART-id>` | no | 3-level discovery | Explicit > project-tag > kit default; see `references/landscape-resolution.md` |
+| `--landscape <ART-id>` | no | alias for `--landscape-artifact` | Kept for backwards compatibility |
 
 ### Tiering formula (summary)
 
@@ -108,7 +110,7 @@ and a full worked example.
 
 | Role | Tier pin | Override? |
 |---|---|---|
-| project-manager | heavy | Never |
+| project-manager | heavy | Never (immutable) |
 | senior-architect | heavy | Medium only if no heavy clears G-floor + owner approval |
 | senior-researcher | heavy | Same as senior-architect |
 | junior-architect | medium | Heavy if capability gap > 15pp on SWE-bench |
@@ -118,6 +120,10 @@ and a full worked example.
 | assistant | light | No override; shares junior-developer model if no light available |
 
 See `references/role-archetypes.md` for full override-when rules.
+
+Project-level overrides: if `context/team/role-archetypes.yaml`
+exists, it is loaded before archetype mapping and validated eagerly.
+See `references/role-archetypes-override.md` for schema and invariants.
 
 ### Commands
 
@@ -181,6 +187,27 @@ DecisionRecord's `progress_notes` are amended instead.
   name, or tier label anywhere in this skill. All identifiers flow
   in from `model-recommender`.
 
+- **Override audit trails (OpenWeave layers 1–4).** Each override
+  layer produces a distinct audit entry in the chartering team
+  DecisionRecord's `inputs_snapshot`:
+  - Layer 1 (landscape): `landscape_artifact_source` records
+    `"explicit"` | `"project-tag"` | `"kit-default"` and the
+    resolved ART-id. The project-tagged artifact (ART-*) is itself
+    the audit record for who created the custom landscape.
+  - Layer 2 (weights): `weights_source` + `weights` block records
+    which DEC-*-TeamWeights (if any) was applied, or `"cli"` /
+    `"skill-default"`. The DEC-*-TeamWeights record carries its own
+    rationale and deciders.
+  - Layer 3 (thresholds): `tier_thresholds_source` + `tier_thresholds`
+    block; co-located with Layer 2 in the same DEC-*-TeamWeights
+    record (causally coupled — cannot drift).
+  - Layer 4 (role pins): `archetype_override_file`, `archetype_override_semantics`,
+    and `archetype_overrides` list each overridden role with its new
+    pin. The `context/team/role-archetypes.yaml` file itself is
+    the persistent record.
+  Any run with overrides: query the single chartering team
+  DecisionRecord to fully reconstruct the run's configuration.
+
 - **Canonical schema fields (processkit v0.16.0).** This skill
   emits five fields introduced in v0.16.0: Role fields
   `primary_contact` (bool), `clone_cap` (int),
@@ -188,6 +215,24 @@ DecisionRecord's `progress_notes` are amended instead.
   `templated_from` (string, nullable). Seed Actors are always
   `is_template: true`; rebalance-spawned clones are
   `is_template: false` with `templated_from` pointing at the seed.
+
+## Agent-driven discovery
+
+Agents can resolve user intent into the correct override layer using
+the trigger phrases below. These are additive to the existing
+`team-creator` triggers above — they extend the skill-finder entries,
+not replace them.
+
+| Layer | Trigger phrases | Routed action |
+|---|---|---|
+| Layer 1 — landscape | "use our own model list", "we have a custom provider set", "this project uses different models", "update the landscape for this project" | Create project-tagged landscape artifact (`landscape-summary-project` tag + `project_id`); pass `--landscape-artifact` to `team-create` |
+| Layer 2 — weights | "we value latency more", "cost matters more here", "prioritise governance", "adjust the scoring weights", "latency is critical for this project" | Write a `DEC-*-TeamWeights` record (tag: `team-weights-override`) via `decision-record-write`; re-run `team-create` to pick it up |
+| Layer 3 — thresholds | "the tier cutoffs don't fit our model set", "too many models landing in medium", "adjust the heavy threshold", "nothing is reaching heavy tier" | Amend or create `DEC-*-TeamWeights` with a `tier_thresholds` block; validate against rules in `references/team-weights-decision-schema.md` |
+| Layer 4 — pins | "pin senior-architect to medium for this project", "we want all researchers on heavy", "remap role classes", "change the role tier assignments" | Create or update `context/team/role-archetypes.yaml`; re-run `team-create` (eager validation fires on startup) |
+
+Agents MUST consult skill-finder before routing any of these requests.
+The trigger phrases are designed to match natural-language owner requests
+without the owner naming the override layer explicitly.
 
 ## No-skill-inflation rationale
 

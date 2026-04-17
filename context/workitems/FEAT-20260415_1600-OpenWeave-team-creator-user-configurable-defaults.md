@@ -10,7 +10,7 @@ metadata:
     priority_driver: owner-critical
 spec:
   title: team-creator openness — user- and agent-configurable models, weights, classes, and role→class bindings
-  state: proposed
+  state: done
   type: feature
   priority: medium
   size: M
@@ -108,6 +108,30 @@ spec:
       1. Can index-management query arbitrary spec.* fields, or tag-only?
       2. Eager vs lazy role-archetypes.yaml validation.
       3. team-rebalance handling of TeamWeights DEC newer than governing team DEC.
+
+    Phase 2 (implementation) completed by ACTOR-developer on 2026-04-15.
+    Four layers implemented as documentation + two fixtures. SKILL version 1.1.0 → 1.2.0.
+
+    Owner decisions adopted:
+      1. Tag-only discovery (team-weights-override) — no spec.* field queries.
+      2. Eager validation of role-archetypes.yaml — fail fast before model scoring.
+      3. Warn-and-suggest --roles all when TeamWeights DEC is newer than governing DEC.
+
+    Files created:
+      - references/landscape-resolution.md (Layer 1 resolution logic)
+      - references/team-weights-decision-schema.md (Layer 2+3 DEC schema + validation)
+      - references/role-archetypes-override.md (Layer 4 YAML schema + invariants)
+      - ART-20260415_1630-OpenWeave-regression-fixture-max5x-defaults.md
+      - ART-20260415_1635-OpenWeave-dogfood-latency-weighted.md
+
+    Files updated:
+      - SKILL.md (version 1.1.0 → 1.2.0, new inputs table, agent-discovery section, gotchas)
+      - commands/team-create.md (Step 1 resolution, Step 3 weight/threshold, Step 4 override)
+      - commands/team-rebalance.md (newer-TeamWeights-DEC warning, new flags)
+      - commands/team-review.md (landscape resolution update)
+
+    Dogfood result: L=0.50 weights move 5/8 role assignments vs kit-default.
+    PM/sr-arch/sr-researcher switch Opus→Haiku (+65 tok/s each). Smoke tests: PASSED.
   assigned_to: ACTOR-pm-claude  # PM sequences; per-layer implementers TBD
 ---
 

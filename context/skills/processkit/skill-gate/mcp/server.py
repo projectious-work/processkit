@@ -77,10 +77,11 @@ server = FastMCP("processkit-skill-gate")
 # Constants
 # ---------------------------------------------------------------------------
 
-_COMPLIANCE_VERSION = "v1"
+_COMPLIANCE_VERSION = "v2"
 _CONTRACT_MARKER = f"<!-- pk-compliance {_COMPLIANCE_VERSION} -->"
 _SESSION_ACK_SUBDIR = Path("context") / ".state" / "skill-gate"
 _ACK_LIFETIME_HOURS = 12
+_SKIP_LIFETIME_HOURS = 24
 
 
 # ---------------------------------------------------------------------------
@@ -292,6 +293,82 @@ def check_contract_acknowledged() -> dict:
         "age_seconds": age_seconds,
         "contract_hash": stored_hash,
     }
+
+
+@server.tool(
+    annotations=ToolAnnotations(
+        readOnlyHint=False,
+        destructiveHint=False,
+        idempotentHint=False,
+        openWorldHint=False,
+    )
+)
+def skip_decision_record(reason: str, session_id: str = "default") -> dict:
+    """Acknowledge that the current turn intentionally skips a record_decision
+    call despite Tier-A decision-language markers. Writes a per-session skip
+    marker at context/.state/skill-gate/session-<session_id>.decision-skip
+    with the reason. Expires after 24 hours.
+
+    Per the processkit compliance contract: if there is even a 1% chance a
+    processkit skill applies to the current task, consult skill-finder first.
+
+    Parameters
+    ----------
+    reason :
+        Human-readable explanation of why no record_decision is needed
+        (e.g. "decision language was about a sub-step already recorded",
+        "colloquial affirmation not a formal decision").
+    session_id :
+        The session identifier. Defaults to "default"; pass the actual
+        session ID from the hook input for correct session scoping.
+
+    Returns
+    -------
+    ok              — True on success
+    marker_path     — Path where the skip marker was written
+    expires_at      — ISO-8601 UTC timestamp 24 h from now
+    reason          — The reason echoed back
+    """
+    try:
+        project_root = paths.find_project_root()
+        state_dir = project_root / _SESSION_ACK_SUBDIR
+        state_dir.mkdir(parents=True, exist_ok=True)
+
+        # Resolve session_id: honour env var if caller left default.
+        effective_sid = (
+            session_id
+            if session_id != "default"
+            else (os.environ.get("PROCESSKIT_SESSION_ID") or session_id)
+        )
+
+        marker_path = state_dir / f"session-{effective_sid}.decision-skip"
+        now = datetime.now(timezone.utc)
+        expires_at = now + timedelta(hours=_SKIP_LIFETIME_HOURS)
+
+        marker_path.write_text(
+            json.dumps(
+                {
+                    "reason": reason,
+                    "acknowledged_at": now.isoformat(),
+                    "expires_at": expires_at.isoformat(),
+                },
+                indent=2,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        return {
+            "ok": True,
+            "marker_path": str(marker_path),
+            "expires_at": expires_at.isoformat(),
+            "reason": reason,
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "error": str(exc),
+        }
 
 
 if __name__ == "__main__":

@@ -8,8 +8,9 @@ and new outperformers. No entities are written.
 
 ```
 team-review
-  [--landscape <artifact-id>]   # default: latest landscape-summary artifact
-  [--threshold <float>]         # flag if tier-score drifted > N pts, default 0.15
+  [--landscape-artifact <ART-id>]  # explicit landscape override; skips discovery
+  [--landscape <artifact-id>]      # alias for --landscape-artifact
+  [--threshold <float>]            # flag if tier-score drifted > N pts, default 0.15
 ```
 
 ## Process (sequential, read-only)
@@ -25,10 +26,15 @@ team-review
 
 ### Step 2 — Load landscape snapshot
 
-1. If `--landscape <artifact-id>` is supplied, load that artifact.
-2. Otherwise use the artifact ID stored in the DecisionRecord
+Landscape resolution follows the same three-level precedence as
+`team-create` (see `references/landscape-resolution.md`):
+
+1. If `--landscape-artifact <ART-id>` (or alias `--landscape`) is
+   supplied, load that artifact directly.
+2. Otherwise use the artifact ID stored in the governing DecisionRecord
    `inputs_snapshot.landscape_artifact`. If neither is available,
-   query for the latest `landscape-summary` artifact.
+   apply the three-level discovery: project-tagged artifact first,
+   then kit default `landscape-summary`.
 3. If the artifact is older than 90 days, include a staleness warning
    in the output. Do not block.
 
