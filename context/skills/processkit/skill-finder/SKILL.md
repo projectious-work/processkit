@@ -143,6 +143,19 @@ that skill before proceeding.
 | "documentation", "write the docs" | `documentation` |
 | "retrospective", "retro", "lessons learned" | `retrospective` |
 | "estimation", "story points", "planning poker" | `estimation-planning` |
+| "start session", "catch me up", "what's the state", "pk-resume" | `morning-briefing` |
+| "what's the status", "where are we", "what's next", "pk-status" | `standup-context` |
+| "standup", "standup update", "pk-standup" | `standup-context` |
+| "end session", "wrap up", "session end", "handover", "pk-wrapup" | `session-handover` |
+| "note this", "capture this", "remember this", "new note", "pk-note" | `note-management` |
+| "let's discuss", "I want to talk about", "what do you think about", "discuss", "pk-discuss" | `discussion-management` |
+| "research this", "investigate", "look into", "pk-research" | `research-with-confidence` |
+| "prepare release", "cut a release", "pk-release" | `release-semver` |
+| "publish release", "push release", "pk-publish" | `release-semver` |
+| "run tests", "test", "pk-test" | `skill-gate` |
+| "build", "run build", "pk-build" | `skill-gate` |
+| "lint", "run linter", "pk-lint" | `skill-gate` |
+| "review code", "code review", "review changes", "pk-review" | `skill-gate` |
 
 ### By directory (physical layout)
 
@@ -177,6 +190,16 @@ For the full catalog, read `skills/INDEX.md`.
 - `context-grooming` — periodically prune and compact the project context
 - `release-semver` — plan and execute a semver release
 - `team-creator` — compose a provider-neutral AI team via tiered model scoring
+
+**v0.17.0 ergonomic shortcuts (/pk-* aliases)**
+- `morning-briefing` — `/pk-resume` start session, catch up, state of things
+- `standup-context` — `/pk-standup` write daily standup update, `/pk-status` check current status
+- `session-handover` — `/pk-wrapup` end session, shutdown handover
+- `note-management` — `/pk-note` capture fleeting ideas
+- `discussion-management` — `/pk-discuss` open a structured discussion thread
+- `skill-gate` — `/pk-test` run tests, `/pk-build` run build, `/pk-lint` lint, `/pk-review` code review
+- `research-with-confidence` — `/pk-research` investigate with confidence labels
+- `release-semver` — `/pk-release` prepare release, `/pk-publish` execute publish
 
 **Architecture**
 - `software-architecture` — high-level system design patterns and trade-offs
