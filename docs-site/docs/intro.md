@@ -53,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.17.0"
+version = "v0.18.0"
 
 [context]
 packages = ["managed"]
@@ -137,9 +137,15 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   `cap_escalation`, `Actor.is_template` / `templated_from`; `team-creator`
   v1.1.0 emits them on every run; two applied migrations back-fill
   existing entities; `role-management` + `actor-profile` bumped to v1.0.1
-- **v0.17.0** *(current)* — 13 `/pk-*` ergonomic slash commands
+- **v0.17.0** — 13 `/pk-*` ergonomic slash commands
   (provider-neutral `/pk-<verb>` namespace); OpenWeave 4-layer override
   for `team-creator` v1.2.0; Rail 5 decision-capture gate + sweeper
   (shadow-mode); compliance contract v2; `pk-commands` YAML block in
   AGENTS.md for build/test/lint; ShadowCount calibration (NO-GO on block)
+- **v0.18.0** *(current)* — CapabilityProfileRouting three-layer model
+  selection (catalog / preferences / role standard sets);
+  `Role.model_profiles` ranked array + optional `Actor.model_profile_override`;
+  13 additional `/pk-*` promotions (26 total, 0 legacy commands);
+  skill-gate PreToolUse hook decoupled from `session_id`;
+  `emit_compliance_contract.py` echoes `hookEventName` for Claude Code 2.1+
 - **v1.0.0** — first stable release (not yet scheduled)

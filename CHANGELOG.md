@@ -5,6 +5,78 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.18.0] — 2026-04-17
+
+### Added
+
+- **CapabilityProfileRouting — three-layer model-selection architecture**
+  (DEC-20260417_1800). Replaces the single `preferences.model` string
+  pin per Actor with:
+  - **Layer A — Model catalog** (*what exists*): curated model registry
+    inside `model-recommender` skill, refreshed via `/pk-model-refresh`.
+  - **Layer B — Project/owner preferences** (*what this project can use*):
+    subscription tier, API keys, cost bias, preferred ordering, owned by
+    `model-recommender` skill's `set_config` / `get_config` MCP tools
+    (`/pk-model-setup`).
+  - **Layer C — Role standard sets** (*what this role needs*): each
+    `Role` now carries a ranked `model_profiles` array (provider +
+    family + default_version + default_effort + rationale, primary +
+    fallbacks). `Actor` gains optional `model_profile_override` for rare
+    per-actor deviations.
+  - All 8 permanent team roles populated with ranked profiles covering
+    Anthropic / OpenAI / Google / xAI / DeepSeek fallbacks. PM routing
+    algorithm wired in `context/team/roster.md`.
+- **13 additional `/pk-*` slash-command promotions** (total 26 /pk-*
+  commands, 0 legacy processkit commands): `/pk-work`, `/pk-dec`,
+  `/pk-dec-find`, `/pk-route`, `/pk-model-setup`, `/pk-model-refresh`,
+  `/pk-groom`, `/pk-note-promote`, `/pk-note-review`,
+  `/pk-owner-bootstrap`, `/pk-observe`, `/pk-skill-new`,
+  `/pk-skill-audit`.
+- **Actor schema**: optional `model_profile_override` field — identical
+  shape to a single `model_profiles` entry, used only when a specific
+  actor deviates from its role's primary.
+- **Role schema**: required-on-new-roles `model_profiles` array with
+  `rank`, `provider`, `family`, `default_version`, `default_effort`
+  (enum: minimal / low / medium / high / xhigh / none), `rationale`.
+
+### Fixed
+
+- **Skill-gate PreToolUse hook decoupled from `session_id`** — the hook
+  used to key marker-file matching on the harness-provided session id,
+  but the processkit MCP server wrote markers under its own pid, so the
+  two identifiers never matched and file edits silently blocked once
+  the first legacy marker drifted. Hook now scans the marker directory
+  for any marker whose `contract_hash` matches the current contract
+  hash and whose `acknowledged_at` is within the 12 h TTL.
+- **`emit_compliance_contract.py` echoes `hookEventName`** in its
+  `hookSpecificOutput` JSON envelope — Claude Code 2.1+ rejects the
+  envelope without it (`Hook JSON output validation failed —
+  hookSpecificOutput is missing required field 'hookEventName'`). The
+  script now reads `hook_event_name` from stdin and echoes it back.
+- **`test_hooks.py`** — two new failure-mode tests (stale marker beyond
+  TTL, marker with mismatched `contract_hash`). 13 cases total, all
+  green.
+
+### Changed
+
+- **Team roster** rewritten with three-layer architecture section, PM
+  routing algorithm (5 steps), Primary default + Fallbacks columns,
+  effort-tier attribution for session handovers.
+- **`preferences.model` string on Actor is deprecated** (no breaking
+  migration — roles carry the routing intent now; actors stay identity-
+  only unless overriding via `model_profile_override`).
+
+### Notes
+
+- `DEC-20260417_1800-CapabilityProfileRouting` was hand-written via a
+  file Write (not the `record_decision` MCP tool) because the installer
+  did not merge the per-skill `mcp-config.json` files into a harness-
+  readable `.mcp.json` (filed upstream as aibox#53). The file carries a
+  `CLEANUP-REQUIRED` marker; re-record through the MCP tool once the
+  wiring ships.
+
+---
+
 ## [v0.17.0] — 2026-04-17
 
 ### Added
