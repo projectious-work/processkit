@@ -5,6 +5,75 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.17.0] — 2026-04-17
+
+### Added
+
+- **13 `/pk-*` ergonomic slash commands** — the `/pk-<verb>` namespace
+  is processkit's canonical command surface, provider-neutral across
+  Claude Code, Codex CLI, Cursor, OpenCode (Aider falls back to
+  AGENTS.md instructions). Three delivery surfaces:
+  - **Skill-driven (9):** `/pk-resume` (session start),
+    `/pk-status` + alias `/pk-standup` (mid-session status),
+    `/pk-wrapup` (session end), `/pk-note` (fleeting capture with
+    Zettelkasten qualified-link suggestion at capture time),
+    `/pk-discuss` (structured multi-turn engagement),
+    `/pk-research` (investigate with confidence labels),
+    `/pk-release` (prepare a release), `/pk-publish` (push + publish).
+  - **AGENTS.md-driven (3):** `/pk-test`, `/pk-build`, `/pk-lint` —
+    read a structured `<!-- pk-commands -->` YAML block in AGENTS.md
+    and execute the project's declared command. Fills the cross-harness
+    gap (4 of 5 harnesses ship zero build/test coverage).
+  - **Cross-cutting skill-driven (1):** `/pk-review` — processkit-
+    opinionated code review against AGENTS.md conventions + compliance
+    contract.
+- **`<!-- pk-commands -->` YAML block in AGENTS.md** — machine-readable
+  project-specific build/test/lint/fmt/typecheck declarations.
+- **OpenWeave: team-creator 4-layer override surface** (FEAT-OpenWeave)
+  — landscape artifact override (3-level precedence), DEC-*-TeamWeights
+  (tag-based weight + threshold override), `role-archetypes.yaml`
+  (project-level role→class pin override with delta/replace semantics
+  and eager validation). team-creator bumped v1.1.0 → v1.2.0.
+- **QuietLedger Rail 5: auto-capture of decisions** (FEAT-QuietLedger)
+  — Lever 1 PreToolUse decision-language gate (shadow-mode-ON default;
+  `--mode=block` available but NOT recommended until calibrated) +
+  Lever 2 SessionEnd sweeper (writes Note artifact tagged
+  `decision-candidates` for owner async review). New MCP tool:
+  `skip_decision_record(reason, session_id)` on skill-gate.
+  Compliance contract bumped v1 → v2 (new Rail 5 clause).
+- **ShadowCount calibration** (RES-ShadowCount) — 9-session corpus,
+  precision 6/19 = 0.316, recall 6/6 = 1.00. Verdict: NO-GO on
+  `--mode=block` with current marker list. Marker tightening proposed.
+- **DEC-CommandNexus** — strategic decision: `/pk-<verb>` namespace,
+  processkit ships commands for any lifecycle phase not uniformly
+  built-in across all major harnesses. Build/test/lint exclusion
+  reversed.
+- **CommandCompass research artifact** — cross-harness built-in command
+  matrix + external landscape scan + gap analysis + proposal.
+
+### Fixed
+
+- **tool_use transcript filter** — PreToolUse gate + SessionEnd sweeper
+  now filter `tool_use`, `tool_result`, `isCompactSummary`,
+  `isSidechain`, and `<local-command-*>` entries from transcript reads.
+  Prevents false-positive gate fires on agent write payloads that
+  contain decision-language text (e.g., "ship it" in WorkItem YAML).
+
+### Changed
+
+- **Compliance contract v1 → v2** — new clause: "When the last five
+  user messages contain explicit decision language, either call
+  `record_decision` in the same turn or call `skip_decision_record`."
+  Existing session acknowledgements re-prompt once on upgrade (contract
+  hash changes).
+- **team-creator v1.1.0 → v1.2.0** — 4-layer override docs + new
+  `--threshold-overrides` CLI flag + agent-driven discovery section
+  with trigger phrases for all 4 layers.
+- **skill-finder** — 13 new trigger-phrase entries for `/pk-*` commands
+  + v0.17.0 ergonomic shortcuts category section.
+
+---
+
 ## [v0.16.0] — 2026-04-15
 
 ### Added

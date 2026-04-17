@@ -53,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.16.0"
+version = "v0.17.0"
 
 [context]
 packages = ["managed"]
@@ -132,9 +132,14 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   SessionStart hook); `morning-briefing` v1.1.0 (pending-migrations
   source + token-budget snapshot); 6 new artifacts; 3 follow-up
   WorkItems including OpenWeave (4-layer overrides) and Rail 5 (L1+L2)
-- **v0.16.0** *(current)* — canonical team-composition schema fields
+- **v0.16.0** — canonical team-composition schema fields
   (closes aibox issue #6): `Role.primary_contact` / `clone_cap` /
   `cap_escalation`, `Actor.is_template` / `templated_from`; `team-creator`
   v1.1.0 emits them on every run; two applied migrations back-fill
   existing entities; `role-management` + `actor-profile` bumped to v1.0.1
+- **v0.17.0** *(current)* — 13 `/pk-*` ergonomic slash commands
+  (provider-neutral `/pk-<verb>` namespace); OpenWeave 4-layer override
+  for `team-creator` v1.2.0; Rail 5 decision-capture gate + sweeper
+  (shadow-mode); compliance contract v2; `pk-commands` YAML block in
+  AGENTS.md for build/test/lint; ShadowCount calibration (NO-GO on block)
 - **v1.0.0** — first stable release (not yet scheduled)

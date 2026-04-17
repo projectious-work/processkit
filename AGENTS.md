@@ -1,7 +1,7 @@
 # AGENTS.md
 
-<!-- pk-compliance-contract v1 BEGIN -->
-<!-- pk-compliance v1 -->
+<!-- pk-compliance-contract v2 BEGIN -->
+<!-- pk-compliance v2 -->
 
 ## processkit Compliance Contract
 
@@ -28,12 +28,17 @@ produce automatically.
 After a cross-cutting recommendation is accepted, call `record_decision`
 in the same turn.
 
+When the last five user messages contain explicit decision language
+(approved / decided / ship it / let's go / ok / yes / confirmed),
+either call `record_decision` in the same turn or call
+`skip_decision_record(reason=...)` to acknowledge the skip.
+
 Do not edit any file under `context/templates/` — it is a read-only
 upstream mirror used as a diff baseline.
 
 Do not hand-edit the generated harness MCP config — edit the per-skill
 `mcp-config.json` and let the installer re-merge.
-<!-- pk-compliance-contract v1 END -->
+<!-- pk-compliance-contract v2 END -->
 
 ## Session start
 
@@ -76,6 +81,16 @@ uv run scripts/smoke-test-servers.py
 # follow .editorconfig plus the 80-column rules in CONTRIBUTING.md
 ```
 
+<!-- pk-commands BEGIN -->
+<!--
+build: "npm --prefix docs-site run build"
+test: "uv run scripts/smoke-test-servers.py"
+lint: ""
+fmt: ""
+typecheck: ""
+-->
+<!-- pk-commands END -->
+
 ## Code style and conventions
 
 - Hard-wrap Markdown prose, Python, and YAML at 80 columns. Exempt:
@@ -116,7 +131,7 @@ directly; MCP servers read them on every call — no restart needed.
 ## How this project is organized: processkit content
 
 This project uses **[processkit](https://github.com/projectious-work/processkit.git)**,
-pinned at `v0.16.0`, package tier(s) `product`, to manage process
+pinned at `v0.17.0`, package tier(s) `product`, to manage process
 content (skills, primitives, processes, schemas). All
 processkit-installed material lives under `context/`:
 
@@ -279,4 +294,4 @@ without owner sign-off), and budget orientation (Opus ≈5% / Sonnet ≈85%
 
 ---
 
-<sub>Scaffolded by processkit `v0.16.0` on `2026-04-15`. Re-rendered on each installer sync.</sub>
+<sub>Scaffolded by processkit `v0.17.0` on `2026-04-17`. Re-rendered on each installer sync.</sub>
