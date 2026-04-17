@@ -1,7 +1,7 @@
 # AGENTS.md
 
-<!-- pk-compliance-contract v1 BEGIN -->
-<!-- pk-compliance v1 -->
+<!-- pk-compliance-contract v2 BEGIN -->
+<!-- pk-compliance v2 -->
 
 ## processkit Compliance Contract
 
@@ -28,12 +28,24 @@ produce automatically.
 After a cross-cutting recommendation is accepted, call `record_decision`
 in the same turn.
 
+When the last five user messages contain explicit decision language
+(approved / decided / ship it / let's go / ok / yes / confirmed),
+either call `record_decision` in the same turn or call
+`skip_decision_record(reason=...)` to acknowledge the skip.
+
 Do not edit any file under `context/templates/` — it is a read-only
 upstream mirror used as a diff baseline.
 
 Do not hand-edit the generated harness MCP config — edit the per-skill
 `mcp-config.json` and let the installer re-merge.
-<!-- pk-compliance-contract v1 END -->
+<!-- pk-compliance-contract v2 END -->
+
+## Session start
+
+On session start, run `pk-resume` before acting. It will read
+AGENTS.md, the most recent `session.handover` log, pending migrations
+under `context/migrations/pending/`, in-progress WorkItems, and open
+DecisionRecords.
 
 This file is the canonical, provider-neutral entry point for any AI coding
 agent (or human collaborator) working on **{{PROJECT_NAME}}**. It follows

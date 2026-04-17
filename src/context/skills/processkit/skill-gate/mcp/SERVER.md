@@ -147,13 +147,20 @@ None.
 
 1. Environment variable `PROCESSKIT_SESSION_ID` — allows harness or test
    injection of a stable, human-readable session identifier.
-2. `os.getpid()` — the PID of the `uv`-spawned server process, which is
-   stable for the lifetime of the MCP server process. On MCP stdio
-   transport each harness session spawns a fresh server, so one process
-   equals one session.
+2. `os.getpid()` — the PID of the `uv`-spawned server process.
 
 The marker directory (`context/.state/skill-gate/`) is created on first
 write with `mkdir(parents=True, exist_ok=True)`.
+
+> **Validity rule (revised 2026-04-17).** The PreToolUse hook no longer
+> matches markers by SESSION_ID. The MCP protocol does not propagate
+> the harness session UUID to tool calls, so the hook (which reads the
+> harness session_id from stdin) and the MCP server (which uses its own
+> pid) wrote disjoint identifiers, making acknowledge_contract()
+> unsatisfiable in practice. The hook now scans the marker directory
+> and accepts any marker whose `contract_hash` matches the current
+> contract file and whose `acknowledged_at` is within 12 h. SESSION_ID
+> remains in the filename purely for human auditing and cleanup.
 
 ### Format
 

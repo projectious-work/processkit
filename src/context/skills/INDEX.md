@@ -1,7 +1,8 @@
 # src/skills/
 
-Multi-artifact skill packages. Each skill is a directory containing instructions
-(SKILL.md), examples, templates, and optionally a Python MCP server.
+Multi-artifact skill packages. Each skill is a directory containing
+instructions (SKILL.md), examples, templates, and optionally a Python
+MCP server.
 
 See [FORMAT.md](FORMAT.md) for the complete skill package format spec.
 

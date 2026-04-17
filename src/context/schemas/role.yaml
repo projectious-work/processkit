@@ -53,3 +53,35 @@ spec:
         type: string
         pattern: "^ROLE-[a-zA-Z0-9_-]+$"
         description: "Role ID this one replaces (for role renames or reorganizations)."
+      model_profiles:
+        type: array
+        description: >
+          Ranked list of equivalent model-profile options this role can be
+          fulfilled by. The PM picks the top-ranked option available to the
+          project (filtered by Layer B owner preferences in model-recommender
+          config). Order by `rank` ascending (1 = primary). Added 2026-04-17.
+        items:
+          type: object
+          additionalProperties: false
+          required: [rank, provider, family]
+          properties:
+            rank:
+              type: integer
+              minimum: 1
+              description: "1 = primary, 2 = first alternate, etc."
+            provider:
+              type: string
+              description: "Vendor: anthropic, openai, google, xai, deepseek, ..."
+            family:
+              type: string
+              description: "Model family, e.g. claude-opus, gpt-5, gemini-pro."
+            default_version:
+              type: string
+              description: "Version string, e.g. \"4.7\", \"5.4\"."
+            default_effort:
+              type: string
+              enum: [minimal, low, medium, high, xhigh, none]
+              description: "Effort tier. Use \"none\" for models without tiers (e.g. Haiku)."
+            rationale:
+              type: string
+              description: "One-line reason this option is in the set at this rank."

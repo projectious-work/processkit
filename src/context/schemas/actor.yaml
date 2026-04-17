@@ -70,3 +70,33 @@ spec:
         type: string
         format: date-time
         description: "When the actor stopped (typically also sets active: false)."
+      model_profile_override:
+        type: object
+        description: >
+          Rare per-actor override of the Role's default model_profiles
+          ranked list. Use only for exceptional cases (e.g. an actor
+          licensed for a specific model variant not in the role set).
+          The PM applies this in place of the role's model_profiles when
+          routing tasks to this actor. Added 2026-04-17.
+        additionalProperties: false
+        properties:
+          rank:
+            type: integer
+            minimum: 1
+            description: "1 = primary, 2 = first alternate, etc."
+          provider:
+            type: string
+            description: "Vendor: anthropic, openai, google, xai, deepseek, ..."
+          family:
+            type: string
+            description: "Model family, e.g. claude-opus, gpt-5, gemini-pro."
+          default_version:
+            type: string
+            description: "Version string, e.g. \"4.7\", \"5.4\"."
+          default_effort:
+            type: string
+            enum: [minimal, low, medium, high, xhigh, none]
+            description: "Effort tier. Use \"none\" for models without tiers (e.g. Haiku)."
+          rationale:
+            type: string
+            description: "One-line reason this option is in the set at this rank."
