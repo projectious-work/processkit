@@ -22,4 +22,11 @@ spec:
     - user-research
   default_scope: permanent
   model_tier: opus
+  model_profiles:
+    - { rank: 1, provider: anthropic, family: claude-opus, default_version: "4.7", default_effort: high,
+        rationale: "Multi-source synthesis; adaptive thinking for unclear scope" }
+    - { rank: 2, provider: google, family: gemini-pro, default_version: "2.5", default_effort: medium,
+        rationale: "Cost-optimal for >200K-token doc analysis at $1.25/M input" }
+    - { rank: 3, provider: openai, family: gpt-5, default_version: "5.4", default_effort: high,
+        rationale: "Alternate when OpenAI access is primary" }
 ---

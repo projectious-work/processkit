@@ -8,7 +8,7 @@ None.
 
 None.
 
-## Applied (9)
+## Applied (11)
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
@@ -22,6 +22,8 @@ None.
 | 2026-04-14 | MIG-20260414T085054 — processkit v0.13.0 → v0.13.0 | Same-version re-scan. AGENTS.md conflict: kept local. Four changed-locally-only files: no action. |
 | 2026-04-15 | MIG-20260415T085311 — processkit v0.15.0 → v0.16.0 | Role schema: add primary_contact, clone_cap, cap_escalation. 8 role entities updated. |
 | 2026-04-15 | MIG-20260415T095000 — processkit v0.15.0 → v0.16.0 | Actor schema: add is_template, templated_from. 8 actor entities (templates) updated. |
+| 2026-04-17 | MIG-20260417T142628 — processkit v0.13.0 → v0.17.0 | Documentary only — live tree already at v0.17.0 (three 0.15→0.17 releases shipped in the 2026-04-15→17 session). All 9 server.py conflicts identical to v0.17.0 template; AGENTS.md + INDEX.md kept as intentional local customizations; all 11 new-upstream skill-gate files present. |
+| 2026-04-17 | MIG-RUNTIME-20260417T142628 — runtime-home 0.18.2 → 0.18.3 | yazi/keymap.toml accepted; toggle-pane.yazi plugin installed; .claude/keybindings.json kept local. |
 
 ## CLI Migrations
 
@@ -34,3 +36,4 @@ None.
 | 20260410_2351_0.17.11-to-0.17.12.md | v0.17.11 → v0.17.12 | completed |
 | 20260411_2249_0.17.12-to-0.17.15.md | v0.17.12 → v0.17.15 | completed |
 | 20260413_1336_0.18.1-to-0.18.2.md | v0.18.1 → v0.18.2 | completed |
+| 20260417_1626_0.18.2-to-0.18.3.md | v0.18.2 → v0.18.3 | completed (doc stale — actual host jumped 0.18.2 → 0.18.4; aibox upstream investigating the skipped 0.18.3 sync artefacts) |

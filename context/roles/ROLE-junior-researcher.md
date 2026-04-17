@@ -20,4 +20,9 @@ spec:
     - prompt-engineering
   default_scope: permanent
   model_tier: sonnet
+  model_profiles:
+    - { rank: 1, provider: anthropic, family: claude-sonnet, default_version: "4.6", default_effort: low,
+        rationale: "Bounded one-topic research; low effort keeps cost predictable" }
+    - { rank: 2, provider: google, family: gemini-flash, default_version: "2.5", default_effort: medium,
+        rationale: "Free tier / low cost for high-volume summarization" }
 ---

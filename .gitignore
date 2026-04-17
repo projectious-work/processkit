@@ -4,6 +4,9 @@
 # processkit runtime cache (SQLite index, etc.) — regenerable
 context/.cache/
 
+# processkit runtime state (skill-gate session markers, etc.) — regenerable
+context/.state/
+
 # user-private entity files (privacy: user-private convention)
 context/**/private/
 

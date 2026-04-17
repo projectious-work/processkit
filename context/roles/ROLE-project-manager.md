@@ -27,6 +27,11 @@ spec:
     - workitem-management
   default_scope: permanent
   model_tier: opus
+  model_profiles:
+    - { rank: 1, provider: anthropic, family: claude-opus, default_version: "4.7", default_effort: medium,
+        rationale: "Routing + devil's-advocate; adaptive thinking covers most turns without paying xhigh tax" }
+    - { rank: 2, provider: openai, family: gpt-5, default_version: "5.4", default_effort: high,
+        rationale: "Fallback when Anthropic access unavailable" }
 ---
 
 ## Notes

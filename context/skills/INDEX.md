@@ -1,7 +1,8 @@
 # src/skills/
 
-Multi-artifact skill packages. Each skill is a directory containing instructions
-(SKILL.md), examples, templates, and optionally a Python MCP server.
+Multi-artifact skill packages. Each skill is a directory containing
+instructions (SKILL.md), examples, templates, and optionally a Python
+MCP server.
 
 See [FORMAT.md](FORMAT.md) for the complete skill package format spec.
 
@@ -66,7 +67,7 @@ Layer 4 (cross-cutting coordination):
 
 Layer null (routing and meta skills):
 - `model-recommender`, `skill-builder`, `skill-finder`, `skill-gate`,
-  `skill-reviewer`, `task-router`, `team-creator`
+  `skill-reviewer`, `task-router`
 
 Technical and language skills (engineering/, devops/, data-ai/, etc.) are
 also `layer: null` — the hierarchy above applies only to processkit/

@@ -25,4 +25,11 @@ spec:
     - threat-modeling
   default_scope: permanent
   model_tier: opus
+  model_profiles:
+    - { rank: 1, provider: anthropic, family: claude-opus, default_version: "4.7", default_effort: high,
+        rationale: "Deep reasoning for large design; xhigh on multi-subsystem cases" }
+    - { rank: 2, provider: openai, family: gpt-5, default_version: "5.4", default_effort: high,
+        rationale: "Strong when Computer Use or OpenAI ecosystem integration required" }
+    - { rank: 3, provider: xai, family: grok, default_version: "4.20", default_effort: high,
+        rationale: "Pick when 2M-token context or multi-agent ensemble is the constraint" }
 ---

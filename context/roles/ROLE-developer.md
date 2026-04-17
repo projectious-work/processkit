@@ -24,4 +24,11 @@ spec:
     - git-workflow
   default_scope: permanent
   model_tier: sonnet
+  model_profiles:
+    - { rank: 1, provider: anthropic, family: claude-sonnet, default_version: "4.6", default_effort: medium,
+        rationale: "Claude Code's native model; 256K output window for iterative coding loops" }
+    - { rank: 2, provider: deepseek, family: deepseek-v4, default_version: "v4", default_effort: none,
+        rationale: "High-volume coding at $0.30/M; SWE-bench 81%; pick when budget-dominant" }
+    - { rank: 3, provider: openai, family: gpt-5, default_version: "5.4", default_effort: medium,
+        rationale: "Alternate when Computer Use coupling is needed" }
 ---

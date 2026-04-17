@@ -22,4 +22,9 @@ spec:
     - decision-record
   default_scope: permanent
   model_tier: sonnet
+  model_profiles:
+    - { rank: 1, provider: anthropic, family: claude-sonnet, default_version: "4.6", default_effort: medium,
+        rationale: "Daily design workhorse; 256K output window for long design docs" }
+    - { rank: 2, provider: openai, family: gpt-5, default_version: "5.4", default_effort: medium,
+        rationale: "Fallback; cost-comparable to Sonnet" }
 ---

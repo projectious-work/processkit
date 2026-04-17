@@ -20,4 +20,9 @@ spec:
     - git-workflow
   default_scope: permanent
   model_tier: haiku
+  model_profiles:
+    - { rank: 1, provider: anthropic, family: claude-haiku, default_version: "4.5", default_effort: none,
+        rationale: "Mechanical single-file edits; no thinking tier needed" }
+    - { rank: 2, provider: deepseek, family: deepseek-v4, default_version: "v4", default_effort: none,
+        rationale: "Cheapest coding tier with auto-hybrid reasoning" }
 ---

@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "_processkit_managed": true,
+        "hooks": [
+          {
+            "command": "python3 context/skills/processkit/skill-gate/scripts/check_route_task_called.py",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit|MultiEdit|create_workitem|transition_workitem|record_decision|link_entities|open_discussion|create_artifact|log_event|create_note"
+      }
+    ],
+    "SessionStart": [
+      {
+        "_processkit_managed": true,
+        "hooks": [
+          {
+            "command": "python3 context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "_processkit_managed": true,
+        "hooks": [
+          {
+            "command": "python3 context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ]
+  }
+}

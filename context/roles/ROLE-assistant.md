@@ -21,4 +21,9 @@ spec:
     - standup-context
   default_scope: permanent
   model_tier: haiku
+  model_profiles:
+    - { rank: 1, provider: anthropic, family: claude-haiku, default_version: "4.5", default_effort: none,
+        rationale: "Admin / formatting / summarization; fastest Claude tier" }
+    - { rank: 2, provider: google, family: gemini-flash-lite, default_version: "2.5", default_effort: none,
+        rationale: "Cheapest admin tier at $0.10/$0.40 per M tokens" }
 ---
