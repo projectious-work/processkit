@@ -5,6 +5,63 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.18.1] — 2026-04-17
+
+### Fixed
+
+- **Release tarball now actually contains v0.15.0–v0.18.0 content**
+  ([#7](https://github.com/projectious-work/processkit/issues/7)). The
+  build script (`scripts/build-release-tarball.sh`) packages from
+  `src/context/`, but content added since v0.14.0 had been landing only
+  in the dogfooded `context/` tree. v0.18.0 and earlier tarballs were
+  therefore missing features announced in their own CHANGELOG entries.
+  v0.18.1 is a pure-sync release: no behavioural changes beyond bringing
+  `src/context/` up to parity with what was already running in the
+  dogfood.
+- **`skill-gate/scripts/emit_compliance_contract.py` now emits
+  `hookEventName`** in the `hookSpecificOutput` envelope, as required by
+  Claude Code 2.1+. Reads `hook_event_name` from stdin (sent by every
+  Claude Code hook invocation) and echoes it back as `hookEventName`.
+  Falls back to `"UserPromptSubmit"` if stdin is empty or malformed. The
+  Codex / plain-stdout path is unchanged. Resolves the
+  `UserPromptSubmit hook error: invalid hookSpecificOutput` that was
+  blocking every prompt in Claude Code 2.1+ consumer projects.
+- **`check_route_task_called.py`** — marker-lookup decoupled from
+  `session_id` (scans `.state/skill-gate/` for any valid marker with
+  matching contract_hash + 12h TTL) so Claude Code sessions whose id
+  shifts mid-session no longer lock out of MCP tools.
+- **`test_hooks.py`** — adds coverage for SessionStart / UserPromptSubmit
+  event-name echo, stale marker (> 12h), and hash-mismatch cases.
+
+### Added (now actually shipped — were missing from v0.15.0–v0.18.0 tarballs)
+
+- `team-creator` skill (SKILL.md + commands + references) — entire
+  directory tree. Claimed in v0.15.0 CHANGELOG, previously only in the
+  dogfood tree.
+- All 26 `/pk-*` slash-command files across 13 skills — the rename from
+  `<skill>-<verb>.md` to `pk-<verb>.md` happened in v0.17.0 and was
+  extended in v0.18.0, but legacy names lingered in `src/context/`.
+- Skill-gate Rail 5 scripts and fixtures:
+  `check_decision_captured.py`, `decision_markers.py`,
+  `decision_sweeper.py`, `record_decision_observer.py`,
+  plus transcript and sessionend fixtures.
+- `discussion-management/commands/`, `id-management/config/`,
+  `index-management/config/` directories.
+- Three `owner-profiling` assets (`OWNER-20260409_2054-*`).
+- `actor.yaml` / `role.yaml` schema updates for CapabilityProfileRouting
+  (`Role.model_profiles`, `Actor.model_profile_override`).
+- Updated `AGENTS.md` template: compliance contract v2 marker + decision-
+  language clause + Session start block.
+
+### Known non-blocking inconsistency
+
+- `AGENTS.md` template carries `pk-compliance v2` marker and the
+  decision-language clause, but the `skill-gate/assets/compliance-
+  contract.md` asset (printed by the hook) is still v1. Clauses remain
+  a strict superset in v2; a follow-up release will reconcile both to v2
+  and ship the `skip_decision_record` MCP tool referenced by the clause.
+  Tracked in the dogfood backlog.
+
 ## [v0.18.0] — 2026-04-17
 
 ### Added

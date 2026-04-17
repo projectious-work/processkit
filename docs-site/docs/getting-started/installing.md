@@ -23,11 +23,11 @@ In your project's `aibox.toml`:
 ```toml
 [context]
 packages = ["managed"]
-processkit_version = "v0.18.0"
+processkit_version = "v0.18.1"
 ```
 
 `aibox init` and `aibox sync` will fetch that tag and cache it under
-`~/.cache/aibox/processkit/v0.18.0/`.
+`~/.cache/aibox/processkit/v0.18.1/`.
 
 ## 3. Run `aibox init`
 
@@ -69,6 +69,7 @@ expected skills, you are ready to start working.
 | `v0.16.0`  | 0.17.12     | canonical team schema fields; closes aibox #6   |
 | `v0.17.0`  | 0.17.12     | 13 /pk-* commands; OpenWeave; Rail 5; contract v2 |
 | `v0.18.0`  | 0.18.3      | CapabilityProfileRouting 3-layer models; 26 /pk-*; skill-gate decouple |
+| `v0.18.1`  | 0.18.3      | hotfix: src↔context sync; fixes #7 hookEventName in Claude Code 2.1+ |
 
 aibox ships with a default processkit version pin. Overriding it in
 `aibox.toml` is how you opt into newer content without upgrading aibox (or

@@ -53,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.18.0"
+version = "v0.18.1"
 
 [context]
 packages = ["managed"]
@@ -142,10 +142,16 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   for `team-creator` v1.2.0; Rail 5 decision-capture gate + sweeper
   (shadow-mode); compliance contract v2; `pk-commands` YAML block in
   AGENTS.md for build/test/lint; ShadowCount calibration (NO-GO on block)
-- **v0.18.0** *(current)* — CapabilityProfileRouting three-layer model
+- **v0.18.0** — CapabilityProfileRouting three-layer model
   selection (catalog / preferences / role standard sets);
   `Role.model_profiles` ranked array + optional `Actor.model_profile_override`;
   13 additional `/pk-*` promotions (26 total, 0 legacy commands);
   skill-gate PreToolUse hook decoupled from `session_id`;
   `emit_compliance_contract.py` echoes `hookEventName` for Claude Code 2.1+
+- **v0.18.1** *(current)* — hotfix release: sync `src/context/` with content
+  that had been landing only in the dogfooded `context/` tree since v0.15.0
+  (team-creator skill, 26 `/pk-*` commands, Rail 5 scripts + fixtures, schema
+  updates). Fixes [#7](https://github.com/projectious-work/processkit/issues/7):
+  `emit_compliance_contract.py` now emits `hookEventName` so Claude Code 2.1+
+  accepts the hook envelope.
 - **v1.0.0** — first stable release (not yet scheduled)
