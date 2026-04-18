@@ -1,10 +1,10 @@
 {
   "hooks": {
     "session_start": {
-      "command": "python3 context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py"
+      "command": "python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py"
     },
     "user_prompt_submit": {
-      "command": "python3 context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py"
+      "command": "python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py"
     }
   }
 }

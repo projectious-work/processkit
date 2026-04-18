@@ -5,7 +5,7 @@
         "_processkit_managed": true,
         "hooks": [
           {
-            "command": "python3 context/skills/processkit/skill-gate/scripts/check_route_task_called.py",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/check_route_task_called.py",
             "type": "command"
           }
         ],
@@ -17,7 +17,7 @@
         "_processkit_managed": true,
         "hooks": [
           {
-            "command": "python3 context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
             "type": "command"
           }
         ],
@@ -29,7 +29,7 @@
         "_processkit_managed": true,
         "hooks": [
           {
-            "command": "python3 context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
             "type": "command"
           }
         ],
