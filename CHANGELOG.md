@@ -5,6 +5,80 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.18.2] — 2026-04-18
+
+### Fixed
+
+- **Stale `mcp-config.json` paths block MCP server startup in derived
+  projects** ([#8](https://github.com/projectious-work/processkit/issues/8)).
+  12 of the 16 per-skill `mcp-config.json` files under
+  `context/skills/processkit/<skill>/mcp/` shipped a `script` path that
+  omitted the `processkit/` category segment introduced in v0.17.0's
+  nested layout (`context/skills/<skill>/mcp/server.py` instead of
+  `context/skills/processkit/<skill>/mcp/server.py`). Harnesses merged
+  the broken path verbatim and then failed to launch the affected MCP
+  servers on startup, forcing agents back to bash/python workarounds
+  for `context/` writes. Latent since v0.17.0; masked until v0.18.6 of
+  aibox because earlier aibox walker bugs prevented `.mcp.json` from
+  being written at all. Mechanical fix — prepend `processkit/` to the
+  script arg for: `actor-profile`, `binding-management`,
+  `decision-record`, `discussion-management`, `event-log`,
+  `gate-management`, `id-management`, `index-management`,
+  `model-recommender`, `role-management`, `scope-management`,
+  `workitem-management`. Mirrored into `src/context/`.
+- **`AGENTS.md` Session start block points at `pk-resume`** (was stale
+  `morning-briefing-generate`, renamed in v0.17.0).
+
+### Added
+
+- **`skip_decision_record(reason, session_id?)` MCP tool on
+  `skill-gate`** — acknowledges the v2 contract's decision-language
+  window without writing a record, when the agent concludes no decision
+  needs recording (e.g. the user withdrew a proposal). Writes a
+  `session-<id>.decision-skip` marker next to the existing `.ack` /
+  `.decision-observed` markers (24 h TTL, empty reason rejected).
+  `check_decision_captured.py` honours skip markers in block mode.
+- **`compliance-contract.md` asset bumped to v2.** Adds the clause:
+  "When the last five user messages contain explicit decision language
+  (approved / decided / ship it / let's go / ok / yes / confirmed),
+  either call `record_decision` in the same turn or call
+  `skip_decision_record(reason=...)` to acknowledge the skip." Resolves
+  the v1 asset vs v2 `AGENTS.md` inconsistency called out in the
+  v0.18.1 known-issues block. Existing session markers (which embed
+  the old contract hash) automatically invalidate; callers re-ack on
+  next hook invocation.
+- **`scripts/check-src-context-drift.sh` — release-time drift guard.**
+  Runs `diff -rq context/ src/context/` with an allowlist for
+  dogfood-only directories (`actors/`, `artifacts/`, `bindings/`,
+  `decisions/`, `discussions/`, `logs/`, `migrations/`, `notes/`,
+  `roles/`, `team/`, `workitems/`, root `INDEX.md`), runtime paths
+  (`.cache/`, `.state/`, `__pycache__/`, `.gitkeep`), and `templates/`.
+  Wired into `scripts/build-release-tarball.sh` as a pre-build step;
+  non-zero exit fails the release before the tarball is built.
+  Structural guard against the v0.15.0–v0.18.0 drift class.
+- **Session-start skill-check checklist (SnappyTrout).** `AGENTS.md`
+  and `session-handover/SKILL.md` now name six task classes (research
+  ingestion, artifact creation, discussion management, decision
+  recording, backlog item creation, quality audits) that must be
+  preceded by a `search_entities(kind=skill, ...)` / `find_skill(...)`
+  / `list_skills(...)` call. Extends, does not duplicate, the
+  compliance-contract 1 % rule.
+- **`/pk-standup` and `/pk-status` differentiated.** `/pk-standup` is
+  now the brief daily standup (done / doing / next / blockers);
+  `/pk-status` is the fuller status snapshot. Both invoke
+  `standup-context`, different argument framing. Prior identical
+  bodies were a v0.17.0 authoring glitch.
+
+### Closed work
+
+- `BACK-20260410_1049-SnappyTrout` — session-start skill-check
+  (shipped here).
+- `BACK-20260411_0802-LivelyTulip` — skill-finder MCP server
+  (`find_skill`, `list_skills` already ship; verified by
+  `scripts/smoke-test-servers.py`).
+
+---
+
 ## [v0.18.1] — 2026-04-17
 
 ### Fixed

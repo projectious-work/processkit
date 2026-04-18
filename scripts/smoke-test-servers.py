@@ -644,9 +644,15 @@ def run():
             f"expected acknowledged=false before ack, got {not_acked}"
         )
 
-        # Valid acknowledgement
-        good_ack = ack_fn(version="v1")
-        print("acknowledge_contract v1:", good_ack)
+        # Valid acknowledgement — read current version from the contract asset
+        _contract_text = (
+            _sg_assets_src / "compliance-contract.md"
+        ).read_text() if _sg_assets_src.is_dir() else ""
+        import re as _re
+        _m = _re.search(r"<!--\s*pk-compliance\s+(v\d+)\s*-->", _contract_text)
+        _current_version = _m.group(1) if _m else "v1"
+        good_ack = ack_fn(version=_current_version)
+        print(f"acknowledge_contract {_current_version}:", good_ack)
         assert good_ack["ok"], f"expected ok=true, got {good_ack}"
         assert "contract_hash" in good_ack
         assert "expires_at" in good_ack

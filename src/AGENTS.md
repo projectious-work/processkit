@@ -297,6 +297,30 @@ paths, workitem linking, output formats) that general knowledge does
 not know. Missing a skill wastes work and produces non-standard
 output.
 
+**Mandatory skill-check task classes.** Before starting any task in
+the following categories, call
+`search_entities(kind=skill, text=<task-keyword>)` or
+`find_skill(<task-keyword>)` / `list_skills()` — even if you think
+you know the procedure:
+
+1. **Research ingestion** — importing notes, papers, or external
+   artefacts into the project context.
+2. **Artifact creation** — producing a new PRD, ADR, spec, brief,
+   or any structured output file.
+3. **Discussion management** — opening, advancing, or closing a
+   structured discussion thread.
+4. **Decision recording** — capturing a cross-cutting decision in a
+   DecisionRecord entity.
+5. **Backlog item creation** — adding a WorkItem, Epic, or task to
+   the backlog.
+6. **Quality audits** — reviewing a skill, process, schema, or
+   compliance artifact.
+
+This list is not exhaustive — the 1% rule from the Compliance
+Contract applies to every task, not just these six. The list names
+the classes where bypassing the catalog has caused the most
+observed work-waste.
+
 ### Contributing improvements upstream
 
 When you make a behavioral or content improvement to a file in

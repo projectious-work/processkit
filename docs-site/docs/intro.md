@@ -53,7 +53,7 @@ A consumer selects a processkit source and version in their `aibox.toml`:
 ```toml
 [processkit]
 source  = "https://github.com/projectious-work/processkit.git"
-version = "v0.18.1"
+version = "v0.18.2"
 
 [context]
 packages = ["managed"]
@@ -148,10 +148,16 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   13 additional `/pk-*` promotions (26 total, 0 legacy commands);
   skill-gate PreToolUse hook decoupled from `session_id`;
   `emit_compliance_contract.py` echoes `hookEventName` for Claude Code 2.1+
-- **v0.18.1** *(current)* — hotfix release: sync `src/context/` with content
+- **v0.18.1** — hotfix release: sync `src/context/` with content
   that had been landing only in the dogfooded `context/` tree since v0.15.0
   (team-creator skill, 26 `/pk-*` commands, Rail 5 scripts + fixtures, schema
   updates). Fixes [#7](https://github.com/projectious-work/processkit/issues/7):
   `emit_compliance_contract.py` now emits `hookEventName` so Claude Code 2.1+
   accepts the hook envelope.
+- **v0.18.2** *(current)* — fixes [#8](https://github.com/projectious-work/processkit/issues/8):
+  stale `mcp-config.json` paths in 12 of 16 per-skill configs blocked MCP
+  server startup in derived projects. Adds `skip_decision_record` MCP tool +
+  compliance contract v2 bump, `scripts/check-src-context-drift.sh` release-time
+  drift guard, session-start skill-check checklist (SnappyTrout), and
+  `/pk-standup` vs `/pk-status` differentiation.
 - **v1.0.0** — first stable release (not yet scheduled)

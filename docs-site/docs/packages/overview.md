@@ -51,7 +51,7 @@ minimal ── managed ── software ── product
 # aibox.toml
 [context]
 packages = ["software"]
-processkit_version = "v0.18.1"
+processkit_version = "v0.18.2"
 
 [skills]
 include = ["logo-design"]       # add to software

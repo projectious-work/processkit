@@ -68,6 +68,19 @@ fi
 mkdir -p "$DIST_DIR"
 mkdir -p "$STAGING_DIR"
 
+# Drift guard: ensure context/ (dogfood) and src/context/ (shipped template)
+# are in sync before building the tarball.  If this fails, the release tree
+# is inconsistent with what the changelog claims; fix the drift first.
+echo "running drift guard: context/ vs src/context/" >&2
+if ! "$REPO_ROOT/scripts/check-src-context-drift.sh"; then
+    echo "" >&2
+    echo "error: drift guard failed — src/context/ does not match context/." >&2
+    echo "Run 'scripts/check-src-context-drift.sh --verbose' to inspect the diff," >&2
+    echo "copy updated files from context/ into src/context/, or add a justified" >&2
+    echo "entry to the ALLOWLIST_* constants in check-src-context-drift.sh." >&2
+    exit 1
+fi
+
 # Copy the entire src/ tree into the staging dir at the top level.
 # Excludes: __pycache__/, .pyc files, .DS_Store, dotfiles inside src.
 echo "staging src/ → $STAGING_DIR/" >&2
