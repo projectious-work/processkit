@@ -154,6 +154,7 @@ def run():
         gate = import_server("gate-management")
         disc = import_server("discussion-management")
         art = import_server("artifact-management")
+        mig = import_server("migration-management")
         skf = import_server("skill-finder")
 
         # 0. id-management sanity
@@ -446,6 +447,207 @@ def run():
         assert g_updated["version"] == "1.0"
         assert "final" in g_updated["tags"]
 
+        # 4h. migration-management
+        #     Seed two pending Migration fixtures directly on disk (aibox
+        #     sync generates these in real life), then exercise start /
+        #     apply / reject through the MCP server to assert:
+        #       - state transitions are validated and stamped
+        #       - files move between pending/, in-progress/, applied/
+        #       - INDEX.md is regenerated with Pending/In Progress/
+        #         Applied/Rejected sections
+        #       - migration.transitioned / migration.applied /
+        #         migration.rejected events land in the log.
+        _mig_dir = workdir / "context" / "migrations"
+        (_mig_dir / "pending").mkdir(parents=True, exist_ok=True)
+        (_mig_dir / "in-progress").mkdir(parents=True, exist_ok=True)
+        (_mig_dir / "applied").mkdir(parents=True, exist_ok=True)
+
+        _mig1_id = "MIG-20260420T120000"
+        _mig2_id = "MIG-20260420T120001"
+        _mig1_path = _mig_dir / "pending" / f"{_mig1_id}.md"
+        _mig2_path = _mig_dir / "pending" / f"{_mig2_id}.md"
+
+        _mig1_path.write_text(
+            "---\n"
+            "apiVersion: processkit.projectious.work/v1\n"
+            "kind: Migration\n"
+            "metadata:\n"
+            f"  id: {_mig1_id}\n"
+            "  created: 2026-04-20T12:00:00Z\n"
+            "spec:\n"
+            "  source: processkit\n"
+            "  from_version: v0.18.2\n"
+            "  to_version: v0.19.0\n"
+            "  state: pending\n"
+            "  generated_by: smoke-test\n"
+            "  generated_at: 2026-04-20T12:00:00Z\n"
+            "  summary: \"smoke: apply happy path\"\n"
+            "---\n\n"
+            "# Migration apply-happy-path\n\nBody.\n"
+        )
+        _mig2_path.write_text(
+            "---\n"
+            "apiVersion: processkit.projectious.work/v1\n"
+            "kind: Migration\n"
+            "metadata:\n"
+            f"  id: {_mig2_id}\n"
+            "  created: 2026-04-20T12:00:01Z\n"
+            "spec:\n"
+            "  source: processkit\n"
+            "  from_version: v0.18.2\n"
+            "  to_version: v0.19.0\n"
+            "  state: pending\n"
+            "  generated_by: smoke-test\n"
+            "  generated_at: 2026-04-20T12:00:01Z\n"
+            "  summary: \"smoke: reject path\"\n"
+            "---\n\n"
+            "# Migration reject-path\n\nBody.\n"
+        )
+
+        list_mig = get_tool(mig, "list_migrations")
+        lm = list_mig()
+        print("list_migrations (pre):", len(lm))
+        assert len(lm) >= 2, f"expected at least 2 migrations, got {lm}"
+        assert all(m.get("state") == "pending" for m in lm)
+
+        get_mig = get_tool(mig, "get_migration")
+        gm = get_mig(id=_mig1_id)
+        print("get_migration:", gm["id"], gm["state"])
+        assert gm["id"] == _mig1_id and gm["state"] == "pending"
+        assert gm["body"].startswith("\n# Migration apply-happy-path") or (
+            "apply-happy-path" in gm["body"]
+        )
+
+        # Partial-ID lookup via index fallback — the raw "20260420T120001"
+        # word-pair alone should not resolve, but a MIG-prefixed full ID
+        # must.  Skip the partial-ID assertion here: the index has not
+        # been reindexed in this test yet.
+
+        # Happy path: start then apply
+        start_mig = get_tool(mig, "start_migration")
+        sm_res = start_mig(id=_mig1_id)
+        print("start_migration:", sm_res)
+        assert sm_res["ok"] and sm_res["to_state"] == "in-progress"
+        assert not _mig1_path.is_file(), "pending file must be removed"
+        assert (_mig_dir / "in-progress" / f"{_mig1_id}.md").is_file()
+
+        # Double-start must fail (already moved out of pending)
+        sm_bad = start_mig(id=_mig1_id)
+        print("start_migration (already started, expect error):", sm_bad)
+        assert "error" in sm_bad
+
+        apply_mig = get_tool(mig, "apply_migration")
+        am = apply_mig(id=_mig1_id, notes="Smoke test applied this migration.")
+        print("apply_migration:", am)
+        assert am["ok"] and am["to_state"] == "applied"
+        assert not (_mig_dir / "in-progress" / f"{_mig1_id}.md").is_file()
+        assert (_mig_dir / "applied" / f"{_mig1_id}.md").is_file()
+
+        # Verify spec now has applied_at + progress_notes
+        gm_applied = get_mig(id=_mig1_id)
+        assert gm_applied["state"] == "applied"
+        assert gm_applied["applied_at"], "applied_at must be stamped"
+        assert gm_applied["started_at"], "started_at must be stamped"
+        assert any(
+            n.get("note", "").startswith("Smoke test applied")
+            for n in (gm_applied["progress_notes"] or [])
+        ), f"progress_notes missing: {gm_applied['progress_notes']}"
+
+        # Reject path from pending (skips in-progress entirely)
+        reject_mig = get_tool(mig, "reject_migration")
+        rm = reject_mig(id=_mig2_id, reason="Smoke test rejected this one.")
+        print("reject_migration:", rm)
+        assert rm["ok"] and rm["to_state"] == "rejected"
+        assert not _mig2_path.is_file()
+        # Rejected files park under applied/
+        assert (_mig_dir / "applied" / f"{_mig2_id}.md").is_file()
+
+        gm_rej = get_mig(id=_mig2_id)
+        assert gm_rej["state"] == "rejected"
+        assert gm_rej["rejected_reason"] == "Smoke test rejected this one."
+
+        # Reject without a reason must fail
+        rm_bad = reject_mig(id=_mig2_id, reason="")
+        print("reject_migration empty reason (expected error):", rm_bad)
+        assert "error" in rm_bad
+
+        # INDEX.md was regenerated and contains the four sections.
+        _mig_index = (_mig_dir / "INDEX.md").read_text()
+        print("INDEX.md sections:", [
+            ln for ln in _mig_index.splitlines() if ln.startswith("## ")
+        ])
+        assert "## Pending" in _mig_index
+        assert "## In Progress" in _mig_index
+        assert "## Applied" in _mig_index
+        assert "## Rejected" in _mig_index
+        assert _mig1_id in _mig_index
+        assert _mig2_id in _mig_index
+
+        # Implicit-start via apply_migration(pending)
+        _mig3_id = "MIG-20260420T120002"
+        _mig3_path = _mig_dir / "pending" / f"{_mig3_id}.md"
+        _mig3_path.write_text(
+            "---\n"
+            "apiVersion: processkit.projectious.work/v1\n"
+            "kind: Migration\n"
+            "metadata:\n"
+            f"  id: {_mig3_id}\n"
+            "  created: 2026-04-20T12:00:02Z\n"
+            "spec:\n"
+            "  source: processkit\n"
+            "  from_version: v0.18.2\n"
+            "  to_version: v0.19.0\n"
+            "  state: pending\n"
+            "  generated_by: smoke-test\n"
+            "  generated_at: 2026-04-20T12:00:02Z\n"
+            "  summary: \"smoke: implicit-start\"\n"
+            "---\n\n"
+            "# Migration implicit-start\n\nBody.\n"
+        )
+        am_implicit = apply_mig(id=_mig3_id)
+        print("apply_migration (implicit start):", am_implicit)
+        assert am_implicit["ok"]
+        assert am_implicit["from_state"] == "pending"
+        assert am_implicit["to_state"] == "applied"
+        assert (_mig_dir / "applied" / f"{_mig3_id}.md").is_file()
+
+        # Filtered list
+        lm_applied = list_mig(state="applied")
+        print("list_migrations applied:", [m["id"] for m in lm_applied])
+        assert any(m["id"] == _mig1_id for m in lm_applied)
+        assert any(m["id"] == _mig3_id for m in lm_applied)
+        assert not any(m["id"] == _mig2_id for m in lm_applied)  # rejected
+
+        lm_rejected = list_mig(state="rejected")
+        assert any(m["id"] == _mig2_id for m in lm_rejected)
+
+        # Assert migration events landed in the log
+        from processkit import index as _index
+        _db = _index.open_db()
+        try:
+            _ev_mig_trans = _index.query_events(
+                _db, event_type="migration.transitioned"
+            )
+            _ev_mig_applied = _index.query_events(
+                _db, event_type="migration.applied"
+            )
+            _ev_mig_rejected = _index.query_events(
+                _db, event_type="migration.rejected"
+            )
+        finally:
+            _db.close()
+        print("migration.transitioned:", len(_ev_mig_trans))
+        print("migration.applied:", len(_ev_mig_applied))
+        print("migration.rejected:", len(_ev_mig_rejected))
+        # start_migration on _mig1 + implicit start in apply(_mig3) = 2
+        assert len(_ev_mig_trans) >= 2, _ev_mig_trans
+        # apply on _mig1 + apply on _mig3 = 2
+        assert len(_ev_mig_applied) >= 2, _ev_mig_applied
+        # reject on _mig2 = 1
+        assert len(_ev_mig_rejected) >= 1, _ev_mig_rejected
+
+        print("migration-management smoke test: PASSED")
+
         # 5. binding
         create_bind = get_tool(bind, "create_binding")
         b = create_bind(
@@ -503,7 +705,8 @@ def run():
         stats = reindex()
         print("reindex stats:", stats)
         # workitem + decision + actor + role + role-binding + scope + gate +
-        # gate-eval-log + discussion + work-binding + artifacts + side-effect logs
+        # gate-eval-log + discussion + work-binding + artifacts + migrations
+        # + side-effect logs
         assert stats["entities"] >= 13
         assert stats["events"] >= 7, f"expected at least 7 events (log side effects), got {stats['events']}"
 

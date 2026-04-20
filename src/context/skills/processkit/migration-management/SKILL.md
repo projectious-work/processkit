@@ -257,13 +257,26 @@ in `aibox sync` for the truth table. The pinned source URL + version +
 resolved commit live in `aibox.lock` at the project root (Cargo-style),
 not in a separate manifest file.
 
-### What this skill does NOT do (yet, in v0.4.0)
+### Agent-facing MCP tools
+
+This skill ships an MCP server — see
+[`mcp/SERVER.md`](mcp/SERVER.md) for the contract. The server exposes
+five tools that together cover the full lifecycle: `list_migrations`
+and `get_migration` for discovery, `start_migration` for the
+`pending → in-progress` edge, `apply_migration` for the terminal
+`in-progress → applied` edge (with implicit-start support from a
+pending file), and `reject_migration` for the
+`{pending, in-progress} → rejected` branch. Every write-side tool
+stamps the appropriate timestamp (`started_at` / `applied_at` /
+`rejected_at`), moves the file between the `pending/`, `in-progress/`,
+and `applied/` directories, refreshes `context/migrations/INDEX.md`
+(preserving the hand-written Notes column and the trailing
+`## CLI Migrations` section), and writes a `migration.*` event via the
+side-effect log helper.
+
+### What this skill does NOT do (yet)
 
 - **Generate** migrations — that's `aibox sync`'s job.
 - **Apply file changes** — the agent does the actual edits as part of
   walking the plan. This skill describes the workflow but doesn't ship a
   tool that auto-edits.
-- **MCP server** — none yet. v0.4.0 is markdown-only. A future release may
-  add an MCP server with tools like `transition_migration`,
-  `add_progress_note`, `query_migrations` (the index-management MCP server
-  already supports the last via `query_entities(kind="Migration")`).

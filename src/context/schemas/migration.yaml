@@ -109,6 +109,10 @@ spec:
               type: string
             actor:
               type: string
+      started_at:
+        type: string
+        format: date-time
+        description: "When the migration transitioned from pending to in-progress."
       applied_at:
         type: string
         format: date-time

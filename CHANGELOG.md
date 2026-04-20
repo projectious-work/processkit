@@ -5,6 +5,29 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.19.0-candidate] — unreleased
+
+### Added
+
+- **feat(migration-management): new MCP server exposing 5 tools**
+  (fixes [#9](https://github.com/projectious-work/processkit/issues/9)).
+  `list_migrations`, `get_migration`, `start_migration`,
+  `apply_migration` (with implicit-start when called from pending),
+  and `reject_migration`. Each write-side tool stamps the appropriate
+  timestamp (`started_at` / `applied_at` / `rejected_at`), moves the
+  Migration file between `pending/`, `in-progress/`, and `applied/`
+  subdirectories, refreshes `context/migrations/INDEX.md` (preserving
+  the Applied-table Notes column and the `## CLI Migrations` tail
+  section), and writes a `migration.*` event via the side-effect log
+  helper. Rejected migrations park under `applied/` and are listed in
+  a dedicated `## Rejected` INDEX.md section. Adds
+  `spec.started_at` to the Migration schema (optional,
+  backward-compatible). See
+  `DEC-20260420_1342-WarmClover` (shape) and
+  `DEC-20260420_1353-ProudReef` (5 refinements).
+
+---
+
 ## [v0.18.2] — 2026-04-18
 
 ### Fixed
