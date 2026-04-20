@@ -9,6 +9,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **feat(pk-doctor): new health-check aggregator skill + /pk-doctor slash command** (Phase 1). Detect-only by default; 4 checks: schema+filename validation against src/context/schemas/, sharding (logs YYYY/MM, migrations state-bucket), stale pending migrations, src/context drift. --fix/--fix-all opt-in; fixes route through existing MCP write tools (no hand-edits). Each run emits a doctor.report LogEntry via event-log MCP. See DEC-20260420_1631-WiseGarnet and BACK-20260420_1631-ProudGlade.
 - **feat(migration-management): new MCP server exposing 5 tools**
   (fixes [#9](https://github.com/projectious-work/processkit/issues/9)).
   `list_migrations`, `get_migration`, `start_migration`,
