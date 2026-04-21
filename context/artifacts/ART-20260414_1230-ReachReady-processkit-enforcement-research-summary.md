@@ -7,7 +7,7 @@ metadata:
 spec:
   name: "Executive summary — why agents ignore processkit"
   kind: document
-  location: context/artifacts/ART-20260414_1230-ReachReady-processkit-enforcement-research.summary.md
+  location: context/artifacts/ART-20260414_1230-ReachReady-processkit-enforcement-research-summary.md
   format: markdown
   version: "1.0.0"
   tags: [research, enforcement, processkit, summary]

@@ -38,7 +38,7 @@ spec:
   Artifacts:
     - ART-20260414_1230-ReachReady-processkit-enforcement-research.md
       (full 8–15 page report with confidence labels)
-    - ART-20260414_1230-ReachReady-processkit-enforcement-research.summary.md
+    - ART-20260414_1230-ReachReady-processkit-enforcement-research-summary.md
       (one-page executive summary)
   Top 3 leverage points (see summary): (1) ship a pre-merged MCP
   config at install time; (2) SessionStart + UserPromptSubmit hook

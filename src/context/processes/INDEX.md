@@ -20,10 +20,10 @@ engine.
 
 | File | Process | Purpose |
 |---|---|---|
-| `bug-fix.md` | `PROC-bug-fix` | Diagnose, reproduce, fix, and verify a defect |
-| `code-review.md` | `PROC-code-review` | Review a change before it merges |
-| `feature-development.md` | `PROC-feature-development` | Take a feature from backlog to merged |
-| `release.md` | `PROC-release` | Cut, tag, and publish a versioned release |
+| `PROC-bug-fix.md` | `PROC-bug-fix` | Diagnose, reproduce, fix, and verify a defect |
+| `PROC-code-review.md` | `PROC-code-review` | Review a change before it merges |
+| `PROC-feature-development.md` | `PROC-feature-development` | Take a feature from backlog to merged |
+| `PROC-release.md` | `PROC-release` | Cut, tag, and publish a versioned release |
 
 Each process is a `kind: Process` entity validated by
 `src/primitives/schemas/process.yaml`.

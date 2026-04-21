@@ -72,7 +72,7 @@ to the user or pass them to an LLM for disambiguation. Do NOT call a
 
 Read the process override file **before** the generic skill. It
 contains project-specific step overrides, gates, and blockers that
-supersede the skill defaults. Example: `context/processes/release.md`
+supersede the skill defaults. Example: `context/processes/PROC-release.md`
 overrides `release-semver` for this project.
 
 ## Gotchas

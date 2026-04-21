@@ -19,7 +19,7 @@ skill, project-specific process override, and MCP tool.
 {
   "skill": "workitem-management",
   "skill_description_excerpt": "Create, transition, and query WorkItems...",
-  "process_override": "context/processes/release.md",
+  "process_override": "context/processes/PROC-release.md",
   "server": "processkit-workitem-management",
   "tool": "create_workitem",
   "tool_qualified": "processkit-workitem-management__create_workitem",

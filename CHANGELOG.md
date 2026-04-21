@@ -16,6 +16,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 - chore(mcp): skill-consultation prompt added to every entity-mutating MCP tool description across all processkit servers (provider-neutral replacement for pre-tool-use hooks). Closes BACK-20260411_0802-SolidCrow.
 - chore(AGENTS): slim root AGENTS.md to <60 lines of core content; domain-specific instructions moved into their owning skills; explicit if/then skill guards added. Closes BACK-20260411_0802-EagerSpruce.
+- chore(grooming): rename 4 process files and 1 artifact to match canonical metadata.id prefixes (PROC-/ART-). pk-doctor WARN residual eliminated (5 → 0). Closes pk-doctor Phase 2 filename-rename intent.
 
 ### Added
 
