@@ -256,7 +256,7 @@ issue before using a new value):
 | Value | Typical skills |
 |---|---|
 | `process` | workitem-management, decision-record, event-log, note-management, release-semver |
-| `meta` | skill-builder, skill-reviewer, skill-finder, research-with-confidence, morning-briefing |
+| `meta` | skill-builder, skill-reviewer, skill-finder, research-with-confidence, status-briefing |
 | `architecture` | software-architecture, system-design, api-design, software-modularization, microservice-creation |
 | `language` | python-best-practices, typescript-patterns, go-conventions, rust-conventions |
 | `framework` | fastapi-patterns, graphql-patterns, grpc-protobuf, flutter-development |

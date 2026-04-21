@@ -195,7 +195,7 @@ DOMAIN_GROUPS: dict[str, dict] = {
     },
     "index": {
         "server": "processkit-index-management",
-        "skill": "morning-briefing",
+        "skill": "status-briefing",
         "keywords": [
             "search", "find entity", "query entity", "index", "catalog",
             "discover", "full text search", "what exists", "reindex",
@@ -304,6 +304,21 @@ DOMAIN_GROUPS: dict[str, dict] = {
              "Assign a role to an actor"),
             ("update_role",
              "Update a role's definition or responsibilities"),
+        ],
+    },
+    "retro": {
+        "server": "processkit-event-log",
+        "skill": "retrospective",
+        "keywords": [
+            "retrospective", "retro", "post-release", "post-mortem",
+            "blameless", "what held", "what slipped", "release review",
+            "lessons learned", "cycle review", "pk-retro",
+        ],
+        "tools": [
+            ("log_event",
+             "Emit the retro.completed LogEntry after the Artifact is saved"),
+            ("query_events",
+             "Query release.published and doctor.report events for signals"),
         ],
     },
     "binding": {

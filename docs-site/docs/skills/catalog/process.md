@@ -218,12 +218,12 @@ Key capabilities:
 
 ---
 
-### morning-briefing
+### status-briefing
 
 > Generates a session-start orientation from the current project state.
 > Use at the beginning of a session to get a fast, structured catch-up.
 
-**Triggers:** When the user says "morning briefing", "catch me up",
+**Triggers:** When the user says "status briefing", "catch me up",
 "state of things", or "what's on the board".
 **Tools:** Reads `query_entities`, `recent_events` via index-management
 **Layers:** Layer 4

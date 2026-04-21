@@ -122,7 +122,7 @@ that skill before proceeding.
 | "remember this", "note this idea", "capture this" | `note-management` |
 | "write a standup", "daily update" | `standup-context` |
 | "write a handover", "shutting down", "container restart" | `session-handover` |
-| "morning briefing", "catch me up", "state of things" | `morning-briefing` |
+| "status briefing", "catch me up", "state of things" | `status-briefing` |
 | "groom the context", "clean up context" | `context-grooming` |
 | "second opinion", "devil's advocate", "poke holes in this" | `devils-advocate` |
 | "multiple perspectives", "board of advisors" | `board-of-advisors` |
@@ -140,7 +140,7 @@ that skill before proceeding.
 | "webhook", "callback URL" | `webhook-integration` |
 | "error handling", "exception handling" | `error-handling` |
 | "documentation", "write the docs" | `documentation` |
-| "retrospective", "retro", "lessons learned" | `retrospective` |
+| "retrospective", "retro", "post-release review", "post-mortem", "lessons learned" | `retrospective` |
 | "estimation", "story points", "planning poker" | `estimation-planning` |
 
 ### By directory (physical layout)
@@ -172,9 +172,10 @@ For the full catalog, read `skills/INDEX.md`.
 - `note-management` — capture, review, and promote fleeting ideas and insights
 - `session-handover` — write an end-of-session handover before shutdown
 - `standup-context` — write a standup update (done / doing / next / blockers)
-- `morning-briefing` — generate a session-start orientation from project state
+- `status-briefing` — generate a session-start orientation from project state
 - `context-grooming` — periodically prune and compact the project context
 - `release-semver` — plan and execute a semver release
+- `retrospective` — post-release blameless retrospective (4 signals, dual-emit Artifact+LogEntry)
 
 **Architecture**
 - `software-architecture` — high-level system design patterns and trade-offs
@@ -238,7 +239,7 @@ For the full catalog, read `skills/INDEX.md`.
 - `research-with-confidence` — structured research with explicit confidence labels
 - `devils-advocate` — adversarial analysis of a plan or proposal
 - `board-of-advisors` — multi-perspective simulation with named advisor archetypes
-- `morning-briefing` — session-start orientation (also listed under Process)
+- `status-briefing` — session-start orientation (also listed under Process)
 
 ### How to use a skill
 

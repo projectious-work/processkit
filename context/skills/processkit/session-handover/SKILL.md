@@ -45,7 +45,7 @@ use case. The handover may be read days or weeks later.
 
 **Pattern B — regular evening cadence**
 The user writes a handover at the end of every work session as a habit.
-`morning-briefing` reads the most recent handover and weights it by age:
+`status-briefing` reads the most recent handover and weights it by age:
 a same-day handover is the primary "what happened" source; an old handover
 is context only.
 
@@ -189,19 +189,19 @@ This skill also provides the `/session-handover-write` slash command for direct 
 
 ## Full reference
 
-### Relationship to morning-briefing
+### Relationship to status-briefing
 
-`morning-briefing` reads the most recent `session.handover` LogEntry and
+`status-briefing` reads the most recent `session.handover` LogEntry and
 weights it by age:
 
-| Handover age | Weight in morning briefing |
+| Handover age | Weight in status briefing |
 |---|---|
 | < 24 hours | Primary source for "what happened last session" |
 | 1–7 days | Secondary source — flagged as stale; git log + WorkItem state carry more weight |
 | > 7 days | Skipped — briefing relies on git log and current WorkItem state only |
 
 The handover is a best-effort enrichment, not a required source. If no
-handover exists, `morning-briefing` reconstructs context from git log and
+handover exists, `status-briefing` reconstructs context from git log and
 WorkItem state.
 
 ### Handover vs. standup

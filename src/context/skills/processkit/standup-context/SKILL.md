@@ -30,7 +30,7 @@ metadata:
 ## Intro
 
 A standup update is a brief, structured record of session progress — written
-for the team record and for any downstream skill (like `morning-briefing`)
+for the team record and for any downstream skill (like `status-briefing`)
 that reconstructs what happened. It lives in `context/logs/` as a
 `session.standup` LogEntry. It is NOT a flat `context/STANDUPS.md` file.
 
@@ -147,7 +147,7 @@ To reconstruct what has happened since the last session:
 query_events(event_type="session.standup", since="<date>", order="asc")
 ```
 
-`morning-briefing` uses this query to populate its "what happened" section
+`status-briefing` uses this query to populate its "what happened" section
 when no recent `session.handover` exists.
 
 ### Output format for sharing

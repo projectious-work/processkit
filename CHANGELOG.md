@@ -20,6 +20,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Renamed skill**: morning-briefing → status-briefing (provider-neutral; time-of-day agnostic). Content migration emitted for downstream projects.
+
+- **New skill: retrospective** — /pk-retro generates post-release blameless retrospectives (4 signals: release_summary, timeline, workitems, drift; dual-emit Artifact+LogEntry; --auto-workitems for proposed follow-ups; --verbose for full narrative including Appendix A raw signal dumps). See BACK-20260420_1340-LoyalFrog-add-pk-retro-skill.
+
 - **feat(pk-doctor): new health-check aggregator skill + /pk-doctor slash command** (Phase 1). Detect-only by default; 4 checks: schema+filename validation against src/context/schemas/, sharding (logs YYYY/MM, migrations state-bucket), stale pending migrations, src/context drift. --fix/--fix-all opt-in; fixes route through existing MCP write tools (no hand-edits). Each run emits a doctor.report LogEntry via event-log MCP. See DEC-20260420_1631-WiseGarnet and BACK-20260420_1631-ProudGlade.
 - **feat(migration-management): new MCP server exposing 5 tools**
   (fixes [#9](https://github.com/projectious-work/processkit/issues/9)).

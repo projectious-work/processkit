@@ -1,11 +1,11 @@
 ---
-name: morning-briefing
+name: status-briefing
 description: |
-  Generates a concise daily briefing from project context — synthesizing current state, open decisions, key risks, and today's priority actions into a focused session-start orientation. Use at the start of a session when asked for a briefing, "what's the state of things", "catch me up", or "what should I focus on today."
+  Generates a concise status briefing from project context — synthesizing current state, open decisions, key risks, and today's priority actions into a focused session-start orientation. Use at the start of a session when asked for a briefing, "what's the state of things", "catch me up", or "what should I focus on today."
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v1
-    id: SKILL-morning-briefing
+    id: SKILL-status-briefing
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: processkit
@@ -18,16 +18,16 @@ metadata:
       - skill: workitem-management
         purpose: Query in-progress and next-up WorkItems for the today's priorities section.
     commands:
-      - name: morning-briefing-generate
+      - name: status-briefing-generate
         args: ""
         description: "Generate a session-start orientation from current project state"
 ---
 
-# Morning Briefing
+# Status Briefing
 
 ## Intro
 
-A morning briefing is a single-screen orientation that a person or
+A status briefing is a single-screen orientation that a person or
 agent reads at the start of a session to immediately know what
 matters today. It distills project context, backlog state, open
 decisions, and upcoming deadlines into a focused, actionable
@@ -66,7 +66,7 @@ the user configuring anything.
 ### The briefing format
 
 ```markdown
-# Morning Briefing — [Date]
+# Status Briefing — [Date]
 
 ## State of play
 
@@ -127,7 +127,7 @@ bigger shape of the period.
 
 ### The "one-liner to carry"
 
-The most important output of a good morning briefing is the single
+The most important output of a good status briefing is the single
 sentence the reader holds in their head all day. It captures the
 dominant constraint or priority for the session:
 
@@ -146,11 +146,11 @@ Bad examples (too vague):
 If you cannot write a specific one-liner for today, the briefing
 itself is probably too generic.
 
-This skill also provides the `/morning-briefing-generate` slash command for direct invocation — see `commands/morning-briefing-generate.md`.
+This skill also provides the `/status-briefing-generate` slash command for direct invocation — see `commands/status-briefing-generate.md`.
 
 ### Keeping it short
 
-A morning briefing that takes more than 3 minutes to read has failed.
+A status briefing that takes more than 3 minutes to read has failed.
 Length signals:
 - **Too long:** more than 2 items per section, or more than 5 sections
 - **Too short:** misses an active blocker or an imminent deadline
@@ -162,11 +162,11 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
 - **Treating a stale handover as current.** A `session.handover` written 10 days ago reflects a state that may have completely changed. Always check `details.session_date` before using a handover as a source. If it is more than 7 days old, skip it and reconstruct from git log and WorkItem state instead. Presenting stale handover content as "what happened last session" when the last session was a week ago misleads the user.
 - **Reading only the handover note without checking WorkItem state.** The handover captures what was true at session end; WorkItem state shows what has been actively changed since. A briefing that contradicts current WorkItem state (e.g., listing an item as "next up" when it is now done) will erode trust immediately. Always cross-check both.
-- **Listing everything instead of prioritizing.** A briefing that reports all 12 open workitems is not a briefing — it's a dump. The value of a morning briefing is triage: surface the 3 things that matter today, not an inventory of everything that exists. If in doubt about what to prioritize, ask — do not pad.
+- **Listing everything instead of prioritizing.** A briefing that reports all 12 open workitems is not a briefing — it's a dump. The value of a status briefing is triage: surface the 3 things that matter today, not an inventory of everything that exists. If in doubt about what to prioritize, ask — do not pad.
 - **Making the "state of play" section too optimistic.** Briefings written by the agent often smooth over problems to avoid delivering bad news. If the project is blocked, at risk, or behind, the state of play must say so clearly — not "making good progress with a few items to resolve." The user is about to spend their session on this; accurate state matters.
 - **Not including a one-liner.** The "one-liner to carry" section is the hardest to write and the most valuable. Skipping it produces a briefing that reports status without providing orientation. Every briefing must end with one sentence that captures the dominant constraint or priority for the session.
 - **Generating a briefing without reading the current context.** A briefing from memory or from context loaded in a prior session may be stale. Always read HANDOVER.md and BACKLOG.md (or query the live index) before generating. A briefing that reflects last week's state is misleading.
-- **Writing the briefing in a format that requires careful reading instead of scanning.** Morning briefings are consumed at session start, often under time pressure. Use short bullets, bold key terms, and scannable structure. A briefing written as flowing prose that requires careful reading defeats the purpose.
+- **Writing the briefing in a format that requires careful reading instead of scanning.** Status briefings are consumed at session start, often under time pressure. Use short bullets, bold key terms, and scannable structure. A briefing written as flowing prose that requires careful reading defeats the purpose.
 - **Reporting blockers without their resolution path.** "Blocked on API key from vendor" is incomplete. "Blocked on API key from vendor — Sarah requested it Tuesday, expected by Thursday" is actionable. Every blocker must include: who owns it, what action is in progress, and when it's expected to resolve.
 
 ## Full reference
@@ -186,14 +186,14 @@ Then generate the briefing from those answers using the same format.
 
 Briefings are ephemeral by design. Do not archive them unless the
 user requests it. The handover note is the persistent record;
-the morning briefing is a generated view of it.
+the status briefing is a generated view of it.
 
 ### Integration with event-log
 
 The `event-log` skill records session activity as log entries.
-`morning-briefing` reads recent entries (plus HANDOVER and WorkItem
+`status-briefing` reads recent entries (plus HANDOVER and WorkItem
 state) and synthesizes them into an actionable briefing. event-log
-is the write path; morning-briefing is the read path.
+is the write path; status-briefing is the read path.
 
 ### Briefing cadence
 

@@ -36,8 +36,10 @@ here. Run `pk-resume` before acting. Provider-specific files
 - Cross-cutting recommendation accepted → `record_decision` or
   `skip_decision_record(reason=...)` same turn.
 - Authoring/reviewing a skill → `skill-builder` / `skill-reviewer`.
-- Morning brief / standup / wrap-up → `morning-briefing` /
+- Status briefing / standup / wrap-up → `status-briefing` /
   `standup-context` / `session-handover`.
+- Retro / retrospective / post-release review / post-mortem →
+  `retrospective` skill (`/pk-retro`).
 - Any domain-specific task (PRD, audit, research ingest, discussion,
   backlog add) → `find_skill` first; see the six mandatory skill-check
   classes in `skill-gate/SKILL.md`.

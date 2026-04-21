@@ -77,7 +77,7 @@ See [Skills → Format](./format) for the complete specification.
 | Engineering (language, framework, architecture, infra, security) | ~70 | python-best-practices, fastapi-patterns, terraform-basics |
 | Process-primitive | ~32 | workitem-management, decision-record, artifact-management, task-router, skill-gate |
 | Document / asset creation | 4 | docx-authoring, pptx-authoring, xlsx-modeling, pdf-workflow |
-| Meta-cognitive | 4 | research-with-confidence, devils-advocate, board-of-advisors, morning-briefing |
+| Meta-cognitive | 4 | research-with-confidence, devils-advocate, board-of-advisors, status-briefing |
 | Role-specific | 4 | prd-writing, user-research, data-storytelling, legal-review |
 | Data, design, AI/ML | ~23 | data-science, excalidraw, rag-engineering, llm-evaluation |
 

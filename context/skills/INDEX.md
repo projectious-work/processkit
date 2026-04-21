@@ -13,7 +13,7 @@ utilities (not a public skill category).
 
 ```
 skills/
-  processkit/    — 33 skills for operating the processkit system
+  processkit/    — 34 skills for operating the processkit system
   engineering/   — 46 skills: software design, architecture, backend, languages
   devops/        — 15 skills: infrastructure, CI/CD, ops, monitoring
   data-ai/       — 11 skills: data science, ML, AI/LLM, embeddings
@@ -37,7 +37,7 @@ skills/
 
 ## processkit skill hierarchy
 
-The 33 processkit/ skills form a strict dependency hierarchy where
+The 34 processkit/ skills form a strict dependency hierarchy where
 `layer: 0-4` skills depend only downward; the `layer: null` routing and
 meta skills sit outside that dependency chain:
 
@@ -53,13 +53,14 @@ Layer 2 (core entities and operator workflows):
 - `workitem-management` **MCP**, `decision-record` **MCP**,
   `artifact-management` **MCP**, `scope-management`,
   `category-management`, `cross-reference-management`,
-  `binding-management` **MCP**, `morning-briefing`,
+  `binding-management` **MCP**, `status-briefing`,
   `note-management`, `session-handover`, `standup-context`,
   `status-update-writer`
 
 Layer 3 (process orchestration):
 - `process-management`, `state-machine-management`, `gate-management`,
-  `schedule-management`, `constraint-management`, `migration-management`
+  `schedule-management`, `constraint-management`, `migration-management`,
+  `retrospective`
 
 Layer 4 (cross-cutting coordination):
 - `discussion-management`, `owner-profiling`, `context-grooming`,

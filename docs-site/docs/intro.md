@@ -102,7 +102,7 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   Intro/Overview/Full reference structure, FORMAT.md, skill-builder + skill-reviewer,
   scripts/ subdirectory, assets/, session-handover, standup-context
 - **v0.5.1** — 30 new skills (document creation, meta-cognitive, role-specific),
-  Note primitive + note-management skill, morning-briefing
+  Note primitive + note-management skill, status-briefing
 - **v0.7.0–v0.9.0** — `src/context/` mirror restructure; all primitives gain JSON
   schemas; auto-log side-effects in all entity-mutating MCP servers
 - **v0.10.0** — skills directory reorganised into 7 category subdirectories
@@ -129,7 +129,7 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
 - **v0.15.0** — `team-creator` skill (provider-neutral team composition
   by cost/outcome tier, 3 commands, no new MCP server); session-
   orientation wiring (AGENTS.md "Session start" block + extended
-  SessionStart hook); `morning-briefing` v1.1.0 (pending-migrations
+  SessionStart hook); `status-briefing` v1.1.0 (pending-migrations
   source + token-budget snapshot); 6 new artifacts; 3 follow-up
   WorkItems including OpenWeave (4-layer overrides) and Rail 5 (L1+L2)
 - **v0.16.0** — canonical team-composition schema fields
