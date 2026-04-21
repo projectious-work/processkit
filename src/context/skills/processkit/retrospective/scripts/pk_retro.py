@@ -31,15 +31,76 @@ BACK-20260420_1340-LoyalFrog-add-pk-retro-skill.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 RETRO_VERSION = "1.0.0"
+
+# MCP server modules to import in-process, relative to the processkit
+# skills directory (.../context/skills/processkit/).
+#
+# File layout:
+#   context/skills/processkit/retrospective/scripts/pk_retro.py
+#                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   parent(0) = scripts/
+#   parent(1) = retrospective/
+#   parent(2) = processkit/          ← _PK_SKILLS_ROOT
+_PK_SKILLS_ROOT = Path(__file__).resolve().parent.parent.parent
+
+_MCP_SERVERS: dict[str, tuple[str, str]] = {
+    # tool-name → (relative-path-to-server.py, function-name)
+    "create_artifact": (
+        "artifact-management/mcp/server.py",
+        "create_artifact",
+    ),
+    "log_event": (
+        "event-log/mcp/server.py",
+        "log_event",
+    ),
+    "create_workitem": (
+        "workitem-management/mcp/server.py",
+        "create_workitem",
+    ),
+}
+
+
+def _load_production_mcp() -> dict[str, Callable]:
+    """Load real MCP callables by importing each server module directly.
+
+    Returns a dict mapping tool-name → callable, matching the shape the
+    existing _emit_* functions already expect (mcp.get("create_artifact"),
+    etc.).  Falls back gracefully: any individual import failure is
+    re-raised so main() can surface it as a fatal error rather than
+    silently producing no output.
+    """
+    result: dict[str, Callable] = {}
+
+    for tool_name, (rel_path, fn_name) in _MCP_SERVERS.items():
+        server_path = _PK_SKILLS_ROOT / rel_path
+        spec = importlib.util.spec_from_file_location(
+            f"_pk_mcp_{tool_name}", server_path
+        )
+        if spec is None or spec.loader is None:
+            raise ImportError(
+                f"Cannot locate MCP server module: {server_path}"
+            )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)  # type: ignore[union-attr]
+        fn = getattr(mod, fn_name, None)
+        if fn is None or not callable(fn):
+            raise AttributeError(
+                f"Function {fn_name!r} not found or not callable "
+                f"in {server_path}"
+            )
+        result[tool_name] = fn
+
+    return result
 
 # Per-section line budgets (enforced when --verbose is off)
 _LINE_BUDGETS: dict[str, int] = {
@@ -626,8 +687,22 @@ def main(argv: list[str], mcp_overrides: dict | None = None) -> int:
     args = _parse_args(argv)
     repo_root = _resolve_repo_root(args.repo_root)
 
-    # MCP callable stubs (injected by tests or resolved at runtime)
-    mcp: dict = dict(mcp_overrides or {})
+    # MCP callable stubs: tests inject mcp_overrides; production uses the
+    # in-process loader; --dry-run and --no-mcp both skip the loader.
+    if mcp_overrides is not None:
+        mcp: dict = dict(mcp_overrides)
+    elif args.dry_run or args.no_mcp:
+        mcp = {}
+    else:
+        try:
+            mcp = _load_production_mcp()
+        except (ImportError, AttributeError, Exception) as exc:
+            print(
+                f"[pk-retro] WARNING: in-process MCP loader failed: {exc}. "
+                "Use --dry-run to preview or --no-mcp to skip.",
+                file=sys.stderr,
+            )
+            return 1
 
     # Read notes file if provided
     notes: str | None = None

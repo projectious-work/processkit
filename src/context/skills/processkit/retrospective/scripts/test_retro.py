@@ -976,3 +976,91 @@ class TestVerboseMode:
             notes=None,
         )
         assert "Appendix A" not in body
+
+
+# ---------------------------------------------------------------------------
+# Production MCP loader
+# ---------------------------------------------------------------------------
+
+class TestProductionMcpLoader:
+    def test_load_production_mcp_returns_callables(self):
+        """_load_production_mcp() returns a dict with the 3 expected keys.
+
+        Skipped when the ``mcp`` package is not installed (test env uses
+        ``--with pytest --with pyyaml --with jsonschema`` only; add
+        ``--with 'mcp[cli]>=1.0'`` to run this test in-process).
+        """
+        pytest.importorskip("mcp", reason="mcp package not installed")
+        result = retro._load_production_mcp()
+        assert set(result.keys()) == {
+            "create_artifact", "log_event", "create_workitem"
+        }
+        for key, fn in result.items():
+            assert callable(fn), f"{key} must be callable"
+
+    def test_main_uses_production_loader_when_no_overrides(
+        self, repo_root: Path
+    ):
+        """main() calls _load_production_mcp when mcp_overrides is None
+        and neither --dry-run nor --no-mcp is set."""
+        artifact_result = {
+            "metadata": {"id": "ART-test-prod"},
+            "id": "ART-test-prod",
+        }
+        mock_create_artifact = MagicMock(return_value=artifact_result)
+        mock_log_event = MagicMock(return_value=None)
+        mock_mcp = {
+            "create_artifact": mock_create_artifact,
+            "log_event": mock_log_event,
+            "query_events": lambda **kw: [],
+            "query_entities": lambda **kw: [],
+        }
+
+        with patch.object(retro, "_load_production_mcp", return_value=mock_mcp) \
+                as mock_loader:
+            rc = retro.main(
+                ["--release", "v0.18.2", "--repo-root", str(repo_root)],
+                mcp_overrides=None,
+            )
+
+        mock_loader.assert_called_once()
+        assert rc == 0
+        mock_create_artifact.assert_called_once()
+        mock_log_event.assert_called()
+
+    def test_main_fails_cleanly_when_loader_raises(
+        self, repo_root: Path, capsys
+    ):
+        """main() returns 1 and prints a warning when the loader raises."""
+        with patch.object(
+            retro, "_load_production_mcp",
+            side_effect=ImportError("test server missing"),
+        ):
+            rc = retro.main(
+                ["--release", "v0.18.2", "--repo-root", str(repo_root)],
+                mcp_overrides=None,
+            )
+
+        assert rc == 1
+        captured = capsys.readouterr()
+        assert "WARNING: in-process MCP loader failed" in captured.err
+        assert "test server missing" in captured.err
+        assert "--dry-run" in captured.err
+
+    def test_no_mcp_flag_skips_loader(self, repo_root: Path):
+        """--no-mcp forces empty mcp dict even when mcp_overrides is None."""
+        with patch.object(retro, "_load_production_mcp") as mock_loader:
+            # --no-mcp + no overrides → loader is never called;
+            # mcp is empty, so create_artifact warning fires and returns 1.
+            rc = retro.main(
+                [
+                    "--release", "v0.18.2",
+                    "--repo-root", str(repo_root),
+                    "--no-mcp",
+                ],
+                mcp_overrides=None,
+            )
+
+        mock_loader.assert_not_called()
+        # With empty mcp and no dry-run, create_artifact fails → rc == 1
+        assert rc == 1
