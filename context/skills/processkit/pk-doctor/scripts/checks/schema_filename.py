@@ -52,6 +52,32 @@ FILENAME_DATE_RE = re.compile(r"(\d{8})(?:[_T](\d{4,6}))?")
 # CLI upgrade notes. Exempt them from schema validation.
 CLI_MIGRATION_RE = re.compile(r"^\d{8}_\d{4}_\d+\.\d+\.\d+-to-\d+\.\d+\.\d+\.md$")
 
+# Actor ID pattern enforcement (DEC-20260421_2036-SoundIvy-two-class-actor-ids)
+_ACTOR_IDENTITY_RE = re.compile(
+    r"^ACTOR-\d{8}_\d{4}-[A-Z][a-z]+[A-Z][a-z]+-[a-z0-9-]+$"
+)
+_ACTOR_ROLE_RE = re.compile(r"^ACTOR-[a-z][a-z0-9-]*$")
+
+
+def _check_actor_id_pattern(
+    entity_id: str, allowed_role_ids: list[str]
+) -> str | None:
+    """Return None if valid, or an error reason string if invalid."""
+    if _ACTOR_IDENTITY_RE.match(entity_id):
+        return None  # identity class — OK
+    if _ACTOR_ROLE_RE.match(entity_id):
+        slug = entity_id[len("ACTOR-"):]
+        if slug in allowed_role_ids:
+            return None  # role class in allowlist — OK
+        return (
+            f"role-actor ID '{slug}' not in x-allowed-role-ids allowlist"
+        )
+    return (
+        "does not match identity class "
+        "(ACTOR-<datetime>-<WordPair>-<slug>) or "
+        "role class (ACTOR-<slug>)"
+    )
+
 
 def _load_schema(schemas_dir: Path, kind: str) -> dict | None:
     path = schemas_dir / f"{kind}.yaml"
@@ -150,6 +176,8 @@ def run(ctx) -> list[CheckResult]:
         schema = _load_schema(schemas_dir, kind)
         if schema is None:
             continue
+        # Cache allowed role IDs per kind (actor only, cheap to compute).
+        allowed_role_ids: list[str] = schema.get("x-allowed-role-ids", [])
         for path in _iter_entity_files(ctx_root, kind_dir, since_files):
             walked_count += 1
             fm, parse_err = _parse_frontmatter(path)
@@ -182,6 +210,20 @@ def run(ctx) -> list[CheckResult]:
                     fixable=False,
                     suggested_fix=f"rename to {meta_id}.md (Phase 2)",
                 ))
+
+            # --- Actor: two-class ID pattern check -------------------------
+            if kind == "actor" and meta_id:
+                reason = _check_actor_id_pattern(meta_id, allowed_role_ids)
+                if reason is not None:
+                    results.append(CheckResult(
+                        severity="ERROR",
+                        category="schema_filename",
+                        id="schema.filename.invalid_actor_id_pattern",
+                        message=(
+                            f"{rel}: metadata.id '{meta_id}': {reason}"
+                        ),
+                        entity_ref=str(rel),
+                    ))
 
             # --- filename date vs metadata.created ------------------------
             m = FILENAME_DATE_RE.search(stem)

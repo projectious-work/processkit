@@ -298,6 +298,111 @@ with tempfile.TemporaryDirectory() as tmp:
           isinstance(payload2, dict) and payload2.get("event_type") == "doctor.report")
 
 # ---------------------------------------------------------------------------
+# Test 6: _check_actor_id_pattern unit tests
+# ---------------------------------------------------------------------------
+print("\n[6] _check_actor_id_pattern — actor two-class ID pattern unit tests")
+
+# Import the function under test directly.
+sys.path.insert(0, str(_SCRIPTS_DIR))
+from checks.schema_filename import _check_actor_id_pattern  # noqa: E402
+
+_ALLOWED = [
+    "assistant", "developer", "jr-architect", "jr-developer",
+    "jr-researcher", "pm-claude", "sr-architect", "sr-researcher",
+]
+
+# valid identity-class ID → no error
+check(
+    "identity class OK",
+    _check_actor_id_pattern(
+        "ACTOR-20260421_0144-AmberDawn-legacy-historical-backfill", _ALLOWED
+    ) is None,
+)
+
+# valid role-class ID in allowlist → no error
+check(
+    "role class in allowlist OK",
+    _check_actor_id_pattern("ACTOR-pm-claude", _ALLOWED) is None,
+)
+
+# role-class ID NOT in allowlist → ERROR
+result_not_in_list = _check_actor_id_pattern("ACTOR-hacker", _ALLOWED)
+check(
+    "role class not in allowlist → error",
+    result_not_in_list is not None and "not in x-allowed-role-ids" in result_not_in_list,
+    repr(result_not_in_list),
+)
+
+# malformed (underscores and caps) → ERROR
+result_malformed = _check_actor_id_pattern("ACTOR-Sr_Architect", _ALLOWED)
+check(
+    "malformed ID (caps+underscores) → error",
+    result_malformed is not None,
+    repr(result_malformed),
+)
+
+# empty-slug → ERROR
+result_empty = _check_actor_id_pattern("ACTOR-", _ALLOWED)
+check(
+    "empty slug (ACTOR-) → error",
+    result_empty is not None,
+    repr(result_empty),
+)
+
+# identity class with broken datetime → ERROR
+result_bad_dt = _check_actor_id_pattern("ACTOR-12345-FooBar-x", _ALLOWED)
+check(
+    "broken datetime in identity class → error",
+    result_bad_dt is not None,
+    repr(result_bad_dt),
+)
+
+# ---------------------------------------------------------------------------
+# Test 7: pk-doctor integration — invalid actor ID triggers ERROR
+# ---------------------------------------------------------------------------
+print("\n[7] pk-doctor integration — invalid actor ID emits ERROR")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    _seed_tree(root)
+
+    # Copy live actor schema into fixture tree.
+    actor_schema_src = _SCHEMAS_SRC / "actor.yaml"
+    if actor_schema_src.is_file():
+        (root / "src" / "context" / "schemas" / "actor.yaml").write_text(
+            actor_schema_src.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+
+    # Plant an actor with an ID not in the allowlist.
+    (root / "context" / "actors").mkdir(parents=True)
+    (root / "context" / "actors" / "ACTOR-hacker.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v1
+            kind: Actor
+            metadata:
+              id: ACTOR-hacker
+              created: 2026-04-21T00:00:00Z
+            spec:
+              type: ai-agent
+              name: Hacker Bot
+              active: true
+            ---
+            """),
+        encoding="utf-8",
+    )
+
+    stub = root / ".doctor-logentry.json"
+    result = _run_doctor(root, stub_path=stub)
+    check("exit 1 for invalid actor ID", result.returncode == 1,
+          f"got {result.returncode}\nstdout:\n{result.stdout[-600:]}")
+    check(
+        "invalid_actor_id_pattern in output",
+        "invalid_actor_id_pattern" in result.stdout,
+        result.stdout[-600:],
+    )
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()
