@@ -48,8 +48,13 @@ spec:
             rejected_because: { type: string, description: "Why it was not chosen." }
         description: "Alternatives considered and why they were rejected."
       consequences:
-        type: string
-        description: "Known or expected consequences, both positive and negative."
+        anyOf:
+          - type: "null"
+          - type: string
+          - type: array
+            items:
+              type: string
+        description: "Known or expected consequences, both positive and negative. May be a string, a list of strings, or null."
       deciders:
         type: array
         items:
@@ -57,13 +62,19 @@ spec:
           pattern: "^ACTOR-[a-zA-Z0-9_-]+$"
         description: "ACTOR IDs of the people/agents who made the decision."
       supersedes:
-        type: string
-        pattern: "^DEC-[a-zA-Z0-9_-]+$"
-        description: "ID of a prior decision this one replaces."
+        anyOf:
+          - type: "null"
+          - type: string
+            pattern: "^DEC-[a-zA-Z0-9_-]+$"
+          - type: array
+            maxItems: 0
+        description: "ID of a prior decision this one replaces. Null or empty-list when none."
       superseded_by:
-        type: string
-        pattern: "^DEC-[a-zA-Z0-9_-]+$"
-        description: "ID of a later decision that replaces this one (set when this one becomes superseded)."
+        anyOf:
+          - type: "null"
+          - type: string
+            pattern: "^DEC-[a-zA-Z0-9_-]+$"
+        description: "ID of a later decision that replaces this one (set when this one becomes superseded). Null when active."
       related_workitems:
         type: array
         items:

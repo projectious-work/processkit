@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-SteadyBeam-file-per-entity-git
   created: 2026-04-10
 spec:
+  body: "processkit's context system stores each process artifact (work item, event, decision, etc.) as a separate markdown file with YAML frontmatter. At scale…"
   title: "File-per-entity git scaling — real-world benchmarks and mitigations"
   type: reference
   state: captured

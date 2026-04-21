@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [architecture, enforcement, processkit, hooks, mcp, aibox]
-  produced_by: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  produced_by: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
   owner: ACTOR-sr-architect
   links:
-    workitem: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+    workitem: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
     inputs:
       - ART-20260414_1230-ReachReady-processkit-enforcement-research
       - ART-20260414_1230-ReachReady-processkit-enforcement-research-summary
@@ -28,7 +28,7 @@ spec:
 
 **Author:** Senior Architect (Opus) · **Date:** 2026-04-14
 **Input research:** `ART-20260414_1230-ReachReady-processkit-enforcement-research`
-**Parent WorkItem:** `ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan`
+**Parent WorkItem:** `BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan`
 
 ## 0. Framing
 
@@ -287,13 +287,13 @@ point at the exact files.
 
 | WorkItem | Title | Size |
 |---|---|---|
-| `FEAT-20260414_1430-CleanCharter-compliance-contract-canonical-source` | Write canonical `compliance-contract.md` under `skill-gate/assets/` | S |
-| `FEAT-20260414_1431-LoudBell-acknowledge-contract-mcp-tool` | Add `acknowledge_contract()` / `check_contract_acknowledged()` MCP tools on `skill-gate` | M |
-| `FEAT-20260414_1432-InkStamp-mcp-tool-description-1pct-rule` | Embed the 1% rule in 8 locked MCP tool descriptions + CI guard | S |
-| `FEAT-20260414_1433-SteadyHand-provider-neutral-hook-scripts` | Write `emit_compliance_contract.py` + `check_route_task_called.py` under `skill-gate/scripts/` | M |
-| `FEAT-20260414_1434-RightPath-agents-md-compliance-header` | Re-layer AGENTS.md (canonical + scaffolding) with a compliance-contract header block | S |
-| `FEAT-20260414_1435-QuietProbe-codex-reinjection-probe` | Probe Codex CLI AGENTS.md re-injection behaviour and record findings | S |
-| `FEAT-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping` | Scope processkit-side content requirements for Cursor, OpenCode, Aider adapters | S |
+| `BACK-20260414_1430-CleanCharter-compliance-contract-canonical-source` | Write canonical `compliance-contract.md` under `skill-gate/assets/` | S |
+| `BACK-20260414_1431-LoudBell-acknowledge-contract-mcp-tool` | Add `acknowledge_contract()` / `check_contract_acknowledged()` MCP tools on `skill-gate` | M |
+| `BACK-20260414_1432-InkStamp-mcp-tool-description-1pct-rule` | Embed the 1% rule in 8 locked MCP tool descriptions + CI guard | S |
+| `BACK-20260414_1433-SteadyHand-provider-neutral-hook-scripts` | Write `emit_compliance_contract.py` + `check_route_task_called.py` under `skill-gate/scripts/` | M |
+| `BACK-20260414_1434-RightPath-agents-md-compliance-header` | Re-layer AGENTS.md (canonical + scaffolding) with a compliance-contract header block | S |
+| `BACK-20260414_1435-QuietProbe-codex-reinjection-probe` | Probe Codex CLI AGENTS.md re-injection behaviour and record findings | S |
+| `BACK-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping` | Scope processkit-side content requirements for Cursor, OpenCode, Aider adapters | S |
 
 Each WorkItem file is self-contained — input files, success criteria,
 and explicit guardrails against scope creep. A Sonnet Developer can
@@ -554,7 +554,7 @@ capability matrix and open follow-up implementation issues.
 
 - Research: `ART-20260414_1230-ReachReady-processkit-enforcement-research`
 - Audit: `ART-20260414_0935-AuditSurface-mcp-enforcement-surface`
-- Parent WorkItem: `ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan`
+- Parent WorkItem: `BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan`
 - DecisionRecord (this plan): `DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list`
 - Earlier related decision: `DEC-20260411_0802-RoyalComet-reliable-skill-invocation-provider`
   (this plan is the hybrid-approved update — hooks are now in scope for

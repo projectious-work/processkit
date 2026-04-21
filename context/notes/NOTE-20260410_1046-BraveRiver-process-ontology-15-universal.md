@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-BraveRiver-process-ontology-15-universal
   created: 2026-04-10
 spec:
+  body: "This document identifies the universal process primitives -- the fundamental building blocks that ALL process frameworks share, regardless of domain. These are…"
   title: "Process ontology research — 15 universal primitives across all domains"
   type: reference
   state: captured

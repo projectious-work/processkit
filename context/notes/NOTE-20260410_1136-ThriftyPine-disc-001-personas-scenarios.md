@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1136-ThriftyPine-disc-001-personas-scenarios
   created: 2026-04-10
 spec:
+  body: "This document captures the detailed persona definitions and validation scenario walkthroughs for the context system redesign. It serves as the primary…"
   title: "DISC-001 Appendix: Personas, naming conventions, and 10 scenario walkthroughs"
   type: reference
   state: captured

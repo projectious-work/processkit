@@ -1,6 +1,6 @@
 # processkit skill-gate hook scripts
 
-WorkItem: `FEAT-20260414_1433-SteadyHand-provider-neutral-hook-scripts`
+WorkItem: `BACK-20260414_1433-SteadyHand-provider-neutral-hook-scripts`
 
 These scripts are shipped by processkit and wired into harness configs by
 `aibox sync` (aibox issue 6.2).  They are **stdlib-only Python 3.10+**

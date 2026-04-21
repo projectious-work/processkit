@@ -6,10 +6,11 @@ metadata:
   created: '2026-04-16T08:00:00+00:00'
 spec:
   title: "v0.17.0 command strategy — /pk- namespace, cross-harness uniformity, AGENTS.md-driven build/test"
+  question: "What is the v0.17.0 slash-command scope for processkit — which commands to ship, what namespace, how to handle cross-harness uniformity and AGENTS.md-driven build/test/lint?"
   state: concluded
   participants:
     - ACTOR-pm-claude
-    - owner (bernhard.gerlach@web.de)
+    - ACTOR-20260421_0144-ThriftyOtter-owner
   summary: >
     Multi-turn working conversation on 2026-04-15 → 2026-04-16 that
     produced the v0.17.0 slash-command scope and refined the strategic
@@ -92,10 +93,8 @@ spec:
     v0.17.0 ships 12 /pk- commands (9 skill-driven + 3 AGENTS.md-
     driven) + 1 bug fix. DEC-CommandNexus amended to remove the
     build/test/lint exclusion. Discussion recorded per owner request.
-  related:
+  outcomes:
     - DEC-20260415_2030-CommandNexus-pk-prefix-namespace-and-command-strategy
-    - ART-20260415_1830-CommandCompass-processkit-slash-command-inventory-and-proposal
-    - ART-20260415_2000-ShadowCount-rail5-marker-calibration
 ---
 
 # Discussion log
@@ -107,3 +106,15 @@ content so it survives /clear or session loss.
 
 See `spec.key_exchanges` above for the structured record of each
 topic, the owner's position, and the outcome.
+
+## Cross-references
+
+The original `spec.related` list held IDs that the Discussion schema's
+`related` field cannot carry (it accepts only `DISC-…` entries). They
+are preserved here instead:
+
+- DecisionRecord produced by this discussion (now in `spec.outcomes`):
+  `DEC-20260415_2030-CommandNexus-pk-prefix-namespace-and-command-strategy`
+- Artifacts referenced during the discussion:
+  - `ART-20260415_1830-CommandCompass-processkit-slash-command-inventory-and-proposal`
+  - `ART-20260415_2000-ShadowCount-rail5-marker-calibration`

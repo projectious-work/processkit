@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [team-creator, skill-design, openweave, configurable-defaults, landscape-override, weight-override, tier-thresholds, role-archetypes]
-  produced_by: FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+  produced_by: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
   owner: ACTOR-jr-architect
   links:
-    workitem: FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+    workitem: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
     inputs:
       - ART-20260415_1505-TeamWeaver-team-creator-skill-design
       - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
@@ -26,7 +26,7 @@ spec:
 **Author:** ACTOR-jr-architect (Sonnet 4.6)
 **Date:** 2026-04-15
 **Phase:** 1 of 2 — Design only. No skill modifications here.
-**WorkItem:** FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+**WorkItem:** BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
 
 ---
 

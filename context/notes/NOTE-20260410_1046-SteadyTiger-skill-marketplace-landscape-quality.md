@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-SteadyTiger-skill-marketplace-landscape-quality
   created: 2026-04-10
 spec:
+  body: "Research conducted 2026-03-22 to inform skill library expansion planning."
   title: "Skill marketplace landscape — quality crisis, install counts, ecosystem positioning"
   type: reference
   state: captured

@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: RES-20260415_1800-ShadowCount-rail5-marker-calibration
+  id: BACK-20260415_1800-ShadowCount-rail5-marker-calibration
+  legacy_id: BACK-20260415_1800-ShadowCount-rail5-marker-calibration
   created: '2026-04-15T18:00:00+00:00'
   labels:
     component: skill-gate
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: Rail 5 shadow-mode calibration — 20-session precision/recall run before flipping to block
   state: done
-  type: research
+  type: spike
   priority: high
   size: S
   description: >
@@ -29,28 +30,32 @@ spec:
       - Prefer sessions with user-labeled outcomes so TP/FP labelling
         is tractable.
     procedure:
-      - 1. Run `decision_markers.scan(tier="A")` on the user-message
-           stream of each transcript. Emit a table:
-           session_id × timestamp × matched_marker × matched_text ×
-           next_tool_call.
-      - 2. Manually label each hit: TP = this user-turn was genuinely
-           owner approval of a cross-cutting decision; FP = the marker
-           was conversational or referred to trivial in-turn work.
-      - 3. Compute precision (TP / (TP + FP)) and recall
-           (TP / total-owner-confirmed-decisions-in-corpus).
-      - 4. If precision < 0.80, propose marker-list revisions (drop
-           bare `ok`/`yes`; require longer phrases like
-           `ok let's`/`yes let's`; or add a last-message-only
-           constraint so 5-message-back matches never fire).
-      - 5. If recall < ~0.60, propose Tier-B promotions to Tier-A
-           (but only if they clear the precision gate).
+      - |
+        1. Run `decision_markers.scan(tier="A")` on the user-message
+        stream of each transcript. Emit a table:
+        session_id × timestamp × matched_marker × matched_text ×
+        next_tool_call.
+      - |
+        2. Manually label each hit: TP = this user-turn was genuinely
+        owner approval of a cross-cutting decision; FP = the marker
+        was conversational or referred to trivial in-turn work.
+      - |
+        3. Compute precision (TP / (TP + FP)) and recall
+        (TP / total-owner-confirmed-decisions-in-corpus).
+      - |
+        4. If precision < 0.80, propose marker-list revisions (drop
+        bare `ok`/`yes`; require longer phrases like
+        `ok let's`/`yes let's`; or add a last-message-only
+        constraint so 5-message-back matches never fire).
+      - |
+        5. If recall < ~0.60, propose Tier-B promotions to Tier-A
+        (but only if they clear the precision gate).
   success_criteria:
     - Artifact lists all Tier-A hits in the 20-session corpus with
       TP/FP labels.
     - Precision and recall computed with clear numerator/denominator.
-    - Explicit go/no-go recommendation on flipping to `--mode=block`.
-    - If no-go: a concrete marker-list revision with expected
-      precision under the new list.
+    - "Explicit go/no-go recommendation on flipping to `--mode=block`."
+    - "If no-go: a concrete marker-list revision with expected precision under the new list."
   deliverables:
     - context/artifacts/ART-*-ShadowCount-rail5-marker-calibration.md
   out_of_scope:
@@ -59,9 +64,9 @@ spec:
     - Calibrating Tier-B markers (sweeper-only; higher recall is
       fine there).
   related_workitems:
-    depends_on: FEAT-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
+    depends_on: BACK-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
     sibling_of:
-      - FEAT-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
+      - BACK-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
   related_artifacts:
     - ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research
   assigned_to: ACTOR-sr-researcher

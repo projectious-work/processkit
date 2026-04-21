@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [research, enforcement, processkit, summary]
-  produced_by: RES-20260414_0930-ReliableReach-processkit-enforcement-research
+  produced_by: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
   owner: ACTOR-sr-researcher
   links:
-    workitem: RES-20260414_0930-ReliableReach-processkit-enforcement-research
+    workitem: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
     full_report: ART-20260414_1230-ReachReady-processkit-enforcement-research
 ---
 
@@ -90,4 +90,4 @@ with a compliance-contract header) are in the full report.
 
 - Full report: `ART-20260414_1230-ReachReady-processkit-enforcement-research.md`
 - Audit input: `ART-20260414_0935-AuditSurface-mcp-enforcement-surface.md`
-- WorkItem: `RES-20260414_0930-ReliableReach-processkit-enforcement-research`
+- WorkItem: `BACK-20260414_0930-ReliableReach-processkit-enforcement-research`

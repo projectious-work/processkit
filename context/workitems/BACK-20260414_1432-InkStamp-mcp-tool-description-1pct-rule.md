@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
+  id: BACK-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
+  legacy_id: BACK-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
   created: '2026-04-14T14:32:00+00:00'
   labels:
     component: mcp-servers
@@ -10,7 +11,7 @@ metadata:
 spec:
   title: Embed the 1% rule in the eight locked MCP tool descriptions (+ CI guard)
   state: done
-  type: feature
+  type: story
   priority: high
   size: S
   description: >
@@ -51,7 +52,7 @@ spec:
     - Each of the eight tools' docstrings, when read via `tool.description` in FastMCP, contains the literal string "1% rule".
     - Each appended suffix is ≤120 characters.
     - No existing docstring text is removed or reordered.
-    - `uv run scripts/smoke-test-servers.py` passes; deleting the suffix from any one tool causes the new assertion to fail.
+    - "`uv run scripts/smoke-test-servers.py` passes; deleting the suffix from any one tool causes the new assertion to fail."
     - No MCP tool outside the locked set is edited in this WorkItem.
   out_of_scope:
     - Adding the rule to any ninth tool. That requires a superseding DecisionRecord.
@@ -59,7 +60,7 @@ spec:
   related_decisions:
     - DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list
   assigned_to: ACTOR-developer
-  parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
   progress_notes:
     - timestamp: '2026-04-14T14:35:00+00:00'
       actor: ACTOR-developer

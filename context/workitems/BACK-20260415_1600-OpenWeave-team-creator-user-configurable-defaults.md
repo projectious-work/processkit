@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+  id: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+  legacy_id: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
   created: '2026-04-15T16:00:00+00:00'
   labels:
     component: processkit-core
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: team-creator openness — user- and agent-configurable models, weights, classes, and role→class bindings
   state: done
-  type: feature
+  type: story
   priority: medium
   size: M
   description: >
@@ -87,8 +88,8 @@ spec:
     - UI for editing weights — override is file-based / CLI / MCP tool only.
     - Cross-project weight sharing / synchronization.
   related_workitems:
-    depends_on: FEAT-20260415_1505-TeamWeaver-team-creator-skill  # this wave must land first
-    parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+    depends_on: BACK-20260415_1505-TeamWeaver-team-creator-skill  # this wave must land first
+    parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
   related_artifacts:
     - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
     - ART-20260415_1505-TeamWeaver-team-creator-skill-design

@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [team-creator, dogfood, openweave, latency-weighted, weight-override, acceptance-gate]
-  produced_by: FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+  produced_by: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
   owner: ACTOR-developer
   links:
-    workitem: FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+    workitem: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
     inputs:
       - ART-20260415_1630-OpenWeave-regression-fixture-max5x-defaults
       - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
@@ -26,7 +26,7 @@ spec:
 **Author:** ACTOR-developer (Sonnet 4.6)
 **Date:** 2026-04-15
 **Phase:** OpenWeave Phase 2 — analytic derivation only. No runtime execution.
-**WorkItem:** FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+**WorkItem:** BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
 
 ---
 

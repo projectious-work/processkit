@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260411_1758-StagedMind-cascaded-coarse-to-fine-routing-paradigm
   created: 2026-04-11
 spec:
+  body: "Any system that must select from a large candidate space under a context or cost constraint should narrow that space in stages, using the cheapest mechanism at…"
   title: "Cascaded coarse-to-fine: the universal paradigm for effective context management under constraint"
   type: insight
   state: captured

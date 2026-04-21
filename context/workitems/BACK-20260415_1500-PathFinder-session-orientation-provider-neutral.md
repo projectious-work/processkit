@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260415_1500-PathFinder-session-orientation-provider-neutral
+  id: BACK-20260415_1500-PathFinder-session-orientation-provider-neutral
+  legacy_id: BACK-20260415_1500-PathFinder-session-orientation-provider-neutral
   created: '2026-04-15T15:00:00+00:00'
   labels:
     component: processkit-core
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: Wire morning-briefing as the canonical session-start entry point (no new skill)
   state: done
-  type: feature
+  type: story
   priority: high
   size: S
   description: >
@@ -46,10 +47,10 @@ spec:
       actuals vs ≈5/85/10 target). Bump SKILL version to 1.1.0.
   success_criteria:
     - AGENTS.md has a "Session start" section directly under the compliance-contract block.
-    - `morning-briefing` SKILL.md lists pending migrations as a source and emits the budget-share snapshot.
-    - `emit_compliance_contract.py` with `--include-session-start` appends the session-start instruction.
+    - "`morning-briefing` SKILL.md lists pending migrations as a source and emits the budget-share snapshot."
+    - "`emit_compliance_contract.py` with `--include-session-start` appends the session-start instruction."
     - No new skill created; no new MCP tool added.
-    - `uv run scripts/smoke-test-servers.py` still passes.
+    - "`uv run scripts/smoke-test-servers.py` still passes."
     - A fresh session in Claude Code sees the session-start instruction via hook stdout AND via AGENTS.md.
   out_of_scope:
     - Creating a new "session-onboarding" skill — violates the no-skill-inflation rule (feedback memory 2026-04-15).
@@ -57,7 +58,7 @@ spec:
   related_decisions:
     - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition
   related_workitems:
-    parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+    parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
     replaces_placeholder: FEAT-Q3-session-onboarding
   assigned_to: ACTOR-developer
   progress_notes: |

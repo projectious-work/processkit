@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-RapidPeak-skills-quality-audit-thin
   created: 2026-04-10
 spec:
+  body: "Audited: 85 SKILL.md files in `templates/skills/` Sample read in detail: 22 files across all categories Date: 2026-03-26"
   title: "Skills quality audit — 55% of skills are thin-tier, lacking examples and tool declarations"
   type: reference
   state: captured

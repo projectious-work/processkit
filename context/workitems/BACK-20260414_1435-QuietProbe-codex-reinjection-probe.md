@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260414_1435-QuietProbe-codex-reinjection-probe
+  id: BACK-20260414_1435-QuietProbe-codex-reinjection-probe
+  legacy_id: BACK-20260414_1435-QuietProbe-codex-reinjection-probe
   created: '2026-04-14T14:35:00+00:00'
   labels:
     component: codex
@@ -10,7 +11,7 @@ metadata:
 spec:
   title: Probe Codex CLI AGENTS.md re-injection behaviour and record findings
   state: done
-  type: research
+  type: spike
   priority: medium
   size: S
   description: >
@@ -44,5 +45,5 @@ spec:
     - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
     - ART-20260414_1500-ClearSignal-codex-agents-md-reinjection-probe
   assigned_to: ACTOR-junior-researcher
-  parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
 ---

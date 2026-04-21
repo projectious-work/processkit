@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [research, codex, enforcement, processkit, agents-md, hooks]
-  produced_by: FEAT-20260414_1435-QuietProbe-codex-reinjection-probe
+  produced_by: BACK-20260414_1435-QuietProbe-codex-reinjection-probe
   owner: ACTOR-jr-researcher
   links:
-    workitem: FEAT-20260414_1435-QuietProbe-codex-reinjection-probe
+    workitem: BACK-20260414_1435-QuietProbe-codex-reinjection-probe
     related_artifacts:
       - ART-20260414_1230-ReachReady-processkit-enforcement-research
       - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
@@ -23,7 +23,7 @@ spec:
 # Codex CLI AGENTS.md re-injection probe
 
 **Author:** Jr Researcher (Sonnet) · **Date:** 2026-04-14
-**WorkItem:** `FEAT-20260414_1435-QuietProbe-codex-reinjection-probe`
+**WorkItem:** `BACK-20260414_1435-QuietProbe-codex-reinjection-probe`
 **Method used:** Docs + source (Method 2) — the `codex` CLI binary is not available in this environment; the empirical probe (Method 1) could not be run. The documentary evidence is sufficiently clear that a confident answer is possible without it.
 
 ---
@@ -111,7 +111,7 @@ AGENTS.md injection at session start is subject to:
 
 The compliance-contract hook scripts (`emit_compliance_contract.py` wired to `SessionStart` + `UserPromptSubmit` in `.codex/hooks.json`) are therefore the primary mechanism to keep enforcement rules in live context on Codex, exactly as concluded in SteadyBeacon §1.4. AGENTS.md (re-layered per `FEAT-RightPath`) remains valuable as the session-start anchor and for harnesses without hook support, but it is not a substitute for hooks on Codex.
 
-The WorkItem `FEAT-20260414_1433-SteadyHand-provider-neutral-hook-scripts` should be prioritised accordingly — there is no evidence that AGENTS.md alone is sufficient for multi-turn Codex sessions.
+The WorkItem `BACK-20260414_1433-SteadyHand-provider-neutral-hook-scripts` should be prioritised accordingly — there is no evidence that AGENTS.md alone is sufficient for multi-turn Codex sessions.
 
 ---
 

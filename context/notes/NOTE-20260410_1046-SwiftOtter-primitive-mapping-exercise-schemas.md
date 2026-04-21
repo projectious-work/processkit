@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-SwiftOtter-primitive-mapping-exercise-schemas
   created: 2026-04-10
 spec:
+  body: "Purpose: Map each of the 16 universal primitives to concrete file locations, YAML schemas, state machines, and storage tier classification."
   title: "Primitive mapping exercise — YAML schemas, file paths, and state machines per primitive"
   type: reference
   state: captured

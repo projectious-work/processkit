@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260414_1433-SteadyHand-provider-neutral-hook-scripts
+  id: BACK-20260414_1433-SteadyHand-provider-neutral-hook-scripts
+  legacy_id: BACK-20260414_1433-SteadyHand-provider-neutral-hook-scripts
   created: '2026-04-14T14:33:00+00:00'
   labels:
     component: skill-gate
@@ -10,7 +11,7 @@ metadata:
 spec:
   title: Write provider-neutral hook scripts (SessionStart / UserPromptSubmit / PreToolUse)
   state: done
-  type: feature
+  type: story
   priority: high
   size: M
   description: >
@@ -23,7 +24,7 @@ spec:
     - /workspace/context/artifacts/ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan.md  (§1.4)
     - https://code.claude.com/docs/en/hooks-guide  (Claude Code hook input/output JSON — re-verify at implementation time)
     - https://developers.openai.com/codex/hooks  (Codex CLI hooks — re-verify)
-    - depends-on: FEAT-20260414_1430-CleanCharter-compliance-contract-canonical-source
+    - depends-on: BACK-20260414_1430-CleanCharter-compliance-contract-canonical-source
   deliverables:
     - context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py
     - context/skills/processkit/skill-gate/scripts/check_route_task_called.py
@@ -32,13 +33,13 @@ spec:
     - context/skills/processkit/skill-gate/scripts/fixtures/claude-code-pre-tool-use.json  (captured real hook payload)
   script_contracts:
     emit_compliance_contract.py:
-      reads: stdin (ignored; optional JSON) + ../assets/compliance-contract.md relative to script.
-      writes: full contract text to stdout. On Claude Code 2.1.0+, optionally wraps in {"hookSpecificOutput": {"hookEventName": "<event>", "additionalContext": "<contract>"}} when a --claude-2-1 flag is present.
-      exits: 0 on success, 1 on missing contract file (stderr explains), never 2.
+      reads: "stdin (ignored; optional JSON) + ../assets/compliance-contract.md relative to script."
+      writes: 'full contract text to stdout. On Claude Code 2.1.0+, optionally wraps in {"hookSpecificOutput": {"hookEventName": "<event>", "additionalContext": "<contract>"}} when a --claude-2-1 flag is present.'
+      exits: "0 on success, 1 on missing contract file (stderr explains), never 2."
     check_route_task_called.py:
-      reads: hook input JSON from stdin (Claude Code PreToolUse shape). Parses `session_id`, `tool_name`, `tool_input`.
-      logic: If tool_name is not in {Write, Edit, MultiEdit}, exit 0 (allow). If path in tool_input does not start with "context/", exit 0. Otherwise check for context/.state/skill-gate/session-<session_id>.ack OR .route marker; exit 0 if present, exit 2 with a remediation message on stderr if absent.
-      exits: 0 (allow), 2 (block with stderr shown to user), never 1.
+      reads: "hook input JSON from stdin (Claude Code PreToolUse shape). Parses `session_id`, `tool_name`, `tool_input`."
+      logic: 'If tool_name is not in {Write, Edit, MultiEdit}, exit 0 (allow). If path in tool_input does not start with "context/", exit 0. Otherwise check for context/.state/skill-gate/session-<session_id>.ack OR .route marker; exit 0 if present, exit 2 with a remediation message on stderr if absent.'
+      exits: "0 (allow), 2 (block with stderr shown to user), never 1."
   success_criteria:
     - Both scripts run under python3.10+ with only the stdlib (no pip install).
     - emit_compliance_contract.py with the fixture as stdin prints the contract body verbatim and returns 0.
@@ -53,7 +54,7 @@ spec:
   related_artifacts:
     - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
   assigned_to: ACTOR-developer
-  parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
   progress_notes: |
     ACTOR-developer (Sonnet) completed 2026-04-14.
 

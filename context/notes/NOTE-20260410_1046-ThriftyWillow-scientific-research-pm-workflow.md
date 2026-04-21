@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-ThriftyWillow-scientific-research-pm-workflow
   created: 2026-04-10
 spec:
+  body: "Purpose: Analyze what a scientific research process template needs, map to existing primitives, identify gaps"
   title: "Scientific research PM — full workflow, primitive mapping, and identified primitive gaps"
   type: reference
   state: captured

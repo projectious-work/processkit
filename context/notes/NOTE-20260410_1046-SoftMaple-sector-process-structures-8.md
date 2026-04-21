@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-SoftMaple-sector-process-structures-8
   created: 2026-04-10
 spec:
+  body: "Purpose: Identify what each professional sector needs from a project management tool beyond software-development defaults. Informs process template library and…"
   title: "Sector process structures — 8 professional domains beyond software defaults"
   type: reference
   state: captured

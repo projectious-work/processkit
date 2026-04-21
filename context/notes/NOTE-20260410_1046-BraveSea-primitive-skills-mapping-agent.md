@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-BraveSea-primitive-skills-mapping-agent
   created: 2026-04-10
 spec:
+  body: "Purpose: Map each of the 17 primitives to the skills agents need to work with them. Skills are the agent's API to the context system."
   title: "Primitive-to-skills mapping — agent API design per primitive"
   type: reference
   state: captured

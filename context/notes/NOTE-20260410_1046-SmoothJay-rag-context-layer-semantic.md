@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-SmoothJay-rag-context-layer-semantic
   created: 2026-04-10
 spec:
+  body: "Research for semantic search over the processkit `./context/` directory. Evaluates embedding models, vector storage, MCP integration, existing tools, indexing…"
   title: "RAG context layer — semantic search design for processkit context directory"
   type: reference
   state: captured

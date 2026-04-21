@@ -76,7 +76,7 @@ spec:
     literal string "1% rule"; PRs that drop it fail CI. (2) skill-
     builder's new-skill template documents the criterion so additions
     to this list have a clear bar. (3) The WorkItem
-    FEAT-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
+    BACK-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
     implements the eight edits and the CI guard. (4) Any future
     proposal to add a ninth tool or remove one must supersede this
     record, not amend it silently.
@@ -111,4 +111,4 @@ The eight tools are:
 
 Each description keeps its existing docstring and gains ≤120 extra
 characters. The canonical reminder text is owned by
-`FEAT-20260414_1432-InkStamp-mcp-tool-description-1pct-rule`.
+`BACK-20260414_1432-InkStamp-mcp-tool-description-1pct-rule`.

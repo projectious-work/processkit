@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
+  id: BACK-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
+  legacy_id: BACK-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
   created: '2026-04-14T14:36:00+00:00'
   labels:
     component: harness-adapters
@@ -10,7 +11,7 @@ metadata:
 spec:
   title: Scope processkit-side content requirements for Cursor / OpenCode / Aider adapters
   state: done
-  type: research
+  type: spike
   priority: low
   size: S
   description: >
@@ -40,7 +41,7 @@ spec:
     - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
     - ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix
   assigned_to: ACTOR-junior-researcher
-  parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
   progress_notes: |
     2026-04-14 — Research complete. Capability matrix produced as
     ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix.

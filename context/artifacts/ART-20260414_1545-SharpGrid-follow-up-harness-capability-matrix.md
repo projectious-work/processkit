@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [research, enforcement, cursor, opencode, aider, capability-matrix, harness-adapters]
-  produced_by: FEAT-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
+  produced_by: BACK-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
   owner: ACTOR-junior-researcher
   links:
-    workitem: FEAT-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
+    workitem: BACK-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
     inputs:
       - ART-20260414_1230-ReachReady-processkit-enforcement-research
       - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
@@ -24,7 +24,7 @@ spec:
 
 **Author:** Junior Researcher (Sonnet) — ACTOR-jr-researcher
 **Date gathered:** 2026-04-14
-**Parent WorkItem:** `FEAT-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping`
+**Parent WorkItem:** `BACK-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping`
 **Input artifacts:**
 - `ART-20260414_1230-ReachReady-processkit-enforcement-research` (§4.3, §6)
 - `ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan` (§2.5, §4 Q2)

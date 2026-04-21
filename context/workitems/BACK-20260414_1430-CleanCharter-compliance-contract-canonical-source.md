@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260414_1430-CleanCharter-compliance-contract-canonical-source
+  id: BACK-20260414_1430-CleanCharter-compliance-contract-canonical-source
+  legacy_id: BACK-20260414_1430-CleanCharter-compliance-contract-canonical-source
   created: '2026-04-14T14:30:00+00:00'
   labels:
     component: skill-gate
@@ -19,7 +20,7 @@ spec:
     no-templates-edit, no-hand-edit-harness-config. Rules 1 and 7 from the
     seed (route_task and skill-finder) are kept as separate rules matching
     the original seed's intent; no rules dropped or new categories added.
-  type: feature
+  type: story
   priority: high
   size: S
   description: >
@@ -48,5 +49,5 @@ spec:
   related_decisions:
     - DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list
   assigned_to: ACTOR-developer
-  parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
 ---

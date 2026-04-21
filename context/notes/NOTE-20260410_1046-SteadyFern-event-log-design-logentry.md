@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-SteadyFern-event-log-design-logentry
   created: 2026-04-10
 spec:
+  body: "The context system has structured places for deliberate choices (decisions), planned work (work items), session activity (standups), and project tracking…"
   title: "Event log design — LogEntry categories, JSONL sharding, query patterns"
   type: reference
   state: captured

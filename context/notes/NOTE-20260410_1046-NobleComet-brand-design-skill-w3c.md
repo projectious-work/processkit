@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-NobleComet-brand-design-skill-w3c
   created: 2026-04-10
 spec:
+  body: "processkit ships 85+ skills across 14 categories. The \"Design & Visual\" category contains 7 skills (excalidraw, logo-design, infographics, frontend-design…"
   title: "Brand design skill spec — W3C DTCG tokens, logo system, brand voice, repository structure"
   type: reference
   state: captured

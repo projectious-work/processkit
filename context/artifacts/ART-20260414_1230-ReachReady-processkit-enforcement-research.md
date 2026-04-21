@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [research, enforcement, processkit, agents, mcp, hooks, agents-md]
-  produced_by: RES-20260414_0930-ReliableReach-processkit-enforcement-research
+  produced_by: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
   owner: ACTOR-sr-researcher
   links:
-    workitem: RES-20260414_0930-ReliableReach-processkit-enforcement-research
+    workitem: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
     inputs:
       - ART-20260414_0935-AuditSurface-mcp-enforcement-surface
     related_decisions:

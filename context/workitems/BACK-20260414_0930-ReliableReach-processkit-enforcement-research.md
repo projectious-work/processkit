@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: RES-20260414_0930-ReliableReach-processkit-enforcement-research
+  id: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
+  legacy_id: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
   created: '2026-04-14T09:30:00+00:00'
   labels:
     component: processkit-core
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: Research report — why agents ignore processkit, and provider-neutral leverage points
   state: completed
-  type: research
+  type: spike
   priority: critical
   description: >
     Produce a research-with-confidence report answering: where do agents

@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: RES-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
+  id: BACK-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
+  legacy_id: BACK-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
   created: '2026-04-15T15:20:00+00:00'
   labels:
     component: processkit-core
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: Rail 5 research — auto-capture of decisions from planning discussions
   state: done
-  type: research
+  type: spike
   priority: high
   size: M
   description: >
@@ -70,11 +71,11 @@ spec:
     - Auto-capture for entity types other than DecisionRecord.
   related_workitems:
     sibling_of:
-      - FEAT-20260414_1430-CleanCharter-compliance-contract-canonical-source
-      - FEAT-20260414_1431-LoudBell-acknowledge-contract-mcp-tool
-      - FEAT-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
-      - FEAT-20260414_1433-SteadyHand-provider-neutral-hook-scripts
-    parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+      - BACK-20260414_1430-CleanCharter-compliance-contract-canonical-source
+      - BACK-20260414_1431-LoudBell-acknowledge-contract-mcp-tool
+      - BACK-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
+      - BACK-20260414_1433-SteadyHand-provider-neutral-hook-scripts
+    parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
   related_decisions:
     - DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list
   assigned_to: ACTOR-sr-researcher

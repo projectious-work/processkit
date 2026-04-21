@@ -4,9 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260420_1729-SureTiger-groom-the-153-error
   created: '2026-04-20T17:29:14+00:00'
+  updated: '2026-04-21T01:56:59+00:00'
 spec:
   title: Groom the 153-ERROR baseline surfaced by first /pk-doctor run (Option A follow-up)
-  state: backlog
+  state: done
   type: epic
   priority: medium
   description: 'First real `/pk-doctor` run against `/workspace` surfaced 153 ERROR
@@ -72,4 +73,20 @@ spec:
     - CLI migration sharding exemption + move
 
     - processes/ schema reconciliation'
+  started_at: '2026-04-20T19:02:30+00:00'
+  completed_at: '2026-04-21T01:56:59+00:00'
 ---
+
+## Transition note (2026-04-20T19:02:30+00:00)
+
+Dispatching worker for 5-track grooming sweep per DEC-20260420_XXXX-SureTigerGrooming. Strict-schema rewrite of legacy WorkItems (types + IDs), schema null/empty relaxation, CLI-migration sharding exemption, YAML hand-repairs, misplaced-log move.
+
+
+## Transition note (2026-04-21T01:56:58+00:00)
+
+All 5 tracks + backfill complete. 164 → 0 ERROR, 17 → 5 WARN (residual are Phase-2 filename renames). Drift guard PASS. Index clean. Collateral create_actor bug filed as separate WorkItem.
+
+
+## Transition note (2026-04-21T01:56:59+00:00)
+
+Shipped via the commit below.

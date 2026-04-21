@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-CleverRiver-skills-gap-analysis-critical
   created: 2026-04-10
 spec:
+  body: "Purpose: Compare processkit's curated skills against the broader AI coding agent ecosystem to identify gaps and expansion opportunities."
   title: "Skills gap analysis — critical missing skills vs ecosystem (March 2026)"
   type: reference
   state: captured

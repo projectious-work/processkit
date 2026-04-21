@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: RES-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics
+  id: BACK-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics
+  legacy_id: BACK-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics
   created: '2026-04-14T15:00:00+00:00'
   labels:
     component: processkit-core
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: Capture pre-enforcement baseline metrics for processkit adoption in derived projects
   state: done
-  type: research
+  type: spike
   priority: medium
   description: >
     Before the enforcement wave (CleanCharter / InkStamp / RightPath /

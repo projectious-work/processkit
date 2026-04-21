@@ -5,6 +5,7 @@ metadata:
   id: LOG-20260420_1608-WildRaven-workitem-transitioned
   created: '2026-04-20T16:08:41+00:00'
 spec:
+  actor: ACTOR-20260421_0144-AmberDawn-legacy-historical-backfill
   event_type: workitem.transitioned
   timestamp: '2026-04-20T16:08:41+00:00'
   summary: Transitioned WorkItem 'BACK-20260420_1339-TidyJay-add-migration-management-mcp'

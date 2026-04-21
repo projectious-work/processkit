@@ -65,3 +65,4 @@ spec:
         than full content. All 17 research Notes, the main discussion entity, and
         2 appendix Notes were subsequently rewritten with full original content.
         Rule encoded in the feedback memory above."
+---

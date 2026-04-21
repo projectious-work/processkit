@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
+  id: BACK-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
+  legacy_id: BACK-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
   created: '2026-04-15T17:00:00+00:00'
   labels:
     component: skill-gate
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: Rail 5 implementation — auto-capture of decisions (Lever 1 PreToolUse gate + Lever 2 SessionEnd sweeper)
   state: done
-  type: feature
+  type: story
   priority: high
   size: M
   description: >
@@ -35,7 +36,7 @@ spec:
         - context/skills/processkit/skill-gate/scripts/decision_markers.py  # shared regex lib
         - context/skills/processkit/skill-gate/scripts/record_decision_observer.py  # PostToolUse — records the ack
         - context/skills/processkit/skill-gate/scripts/fixtures/claude-code-pretooluse-with-transcript.json
-        - new MCP tool on skill-gate: skip_decision_record(reason: str)
+        - "new MCP tool on skill-gate: skip_decision_record(reason: str)"
         - compliance-contract.md updated with Rail-5 clause
       success_criteria:
         - Hook reads transcript_path correctly on Claude Code 2.1+ fixture.
@@ -83,12 +84,12 @@ spec:
   related_artifacts:
     - ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research
   related_workitems:
-    parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+    parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
     sibling_of:
-      - FEAT-20260414_1430-CleanCharter-compliance-contract-canonical-source
-      - FEAT-20260414_1431-LoudBell-acknowledge-contract-mcp-tool
-      - FEAT-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
-      - FEAT-20260414_1433-SteadyHand-provider-neutral-hook-scripts
+      - BACK-20260414_1430-CleanCharter-compliance-contract-canonical-source
+      - BACK-20260414_1431-LoudBell-acknowledge-contract-mcp-tool
+      - BACK-20260414_1432-InkStamp-mcp-tool-description-1pct-rule
+      - BACK-20260414_1433-SteadyHand-provider-neutral-hook-scripts
   related_decisions:
     - DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list
   assigned_to: ACTOR-pm-claude  # PM dispatches; per-lever implementer TBD

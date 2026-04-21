@@ -12,10 +12,10 @@ spec:
   version: "1.0.0"
   tags: [research, enforcement, rail5, calibration, decision-record,
          precision-recall, shadow-mode]
-  produced_by: RES-20260415_1800-ShadowCount-rail5-marker-calibration
+  produced_by: BACK-20260415_1800-ShadowCount-rail5-marker-calibration
   owner: ACTOR-sr-researcher
   links:
-    workitem: RES-20260415_1800-ShadowCount-rail5-marker-calibration
+    workitem: BACK-20260415_1800-ShadowCount-rail5-marker-calibration
     inputs:
       - ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research
       - context/skills/processkit/skill-gate/scripts/decision_markers.py
@@ -26,7 +26,7 @@ spec:
 
 **Author:** Senior Researcher (Opus) — ACTOR-sr-researcher
 **Date:** 2026-04-15
-**Parent WorkItem:** `RES-20260415_1800-ShadowCount-rail5-marker-calibration`
+**Parent WorkItem:** `BACK-20260415_1800-ShadowCount-rail5-marker-calibration`
 
 ---
 

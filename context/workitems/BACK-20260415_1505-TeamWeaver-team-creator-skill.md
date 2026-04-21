@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260415_1505-TeamWeaver-team-creator-skill
+  id: BACK-20260415_1505-TeamWeaver-team-creator-skill
+  legacy_id: BACK-20260415_1505-TeamWeaver-team-creator-skill
   created: '2026-04-15T15:05:00+00:00'
   labels:
     component: processkit-core
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: New narrow `team-creator` skill — provider-neutral team composition by cost/outcome tier
   state: done
-  type: feature
+  type: story
   priority: high
   size: M
   description: >
@@ -182,7 +183,7 @@ spec:
     context/skills/processkit/skill-finder/SKILL.md with trigger phrases at
     line 126. Smoke test: PASSED (=== ALL SERVER SMOKE TESTS PASSED ===).
     WorkItem state transitioned from proposed to done. Follow-up:
-    FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+    BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
     tracks the openness expansion.
 
     v0.16.0 schema-field support (primary_contact, clone_cap,
@@ -191,7 +192,7 @@ spec:
   related_decisions:
     - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition  # to be superseded by phase-3 output
   related_workitems:
-    parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+    parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
     replaces_placeholder: RES-Q2-team-creator
   assigned_to: ACTOR-pm-claude  # PM routes the phases; per-phase owners listed above
 ---

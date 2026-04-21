@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-WarmAnt-context-database-architecture-file
   created: 2026-04-10
 spec:
+  body: "processkit needs a storage layer for process primitives -- work items, events, decisions, projects, metrics, cross-references, and user-defined entities. This…"
   title: "Context database architecture — why file-per-entity beats SQLite in git"
   type: reference
   state: captured

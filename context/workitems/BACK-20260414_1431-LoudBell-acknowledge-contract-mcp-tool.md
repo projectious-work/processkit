@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: FEAT-20260414_1431-LoudBell-acknowledge-contract-mcp-tool
+  id: BACK-20260414_1431-LoudBell-acknowledge-contract-mcp-tool
+  legacy_id: BACK-20260414_1431-LoudBell-acknowledge-contract-mcp-tool
   created: '2026-04-14T14:31:00+00:00'
   labels:
     component: skill-gate
@@ -10,7 +11,7 @@ metadata:
 spec:
   title: Add acknowledge_contract() / check_contract_acknowledged() MCP tools on skill-gate
   state: done
-  type: feature
+  type: story
   priority: high
   size: M
   description: >
@@ -25,23 +26,23 @@ spec:
     - /workspace/context/skills/processkit/skill-gate/SKILL.md
     - /workspace/context/skills/processkit/task-router/mcp/server.py  (reference for FastMCP + ToolAnnotations pattern)
     - /workspace/context/skills/processkit/skill-finder/mcp/mcp-config.json  (reference for per-skill config shape)
-    - depends-on: FEAT-20260414_1430-CleanCharter-compliance-contract-canonical-source
+    - depends-on: BACK-20260414_1430-CleanCharter-compliance-contract-canonical-source
   deliverables:
     - context/skills/processkit/skill-gate/mcp/server.py
     - context/skills/processkit/skill-gate/mcp/mcp-config.json
     - context/skills/processkit/skill-gate/mcp/SERVER.md
     - Updated context/skills/processkit/skill-gate/SKILL.md (add provides.mcp_tools frontmatter + "How the gate is enforced" section)
   tools:
-    - acknowledge_contract(version: str) -> {ok, contract_hash, contract_text, expires_at}
-    - check_contract_acknowledged() -> {acknowledged: bool, contract_hash: str?, age_seconds: int?}
+    - "acknowledge_contract(version: str) -> {ok, contract_hash, contract_text, expires_at}"
+    - "check_contract_acknowledged() -> {acknowledged: bool, contract_hash: str?, age_seconds: int?}"
   success_criteria:
-    - `uv run scripts/smoke-test-servers.py` passes with the new server.
+    - "`uv run scripts/smoke-test-servers.py` passes with the new server."
     - Calling acknowledge_contract("v1") returns ok=true and writes a marker file at context/.state/skill-gate/session-<SESSION_ID>.ack containing the contract hash.
     - Calling acknowledge_contract("v999") returns ok=false with a "version mismatch" error, no marker written.
     - Calling check_contract_acknowledged after a successful acknowledge returns acknowledged=true with the matching hash; calling it in a session without a prior acknowledge returns acknowledged=false.
     - The tool's MCP description (both acknowledge_contract and check_contract_acknowledged) contains the literal string "1% rule" and is ≤300 characters including the existing text.
-    - mcp-config.json follows the same shape as task-router/mcp/mcp-config.json — PEP 723 `uv run` invocation.
-    - skill-gate SKILL.md frontmatter has `provides.mcp_tools: [acknowledge_contract, check_contract_acknowledged]`.
+    - "mcp-config.json follows the same shape as task-router/mcp/mcp-config.json — PEP 723 `uv run` invocation."
+    - "skill-gate SKILL.md frontmatter has `provides.mcp_tools: [acknowledge_contract, check_contract_acknowledged]`."
     - skill-gate SKILL.md gains a section "How the gate is enforced" documenting the prose-vs-tool split.
   out_of_scope:
     - Enforcing check_contract_acknowledged() on the write-side tools (create_workitem, record_decision, ...). That is a follow-up WorkItem once the fallback has soaked.
@@ -88,5 +89,5 @@ spec:
   related_decisions:
     - DEC-20260411_0802-RoyalComet-reliable-skill-invocation-provider
   assigned_to: ACTOR-developer
-  parent: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  parent: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
 ---

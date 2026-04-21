@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [research, enforcement, rail5, decision-record, hooks, provider-neutral]
-  produced_by: RES-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
+  produced_by: BACK-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
   owner: ACTOR-sr-researcher
   links:
-    workitem: RES-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
+    workitem: BACK-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
     inputs:
       - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
       - ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix
@@ -26,7 +26,7 @@ spec:
 
 **Author:** Senior Researcher (Opus) — ACTOR-sr-researcher
 **Date:** 2026-04-15
-**Parent WorkItem:** `RES-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture`
+**Parent WorkItem:** `BACK-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture`
 
 ---
 

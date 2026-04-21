@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: ARCH-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  id: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
+  legacy_id: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
   created: '2026-04-14T12:45:00+00:00'
   labels:
     component: processkit-core
@@ -11,7 +12,7 @@ metadata:
 spec:
   title: Implementation plan — processkit enforcement (hooks + acknowledge-contract hybrid)
   state: done
-  type: architecture
+  type: epic
   priority: critical
   description: >
     Consume the Sr Researcher's report
@@ -31,6 +32,6 @@ spec:
     - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition
   assigned_to: ACTOR-sr-architect
   blocks:
-    - FEAT-20260415_1500-PathFinder-session-orientation-provider-neutral   # filed 2026-04-15, replaces FEAT-Q3-session-onboarding
-    - FEAT-20260415_1505-TeamWeaver-team-creator-skill                     # filed 2026-04-15, replaces RES-Q2-team-creator
+    - BACK-20260415_1500-PathFinder-session-orientation-provider-neutral   # filed 2026-04-15, replaces FEAT-Q3-session-onboarding
+    - BACK-20260415_1505-TeamWeaver-team-creator-skill                     # filed 2026-04-15, replaces RES-Q2-team-creator
 ---

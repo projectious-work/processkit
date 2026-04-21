@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-QuietRiver-process-architecture-frameworks-safe
   created: 2026-04-10
 spec:
+  body: "process template implementation Date: 2026-03-18"
   title: "Process architecture frameworks — SAFe, PMBOK, CMMI, IPMA deep-dive"
   type: reference
   state: captured

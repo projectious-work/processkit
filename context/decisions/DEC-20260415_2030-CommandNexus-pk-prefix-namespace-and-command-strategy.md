@@ -105,7 +105,7 @@ spec:
   related:
     - ART-20260415_1830-CommandCompass-processkit-slash-command-inventory-and-proposal
     - ART-20260415_2000-ShadowCount-rail5-marker-calibration
-    - FEAT-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
+    - BACK-20260415_1700-QuietLedger-rail5-auto-decision-capture-implementation
     - DISC-20260416_0800-CommandScope-v017-command-strategy-session
   v017_command_scope:
     ship:
@@ -131,12 +131,9 @@ spec:
       - /pk-retro    (retrospective skill — must be designed + built first)
       - FEAT-M — LLM-classifier variant for Rail 5 Lever 1
     dropped_from_v017:
-      - /pk-decide   (decisions are conversational; Rail 5 shadow-mode
-        + long-form /decision-record-write cover it; revisit after
-        LLM-classifier lands)
-      - /pk-onboard  (split into /pk-resume + /pk-wrap + /pk-status
-        per owner feedback: three distinct moments, not one)
-      - /pk-capture  (superseded by /pk-note + /pk-discuss)
+      - "/pk-decide   (decisions are conversational; Rail 5 shadow-mode + long-form /decision-record-write cover it; revisit after LLM-classifier lands)"
+      - "/pk-onboard  (split into /pk-resume + /pk-wrap + /pk-status per owner feedback: three distinct moments, not one)"
+      - "/pk-capture  (superseded by /pk-note + /pk-discuss)"
 ---
 
 # Notes

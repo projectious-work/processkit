@@ -47,6 +47,10 @@ KIND_TO_DIR = {
 }
 
 FILENAME_DATE_RE = re.compile(r"(\d{8})(?:[_T](\d{4,6}))?")
+# aibox-CLI migration docs (e.g. 20260410_1523_0.17.6-to-0.17.9.md) live in
+# context/migrations/ but are NOT processkit Migration entities — they are
+# CLI upgrade notes. Exempt them from schema validation.
+CLI_MIGRATION_RE = re.compile(r"^\d{8}_\d{4}_\d+\.\d+\.\d+-to-\d+\.\d+\.\d+\.md$")
 
 
 def _load_schema(schemas_dir: Path, kind: str) -> dict | None:
@@ -86,6 +90,9 @@ def _iter_entity_files(ctx_root: Path, kind_dir: str, since_files: set[Path] | N
         return
     for p in root.rglob("*.md"):
         if p.name.startswith("INDEX"):
+            continue
+        if CLI_MIGRATION_RE.match(p.name):
+            # aibox-CLI upgrade doc, not a processkit entity — skip.
             continue
         if since_files is not None and p not in since_files:
             continue

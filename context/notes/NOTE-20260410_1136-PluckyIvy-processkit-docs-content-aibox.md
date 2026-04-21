@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1136-PluckyIvy-processkit-docs-content-aibox
   created: 2026-04-10
 spec:
+  body: "This file collects documentation content that belongs in processkit's own docs, not in aibox's docs. Each block notes the source file, the exact content, and…"
   title: "Processkit docs content collected from aibox docs — boundary and content blocks"
   type: reference
   state: captured

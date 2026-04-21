@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [research, measurement, enforcement, baseline, adoption]
-  produced_by: RES-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics
+  produced_by: BACK-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics
   owner: ACTOR-jr-researcher
   links:
-    workitem: RES-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics
+    workitem: BACK-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics
     related_artifacts:
       - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
 ---
@@ -22,7 +22,7 @@ spec:
 # Pre-enforcement baseline metrics — processkit tool-adoption
 
 **Author:** ACTOR-jr-researcher (Sonnet) · **Date:** 2026-04-14
-**Parent WorkItem:** `RES-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics`
+**Parent WorkItem:** `BACK-20260414_1500-BaselinePulse-enforcement-adoption-baseline-metrics`
 **Scope:** processkit repo only (single-project; see §6 for second-project gap)
 
 ---

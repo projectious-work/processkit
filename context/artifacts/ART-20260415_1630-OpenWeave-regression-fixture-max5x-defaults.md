@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [team-creator, regression-fixture, openweave, kit-defaults, acceptance-gate]
-  produced_by: FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+  produced_by: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
   owner: ACTOR-developer
   links:
-    workitem: FEAT-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
+    workitem: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
     inputs:
       - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
       - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured

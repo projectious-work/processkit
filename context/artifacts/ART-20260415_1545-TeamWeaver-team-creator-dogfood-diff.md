@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [team-creator, dogfood, tiering-formula, acceptance-gate, diagnostic]
-  produced_by: FEAT-20260415_1505-TeamWeaver-team-creator-skill
+  produced_by: BACK-20260415_1505-TeamWeaver-team-creator-skill
   owner: ACTOR-sr-researcher
   links:
-    workitem: FEAT-20260415_1505-TeamWeaver-team-creator-skill
+    workitem: BACK-20260415_1505-TeamWeaver-team-creator-skill
     inputs:
       - ART-20260415_1505-TeamWeaver-team-creator-skill-design
       - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
@@ -26,7 +26,7 @@ spec:
 **Author:** ACTOR-sr-researcher (Opus)
 **Date:** 2026-04-15
 **Phase:** 3 of 4 — Diagnostic simulation. No skill modification.
-**WorkItem:** `FEAT-20260415_1505-TeamWeaver-team-creator-skill`
+**WorkItem:** `BACK-20260415_1505-TeamWeaver-team-creator-skill`
 **Verdict (preview):** FAIL — the current formula inverts the tiers
 relative to the existing team. Recommended adjustments in §7.
 

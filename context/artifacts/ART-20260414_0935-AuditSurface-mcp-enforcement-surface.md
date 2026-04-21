@@ -11,9 +11,9 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [audit, mcp, enforcement, processkit]
-  produced_by: AUDIT-20260414_0930-SwiftSurvey-mcp-enforcement-surface-audit
+  produced_by: BACK-20260414_0930-SwiftSurvey-mcp-enforcement-surface-audit
   links:
-    workitem: AUDIT-20260414_0930-SwiftSurvey-mcp-enforcement-surface-audit
+    workitem: BACK-20260414_0930-SwiftSurvey-mcp-enforcement-surface-audit
 ---
 
 # MCP Enforcement Surface Audit — processkit Skills Catalog

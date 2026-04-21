@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-KeenVale-addon-skill-mapping-audit
   created: 2026-04-10
 spec:
+  body: "Scope: All 85 skill templates, 13 process packages, 22 addons"
   title: "Addon/skill mapping audit — old aibox system, 31 orphaned skills identified"
   type: reference
   state: captured

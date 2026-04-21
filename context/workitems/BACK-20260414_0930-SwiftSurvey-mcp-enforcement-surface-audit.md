@@ -2,7 +2,8 @@
 apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
-  id: AUDIT-20260414_0930-SwiftSurvey-mcp-enforcement-surface-audit
+  id: BACK-20260414_0930-SwiftSurvey-mcp-enforcement-surface-audit
+  legacy_id: BACK-20260414_0930-SwiftSurvey-mcp-enforcement-surface-audit
   created: '2026-04-14T09:30:00+00:00'
   labels:
     component: processkit-core
@@ -21,5 +22,5 @@ spec:
     This audit is evidence input for the Sr Researcher's report.
   assigned_to: ACTOR-assistant
   blocks:
-    - RES-20260414_0930-ReliableReach-processkit-enforcement-research
+    - BACK-20260414_0930-ReliableReach-processkit-enforcement-research
 ---

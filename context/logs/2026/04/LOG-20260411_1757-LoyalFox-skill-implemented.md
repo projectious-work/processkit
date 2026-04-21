@@ -5,6 +5,7 @@ metadata:
   id: LOG-20260411_1757-LoyalFox-skill-implemented
   created: '2026-04-11T17:57:25+00:00'
 spec:
+  actor: ACTOR-20260421_0144-AmberDawn-legacy-historical-backfill
   event_type: skill.implemented
   timestamp: '2026-04-11T17:57:25+00:00'
   summary: task-router MCP server v0.1 implemented, smoke-tested, and registered.

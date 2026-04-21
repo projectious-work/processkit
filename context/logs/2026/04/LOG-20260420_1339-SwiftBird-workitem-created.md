@@ -5,6 +5,7 @@ metadata:
   id: LOG-20260420_1339-SwiftBird-workitem-created
   created: '2026-04-20T13:39:49+00:00'
 spec:
+  actor: ACTOR-20260421_0144-AmberDawn-legacy-historical-backfill
   event_type: workitem.created
   timestamp: '2026-04-20T13:39:49+00:00'
   summary: 'Created WorkItem ''BACK-20260420_1339-TidyJay-add-migration-management-mcp'':

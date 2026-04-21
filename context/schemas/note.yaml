@@ -70,15 +70,17 @@ spec:
         type: string
         description: "For reference notes: URL, book title, or conversation description."
       promotes_to:
-        type: object
-        description: "When a note is promoted, record the target primitive kind and ID."
-        properties:
-          kind:
-            type: string
-            enum: [WorkItem, DecisionRecord, Artifact, Discussion]
-          id:
-            type: string
-        required: [kind, id]
+        anyOf:
+          - type: "null"
+          - type: object
+            properties:
+              kind:
+                type: string
+                enum: [WorkItem, DecisionRecord, Artifact, Discussion]
+              id:
+                type: string
+            required: [kind, id]
+        description: "When a note is promoted, record the target primitive kind and ID. Null when not yet promoted."
       review_due:
         type: string
         format: date

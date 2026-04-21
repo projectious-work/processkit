@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-StoutSwan-owner-profiling-observable-signals
   created: 2026-04-10
 spec:
+  body: "Every processkit project has a `context/OWNER.md` file that captures the project owner's identity, preferences, and working context. Today this file is…"
   title: "Owner profiling spec — observable signals, learning algorithm, incremental enrichment"
   type: reference
   state: captured

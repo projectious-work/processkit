@@ -26,6 +26,10 @@ from .common import CheckResult
 YYYY_RE = re.compile(r"^\d{4}$")
 MM_RE = re.compile(r"^(0[1-9]|1[0-2])$")
 VALID_MIG_BUCKETS = {"pending", "in-progress", "applied"}
+# aibox-CLI migration docs (e.g. 20260410_1523_0.17.6-to-0.17.9.md) live in
+# context/migrations/ but are NOT processkit Migration entities — they are
+# CLI upgrade notes. Exempt them from sharding + schema checks.
+CLI_MIGRATION_RE = re.compile(r"^\d{8}_\d{4}_\d+\.\d+\.\d+-to-\d+\.\d+\.\d+\.md$")
 
 
 def _read_state(path: Path) -> str | None:
@@ -87,6 +91,9 @@ def run(ctx) -> list[CheckResult]:
             if since_files is not None and p not in since_files:
                 continue
             if p.name.startswith("INDEX"):
+                continue
+            if CLI_MIGRATION_RE.match(p.name):
+                # aibox-CLI upgrade doc, not a processkit Migration entity.
                 continue
             rel_parts = p.relative_to(mig_dir).parts
             if len(rel_parts) < 2 or rel_parts[0] not in VALID_MIG_BUCKETS:

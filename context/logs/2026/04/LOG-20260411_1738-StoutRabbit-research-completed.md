@@ -5,6 +5,7 @@ metadata:
   id: LOG-20260411_1738-StoutRabbit-research-completed
   created: '2026-04-11T17:38:43+00:00'
 spec:
+  actor: ACTOR-20260421_0144-AmberDawn-legacy-historical-backfill
   event_type: research.completed
   timestamp: '2026-04-11T17:38:43+00:00'
   summary: 'Deep research completed on MCP routing: MetaMCP, PulseMCP Router, MasRouter

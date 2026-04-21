@@ -30,7 +30,7 @@ spec:
     fit: [agentic_best_for, when_not_to_use]
   consumes: []
   consumed_by:
-    - FEAT-20260415_1505-TeamWeaver-team-creator-skill
+    - BACK-20260415_1505-TeamWeaver-team-creator-skill
   freshness: |
     Snapshots of the provider landscape go stale within a quarter.
     Re-capture before every `team-rebalance` run. This snapshot is

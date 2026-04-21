@@ -5,6 +5,7 @@ metadata:
   id: NOTE-20260410_1046-BrightDew-personas-and-scenarios-five
   created: 2026-04-10
 spec:
+  body: "Purpose: Define personas and user stories to validate the context system design against real-world usage patterns."
   title: "Personas and validation scenarios — 5 target user profiles for processkit"
   type: reference
   state: captured

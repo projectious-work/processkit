@@ -11,10 +11,10 @@ spec:
   format: markdown
   version: "1.0.0"
   tags: [team-creator, skill-design, tiering-formula, role-archetypes, team-composition]
-  produced_by: FEAT-20260415_1505-TeamWeaver-team-creator-skill
+  produced_by: BACK-20260415_1505-TeamWeaver-team-creator-skill
   owner: ACTOR-jr-architect
   links:
-    workitem: FEAT-20260415_1505-TeamWeaver-team-creator-skill
+    workitem: BACK-20260415_1505-TeamWeaver-team-creator-skill
     inputs:
       - ART-20260415_1510-LandscapeSnapshot-ai-provider-comparison-april-2026
       - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition
@@ -25,7 +25,7 @@ spec:
 **Author:** ACTOR-jr-architect (Sonnet 4.6)
 **Date:** 2026-04-15
 **Phase:** 1 of 4 — Design only. No code, no skill directory, no MCP server created here.
-**WorkItem:** `FEAT-20260415_1505-TeamWeaver-team-creator-skill`
+**WorkItem:** `BACK-20260415_1505-TeamWeaver-team-creator-skill`
 
 ---
 
