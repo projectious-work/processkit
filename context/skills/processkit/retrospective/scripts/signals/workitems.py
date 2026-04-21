@@ -2,8 +2,18 @@
 
 Uses index-management query_entities to find WorkItems whose
 ``completed_at`` or ``deferred_at`` falls within the time window.
-Partitions them into "held" (closed/done) and "slipped" (deferred /
-superseded / cancelled-with-slip note).
+Partitions them into "held" (done) and "slipped" (deferred / superseded).
+
+Classification rules
+--------------------
+* **held**    — final state is ``done`` (or legacy aliases ``closed`` /
+                ``completed``) and ``completed_at`` falls in the window.
+* **slipped** — final state is ``deferred`` or ``superseded`` and
+                ``deferred_at`` (or ``completed_at``) falls in the window.
+* **cancelled** — excluded from both buckets.  ``cancelled`` means "we're
+                not doing this; no longer a concern" — it is success-neutral
+                noise from the retrospective's perspective and must not be
+                counted as slippage.
 
 Returns::
 
@@ -42,7 +52,9 @@ from typing import Any
 
 
 _HELD_STATES = frozenset({"done", "closed", "completed"})
-_SLIPPED_STATES = frozenset({"deferred", "superseded", "cancelled"})
+# "cancelled" is intentionally excluded: it means "no longer a concern",
+# not "we failed to deliver it".  Only genuine deferrals count as slippage.
+_SLIPPED_STATES = frozenset({"deferred", "superseded"})
 
 
 def collect(ctx: dict) -> dict:

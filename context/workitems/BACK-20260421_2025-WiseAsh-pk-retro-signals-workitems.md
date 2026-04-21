@@ -4,9 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260421_2025-WiseAsh-pk-retro-signals-workitems
   created: '2026-04-21T20:25:14+00:00'
+  updated: '2026-04-21T20:30:49+00:00'
 spec:
   title: pk-retro signals/workitems.py conflates cancelled-resolved with slipped
-  state: backlog
+  state: done
   type: bug
   priority: medium
   description: 'context/skills/processkit/retrospective/scripts/signals/workitems.py
@@ -60,4 +61,20 @@ spec:
     Source retro artifact: ART-20260421_1747-BrightCrow-retrospective-v0-18-2
 
     Source DR: DEC-20260421_2033-*'
+  started_at: '2026-04-21T20:28:22+00:00'
+  completed_at: '2026-04-21T20:30:49+00:00'
 ---
+
+## Transition note (2026-04-21T20:28:22+00:00)
+
+Option 2 approved per DEC-20260421_2025-KindFrog. Dispatching Sonnet worker to update signals/workitems.py + tests + dual-tree mirror.
+
+
+## Transition note (2026-04-21T20:30:46+00:00)
+
+Option 2 shipped: _SLIPPED_STATES = {deferred, superseded}. 37/37 tests pass. Dogfood v0.18.2 dry-run shows "What Slipped: No slipped WorkItems or drift signals found in window." — BraveReef false positive would no longer be produced.
+
+
+## Transition note (2026-04-21T20:30:49+00:00)
+
+Shipping.

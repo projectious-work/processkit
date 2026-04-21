@@ -117,6 +117,40 @@ def mock_workitems_deferred() -> list[dict]:
 
 
 @pytest.fixture()
+def mock_workitems_superseded() -> list[dict]:
+    return [
+        {
+            "metadata": {"id": "BACK-004"},
+            "spec": {
+                "title": "Old approach replaced by new design",
+                "state": "superseded",
+                "type": "feature",
+                "completed_at": "",
+                "deferred_at": "2026-04-16T10:00:00Z",
+                "notes": "Superseded by BACK-010",
+            },
+        },
+    ]
+
+
+@pytest.fixture()
+def mock_workitems_cancelled() -> list[dict]:
+    return [
+        {
+            "metadata": {"id": "BACK-005"},
+            "spec": {
+                "title": "SunnyDawn — per-skill settings.toml (no longer needed)",
+                "state": "cancelled",
+                "type": "chore",
+                "completed_at": "",
+                "deferred_at": "2026-04-17T12:00:00Z",
+                "notes": "Concern resolved via per-skill settings.toml",
+            },
+        },
+    ]
+
+
+@pytest.fixture()
 def mock_doctor_reports() -> list[dict]:
     return [
         {
@@ -316,16 +350,13 @@ class TestTimeline:
 class TestWorkitems:
     def _make_mcp(
         self,
-        done: list[dict] | None = None,
-        deferred: list[dict] | None = None,
+        items: list[dict] | None = None,
     ) -> dict:
-        done = done or []
-        deferred = deferred or []
-        all_items = done + deferred
+        items = items or []
 
         def query_entities(kind="", state="", **kwargs):
             return [
-                e for e in all_items
+                e for e in items
                 if e.get("spec", {}).get("state") == state
             ]
 
@@ -337,10 +368,7 @@ class TestWorkitems:
         mock_workitems_done: list[dict],
         mock_workitems_deferred: list[dict],
     ):
-        mcp = self._make_mcp(
-            done=mock_workitems_done,
-            deferred=mock_workitems_deferred,
-        )
+        mcp = self._make_mcp(items=mock_workitems_done + mock_workitems_deferred)
         ctx = {
             "repo_root": repo_root,
             "since": "2026-04-15T00:00:00Z",
@@ -352,6 +380,108 @@ class TestWorkitems:
         assert result["slipped_count"] == 1
         assert result["total_closed"] == 3
         assert result["bug_closed"] == 1  # only BACK-002 is type=bug
+
+    def test_deferred_appears_in_slipped(
+        self,
+        repo_root: Path,
+        mock_workitems_deferred: list[dict],
+    ):
+        mcp = self._make_mcp(items=mock_workitems_deferred)
+        ctx = {
+            "repo_root": repo_root,
+            "since": "2026-04-15T00:00:00Z",
+            "until": "2026-04-18T23:59:59Z",
+            "mcp": mcp,
+        }
+        result = wi_mod.collect(ctx)
+        assert result["slipped_count"] == 1
+        assert result["held_count"] == 0
+        slipped_ids = [w["id"] for w in result["slipped"]]
+        assert "BACK-003" in slipped_ids
+
+    def test_superseded_appears_in_slipped(
+        self,
+        repo_root: Path,
+        mock_workitems_superseded: list[dict],
+    ):
+        mcp = self._make_mcp(items=mock_workitems_superseded)
+        ctx = {
+            "repo_root": repo_root,
+            "since": "2026-04-15T00:00:00Z",
+            "until": "2026-04-18T23:59:59Z",
+            "mcp": mcp,
+        }
+        result = wi_mod.collect(ctx)
+        assert result["slipped_count"] == 1
+        slipped_ids = [w["id"] for w in result["slipped"]]
+        assert "BACK-004" in slipped_ids
+
+    def test_done_appears_in_held(
+        self,
+        repo_root: Path,
+        mock_workitems_done: list[dict],
+    ):
+        mcp = self._make_mcp(items=mock_workitems_done)
+        ctx = {
+            "repo_root": repo_root,
+            "since": "2026-04-15T00:00:00Z",
+            "until": "2026-04-18T23:59:59Z",
+            "mcp": mcp,
+        }
+        result = wi_mod.collect(ctx)
+        assert result["held_count"] == 2
+        assert result["slipped_count"] == 0
+        held_ids = [w["id"] for w in result["held"]]
+        assert "BACK-001" in held_ids
+        assert "BACK-002" in held_ids
+
+    def test_cancelled_excluded_from_both_buckets(
+        self,
+        repo_root: Path,
+        mock_workitems_cancelled: list[dict],
+    ):
+        """cancelled WorkItems must not appear in held OR slipped."""
+        mcp = self._make_mcp(items=mock_workitems_cancelled)
+        ctx = {
+            "repo_root": repo_root,
+            "since": "2026-04-15T00:00:00Z",
+            "until": "2026-04-18T23:59:59Z",
+            "mcp": mcp,
+        }
+        result = wi_mod.collect(ctx)
+        assert result["held_count"] == 0
+        assert result["slipped_count"] == 0
+        all_ids = (
+            [w["id"] for w in result["held"]]
+            + [w["id"] for w in result["slipped"]]
+        )
+        assert "BACK-005" not in all_ids
+
+    def test_cancelled_not_flagged_as_slipped_regression(
+        self,
+        repo_root: Path,
+        mock_workitems_cancelled: list[dict],
+        mock_workitems_done: list[dict],
+    ):
+        """Regression: BraveReef false positive — /pk-retro v0.18.2 flagged SunnyDawn
+        as slipped because it was cancelled, even though the cancellation note said
+        the concern was resolved via per-skill settings.toml. See DEC-20260421_2025-KindFrog."""
+        # Mix cancelled with done items: cancelled must stay out of slipped
+        mcp = self._make_mcp(items=mock_workitems_done + mock_workitems_cancelled)
+        ctx = {
+            "repo_root": repo_root,
+            "since": "2026-04-15T00:00:00Z",
+            "until": "2026-04-18T23:59:59Z",
+            "mcp": mcp,
+        }
+        result = wi_mod.collect(ctx)
+        slipped_ids = [w["id"] for w in result["slipped"]]
+        assert "BACK-005" not in slipped_ids, (
+            "BraveReef regression: cancelled item BACK-005 (SunnyDawn) "
+            "must not appear in slipped"
+        )
+        # done items are unaffected
+        assert result["held_count"] == 2
 
     def test_empty_returns_zeros(self, repo_root: Path):
         ctx = {
@@ -371,7 +501,7 @@ class TestWorkitems:
         repo_root: Path,
         mock_workitems_done: list[dict],
     ):
-        mcp = self._make_mcp(done=mock_workitems_done)
+        mcp = self._make_mcp(items=mock_workitems_done)
         ctx = {
             "repo_root": repo_root,
             "since": None,
@@ -381,6 +511,57 @@ class TestWorkitems:
         result = wi_mod.collect(ctx)
         for item in result["held"]:
             assert item["id"], "held item must have an ID"
+
+
+# ---------------------------------------------------------------------------
+# Regression: BraveReef false positive (standalone)
+# ---------------------------------------------------------------------------
+
+def test_cancelled_workitem_not_flagged_as_slipped():
+    """Regression: BraveReef false positive — /pk-retro v0.18.2 flagged SunnyDawn
+    as slipped because it was cancelled, even though the cancellation note said
+    the concern was resolved via per-skill settings.toml. See DEC-20260421_2025-KindFrog."""
+    import tempfile
+    from pathlib import Path as _Path
+
+    cancelled_item = {
+        "metadata": {"id": "BACK-SunnyDawn"},
+        "spec": {
+            "title": "SunnyDawn — per-skill settings.toml",
+            "state": "cancelled",
+            "type": "chore",
+            "completed_at": "",
+            "deferred_at": "2026-04-17T12:00:00Z",
+            "notes": "Concern resolved via per-skill settings.toml",
+        },
+    }
+
+    def query_entities(kind="", state="", **kwargs):
+        if state == "cancelled":
+            return [cancelled_item]
+        return []
+
+    with tempfile.TemporaryDirectory() as tmp:
+        repo_root = _Path(tmp)
+        (repo_root / "context" / "workitems").mkdir(parents=True)
+        ctx = {
+            "repo_root": repo_root,
+            "since": "2026-04-15T00:00:00Z",
+            "until": "2026-04-18T23:59:59Z",
+            "mcp": {"query_entities": query_entities},
+        }
+        result = wi_mod.collect(ctx)
+
+    slipped_ids = [w["id"] for w in result["slipped"]]
+    held_ids = [w["id"] for w in result["held"]]
+    assert "BACK-SunnyDawn" not in slipped_ids, (
+        "BraveReef regression: cancelled SunnyDawn must not appear in slipped"
+    )
+    assert "BACK-SunnyDawn" not in held_ids, (
+        "BraveReef regression: cancelled SunnyDawn must not appear in held"
+    )
+    assert result["slipped_count"] == 0
+    assert result["held_count"] == 0
 
 
 # ---------------------------------------------------------------------------
