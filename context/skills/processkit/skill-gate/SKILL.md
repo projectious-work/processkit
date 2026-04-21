@@ -42,6 +42,42 @@ itself — it ensures work is performed via the right skill.
 
 ## Overview
 
+### The processkit Compliance Contract (v2)
+
+AGENTS.md ships a ToC of this contract; the authoritative rules live
+here. Every session that touches processkit entities or `context/`
+files is governed by all ten:
+
+1. **route_task before writes.** Call `route_task(task_description)`
+   before any `create_*`, `transition_*`, `link_*`, `record_*`, or
+   `open_*` tool call.
+2. **1% rule.** If there is even a 1% chance a processkit skill
+   applies, consult `skill-finder` (or call `find_skill`) before
+   acting.
+3. **Commit to entity creation in the same turn.** When you decide to
+   create a WorkItem, DecisionRecord, Note, or Artifact, call the tool
+   in the same turn — deferred entity creation is lost.
+4. **Write via MCP.** Write entities through MCP tools, not by
+   hand-editing files under `context/` — hand edits bypass schema
+   validation, state-machine enforcement, and the event-log auto-entry.
+5. **Read via index.** Read entities through `index-management`
+   (`query_entities`, `get_entity`, `search_entities`) — do not use
+   `ls`, `grep`, or raw filesystem walks under `context/`.
+6. **Log after state changes.** Log an event after any state change
+   that an MCP write did not already produce automatically.
+7. **Record accepted cross-cutting decisions.** After a cross-cutting
+   recommendation is accepted, call `record_decision` in the same turn.
+8. **Acknowledge decision language.** When the last five user messages
+   contain explicit decision language (approved / decided / ship it /
+   let's go / ok / yes / confirmed), either call `record_decision` in
+   the same turn or call `skip_decision_record(reason=...)` to
+   acknowledge the skip.
+9. **Templates are read-only.** Do not edit any file under
+   `context/templates/` — it is a read-only upstream mirror used as a
+   diff baseline.
+10. **Don't hand-edit merged MCP config.** Edit the per-skill
+    `mcp-config.json` and let the installer re-merge.
+
 ### The 1% rule
 
 Before any of the following actions, pause and apply the decision graph:
@@ -94,6 +130,30 @@ is wrong:
 | "skill-finder won't have a match for this." | The catalog has 128+ skills. Check before assuming. If there genuinely is no match, `skill-builder` is the next step — not acting from general knowledge. |
 | "The user told me exactly what to do." | User instructions describe intent, not process. The skill encodes the processkit-specific conventions for realizing that intent correctly. |
 | "I've done this before in this session." | Skill-gate applies to each new task type, not just the first one. If the task domain shifts, check again. |
+
+### Mandatory skill-check task classes
+
+Before starting any task in the following categories, call
+`find_skill(<task-keyword>)` / `list_skills()` (or
+`search_entities(kind=skill, text=<task-keyword>)` via index-management)
+— even if you think you know the procedure:
+
+1. **Research ingestion** — importing notes, papers, or external
+   artefacts into the project context.
+2. **Artifact creation** — producing a new PRD, ADR, spec, brief, or
+   any structured output file.
+3. **Discussion management** — opening, advancing, or closing a
+   structured discussion thread.
+4. **Decision recording** — capturing a cross-cutting decision in a
+   DecisionRecord entity.
+5. **Backlog item creation** — adding a WorkItem, Epic, or task to
+   the backlog.
+6. **Quality audits** — reviewing a skill, process, schema, or
+   compliance artifact.
+
+This list is not exhaustive — the 1% rule applies to every task, not
+just these six. The list names the classes where bypassing the catalog
+has caused the most observed work-waste.
 
 ### Escape hatch
 
@@ -166,6 +226,70 @@ skill-gate is a processkit-specific skill. It is only meaningful in
 projects that have processkit installed (i.e. that have a `context/`
 directory with processkit entities). In projects without processkit,
 skill-gate should not be loaded.
+
+### Context directory layout
+
+All processkit-installed material lives under `context/`:
+
+```
+context/
+├── skills/         ← skill packages (SKILL.md, mcp/, references/, templates/)
+├── schemas/        ← JSON schemas for the core primitives
+├── state-machines/ ← state-machine definitions
+├── processes/      ← process definitions (bug-fix, code-review, release, …)
+└── templates/      ← immutable upstream mirror used as a diff baseline
+```
+
+`context/templates/processkit/<version>/` is the verbatim upstream
+snapshot. **Do not edit it.** Edit the live files at
+`context/skills/<name>/SKILL.md`, `context/processes/<name>.md`, etc.,
+directly. Local edits are detected at the next sync via three-way diff
+against the templates mirror.
+
+Every `context/` subdirectory has an `INDEX.md`. **Read those first** —
+do not slurp `context/skills/` or any large directory at session start.
+Load specific files only when the task demands it. This is the
+three-level principle: start at Level 1 (intro), drop to Level 2
+(workflows) when the task narrows, drop to Level 3 (full reference) for
+edge cases.
+
+### Working with entities
+
+processkit models project state as **entities** — work items, decision
+records, discussions, log entries, scopes, gates, bindings, and so on.
+Each entity is a YAML file under `context/<kind>s/`, created lazily on
+first use. For each entity kind, processkit ships a schema at
+`context/schemas/<kind>.yaml`, a state machine at
+`context/state-machines/<kind>.yaml`, and an MCP server at
+`context/skills/<kind>-management/mcp/server.py`.
+
+- **Read** entities through `index-management`: call `query_entities`,
+  `get_entity`, `search_entities` — not `ls`, `grep`, or filesystem
+  walks. The SQLite-backed index is faster, context-cheaper, and
+  reflects canonical state.
+- **Write** entities through the per-kind MCP servers:
+  `create_workitem` / `transition_workitem`, `record_decision`, and so
+  on. Hand-editing entity files bypasses index updates and
+  state-machine validation. Reserve hand edits for cases the MCP tools
+  genuinely don't cover — and call `reindex()` after so the SQLite
+  index reflects the new state.
+- **Log an event** after any state change that an MCP write did not
+  already produce automatically (via `event-log`'s `log_event` tool).
+
+### MCP server wiring
+
+Each MCP-bearing skill ships its own `mcp/mcp-config.json` declaring
+how to launch the server (typically `uv run …/server.py`). Agent
+harnesses (Claude Code, Codex CLI, Cursor, …) read a single merged MCP
+config at startup, so the per-skill blocks must be merged and placed at
+the harness-specific path. If an installer set the project up (e.g.
+an aibox-managed devcontainer), the installer owns that wiring; if
+processkit was installed manually, the project owner merges the blocks
+by hand. Either way, MCP-bearing skills require **`uv`** and **Python
+≥ 3.10** on PATH — each `server.py` is a PEP 723 script and `uv run`
+resolves dependencies on first launch. Do not hand-edit the generated
+merged harness config; edit per-skill `mcp-config.json` and let the
+installer re-merge.
 
 ## How the gate is enforced
 

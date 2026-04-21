@@ -170,6 +170,7 @@ def create_workitem(
         "WorkItem", new_id, "workitem.created",
         f"Created WorkItem {new_id!r}: {title!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target), "state": initial_state}
 
@@ -225,6 +226,7 @@ def transition_workitem(id: str, to_state: str, note: str | None = None) -> dict
         "WorkItem", id, "workitem.transitioned",
         f"Transitioned WorkItem {id!r} from {from_state!r} to {to_state!r}",
         root=root,
+        actor=id,
     )
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
@@ -314,9 +316,12 @@ def link_workitems(from_id: str, to_id: str, relation: str) -> dict:
     ``relation`` must be one of: blocks, blocked_by, parent, children,
     related_decisions. Bidirectional relations (blocks/blocked_by,
     parent/children) are NOT auto-mirrored — call link_workitems on
-    both sides if you want them. Prerequisite: call
-    find_skill(task_description) or confirm you are already operating
-    within a named processkit skill before using this tool.
+    both sides if you want them.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     if relation not in _VALID_RELATIONS:
         return {"error": f"invalid relation {relation!r}; valid: {sorted(_VALID_RELATIONS)}"}

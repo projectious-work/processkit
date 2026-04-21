@@ -269,6 +269,45 @@ def run():
         print("bad actor type (expected error):", bad)
         assert "error" in bad
 
+        # Regression guard for BACK-20260421_0156: create_actor must emit an
+        # `actor.created` LogEntry whose spec.actor equals the new actor id
+        # (self-attribution), and the emitted spec must pass LogEntry schema
+        # validation (actor is a required field).
+        from processkit import entity as _entity, index as _index_mod, schema as _schema_mod
+        _db_ac = _index_mod.open_db()
+        try:
+            _ev_actor_created = _index_mod.query_events(
+                _db_ac, event_type="actor.created", subject=actor_id
+            )
+        finally:
+            _db_ac.close()
+        print("log side effects — actor.created:", len(_ev_actor_created))
+        assert len(_ev_actor_created) >= 1, "actor.created LogEntry missing"
+        _log_row = _ev_actor_created[0]
+        _log_id = _log_row["id"]
+        # Resolve the LogEntry entity so we can inspect its full spec and run
+        # schema validation (not just the indexed event row).
+        _db_ac = _index_mod.open_db()
+        try:
+            _log_full = _index_mod.get_entity(_db_ac, _log_id)
+        finally:
+            _db_ac.close()
+        assert _log_full and _log_full.get("path"), (
+            f"LogEntry {_log_id!r} missing path in index: {_log_full}"
+        )
+        _log_ent = _entity.load(_log_full["path"])
+        assert _log_ent.spec.get("actor") == actor_id, (
+            f"actor.created LogEntry spec.actor={_log_ent.spec.get('actor')!r} "
+            f"expected {actor_id!r} (self-attribution)"
+        )
+        _log_errs = _schema_mod.validate_spec("LogEntry", _log_ent.spec)
+        assert _log_errs == [], (
+            f"actor.created LogEntry fails schema validation: {_log_errs}"
+        )
+        print(
+            "actor.created LogEntry self-attribution + schema validation: OK"
+        )
+
         # 4c. role-management
         create_role = get_tool(role, "create_role")
         r = create_role(
@@ -699,6 +738,42 @@ def run():
         assert len(_ev_gate_eval) >= 1, "gate.passed log entry missing"
         assert len(_ev_disc) >= 1, "discussion.opened log entry missing"
         assert len(_ev_art) >= 1, "artifact.created log entry missing"
+
+        # ── Systemic self-attribution guard (BACK-20260421_0209-*) ────────────
+        # Every entity-mutating MCP tool must pass actor=<subject-id> to its
+        # log helper so the emitted LogEntry passes schema validation (actor
+        # is a required field on LogEntry). Spot-check the four canonical
+        # tools: workitem-management create + transition, decision-record
+        # record_decision, and discussion-management open_discussion.
+        from processkit import entity as _entity_sa, schema as _schema_sa
+        _sa_cases = [
+            ("workitem.created",      wi_id,   "create_workitem"),
+            ("workitem.transitioned", wi_id,   "transition_workitem"),
+            ("decision.created",      dec_id,  "record_decision"),
+            ("discussion.opened",     disc_id, "open_discussion"),
+        ]
+        _db_sa = _index.open_db()
+        try:
+            for _evt, _subj, _label in _sa_cases:
+                _rows = _index.query_events(_db_sa, event_type=_evt, subject=_subj)
+                assert _rows, f"{_label}: no {_evt!r} LogEntry found for {_subj!r}"
+                _full = _index.get_entity(_db_sa, _rows[0]["id"])
+                assert _full and _full.get("path"), (
+                    f"{_label}: LogEntry row has no path: {_full}"
+                )
+                _ent = _entity_sa.load(_full["path"])
+                assert _ent.spec.get("actor") == _subj, (
+                    f"{_label}: spec.actor={_ent.spec.get('actor')!r} "
+                    f"expected {_subj!r} (self-attribution)"
+                )
+                _errs = _schema_sa.validate_spec("LogEntry", _ent.spec)
+                assert _errs == [], (
+                    f"{_label}: LogEntry fails schema validation: {_errs}"
+                )
+        finally:
+            _db_sa.close()
+        print("systemic self-attribution guard: 4 tools OK")
+        # ── end systemic self-attribution guard ──────────────────────────────
 
         # 6. index management
         reindex = get_tool(idx, "reindex")

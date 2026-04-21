@@ -97,7 +97,8 @@ def create_scope(
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
 
     Parameters
     ----------
@@ -164,6 +165,7 @@ def create_scope(
         "Scope", new_id, "scope.created",
         f"Created Scope {new_id!r}: {name!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target_path), "state": "planned"}
 
@@ -205,7 +207,8 @@ def transition_scope(id: str, to_state: str) -> dict:
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     root = paths.find_project_root()
     ent = _load_scope(root, id)
@@ -231,6 +234,7 @@ def transition_scope(id: str, to_state: str) -> dict:
         "Scope", id, "scope.transitioned",
         f"Transitioned Scope {id!r} from {from_state!r} to {to_state!r}",
         root=root,
+        actor=id,
     )
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 

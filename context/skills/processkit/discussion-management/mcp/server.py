@@ -153,6 +153,7 @@ def open_discussion(
         "Discussion", new_id, "discussion.opened",
         f"Opened Discussion {new_id!r}: {question!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target_path), "state": "active"}
 
@@ -193,7 +194,8 @@ def transition_discussion(id: str, to_state: str) -> dict:
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     root = paths.find_project_root()
     ent = _load_discussion(root, id)
@@ -221,6 +223,7 @@ def transition_discussion(id: str, to_state: str) -> dict:
         "Discussion", id, "discussion.transitioned",
         f"Transitioned Discussion {id!r} from {from_state!r} to {to_state!r}",
         root=root,
+        actor=id,
     )
     return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
@@ -236,9 +239,10 @@ def add_outcome(id: str, decision_id: str) -> dict:
 
     The DecisionRecord must already exist (use decision-record's
     record_decision first). Idempotent: re-adding the same decision is
-    a no-op. Prerequisite: call find_skill(task_description) or confirm
-    you are already operating within a named processkit skill before
-    using this tool.
+    a no-op.    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     if not decision_id.startswith("DEC-"):
         return {"error": f"decision_id must start with DEC-, got {decision_id!r}"}

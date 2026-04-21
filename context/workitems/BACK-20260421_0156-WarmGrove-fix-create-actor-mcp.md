@@ -4,10 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260421_0156-WarmGrove-fix-create-actor-mcp
   created: '2026-04-21T01:56:55+00:00'
+  updated: '2026-04-21T07:25:55+00:00'
 spec:
   title: Fix create_actor MCP tool — emits LogEntry without required actor field (self-referential
     bug)
-  state: backlog
+  state: done
   type: bug
   priority: low
   description: 'Found during SureTiger grooming sweep (BACK-20260420_1729). When `mcp__processkit-actor-profile__create_actor`
@@ -36,4 +37,20 @@ spec:
 
     Acceptance: create_actor emits an `actor.created` LogEntry that passes schema
     validation without manual backfill.'
+  started_at: '2026-04-21T02:09:18+00:00'
+  completed_at: '2026-04-21T07:25:55+00:00'
 ---
+
+## Transition note (2026-04-21T02:09:18+00:00)
+
+Dispatching worker — emit-after-persist with self-attribution shape.
+
+
+## Transition note (2026-04-21T07:25:51+00:00)
+
+Expanded fix shipped: not just create_actor, but all 18 auto-log sites across 10 servers. 6 session LogEntries backfilled. Drift allowlist extended.
+
+
+## Transition note (2026-04-21T07:25:55+00:00)
+
+Shipped in commit below.

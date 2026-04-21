@@ -111,7 +111,8 @@ def create_binding(
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
 
     Parameters
     ----------
@@ -174,6 +175,7 @@ def create_binding(
         "Binding", new_id, "binding.created",
         f"Created Binding {new_id!r}: {type!r} {subject!r} → {target!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target_path)}
 
@@ -189,7 +191,8 @@ def end_binding(id: str, end_date: str | None = None) -> dict:
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     root = paths.find_project_root()
     ent = _load_binding(root, id)
@@ -208,6 +211,7 @@ def end_binding(id: str, end_date: str | None = None) -> dict:
         "Binding", id, "binding.ended",
         f"Ended Binding {id!r} (valid_until={ent.spec['valid_until']!r})",
         root=root,
+        actor=id,
     )
     return {"ok": True, "id": id, "valid_until": ent.spec["valid_until"]}
 

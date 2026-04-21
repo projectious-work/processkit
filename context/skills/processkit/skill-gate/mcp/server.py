@@ -177,6 +177,11 @@ def acknowledge_contract(version: str) -> dict:
     expires_at      — ISO-8601 UTC timestamp 12 h after acknowledgement
     contract        — full contract text (re-read even if ok=False)
     error           — present only when ok=False; explains the mismatch
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     try:
         contract_file = _contract_path()
@@ -340,6 +345,11 @@ def skip_decision_record(reason: str, session_id: str | None = None) -> dict:
     acknowledged_at — ISO-8601 UTC timestamp of this call
     expires_at      — ISO-8601 UTC timestamp 24 h from now (TTL)
     error           — present only when ok=False; explains what went wrong
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     reason = reason.strip() if reason else ""
     if not reason:

@@ -177,6 +177,7 @@ def create_artifact(
         "Artifact", new_id, "artifact.created",
         f"Created Artifact {new_id!r}: {name!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target)}
 
@@ -284,9 +285,12 @@ def update_artifact(
     """Update metadata fields on an existing Artifact.
 
     Only the fields you supply are changed; omitted fields are
-    preserved. Returns ``{ok, id}``. Prerequisite: call
-    find_skill(task_description) or confirm you are already operating
-    within a named processkit skill before using this tool.
+    preserved. Returns ``{ok, id}``.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     if kind is not None and kind not in _VALID_KINDS:
         return {
@@ -332,6 +336,7 @@ def update_artifact(
         "Artifact", id, "artifact.updated",
         f"Updated Artifact {id!r}",
         root=root,
+        actor=id,
     )
     return {"ok": True, "id": id}
 

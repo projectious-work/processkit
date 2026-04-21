@@ -100,7 +100,8 @@ def create_gate(
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
 
     Parameters
     ----------
@@ -167,6 +168,7 @@ def create_gate(
         "Gate", new_id, "gate.created",
         f"Created Gate {new_id!r}: {name!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target_path), "name": name}
 
@@ -258,9 +260,12 @@ def evaluate_gate(
     Gates are immutable rules; evaluations are events. The Gate file is
     not modified. ``outcome`` must be one of "passed", "failed", or
     "waived"; a "waived" outcome requires a non-empty ``reason`` and
-    typically an ``actor`` who waived it. Prerequisite: call
-    find_skill(task_description) or confirm you are already operating
-    within a named processkit skill before using this tool.
+    typically an ``actor`` who waived it.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     if outcome not in _VALID_OUTCOMES:
         return {"error": f"invalid outcome {outcome!r}; must be one of {sorted(_VALID_OUTCOMES)}"}

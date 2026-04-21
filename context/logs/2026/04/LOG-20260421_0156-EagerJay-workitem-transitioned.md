@@ -11,4 +11,5 @@ spec:
     from 'review' to 'done'
   subject: BACK-20260420_1729-SureTiger-groom-the-153-error
   subject_kind: WorkItem
+  actor: BACK-20260420_1729-SureTiger-groom-the-153-error
 ---

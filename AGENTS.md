@@ -3,82 +3,52 @@
 <!-- pk-compliance-contract v2 BEGIN -->
 <!-- pk-compliance v2 -->
 
-## processkit Compliance Contract
+## processkit Compliance Contract (ToC)
 
-Call `route_task(task_description)` before any `create_*`,
-`transition_*`, `link_*`, `record_*`, or `open_*` tool call.
-
-If there is even a 1% chance a processkit skill applies to the current
-task, consult `skill-finder` (or call `find_skill`) before acting.
-
-When you decide to create a WorkItem, DecisionRecord, Note, or Artifact,
-call the tool in the same turn — deferred entity creation is lost.
-
-Write entities through MCP tools, not by hand-editing files under
-`context/` — hand edits bypass schema validation, state-machine
-enforcement, and the event-log auto-entry.
-
-Read entities through `index-management` (`query_entities`,
-`get_entity`, `search_entities`) — do not use `ls`, `grep`, or raw
-filesystem walks under `context/`.
-
-Log an event after any state change that an MCP write did not already
-produce automatically.
-
-After a cross-cutting recommendation is accepted, call `record_decision`
-in the same turn.
-
-When the last five user messages contain explicit decision language
-(approved / decided / ship it / let's go / ok / yes / confirmed),
-either call `record_decision` in the same turn or call
-`skip_decision_record(reason=...)` to acknowledge the skip.
-
-Do not edit any file under `context/templates/` — it is a read-only
-upstream mirror used as a diff baseline.
-
-Do not hand-edit the generated harness MCP config — edit the per-skill
-`mcp-config.json` and let the installer re-merge.
+Ten non-negotiables — full text in
+[`context/skills/processkit/skill-gate/SKILL.md`](context/skills/processkit/skill-gate/SKILL.md):
+(1) `route_task` before writes; (2) 1% skill-finder rule; (3) commit
+to entity creation same turn; (4) write via MCP, never hand-edit
+`context/` YAML; (5) read via `index-management`; (6) log events for
+non-MCP state changes; (7) record accepted cross-cutting decisions;
+(8) acknowledge user decision language (`record_decision` or
+`skip_decision_record`); (9) `context/templates/` is read-only;
+(10) never hand-edit merged harness MCP config.
 <!-- pk-compliance-contract v2 END -->
 
-## Session start
+## About & session start
 
-On session start, run `pk-resume` before acting. It
-will read AGENTS.md, the most recent `session.handover` log, pending
-migrations under `context/migrations/pending/`, in-progress WorkItems,
-and open DecisionRecords.
+processkit is a versioned, provider-neutral library of process
+primitives, skills, and MCP servers consumed by aibox and dogfooded
+here. Run `pk-resume` before acting. Provider-specific files
+(`CLAUDE.md`, `CODEX.md`, `.cursor/rules`) are thin pointers — edit
+**this** file.
 
-This file is the canonical, provider-neutral entry point for any AI coding
-agent (or human collaborator) working on **processkit**. It follows
-the [agents.md](https://agents.md) open standard.
+## Skill guards (if/then)
 
-If your harness auto-loads a provider-specific file (`CLAUDE.md`,
-`CODEX.md`, `.cursor/rules`, ...), that file should be a thin pointer to
-this one. Edit **this** file, not the pointers.
-
-## About this project
-
-processkit is a versioned library of process primitives, skills, and MCP
-servers. It is provider-neutral, consumed by aibox, and dogfooded in
-this repository.
-
-**Why it exists.** processkit gives aibox and other agent environments a
-versioned, provider-neutral layer for skills, processes, schemas, and
-MCP servers so teams can share a consistent operating model and improve
-it upstream.
+- Editing/creating a file under `context/` → call `find_skill`; never
+  hand-edit entity YAML.
+- Creating or transitioning any entity (WorkItem, Decision, Note,
+  Artifact, Discussion, Scope, Gate, Binding) → use the relevant
+  `*-management` MCP tool.
+- Pending migration under `context/migrations/pending/` → use
+  `migration-management` MCP; don't move files by hand.
+- Cross-cutting recommendation accepted → `record_decision` or
+  `skip_decision_record(reason=...)` same turn.
+- Authoring/reviewing a skill → `skill-builder` / `skill-reviewer`.
+- Morning brief / standup / wrap-up → `morning-briefing` /
+  `standup-context` / `session-handover`.
+- Any domain-specific task (PRD, audit, research ingest, discussion,
+  backlog add) → `find_skill` first; see the six mandatory skill-check
+  classes in `skill-gate/SKILL.md`.
+- Otherwise → browse `context/skills/INDEX.md` before falling back to
+  general knowledge.
 
 ## Setup
 
 ```sh
-# install dependencies and build
-npm --prefix docs-site install
-npm --prefix docs-site run build
-
-# run tests
+npm --prefix docs-site install && npm --prefix docs-site run build
 uv run scripts/smoke-test-servers.py
-
-# run linter / formatter check
-# no repo-wide lint / formatter command is configured yet
-# follow .editorconfig plus the 80-column rules in CONTRIBUTING.md
 ```
 
 <!-- pk-commands BEGIN -->
@@ -91,230 +61,29 @@ typecheck: ""
 -->
 <!-- pk-commands END -->
 
-## Code style and conventions
+## Code style & PRs
 
-- Hard-wrap Markdown prose, Python, and YAML at 80 columns. Exempt:
-  tables, URLs, YAML frontmatter, fenced code blocks, and machine-
-  generated TOML where readability would get worse.
-- Use Conventional Commits: `feat:`, `fix:`, `refactor:`, `docs:`,
-  `chore:`. Never use `--no-verify`.
-- Keep the repo boundary clear: `src/` ships to consumers; `context/`
-  is local to this repo. Never mix them.
-- Prefer MCP tools for entity writes. Hand edits bypass schema
-  validation, state-machine enforcement, and index sync.
-- If you decide to create an entity, do it in the same turn. Deferred
-  entity creation is routinely dropped.
-
-## Pull requests
-
-Open a PR for feature and bug-fix changes, link the relevant WorkItem ID
-in the PR description and in commit messages, and request at least one
-independent review. Use squash merge for PRs. The final squash commit
-message should use a Conventional Commit prefix and include the related
-WorkItem ID when applicable. Before merge, resolve all blocking comments
-and make sure the relevant tests are green.
-
-## processkit preferences
-
-Runtime configuration lives in per-skill config files under
-`context/skills/<name>/config/settings.toml`. The agent edits these
-directly; MCP servers read them on every call — no restart needed.
-
-- IDs use `format = "word"` with `word_style = "pascal"`,
-  `datetime_prefix = true`, and `slug = true`.
-- Directory names under `context/` use the default `index-management`
-  mappings.
-- Log entries are sharded by date under `context/logs/{year}/{month}/`.
-
----
-
-## How this project is organized: processkit content
-
-This project uses **[processkit](https://github.com/projectious-work/processkit.git)**,
-pinned at `v0.18.1`, package tier(s) `product`, to manage process
-content (skills, primitives, processes, schemas). All
-processkit-installed material lives under `context/`:
-
-```
-context/
-├── skills/         ← skill packages (SKILL.md, mcp/, references/, templates/)
-├── schemas/        ← JSON schemas for the core primitives
-├── state-machines/ ← state-machine definitions
-├── processes/      ← process definitions (bug-fix, code-review, release, ...)
-└── templates/      ← immutable upstream mirror used as a diff baseline
-```
-
-`context/templates/processkit/<version>/` is the verbatim upstream
-snapshot. **Do not edit it.** Edit the live files at
-`context/skills/<name>/SKILL.md`, `context/processes/<name>.md`, etc.,
-directly. Local edits are detected at the next sync via three-way diff
-against the templates mirror.
-
-Every `context/` subdirectory has an `INDEX.md`. **Read those first** —
-do not slurp `context/skills/` or any large directory at session start.
-Load specific files only when the task demands it. This is the
-three-level principle: start at Level 1 (intro), drop to Level 2
-(workflows) when the task narrows, drop to Level 3 (full reference) for
-edge cases.
-
-## Working with entities
-
-processkit models project state as **entities** — work items, decision
-records, discussions, log entries, scopes, gates, bindings, and so on.
-Each entity is a YAML file under `context/<kind>s/`, created lazily on
-first use.
-
-For each entity kind, processkit ships:
-
-- **A schema** at `context/schemas/<kind>.yaml`
-- **A state machine** at `context/state-machines/<kind>.yaml`
-- **An MCP server** at `context/skills/<kind>-management/mcp/server.py`
-
-### Read entities through the index
-
-`context/skills/index-management/` exposes a SQLite-backed index over
-every entity in `context/`. Call its tools — `query_entities(kind=...,
-state=...)`, `get_entity(id)`, `search_entities(text)` — instead of `ls` /
-`grep` / filesystem walks. The index is faster, context-cheaper, and
-reflects the canonical state.
-
-### Write entities through the per-kind MCP servers
-
-Use the relevant MCP tool to create or transition entities —
-`create_workitem` and `transition_workitem` from `workitem-management`,
-`record_decision` from `decision-record`, and so on. Hand-editing entity
-files works but bypasses index updates and state-machine validation, so
-the index can drift and invalid transitions can slip through. Reserve
-hand edits for cases the MCP tools genuinely don't cover.
-
-### Wiring the MCP servers into your harness
-
-Each MCP-bearing skill ships its own `mcp/mcp-config.json` declaring how
-to launch the server (typically `uv run .../server.py`). Agent harnesses
-(Claude Code, Codex CLI, Cursor, ...) discover MCP servers by reading a
-single config file at startup, so the per-skill configs need to be
-**merged** into the one file your harness reads, and that file needs to
-live at the path your harness expects.
-
-If this project was set up by an installer (e.g. an aibox-managed
-devcontainer), the installer is responsible for that wiring — the merged
-config is generated for you and you should not need to touch it. If
-processkit was installed manually, the project owner is responsible for
-merging the per-skill blocks and placing the result at the
-harness-specific path themselves.
-
-Either way, MCP-bearing skills require **`uv`** and **Python ≥ 3.10** on
-PATH inside the environment where the harness runs the servers — each
-`server.py` is a self-contained PEP 723 script and `uv run` resolves its
-dependencies on first launch.
-
-## AI agents on this project
-
-Configured providers: **claude, codex**. Other agents may be working
-on this project — coordinate through the entity layer
-(`workitem-management`, `event-log`, `discussion-management`) rather than
-assuming you are alone.
-
-**Commit to actions immediately.** If you decide to create an entity
-(WorkItem, DecisionRecord, etc.), call the tool in the same turn. Do
-not say "I'll track that" and move on — deferred commitments are
-routinely dropped and leave the entity layer out of sync with what was
-discussed.
-
-**Check the skill catalog before acting on domain tasks.** When a
-domain-specific task arrives — writing a PRD, creating a release,
-reviewing a skill, designing a schema — search the processkit skill
-catalog first. Use `search_entities` via index-management or check
-`skill-finder` before falling back to general knowledge. A matching
-skill may exist with processkit-specific conventions (entity storage
-paths, workitem linking, output formats) that general knowledge does
-not know. Missing a skill wastes work and produces non-standard
-output.
-
-**Mandatory skill-check task classes.** Before starting any task in
-the following categories, call
-`search_entities(kind=skill, text=<task-keyword>)` or
-`find_skill(<task-keyword>)` / `list_skills()` — even if you think
-you know the procedure:
-
-1. **Research ingestion** — importing notes, papers, or external
-   artefacts into the project context.
-2. **Artifact creation** — producing a new PRD, ADR, spec, brief,
-   or any structured output file.
-3. **Discussion management** — opening, advancing, or closing a
-   structured discussion thread.
-4. **Decision recording** — capturing a cross-cutting decision in a
-   DecisionRecord entity.
-5. **Backlog item creation** — adding a WorkItem, Epic, or task to
-   the backlog.
-6. **Quality audits** — reviewing a skill, process, schema, or
-   compliance artifact.
-
-This list is not exhaustive — the 1% rule from the Compliance
-Contract applies to every task, not just these six. The list names
-the classes where bypassing the catalog has caused the most
-observed work-waste.
-
-### Contributing improvements upstream
-
-When you make a behavioral or content improvement to a file in
-`context/` that was installed from processkit (it has a counterpart
-in `context/templates/processkit/<version>/`), ask whether the
-improvement is general enough to benefit all processkit consumers.
-
-If yes:
-1. Open a Discussion entity locally with `open_discussion` —
-   title it "Upstream proposal: <short description>", note the
-   changed file and the improvement in the body.
-   This creates an audit trail so future sessions can see what
-   was proposed and what was decided.
-2. File an issue at the processkit repository so maintainers can
-   consider it for the upstream catalog.
-
-Nothing is mandatory — the project owner decides what to file
-upstream. The Discussion entity records the decision either way.
+Hard-wrap Markdown/Python/YAML at 80 cols (exempt: tables, URLs,
+frontmatter, code fences). Conventional Commits; never `--no-verify`.
+`src/` ships to consumers, `context/` is local — never mix. Preferences
+live in per-skill `context/skills/<name>/config/settings.toml`. PRs:
+link WorkItem ID, squash-merge, green tests before merge.
 
 ## Team
 
-This project has a permanent AI team of eight roles defined under
-`context/roles/`, `context/actors/`, and `context/bindings/`. The
-project manager (`ACTOR-pm-claude`, Opus) is the default session agent:
-owns every incoming request, routes by kind + complexity, reviews
-results, and plays devil's advocate against the owner and the rest of
-the team.
-
-Read [`context/team/roster.md`](context/team/roster.md) at session start
-for the routing heuristic, clone policy (max 5 parallel per role
-without owner sign-off), and budget orientation (Opus ≈5% / Sonnet ≈85%
-/ Haiku ≈10%, not a hard limit). The charter lives in
-`DEC-20260414_0900-TeamRoster-permanent-ai-team-composition`.
+Eight-role AI team defined under `context/roles/`, `context/actors/`,
+`context/bindings/`. PM (`ACTOR-pm-claude`, Opus) is the default session
+agent. Charter: `DEC-20260414_0900-TeamRoster-permanent-ai-team-composition`.
+See [`context/team/roster.md`](context/team/roster.md).
 
 ## Project-specific notes
 
-- Load `context/skills/processkit/skill-gate/SKILL.md` at the start of
-  any session involving processkit work.
-- If there is even a 1% chance a processkit skill covers the task, call
-  `route_task(task_description)` before acting. Use it before editing or
-  creating files under `context/`, before calling `create_*` /
-  `transition_*` / `link_*` / `record_*` / `open_*`, and before acting
-  on a domain task without a skill loaded.
-- Keep these MCP servers available: `index-management`,
-  `id-management`, `workitem-management`, `discussion-management`,
-  `decision-record`, `event-log`, `skill-finder`, and `task-router`.
-  Do not hand-edit generated harness-specific merged MCP config.
-- `context/templates/` is read-only. Edit the live files under
-  `context/skills/`, `context/processes/`, etc. instead.
-- After any hand-edit to an entity file, run `reindex()` so the SQLite
-  index reflects the new state.
-- Preferences live in two places: this file and the per-skill
-  `context/skills/*/config/settings.toml` files. MCP servers read the
-  config files directly at runtime.
-- Never edit `.devcontainer/Dockerfile`; use
-  `.devcontainer/Dockerfile.local`.
-- `apiVersion` is locked through v1.x. Bump to `v2` only with a full
-  migration.
-- `_find_lib()` uses cwd; the smoke tests call `os.chdir()` before
-  invoking servers.
+- Required MCP servers: `index-management`, `id-management`,
+  `workitem-management`, `discussion-management`, `decision-record`,
+  `event-log`, `skill-finder`, `task-router`.
+- Never edit `.devcontainer/Dockerfile`; use `Dockerfile.local`.
+- `apiVersion` locked through v1.x; `v2` requires a full migration.
+- `_find_lib()` uses cwd; smoke tests `os.chdir()` before invoking servers.
 
 ---
 

@@ -64,6 +64,15 @@ ALLOWLIST_GITKEEP=1
 # __pycache__/ — transient Python bytecode; excluded from tarball already.
 ALLOWLIST_PYCACHE=1
 
+# scripts/ subdirs under src/context/skills/*/ that contain only .gitkeep (or
+# are empty) — template-only artifacts.  The release installer creates these
+# empty scripts/ placeholders in consumer installs for structural consistency,
+# but the dogfood context/ tree does not need them because dogfood only keeps
+# scripts/ dirs that have real content (pk-doctor, skill-gate).  The diff
+# reports them as "Only in <SRC>/skills/<pkg>/<skill>: scripts"; we filter
+# those entries out after verifying the src-side scripts/ dir is empty-ish.
+ALLOWLIST_EMPTY_SRC_SCRIPTS=1
+
 # ---------------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -187,6 +196,31 @@ fi
 
 if [[ $ALLOWLIST_PYCACHE -eq 1 ]]; then
     filtered_diff="$(echo "$filtered_diff" | grep -v '__pycache__' || true)"
+fi
+
+if [[ $ALLOWLIST_EMPTY_SRC_SCRIPTS -eq 1 ]]; then
+    # Drop "Only in <SRC>/skills/.../<skill>: scripts" lines where the
+    # src-side scripts/ dir is empty or contains only .gitkeep.  Re-materialise
+    # each candidate path and check ls output.  Non-empty scripts/ dirs (which
+    # DO exist in dogfood context/) will not appear in the diff output anyway,
+    # so those are not affected by this filter.
+    _kept_lines=""
+    while IFS= read -r _line; do
+        if [[ "$_line" =~ ^Only\ in\ (${SRC}/skills/[^:]+):\ scripts$ ]]; then
+            _parent="${BASH_REMATCH[1]}"
+            _candidate="$_parent/scripts"
+            if [[ -d "$_candidate" ]]; then
+                _contents="$(ls -A "$_candidate" 2>/dev/null | grep -v '^\.gitkeep$' || true)"
+                if [[ -z "$_contents" ]]; then
+                    continue  # filter out: empty or gitkeep-only
+                fi
+            fi
+        fi
+        if [[ -n "$_line" ]]; then
+            _kept_lines+="$_line"$'\n'
+        fi
+    done <<< "$filtered_diff"
+    filtered_diff="${_kept_lines%$'\n'}"
 fi
 
 # Strip blank lines that filtering can leave behind.

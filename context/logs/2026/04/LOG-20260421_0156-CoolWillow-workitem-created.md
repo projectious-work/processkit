@@ -12,4 +12,5 @@ spec:
     bug)'''
   subject: BACK-20260421_0156-WarmGrove-fix-create-actor-mcp
   subject_kind: WorkItem
+  actor: BACK-20260421_0156-WarmGrove-fix-create-actor-mcp
 ---

@@ -7,6 +7,16 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [v0.19.0-candidate] — unreleased
 
+### Fixed
+
+- fix(mcp): systemic auto-log actor fix — every entity-mutating MCP tool (create_*, transition_*, link_*, update_*, apply_*, reject_*, start_*, end_*, open_*, record_*, supersede_*, deactivate_*) now passes actor=<subject-id> to log helpers, producing schema-valid LogEntries. Covers the bug pattern previously fixed for create_actor in WarmGrove. Includes backfill of 6 pre-fix-emission LogEntries from this session and drift-allowlist entry for template-only scripts/ subdirs.
+- fix(actor-profile): create_actor MCP tool now emits actor.created LogEntry with spec.actor = new actor id (self-attribution); previously the emitted LogEntry was schema-invalid (missing required field). Closes BACK-20260421_0156.
+
+### Changed
+
+- chore(mcp): skill-consultation prompt added to every entity-mutating MCP tool description across all processkit servers (provider-neutral replacement for pre-tool-use hooks). Closes BACK-20260411_0802-SolidCrow.
+- chore(AGENTS): slim root AGENTS.md to <60 lines of core content; domain-specific instructions moved into their owning skills; explicit if/then skill guards added. Closes BACK-20260411_0802-EagerSpruce.
+
 ### Added
 
 - **feat(pk-doctor): new health-check aggregator skill + /pk-doctor slash command** (Phase 1). Detect-only by default; 4 checks: schema+filename validation against src/context/schemas/, sharding (logs YYYY/MM, migrations state-bucket), stale pending migrations, src/context drift. --fix/--fix-all opt-in; fixes route through existing MCP write tools (no hand-edits). Each run emits a doctor.report LogEntry via event-log MCP. See DEC-20260420_1631-WiseGarnet and BACK-20260420_1631-ProudGlade.

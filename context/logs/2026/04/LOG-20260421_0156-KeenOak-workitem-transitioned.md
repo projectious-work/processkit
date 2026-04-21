@@ -11,4 +11,5 @@ spec:
     from 'in-progress' to 'review'
   subject: BACK-20260420_1729-SureTiger-groom-the-153-error
   subject_kind: WorkItem
+  actor: BACK-20260420_1729-SureTiger-groom-the-153-error
 ---

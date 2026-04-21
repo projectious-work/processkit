@@ -103,7 +103,8 @@ def create_role(
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
 
     Parameters
     ----------
@@ -167,6 +168,7 @@ def create_role(
         "Role", new_id, "role.created",
         f"Created Role {new_id!r}: {name!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target_path), "name": name}
 
@@ -211,9 +213,12 @@ def update_role(
 
     Note: ``name`` is intentionally NOT updatable (the metadata.id suffix
     must match the name; renaming a role means superseding it via a new
-    entity that sets ``spec.supersedes``). Prerequisite: call
-    find_skill(task_description) or confirm you are already operating
-    within a named processkit skill before using this tool.
+    entity that sets ``spec.supersedes``).
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     if default_scope is not None and default_scope not in _VALID_SCOPES:
         return {
@@ -317,9 +322,10 @@ def link_role_to_actor(
     Use this rather than editing the Actor's ``spec.roles`` field when
     the assignment has scope, time, or its own attributes. The created
     binding can be queried via binding-management's
-    resolve_bindings_for. Prerequisite: call find_skill(task_description)
-    or confirm you are already operating within a named processkit skill
-    before using this tool.
+    resolve_bindings_for.    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     if not actor_id.startswith("ACTOR-"):
         return {"error": f"actor_id must start with ACTOR-, got {actor_id!r}"}
@@ -380,6 +386,7 @@ def link_role_to_actor(
         "Binding", new_id, "binding.role-assigned",
         f"Bound Actor {actor_id!r} to Role {role_id!r} via {new_id!r}",
         root=root,
+        actor=new_id,
     )
     return {
         "ok": True,

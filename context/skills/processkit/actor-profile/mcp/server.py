@@ -112,7 +112,8 @@ def create_actor(
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
 
     Parameters
     ----------
@@ -179,10 +180,16 @@ def create_actor(
     finally:
         db.close()
 
+    # Emit the actor.created LogEntry AFTER the Actor is persisted, using
+    # the newly-created Actor's own ID as the actor (self-attribution) so
+    # the emitted LogEntry satisfies the LogEntry schema's required
+    # `spec.actor` field. The actor that was just created IS logically the
+    # subject — the tool acted in its name.
     log.log_side_effect(
         "Actor", new_id, "actor.created",
         f"Created Actor {new_id!r}: {name!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target_path), "type": type, "name": name}
 
@@ -235,7 +242,8 @@ def update_actor(
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     root = paths.find_project_root()
     ent = _load_actor(root, id)
@@ -292,7 +300,8 @@ def deactivate_actor(id: str, left_at: str | None = None) -> dict:
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     root = paths.find_project_root()
     ent = _load_actor(root, id)
@@ -311,6 +320,7 @@ def deactivate_actor(id: str, left_at: str | None = None) -> dict:
         "Actor", id, "actor.deactivated",
         f"Deactivated Actor {id!r}",
         root=root,
+        actor=id,
     )
     return {"ok": True, "id": id, "left_at": ent.spec["left_at"]}
 

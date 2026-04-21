@@ -164,6 +164,7 @@ def record_decision(
         "DecisionRecord", new_id, "decision.created",
         f"Created DecisionRecord {new_id!r}: {title!r}",
         root=root,
+        actor=new_id,
     )
     return {"id": new_id, "path": str(target), "state": state}
 
@@ -177,9 +178,12 @@ def record_decision(
 def transition_decision(id: str, to_state: str) -> dict:
     """Transition a DecisionRecord to a new state.
 
-    Validates against the decisionrecord state machine. Prerequisite:
-    call find_skill(task_description) or confirm you are already
-    operating within a named processkit skill before using this tool.
+    Validates against the decisionrecord state machine.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     root = paths.find_project_root()
     ent = _load_decision(root, id)
@@ -206,6 +210,7 @@ def transition_decision(id: str, to_state: str) -> dict:
         "DecisionRecord", id, "decision.transitioned",
         f"Transitioned DecisionRecord {id!r} from {from_state!r} to {to_state!r}",
         root=root,
+        actor=id,
     )
     return {"ok": True, "from_state": from_state, "to_state": to_state}
 
@@ -276,9 +281,10 @@ def supersede_decision(old_id: str, new_id: str) -> dict:
 
     Updates both DecisionRecords: the old one transitions to
     ``superseded`` and gets ``superseded_by``; the new one gets
-    ``supersedes``. Prerequisite: call find_skill(task_description) or
-    confirm you are already operating within a named processkit skill
-    before using this tool.
+    ``supersedes``.    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     root = paths.find_project_root()
     old = _load_decision(root, old_id)
@@ -307,6 +313,7 @@ def supersede_decision(old_id: str, new_id: str) -> dict:
         "DecisionRecord", old_id, "decision.superseded",
         f"DecisionRecord {old_id!r} superseded by {new_id!r}",
         root=root,
+        actor=old_id,
     )
     return {"ok": True, "old_id": old_id, "new_id": new_id}
 
@@ -322,7 +329,8 @@ def link_decision_to_workitem(decision_id: str, workitem_id: str) -> dict:
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
-    tool.
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
     """
     root = paths.find_project_root()
     ent = _load_decision(root, decision_id)

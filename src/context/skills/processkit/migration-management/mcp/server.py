@@ -440,6 +440,7 @@ def _commit_transition(
 
     log.log_side_effect(
         "Migration", ent.id, event_type, summary, root=root,
+        actor=ent.id,
     )
     return new_path
 

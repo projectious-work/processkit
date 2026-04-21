@@ -450,6 +450,24 @@ These are pitfalls that go wrong regardless of who is authoring:
   learn the commands exist from reading the skill — not only when the user
   happens to type the slash. One sentence per command is enough.
 
+### Contributing improvements upstream
+
+When you make a behavioral or content improvement to a file under
+`context/` that was installed from processkit (it has a counterpart
+in `context/templates/processkit/<version>/`), ask whether the
+improvement is general enough to benefit all processkit consumers.
+
+If yes:
+1. Open a Discussion entity locally with `open_discussion` — title it
+   "Upstream proposal: <short description>", note the changed file and
+   the improvement in the body. This creates an audit trail so future
+   sessions can see what was proposed and what was decided.
+2. File an issue at the processkit repository so maintainers can
+   consider it for the upstream catalog.
+
+Nothing is mandatory — the project owner decides what to file
+upstream. The Discussion entity records the decision either way.
+
 ### Cross-references
 
 - `skill-reviewer` — for reviewing existing skills (brownfield)
