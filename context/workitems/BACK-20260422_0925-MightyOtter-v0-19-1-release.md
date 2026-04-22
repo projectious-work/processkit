@@ -4,10 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260422_0925-MightyOtter-v0-19-1-release
   created: '2026-04-22T09:25:57+00:00'
-  updated: '2026-04-22T09:26:25+00:00'
+  updated: '2026-04-22T15:44:51+00:00'
 spec:
   title: v0.19.1 — release automation workflow + release-semver SKILL.md tightening
-  state: in-progress
+  state: done
   type: task
   priority: high
   description: 'Patch release addressing the v0.19.0 post-mortem finding: `git push
@@ -60,8 +60,14 @@ spec:
 
     - Dual-tree drift clean.'
   started_at: '2026-04-22T09:26:25+00:00'
+  completed_at: '2026-04-22T15:44:51+00:00'
 ---
 
 ## Transition note (2026-04-22T09:26:25+00:00)
 
 Starting: workflow + SKILL.md fixes in both trees, then v0.19.1 bump + tag-push dogfood.
+
+
+## Transition note (2026-04-22T15:44:46+00:00)
+
+v0.19.1 shipped + Release verified. Scope pivoted mid-turn from CI workflow (DEC-MerryArch) to local-only (DEC-SnowyWolf) per owner's no-CI directive. Final deliverables: (1) release-semver SKILL.md collapsed to single bulletproof 9-step flow ending in gh release view as completion gate (both trees); (2) pk-doctor 6th check category release_integrity with graceful degradation when gh unavailable (both trees, 5 pre-existing historical tags flagged — v0.1.0-v0.6.0 — correct behavior); (3) DEC-SnowyWolf supersedes DEC-MerryArch; (4) no .github/workflows/ shipped. End-to-end dogfood: /pk-release-style flow executed manually (bump → CHANGELOG → PROVENANCE → commit → tag → push → gh release create → gh release view), Release live at https://github.com/projectious-work/processkit/releases/tag/v0.19.1. 5 LogEntries actor-backfilled.
