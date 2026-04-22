@@ -56,13 +56,61 @@ Group entries under **Added**, **Changed**, **Fixed**, and
 prominently — call them out in their own section if a major bump
 is involved.
 
-### Bump, commit, tag, publish
+### The release flow (single turn, bulletproof)
 
-Update the version in every relevant file (`Cargo.toml`,
-`pyproject.toml`, `package.json`, lockfiles). Commit with a message
-like `chore: bump version to vX.Y.Z`. Tag the commit `vX.Y.Z`.
-Publish according to the project's distribution channel
-(crates.io, PyPI, npm, GitHub Releases, container registry, etc.).
+A release is **one continuous sequence** — you do not stop halfway.
+`/pk-release vX.Y.Z` runs every step below in order, in the same
+turn, and is not considered done until the final verification
+passes. See DEC-20260422_1348-SnowyWolf.
+
+1. **Bump version** in every relevant file (`aibox.lock`,
+   `Cargo.toml`, `pyproject.toml`, `package.json`, lockfiles).
+2. **Finalize CHANGELOG** — rename the `[vX.Y.Z-candidate]` section
+   to `[vX.Y.Z] — YYYY-MM-DD`; ensure Added/Changed/Fixed/Removed
+   grouping; call out breaking changes if a major bump.
+3. **Regenerate provenance / transitive artifacts** — for processkit,
+   `scripts/stamp-provenance.sh vX.Y.Z`.
+4. **Commit** the bump with message `chore(release): bump to vX.Y.Z`.
+5. **Tag** the commit: `git tag -a vX.Y.Z -m "<tag summary>"`.
+6. **Push** branch then tag: `git push origin main && git push origin vX.Y.Z`.
+   A tag push alone does **not** create a GitHub Release — it is a
+   git ref, not a distribution-channel artifact.
+7. **Create the GitHub Release** with notes extracted from the
+   CHANGELOG. The single canonical command:
+   ```bash
+   gh release create vX.Y.Z \
+     --repo <org>/<repo> \
+     --title "vX.Y.Z — <one-line summary>" \
+     --notes-file <(awk -v v=X.Y.Z '
+       $0 ~ "^## \\[v" v "\\]"   { f=1; next }
+       f && /^## \[/              { f=0 }
+       f
+     ' CHANGELOG.md) \
+     --latest
+   ```
+8. **Verify** the Release is live. This is the release's
+   completion gate:
+   ```bash
+   gh release view vX.Y.Z --repo <org>/<repo>
+   ```
+   If this exits non-zero, the release is **incomplete** — return
+   to step 7. Do not report the release as done until step 8
+   succeeds.
+9. **Other channels** (crates.io, PyPI, npm, container registry,
+   homebrew tap, etc.) — run after step 8 so the GitHub Release
+   remains the canonical artifact pointer.
+
+**Recovery pattern** — if a tag was pushed in a prior session
+without the Release, run `gh release create` and `gh release view`
+for that tag directly; `/pk-publish` exists as an alias for this
+recovery scenario.
+
+**pk-doctor `release_integrity` check (detection layer)** — walks
+every local `v*` git tag, probes GitHub for a matching Release, and
+WARNs on any tag without one. Run `/pk-doctor --category=release_integrity`
+after a release to confirm; run `/pk-doctor` routinely to catch any
+historical gap. Requires `gh` CLI + auth; emits INFO when `gh` is
+unavailable.
 
 ### Example
 
@@ -84,6 +132,8 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Publishing from a developer machine without a clean checkout.** Uncommitted local changes — WIP files, debug flags, `console.log` statements — may sneak into the artifact. Publish from CI with a clean checkout or from a fresh clone.
 - **Re-tagging a published version to fix a mistake.** Package registries (crates.io, PyPI, npm) prohibit or block re-publishing to an existing version. Cut a new patch version (e.g. `1.2.1`) to fix a mistake in `1.2.0`; never overwrite a tag.
 - **Pre-1.0 projects that promise stability they cannot keep.** If the API is still moving, stay below 1.0 and say so. Cutting `1.0.0` too early creates a compatibility obligation that slows future improvements.
+- **Treating `git push --tags` as "the release is out."** Pushing a tag creates a git ref; it does **not** create a GitHub Release, a crates.io release, a PyPI release, or any other distribution-channel artifact. Downstream consumers (package managers, `gh api`, the Releases page, auto-sync tools like aibox) read from the channel, not the tag. Until `gh release create` (or the equivalent channel publish command) has run, the release is not visible. The flow above bakes this in: the release is not complete until step 8 (`gh release view`) succeeds. See DEC-20260422_1348-SnowyWolf.
+- **Stopping after `/pk-release` prepare-like work.** In an older split where `/pk-release` prepared and `/pk-publish` published, it was easy to do only half. The current flow is single-turn: /pk-release runs every step through GitHub-Release verification. /pk-publish remains only as a recovery alias for historical tags without Releases.
 
 ## Full reference
 

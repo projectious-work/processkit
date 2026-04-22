@@ -5,6 +5,28 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.19.1] — 2026-04-22
+
+Local-only release bulletproofing — no CI workflows. Addresses the
+v0.19.0 post-mortem finding that a tag push does not create a GitHub
+Release. Supersedes `DEC-20260422_0926-MerryArch` (CI workflow
+approach, rejected on vendor-lock + cost grounds) with
+`DEC-20260422_1348-SnowyWolf` (skill flow + doctor detection).
+
+### Added
+
+- **feat(pk-doctor): 6th check category `release_integrity`** — walks every local `v*` git tag, probes GitHub via `gh release view` for a matching Release, and WARNs on any tag without one. INFO when `gh` is unavailable or the tag set is empty. Opt-out via `PK_DOCTOR_SKIP_RELEASE_INTEGRITY=1`; tag-scan cap via `PK_DOCTOR_RELEASE_INTEGRITY_MAX` (default 50). Each WARN carries a ready-to-paste `gh release create <TAG>` command with CHANGELOG extraction inlined. See `DEC-20260422_1348-SnowyWolf-local-only-release-bulletproofing`.
+
+### Changed
+
+- **chore(release-semver): collapse /pk-release into a single bulletproof flow.** `SKILL.md` (both trees) rewritten with a 9-step recipe that prepares, publishes, and **verifies** in one turn — the release is not considered complete until `gh release view vX.Y.Z` succeeds (step 8). `/pk-publish` retained as a recovery alias for historical tags that are missing a Release. New Gotcha: "`git push --tags` is not a GitHub Release." Closes `BACK-20260422_0925-MightyOtter-v0-19-1-release`.
+
+### Fixed
+
+- **fix(release flow): v0.19.0 tag was pushed without a corresponding GitHub Release** — the prepare phase of release-semver completed but the publish phase was skipped. v0.19.0 Release was created manually; v0.19.1 ships the prevention (collapsed flow) and detection (`release_integrity` check) mechanisms.
+
+---
+
 ## [v0.19.0] — 2026-04-22
 
 ### Added (v0.19.0 architecture refactor)
