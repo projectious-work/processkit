@@ -5,7 +5,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [v0.19.0-candidate] — unreleased
+## [v0.19.0] — 2026-04-22
 
 ### Added (v0.19.0 architecture refactor)
 
