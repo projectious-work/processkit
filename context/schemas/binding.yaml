@@ -4,8 +4,18 @@ kind: Schema
 metadata:
   id: SCHEMA-binding
   target_kind: Binding
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-07T00:00:00Z
+  updated: 2026-04-22T00:00:00Z
+x-known-types:
+  - role-assignment
+  - model-assignment
+  - work-assignment
+  - process-gate
+  - process-scope
+  - schedule-scope
+  - constraint-scope
+  - category-assignment
 spec:
   description: >
     A scoped, temporal, attribute-bearing relationship between two
@@ -13,6 +23,10 @@ spec:
     (DEC-023). Use a Binding when a relationship has scope, time, or
     its own attributes; otherwise prefer a frontmatter cross-reference.
     Bindings are descriptive — there is no enforcement attached.
+
+    v1.1.0 change (DEC-20260422_0234-LoyalComet): added conditional
+    validation for type='model-assignment' bindings, enumerating the
+    fields used by the 8-layer resolution precedence.
   id_prefix: BIND
   state_machine: null
   default_directory: context/bindings
@@ -27,8 +41,9 @@ spec:
         minLength: 1
         description: >
           Freeform binding type. Conventions per project. Examples:
-          role-assignment, work-assignment, process-gate, process-scope,
-          schedule-scope, constraint-scope, category-assignment.
+          role-assignment, model-assignment, work-assignment,
+          process-gate, process-scope, schedule-scope,
+          constraint-scope, category-assignment.
       subject:
         type: string
         description: "ID of the entity on the from side of the relationship."
@@ -63,3 +78,60 @@ spec:
       description:
         type: string
         description: "One-line human-readable summary."
+    allOf:
+      - if:
+          properties:
+            type:
+              const: model-assignment
+          required: [type]
+        then:
+          properties:
+            target:
+              type: string
+              pattern: "^MODEL-[a-z0-9-]+$"
+              description: "Target must be a MODEL ID."
+            conditions:
+              type: object
+              additionalProperties: true
+              description: >
+                Resolution inputs for 'model-assignment' bindings; see
+                DEC-20260422_0234-LoyalComet, §8-layer precedence.
+              properties:
+                seniority:
+                  type: string
+                  enum: [junior, specialist, expert, senior, principal]
+                  description: "Layer 5 match key when subject is a Role."
+                rank:
+                  type: integer
+                  minimum: 1
+                  description: "1 = primary, 2 = first alternate, etc."
+                effort_floor:
+                  type: string
+                  enum: [none, low, medium, high, extra-high, max]
+                effort_ceiling:
+                  type: string
+                  enum: [none, low, medium, high, extra-high, max]
+                version_pin:
+                  type: string
+                  description: "If set, pin to this version_id of the target model."
+                blocked:
+                  type: boolean
+                  description: >
+                    Layer 3 veto flag. When true, the subject (usually
+                    a ProjectScope) hard-excludes this model.
+                provider_preference:
+                  type: array
+                  items:
+                    type: string
+                  description: "Layer 7 tie-breaker provider ordering."
+                cost_bias:
+                  type: number
+                  description: "Layer 7 bias; positive = prefer cheaper."
+                cost_cap:
+                  type: number
+                  description: >
+                    Layer 3 hard filter if this model's usage would
+                    exceed cap for the expected task cost.
+                rationale:
+                  type: string
+                  description: "One-line reason this binding exists."

@@ -15,6 +15,7 @@ Data lives in model_scores.json and user_config.json alongside this file.
 
 import json
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import Optional
 
@@ -25,11 +26,160 @@ HERE = Path(__file__).parent
 SCORES_FILE = HERE / "model_scores.json"
 CONFIG_FILE = HERE / "user_config.json"
 
+# Walk up to repo root to find context/models/ (first-class Model artifacts).
+# The MCP lives at <repo>/context/skills/processkit/model-recommender/mcp/server.py
+# so HERE.parents[4] is the repo root:
+#   [0] model-recommender  [1] processkit  [2] skills
+#   [3] context            [4] <repo>
+REPO_ROOT = HERE.parents[4]
+MODELS_DIR = REPO_ROOT / "context" / "models"
+
+# Expose scripts/ so we can import resolver.py
+_SCRIPTS_DIR = HERE.parent / "scripts"
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
 server = FastMCP("processkit-model-recommender")
 
 # ── helpers ────────────────────────────────────────────────────────────────
 
+# Reverse map from equivalent_tier (or dims) back to the free-form "tier"
+# string used by legacy tools — approximate.
+_TIER_LABEL = {
+    "xxl": "Frontier flagship",
+    "xl":  "Frontier",
+    "l":   "Mid-tier",
+    "m":   "Mid-tier",
+    "s":   "Small / fast",
+    "xs":  "Small",
+}
+
+_DIM_KEY_TO_LETTER = {
+    "reasoning": "R",
+    "engineering": "E",
+    "speed": "S",
+    "breadth": "B",
+    "reliability": "L",
+    "governance": "G",
+}
+
+
+def _parse_frontmatter(text: str) -> dict | None:
+    """Extract YAML frontmatter as a dict. Returns None if unparseable."""
+    try:
+        import yaml  # optional; only needed for artifact mode
+    except ImportError:
+        return None
+    parts = text.split("---")
+    if len(parts) < 3:
+        return None
+    try:
+        return yaml.safe_load(parts[1])
+    except Exception:
+        return None
+
+
+def _entity_to_legacy(entity: dict) -> list[dict]:
+    """Convert a Model entity artifact into one legacy JSON-style dict per
+    version, so the existing server tools work unchanged.
+    """
+    spec = entity.get("spec", {})
+    provider_slug = spec.get("provider", "")
+    family = spec.get("family", "")
+    dims_flat = spec.get("dimensions", {}) or {}
+    # Re-inflate into the legacy {score, sub} shape. Sub-dimensions are
+    # lost in the artifact model; we synthesize flat sub-scores equal
+    # to the top-level score so consumers keying on sub-dims still work.
+    dims = {}
+    for key, letter in _DIM_KEY_TO_LETTER.items():
+        score = int(dims_flat.get(key, 0) or 0)
+        dims[letter] = {"score": score, "sub": {}}
+
+    tier_label = _TIER_LABEL.get(spec.get("equivalent_tier", ""), "")
+    provider_display = {
+        "anthropic": "Anthropic",
+        "openai": "OpenAI",
+        "google": "Google",
+        "xai": "xAI",
+        "deepseek": "DeepSeek",
+        "meta": "Meta",
+        "mistral": "Mistral",
+        "minimax": "MiniMax",
+        "alibaba": "Alibaba / Open",
+        "microsoft": "Microsoft",
+        "cohere": "Cohere",
+    }.get(provider_slug, provider_slug.title())
+
+    legacy_entries: list[dict] = []
+    for ver in spec.get("versions", []) or []:
+        vid = ver.get("version_id", "")
+        legacy_id = f"{family}-{vid}" if vid and vid != "1" else family
+        ctx_tokens = ver.get("context_window") or 0
+        ctx_k = int(ctx_tokens // 1000) if ctx_tokens else 0
+        pricing_map = ver.get("pricing_usd_per_1m", {}) or {}
+        pricing = {
+            "input_per_1m": pricing_map.get("input"),
+            "output_per_1m": pricing_map.get("output"),
+            "currency": "USD",
+            "hosting": "api",
+            "note": ver.get("pricing_note", ""),
+        }
+        legacy_entries.append({
+            "id": legacy_id,
+            "name": f"{family} {vid}".strip(),
+            "provider": provider_display,
+            "tier": spec.get("rationale") or tier_label,
+            "context_k": ctx_k,
+            "governance_warning": ver.get("governance_warning"),
+            "pricing": pricing,
+            "dimensions": dims,
+            "_estimated": ver.get("status") in ("preview", "beta"),
+            "best_for": [],
+            "avoid_for": [],
+        })
+    return legacy_entries
+
+
+def _load_from_artifacts() -> dict | None:
+    """Load models from `context/models/*.md` entity artifacts.
+
+    Returns a dict in the same shape as model_scores.json (with "_meta"
+    and "models") when the directory exists and has ≥1 parseable
+    artifact; returns None otherwise (caller falls back to JSON).
+    """
+    if not MODELS_DIR.is_dir():
+        return None
+    md_files = sorted(MODELS_DIR.glob("*.md"))
+    if not md_files:
+        return None
+    entities: list[dict] = []
+    for path in md_files:
+        try:
+            entity = _parse_frontmatter(path.read_text())
+        except Exception:
+            continue
+        if not entity or entity.get("kind") != "Model":
+            continue
+        entities.extend(_entity_to_legacy(entity))
+    if not entities:
+        return None
+    # Preserve _meta block from JSON if present (pricing pages, status
+    # pages, sub-dimension catalogue) so tools that read meta still work.
+    meta: dict = {}
+    if SCORES_FILE.exists():
+        try:
+            meta = json.loads(SCORES_FILE.read_text()).get("_meta", {})
+        except Exception:
+            meta = {}
+    return {"_meta": meta, "models": entities}
+
+
 def _load_scores() -> dict:
+    # Prefer first-class Model artifacts when available; fall back to
+    # the legacy monolithic registry for backward compatibility.
+    from_artifacts = _load_from_artifacts()
+    if from_artifacts is not None:
+        return from_artifacts
     with open(SCORES_FILE) as f:
         return json.load(f)
 
@@ -538,6 +688,104 @@ def set_config(
 
     _save_config(cfg)
     return {"ok": True, "config": cfg}
+
+
+# ── resolver (8-layer model-assignment binding resolution) ────────────────
+
+def _resolver_module():
+    """Import resolver lazily so the server doesn't fail when invoked outside
+    of a processkit-equipped checkout (e.g. the unit tests for the legacy
+    scoring tools). Cached on the function object.
+    """
+    if hasattr(_resolver_module, "_mod"):
+        return _resolver_module._mod
+    import resolver as _r  # type: ignore
+    _resolver_module._mod = _r
+    return _r
+
+
+def _candidate_to_dict(c) -> dict:
+    return {
+        "model_id": c.model_id,
+        "version_id": c.version_id,
+        "effort": c.effort,
+        "rank": c.rank,
+        "source_layer": c.source_layer,
+        "rationale": c.rationale,
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def resolve_model(
+    role: str,
+    seniority: Optional[str] = None,
+    team_member: Optional[str] = None,
+    scope: Optional[str] = None,
+    task_hints: Optional[dict] = None,
+    explain: bool = False,
+) -> dict:
+    """Resolve the best-fit model(s) for a (role, seniority, …) call site.
+
+    Runs the 8-layer precedence ladder from DEC-20260422_0234-LoyalComet:
+    task-pin → team-member pref → project veto → capability filter →
+    role+seniority → role default → project bias → shim fallback.
+
+    Parameters
+    ----------
+    role:         ``ROLE-<slug>`` identifier (required)
+    seniority:    junior | specialist | expert | senior | principal
+    team_member:  ``TEAMMEMBER-<slug>`` override
+    scope:        ``SCOPE-<slug>`` (or project slug) for project-level bindings
+    task_hints:   optional dict: ``{requires_vision, requires_tool_use,
+                  requires_computer_use, max_cost_usd, max_latency_ms,
+                  model_pin, version_pin, effort, expected_tokens}``
+    explain:      include a layer-by-layer trace in the response
+    """
+    r = _resolver_module()
+    try:
+        out = r.resolve(
+            role=role, seniority=seniority, team_member=team_member,
+            scope=scope, task_hints=task_hints, explain=explain,
+        )
+    except r.NoViableModelError as e:
+        return {"candidates": [], "error": str(e)}
+
+    if explain:
+        cands, trace = out
+        return {
+            "candidates": [_candidate_to_dict(c) for c in cands],
+            "trace": trace,
+        }
+    return {"candidates": [_candidate_to_dict(c) for c in out]}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def explain_routing(
+    role: str,
+    seniority: Optional[str] = None,
+    team_member: Optional[str] = None,
+    scope: Optional[str] = None,
+    task_hints: Optional[dict] = None,
+) -> dict:
+    """Return the full 8-layer resolution trace for a (role, …) call site.
+
+    Thin wrapper over ``resolve_model(..., explain=True)`` for the
+    ``pk explain-routing`` CLI. Always includes the ``trace`` list.
+    """
+    return resolve_model(
+        role=role, seniority=seniority, team_member=team_member,
+        scope=scope, task_hints=task_hints, explain=True,
+    )
 
 
 # ── main ───────────────────────────────────────────────────────────────────

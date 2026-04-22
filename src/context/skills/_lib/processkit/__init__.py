@@ -43,6 +43,7 @@ KIND_PREFIXES = {
     "Artifact": "ART",
     "Migration": "MIG",
     "Note": "NOTE",
+    "TeamMember": "TEAMMEMBER",
 }
 
 # Default subdirectory under context/ for each primitive kind
@@ -69,4 +70,5 @@ DEFAULT_DIRS = {
     # places files in the correct subdirectory.
     "Migration": "migrations",
     "Note": "notes",
+    "TeamMember": "team-members",
 }

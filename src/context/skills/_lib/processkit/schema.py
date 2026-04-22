@@ -36,7 +36,15 @@ def load_schema(kind: str, schemas_dir: Path | None = None) -> dict[str, Any]:
         raise SchemaError("no schemas directory found")
     candidate = schemas_dir / f"{kind.lower()}.yaml"
     if not candidate.is_file():
-        raise SchemaError(f"no schema for kind={kind!r} at {candidate}")
+        # Fallback: try kebab-cased filename for camel/pascal kinds
+        # (e.g. "TeamMember" -> "team-member.yaml").
+        import re as _re
+        kebab = _re.sub(r"(?<!^)(?=[A-Z])", "-", kind).lower()
+        alt = schemas_dir / f"{kebab}.yaml"
+        if alt.is_file():
+            candidate = alt
+        else:
+            raise SchemaError(f"no schema for kind={kind!r} at {candidate}")
     text = candidate.read_text()
     try:
         data = yaml.safe_load(text)

@@ -106,6 +106,34 @@ Configured providers: **{{AI_PROVIDERS}}**. Coordinate via the entity
 layer (`workitem-management`, `event-log`, `discussion-management`)
 rather than assuming you are alone.
 
+### Team model (v0.19.0)
+
+- **Roles** live under `context/roles/` — organisational labels for
+  routing. Seniority is a pure-ordinal attribute, not baked into slugs:
+  ladder `junior → specialist → expert → senior → principal`.
+- **Persistent identities** (humans + named AI personas + services)
+  live as directory trees under `context/team-members/<slug>/` —
+  entity file, `persona.md`, A2A `card.json`, and six memory tiers
+  (`knowledge/`, `journal/`, `skills/`, `relations/`, `lessons/`,
+  `private/`; the last is gitignored by `.gitignore.example`).
+- **Ephemeral invocations** are `(role, seniority)` dispatches resolved
+  at call time — no team-member entity needed.
+- **Models** live under `context/models/` as first-class entities, one
+  per `(provider, family)` with nested versions. Each declares an
+  `equivalent_tier` in the T-shirt capacity ladder
+  (`xs / s / m / l / xl / xxl`, extensible both directions).
+- **Routing** via `model-recommender.resolve_model(role, seniority,
+  team_member?, scope?, task_hints?)` — an 8-layer precedence chain
+  reading `model-assignment` bindings from `context/bindings/`. A
+  default binding pack ships at
+  `context/skills/processkit/model-recommender/default-bindings/MANIFEST.yaml`.
+  Use `/pk-explain-routing` for a trace.
+
+Create a new persistent AI team-member with
+`team-manager.create_team_member(name, type=ai-agent, slug, default_role, default_seniority, ...)`;
+the `name` must come from the international name pool at
+`context/skills/processkit/team-manager/data/name-pool.yaml`.
+
 ## Project-specific notes
 
 <!-- PLACEHOLDER:NONOBVIOUS_GOTCHAS class=B -->

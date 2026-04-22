@@ -7,6 +7,93 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [v0.19.0-candidate] — unreleased
 
+### Added (v0.19.0 architecture refactor)
+
+- **feat(team-manager): new skill replacing `actor-profile`**. Persistent
+  participants are now **TeamMembers** (humans, named AI personas,
+  services), each living as a directory tree:
+  `context/team-members/<slug>/` with `team-member.md` (entity), `persona.md`
+  (loaded as persona prompt), `card.json` (A2A v0.3 Agent Card), and six
+  memory tiers (`knowledge/`, `journal/`, `skills/`, `relations/`,
+  `lessons/`, `private/`). Ad-hoc worker invocations are **not**
+  persisted — they are ephemeral `(role, seniority)` dispatches. Skill
+  ships 17 MCP tools (lifecycle, name pool, memory tree, export/import,
+  consistency), a curated 59-name international name pool, and 10
+  consistency check categories. **Replaces actor-profile** (clean break,
+  no backward compat). See `DEC-20260422_0233-SpryTulip`.
+
+- **feat(team-member memory): file-based tiered memory**. Six tiers
+  (working, episodic, semantic, procedural, relational, lessons) all
+  stored as Markdown with YAML frontmatter (`tier`, `source`,
+  `sensitivity`, `confidence`, `importance`, `created`, `last_reinforced`,
+  `scope`). Default consolidation cadence: per-task + daily journal +
+  weekly importance-triggered promotion (Park-style). Each team-member
+  has a `private/` subdirectory for developer-local notes
+  (gitignored via `.gitignore.example` shipped at repo root).
+
+- **feat(team-member export/import)**: `export_team_member` produces a
+  versioned tarball excluding `journal/`, `relations/`, and
+  `private/` by default; sensitivity-tagged files (`pii`, `confidential`)
+  are redacted. `import_team_member` validates the A2A card signature
+  field and creates the entity tree on import.
+
+- **feat(role catalog): expanded from 8 to 51 curated roles** under
+  `context/roles/`. Function-grouped (engineering-software, platform-infra,
+  data-ml, security, architecture, design-ux, marketing, sales-customer,
+  finance, legal-compliance, executive, etc.). **Seniority no longer
+  baked into slugs** — pure ordinal attribute with ladder
+  `junior → specialist → expert → senior → principal`.
+  Bindings (not role files) decide what each rung maps to in
+  (model, effort). See `DEC-20260422_0234-BraveFalcon`.
+
+- **feat(model artifacts): models become first-class entities** under
+  `context/models/`, one file per `(provider, family)` with
+  versions[] nested. 34 model artifacts replace the monolithic
+  `model_scores.json` registry (which becomes a compiled cache).
+  Each model carries `equivalent_tier` in the **provider-neutral
+  T-shirt capacity ladder** (`xs / s / m / l / xl / xxl`, extensible
+  in both directions). Effort enum normalised to
+  `[none, low, medium, high, extra-high, max]` (aliases `extra-high → xhigh`
+  at the Anthropic adapter boundary). See `DEC-20260422_0234-LoyalComet`.
+
+- **feat(bindings): `model-assignment` binding type + 8-layer resolver**.
+  `model-recommender.resolve_model(role, seniority?, team_member?, scope?, task_hints?)`
+  returns ranked `(model, version, effort)` candidates via the precedence
+  ladder: task-pin → team-member preference → project veto → capability
+  filter → role+seniority → role default → project bias → shim fallback.
+  Tie-breakers: project-preferred provider → cost → recency → reliability.
+  Effort clamping, version pinning, stale-binding skip, in-module result
+  caching, explain-mode trace. New `/pk-explain-routing` slash command
+  for debugging. **Default binding pack** at
+  `context/skills/processkit/model-recommender/default-bindings/MANIFEST.yaml`
+  ships 30 starter bindings (10 roles × 3 seniorities) materialised into
+  `context/bindings/`.
+
+- **feat(pk-doctor): 5th check category `team_consistency`**. Wraps
+  `team-manager.check_all()` and surfaces the 10 team-consistency check
+  codes in pk-doctor's standard report (schema drift, tier-missing,
+  dangling refs, name collision, name-pool compliance, orphan files,
+  sensitivity placement, private-dir gitignore, memory file headers,
+  card staleness).
+
+- **chore(.gitignore.example)**: bundle of all proposed processkit
+  ignores (cache/state, `context/**/private/`, model cache, harness
+  configs, OS/IDE/Python noise) shipped at repo root for adoption by
+  new processkit projects.
+
+### Removed
+
+- **actor-profile skill superseded** by team-manager. 8 role-class
+  actors removed (`ACTOR-developer`, `ACTOR-assistant`, `ACTOR-pm-claude`,
+  `ACTOR-{sr,jr}-{architect,researcher,developer}`); identity-class
+  `ACTOR-20260421_0144-AmberDawn-legacy-historical-backfill` removed
+  (not meaningful); `ACTOR-20260421_0144-ThriftyOtter-owner` migrated
+  to `TEAMMEMBER-thrifty-otter`. 7 legacy role files
+  (`ROLE-{developer,project-manager,senior-architect,senior-researcher,
+  junior-architect,junior-developer,junior-researcher}`) removed,
+  superseded by entries in the curated 51-role catalog. 8 legacy
+  role-assignment bindings removed.
+
 ### Fixed
 
 - fix(mcp): systemic auto-log actor fix — every entity-mutating MCP tool (create_*, transition_*, link_*, update_*, apply_*, reject_*, start_*, end_*, open_*, record_*, supersede_*, deactivate_*) now passes actor=<subject-id> to log helpers, producing schema-valid LogEntries. Covers the bug pattern previously fixed for create_actor in WarmGrove. Includes backfill of 6 pre-fix-emission LogEntries from this session and drift-allowlist entry for template-only scripts/ subdirs.

@@ -73,10 +73,18 @@ link WorkItem ID, squash-merge, green tests before merge.
 
 ## Team
 
-Eight-role AI team defined under `context/roles/`, `context/actors/`,
-`context/bindings/`. PM (`ACTOR-pm-claude`, Opus) is the default session
-agent. Charter: `DEC-20260414_0900-TeamRoster-permanent-ai-team-composition`.
-See [`context/team/roster.md`](context/team/roster.md).
+51-role catalog under `context/roles/`, with **pure-ordinal seniority**
+(`junior → specialist → expert → senior → principal`). Persistent
+identities live as **TeamMembers** under `context/team-members/<slug>/`
+(directory tree: persona + A2A card + tiered memory). Ad-hoc
+invocations are ephemeral `(role, seniority)` dispatches resolved via
+`model-recommender.resolve_model` against `model-assignment` bindings.
+
+Charters: `DEC-20260422_0233-SpryTulip` (team-member model + memory),
+`DEC-20260422_0234-BraveFalcon` (role catalog + seniority),
+`DEC-20260422_0234-LoyalComet` (model artifacts + binding routing).
+See [`context/team/roster.md`](context/team/roster.md) and
+[`context/skills/processkit/team-manager/SKILL.md`](context/skills/processkit/team-manager/SKILL.md).
 
 ## Project-specific notes
 
