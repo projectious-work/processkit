@@ -3,6 +3,8 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #   "pyyaml>=6.0",
+#   "mcp[cli]>=1.0",
+#   "jsonschema>=4.0",
 # ]
 # ///
 """pk-retro — post-release blameless retrospective generator.

@@ -4,9 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260424_0038-WildLake-pk-retro-auto-workitems
   created: '2026-04-24T00:38:25+00:00'
+  updated: '2026-04-24T00:59:06+00:00'
 spec:
   title: pk_retro --auto-workitems fails with "No module named 'mcp'"
-  state: backlog
+  state: review
   type: bug
   priority: low
   assignee: TEAMMEMBER-cora
@@ -22,4 +23,14 @@ spec:
     \ path that `/pk-work` would use.\n- OR the script prints a clear \"you must run\
     \ X to enable --auto-workitems\" hint rather than a raw ModuleNotFoundError.\n\
     \n**Target:** v0.19.3 or next release. **Owner:** cora."
+  started_at: '2026-04-24T00:53:42+00:00'
 ---
+
+## Transition note (2026-04-24T00:53:42+00:00)
+
+Picked up for v0.20.0 implementation per DEC-GentleDove.
+
+
+## Transition note (2026-04-24T00:59:06+00:00)
+
+Fix: added mcp[cli]>=1.0 and jsonschema>=4.0 to pk_retro.py PEP 723 header. Loader smoke-tested end-to-end (returns 3 callables: create_artifact, log_event, create_workitem). 4/4 TestProductionMcpLoader tests pass when run with the new env. Mirrored to src/context/. Drift guard green.
