@@ -28,6 +28,10 @@ metadata:
         - add_outcome
         - list_discussions
       templates: [discussion]
+    commands:
+      - name: pk-discuss
+        args: "topic or question to discuss"
+        description: "Start a structured discussion on a topic: research, challenge assumptions, present alternatives, work toward a conclusion"
 ---
 
 # Discussion Management

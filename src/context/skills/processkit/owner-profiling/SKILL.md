@@ -19,13 +19,10 @@ metadata:
       primitives: []
       templates: [identity, working-style, goals-and-context, team-and-relationships]
     commands:
-      - name: owner-profiling-bootstrap
+      - name: pk-owner-bootstrap
         args: "owner-name"
         description: "Run the initial profiling interview for a new project owner"
-      - name: owner-profiling-refine
-        args: "owner-name"
-        description: "Refine an existing owner profile from new observations"
-      - name: owner-profiling-observe
+      - name: pk-observe
         args: "owner-name observation"
         description: "Record a behavioural observation about a project owner"
 ---

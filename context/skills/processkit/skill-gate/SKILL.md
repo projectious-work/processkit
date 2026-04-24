@@ -27,6 +27,19 @@ metadata:
       primitives: []
       mcp_tools: [acknowledge_contract, check_contract_acknowledged]
       assets: []
+    commands:
+      - name: pk-build
+        args: ""
+        description: "Run the project build command from the AGENTS.md pk-commands block"
+      - name: pk-lint
+        args: ""
+        description: "Run the project lint command from the AGENTS.md pk-commands block"
+      - name: pk-test
+        args: ""
+        description: "Run the project test command from the AGENTS.md pk-commands block"
+      - name: pk-review
+        args: ""
+        description: "Review the current branch against AGENTS.md conventions; report blockers / warnings / notes"
 ---
 
 # Skill Gate

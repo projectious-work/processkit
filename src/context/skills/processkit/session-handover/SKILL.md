@@ -17,7 +17,7 @@ metadata:
       - skill: workitem-management
         purpose: Query in-progress and blocked WorkItems to populate open_threads accurately.
     commands:
-      - name: session-handover-write
+      - name: pk-wrapup
         args: ""
         description: "Generate a session handover document from current project state"
 ---

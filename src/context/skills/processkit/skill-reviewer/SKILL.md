@@ -25,12 +25,9 @@ metadata:
       assets: []
       processes: [skill-review, gotchas-generation]
     commands:
-      - name: skill-reviewer-audit
+      - name: pk-skill-audit
         args: "skill-name"
         description: "Run a full 12-category review of the named skill"
-      - name: skill-reviewer-bulk-gotchas
-        args: ""
-        description: "Run a bulk Gotchas-generation pass across all skills in the catalog"
 ---
 
 # Skill Reviewer

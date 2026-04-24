@@ -11,13 +11,13 @@ metadata:
     category: processkit
     layer: 2
     commands:
-      - name: note-management-capture
+      - name: pk-note
         args: "title"
         description: "Capture a new fleeting note with the given title"
-      - name: note-management-review
+      - name: pk-note-review
         args: ""
         description: "Review all fleeting notes and decide what to promote or discard"
-      - name: note-management-promote
+      - name: pk-note-promote
         args: "note-id"
         description: "Promote a fleeting note to a more permanent artifact"
 ---

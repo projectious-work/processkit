@@ -20,9 +20,12 @@ metadata:
       - skill: workitem-management
         purpose: Query completed and in-progress WorkItems to populate done/doing accurately.
     commands:
-      - name: standup-context-write
+      - name: pk-standup
         args: ""
         description: "Generate a standup update (done / doing / next / blockers)"
+      - name: pk-status
+        args: ""
+        description: "Generate a status update: current progress, blockers, and recommended next steps"
 ---
 
 # Standup Context

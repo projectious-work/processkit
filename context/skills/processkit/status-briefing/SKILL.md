@@ -18,7 +18,7 @@ metadata:
       - skill: workitem-management
         purpose: Query in-progress and next-up WorkItems for the today's priorities section.
     commands:
-      - name: status-briefing-generate
+      - name: pk-resume
         args: ""
         description: "Generate a session-start orientation from current project state"
 ---

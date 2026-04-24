@@ -37,24 +37,16 @@ metadata:
     provides:
       primitives: []
       mcp_tools: []
-      commands:
-        - name: team-create
-          args: "--subscription --providers --parallelism-cap \
---governance-floor [--weight-overrides] [--dry-run]"
-          description: >
-            Full team derivation. Writes 8 Role + 8 Actor + 8
-            Binding entities, roster.md, and a chartering
-            DecisionRecord.
-        - name: team-review
-          args: "[--landscape <artifact-id>] [--threshold <float>]"
-          description: >
-            Read-only health-check. Diffs current assignments
-            against the latest landscape snapshot. No writes.
-        - name: team-rebalance
-          args: "--roles <list> --confirm --reason <string>"
-          description: >
-            Apply a team-review recommendation. Ends old Bindings,
-            creates new ones, amends roster.md and DecisionRecord.
+    commands:
+      - name: team-create
+        args: "--subscription <provider>:<tier> --providers <list|any> --parallelism-cap <int> --governance-floor <0-5>"
+        description: "Derive a full team from scratch: roles, actors, bindings, roster, and chartering DecisionRecord"
+      - name: team-review
+        args: "[--landscape-artifact <ART-id>] [--threshold <float>]"
+        description: "Read-only team health-check against the latest landscape snapshot"
+      - name: team-rebalance
+        args: "--roles <list|all> --confirm --reason <string>"
+        description: "Apply a team-review recommendation: targeted re-tiering of one or more roles"
 ---
 
 # Team Creator

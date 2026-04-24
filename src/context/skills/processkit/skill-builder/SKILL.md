@@ -22,7 +22,7 @@ metadata:
       assets: [skill-template]
       processes: [skill-creation]
     commands:
-      - name: skill-builder-create
+      - name: pk-skill-new
         args: "skill-topic"
         description: "Start the interactive skill-creation workflow for a given topic"
 ---

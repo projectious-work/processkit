@@ -24,7 +24,7 @@ metadata:
       mcp_tools: [create_workitem, transition_workitem, query_workitems, link_workitems]
       templates: [workitem, workitem-bug, workitem-story]
     commands:
-      - name: workitem-management-create
+      - name: pk-work
         args: "title [--type task|story|bug|epic] [--priority critical|high|medium|low]"
         description: "Create a new work item in the backlog with the given title"
 ---

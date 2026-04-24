@@ -20,7 +20,7 @@ metadata:
       primitives: []
       templates: [grooming-report]
     commands:
-      - name: context-grooming-run
+      - name: pk-groom
         args: ""
         description: "Run a context grooming pass to prune and compact project context"
 ---

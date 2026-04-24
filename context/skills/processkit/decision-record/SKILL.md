@@ -24,10 +24,10 @@ metadata:
       mcp_tools: [record_decision, query_decisions, link_decision, supersede_decision]
       templates: [decisionrecord]
     commands:
-      - name: decision-record-write
+      - name: pk-dec
         args: "decision-title"
         description: "Record a new architectural or product decision with the given title"
-      - name: decision-record-query
+      - name: pk-dec-find
         args: "filter"
         description: "Query existing decisions by keyword, status, or topic"
 ---

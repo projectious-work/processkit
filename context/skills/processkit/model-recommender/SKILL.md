@@ -19,16 +19,13 @@ metadata:
       assets: []
       processes: [model-profiling, task-routing, roster-refresh, setup-questionnaire]
     commands:
-      - name: model-recommender-profile
-        args: "model-id [scope]"
-        description: "Show the spider-chart capability profile for the named model"
-      - name: model-recommender-route
+      - name: pk-route
         args: "task-description"
         description: "Route a task or task plan to the optimal AI model"
-      - name: model-recommender-setup
+      - name: pk-model-setup
         args: ""
         description: "Run the guided questionnaire to configure model access and preferences"
-      - name: model-recommender-refresh
+      - name: pk-model-refresh
         args: ""
         description: "Run Workflow C to research and refresh the model roster from live benchmarks"
 ---
