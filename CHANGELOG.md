@@ -5,6 +5,101 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.19.2] — 2026-04-24
+
+Release-hygiene and derived-project-install bulletproofing.  Closes
+four v0.19.2 WorkItems (SteadyCedar, BraveDove, ToughMeadow,
+HappyFinch) and ships the processkit-side half of TrueQuail; the
+aibox-side reconcile is tracked at
+[projectious-work/aibox#54](https://github.com/projectious-work/aibox/issues/54).
+
+### Added
+
+- **feat(pk-doctor): `commands_consistency` check.** Walks every
+  `context/skills/processkit/*/SKILL.md` and ERRORs when a declared
+  `commands[].name` has no matching `commands/<name>.md` file (WARNs
+  on the inverse — stray files not declared in metadata).  Prevents
+  recurrence of the v0.19.1 slip where pk-doctor shipped without its
+  own `commands/pk-doctor.md`.  Closes
+  `BACK-20260423_1103-ToughMeadow-pk-doctor-skill-missing`.
+- **feat(pk-doctor): `mcp_config_drift` check.** Reads
+  `context/.processkit-mcp-manifest.json`, recomputes per-skill
+  `mcp-config.json` sha256es, and reports manifest staleness (WARN)
+  or — in a derived-project context (`aibox.lock` + `.mcp.json` at
+  repo root) — missing processkit servers in `.mcp.json`'s
+  `mcpServers` map (ERROR with a "run `aibox sync`" hint).  Surfaces
+  the exact failure mode that motivated TrueQuail.
+- **feat(release-semver): `scripts/generate-mcp-manifest.py`.** Writes
+  `context/.processkit-mcp-manifest.json` + src/ mirror with a sha256
+  per-skill-config and an aggregate hash.  Wired into
+  `scripts/build-release-tarball.sh` so every release tarball ships a
+  fresh manifest.  Stable contract for downstream installers (aibox)
+  to detect per-skill-config drift independent of the processkit
+  version delta — see
+  `DEC-20260423_2049-VastLake-truequail-split-processkit-ships` and
+  `projectious-work/aibox#54`.  Closes the processkit-side of
+  `BACK-20260423_0829-TrueQuail-aibox-installer-reconcile-mcp`.
+- **feat(pk-doctor): ship `commands/pk-doctor.md`.** v0.19.1 declared
+  the slash command in SKILL.md metadata but forgot the file, so
+  `/pk-doctor` was never registered in derived projects.  This release
+  ships the file in both trees and adds `commands_consistency` above
+  as the prevention mechanism.
+- **docs(AGENTS.md): "MCP config manifest" contract section.**
+  Documents the manifest shape + path so aibox (and any other
+  processkit installer) can implement against a stable interface.
+
+### Changed
+
+- **chore(skills): reconcile SKILL.md `commands:` metadata to `/pk-`
+  namespace.** 14 skills had stale `<skill>-<verb>` names declared in
+  metadata while actually shipping `/pk-<verb>.md` files.  This
+  release renames the metadata to match shipped filenames (and for
+  team-creator, promotes the `commands:` block out of `provides:` to
+  `metadata.processkit.commands:` so the new
+  `commands_consistency` check can see it).  Drops three entries for
+  commands that were declared but never shipped
+  (`model-recommender-profile`, `owner-profiling-refine`,
+  `skill-reviewer-bulk-gotchas`).  No behavioural changes to any
+  command.  Closes
+  `BACK-20260423_2055-HappyFinch-skill-md-commands-metadata`.
+
+### Fixed
+
+- **fix(model-recommender): add missing `pyyaml>=6.0` to MCP server's
+  PEP 723 header.** The `resolve_model` call failed with
+  `ModuleNotFoundError: No module named 'yaml'` when the harness
+  invoked `uv run server.py` (no `--script`).  Smoke-tested live
+  returning an 8-layer routing trace for
+  `ROLE-product-manager@senior`.  Closes
+  `BACK-20260423_0829-SteadyCedar-model-recommender-mcp-server`.
+- **fix(schemas): widen identity-class ID pattern to
+  `^(ACTOR|TEAMMEMBER)-[a-zA-Z0-9_-]+$` across five schemas.**  The
+  v0.19.0 TeamMember rollout left `workitem.assignee`,
+  `decisionrecord.deciders[]`, `discussion.participants[]`,
+  `artifact.owner`, and `metric.owner` still requiring `ACTOR-*`
+  only, so MCP writes carrying a `TEAMMEMBER-*` subject failed
+  jsonschema validation.  Chose alternation over a clean flip to
+  avoid retroactively invalidating ~90 residual `ACTOR-*` references
+  in 44 entity files.  Smoke-tested live post-harness-restart with
+  both a `create_workitem(assignee="TEAMMEMBER-cora")` and a
+  `record_decision(deciders=["TEAMMEMBER-cora"])`.  Closes
+  `BACK-20260422_1643-BraveDove-schema-drift-workitem-assignee`.
+- **fix(log): add missing required `actor` field to
+  `LOG-20260422_1643-CalmAnt-workitem-created`.**  Pre-TeamMember MCP
+  server wrote a LogEntry without populating `actor`, so
+  `pk-doctor --category=schema_filename` reported a schema ERROR.
+  `actor: system` accurately reflects the unattributed machine-origin
+  of the event.  One-off direct edit; no MCP tool exists to patch
+  append-only LogEntries.
+
+### External
+
+- `projectious-work/aibox#54` — aibox-side reconcile-on-manifest-drift
+  tracking issue.  `BACK-20260423_0829-TrueQuail` stays open in the
+  processkit backlog until that PR lands.
+
+---
+
 ## [v0.19.1] — 2026-04-22
 
 Local-only release bulletproofing — no CI workflows. Addresses the

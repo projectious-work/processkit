@@ -4,11 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260423_1103-ToughMeadow-pk-doctor-skill-missing
   created: '2026-04-23T11:03:18+00:00'
-  updated: '2026-04-23T20:56:00+00:00'
+  updated: '2026-04-24T00:24:51+00:00'
 spec:
   title: pk-doctor skill missing commands/ directory — /pk-doctor slash command not
     registered in derived projects
-  state: review
+  state: done
   type: bug
   priority: high
   assignee: TEAMMEMBER-cora
@@ -82,6 +82,7 @@ spec:
     - pk-doctor itself grows a health check for `commands:` metadata ↔ `commands/`
     directory consistency.'
   started_at: '2026-04-23T20:50:16+00:00'
+  completed_at: '2026-04-24T00:24:51+00:00'
 ---
 
 ## Transition note (2026-04-23T20:50:16+00:00)
@@ -92,3 +93,8 @@ Dispatching in parallel with TrueQuail.
 ## Transition note (2026-04-23T20:56:00+00:00)
 
 Shipped: commands/pk-doctor.md (both trees), new commands_consistency check module (both trees), registry wired, SKILL.md updated. Check runs green for pk-doctor itself. Check also surfaced broader SKILL.md commands-metadata inconsistency across ~11 other skills — filed as follow-up WI BACK-20260423_2055-HappyFinch, NOT in this WI's scope. scripts/check-src-context-drift.sh clean.
+
+
+## Transition note (2026-04-24T00:24:51+00:00)
+
+Shipped in 90c980f. pk-doctor commands/pk-doctor.md present in both trees; commands_consistency check green.

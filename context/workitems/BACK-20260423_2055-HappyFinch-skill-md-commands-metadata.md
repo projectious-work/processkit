@@ -4,11 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260423_2055-HappyFinch-skill-md-commands-metadata
   created: '2026-04-23T20:55:35+00:00'
-  updated: '2026-04-24T00:09:55+00:00'
+  updated: '2026-04-24T00:24:55+00:00'
 spec:
   title: 'SKILL.md commands: metadata uses stale &lt;skill&gt;-&lt;verb&gt; names
     — reconcile to /pk- namespace'
-  state: review
+  state: done
   type: chore
   priority: medium
   assignee: TEAMMEMBER-cora
@@ -87,8 +87,14 @@ spec:
 
     - One commit: `chore: reconcile SKILL.md commands metadata to /pk- namespace`.'
   started_at: '2026-04-24T00:02:47+00:00'
+  completed_at: '2026-04-24T00:24:55+00:00'
 ---
 
 ## Transition note (2026-04-24T00:09:55+00:00)
 
 Applied: 11 renames (context-grooming, decision-record, model-recommender, note-management, owner-profiling, session-handover, skill-builder, skill-reviewer, standup-context, status-briefing, workitem-management), 2 insertions (discussion-management, skill-gate), 1 structural + rename (team-creator — commands block lifted out of provides: to metadata.processkit: and normalised to shipped entries). Both trees in sync. commands_consistency now reports 0 ERROR / 0 WARN / 1 INFO. Dropped entries for commands never shipped: model-recommender-profile, owner-profiling-refine, skill-reviewer-bulk-gotchas.
+
+
+## Transition note (2026-04-24T00:24:55+00:00)
+
+Shipped in 632d499. commands_consistency check reports 0/0/1 across both trees.
