@@ -46,6 +46,18 @@ here. Run `pk-resume` before acting. Provider-specific files
 - Otherwise → browse `context/skills/INDEX.md` before falling back to
   general knowledge.
 
+## Sub-agent delegation
+
+Harness `Agent`-tool sub-agents inherit the main session's permission
+policy but run ephemerally — any unallowed tool call errors
+immediately rather than prompting. Delegate **read-only** work to
+sub-agents (Read, search Bash, MCP `query_*` / `get_*` / `search_*` /
+`list_*`); keep **mutating** work on the main session (Write, Edit,
+new `mkdir`, MCP `create_*` / `transition_*` / `record_*` / `link_*`
+/ `open_*` / `log_event`, `git` mutations). A sub-agent permission
+block is not a cue to broaden the allowlist — move the write back to
+main.
+
 ## Setup
 
 ```sh

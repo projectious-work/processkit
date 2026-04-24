@@ -4,10 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260424_0038-ToughAnt-ephemeral-sub-agent-defaults
   created: '2026-04-24T00:38:05+00:00'
+  updated: '2026-04-24T01:03:19+00:00'
 spec:
   title: Ephemeral sub-agent defaults — allow Write/mkdir under context/skills/ for
     scoped delegation
-  state: backlog
+  state: review
   type: task
   priority: medium
   assignee: TEAMMEMBER-cora
@@ -39,4 +40,14 @@ spec:
 
 
     **Target:** next session. **Owner:** cora.'
+  started_at: '2026-04-24T01:01:54+00:00'
 ---
+
+## Transition note (2026-04-24T01:01:54+00:00)
+
+Picked up for v0.20.0 per DEC-SolidBadger.
+
+
+## Transition note (2026-04-24T01:03:19+00:00)
+
+Fix: option (b) — added "Sub-agent delegation" section to AGENTS.md and src/AGENTS.md documenting the read-only / mutating split and the "don't broaden the allowlist, move the write back to main" rule. Option (a) deferred: harness-level permission propagation is out of scope for processkit (belongs to the consuming harness).

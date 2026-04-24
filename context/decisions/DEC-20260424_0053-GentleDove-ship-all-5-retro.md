@@ -4,9 +4,10 @@ kind: DecisionRecord
 metadata:
   id: DEC-20260424_0053-GentleDove-ship-all-5-retro
   created: '2026-04-24T00:53:16+00:00'
+  updated: '2026-04-24T01:01:45+00:00'
 spec:
   title: Ship all 5 retro-derived WorkItems as v0.20.0
-  state: accepted
+  state: superseded
   decision: Implement WildLake, ToughAnt, SwiftLynx, SharpBrook, and SnappyBird in
     this session and cut v0.20.0 immediately after.
   context: v0.19.2 retrospective produced 5 action-item WIs all tagged at v0.19.3/v0.20.0
@@ -27,4 +28,5 @@ spec:
   - BACK-20260424_0037-SharpBrook-mcp-servers-cache-schemas
   - BACK-20260424_0038-SnappyBird-data-repair-path-for
   decided_at: '2026-04-24T00:53:16+00:00'
+  superseded_by: DEC-20260424_0101-SolidBadger-split-v0-20-0
 ---
