@@ -20,7 +20,7 @@ import os
 import subprocess
 import sys
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -162,6 +162,16 @@ with tempfile.TemporaryDirectory() as _tmp4:
     result = run(_CHECK_SCRIPT, stdin_text=json.dumps(_input4))
     check("exit 2 (block)", result.returncode == 2, f"got {result.returncode}")
     check("remediation message on stderr", "acknowledge_contract" in result.stderr)
+    # Remediation must reference the *current* on-disk contract version,
+    # not a hard-coded literal. Parse it from the contract marker and
+    # assert it appears in the remediation text. (SwiftLynx)
+    _first_line = _CONTRACT.read_text(encoding="utf-8").splitlines()[0]
+    _on_disk_v = _first_line[len("<!-- pk-compliance "):-len(" -->")].strip()
+    check(
+        f"remediation uses on-disk contract version {_on_disk_v!r}",
+        f"version='{_on_disk_v}'" in result.stderr,
+        f"stderr did not contain version='{_on_disk_v}':\n    {result.stderr.strip()}",
+    )
 
 # ---------------------------------------------------------------------------
 # Test 5: check_route_task_called.py — valid marker → exit 0
@@ -197,6 +207,50 @@ with tempfile.TemporaryDirectory() as tmp:
 
     result = run(_CHECK_SCRIPT, stdin_text=json.dumps(fixture_with_tmp_cwd))
     check("exit 0 (pass)", result.returncode == 0, f"got {result.returncode}\n    stderr: {result.stderr.strip()}")
+
+# ---------------------------------------------------------------------------
+# Test 5a: auto-renew — a valid-but-aging marker has its acknowledged_at
+# bumped forward on a successful gate check (SwiftLynx)
+# ---------------------------------------------------------------------------
+print("\n[5a] check_route_task_called.py — valid marker is auto-renewed on pass")
+
+with tempfile.TemporaryDirectory() as tmp:
+    project_root = Path(tmp)
+    (project_root / "context").mkdir()
+    state_dir = project_root / "context" / ".state" / "skill-gate"
+    state_dir.mkdir(parents=True)
+    # 6h-old marker (within the 12h TTL, but clearly not "now").
+    _old = datetime.now(timezone.utc) - timedelta(hours=6)
+    marker_path = state_dir / "session-aging.ack"
+    marker_path.write_text(
+        json.dumps(
+            {
+                "contract_hash": contract_hash,
+                "acknowledged_at": _old.isoformat(),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    _input = dict(fixture_data)
+    _input["cwd"] = str(project_root)
+    _input["tool_input"] = {"file_path": "context/workitems/FEAT-fixture.md", "content": "x"}
+    result = run(_CHECK_SCRIPT, stdin_text=json.dumps(_input))
+    check("exit 0 (pass)", result.returncode == 0, f"got {result.returncode}")
+    _after = json.loads(marker_path.read_text(encoding="utf-8"))
+    _renewed = datetime.fromisoformat(_after["acknowledged_at"])
+    if _renewed.tzinfo is None:
+        _renewed = _renewed.replace(tzinfo=timezone.utc)
+    check(
+        "acknowledged_at auto-renewed to ~now (> original)",
+        _renewed > _old,
+        f"renewed={_renewed.isoformat()} old={_old.isoformat()}",
+    )
+    check(
+        "contract_hash preserved across renew",
+        _after.get("contract_hash") == contract_hash,
+    )
 
 # ---------------------------------------------------------------------------
 # Test 5b: stale marker (outside TTL) → exit 2

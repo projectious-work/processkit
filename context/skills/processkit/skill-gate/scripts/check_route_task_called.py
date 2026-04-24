@@ -67,6 +67,11 @@ from pathlib import Path
 _ASSETS_DIR = Path(__file__).parent.parent / "assets"
 _CONTRACT_PATH = _ASSETS_DIR / "compliance-contract.md"
 _MARKER_SUBDIR = Path("context") / ".state" / "skill-gate"
+# TTL is an *idle* timeout, not wall-clock: every valid gate check
+# renews the marker's acknowledged_at via _any_valid_marker(). A
+# session that is actively making compliant writes will never expire;
+# a session that goes idle for longer than this window must
+# re-acknowledge.
 _ACK_LIFETIME_HOURS = 12
 
 # Write-side processkit MCP tools that require an acknowledged contract.
@@ -86,14 +91,34 @@ _LOCKED_PROCESSKIT_TOOLS = frozenset(
 # Generic file-editing tools that are locked only when targeting context/.
 _FILE_WRITE_TOOLS = frozenset({"Write", "Edit", "MultiEdit"})
 
-_REMEDIATION_MSG = (
-    "processkit compliance gate: call `acknowledge_contract(version='v1')` "
-    "before any write-side processkit tool.\n"
-    "  MCP call: {\"tool\": \"acknowledge_contract\", \"arguments\": {\"version\": \"v1\"}}\n"
-    "  This writes a marker that the gate scans on every write.\n"
-    "  If the tool is unavailable, add `processkit-skill-gate` to your\n"
-    "  harness's enabled MCP servers, then retry."
-)
+def _contract_version() -> str:
+    """Return the on-disk contract version, e.g. 'v2'.
+
+    Parses the leading ``<!-- pk-compliance vN -->`` marker. Returns
+    ``'v?'`` if the contract is missing or malformed — the remediation
+    message will still render, just without a specific version.
+    """
+    try:
+        first_line = _CONTRACT_PATH.read_text(encoding="utf-8").splitlines()[0]
+    except (OSError, IndexError):
+        return "v?"
+    prefix = "<!-- pk-compliance "
+    suffix = " -->"
+    if first_line.startswith(prefix) and first_line.endswith(suffix):
+        return first_line[len(prefix):-len(suffix)].strip()
+    return "v?"
+
+
+def _remediation_msg() -> str:
+    v = _contract_version()
+    return (
+        f"processkit compliance gate: call `acknowledge_contract(version='{v}')` "
+        "before any write-side processkit tool.\n"
+        f"  MCP call: {{\"tool\": \"acknowledge_contract\", \"arguments\": {{\"version\": \"{v}\"}}}}\n"
+        "  This writes a marker that the gate scans on every write.\n"
+        "  If the tool is unavailable, add `processkit-skill-gate` to your\n"
+        "  harness's enabled MCP servers, then retry."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -159,6 +184,13 @@ def _any_valid_marker(cwd: str) -> bool:
     Return True if any marker file has a contract_hash matching the
     current contract AND acknowledged_at within the TTL.
 
+    On a successful match, the marker is touched — its
+    ``acknowledged_at`` is rewritten to ``now`` — so the TTL behaves
+    as an idle timeout rather than a wall-clock one. A session that
+    is actively making compliant writes will never expire mid-flow
+    (the v0.19.2 midnight-span pain pattern). Touch failures are
+    non-fatal: the caller still proceeds.
+
     Session-id coupling is intentionally absent — see module docstring.
     """
     if not _CONTRACT_PATH.exists():
@@ -184,8 +216,18 @@ def _any_valid_marker(cwd: str) -> bool:
         if acked_at.tzinfo is None:
             acked_at = acked_at.replace(tzinfo=timezone.utc)
         if now - acked_at <= ttl:
+            _touch_marker(marker, data, now)
             return True
     return False
+
+
+def _touch_marker(marker: Path, data: dict, now: datetime) -> None:
+    """Rewrite marker with acknowledged_at = now. Best-effort; errors ignored."""
+    data["acknowledged_at"] = now.isoformat()
+    try:
+        marker.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    except OSError:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -211,7 +253,7 @@ def main() -> int:
     if _any_valid_marker(cwd):
         return 0
 
-    print(_REMEDIATION_MSG, file=sys.stderr)
+    print(_remediation_msg(), file=sys.stderr)
     return 2
 
 
