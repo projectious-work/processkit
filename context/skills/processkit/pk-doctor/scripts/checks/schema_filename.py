@@ -272,3 +272,129 @@ def run(ctx) -> list[CheckResult]:
         message=f"walked {walked_count} entity file(s) across {len(KIND_TO_DIR)} kinds",
     ))
     return results
+
+
+# --- narrow autofix (DEC-BrightHawk / SnappyBird replacement) --------------
+#
+# Scope: exactly ONE failure pattern — a LogEntry missing the required
+# `actor` field (CalmAnt-class, pre-TeamMember schema-drift window).
+# The fix inserts `actor: system` into spec. Any other schema.invalid
+# pattern is left untouched — extend case-by-case when a real need
+# arises, per DEC-20260424_0128-BrightHawk.
+
+_MISSING_ACTOR_MARKER = "'actor' is a required property"
+
+
+def run_fix(ctx, results: list[CheckResult]) -> list[dict]:
+    """Apply narrow, known-safe patches for specific schema ERRORs.
+
+    Currently handles only: LogEntry missing required field ``actor``
+    → insert ``actor: system`` into spec, validate post-patch, write
+    back on success.
+
+    Returns a list of fix records with ``status`` in
+    ``applied | skipped | rolled-back``.  Called by doctor.py only
+    when ``--fix=schema_filename`` (or ``--fix-all``) is passed.
+    """
+    repo_root: Path = ctx["repo_root"]
+    schemas_dir = repo_root / "src" / "context" / "schemas"
+    log_schema = _load_schema(schemas_dir, "logentry")
+    fixes: list[dict] = []
+
+    for r in results:
+        if r.id != "schema.invalid":
+            continue
+        if _MISSING_ACTOR_MARKER not in (r.message or ""):
+            continue
+        if not r.entity_ref:
+            continue
+        rel = Path(r.entity_ref)
+        if rel.parts[:2] != ("context", "logs"):
+            continue  # only LogEntries
+        abs_path = repo_root / rel
+        if not abs_path.is_file():
+            fixes.append({
+                "category": "schema_filename",
+                "entity": str(rel),
+                "status": "skipped",
+                "reason": "file not found",
+            })
+            continue
+        if log_schema is None:
+            fixes.append({
+                "category": "schema_filename",
+                "entity": str(rel),
+                "status": "skipped",
+                "reason": "no logentry.yaml schema available for validation",
+            })
+            continue
+
+        fm, perr = _parse_frontmatter(abs_path)
+        if fm is None:
+            fixes.append({
+                "category": "schema_filename",
+                "entity": str(rel),
+                "status": "skipped",
+                "reason": f"frontmatter parse failed: {perr}",
+            })
+            continue
+
+        spec = fm.get("spec") if isinstance(fm, dict) else None
+        if not isinstance(spec, dict):
+            fixes.append({
+                "category": "schema_filename",
+                "entity": str(rel),
+                "status": "skipped",
+                "reason": "no spec block in frontmatter",
+            })
+            continue
+        if "actor" in spec:
+            fixes.append({
+                "category": "schema_filename",
+                "entity": str(rel),
+                "status": "skipped",
+                "reason": "actor already present",
+            })
+            continue
+
+        # Patch in memory and re-validate against the schema.
+        spec["actor"] = "system"
+        errs_after = _validate_against_schema(fm, log_schema)
+        if errs_after:
+            # Post-patch STILL invalid → don't write; report.
+            fixes.append({
+                "category": "schema_filename",
+                "entity": str(rel),
+                "status": "rolled-back",
+                "reason": f"post-patch still invalid: {errs_after[0]}",
+            })
+            continue
+
+        # Rewrite frontmatter, preserving the original body verbatim.
+        original_text = abs_path.read_text(encoding="utf-8")
+        parts = original_text.split("---", 2)
+        if len(parts) < 3:
+            fixes.append({
+                "category": "schema_filename",
+                "entity": str(rel),
+                "status": "skipped",
+                "reason": "unterminated frontmatter",
+            })
+            continue
+        body = parts[2]
+        new_fm_text = yaml.safe_dump(fm, sort_keys=False, allow_unicode=True)
+        new_text = f"---\n{new_fm_text}---{body}"
+        abs_path.write_text(new_text, encoding="utf-8")
+
+        fixes.append({
+            "category": "schema_filename",
+            "entity": str(rel),
+            "status": "applied",
+            "patch": "spec.actor = 'system'",
+            "rationale": (
+                "missing required 'actor' field (CalmAnt-class, "
+                "DEC-BrightHawk)"
+            ),
+        })
+
+    return fixes

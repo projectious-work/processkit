@@ -63,6 +63,12 @@ Unannotated placeholders default to **Class B**.
   classes in `skill-gate/SKILL.md`.
 - Otherwise → browse `context/skills/INDEX.md` before falling back to
   general knowledge.
+- Schema-invalid LogEntry repair → prefer
+  `pk-doctor --fix=schema_filename --yes` (narrow, known-safe patches
+  like inserting `actor: system` for pre-TeamMember logs). Direct
+  hand-edit of a schema-invalid entry is permitted as an escape
+  hatch; commit with a clear reference. LogEntries remain
+  append-only for the normal write path.
 
 ## Sub-agent delegation
 

@@ -4,11 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260424_0128-MightyFjord-pk-doctor-fix-schema
   created: '2026-04-24T01:28:50+00:00'
-  updated: '2026-04-24T01:29:18+00:00'
+  updated: '2026-04-24T20:51:18+00:00'
 spec:
   title: pk-doctor --fix=schema_filename (narrow CalmAnt-class only) + AGENTS.md hand-edit
     note (supersedes SnappyBird, v0.21.0)
-  state: backlog
+  state: review
   type: task
   priority: low
   assignee: TEAMMEMBER-cora
@@ -34,4 +34,14 @@ spec:
     \ ~2 hours. Target: v0.21.0. Supersedes BACK-20260424_0038-SnappyBird-data-repair-path-for."
   related_decisions:
   - DEC-20260424_0128-BrightHawk-narrow-snappybird-ship-pk
+  started_at: '2026-04-24T20:35:10+00:00'
 ---
+
+## Transition note (2026-04-24T20:35:10+00:00)
+
+Starting implementation per approval.
+
+
+## Transition note (2026-04-24T20:51:18+00:00)
+
+Implementation complete. (1) Added run_fix() to schema_filename.py — narrow to LogEntry missing-actor pattern ONLY, inserts `actor: system`, validates post-patch, rolls back if still invalid. (2) End-to-end test: fixture LogEntry → detect ERROR → --fix=schema_filename --yes → status: applied → re-detect 0 ERROR. (3) AGENTS.md + src/AGENTS.md updated with the escape-hatch note under Skill guards. Mirrored; drift green; pk-doctor 0 ERROR / 0 WARN on live repo.
