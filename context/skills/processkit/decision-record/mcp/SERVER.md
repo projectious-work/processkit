@@ -13,6 +13,7 @@ and `actor-profile`.
 | `get_decision(id)`                                                                                                                                  | Fetch one DecisionRecord                                 |
 | `supersede_decision(old_id, new_id)`                                                                                                                | Mark `old_id` as superseded by `new_id` (updates both)   |
 | `link_decision_to_workitem(decision_id, workitem_id)`                                                                                               | Add a workitem ID to `spec.related_workitems`            |
+| `reload_schemas()`                                                                                                                                  | Clear in-process schema + state-machine caches so a disk edit is picked up without a server restart (returns `{ok, cleared: {schemas, state_machines}}`). Scope: this server only. PEP 723 dep edits still require a harness restart. See DEC-QuickPine. |
 
 ## State machine
 

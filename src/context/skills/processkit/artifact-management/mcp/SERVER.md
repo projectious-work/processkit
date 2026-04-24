@@ -11,6 +11,7 @@ Artifact registration, retrieval, and update. Layer 2 — depends on
 | `get_artifact(id)` | Fetch one Artifact with full spec |
 | `query_artifacts(kind?, owner?, tags?, limit?)` | List Artifacts matching filters |
 | `update_artifact(id, name?, kind?, location?, format?, version?, owner?, produced_by?, tags?)` | Update metadata fields on an existing Artifact |
+| `reload_schemas()` | Clear in-process schema + state-machine caches so a disk edit is picked up without a server restart (returns `{ok, cleared: {schemas, state_machines}}`). Scope: this server only. PEP 723 dep edits still require a harness restart. See DEC-QuickPine. |
 
 ## Valid kinds
 

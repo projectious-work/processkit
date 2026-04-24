@@ -349,5 +349,32 @@ def link_decision_to_workitem(decision_id: str, workitem_id: str) -> dict:
     return {"ok": True}
 
 
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def reload_schemas() -> dict:
+    """Clear this server's in-process schema + state-machine caches.
+
+    After a schema or state-machine file on disk is edited, call this
+    tool to make the next request re-read from disk. Returns
+    ``{"ok": True, "cleared": {"schemas": N, "state_machines": M}}``
+    where N/M are the number of cache entries that were holding data
+    before the clear.
+
+    Scope: clears caches in THIS server process only. Each MCP server
+    runs as a separate child process under the harness, so a schema
+    edit that affects multiple servers requires calling
+    `reload_schemas` on each.
+
+    Does NOT address PEP 723 dep-header edits — those require a full
+    harness restart because the uv-resolved venv is pinned at process
+    start.
+    """
+    return {"ok": True, "cleared": schema.reload_caches()}
+
+
 if __name__ == "__main__":
     server.run(transport="stdio")

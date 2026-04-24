@@ -45,7 +45,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, paths  # noqa: E402
+from processkit import config, entity, ids, index, paths, schema  # noqa: E402
 
 server = FastMCP("processkit-event-log")
 
@@ -162,6 +162,33 @@ def recent_events(limit: int = 20) -> list[dict]:
         return index.query_events(db, limit=limit)
     finally:
         db.close()
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def reload_schemas() -> dict:
+    """Clear this server's in-process schema + state-machine caches.
+
+    After a schema or state-machine file on disk is edited, call this
+    tool to make the next request re-read from disk. Returns
+    ``{"ok": True, "cleared": {"schemas": N, "state_machines": M}}``
+    where N/M are the number of cache entries that were holding data
+    before the clear.
+
+    Scope: clears caches in THIS server process only. Each MCP server
+    runs as a separate child process under the harness, so a schema
+    edit that affects multiple servers requires calling
+    `reload_schemas` on each.
+
+    Does NOT address PEP 723 dep-header edits — those require a full
+    harness restart because the uv-resolved venv is pinned at process
+    start.
+    """
+    return {"ok": True, "cleared": schema.reload_caches()}
 
 
 if __name__ == "__main__":

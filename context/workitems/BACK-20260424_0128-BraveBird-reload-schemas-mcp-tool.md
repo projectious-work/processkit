@@ -4,11 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260424_0128-BraveBird-reload-schemas-mcp-tool
   created: '2026-04-24T01:28:31+00:00'
-  updated: '2026-04-24T01:29:18+00:00'
+  updated: '2026-04-24T11:20:47+00:00'
 spec:
   title: reload_schemas MCP tool + _lib helper on 4 schema-active servers (supersedes
     SharpBrook, v0.21.0)
-  state: backlog
+  state: review
   type: story
   priority: medium
   assignee: TEAMMEMBER-cora
@@ -56,4 +56,14 @@ spec:
     (schema-reload half).'
   related_decisions:
   - DEC-20260424_0127-QuickPine-split-sharpbrook-ship-schema
+  started_at: '2026-04-24T01:34:53+00:00'
 ---
+
+## Transition note (2026-04-24T01:34:53+00:00)
+
+Starting implementation. Scope confirmed with owner: 4 servers (workitem, decision, event-log, artifact).
+
+
+## Transition note (2026-04-24T11:20:47+00:00)
+
+Implementation complete. (1) Added reload_caches() helper to _lib/processkit/schema.py clearing both load_schema and state_machine.load lru_caches. (2) Added reload_schemas MCP tool on all 4 target servers (workitem, decision, event-log, artifact) as ~20-line wrappers. (3) Proved live-reload end-to-end: disk edit → stale cache → reload_schemas → fresh cache, no server restart. (4) Added BraveBird guard to scripts/smoke-test-servers.py — all 4 tools callable with correct shape. (5) Updated all 4 SERVER.md docs. Drift guard green; pk-doctor 0 ERROR / 0 WARN across 8 checks.

@@ -12,6 +12,7 @@ WorkItem creation, transitions, queries, and links. Layer 2 — depends on
 | `query_workitems(state?, type?, assignee?, limit?)`                                                 | List WorkItems matching filters                               |
 | `get_workitem(id)`                                                                                  | Fetch a WorkItem with full spec                               |
 | `link_workitems(from_id, to_id, relation)`                                                          | Add a typed cross-reference (`blocks`/`blocked_by`/`parent`/`children`/`related_decisions`) |
+| `reload_schemas()`                                                                                  | Clear in-process schema + state-machine caches so a disk edit is picked up without a server restart (returns `{ok, cleared: {schemas, state_machines}}`). Scope: this server only. PEP 723 dep edits still require a harness restart. See DEC-QuickPine. |
 
 ## State machine
 

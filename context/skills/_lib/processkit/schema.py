@@ -100,3 +100,30 @@ def list_known_kinds(schemas_dir: Path | None = None) -> list[str]:
 def _format_error(error: Any) -> str:
     path = ".".join(str(p) for p in error.absolute_path) or "<root>"
     return f"{path}: {error.message}"
+
+
+def reload_caches() -> dict[str, int]:
+    """Clear the in-process schema and state-machine caches.
+
+    Returns ``{"schemas": <cleared>, "state_machines": <cleared>}`` —
+    the count of cache entries that were holding loaded data before
+    the clear.  Intended to back a per-server ``reload_schemas`` MCP
+    tool so an agent can pick up a schema or state-machine edit
+    without restarting the server process.
+
+    Note: this helper only clears the *in-process* caches of the
+    server module that imports it.  Since each MCP server runs as
+    its own child process under the harness, callers that need all
+    servers to pick up a change must invoke ``reload_schemas`` on
+    each server separately.
+
+    PEP 723 dep-header edits are NOT addressed by this helper — they
+    require a full harness restart because the ``uv``-resolved venv
+    is pinned at process start.
+    """
+    schemas_before = load_schema.cache_info().currsize
+    load_schema.cache_clear()
+    from . import state_machine as _sm
+    sm_before = _sm.load.cache_info().currsize
+    _sm.load.cache_clear()
+    return {"schemas": schemas_before, "state_machines": sm_before}

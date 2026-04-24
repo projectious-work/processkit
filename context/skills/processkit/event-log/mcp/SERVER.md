@@ -10,6 +10,7 @@ process-primitive skill.
 | `log_event(event_type, summary, actor?, subject?, subject_kind?, details?, timestamp?, correlation_id?)` | Append a new LogEntry to `context/logs/` |
 | `query_events(event_type?, subject?, actor?, limit?)`                           | Query LogEntries via the index                       |
 | `recent_events(limit?)`                                                         | Most recent LogEntries                               |
+| `reload_schemas()`                                                              | Clear in-process schema + state-machine caches so a disk edit is picked up without a server restart (returns `{ok, cleared: {schemas, state_machines}}`). Scope: this server only. PEP 723 dep edits still require a harness restart. See DEC-QuickPine. |
 
 ## Notes
 

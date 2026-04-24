@@ -1000,6 +1000,36 @@ def run():
         print("1% rule guard: all 10 locked tools carry the '1% rule' string.")
         # ── end 1% rule guard ─────────────────────────────────────────────────
 
+        # ── BraveBird: reload_schemas live-reload regression guard ────────────
+        # Each of the 4 schema-active servers (event-log, workitem,
+        # decision-record, artifact-management) must expose a
+        # reload_schemas tool that clears the _lib schema + state_machine
+        # caches so a disk-level schema edit is visible without a server
+        # restart. See DEC-QuickPine + BACK-BraveBird.
+        for _srv_obj, _srv_name in [
+            (elog, "event-log"),
+            (wi, "workitem-management"),
+            (dec, "decision-record"),
+            (art, "artifact-management"),
+        ]:
+            _reload = get_tool(_srv_obj, "reload_schemas")
+            _result = _reload()
+            assert _result.get("ok") is True, (
+                f"reload_schemas on {_srv_name}: ok=false, got {_result}"
+            )
+            assert "cleared" in _result, (
+                f"reload_schemas on {_srv_name}: missing 'cleared' field"
+            )
+            assert set(_result["cleared"].keys()) >= {"schemas", "state_machines"}, (
+                f"reload_schemas on {_srv_name}: cleared missing keys, "
+                f"got {_result['cleared'].keys()}"
+            )
+        print(
+            "reload_schemas guard: all 4 schema-active servers expose a "
+            "callable reload_schemas with correct shape."
+        )
+        # ── end BraveBird guard ───────────────────────────────────────────────
+
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
