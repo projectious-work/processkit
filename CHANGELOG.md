@@ -5,6 +5,79 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.20.0] — 2026-04-24
+
+Retro follow-up batch: fixes the three lightest action items from the
+v0.19.2 retrospective (WildLake, ToughAnt, SwiftLynx).  The two heavier
+retro items — SharpBrook (MCP schema hot-reload) and SnappyBird
+(data-repair path for append-only LogEntries) — are deferred to
+v0.21.0 pending the design discussions opened as DISC-DaringBird and
+DISC-WiseLily.  See `DEC-20260424_0101-SolidBadger-split-v0-20-0`.
+
+### Added
+
+- **docs(AGENTS.md): "Sub-agent delegation" section.**  Pairs with the
+  existing "Skill guards" list and codifies the read-only / mutating
+  split for harness `Agent`-tool sub-agents: delegate Read, search
+  Bash, and MCP `query_*` / `get_*` / `search_*` / `list_*`; keep
+  Write, Edit, new `mkdir`, MCP `create_*` / `transition_*` /
+  `record_*` / `link_*` / `open_*` / `log_event`, and git mutations
+  on the main session.  Closes
+  `BACK-20260424_0038-ToughAnt-ephemeral-sub-agent-defaults`.
+
+### Changed
+
+- **feat(skill-gate): compliance-ack TTL is now an idle timeout.**
+  `_any_valid_marker()` in `check_route_task_called.py` now rewrites
+  the matching marker's `acknowledged_at` to `now` on every
+  successful gate check.  A session that is actively making
+  compliant writes no longer expires mid-flow (the v0.19.2
+  midnight-span pain pattern); a session that goes idle for longer
+  than `_ACK_LIFETIME_HOURS` (12h) still must re-acknowledge.  Touch
+  failures are non-fatal.  Closes
+  `BACK-20260424_0038-SwiftLynx-compliance-contract-acknowledgement-ttl`.
+
+### Fixed
+
+- **fix(skill-gate): remediation text uses the on-disk contract
+  version.**  `_remediation_msg()` parses the leading
+  `<!-- pk-compliance vN -->` marker in
+  `assets/compliance-contract.md` rather than hard-coding `v1`.  The
+  v0.19.2 hard-code told callers to acknowledge `v1` even though the
+  on-disk contract was already `v2`.  Part of SwiftLynx.
+- **fix(retrospective): `/pk-retro --auto-workitems` no longer fails
+  with `ModuleNotFoundError: No module named 'mcp'`.**  `pk_retro.py`
+  declared only `pyyaml` in its PEP 723 header, but its in-process
+  MCP loader imports `server.py` modules from artifact-management,
+  event-log, and workitem-management — all of which require
+  `mcp[cli]` and `jsonschema`.  Added both to the PEP 723 header so
+  `uv run --script pk_retro.py` resolves them automatically.  Closes
+  `BACK-20260424_0038-WildLake-pk-retro-auto-workitems`.
+- **fix(skills): resolve cross-category `retrospective` skill
+  basename collision.**  `product/retrospective` is renamed to
+  `product/sprint-retrospective` (directory, `name:`, and `id:
+  SKILL-sprint-retrospective`); the processkit-category
+  `retrospective` (release scope, `/pk-retro`) keeps the bare name.
+  Closes [#11].  The missing `pk-doctor/commands/` directory
+  ([#10]) and the duplicate `pk-resume.md` command
+  ([#12]) were already resolved in v0.19.2 (90c980f and 87e185e
+  respectively) and are closed here for bookkeeping.
+
+### Deferred to v0.21.0
+
+- `BACK-20260424_0037-SharpBrook-mcp-servers-cache-schemas` — MCP
+  schema hot-reload / `reload_schemas` tool. Design discussion:
+  `DISC-20260424_0101-DaringBird-how-should-mcp-servers`.
+- `BACK-20260424_0038-SnappyBird-data-repair-path-for` — data-repair
+  path for malformed append-only LogEntries. Design discussion:
+  `DISC-20260424_0101-WiseLily-how-do-we-allow`.
+
+[#10]: https://github.com/projectious-work/processkit/issues/10
+[#11]: https://github.com/projectious-work/processkit/issues/11
+[#12]: https://github.com/projectious-work/processkit/issues/12
+
+---
+
 ## [v0.19.2] — 2026-04-24
 
 Release-hygiene and derived-project-install bulletproofing.  Closes
