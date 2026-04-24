@@ -1,0 +1,15 @@
+---
+apiVersion: processkit.projectious.work/v1
+kind: LogEntry
+metadata:
+  id: LOG-20260423_2057-RoyalRaven-workitem-transitioned
+  created: '2026-04-23T20:57:59+00:00'
+spec:
+  event_type: workitem.transitioned
+  timestamp: '2026-04-23T20:57:59+00:00'
+  summary: Transitioned WorkItem 'BACK-20260423_0829-TrueQuail-aibox-installer-reconcile-mcp'
+    from 'in-progress' to 'review'
+  subject: BACK-20260423_0829-TrueQuail-aibox-installer-reconcile-mcp
+  subject_kind: WorkItem
+  actor: BACK-20260423_0829-TrueQuail-aibox-installer-reconcile-mcp
+---
