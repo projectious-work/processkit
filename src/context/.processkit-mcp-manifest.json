@@ -1,0 +1,80 @@
+{
+  "aggregate_sha256": "92d6eedc1755a7ce9d69a1013393e36cc616e411d1daa4c9c5484cefe4536651",
+  "generated_at": "2026-04-23T20:54:08Z",
+  "per_skill": [
+    {
+      "path": "context/skills/processkit/actor-profile/mcp/mcp-config.json",
+      "sha256": "b5b6f3137c0503707427dc45c508b51096d3681758500f312d237fee766539ef"
+    },
+    {
+      "path": "context/skills/processkit/artifact-management/mcp/mcp-config.json",
+      "sha256": "e09c0fe9c1e4e63cdb3aa73382d71e9a4b861b6c81777239a353c2c34d6d6f9a"
+    },
+    {
+      "path": "context/skills/processkit/binding-management/mcp/mcp-config.json",
+      "sha256": "dea4c50fc489403a2d0fa39f1dd7edea47b5214c2f46d704d7d56deaa5706a42"
+    },
+    {
+      "path": "context/skills/processkit/decision-record/mcp/mcp-config.json",
+      "sha256": "3ed35e1ad1ca9e9d80da664e295188ef486b23a47c96d188dcb9ef2ac70038b6"
+    },
+    {
+      "path": "context/skills/processkit/discussion-management/mcp/mcp-config.json",
+      "sha256": "789e045f3e45f0f5ae95c1eaf99ce7b914dbde8a5bccc4d1da1eab001fe1a9ad"
+    },
+    {
+      "path": "context/skills/processkit/event-log/mcp/mcp-config.json",
+      "sha256": "2f9afddaa58ad35d30683036ee851b84e6d993d413aa27ece603202be1888a53"
+    },
+    {
+      "path": "context/skills/processkit/gate-management/mcp/mcp-config.json",
+      "sha256": "263c2c8ff13642d31107f6631ab1dfdd5f6f6cecb77cd99be17c6273877b69dd"
+    },
+    {
+      "path": "context/skills/processkit/id-management/mcp/mcp-config.json",
+      "sha256": "ae0eacb10e0590828b68938ae05f474814c5ecb9396c994031dd008713660cda"
+    },
+    {
+      "path": "context/skills/processkit/index-management/mcp/mcp-config.json",
+      "sha256": "2416a78970bb529a6465dcd82da312ffc3ce1d594e8b0e730dcc4cfdfbe24e5f"
+    },
+    {
+      "path": "context/skills/processkit/migration-management/mcp/mcp-config.json",
+      "sha256": "4b62d7a45c57692feb3fae996a656eb18c0e96bdd435de64e8baf0631c2d3404"
+    },
+    {
+      "path": "context/skills/processkit/model-recommender/mcp/mcp-config.json",
+      "sha256": "fbbe9faf06b7a94056ab3734b2a15f37128246fb581b713f4d008d31351a51fc"
+    },
+    {
+      "path": "context/skills/processkit/role-management/mcp/mcp-config.json",
+      "sha256": "5010739924c1a9dbc1386e10a6151dfb2ad423160a66d85417039c7d95da11fa"
+    },
+    {
+      "path": "context/skills/processkit/scope-management/mcp/mcp-config.json",
+      "sha256": "85ca13e76490c3bdd7eefbfbc51950bebdce2e7b7e8df5dd0e01c594b81a0d58"
+    },
+    {
+      "path": "context/skills/processkit/skill-finder/mcp/mcp-config.json",
+      "sha256": "5b0ab6a239ec60dfbd6b9f1b66dd2c8caaedb24b38af3d2344d247d366bff50b"
+    },
+    {
+      "path": "context/skills/processkit/skill-gate/mcp/mcp-config.json",
+      "sha256": "03f85f9d1b916f262c5de12c5bc43f78945027989e87a29e75de753dcf990564"
+    },
+    {
+      "path": "context/skills/processkit/task-router/mcp/mcp-config.json",
+      "sha256": "aa4e91bd4d9276016738a11ab61d76538f9bf1261674de410dfdfa9dfcd7d832"
+    },
+    {
+      "path": "context/skills/processkit/team-manager/mcp/mcp-config.json",
+      "sha256": "ab3597df06c91e351209a79f3a2def376fe3a83922bbbb879151b0e7d94909fa"
+    },
+    {
+      "path": "context/skills/processkit/workitem-management/mcp/mcp-config.json",
+      "sha256": "a4ae7e26a980aeebed953f3cc2e761cde6dd8692fb033c81c9e3c8927e8b5898"
+    }
+  ],
+  "processkit_version": "v0.19.1",
+  "version": 1
+}

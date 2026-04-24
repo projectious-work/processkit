@@ -7,7 +7,16 @@ aggregator doesn't otherwise sequence checks.
 
 from __future__ import annotations
 
-from . import schema_filename, sharding, migrations, drift, team_consistency, release_integrity
+from . import (
+    schema_filename,
+    sharding,
+    migrations,
+    drift,
+    team_consistency,
+    release_integrity,
+    commands_consistency,
+    mcp_config_drift,
+)
 
 # (name, module). Name is the --category= token and the key in the
 # per-category tally block of the doctor.report LogEntry.
@@ -18,6 +27,8 @@ REGISTRY = [
     ("drift", drift),
     ("team_consistency", team_consistency),
     ("release_integrity", release_integrity),
+    ("commands_consistency", commands_consistency),
+    ("mcp_config_drift", mcp_config_drift),
 ]
 
 

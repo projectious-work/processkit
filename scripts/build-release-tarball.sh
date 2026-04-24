@@ -68,6 +68,16 @@ fi
 mkdir -p "$DIST_DIR"
 mkdir -p "$STAGING_DIR"
 
+# Regenerate the MCP-config manifest so the release tarball carries the
+# current aggregate hash (consumed by `aibox sync` to detect per-skill
+# mcp-config changes that don't bump the processkit version).  See
+# DEC-20260423_2049-VastLake and projectious-work/aibox#54.
+echo "regenerating MCP-config manifest" >&2
+if ! uv run "$REPO_ROOT/scripts/generate-mcp-manifest.py"; then
+    echo "error: generate-mcp-manifest.py failed" >&2
+    exit 1
+fi
+
 # Drift guard: ensure context/ (dogfood) and src/context/ (shipped template)
 # are in sync before building the tarball.  If this fails, the release tree
 # is inconsistent with what the changelog claims; fix the drift first.

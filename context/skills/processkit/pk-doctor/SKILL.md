@@ -75,6 +75,29 @@ writes exactly one `doctor.report` LogEntry via the event-log MCP.
 4. **`drift`** — subprocess-invokes `scripts/check-src-context-drift.sh`
    from the repo root. Exit 0 → one INFO "trees in sync". Exit 1 →
    one WARN per offending line reported by the script.
+5. **`commands_consistency`** — walks every
+   `context/skills/processkit/*/SKILL.md` and verifies that each entry
+   in `metadata.processkit.commands:` has a matching `commands/<name>.md`
+   file alongside the SKILL.md. ERROR per missing file; WARN for
+   stray `commands/*.md` files not declared in the metadata. Added
+   after v0.19.1 shipped pk-doctor without its own commands/ directory.
+
+Additional checks added after Phase 1:
+
+- **`team_consistency`** — wraps `team-manager.check_all()`.
+- **`release_integrity`** — see DEC-20260422_1348-SnowyWolf-local-only-release-bulletproofing.
+- **`mcp_config_drift`** — reads `context/.processkit-mcp-manifest.json`
+  (produced at release time by `scripts/generate-mcp-manifest.py`) and
+  recomputes the per-skill `mcp-config.json` sha256es. A missing manifest
+  or stale aggregate surfaces as WARN (run the generator). In a
+  derived-project context (`aibox.lock` + `.mcp.json` both present at
+  the repo root), any processkit server missing from `.mcp.json`'s
+  `mcpServers` map surfaces as ERROR with a "run `aibox sync` to
+  re-merge" hint. Exists because `aibox sync` currently gates
+  `.mcp.json` re-merge on processkit version delta only, so per-skill
+  MCP-config edits within a release cycle never reach derived projects
+  until the next version bump — see DEC-20260423_2049-VastLake and
+  projectious-work/aibox#54.
 
 ### What doctor will NEVER do
 

@@ -95,6 +95,21 @@ See [`context/team/roster.md`](context/team/roster.md) and
 - `apiVersion` locked through v1.x; `v2` requires a full migration.
 - `_find_lib()` uses cwd; smoke tests `os.chdir()` before invoking servers.
 
+## MCP config manifest
+
+`context/.processkit-mcp-manifest.json` records a sha256 per
+`context/skills/*/*/mcp/mcp-config.json` plus an `aggregate_sha256` over
+all of them. It is regenerated at release time by
+`scripts/generate-mcp-manifest.py` and mirrored into
+`src/context/` so consumers receive it in the release tarball.
+Downstream installers (notably `aibox sync`) are expected to compare the
+aggregate hash against their last-merged state and re-merge `.mcp.json`
+when they differ — independently of whether the processkit version
+changed. Without this signal, per-skill MCP-config edits made within a
+release cycle never reach derived projects until the next version bump.
+Tracking issue: [projectious-work/aibox#54](https://github.com/projectious-work/aibox/issues/54).
+The `mcp_config_drift` pk-doctor check validates the manifest locally.
+
 ---
 
 <sub>Scaffolded by processkit `v0.18.1` on `2026-04-17`. Re-rendered on each installer sync.</sub>
