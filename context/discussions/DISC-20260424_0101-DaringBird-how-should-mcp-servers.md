@@ -4,14 +4,18 @@ kind: Discussion
 metadata:
   id: DISC-20260424_0101-DaringBird-how-should-mcp-servers
   created: '2026-04-24T01:01:25+00:00'
+  updated: '2026-04-24T01:29:05+00:00'
 spec:
   question: How should MCP servers pick up schema / PEP 723 dep changes without a
     full harness restart — watchdog hot-reload, an admin reload_schemas tool, both,
     or neither?
-  state: active
+  state: resolved
   opened_at: '2026-04-24T01:01:25+00:00'
   participants:
   - TEAMMEMBER-cora
+  outcomes:
+  - DEC-20260424_0127-QuickPine-split-sharpbrook-ship-schema
+  closed_at: '2026-04-24T01:29:05+00:00'
 ---
 
 ## Context

@@ -4,10 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260424_0038-SnappyBird-data-repair-path-for
   created: '2026-04-24T00:38:38+00:00'
+  updated: '2026-04-24T01:29:25+00:00'
 spec:
   title: Data-repair path for malformed append-only LogEntries — migration or log_event
     override
-  state: backlog
+  state: cancelled
   type: task
   priority: low
   assignee: TEAMMEMBER-cora
@@ -40,4 +41,9 @@ spec:
 
 
     **Target:** v0.20.0. **Owner:** cora.'
+  completed_at: '2026-04-24T01:29:25+00:00'
 ---
+
+## Transition note (2026-04-24T01:29:25+00:00)
+
+Superseded by DEC-20260424_0128-BrightHawk. Replaced with narrow WI BACK-MightyFjord (pk-doctor --fix=schema_filename + AGENTS.md note). The general data-fix migration kind is NOT being built.

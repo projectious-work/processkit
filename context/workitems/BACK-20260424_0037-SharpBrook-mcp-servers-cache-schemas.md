@@ -4,10 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260424_0037-SharpBrook-mcp-servers-cache-schemas
   created: '2026-04-24T00:37:53+00:00'
+  updated: '2026-04-24T01:29:24+00:00'
 spec:
   title: MCP servers cache schemas at startup — build hot-reload or reload_schemas
     tool
-  state: backlog
+  state: cancelled
   type: story
   priority: medium
   assignee: TEAMMEMBER-cora
@@ -37,4 +38,9 @@ spec:
 
 
     **Target:** v0.20.0. **Owner:** cora.'
+  completed_at: '2026-04-24T01:29:24+00:00'
 ---
+
+## Transition note (2026-04-24T01:29:24+00:00)
+
+Superseded by DEC-20260424_0127-QuickPine. Replaced with two narrower WIs: BACK-BraveBird (reload_schemas MCP tool, v0.21.0) and BACK-RapidSwan (server_header_drift pk-doctor check, v0.22.0+).

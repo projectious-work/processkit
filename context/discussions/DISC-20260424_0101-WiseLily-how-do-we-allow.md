@@ -4,14 +4,18 @@ kind: Discussion
 metadata:
   id: DISC-20260424_0101-WiseLily-how-do-we-allow
   created: '2026-04-24T01:01:42+00:00'
+  updated: '2026-04-24T01:29:05+00:00'
 spec:
   question: How do we allow data-repair of malformed append-only LogEntries without
     breaking the append-only invariant — data-fix migration kind, log_event --repair
     override, pk-doctor autofix, or all three?
-  state: active
+  state: resolved
   opened_at: '2026-04-24T01:01:42+00:00'
   participants:
   - TEAMMEMBER-cora
+  outcomes:
+  - DEC-20260424_0128-BrightHawk-narrow-snappybird-ship-pk
+  closed_at: '2026-04-24T01:29:05+00:00'
 ---
 
 ## Context
