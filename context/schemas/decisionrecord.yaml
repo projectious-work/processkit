@@ -59,8 +59,8 @@ spec:
         type: array
         items:
           type: string
-          pattern: "^ACTOR-[a-zA-Z0-9_-]+$"
-        description: "ACTOR IDs of the people/agents who made the decision."
+          pattern: "^(ACTOR|TEAMMEMBER)-[a-zA-Z0-9_-]+$"
+        description: "Actor or TeamMember IDs of the people/agents who made the decision."
       supersedes:
         anyOf:
           - type: "null"

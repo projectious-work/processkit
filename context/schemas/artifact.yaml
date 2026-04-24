@@ -61,8 +61,8 @@ spec:
         description: "Optional. Hash for integrity verification."
       owner:
         type: string
-        pattern: "^ACTOR-[a-zA-Z0-9_-]+$"
-        description: "Actor responsible for the artifact."
+        pattern: "^(ACTOR|TEAMMEMBER)-[a-zA-Z0-9_-]+$"
+        description: "Actor or TeamMember responsible for the artifact."
       produced_by:
         type: string
         description: >

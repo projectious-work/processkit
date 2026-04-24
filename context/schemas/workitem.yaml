@@ -43,8 +43,8 @@ spec:
         description: "Business priority."
       assignee:
         type: string
-        pattern: "^ACTOR-[a-zA-Z0-9_-]+$"
-        description: "ID of the Actor currently responsible. Use a Binding for scoped assignments."
+        pattern: "^(ACTOR|TEAMMEMBER)-[a-zA-Z0-9_-]+$"
+        description: "ID of the Actor or TeamMember currently responsible. Use a Binding for scoped assignments."
       parent:
         type: string
         pattern: "^BACK-[a-zA-Z0-9_-]+$"

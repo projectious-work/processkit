@@ -4,6 +4,7 @@
 # dependencies = [
 #   "mcp[cli]>=1.0",
 #   "httpx>=0.27",
+#   "pyyaml>=6.0",
 # ]
 # ///
 """
