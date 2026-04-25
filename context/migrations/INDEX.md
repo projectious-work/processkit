@@ -35,12 +35,13 @@ None.
 |  | MIG-20260418T172222 — processkit v0.18.1 → v0.18.1 | 0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected) |
 |  | MIG-RUNTIME-20260418T090604 — aibox-runtime-home 0.18.3 → 0.18.5 | 0 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected) |
 
-## Rejected (2)
+## Rejected (3)
 
 | Date       | Migration                                | Reason |
 |------------|------------------------------------------|--------|
 | 2026-04-20 | MIG-20260418T183311 — processkit v0.18.1 → v0.18.1 | v0.18.1→v0.18.1 no-op superseded by MIG-20260419T080358. Local changes folded into v0.18.2 release (commit c54af68). |
 | 2026-04-20 | MIG-RUNTIME-20260418T183310 — aibox-runtime-home 0.18.6 → 0.18.6 | 0.18.6→0.18.6 runtime no-op superseded by MIG-RUNTIME-20260419T080804 (0.18.7 runtime). |
+| 2026-04-25 | MIG-20260425T164303 — processkit v0.21.0 → v0.21.0 | Defective aibox-sync output. Same-version (v0.21.0→v0.21.0) yet 564 entries marked new-upstream and unchanged=0; affect… |
 
 ## CLI Migrations
 
