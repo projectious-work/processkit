@@ -904,6 +904,137 @@
       },
       "best_for": ["1M context at low cost, non-sensitive data (estimated)"],
       "avoid_for": ["Sensitive/regulated data via API", "Tasks requiring strong coding capability"]
+    },
+
+    {
+      "_estimated": true,
+      "id": "gpt-5.5",
+      "name": "GPT-5.5",
+      "provider": "OpenAI",
+      "tier": "Frontier flagship (estimated, 2026-04-25)",
+      "context_k": 256,
+      "governance_warning": null,
+      "pricing": {
+        "input_per_1m": 5.0,
+        "output_per_1m": 30.0,
+        "currency": "USD",
+        "hosting": "api",
+        "note": "ESTIMATED — released 2026-04-23 (API 2026-04-24). Pricing CONFIRMED from announcement coverage. Capability scores extrapolated from coverage emphasizing agentic coding, computer use, and knowledge work; not yet validated against published benchmarks. Run Workflow C to validate."
+      },
+      "dimensions": {
+        "R": { "score": 5, "sub": { "math_reasoning": 5, "scientific_reasoning": 5, "abstract_reasoning": 5, "logical_chains": 5, "debugging_chains": 5 }},
+        "E": { "score": 5, "sub": { "function_codegen": 5, "repo_scale_tasks": 5, "tool_use": 5, "agentic_planning": 5, "codebase_navigation": 5 }},
+        "S": { "score": 3, "sub": { "ttft": 3, "throughput": 3, "cost_efficiency": 2 }},
+        "B": { "score": 5, "sub": { "context_window": 4, "long_doc_faithfulness": 5, "vision": 5, "audio": 5, "video": 4, "multilingual": 5, "structured_output": 5 }},
+        "L": { "score": 5, "sub": { "instruction_following": 5, "hallucination_resistance": 5, "consistency": 5, "safety": 5, "format_adherence": 5 }},
+        "G": { "score": 2, "sub": { "data_retention_policy": 2, "data_sovereignty": 2, "self_hostable": 1, "compliance_certs": 3, "audit_logging": 2 }}
+      },
+      "best_for": ["Agentic coding and computer-use workflows", "Long-running multi-tool tasks", "ChatGPT/Codex Plus+ users"],
+      "avoid_for": ["Sensitive/regulated data without enterprise DPA", "Cost-sensitive high-volume work (use gpt-5 or sonnet tier)"]
+    },
+    {
+      "_estimated": true,
+      "id": "gpt-5.5-pro",
+      "name": "GPT-5.5 Pro",
+      "provider": "OpenAI",
+      "tier": "Frontier flagship premium (estimated, 2026-04-25)",
+      "context_k": 256,
+      "governance_warning": null,
+      "pricing": {
+        "input_per_1m": 30.0,
+        "output_per_1m": 180.0,
+        "currency": "USD",
+        "hosting": "api",
+        "note": "ESTIMATED — released 2026-04-23 alongside GPT-5.5. Pricing CONFIRMED from announcement coverage. Capability scores extrapolated as the higher-effort variant of gpt-5.5; not yet validated. Run Workflow C to validate."
+      },
+      "dimensions": {
+        "R": { "score": 5, "sub": { "math_reasoning": 5, "scientific_reasoning": 5, "abstract_reasoning": 5, "logical_chains": 5, "debugging_chains": 5 }},
+        "E": { "score": 5, "sub": { "function_codegen": 5, "repo_scale_tasks": 5, "tool_use": 5, "agentic_planning": 5, "codebase_navigation": 5 }},
+        "S": { "score": 2, "sub": { "ttft": 2, "throughput": 2, "cost_efficiency": 1 }},
+        "B": { "score": 5, "sub": { "context_window": 4, "long_doc_faithfulness": 5, "vision": 5, "audio": 5, "video": 5, "multilingual": 5, "structured_output": 5 }},
+        "L": { "score": 5, "sub": { "instruction_following": 5, "hallucination_resistance": 5, "consistency": 5, "safety": 5, "format_adherence": 5 }},
+        "G": { "score": 2, "sub": { "data_retention_policy": 2, "data_sovereignty": 2, "self_hostable": 1, "compliance_certs": 3, "audit_logging": 2 }}
+      },
+      "best_for": ["Hardest tasks requiring SOTA across all dimensions (estimated)", "Pro/Business/Enterprise tiers"],
+      "avoid_for": ["Cost-sensitive work (6× output price of gpt-5.5)", "Sensitive/regulated data without enterprise DPA"]
+    },
+    {
+      "_estimated": true,
+      "id": "qwen3.6-plus",
+      "name": "Qwen 3.6-Plus",
+      "provider": "Alibaba",
+      "tier": "Flagship proprietary (estimated, 2026-04-25)",
+      "context_k": 1000,
+      "governance_warning": "Chinese company, proprietary (no open weights for 3.6 line). Via Alibaba Cloud API: G:1. Self-hosting NOT available for this version.",
+      "pricing": {
+        "input_per_1m": null,
+        "output_per_1m": null,
+        "currency": "USD",
+        "hosting": "api",
+        "note": "ESTIMATED — released 2026-04-02 as proprietary (departure from prior open-weights Qwen line). 1M-token default context. Pricing not located in coverage; check Alibaba Cloud pricing page. Capability scores extrapolated from agentic-coding/multimodal-perception emphasis. Run Workflow C to validate."
+      },
+      "dimensions": {
+        "R": { "score": 4, "sub": { "math_reasoning": 4, "scientific_reasoning": 4, "abstract_reasoning": 4, "logical_chains": 4, "debugging_chains": 4 }},
+        "E": { "score": 5, "sub": { "function_codegen": 5, "repo_scale_tasks": 5, "tool_use": 5, "agentic_planning": 5, "codebase_navigation": 5 }},
+        "S": { "score": 3, "sub": { "ttft": 3, "throughput": 3, "cost_efficiency": 3 }},
+        "B": { "score": 5, "sub": { "context_window": 5, "long_doc_faithfulness": 4, "vision": 4, "audio": 3, "video": 3, "multilingual": 5, "structured_output": 4 }},
+        "L": { "score": 4, "sub": { "instruction_following": 4, "hallucination_resistance": 4, "consistency": 4, "safety": 4, "format_adherence": 4 }},
+        "G": { "score": 1, "sub": { "data_retention_policy": 1, "data_sovereignty": 1, "self_hostable": 1, "compliance_certs": 1, "audit_logging": 1 }}
+      },
+      "best_for": ["Agentic coding with very long context (1M)", "Multilingual (esp. Asian languages)", "Non-sensitive data via Alibaba Cloud"],
+      "avoid_for": ["Sensitive/regulated data (G:1)", "Air-gapped/on-prem (no self-host)", "Tasks where Qwen3.6-Max-Preview is available"]
+    },
+    {
+      "_estimated": true,
+      "id": "qwen3.6-max-preview",
+      "name": "Qwen 3.6-Max-Preview",
+      "provider": "Alibaba",
+      "tier": "Frontier proprietary preview (estimated, 2026-04-25)",
+      "context_k": 1000,
+      "governance_warning": "Chinese company, proprietary preview (no open weights). Via Alibaba Cloud API: G:1. Self-hosting NOT available.",
+      "pricing": {
+        "input_per_1m": null,
+        "output_per_1m": null,
+        "currency": "USD",
+        "hosting": "api",
+        "note": "ESTIMATED — preview released 2026-04-20. CONFIRMED to top six benchmarks per coverage: SWE-bench Pro, Terminal-Bench 2.0, SkillsBench, QwenClawBench, QwenWebBench, SciCode. Pricing not yet published; preview access only. Run Workflow C to validate."
+      },
+      "dimensions": {
+        "R": { "score": 5, "sub": { "math_reasoning": 5, "scientific_reasoning": 5, "abstract_reasoning": 5, "logical_chains": 5, "debugging_chains": 5 }},
+        "E": { "score": 5, "sub": { "function_codegen": 5, "repo_scale_tasks": 5, "tool_use": 5, "agentic_planning": 5, "codebase_navigation": 5 }},
+        "S": { "score": 3, "sub": { "ttft": 3, "throughput": 3, "cost_efficiency": 3 }},
+        "B": { "score": 5, "sub": { "context_window": 5, "long_doc_faithfulness": 5, "vision": 4, "audio": 3, "video": 3, "multilingual": 5, "structured_output": 5 }},
+        "L": { "score": 4, "sub": { "instruction_following": 5, "hallucination_resistance": 4, "consistency": 4, "safety": 4, "format_adherence": 5 }},
+        "G": { "score": 1, "sub": { "data_retention_policy": 1, "data_sovereignty": 1, "self_hostable": 1, "compliance_certs": 1, "audit_logging": 1 }}
+      },
+      "best_for": ["Top-of-leaderboard coding/agent tasks (per coverage)", "Real-world software-engineering benchmarks (SWE-bench Pro)", "Preview-tier exploration with non-sensitive data"],
+      "avoid_for": ["Production routing until preview lifts", "Sensitive/regulated data (G:1)", "Air-gapped/on-prem"]
+    },
+    {
+      "_estimated": true,
+      "id": "kimi-k2.6",
+      "name": "Kimi K2.6",
+      "provider": "Moonshot AI",
+      "tier": "Frontier open-weights (estimated, 2026-04-25)",
+      "context_k": 256,
+      "governance_warning": "Chinese company. Via Moonshot API: G:1. Self-hosted open weights (Modified MIT, Hugging Face) raise governance to G:3–4.",
+      "pricing": {
+        "input_per_1m": null,
+        "output_per_1m": null,
+        "currency": "USD",
+        "hosting": "api-or-self-hosted",
+        "note": "ESTIMATED — released 2026-04-20. 1T-parameter MoE (32B activated, 384 experts, 61 layers, 64 attention heads). 256K context. 400M-parameter MoonViT vision encoder. CONFIRMED benchmarks per coverage: 58.6 SWE-Bench Pro (vs GPT-5.4 57.7); 54.0 on Humanity's Last Exam with tools (leading the comparison). API pricing not located. Run Workflow C to validate."
+      },
+      "dimensions": {
+        "R": { "score": 5, "sub": { "math_reasoning": 5, "scientific_reasoning": 5, "abstract_reasoning": 5, "logical_chains": 5, "debugging_chains": 5 }},
+        "E": { "score": 5, "sub": { "function_codegen": 5, "repo_scale_tasks": 5, "tool_use": 5, "agentic_planning": 5, "codebase_navigation": 5 }},
+        "S": { "score": 3, "sub": { "ttft": 3, "throughput": 3, "cost_efficiency": 4 }},
+        "B": { "score": 5, "sub": { "context_window": 4, "long_doc_faithfulness": 4, "vision": 4, "audio": 2, "video": 2, "multilingual": 5, "structured_output": 4 }},
+        "L": { "score": 4, "sub": { "instruction_following": 5, "hallucination_resistance": 4, "consistency": 4, "safety": 4, "format_adherence": 5 }},
+        "G": { "score": 1, "sub": { "data_retention_policy": 1, "data_sovereignty": 1, "self_hostable": 4, "compliance_certs": 1, "audit_logging": 1 }}
+      },
+      "best_for": ["Frontier-class open-weight reasoning and coding (rivals GPT-5.4 on SWE-Bench Pro)", "Agent-swarm workloads (300 sub-agents, 4000 coordinated steps per coverage)", "Self-hosted alternative to closed frontier models"],
+      "avoid_for": ["Via Moonshot API for any sensitive data (G:1)", "Tasks requiring strong audio/video multimodal", "Workflows without GPU infrastructure for self-host"]
     }
   ]
 }
