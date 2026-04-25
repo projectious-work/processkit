@@ -7,6 +7,7 @@ metadata:
 spec:
   event_type: workitem.note
   timestamp: '2026-04-25T17:34:23+00:00'
+  actor: ACTOR-claude
   summary: 'CleverRiver processkit-side scope landed: pk-doctor migration_integrity
     check; aibox-side fix still pending'
   subject: BACK-20260425_1711-CleverRiver-aibox-sync-emits-defective

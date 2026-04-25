@@ -7,6 +7,7 @@ metadata:
 spec:
   event_type: workitem.note
   timestamp: '2026-04-25T17:24:37+00:00'
+  actor: ACTOR-claude
   summary: WildGrove Phase A landed in processkit; user-visible fix gates on aibox#55
     (Phase B)
   subject: BACK-20260425_1316-WildGrove-processkit-ships-no-preauth
