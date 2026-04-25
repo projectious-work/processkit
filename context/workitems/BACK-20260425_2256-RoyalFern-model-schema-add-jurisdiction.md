@@ -4,11 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260425_2256-RoyalFern-model-schema-add-jurisdiction
   created: '2026-04-25T22:56:57+00:00'
-  updated: '2026-04-25T22:57:07+00:00'
+  updated: '2026-04-25T23:30:23+00:00'
 spec:
   title: 'Model schema: add jurisdiction, data_privacy, latency_p50_ms, knowledge_cutoff,
     vendor_model_id'
-  state: in-progress
+  state: done
   type: story
   priority: high
   description: '## What
@@ -94,4 +94,5 @@ spec:
     knowledge_cutoff, vendor_model_id) bundled because they were flagged in the same
     audit and are cheap to add in one schema migration cycle.'
   started_at: '2026-04-25T22:57:07+00:00'
+  completed_at: '2026-04-25T23:30:23+00:00'
 ---
