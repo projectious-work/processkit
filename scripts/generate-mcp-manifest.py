@@ -10,6 +10,14 @@ over each file's canonical JSON (sorted keys, compact separators), and
 writes the manifest to both `context/.processkit-mcp-manifest.json` and
 `src/context/.processkit-mcp-manifest.json`.
 
+Also records `per_server_header`: sha256 of the PEP 723 inline metadata
+block (`# /// script` ... `# ///`) of every `mcp/server.py`. The
+pk-doctor `server_header_drift` check (RapidSwan) compares these against
+the live files to detect dep edits that need a harness restart.
+`aggregate_sha256` continues to cover per_skill mcp-config.json files
+only — it is the public contract aibox#54 watches and intentionally
+unaffected by header drift.
+
 Downstream installers (notably `aibox sync`) are expected to compare the
 `aggregate_sha256` against their last-merged state and re-merge the
 consumer's `.mcp.json` when they differ — independently of whether the
@@ -102,6 +110,54 @@ def _collect_entries(repo_root: Path) -> list[dict]:
     return entries
 
 
+def _extract_pep723_header(path: Path) -> str | None:
+    """Return the raw PEP 723 block (inclusive of fences), or None."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    in_block = False
+    block: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not in_block:
+            if stripped == "# /// script":
+                in_block = True
+                block.append(line)
+            continue
+        block.append(line)
+        if stripped == "# ///":
+            return "\n".join(block) + "\n"
+    return None
+
+
+def _collect_server_headers(repo_root: Path) -> list[dict]:
+    """Hash PEP 723 dep headers for every MCP server.py.
+
+    Used by the pk-doctor `server_header_drift` check (RapidSwan) to
+    detect when a server's dep header changed since the last manifest
+    regeneration — signal that the harness needs a restart and the
+    manifest needs regenerating.
+    """
+    skills_root = repo_root / "context" / "skills"
+    entries: list[dict] = []
+    seen: set[str] = set()
+    for server in sorted(skills_root.glob("*/*/mcp/server.py")):
+        rel = server.relative_to(repo_root).as_posix()
+        if rel in seen:
+            continue
+        seen.add(rel)
+        header = _extract_pep723_header(server)
+        if header is None:
+            continue
+        entries.append({
+            "path": rel,
+            "sha256": hashlib.sha256(header.encode("utf-8")).hexdigest(),
+        })
+    entries.sort(key=lambda e: e["path"])
+    return entries
+
+
 def _aggregate(entries: list[dict]) -> str:
     joined = "\n".join(e["sha256"] for e in entries)
     return hashlib.sha256(joined.encode("utf-8")).hexdigest()
@@ -139,12 +195,19 @@ def main() -> int:
     version = _processkit_version(REPO_ROOT)
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    try:
+        server_headers = _collect_server_headers(REPO_ROOT)
+    except Exception as e:
+        print(f"error: failed to collect server headers: {e}", file=sys.stderr)
+        return 1
+
     existing = _load_existing(DOGFOOD_MANIFEST)
     generated_at = now_iso
     if (
         existing
         and existing.get("aggregate_sha256") == aggregate
         and existing.get("per_skill") == entries
+        and existing.get("per_server_header") == server_headers
         and existing.get("processkit_version") == version
         and isinstance(existing.get("generated_at"), str)
     ):
@@ -156,6 +219,7 @@ def main() -> int:
         "generated_at": generated_at,
         "processkit_version": version,
         "per_skill": entries,
+        "per_server_header": server_headers,
         "aggregate_sha256": aggregate,
     }
 
@@ -169,7 +233,8 @@ def main() -> int:
     print(
         f"wrote {DOGFOOD_MANIFEST.relative_to(REPO_ROOT)} "
         f"and {SRC_MANIFEST.relative_to(REPO_ROOT)} "
-        f"({len(entries)} skills, aggregate {aggregate[:12]}...)"
+        f"({len(entries)} skills, {len(server_headers)} server header(s), "
+        f"aggregate {aggregate[:12]}...)"
     )
     return 0
 

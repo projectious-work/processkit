@@ -98,6 +98,15 @@ Additional checks added after Phase 1:
   MCP-config edits within a release cycle never reach derived projects
   until the next version bump — see DEC-20260423_2049-VastLake and
   projectious-work/aibox#54.
+- **`server_header_drift`** — walks every `context/skills/processkit/*/mcp/server.py`,
+  hashes its PEP 723 inline metadata block (`# /// script` ... `# ///`),
+  and compares against the manifest's `per_server_header` baseline. WARN
+  on any drift listing the affected skill slugs — signal that someone
+  edited a dep header without regenerating the manifest, and the harness
+  needs a restart to pick up the new deps. Detect-only; the fix is
+  user-driven (regenerate manifest + restart harness). Per
+  DEC-20260424_0127-QuickPine (SharpBrook split, RapidSwan ships the
+  dep-drift half).
 
 ### What doctor will NEVER do
 

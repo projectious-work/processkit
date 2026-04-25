@@ -17,6 +17,7 @@ from . import (
     release_integrity,
     commands_consistency,
     mcp_config_drift,
+    server_header_drift,
     preauth_applied,
 )
 
@@ -32,6 +33,7 @@ REGISTRY = [
     ("release_integrity", release_integrity),
     ("commands_consistency", commands_consistency),
     ("mcp_config_drift", mcp_config_drift),
+    ("server_header_drift", server_header_drift),
     ("preauth_applied", preauth_applied),
 ]
 
