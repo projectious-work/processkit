@@ -17,6 +17,20 @@ spec:
     pricing_note: 1M context at very low cost; open weights available for self-hosting
     governance_warning: 'Chinese company. Via MiniMax API: G:1 (same caution as DeepSeek).
       Self-hosted open weights raise governance to G:3 but no compliance certs available.'
+    vendor_model_id: MiniMax-Text-01
+    jurisdiction:
+      vendor_hq_country: CN
+      applicable_legal_regimes:
+      - CN-DSL
+      - CN-PIPL
+      data_residency_regions:
+      - cn
+    data_privacy:
+      data_retention_days: unknown
+      training_on_customer_data: unknown
+      pii_eligible: false
+      phi_hipaa_eligible: false
+      gdpr_eligible: false
   efforts_supported:
   - none
   - low

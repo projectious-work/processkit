@@ -19,6 +19,24 @@ spec:
     governance_warning: 'Via Alibaba Cloud API: G:1 (Chinese jurisdiction). Self-hosted
       (Apache 2.0 license): governance rises to G:4 — no data leaves your infra, but
       no compliance certs from Alibaba.'
+    knowledge_cutoff: '2024-10-01'
+    vendor_model_id: qwen2.5-72b-instruct
+    jurisdiction:
+      vendor_hq_country: CN
+      applicable_legal_regimes:
+      - CN-DSL
+      - CN-PIPL
+      data_residency_regions:
+      - cn
+      - sg
+      - multi
+    data_privacy:
+      dpa_available: false
+      data_retention_days: unknown
+      training_on_customer_data: opt-out
+      pii_eligible: false
+      phi_hipaa_eligible: false
+      gdpr_eligible: false
   efforts_supported:
   - none
   - low

@@ -60,6 +60,31 @@ scores 1–5.
 | **Reliability** | L | Instruction fidelity, factual accuracy, consistency | Instruction following, hallucination rate, multi-turn consistency, safety/harmlessness, format adherence |
 | **Governance** | G | Privacy, sovereignty, compliance, auditability | Data retention policy, data sovereignty / region, self-hostable / open weights, compliance certs (SOC 2, HIPAA, GDPR), prompt injection resistance |
 
+The qualitative `G` 1–5 score is a fast filter; for hard requirements
+(HIPAA, GDPR, jurisdiction), use the structured fields on
+`Model.versions[]`:
+
+- `jurisdiction.vendor_hq_country` (ISO-3166-1 alpha-2)
+- `jurisdiction.applicable_legal_regimes[]` (e.g. `EU-GDPR`, `US-HIPAA`,
+  `CN-DSL`)
+- `jurisdiction.data_residency_regions[]`
+- `data_privacy.dpa_available`
+- `data_privacy.data_retention_days` (`0` / `"zero"` for no retention)
+- `data_privacy.training_on_customer_data` (`never|opt-in|opt-out|always|unknown`)
+- `data_privacy.pii_eligible`, `phi_hipaa_eligible`, `gdpr_eligible`
+- `data_privacy.sub_processors_url`
+
+These fields back the `G` score with auditable facts and let
+`query_models()` filter on a hard requirement instead of a fuzzy
+1–5 cutoff (e.g. require `data_privacy.phi_hipaa_eligible == true`
+before any HIPAA-touching task is routed).
+
+`Model.versions[]` also carries:
+
+- `knowledge_cutoff` (date) — vendor-published training cutoff
+- `vendor_model_id` — exact SDK model id (`claude-opus-4-7-20251031`)
+- `latency_p50_ms` — quantitative companion to `S` score
+
 **Score rubric:**
 
 | Score | Label | Meaning |
@@ -142,6 +167,9 @@ filtered lists, or pricing analysis.
 |------|-------------|
 | `list_models()` | First step when access config is unknown; shows what's usable |
 | `query_models(R=4, G=5)` | "Find models with strong reasoning and full privacy" |
+| `query_models(phi_hipaa_eligible=True)` | "Only models the vendor offers a HIPAA BAA on" |
+| `query_models(jurisdiction_country_in=["US","CA","FR"])` | "Allow only US/CA/FR-headquartered vendors" |
+| `query_models(training_on_customer_data="never")` | "Hard-require no training on our prompts" |
 | `get_profile("claude-sonnet-4.6", scope="E")` | Sub-dimension drill-down on Engineering |
 | `compare_models(["claude-sonnet-4.6", "gemini-2.5-pro"], scope="B")` | Side-by-side Breadth sub-dims |
 | `get_pricing(sort_by="value_score")` | Value-for-money ranking |

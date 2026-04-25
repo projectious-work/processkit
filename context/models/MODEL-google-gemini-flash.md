@@ -16,6 +16,25 @@ spec:
       output: 0.3
     pricing_note: Extremely low cost; 1M context sweep costs cents; best throughput/dollar
       of any listed model
+    jurisdiction:
+      vendor_hq_country: US
+      applicable_legal_regimes:
+      - EU-GDPR
+      - US-CLOUD-Act
+      - US-HIPAA
+      data_residency_regions:
+      - us
+      - eu
+      - asia
+      - multi-region
+    data_privacy:
+      dpa_available: https://cloud.google.com/terms/data-processing-addendum
+      data_retention_days: zero
+      training_on_customer_data: opt-out
+      pii_eligible: true
+      phi_hipaa_eligible: true
+      gdpr_eligible: true
+      sub_processors_url: https://cloud.google.com/terms/subprocessors
   efforts_supported:
   - none
   - low

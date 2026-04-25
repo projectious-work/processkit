@@ -16,6 +16,24 @@ spec:
       output: 15.0
     pricing_note: Best price-capability ratio in the Claude family for engineering
       tasks
+    vendor_model_id: claude-sonnet-4-6-20251015
+    jurisdiction:
+      vendor_hq_country: US
+      applicable_legal_regimes:
+      - EU-GDPR
+      - US-CLOUD-Act
+      - US-HIPAA
+      data_residency_regions:
+      - us
+      - eu
+    data_privacy:
+      dpa_available: https://www.anthropic.com/legal/dpa
+      data_retention_days: zero
+      training_on_customer_data: never
+      pii_eligible: true
+      phi_hipaa_eligible: true
+      gdpr_eligible: true
+      sub_processors_url: https://www.anthropic.com/legal/subprocessors
   efforts_supported:
   - none
   - low

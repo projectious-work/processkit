@@ -14,6 +14,24 @@ spec:
     pricing_note: 'Massive MoE (235B params, 22B active); open weights; GPU cluster
       required for self-hosting. Via third-party APIs: pricing varies (~$0.50-2.00/1M).'
     governance_warning: 'Via Alibaba Cloud API: G:1. Self-hosted (Apache 2.0): G:4.'
+    knowledge_cutoff: '2025-04-01'
+    vendor_model_id: qwen3-235b-a22b
+    jurisdiction:
+      vendor_hq_country: CN
+      applicable_legal_regimes:
+      - CN-DSL
+      - CN-PIPL
+      data_residency_regions:
+      - cn
+      - sg
+      - multi
+    data_privacy:
+      dpa_available: false
+      data_retention_days: unknown
+      training_on_customer_data: opt-out
+      pii_eligible: false
+      phi_hipaa_eligible: false
+      gdpr_eligible: false
   efforts_supported:
   - none
   - low

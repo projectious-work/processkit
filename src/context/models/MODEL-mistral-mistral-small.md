@@ -16,6 +16,24 @@ spec:
       output: 0.3
     pricing_note: Mistral's entry-level model; very cheap, EU-based; good for classification
       and routing
+    vendor_model_id: mistral-small-2503
+    jurisdiction:
+      vendor_hq_country: FR
+      applicable_legal_regimes:
+      - EU-GDPR
+      - FR-LIL
+      - US-CLOUD-Act
+      data_residency_regions:
+      - eu
+      - us
+    data_privacy:
+      dpa_available: https://mistral.ai/terms/dpa
+      data_retention_days: zero
+      training_on_customer_data: never
+      pii_eligible: true
+      phi_hipaa_eligible: false
+      gdpr_eligible: true
+      sub_processors_url: https://mistral.ai/terms/sub-processors
   efforts_supported:
   - none
   - low

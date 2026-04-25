@@ -16,6 +16,23 @@ spec:
       output: 6.0
     pricing_note: Mistral's reasoning-mode model; EU-based alternative to o3/DeepSeek
       R1 for regulated data
+    jurisdiction:
+      vendor_hq_country: FR
+      applicable_legal_regimes:
+      - EU-GDPR
+      - FR-LIL
+      - US-CLOUD-Act
+      data_residency_regions:
+      - eu
+      - us
+    data_privacy:
+      dpa_available: https://mistral.ai/terms/dpa
+      data_retention_days: zero
+      training_on_customer_data: never
+      pii_eligible: true
+      phi_hipaa_eligible: false
+      gdpr_eligible: true
+      sub_processors_url: https://mistral.ai/terms/sub-processors
   efforts_supported:
   - none
   - low

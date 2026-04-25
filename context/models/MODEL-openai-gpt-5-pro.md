@@ -16,6 +16,24 @@ spec:
       output: 60.0
     pricing_note: ESTIMATED — premium/slower variant analogous to Opus 4.6. Run Workflow
       C to validate.
+    jurisdiction:
+      vendor_hq_country: US
+      applicable_legal_regimes:
+      - EU-GDPR
+      - US-CLOUD-Act
+      - US-HIPAA
+      data_residency_regions:
+      - us
+      - eu
+      - ap
+    data_privacy:
+      dpa_available: https://openai.com/policies/data-processing-addendum
+      data_retention_days: 30
+      training_on_customer_data: opt-in
+      pii_eligible: true
+      phi_hipaa_eligible: true
+      gdpr_eligible: true
+      sub_processors_url: https://openai.com/policies/subprocessors
   efforts_supported:
   - none
   - low

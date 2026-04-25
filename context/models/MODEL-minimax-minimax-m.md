@@ -17,6 +17,20 @@ spec:
     pricing_note: ESTIMATED — updated MiniMax. Run Workflow C to validate.
     governance_warning: 'Chinese company. Via MiniMax API: G:1. Self-hosted open weights
       raise governance to G:3.'
+    vendor_model_id: MiniMax-M1
+    jurisdiction:
+      vendor_hq_country: CN
+      applicable_legal_regimes:
+      - CN-DSL
+      - CN-PIPL
+      data_residency_regions:
+      - cn
+    data_privacy:
+      data_retention_days: unknown
+      training_on_customer_data: unknown
+      pii_eligible: false
+      phi_hipaa_eligible: false
+      gdpr_eligible: false
   efforts_supported:
   - none
   - low

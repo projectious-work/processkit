@@ -117,6 +117,103 @@ spec:
               description: >
                 Provider-maximum extended-thinking budget in tokens
                 (used to resolve effort='max').
+            knowledge_cutoff:
+              type: string
+              format: date
+              description: >
+                Training-data knowledge cutoff date for this version.
+                Vendor-published value; omit if not disclosed.
+            vendor_model_id:
+              type: string
+              description: >
+                Exact provider API model identifier the SDK call uses
+                (e.g. 'claude-opus-4-7-20251031', 'gpt-5-2026-01-15').
+                Where multiple aliases exist, prefer the dated/pinned id.
+            latency_p50_ms:
+              type: integer
+              minimum: 1
+              description: >
+                Approximate p50 first-token / completion latency in
+                milliseconds, vendor-published or measured. Quantitative
+                companion to dimensions.speed (1-5). Best-effort; omit
+                if no reliable source.
+            jurisdiction:
+              type: object
+              description: >
+                Where the vendor is incorporated and which legal regimes
+                apply to data passed through this model. Lossless
+                replacement for ad-hoc 'governance_warning' free-text
+                callouts.
+              additionalProperties: false
+              properties:
+                vendor_hq_country:
+                  type: string
+                  pattern: "^[A-Z]{2}$"
+                  description: "ISO-3166-1 alpha-2 country code of the vendor HQ."
+                applicable_legal_regimes:
+                  type: array
+                  items:
+                    type: string
+                  description: >
+                    Slugs for legal regimes the vendor is subject to.
+                    Conventional values: EU-GDPR, US-CLOUD-Act,
+                    US-HIPAA, CN-DSL, CN-PIPL, UK-DPA, CA-PIPEDA.
+                data_residency_regions:
+                  type: array
+                  items:
+                    type: string
+                  description: >
+                    Region codes the vendor offers for data residency
+                    pinning (e.g. ['us-east', 'eu-west', 'ap-south']).
+                    Empty array if no residency choice is offered.
+            data_privacy:
+              type: object
+              description: >
+                Vendor data-handling posture. Use for filtering models
+                that may receive sensitive payloads.
+              additionalProperties: false
+              properties:
+                dpa_available:
+                  oneOf:
+                    - type: boolean
+                    - type: string
+                      format: uri
+                  description: >
+                    True/false, or a URL to the vendor's standard DPA.
+                data_retention_days:
+                  oneOf:
+                    - type: integer
+                      minimum: 0
+                    - type: string
+                      enum: [zero, unknown]
+                  description: >
+                    Days the vendor retains prompts/responses by
+                    default. 0 / 'zero' = no retention; 'unknown' if
+                    the vendor does not publish a clear value.
+                training_on_customer_data:
+                  type: string
+                  enum: [never, opt-in, opt-out, always, unknown]
+                  description: >
+                    Whether the vendor trains on customer API traffic
+                    by default.
+                pii_eligible:
+                  type: boolean
+                  description: "Vendor explicitly permits PII workloads."
+                phi_hipaa_eligible:
+                  type: boolean
+                  description: >
+                    Vendor offers a HIPAA BAA covering this model
+                    (PHI-eligible).
+                gdpr_eligible:
+                  type: boolean
+                  description: >
+                    Vendor offers GDPR-compliant processing for EU data
+                    subjects.
+                sub_processors_url:
+                  type: string
+                  format: uri
+                  description: >
+                    URL to the vendor's sub-processor list.
       efforts_supported:
         type: array
         items:

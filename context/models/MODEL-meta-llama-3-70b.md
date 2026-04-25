@@ -13,6 +13,19 @@ spec:
     context_window: 128000
     pricing_note: 'No API cost; infra cost varies by hardware. Via third-party APIs
       (Groq, Together, etc.): ~$0.06-0.80/1M tokens depending on provider.'
+    vendor_model_id: llama-3.3-70b-instruct
+    jurisdiction:
+      vendor_hq_country: US
+      applicable_legal_regimes:
+      - EU-GDPR
+      - US-CLOUD-Act
+      data_residency_regions: []
+    data_privacy:
+      data_retention_days: unknown
+      training_on_customer_data: opt-out
+      pii_eligible: false
+      phi_hipaa_eligible: false
+      gdpr_eligible: true
   efforts_supported:
   - none
   - low

@@ -16,6 +16,22 @@ spec:
       output: 15.0
     pricing_note: Available via xAI API and X Premium subscription; real-time web
       access available in some modes
+    vendor_model_id: grok-3-2025-02-15
+    jurisdiction:
+      vendor_hq_country: US
+      applicable_legal_regimes:
+      - EU-GDPR
+      - US-CLOUD-Act
+      data_residency_regions:
+      - us
+    data_privacy:
+      dpa_available: https://x.ai/legal/dpa
+      data_retention_days: 30
+      training_on_customer_data: opt-out
+      pii_eligible: true
+      phi_hipaa_eligible: false
+      gdpr_eligible: true
+      sub_processors_url: https://x.ai/legal/sub-processors
   efforts_supported:
   - none
   - low

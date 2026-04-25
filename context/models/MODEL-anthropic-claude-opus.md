@@ -16,6 +16,24 @@ spec:
       output: 75.0
     pricing_note: Most expensive Claude; reserve for tasks where quality justifies
       cost
+    vendor_model_id: claude-opus-4-6-20250901
+    jurisdiction:
+      vendor_hq_country: US
+      applicable_legal_regimes:
+      - EU-GDPR
+      - US-CLOUD-Act
+      - US-HIPAA
+      data_residency_regions:
+      - us
+      - eu
+    data_privacy:
+      dpa_available: https://www.anthropic.com/legal/dpa
+      data_retention_days: zero
+      training_on_customer_data: never
+      pii_eligible: true
+      phi_hipaa_eligible: true
+      gdpr_eligible: true
+      sub_processors_url: https://www.anthropic.com/legal/subprocessors
   efforts_supported:
   - none
   - low
