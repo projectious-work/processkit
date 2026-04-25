@@ -4,7 +4,7 @@ synced_at = "2026-04-19T08:03:58.481219+00:00"
 
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.20.0"
+version = "v0.21.0"
 src_path = "src"
 release_asset_sha256 = "3c6bf672e3a4ac2bf8c0b807c2e5fe948ff27906b6a0aa0ff73d36a1b2f7c98c"
 installed_at = "2026-04-19T08:03:58.481219+00:00"

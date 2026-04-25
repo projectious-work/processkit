@@ -5,6 +5,137 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.21.0] — 2026-04-25
+
+Five fixes spanning the v0.19.2 retro action items and two
+correctness bugs in pk-doctor that surfaced when the owner ran
+`/pk-doctor` inside an aibox-derived project and got a falsely-clean
+report.  Both pk-doctor bugs were silent-zero failures: the checks
+silently no-op'd in derived projects and hid every entity-hygiene
+problem they were supposed to catch.
+
+The two heavier retro items (SharpBrook MCP schema hot-reload,
+SnappyBird append-only LogEntry repair) were worked through design
+discussions (DISC-DaringBird, DISC-WiseLily) and split or narrowed
+per DEC-QuickPine and DEC-BrightHawk.
+
+### Added
+
+- **feat(_lib + 4 servers): `reload_schemas` MCP tool.**  Each of
+  the schema-active servers (workitem-management, decision-record,
+  event-log, artifact-management) gains a thin tool that calls a
+  shared helper in `_lib/processkit/schema.py::reload_caches()`,
+  clearing the in-process `load_schema` and
+  `state_machine.load` `lru_cache`es so a disk-level schema or
+  state-machine edit becomes visible without a server restart.
+  Returns `{ok, cleared: {schemas, state_machines}}`.  PEP 723
+  dep-header edits are NOT addressed (the `uv`-resolved venv is
+  pinned at process start — tracked separately by
+  `BACK-RapidSwan` for v0.22.0+).  Closes
+  `BACK-20260424_0128-BraveBird-reload-schemas-mcp-tool` per
+  `DEC-20260424_0127-QuickPine`.
+- **feat(model-recommender): 20 specialist + expert seed bindings.**
+  The v0.19.0 roster declared a 5-level seniority ladder
+  (junior → specialist → expert → senior → principal), but the
+  default-bindings pack seeded only 3 levels.  As a result,
+  `resolve_model(<role>, "specialist"|"expert")` returned
+  `no viable model` across all 10 seeded roles — 20 missing
+  combinations.  KeenFern adds seeds inheriting from the nearest
+  covered neighbour: `specialist` → junior's (model, effort band),
+  `expert` → senior's (model, effort band).  MANIFEST.yaml grew from
+  30 → 50 seeds.  New regression test
+  `test_default_bindings_coverage.py` asserts every seeded role
+  covers all 5 ladder levels and fires loudly on any future gap.
+  Closes `BACK-20260424_0134-KeenFern-fill-model-assignment-seniority`.
+- **docs(AGENTS.md): "Sub-agent delegation" section.**  Codifies
+  the read-only / mutating split for harness `Agent`-tool sub-agents
+  (delegate read-only; keep mutating writes on the main session).
+  Closes `BACK-20260424_0038-ToughAnt-ephemeral-sub-agent-defaults`.
+- **docs(AGENTS.md): "LogEntry repair" Skill-guards entry.**
+  Documents the narrow hand-edit escape hatch for schema-invalid
+  LogEntries and points to `pk-doctor --fix=schema_filename` as
+  the preferred path.  Part of MightyFjord.
+
+### Changed
+
+- **feat(skill-gate): compliance-ack TTL is now an idle timeout.**
+  `_any_valid_marker()` rewrites the matching marker's
+  `acknowledged_at` to `now` on every successful gate check.
+  Sessions actively making compliant writes never expire mid-flow
+  (the v0.19.2 midnight-span pain pattern); idle sessions
+  (> `_ACK_LIFETIME_HOURS`, default 12 h) still must re-acknowledge.
+  Touch failures are non-fatal.  Closes
+  `BACK-20260424_0038-SwiftLynx-compliance-contract-acknowledgement-ttl`.
+
+### Fixed
+
+- **fix(pk-doctor): `schema_filename` schemas-dir fallback (HappyReef).**
+  `schema_filename.py` resolved the schemas dir as
+  `<repo_root>/src/context/schemas/` only — a path that exists
+  exclusively in the processkit dogfood repo.  In every derived
+  project (aibox-installed) schemas live at `<repo_root>/context/
+  schemas/`, so the check silently walked 0 entity files and
+  reported 0 ERROR / 0 WARN regardless of how many malformed
+  entities were on disk.  The new `_resolve_schemas_dir()` tries
+  the dogfood path first, then falls back to `context/schemas/`,
+  and surfaces a single WARN when neither exists.  Verified
+  against an aibox checkout: the check now walks 186 entity files
+  and reports the real findings (filename-date mismatches on
+  `_0000` placeholder filenames, missing-`actor` ERRORs, etc.).
+  Closes `BACK-20260425_1041-HappyReef-pk-doctor-schema-filename`.
+- **fix(pk-doctor): `migrations` layout fallback (DeepMoss).**
+  Companion to HappyReef.  The `migrations` check looked only in
+  `context/migrations/pending/` (processkit dogfood convention).
+  Derived projects (aibox) keep pending migrations at the top
+  level of `context/migrations/` and only move *applied* ones into
+  `applied/`.  The new `_candidate_pending_paths()` probes
+  `pending/` first; if absent, walks `context/migrations/*.md`
+  minus `applied/`, `INDEX.md`, and aibox-CLI upgrade-doc
+  filenames (`<YYYYMMDD>_<HHMM>_<from>-to-<to>.md`).  `_list_pending`
+  also filters by `kind: Migration` so non-Migration markdown
+  alongside migrations is ignored.  Closes
+  `BACK-20260425_1041-DeepMoss-pk-doctor-migrations-detect`.
+- **fix(pk-doctor): `--fix=schema_filename` for the CalmAnt-class
+  pattern (MightyFjord).**  New `run_fix` on
+  `schema_filename.py` patches LogEntries missing the required
+  `actor` field by inserting `actor: system`, validates
+  post-patch, and rolls back on failure.  Behind `--fix=schema_filename
+  --yes`, never default.  Closes
+  `BACK-20260424_0128-MightyFjord-pk-doctor-fix-schema` per
+  `DEC-20260424_0128-BrightHawk`.
+- **fix(skill-gate): remediation text uses on-disk contract version.**
+  `_remediation_msg()` parses the leading `<!-- pk-compliance vN -->`
+  marker rather than hard-coding `v1`.  Part of SwiftLynx.
+- **fix(retrospective): `/pk-retro --auto-workitems` no longer fails
+  with `ModuleNotFoundError: No module named 'mcp'`.**  Added
+  `mcp[cli]>=1.0` and `jsonschema>=4.0` to `pk_retro.py`'s PEP 723
+  header so `uv run --script pk_retro.py` resolves the in-process
+  MCP loader's transitive imports automatically.  Closes
+  `BACK-20260424_0038-WildLake-pk-retro-auto-workitems`.
+- **fix(skills): resolve cross-category `retrospective` skill basename
+  collision.**  `product/retrospective` is renamed to
+  `product/sprint-retrospective`; the processkit-category
+  `retrospective` (release-scope, `/pk-retro`) keeps the bare name.
+  Closes [#11].
+
+### Deferred
+
+- `BACK-20260424_0128-RapidSwan-pk-doctor-server-header` — pk-doctor
+  `server_header_drift` check (PEP 723 dep drift detection,
+  WARN-only).  Targeted v0.22.0+.
+- `BACK-20260424_0037-SharpBrook-mcp-servers-cache-schemas`
+  (cancelled; superseded by BraveBird + RapidSwan per
+  `DEC-20260424_0127-QuickPine`).
+- `BACK-20260424_0038-SnappyBird-data-repair-path-for`
+  (cancelled; replaced by the narrow MightyFjord run_fix per
+  `DEC-20260424_0128-BrightHawk`; general data-fix migration kind
+  not built — revisit only if >2 more recurrences in a calendar
+  quarter).
+
+[#11]: https://github.com/projectious-work/processkit/issues/11
+
+---
+
 ## [v0.20.0] — 2026-04-24
 
 Retro follow-up batch: fixes the three lightest action items from the

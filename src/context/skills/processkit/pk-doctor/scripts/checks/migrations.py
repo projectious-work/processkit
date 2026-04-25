@@ -4,6 +4,18 @@ Reads the pending migration entities directly from the filesystem (the
 same filesystem walk that `migration-management.list_migrations(state=
 'pending')` performs server-side — kept in sync with that convention).
 
+Two layouts are supported (DeepMoss):
+
+  1. processkit dogfood — pending migrations live under
+     ``context/migrations/pending/``; applied ones move to
+     ``context/migrations/applied/``.
+  2. derived projects (e.g. aibox) — pending migrations live at the
+     **top level** of ``context/migrations/`` and only applied ones
+     move into ``context/migrations/applied/``.  ``aibox-CLI``
+     upgrade-doc filenames (``YYYYMMDD_HHMM_<from>-to-<to>.md``) are
+     filtered out via the same regex used by ``schema_filename`` so
+     they are never miscounted as processkit Migration entities.
+
 - INFO: count of pending migrations.
 - WARN: each pending migration older than STALE_DAYS days.
 
@@ -21,6 +33,7 @@ stdio client.
 
 from __future__ import annotations
 
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -31,6 +44,15 @@ from .common import CheckResult
 
 
 STALE_DAYS = 14
+
+# aibox-CLI upgrade-doc filenames: ``YYYYMMDD_HHMM_<from>-to-<to>.md``.
+# These live alongside processkit Migration entities under
+# ``context/migrations/`` in a derived project, but are NOT processkit
+# Migration entities and must not be counted as pending. Mirrors the
+# constant of the same name in ``schema_filename.py``.
+_CLI_MIGRATION_RE = re.compile(
+    r"^\d{8}_\d{4}_\d+\.\d+\.\d+-to-\d+\.\d+\.\d+\.md$"
+)
 
 
 def _load_frontmatter(path: Path) -> dict | None:
@@ -50,14 +72,43 @@ def _load_frontmatter(path: Path) -> dict | None:
     return data if isinstance(data, dict) else None
 
 
+def _candidate_pending_paths(repo_root: Path) -> list[Path]:
+    """Return paths that *could* be pending Migration entities.
+
+    Layout 1 (dogfood): ``context/migrations/pending/*.md``.
+    Layout 2 (derived): ``context/migrations/*.md`` minus
+        - the ``applied/`` subtree (terminal state),
+        - ``INDEX.md``,
+        - aibox-CLI upgrade-doc filenames.
+    Layout 1 takes precedence when both exist, since dogfood projects
+    intentionally use it.
+    """
+    mig_root = repo_root / "context" / "migrations"
+    pending_dir = mig_root / "pending"
+    if pending_dir.is_dir():
+        return sorted(pending_dir.glob("*.md"))
+    if not mig_root.is_dir():
+        return []
+    out: list[Path] = []
+    for p in sorted(mig_root.glob("*.md")):
+        if p.name == "INDEX.md":
+            continue
+        if _CLI_MIGRATION_RE.match(p.name):
+            continue
+        out.append(p)
+    return out
+
+
 def _list_pending(repo_root: Path) -> list[tuple[str, Path, datetime | None]]:
     out: list[tuple[str, Path, datetime | None]] = []
-    pending_dir = repo_root / "context" / "migrations" / "pending"
-    if not pending_dir.is_dir():
-        return out
-    for p in sorted(pending_dir.glob("*.md")):
+    for p in _candidate_pending_paths(repo_root):
         fm = _load_frontmatter(p)
         if not fm:
+            continue
+        # Filter to ONLY processkit Migration entities — derived projects
+        # may keep non-Migration markdown next to migrations, and we don't
+        # want to count those.
+        if fm.get("kind") not in (None, "Migration"):
             continue
         md = fm.get("metadata", {}) if isinstance(fm.get("metadata"), dict) else {}
         mid = md.get("id") or p.stem

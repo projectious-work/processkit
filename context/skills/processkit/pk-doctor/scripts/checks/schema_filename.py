@@ -79,6 +79,30 @@ def _check_actor_id_pattern(
     )
 
 
+def _resolve_schemas_dir(repo_root: Path) -> Path | None:
+    """Return the schemas directory for ``repo_root`` or ``None``.
+
+    Checks two layouts in order:
+      1. ``<repo_root>/src/context/schemas/`` — processkit dogfood (the
+         processkit repo itself; schemas live in src/ because they ship
+         to consumers).
+      2. ``<repo_root>/context/schemas/`` — derived projects (aibox-
+         installed; schemas were copied directly into context/).
+
+    A derived-project install never has a ``src/`` tree, so the first
+    candidate misses and the function falls through to the second.
+    Returning ``None`` is the cue for the caller to surface a single
+    "no schemas dir found" WARN rather than silently walking 0 files.
+    """
+    for candidate in (
+        repo_root / "src" / "context" / "schemas",
+        repo_root / "context" / "schemas",
+    ):
+        if candidate.is_dir():
+            return candidate
+    return None
+
+
 def _load_schema(schemas_dir: Path, kind: str) -> dict | None:
     path = schemas_dir / f"{kind}.yaml"
     if not path.is_file():
@@ -169,15 +193,40 @@ def run(ctx) -> list[CheckResult]:
     results: list[CheckResult] = []
 
     ctx_root = repo_root / "context"
-    schemas_dir = repo_root / "src" / "context" / "schemas"
+    schemas_dir = _resolve_schemas_dir(repo_root)
+    if schemas_dir is None:
+        # No schemas anywhere — surface this loudly instead of silently
+        # walking 0 files, which masked entity-hygiene problems in
+        # derived projects (HappyReef).  Walk continues with no schema
+        # validation but still catches structural issues (filename/id,
+        # actor-id pattern) below.
+        results.append(CheckResult(
+            severity="WARN",
+            category="schema_filename",
+            id="schema.no-schemas-dir",
+            message=(
+                "no schemas directory found at "
+                f"{repo_root / 'src' / 'context' / 'schemas'} or "
+                f"{repo_root / 'context' / 'schemas'} — schema validation "
+                "is disabled for this run; only filename/id and actor-id "
+                "checks fire"
+            ),
+        ))
 
     walked_count = 0
     for kind, kind_dir in KIND_TO_DIR.items():
-        schema = _load_schema(schemas_dir, kind)
-        if schema is None:
+        schema = _load_schema(schemas_dir, kind) if schemas_dir else None
+        # Even without a schema we still want to walk the entity files
+        # so the filename/id, filename-date, and actor-id checks fire
+        # (those don't need spec_schema). Skip only the schema-validation
+        # block when schema is None.
+        if schemas_dir is None and not (repo_root / "context" / kind_dir).is_dir():
+            # No schemas AND no entity dir for this kind — skip silently.
             continue
         # Cache allowed role IDs per kind (actor only, cheap to compute).
-        allowed_role_ids: list[str] = schema.get("x-allowed-role-ids", [])
+        allowed_role_ids: list[str] = (
+            schema.get("x-allowed-role-ids", []) if schema else []
+        )
         for path in _iter_entity_files(ctx_root, kind_dir, since_files):
             walked_count += 1
             fm, parse_err = _parse_frontmatter(path)
@@ -244,7 +293,7 @@ def run(ctx) -> list[CheckResult]:
                     ))
 
             # --- schema validation ----------------------------------------
-            errs = _validate_against_schema(fm, schema)
+            errs = _validate_against_schema(fm, schema) if schema else []
             for err in errs:
                 # Owner policy: datetime-coercion errors are WARN (parser quirk),
                 # all other schema errors are ERROR.

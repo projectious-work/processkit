@@ -403,6 +403,109 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 8: derived-project schema_filename fallback (HappyReef)
+# Ensures pk-doctor walks entity files even when the dogfood
+# `src/context/schemas/` tree is absent — the bug that hid all
+# entity-hygiene findings in aibox-installed repos.
+# ---------------------------------------------------------------------------
+print("\n[8] schema_filename — derived-project fallback to context/schemas/")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    # No src/ tree — schemas live at context/schemas/ (derived layout).
+    (root / "context" / "schemas").mkdir(parents=True)
+    src_logentry = _SCHEMAS_SRC / "logentry.yaml"
+    if src_logentry.is_file():
+        (root / "context" / "schemas" / "logentry.yaml").write_text(
+            src_logentry.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    # Stub drift script so doctor doesn't blow up there.
+    (root / "scripts").mkdir()
+    drift = root / "scripts" / "check-src-context-drift.sh"
+    drift.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    drift.chmod(0o755)
+    # Seed a malformed LogEntry — should now be caught.
+    (root / "context" / "logs").mkdir()
+    (root / "context" / "logs" / "LOG-20260425_1100-Fixture-event.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v1
+            kind: LogEntry
+            metadata:
+              id: LOG-20260425_1100-Fixture-event
+              created: '2026-04-25T11:00:00+00:00'
+            spec:
+              event_type: test.fixture
+              timestamp: '2026-04-25T11:00:00+00:00'
+              summary: missing actor — should be caught
+            ---
+            """),
+        encoding="utf-8",
+    )
+    stub = root / ".doctor-logentry.json"
+    result = _run_doctor(root, "--category=schema_filename", stub_path=stub)
+    check(
+        "exit 1 (ERROR found via derived layout)",
+        result.returncode == 1,
+        f"got {result.returncode}; stdout: {result.stdout[-400:]}",
+    )
+    check(
+        "schema.invalid actor-required ERROR fired",
+        "'actor' is a required property" in result.stdout,
+        result.stdout[-400:],
+    )
+    check(
+        "walked > 0 entity files (no longer silent zero)",
+        "walked 1 entity file" in result.stdout,
+        result.stdout[-400:],
+    )
+
+# ---------------------------------------------------------------------------
+# Test 9: migrations layout fallback (DeepMoss)
+# Ensures pk-doctor counts true Migration entities sitting at the top
+# level of context/migrations/ (derived-project layout) and skips
+# aibox-CLI upgrade docs.
+# ---------------------------------------------------------------------------
+print("\n[9] migrations — derived-project layout (top-level + applied/) fallback")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "context" / "migrations" / "applied").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    drift = root / "scripts" / "check-src-context-drift.sh"
+    drift.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    drift.chmod(0o755)
+    # Real Migration entity at the TOP level (derived layout).
+    (root / "context" / "migrations" / "MIG-20260425T1100-test-fixture.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v1
+            kind: Migration
+            metadata:
+              id: MIG-20260425T1100-test-fixture
+              created: '2026-04-25T11:00:00+00:00'
+            spec:
+              source: processkit
+              state: pending
+            ---
+            test fixture migration
+            """),
+        encoding="utf-8",
+    )
+    # aibox-CLI upgrade doc — must be filtered out.
+    (root / "context" / "migrations" / "20260425_1100_0.18.5-to-0.18.6.md").write_text(
+        "# CLI upgrade doc — not a Migration entity\n",
+        encoding="utf-8",
+    )
+    stub = root / ".doctor-logentry.json"
+    result = _run_doctor(root, "--category=migrations", stub_path=stub)
+    check(
+        "1 pending Migration counted (CLI doc filtered)",
+        "1 pending migration" in result.stdout,
+        result.stdout[-400:],
+    )
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()
