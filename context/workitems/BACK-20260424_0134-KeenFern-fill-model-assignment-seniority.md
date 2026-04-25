@@ -4,10 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260424_0134-KeenFern-fill-model-assignment-seniority
   created: '2026-04-24T01:34:50+00:00'
+  updated: '2026-04-25T10:00:16+00:00'
 spec:
   title: Fill model-assignment seniority ladder gaps — specialist + expert bindings
     for all 10 seeded roles (v0.21.0)
-  state: backlog
+  state: review
   type: task
   priority: medium
   assignee: TEAMMEMBER-cora
@@ -42,4 +43,14 @@ spec:
     \ / 0 WARN. Drift green.\n- Regression test passes.\n\n**Target:** v0.21.0. **Owner:**\
     \ cora. **Priority:** medium — not release-blocking for v0.21.0 but highly visible\
     \ once anyone tries the specialist/expert tiers."
+  started_at: '2026-04-24T20:51:34+00:00'
 ---
+
+## Transition note (2026-04-24T20:51:34+00:00)
+
+Starting KeenFern.
+
+
+## Transition note (2026-04-25T10:00:16+00:00)
+
+All 20 missing bindings created via create_binding (10 specialist + 10 expert). MANIFEST.yaml expanded from 30 → 50 seeds. Regression test test_default_bindings_coverage.py added (3/3 passing) — fires on any future ladder gap. Live resolve_model() now returns viable candidates for sample (role, specialist) and (role, expert) pairs across 4 different roles. Mirrored to src/. Drift green; pk-doctor 0 ERROR / 0 WARN.
