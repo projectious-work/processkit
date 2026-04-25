@@ -5,6 +5,92 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.22.0] — 2026-04-25
+
+Two new pk-doctor checks (`migration_integrity`, `server_header_drift`)
+and the processkit-side half of preauth-spec shipping (WildGrove
+Phase A) — plus a host CLI bump to aibox 0.19.2 with `mcp_config_hash`
+recorded in the lock file. Closes the v0.21.0-deferred RapidSwan
+pk-doctor check, lands the schema-malformed-migration detection that
+motivated CleverRiver, and exports an 18-pattern preauth bundle for
+derived projects (consumed by aibox#55).
+
+A small one-shot cleanup pass also clears 3 pre-existing pk-doctor
+schema ERRORs (1 WorkItem with mangled YAML quoting, 2 LogEntries
+missing `actor`); the producer-side MCP fixes are tracked as
+RapidDaisy and CalmArch for a future release.
+
+### Added
+
+- **feat(pk-doctor): `migration_integrity` check (CleverRiver).**  New
+  check flags two malformed-migration patterns: `same-version-with-content`
+  (a Migration whose `from_version == to_version` but whose
+  `affected_groups` / `affected_files` are non-empty) and
+  `affected-files-empty` (table rows present in the body but the
+  `affected_files` array empty).  Both fire as WARN, cite CleverRiver,
+  and recommend `reject_migration` on the offending file.  Surfaced the
+  malformed `MIG-20260425T164303` that motivated the WI.  CleverRiver
+  itself stays open as a cross-project tracker for the upstream
+  aibox-sync diff-generator fix.
+- **feat(pk-doctor): `server_header_drift` check (RapidSwan).**  New
+  WARN-level check that hashes the PEP 723 inline metadata block
+  (`# /// script` … `# ///`) of every MCP `server.py` and compares
+  against a manifest baseline.  On drift, lists the affected skill
+  slugs and recommends restarting the harness so `uv` re-resolves the
+  pinned venv.  `context/.processkit-mcp-manifest.json` is extended
+  with a per-skill `per_server_header` field; `aggregate_sha256`
+  semantics are unchanged (still computed over `mcp-config.json`
+  files only — aibox#54 contract preserved).  Per
+  `DEC-20260424_0127-QuickPine` (SharpBrook split: BraveBird shipped
+  the schema-reload half in v0.21.0; RapidSwan ships the dep-drift
+  half here).  Closes
+  `BACK-20260424_0128-RapidSwan-pk-doctor-server-header`.
+- **feat(skill-gate): preauth spec asset (WildGrove Phase A).**
+  `context/skills/processkit/skill-gate/assets/preauth.json` ships an
+  18-pattern bundle of server-wildcard permission entries and 18
+  matching `enabledMcpjsonServers` entries that derived projects merge
+  into their harness settings to pre-authorise every processkit MCP
+  server.  Phase A is processkit-side only — aibox#55 picks up Phase
+  B (the merge logic on `aibox sync`).
+- **feat(pk-doctor): `preauth_applied` check (WildGrove Phase A).**
+  WARNs in derived-project context when the preauth spec exists in
+  the processkit tree but the corresponding entries are missing from
+  the harness settings file, with a "run `aibox sync` once aibox#55
+  ships" hint.  No-op in the processkit dogfood repo.
+
+### Changed
+
+- **chore(aibox): host CLI 0.18.7 → 0.19.2 + record `mcp_config_hash`
+  in lock file.**  Bumped the harness CLI; `aibox.lock` now carries an
+  `mcp_config_hash` field recording the sha256 of the merged
+  `.mcp.json` at sync time, giving pk-doctor and aibox-sync a stable
+  reference for drift detection independent of per-skill
+  manifest hashes.
+
+### Fixed
+
+- **chore(repair): clear 3 pre-existing pk-doctor schema ERRORs.**
+  One-shot direct edit on a WorkItem whose YAML quoting was mangled
+  by a fragile MCP serializer, plus two LogEntries missing the
+  required `actor` field (written by a broken `log_event` MCP path
+  that didn't populate the field).  No tooling changes here — the
+  producer-side MCP fixes are tracked as RapidDaisy
+  (log_event missing actor validation) and CalmArch
+  (workitem MCP description quoting) for a future release.
+- **chore(migrations): reject `MIG-20260425T164303`.**  Malformed
+  migration (rejected via `reject_migration` per the
+  `migration_integrity` finding above).  Filed CleverRiver as the
+  upstream-side aibox-sync diff defect that produced it.
+
+### External
+
+- `projectious-work/aibox#55` — aibox-side preauth merge (WildGrove
+  Phase B).  The processkit-side spec stays in-tree; `preauth_applied`
+  WARNs in derived projects until the matching `aibox sync` logic
+  ships.
+
+---
+
 ## [v0.21.0] — 2026-04-25
 
 Five fixes spanning the v0.19.2 retro action items and two

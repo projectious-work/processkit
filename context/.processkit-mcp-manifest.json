@@ -1,6 +1,6 @@
 {
   "aggregate_sha256": "92d6eedc1755a7ce9d69a1013393e36cc616e411d1daa4c9c5484cefe4536651",
-  "generated_at": "2026-04-25T17:43:45Z",
+  "generated_at": "2026-04-25T17:59:14Z",
   "per_server_header": [
     {
       "path": "context/skills/processkit/actor-profile/mcp/server.py",
@@ -149,6 +149,6 @@
       "sha256": "a4ae7e26a980aeebed953f3cc2e761cde6dd8692fb033c81c9e3c8927e8b5898"
     }
   ],
-  "processkit_version": "v0.21.0",
+  "processkit_version": "v0.22.0",
   "version": 1
 }
