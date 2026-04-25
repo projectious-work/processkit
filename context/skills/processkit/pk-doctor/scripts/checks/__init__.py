@@ -16,6 +16,7 @@ from . import (
     release_integrity,
     commands_consistency,
     mcp_config_drift,
+    preauth_applied,
 )
 
 # (name, module). Name is the --category= token and the key in the
@@ -29,6 +30,7 @@ REGISTRY = [
     ("release_integrity", release_integrity),
     ("commands_consistency", commands_consistency),
     ("mcp_config_drift", mcp_config_drift),
+    ("preauth_applied", preauth_applied),
 ]
 
 

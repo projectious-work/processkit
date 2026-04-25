@@ -4,10 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260425_1316-WildGrove-processkit-ships-no-preauth
   created: '2026-04-25T13:16:20+00:00'
+  updated: '2026-04-25T17:17:16+00:00'
 spec:
   title: processkit ships no preauth for MCP tools — derived projects re-prompt on
     every container rebuild
-  state: backlog
+  state: in-progress
   type: bug
   priority: high
   description: "## Symptom\n\nAfter a derived-project (e.g. aibox) devcontainer rebuild,\
@@ -66,4 +67,5 @@ spec:
     \ write) with zero permission prompts.\n- `pk-doctor mcp_config_drift` continues\
     \ to pass.\n- The `enabledMcpjsonServers` list is sourced from a single source\
     \ of truth (the manifest), not duplicated."
+  started_at: '2026-04-25T17:17:16+00:00'
 ---

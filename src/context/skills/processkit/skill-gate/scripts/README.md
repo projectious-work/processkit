@@ -61,6 +61,11 @@ only when the target path resolves under `context/`.
 
 ### Claude Code — `.claude/settings.json`
 
+Two managed blocks: hooks (always shipped) and preauth (added after
+`projectious-work/aibox#55` lands so users stop re-authorising every
+processkit MCP tool on container rebuild — see
+`BACK-20260425_1316-WildGrove`).
+
 ```json
 {
   "hooks": {
@@ -100,6 +105,19 @@ only when the target path resolves under `context/`.
   }
 }
 ```
+
+#### Preauth block (consumed by aibox#55)
+
+aibox sync reads `context/skills/processkit/skill-gate/assets/preauth.json`
+and additively merges its `permissions.allow[]` and `enabledMcpjsonServers[]`
+arrays into `.claude/settings.json`. User-added entries are preserved; only
+entries originating from the spec are managed by sync. Write-side processkit
+tools remain safety-gated by the `check_route_task_called.py` PreToolUse hook
+above — preauth is not a safety regression.
+
+The `pk-doctor preauth_applied` check WARNs derived projects when the hooks
+block is present but the preauth surface is not — a self-diagnostic for "your
+aibox is older than v0.x.y; run `aibox sync` after upgrading".
 
 ### Codex CLI — `.codex/hooks.json`
 
