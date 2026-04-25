@@ -1,5 +1,5 @@
 [aibox]
-cli_version = "0.18.7"
+cli_version = "0.19.2"
 synced_at = "2026-04-19T08:03:58.481219+00:00"
 
 [processkit]
@@ -8,3 +8,4 @@ version = "v0.21.0"
 src_path = "src"
 release_asset_sha256 = "3c6bf672e3a4ac2bf8c0b807c2e5fe948ff27906b6a0aa0ff73d36a1b2f7c98c"
 installed_at = "2026-04-19T08:03:58.481219+00:00"
+mcp_config_hash = "9a66367b0efcc7a7bc57a58f39cb67a33a7faf2c46c18b11a293525d2f166b74"
