@@ -11,9 +11,9 @@ metadata:
     category: product
     layer: 2
     commands:
-      - name: research-with-confidence-investigate
-        args: "topic"
-        description: "Research a topic with explicit confidence labelling on all claims"
+      - name: pk-research
+        args: "research question or topic"
+        description: "Research a topic with explicit confidence labelling on all claims."
 ---
 
 # Research with Confidence

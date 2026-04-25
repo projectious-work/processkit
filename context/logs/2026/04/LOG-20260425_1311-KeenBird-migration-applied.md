@@ -1,0 +1,14 @@
+---
+apiVersion: processkit.projectious.work/v1
+kind: LogEntry
+metadata:
+  id: LOG-20260425_1311-KeenBird-migration-applied
+  created: '2026-04-25T13:11:37+00:00'
+spec:
+  event_type: migration.applied
+  timestamp: '2026-04-25T13:11:37+00:00'
+  summary: 'Migration ''MIG-20260425T124926'': in-progress → applied'
+  subject: MIG-20260425T124926
+  subject_kind: Migration
+  actor: MIG-20260425T124926
+---

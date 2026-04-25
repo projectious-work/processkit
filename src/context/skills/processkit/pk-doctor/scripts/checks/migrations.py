@@ -132,10 +132,15 @@ def run(ctx) -> list[CheckResult]:
 
     pending = _list_pending(repo_root)
     results.append(CheckResult(
-        severity="INFO",
+        severity="WARN" if pending else "INFO",
         category="migrations",
         id="migration.pending-count",
-        message=f"{len(pending)} pending migration(s)",
+        message=(
+            f"{len(pending)} pending migration(s) — review and apply via "
+            f"migration-management MCP (or `/pk-doctor --fix=migrations`)"
+            if pending
+            else "0 pending migration(s)"
+        ),
     ))
 
     now = datetime.now(timezone.utc)

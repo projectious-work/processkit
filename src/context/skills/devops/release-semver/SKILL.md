@@ -11,12 +11,12 @@ metadata:
     category: devops
     layer: 3
     commands:
-      - name: release-semver-prepare
-        args: "bump-type"
-        description: "Prepare a release: bump version, draft changelog, create tag (bump-type: major, minor, patch, or auto)"
-      - name: release-semver-publish
+      - name: pk-release
+        args: "bump-type (major, minor, patch, or version number)"
+        description: "Prepare a release: bump version, draft changelog, create tag."
+      - name: pk-publish
         args: ""
-        description: "Execute the publish phase of the prepared release"
+        description: "Execute the publish phase of the prepared release."
 ---
 
 # Semantic Versioning Release Process
