@@ -4,11 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260424_0128-RapidSwan-pk-doctor-server-header
   created: '2026-04-24T01:28:39+00:00'
-  updated: '2026-04-24T01:29:18+00:00'
+  updated: '2026-04-25T18:00:49+00:00'
 spec:
   title: pk-doctor server_header_drift check — WARN on stale PEP 723 dep headers (supersedes
     SharpBrook, deferred)
-  state: backlog
+  state: done
   type: task
   priority: low
   assignee: TEAMMEMBER-cora
@@ -29,4 +29,6 @@ spec:
     \ (dep-drift half)."
   related_decisions:
   - DEC-20260424_0127-QuickPine-split-sharpbrook-ship-schema
+  started_at: '2026-04-25T18:00:39+00:00'
+  completed_at: '2026-04-25T18:00:49+00:00'
 ---
