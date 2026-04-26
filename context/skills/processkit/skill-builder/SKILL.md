@@ -10,7 +10,7 @@ metadata:
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: processkit
-    layer: null
+    layer: 2
     uses:
       - skill: index-management
         purpose: "Query existing skills before creating a new one to surface duplicates and to find related skills the new one should reference under uses:."

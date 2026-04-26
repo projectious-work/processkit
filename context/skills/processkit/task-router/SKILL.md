@@ -11,6 +11,7 @@ metadata:
     version: "1.0.0"
     created: 2026-04-11T00:00:00Z
     category: processkit
+    layer: 1
     core: true
     provides:
       mcp_tools:

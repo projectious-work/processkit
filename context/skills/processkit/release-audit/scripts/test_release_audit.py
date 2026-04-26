@@ -433,3 +433,206 @@ class TestCrossReferences:
         assert any(f.id == "xref.unresolved" for f in errors), (
             f"Expected xref.unresolved ERROR. Got: {errors}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Test: migration prose excludelist (DEC-20260426_1627-CuriousButter, change 1)
+# ---------------------------------------------------------------------------
+
+class TestMigrationProseSkipped:
+    """Top-level prose docs and INDEX.md under context/migrations/ are skipped.
+
+    Real Migration entities under pending/ continue to be validated.
+    """
+
+    def _write_raw(self, path: Path, content: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    def test_aibox_prose_doc_produces_no_finding(self, tmp_path):
+        # Aibox CLI prose: YYYYMMDD_HHMM_X.Y.Z-to-A.B.C.md, no frontmatter.
+        prose = tmp_path / "context" / "migrations" / "20260410_1353_0.17.5-to-0.17.6.md"
+        self._write_raw(prose, "# Migration prose\n\nNarrative text only.\n")
+        findings = run_entity_files(tmp_path)
+        refs = [f.entity_ref for f in findings if f.entity_ref]
+        assert not any("20260410_1353_0.17.5-to-0.17.6.md" in (r or "") for r in refs), (
+            f"Aibox prose doc should produce no finding. Got refs: {refs}"
+        )
+
+    def test_index_md_produces_no_finding(self, tmp_path):
+        index = tmp_path / "context" / "migrations" / "INDEX.md"
+        self._write_raw(index, "# Index\n")
+        findings = run_entity_files(tmp_path)
+        refs = [f.entity_ref for f in findings if f.entity_ref]
+        assert not any("INDEX.md" in (r or "") for r in refs)
+
+    def test_real_migration_entity_still_validated(self, tmp_path):
+        # Valid Migration entity under pending/ should pass.
+        entity = tmp_path / "context" / "migrations" / "pending" / "MIG-RUNTIME-20260101T000000.md"
+        self._write_raw(entity, "\n".join([
+            "---",
+            f"apiVersion: {EXPECTED_API_VERSION}",
+            "kind: Migration",
+            "metadata:",
+            "  id: MIG-RUNTIME-20260101T000000",
+            "---",
+            "",
+            "Body.",
+            "",
+        ]))
+        findings = run_entity_files(tmp_path)
+        errors = [f for f in findings if f.severity == "ERROR"]
+        assert not errors, f"Valid migration entity should not error. Got: {errors}"
+
+    def test_invalid_migration_entity_still_errors(self, tmp_path):
+        # Real entity-style file under pending/ but with no frontmatter.
+        entity = tmp_path / "context" / "migrations" / "pending" / "MIG-CONTENT-20260101T000000.md"
+        self._write_raw(entity, "no frontmatter at all\n")
+        findings = run_entity_files(tmp_path)
+        error_ids = [f.id for f in findings if f.severity == "ERROR"]
+        assert "entity.no-frontmatter" in error_ids
+
+
+# ---------------------------------------------------------------------------
+# Test: team-member directory layout (DEC-20260426_1627-CuriousButter, change 2)
+# ---------------------------------------------------------------------------
+
+class TestTeamMemberLayout:
+    """team-members/<slug>/team-member.md is the entity; sub-files are skipped."""
+
+    def _make_member(self, tmp_path: Path, slug: str, *, override_id: str = "") -> Path:
+        member_dir = tmp_path / "context" / "team-members" / slug
+        member_dir.mkdir(parents=True, exist_ok=True)
+        fm_id = override_id or f"TEAMMEMBER-{slug}"
+        content = "\n".join([
+            "---",
+            f"apiVersion: {EXPECTED_API_VERSION}",
+            "kind: TeamMember",
+            "metadata:",
+            f"  id: {fm_id}",
+            "---",
+            "",
+            "Body.",
+            "",
+        ])
+        path = member_dir / "team-member.md"
+        path.write_text(content, encoding="utf-8")
+        return path
+
+    def test_valid_team_member_passes(self, tmp_path):
+        self._make_member(tmp_path, "cora")
+        findings = run_entity_files(tmp_path)
+        errors = [f for f in findings if f.severity == "ERROR"]
+        assert not errors, f"Expected no errors. Got: {errors}"
+
+    def test_id_must_match_slug(self, tmp_path):
+        self._make_member(tmp_path, "cora", override_id="TEAMMEMBER-wrong")
+        findings = run_entity_files(tmp_path)
+        error_ids = [f.id for f in findings if f.severity == "ERROR"]
+        assert "entity.id-filename-mismatch" in error_ids
+
+    def test_subfiles_are_ignored(self, tmp_path):
+        member_dir = tmp_path / "context" / "team-members" / "cora"
+        member_dir.mkdir(parents=True, exist_ok=True)
+        self._make_member(tmp_path, "cora")
+        # Sub-files with no frontmatter / alt schemas.
+        (member_dir / "persona.md").write_text("no frontmatter\n", encoding="utf-8")
+        (member_dir / "relations").mkdir()
+        (member_dir / "relations" / "other.md").write_text("no frontmatter\n", encoding="utf-8")
+        (member_dir / "knowledge").mkdir()
+        (member_dir / "knowledge" / "k1.md").write_text("no frontmatter\n", encoding="utf-8")
+        (member_dir / "journal").mkdir()
+        (member_dir / "journal" / "j.md").write_text("no frontmatter\n", encoding="utf-8")
+        findings = run_entity_files(tmp_path)
+        errors = [f for f in findings if f.severity == "ERROR"]
+        assert not errors, f"Sub-files should be ignored. Got: {errors}"
+
+
+# ---------------------------------------------------------------------------
+# Test: layer optional for non-processkit categories (change 3)
+# ---------------------------------------------------------------------------
+
+class TestLayerConditional:
+    """metadata.processkit.layer required only for category=processkit."""
+
+    def test_layer_required_for_processkit_category(self, tmp_path):
+        skill_dir = tmp_path / "context" / "skills" / "processkit" / "no-layer"
+        skill_dir.mkdir(parents=True, exist_ok=True)
+        content = textwrap.dedent(f"""\
+            ---
+            name: no-layer
+            description: |
+              Missing layer field.
+            metadata:
+              processkit:
+                apiVersion: {EXPECTED_API_VERSION}
+                id: SKILL-no-layer
+                version: "1.0.0"
+                category: processkit
+            ---
+
+            # no-layer
+
+            ## Intro
+
+            Content.
+
+            ## Overview
+
+            Content.
+
+            ## Gotchas
+
+            Content.
+
+            ## Full reference
+
+            Content.
+        """)
+        (skill_dir / "SKILL.md").write_text(content, encoding="utf-8")
+        findings = run_skill_structure(tmp_path)
+        assert any(
+            f.id == "skill.missing-field" and "layer" in f.message
+            for f in findings if f.severity == "ERROR"
+        )
+
+    def test_layer_optional_for_project_category(self, tmp_path):
+        skill_dir = tmp_path / "context" / "skills" / "project" / "no-layer-project"
+        skill_dir.mkdir(parents=True, exist_ok=True)
+        content = textwrap.dedent(f"""\
+            ---
+            name: no-layer-project
+            description: |
+              Project skill without layer is OK.
+            metadata:
+              processkit:
+                apiVersion: {EXPECTED_API_VERSION}
+                id: SKILL-no-layer-project
+                version: "1.0.0"
+                category: project
+            ---
+
+            # no-layer-project
+
+            ## Intro
+
+            Content.
+
+            ## Overview
+
+            Content.
+
+            ## Gotchas
+
+            Content.
+
+            ## Full reference
+
+            Content.
+        """)
+        (skill_dir / "SKILL.md").write_text(content, encoding="utf-8")
+        findings = run_skill_structure(tmp_path)
+        errors = [f for f in findings if f.severity == "ERROR"]
+        assert not any(
+            f.id == "skill.missing-field" and "layer" in f.message for f in errors
+        ), f"Project-category skill should not require layer. Got: {errors}"

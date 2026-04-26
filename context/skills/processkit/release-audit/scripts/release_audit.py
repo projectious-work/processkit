@@ -71,8 +71,25 @@ SKILL_REQUIRED_FIELDS: list[str] = [
     "metadata.processkit.id",
     "metadata.processkit.version",
     "metadata.processkit.category",
-    "metadata.processkit.layer",
 ]
+
+# Conditionally required: metadata.processkit.layer is required only when
+# metadata.processkit.category == "processkit". Other categories (e.g. project,
+# user) do not have a layer concept.
+SKILL_LAYER_FIELD: str = "metadata.processkit.layer"
+
+# Regex for aibox CLI migration prose docs under context/migrations/.
+# These follow the YYYYMMDD_HHMM_X.Y.Z-to-A.B.C.md naming convention and are
+# narrative documents, not Migration entities. Real Migration entities live
+# under context/migrations/pending/MIG-{RUNTIME,CONTENT}-*.md.
+_MIGRATION_PROSE_RE = re.compile(r"^\d{8}_\d{4}_.*-to-.*\.md$")
+
+# Sub-file kinds living under context/team-members/<slug>/ that are NOT
+# registered processkit entities. We walk team-members/ specially and only
+# validate <slug>/team-member.md.
+_TEAM_MEMBER_SUB_DIRS: frozenset[str] = frozenset({
+    "relations", "knowledge", "journal", "skills", "lessons", "private",
+})
 
 SKILL_REQUIRED_SECTIONS: list[str] = [
     "## Intro",
@@ -165,7 +182,19 @@ def run_entity_files(repo_root: Path) -> list[Finding]:
             ))
             continue
 
-        md_files = list(entity_dir.rglob("*.md"))
+        # team-members/ has a directory-tree layout; walk it specially so we
+        # only validate <slug>/team-member.md as the TeamMember entity and skip
+        # all sub-files (persona.md, relations/, knowledge/, journal/, skills/,
+        # lessons/, private/, card.json, etc.) which use alternate schemas.
+        if dir_name == "team-members":
+            md_files = []
+            for slug_dir in sorted(p for p in entity_dir.iterdir() if p.is_dir()):
+                tm_path = slug_dir / "team-member.md"
+                if tm_path.is_file():
+                    md_files.append(tm_path)
+        else:
+            md_files = list(entity_dir.rglob("*.md"))
+
         if not md_files:
             findings.append(Finding(
                 severity="INFO",
@@ -179,6 +208,26 @@ def run_entity_files(repo_root: Path) -> list[Finding]:
             rel = md_path.relative_to(repo_root)
             stem = md_path.stem
             ref = str(rel)
+
+            # Skip aibox CLI migration prose docs and the migrations INDEX.md.
+            # These live alongside real Migration entities but are narrative
+            # documents without entity frontmatter — they should not be
+            # validated and should not produce any finding.
+            if dir_name == "migrations":
+                # Only filter top-level files in context/migrations/, not files
+                # under pending/, applied/, in-progress/ which hold real
+                # Migration entities.
+                if md_path.parent == entity_dir:
+                    if md_path.name == "INDEX.md" or _MIGRATION_PROSE_RE.match(md_path.name):
+                        continue
+
+            # For team-members/<slug>/team-member.md, the canonical identifier
+            # is the parent directory name (the slug), not the filename stem.
+            # The expected metadata.id is f"TEAMMEMBER-{slug}".
+            if dir_name == "team-members" and md_path.name == "team-member.md":
+                expected_stem = f"TEAMMEMBER-{md_path.parent.name}"
+            else:
+                expected_stem = stem
 
             try:
                 text = md_path.read_text(encoding="utf-8")
@@ -275,12 +324,12 @@ def run_entity_files(repo_root: Path) -> list[Finding]:
                         message="metadata.id is missing",
                         entity_ref=ref,
                     ))
-                elif str(entity_id) != stem:
+                elif str(entity_id) != expected_stem:
                     findings.append(Finding(
                         severity="ERROR",
                         category="entity_files",
                         id="entity.id-filename-mismatch",
-                        message=f"metadata.id={entity_id!r} does not match filename stem {stem!r}",
+                        message=f"metadata.id={entity_id!r} does not match expected {expected_stem!r}",
                         entity_ref=ref,
                     ))
                 else:
@@ -288,7 +337,7 @@ def run_entity_files(repo_root: Path) -> list[Finding]:
                         severity="INFO",
                         category="entity_files",
                         id="entity.ok",
-                        message=f"{stem} ({dir_name}) — OK",
+                        message=f"{expected_stem} ({dir_name}) — OK",
                         entity_ref=ref,
                     ))
 
@@ -372,6 +421,20 @@ def run_skill_structure(repo_root: Path) -> list[Finding]:
                     category="skill_structure",
                     id="skill.missing-field",
                     message=f"Required frontmatter field missing: {dotpath}",
+                    entity_ref=ref,
+                ))
+                field_errors = True
+
+        # metadata.processkit.layer is required only for processkit-category
+        # skills. Project/user/etc. skills do not have a layer concept.
+        category = _get_nested(data, "metadata.processkit.category")
+        if category == "processkit":
+            if _get_nested(data, SKILL_LAYER_FIELD) is None:
+                findings.append(Finding(
+                    severity="ERROR",
+                    category="skill_structure",
+                    id="skill.missing-field",
+                    message=f"Required frontmatter field missing: {SKILL_LAYER_FIELD}",
                     entity_ref=ref,
                 ))
                 field_errors = True

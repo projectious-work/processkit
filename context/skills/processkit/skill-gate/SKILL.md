@@ -16,7 +16,7 @@ metadata:
     created: 2026-04-11T08:00:00Z
     category: processkit
     core: true
-    layer: null
+    layer: 2
     uses:
       - skill: skill-finder
         purpose: >

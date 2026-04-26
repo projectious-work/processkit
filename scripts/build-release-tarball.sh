@@ -91,6 +91,18 @@ if ! "$REPO_ROOT/scripts/check-src-context-drift.sh"; then
     exit 1
 fi
 
+# Provenance freshness guard: ensure src/PROVENANCE.toml has been re-stamped
+# for the version we're about to build, so the published tarball does not
+# advertise a stale generated_for_tag. See projectious-work/processkit#13.
+echo "running provenance guard: stamp-provenance --check $VERSION" >&2
+if ! "$REPO_ROOT/scripts/stamp-provenance.sh" --check "$VERSION"; then
+    echo "" >&2
+    echo "error: provenance guard failed — src/PROVENANCE.toml is stale for $VERSION." >&2
+    echo "Run 'scripts/stamp-provenance.sh $VERSION' to regenerate," >&2
+    echo "review the diff, and commit before re-running this script." >&2
+    exit 1
+fi
+
 # Copy the entire src/ tree into the staging dir at the top level.
 # Excludes: __pycache__/, .pyc files, .DS_Store, dotfiles inside src.
 echo "staging src/ → $STAGING_DIR/" >&2

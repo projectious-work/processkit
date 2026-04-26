@@ -64,6 +64,13 @@ ALLOWLIST_GITKEEP=1
 # __pycache__/ — transient Python bytecode; excluded from tarball already.
 ALLOWLIST_PYCACHE=1
 
+# .processkit-provenance.toml — release-time provenance stamp written into
+# context/ by scripts/stamp-provenance.sh after the tarball is built.  It
+# records the dogfood instance's installed processkit version and ships only
+# in the dogfood tree; src/context/ never carries a provenance stamp because
+# consumers stamp their own at install time.
+ALLOWLIST_PROVENANCE=1
+
 # scripts/ subdirs under src/context/skills/*/ that contain only .gitkeep (or
 # are empty) — template-only artifacts.  The release installer creates these
 # empty scripts/ placeholders in consumer installs for structural consistency,
@@ -196,6 +203,10 @@ fi
 
 if [[ $ALLOWLIST_PYCACHE -eq 1 ]]; then
     filtered_diff="$(echo "$filtered_diff" | grep -v '__pycache__' || true)"
+fi
+
+if [[ $ALLOWLIST_PROVENANCE -eq 1 ]]; then
+    filtered_diff="$(echo "$filtered_diff" | grep -v "Only in ${DOGFOOD}: \.processkit-provenance\.toml" || true)"
 fi
 
 if [[ $ALLOWLIST_EMPTY_SRC_SCRIPTS -eq 1 ]]; then

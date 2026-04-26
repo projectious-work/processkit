@@ -43,9 +43,14 @@ def run(ctx) -> list[CheckResult]:
         # The script prints the "Offending paths:" block on stderr
         # between the two "===" markers. Extract lines that look like
         # diff output (`Only in ...`, `Files ... differ`).
+        # Match `Files ... differ` strictly — a substring `differ` check
+        # also matches words like "difference" in the script's "To fix"
+        # hint text and produces spurious WARN findings.
         for line in proc.stderr.splitlines():
             line = line.strip()
-            if line.startswith("Only in ") or "differ" in line:
+            if line.startswith("Only in ") or (
+                line.startswith("Files ") and line.endswith(" differ")
+            ):
                 results.append(CheckResult(
                     severity="WARN",
                     category="drift",

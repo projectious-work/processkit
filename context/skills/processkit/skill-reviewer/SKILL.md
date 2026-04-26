@@ -11,7 +11,7 @@ metadata:
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: processkit
-    layer: null
+    layer: 3
     uses:
       - skill: skill-builder
         purpose: "Reference the canonical skill format and the 5 Skill Killers checklist that skill-builder enforces during creation. skill-reviewer applies the same rules to existing skills."

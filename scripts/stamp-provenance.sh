@@ -164,7 +164,12 @@ for f in "${FILES[@]}"; do
 done
 
 if [[ "$CHECK_MODE" -eq 1 ]]; then
-    if ! diff -q "$PROVENANCE_FILE" "$TMP_FILE" >/dev/null 2>&1; then
+    # Ignore generated_at when comparing — it's a wall-clock timestamp,
+    # rewritten on every run, not a content signal. We care that
+    # generated_for_tag matches the requested version and that the [files]
+    # map is current.
+    if ! diff <(grep -v '^generated_at' "$PROVENANCE_FILE") \
+              <(grep -v '^generated_at' "$TMP_FILE") >/dev/null 2>&1; then
         echo "PROVENANCE.toml is out of date. Regenerate with:" >&2
         echo "  scripts/stamp-provenance.sh $EFFECTIVE_VERSION" >&2
         exit 3

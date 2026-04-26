@@ -13,6 +13,7 @@ metadata:
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: processkit
+    layer: 1
     core: true   # proposed: always install regardless of [skills].include/exclude
                  # pending aibox companion issue for content_install.rs change
     provides:
