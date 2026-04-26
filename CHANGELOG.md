@@ -5,6 +5,82 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.22.1] — 2026-04-26
+
+A focused point release shipping the RoyalFern Model schema enhancement
+(`DEC-20260425_2256`): five additive optional fields on
+`Model.spec_schema.versions[]` — `jurisdiction`, `data_privacy`,
+`knowledge_cutoff`, `vendor_model_id`, and `latency_p50_ms` — backfilled
+across all 34 model entities and documented under the Governance
+dimension in the model-recommender skill. No breaking changes; existing
+callers are unaffected because every new field is optional.
+
+The `query_models()` MCP tool does not yet implement filtering on these
+fields — that work is tracked as `BACK-20260426_1214-SolidWolf` and
+targeted for v0.23.0. Until that lands, the new fields are read via
+`get_profile()` / direct file inspection.
+
+### Added
+
+- **feat(schema): RoyalFern Model schema fields.**
+  `context/schemas/model.yaml` gains five optional fields on
+  `spec_schema.versions[]`:
+  - `jurisdiction` — vendor HQ country (ISO-3166-1 alpha-2),
+    `applicable_legal_regimes` (slugs: EU-GDPR, US-CLOUD-Act,
+    US-HIPAA, CN-DSL, CN-PIPL, UK-DPA, CA-PIPEDA), and
+    `data_residency_regions` (e.g. `["us-east","eu-west"]`). Lossless
+    replacement for ad-hoc `governance_warning` free-text callouts.
+  - `data_privacy` — vendor data-handling posture: `dpa_available`
+    (boolean or DPA URL), `data_retention_days` (integer or
+    `zero`/`unknown`), `training_on_customer_data` (`never`/`opt-in`/
+    `opt-out`/`always`/`unknown`), `pii_eligible`, `phi_hipaa_eligible`,
+    `gdpr_eligible`, and `sub_processors_url`.
+  - `knowledge_cutoff` — vendor-published training-data cutoff date.
+  - `vendor_model_id` — exact provider API model identifier
+    (e.g. `claude-opus-4-7-20251031`), preferred dated/pinned form.
+  - `latency_p50_ms` — approximate p50 first-token latency in
+    milliseconds; quantitative companion to `dimensions.speed`.
+  All fields are optional and additive; pre-RoyalFern Model entities
+  remain valid without modification.
+
+### Changed
+
+- **chore(models): backfill RoyalFern fields across all 34 model entities.**
+  Every `MODEL-*.md` under `context/models/` (Anthropic, OpenAI, Google,
+  xAI, Meta, Mistral, DeepSeek, Cohere, Microsoft, Alibaba, MiniMax)
+  now carries the new fields where vendor-published values exist;
+  `unknown` / omitted where they don't. Backfill done by two parallel
+  shard subagents to bound context cost; both passes verified against
+  the schema.
+- **docs(model-recommender): Governance dimension expanded.**
+  `context/skills/processkit/model-recommender/SKILL.md` adds a
+  structured-fields block under the Governance dimension and four
+  example `query_models()` filter usages
+  (`phi_hipaa_eligible=true`,
+  `jurisdiction.vendor_hq_country in ["US","EU"]`,
+  `data_privacy.training_on_customer_data="never"`,
+  `data_privacy.data_retention_days=0`). Note: the SKILL.md docs are
+  the spec; the corresponding `query_models()` filter implementation
+  ships in v0.23.0 (tracked as BACK-20260426_1214-SolidWolf).
+
+### Notes
+
+- v0.22.1 is a **patch** release — five additive optional schema
+  fields with no behavioural changes to any existing tool. Consumers
+  on v0.22.0 can adopt with no migration steps.
+- Two upstream aibox bugs surfaced during this session and were
+  filed for the aibox project: aibox#56 (CleverRiver — same-version
+  migrations) and aibox#57 (FierceWren — content-diff overwrites
+  locally-added entity content). Neither has any processkit-side
+  fix in this release; both are tracked as cross-project WorkItems
+  (BACK-20260425_1711-CleverRiver, BACK-20260426_1205-FierceWren).
+- pk-doctor green at release time: 0 ERROR / 2 WARN (both expected
+  drift WARNs for `context/.processkit-provenance.toml` — known
+  v0.22.0 stamping bug acknowledged in aibox v0.20.0 release notes
+  and tolerated by the host).
+
+---
+
 ## [v0.22.0] — 2026-04-25
 
 Two new pk-doctor checks (`migration_integrity`, `server_header_drift`)
