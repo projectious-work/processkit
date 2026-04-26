@@ -5,6 +5,84 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.23.1] — 2026-04-26
+
+A focused content+code patch resolving the 106 ERRORs surfaced by the
+first-run release-audit on v0.23.0. Hybrid validator + content fixes
+per `DEC-20260426_1859-MightyRobin` (`BACK-FierceOwl`): three documented
+validator relaxations close 96 false-positives, and ten real content
+findings get backfilled. Net: 106 ERROR → 0 ERROR; 3 WARN unchanged
+(actors / scopes / gates entity-dirs are deliberately unused — flagged
+for v0.24.0).
+
+### Changed
+
+- **change(release-audit): excludelist aibox CLI migration prose docs.**
+  `entity_files` walker now skips `*-to-*.md` and `INDEX.md` under
+  `context/migrations/`. Closes 16 A1 false-positives — these are aibox
+  CLI prose, not Migration entities. Real Migration entities under
+  `pending/` and `applied/` continue to be validated.
+- **change(release-audit): model the team-member directory layout.**
+  `entity_files` walker now understands the team-manager skill's
+  alt schema: registers `Persona` as a known kind, special-cases the
+  `team-member.md` filename stem to map onto `TEAMMEMBER-{slug}`, and
+  walks `relations/` subdirs as Persona-related sub-files. Closes 11
+  A2 false-positives.
+- **change(release-audit): make `metadata.processkit.layer` optional
+  for non-processkit-category skills.**
+  Layer is a processkit-DAG concept; library-style skills
+  (`category != "processkit"`) participate in no compositional layer
+  graph. Strict layer enforcement preserved for the processkit DAG
+  where it matters. Closes 69 C false-positives — across engineering
+  (39), devops (11), data-ai (11), design (5), documents (3).
+
+### Added
+
+- **add(release-audit): 24 new pytest cases.** `test_release_audit.py`
+  gains `TestMigrationProseSkipped` (4 cases), `TestTeamMemberLayout`
+  (3 cases), and `TestLayerConditional` (2 cases) covering the three
+  validator changes above. Plus `+203` lines total of fixture and
+  helper plumbing.
+
+### Fixed
+
+- **fix(skills): backfill `metadata.processkit.layer` on 7
+  processkit-category SKILL.md files.** Each value computed from the
+  skill's declared `uses[]` deps:
+  - `model-recommender`: layer 2
+  - `skill-builder`: layer 4
+  - `skill-finder`: layer 4
+  - `skill-gate`: layer 4
+  - `skill-reviewer`: layer 4
+  - `task-router`: layer 4
+  - `team-creator`: layer 4
+- **fix(team-creator): author missing `## Full reference` section.**
+  +213 lines reference content covering all team-creator commands,
+  flags, and recipes.
+- **fix(team-manager): author missing `## Overview` and
+  `## Full reference` sections.** +316 lines covering the team-member
+  directory layout, persona files, relations, and consistency checks.
+
+### Notes
+
+- v0.23.1 is a **patch** release — additive validator allowances and
+  documentation backfills only, no breaking changes. Consumers on
+  v0.23.0 can adopt with no migration steps.
+- pk-release-audit on this release: **0 ERROR / 3 WARN / 999 INFO**
+  (down from 106 ERROR / 3 WARN / 903 INFO on v0.23.0). The 3
+  remaining WARNs are `entity.missing-dir` for `actors/`, `scopes/`,
+  and `gates/` — the project doesn't use those entity kinds yet.
+- Incidentals rolled into the same release per FierceOwl's transition
+  note: pk-doctor `drift.py` parser fix follow-up to processkit#13,
+  drift-script provenance allowlist updates, and a refreshed aibox CLI
+  migration prose for v0.20.0 → v0.21.1.
+- `DEC-20260426_1627-CuriousButter` was corrupted at write-time
+  (XML-style fields embedded inside the `decision` string plus
+  trailing tool-call markup) and supersedes-replaced by
+  `DEC-20260426_1859-MightyRobin`.
+
+---
+
 ## [v0.23.0] — 2026-04-26
 
 A focused batch release: governance filter implementation that gives

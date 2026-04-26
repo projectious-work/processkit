@@ -4,10 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260426_1622-FierceOwl-v0-23-1-release
   created: '2026-04-26T16:22:23+00:00'
-  updated: '2026-04-26T17:46:23+00:00'
+  updated: '2026-04-26T19:18:11+00:00'
 spec:
   title: v0.23.1 — release-audit cleanup (106 ERRORs across 3 buckets)
-  state: in-progress
+  state: done
   type: epic
   priority: medium
   description: |
@@ -106,8 +106,19 @@ spec:
     - pk-release-audit run output (2026-04-26)
     - prior session handover next_recommended_action
   started_at: '2026-04-26T17:46:23+00:00'
+  completed_at: '2026-04-26T19:18:11+00:00'
 ---
 
 ## Transition note (2026-04-26T17:46:23+00:00)
 
 Starting v0.23.1 release-audit cleanup. Approach (b): roll incidental fixes (pk-doctor drift parser, drift-script provenance allowlist, PROVENANCE.toml stamping for GH#13) into FierceOwl commits.
+
+
+## Transition note (2026-04-26T19:18:08+00:00)
+
+All 5 action items shipped in commit 2f3b7c5: validator changes (A1/A2/C — closes 96 ERRORs), 7 SKILL.md layer-field backfills, team-creator + team-manager section additions. Tests 24/24 pass. Final pk-release-audit: 0 ERROR / 3 WARN / 999 INFO.
+
+
+## Transition note (2026-04-26T19:18:11+00:00)
+
+Reviewed and accepted. Closing for v0.23.1 release.
