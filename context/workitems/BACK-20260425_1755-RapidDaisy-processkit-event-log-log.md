@@ -4,9 +4,10 @@ kind: WorkItem
 metadata:
   id: BACK-20260425_1755-RapidDaisy-processkit-event-log-log
   created: '2026-04-25T17:55:34+00:00'
+  updated: '2026-04-26T14:57:51+00:00'
 spec:
   title: processkit-event-log log_event MCP skips actor required-field validation
-  state: backlog
+  state: done
   type: bug
   priority: medium
   description: '## What
@@ -65,4 +66,20 @@ spec:
 
     - pk-doctor schema_filename stays at 0 ERROR for log entries on a fresh dogfood
     run.'
+  started_at: '2026-04-26T14:56:03+00:00'
+  completed_at: '2026-04-26T14:57:51+00:00'
 ---
+
+## Transition note (2026-04-26T14:56:03+00:00)
+
+Starting work — going with strict validation (Option 1 from the WI). Will add schema.validate_spec("LogEntry", spec) before write so missing actor produces a clear error response. Auto-default to ACTOR-claude is too presumptuous in derived projects (their default actor varies); the contract requires a registered actor anyway, so the caller should always have one.
+
+
+## Transition note (2026-04-26T14:57:46+00:00)
+
+Fix landed in context/skills/processkit/event-log/mcp/server.py (mirrored to src/). Strict validation via schema.validate_spec("LogEntry", spec) before write; missing/empty actor returns {"error": "..."} with no file written. Docstring + module preamble updated to mark actor as required. 3 tests in event-log/scripts/test_log_event.py: missing-actor → error, valid-actor → success, empty-actor → error. pk-doctor green (0 ERROR / 2 WARN — both unchanged drift WARNs).
+
+
+## Transition note (2026-04-26T14:57:51+00:00)
+
+Closed. Implementation in main, tested, schema-clean. Will ship in v0.23.0.

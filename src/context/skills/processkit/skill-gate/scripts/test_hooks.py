@@ -496,6 +496,93 @@ with tempfile.TemporaryDirectory() as _tmp10:
     )
 
 # ---------------------------------------------------------------------------
+# Test 11: VastLark — prefix-based locking covers tools that aren't on
+#          the explicit allowlist (the auto-renew gap).
+# ---------------------------------------------------------------------------
+print("\n[11] check_route_task_called.py — VastLark prefix matcher catches create_binding et al.")
+
+with tempfile.TemporaryDirectory() as _tmp_vl:
+    _root_vl = Path(_tmp_vl)
+    (_root_vl / "context").mkdir()
+    # No marker present — every locked tool must be blocked.
+    _vl_locked_cases = [
+        ("create_binding", "the original VastLark repro"),
+        ("create_actor", "actor-profile write"),
+        ("create_team_member", "team-manager write"),
+        ("create_scope", "scope-management write"),
+        ("create_gate", "gate-management write"),
+        ("create_role", "role-management write"),
+        ("create_artifact", "artifact-management write"),
+        ("transition_decision", "decision-record write"),
+        ("transition_discussion", "discussion-management write"),
+        ("link_workitems", "workitem-management linker"),
+        ("link_decision_to_workitem", "decision-record linker"),
+        ("supersede_decision", "decision-record supersede"),
+        ("update_actor", "actor-profile update"),
+        ("update_team_member", "team-manager update"),
+        ("end_binding", "binding-management end"),
+        ("deactivate_actor", "actor-profile deactivate"),
+        ("reactivate_team_member", "team-manager reactivate"),
+        ("reserve_name", "team-manager reservation"),
+        ("release_name", "team-manager release"),
+        ("import_team_member", "team-manager import"),
+        ("apply_migration", "migration-management apply"),
+        ("reject_migration", "migration-management reject"),
+        ("start_migration", "migration-management start"),
+        ("add_outcome", "discussion-management outcome"),
+        ("evaluate_gate", "gate-management evaluation"),
+    ]
+    for _t, _desc in _vl_locked_cases:
+        _r = run(
+            _CHECK_SCRIPT,
+            stdin_text=json.dumps({
+                "hook_event_name": "PreToolUse",
+                "tool_name": _t,
+                "tool_input": {},
+                "cwd": str(_root_vl),
+            }),
+        )
+        check(
+            f"{_t} blocked without marker ({_desc})",
+            _r.returncode == 2,
+            f"got exit {_r.returncode}, stderr={_r.stderr.strip()[:80]}",
+        )
+
+    # Read-side / unrelated tools must NOT be blocked.
+    _vl_passthrough_cases = [
+        ("get_entity", "index read"),
+        ("get_workitem", "workitem read"),
+        ("query_workitems", "workitem list"),
+        ("query_events", "event-log read"),
+        ("list_skills", "skill-finder read"),
+        ("find_skill", "skill-finder lookup"),
+        ("route_task", "task-router (read-only routing)"),
+        ("acknowledge_contract", "the gate call itself"),
+        ("check_contract_acknowledged", "gate status read"),
+        ("recent_events", "event-log recent read"),
+        ("search_entities", "index search"),
+        ("resolve_model", "model-recommender read"),
+        ("compare_models", "model-recommender compare"),
+        ("explain_routing", "model-recommender explain"),
+        ("Read", "harness read tool"),
+    ]
+    for _t, _desc in _vl_passthrough_cases:
+        _r = run(
+            _CHECK_SCRIPT,
+            stdin_text=json.dumps({
+                "hook_event_name": "PreToolUse",
+                "tool_name": _t,
+                "tool_input": {},
+                "cwd": str(_root_vl),
+            }),
+        )
+        check(
+            f"{_t} passes without marker ({_desc})",
+            _r.returncode == 0,
+            f"got exit {_r.returncode}, stderr={_r.stderr.strip()[:80]}",
+        )
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()

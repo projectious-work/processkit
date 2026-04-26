@@ -11,8 +11,8 @@
 
 Append-only LogEntry management. Tools:
 
-    log_event(event_type, summary, actor?, subject?, subject_kind?, details?, timestamp?)
-        -> {id, path}
+    log_event(event_type, summary, actor, subject?, subject_kind?, details?, timestamp?)
+        -> {id, path}  (actor is schema-required)
     query_events(event_type?, subject?, actor?, limit?)
         -> [events]
     recent_events(limit?)
@@ -72,10 +72,13 @@ def log_event(
 ) -> dict:
     """Append a new LogEntry to the project's event log.
 
-    Returns ``{id, path}`` for the created file. Prerequisite: call
-    find_skill(task_description) or confirm you are already operating
-    within a named processkit skill before using this tool.
-    1% rule: call route_task first; commit in the same turn — deferred writes are dropped.
+    Returns ``{id, path}`` for the created file, or ``{"error": ...}``
+    if the spec fails schema validation (most commonly: missing
+    ``actor``, which the LogEntry schema requires alongside event_type
+    and timestamp). Prerequisite: call find_skill(task_description) or
+    confirm you are already operating within a named processkit skill
+    before using this tool. 1% rule: call route_task first; commit in
+    the same turn — deferred writes are dropped.
     """
     root = paths.find_project_root()
     cfg = config.load_config(root)
@@ -111,6 +114,10 @@ def log_event(
         spec["details"] = details
     if correlation_id:
         spec["correlation_id"] = correlation_id
+
+    errors = schema.validate_spec("LogEntry", spec)
+    if errors:
+        return {"error": "; ".join(errors)}
 
     ent = entity.new("LogEntry", new_id, spec)
     # entity_path applies date-based sharding when configured

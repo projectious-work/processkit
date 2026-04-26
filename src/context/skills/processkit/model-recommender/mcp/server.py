@@ -137,6 +137,14 @@ def _entity_to_legacy(entity: dict) -> list[dict]:
             "_estimated": ver.get("status") in ("preview", "beta"),
             "best_for": [],
             "avoid_for": [],
+            # RoyalFern fields (DEC-20260425_2256). Pass through whatever
+            # is present on the version entry; absence is meaningful (the
+            # query_models filters reject models missing the field).
+            "vendor_model_id": ver.get("vendor_model_id"),
+            "knowledge_cutoff": ver.get("knowledge_cutoff"),
+            "latency_p50_ms": ver.get("latency_p50_ms"),
+            "jurisdiction": ver.get("jurisdiction") or {},
+            "data_privacy": ver.get("data_privacy") or {},
         })
     return legacy_entries
 
@@ -238,6 +246,15 @@ def _profile_block(m: dict, scope: str = "summary") -> dict:
         "governance_warning": m.get("governance_warning"),
         "dimensions": top,
     }
+    # RoyalFern fields surface on every scope when present, so callers
+    # can verify the fact a filter was acting on without a second call.
+    for k in ("vendor_model_id", "knowledge_cutoff", "latency_p50_ms"):
+        if m.get(k) is not None:
+            out[k] = m[k]
+    if m.get("jurisdiction"):
+        out["jurisdiction"] = m["jurisdiction"]
+    if m.get("data_privacy"):
+        out["data_privacy"] = m["data_privacy"]
     if scope == "full":
         out["sub_dimensions"] = {d: dims[d]["sub"] for d in dims}
         out["best_for"] = m.get("best_for", [])
@@ -266,6 +283,16 @@ def query_models(
     sub_B: Optional[dict] = None,
     min_context_k: int = 0,
     max_price_per_1m_output: Optional[float] = None,
+    # ── Governance / data-privacy filters (RoyalFern, DEC-20260425_2256) ──
+    phi_hipaa_eligible: Optional[bool] = None,
+    pii_eligible: Optional[bool] = None,
+    gdpr_eligible: Optional[bool] = None,
+    training_on_customer_data: Optional[str] = None,
+    data_retention_days_max: Optional[int] = None,
+    jurisdiction_country_in: Optional[list[str]] = None,
+    legal_regime_in: Optional[list[str]] = None,
+    data_residency_in: Optional[list[str]] = None,
+    max_latency_p50_ms: Optional[int] = None,
     apply_user_filter: bool = True,
     include_estimated: bool = True,
     limit: int = 5,
@@ -280,13 +307,35 @@ def query_models(
     include_estimated: if True (default), includes models with estimated/unvalidated
       scores (marked _estimated in model_scores.json). Set False for production routing.
 
-    Find models that meet minimum dimension scores, ranked by overall fit.
-
     Top-level requirements: pass minimum scores per dimension (1–5, 0 = no requirement).
     Sub-dimension requirements: pass dicts like sub_R={"math_reasoning": 4} to filter on
     specific sub-dimensions within Reasoning. Supported: sub_R, sub_E, sub_B.
     apply_user_filter: if True (default), respects user_config.json access/preference settings.
     limit: max results to return (default 5).
+
+    RoyalFern governance / data-privacy filters — back the G dimension with
+    auditable hard requirements pulled from each model entity's
+    ``data_privacy`` / ``jurisdiction`` blocks. A model that is missing the
+    relevant field is REJECTED (conservative default; absence ≠ allowed):
+
+      phi_hipaa_eligible      — True = require vendor HIPAA BAA covers this model.
+      pii_eligible            — True = require vendor explicitly permits PII.
+      gdpr_eligible           — True = require GDPR-compliant processing.
+      training_on_customer_data
+                              — exact match against the enum
+                                ('never' | 'opt-in' | 'opt-out' | 'always').
+                                Use 'never' to hard-require no training on prompts.
+      data_retention_days_max — integer ceiling. Matches numeric retention
+                                ≤ ceiling, plus the string literal 'zero'
+                                when ceiling ≥ 0. Rejects 'unknown'.
+      jurisdiction_country_in — list of ISO-3166-1 alpha-2 codes; vendor HQ
+                                must match one (e.g. ["US","CA","FR"]).
+      legal_regime_in         — list of regime slugs (EU-GDPR, US-HIPAA,
+                                CN-DSL, ...); model must declare ≥1 match.
+      data_residency_in       — list of residency region codes the vendor
+                                must offer (any-match).
+      max_latency_p50_ms      — integer ceiling on the vendor-published p50
+                                latency.
 
     Returns ranked list of matching model profiles (summary level).
     """
@@ -323,6 +372,20 @@ def query_models(
                 break
         if skip:
             continue
+        # RoyalFern governance / data-privacy filters
+        if not _passes_royalfern_filters(
+            m,
+            phi_hipaa_eligible=phi_hipaa_eligible,
+            pii_eligible=pii_eligible,
+            gdpr_eligible=gdpr_eligible,
+            training_on_customer_data=training_on_customer_data,
+            data_retention_days_max=data_retention_days_max,
+            jurisdiction_country_in=jurisdiction_country_in,
+            legal_regime_in=legal_regime_in,
+            data_residency_in=data_residency_in,
+            max_latency_p50_ms=max_latency_p50_ms,
+        ):
+            continue
         # Compute fit score: sum of (actual - required) for required dims
         fit = sum(dims[d]["score"] - mins[d] for d in mins if mins[d] > 0)
         candidates.append((fit, m))
@@ -333,6 +396,90 @@ def query_models(
         models = _apply_user_filter(models, cfg)
 
     return [_profile_block(m, "summary") for m in models]
+
+
+def _passes_royalfern_filters(
+    m: dict,
+    *,
+    phi_hipaa_eligible: Optional[bool],
+    pii_eligible: Optional[bool],
+    gdpr_eligible: Optional[bool],
+    training_on_customer_data: Optional[str],
+    data_retention_days_max: Optional[int],
+    jurisdiction_country_in: Optional[list[str]],
+    legal_regime_in: Optional[list[str]],
+    data_residency_in: Optional[list[str]],
+    max_latency_p50_ms: Optional[int],
+) -> bool:
+    """Apply the RoyalFern governance filters to a single model entry.
+
+    Returns True if the model satisfies every requested filter, False if
+    any filter rejects (or if a required field is missing — conservative
+    default).
+    """
+    privacy = m.get("data_privacy") or {}
+    jurisdiction = m.get("jurisdiction") or {}
+
+    def _bool_required(field: str, want: bool) -> bool:
+        val = privacy.get(field)
+        if val is None:
+            return False  # missing → reject
+        return bool(val) == want
+
+    if phi_hipaa_eligible is not None and not _bool_required(
+        "phi_hipaa_eligible", phi_hipaa_eligible
+    ):
+        return False
+    if pii_eligible is not None and not _bool_required(
+        "pii_eligible", pii_eligible
+    ):
+        return False
+    if gdpr_eligible is not None and not _bool_required(
+        "gdpr_eligible", gdpr_eligible
+    ):
+        return False
+
+    if training_on_customer_data is not None:
+        val = privacy.get("training_on_customer_data")
+        if val != training_on_customer_data:
+            return False
+
+    if data_retention_days_max is not None:
+        val = privacy.get("data_retention_days")
+        if val is None:
+            return False
+        if isinstance(val, str):
+            if val == "zero":
+                if data_retention_days_max < 0:
+                    return False
+            else:
+                # 'unknown' (or any other string) is not satisfiable.
+                return False
+        else:
+            if val > data_retention_days_max:
+                return False
+
+    if jurisdiction_country_in:
+        country = jurisdiction.get("vendor_hq_country")
+        if country is None or country not in jurisdiction_country_in:
+            return False
+
+    if legal_regime_in:
+        regimes = jurisdiction.get("applicable_legal_regimes") or []
+        if not any(r in regimes for r in legal_regime_in):
+            return False
+
+    if data_residency_in:
+        regions = jurisdiction.get("data_residency_regions") or []
+        if not any(r in regions for r in data_residency_in):
+            return False
+
+    if max_latency_p50_ms is not None:
+        latency = m.get("latency_p50_ms")
+        if latency is None or latency > max_latency_p50_ms:
+            return False
+
+    return True
 
 
 @server.tool(annotations=ToolAnnotations(

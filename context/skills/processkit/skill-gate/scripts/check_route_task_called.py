@@ -38,11 +38,23 @@ Fields consumed:
 
 Write-side tool locked list
 ---------------------------
-The following tool names are treated as write-side processkit tools and
-will be blocked when no valid acknowledgement marker is present:
-  create_workitem, transition_workitem, record_decision, link_entities,
-  open_discussion, create_artifact, log_event, create_note.
-acknowledge_contract is intentionally excluded — it IS the gate call.
+A tool call is treated as a write-side processkit call (and therefore
+blocked when no valid acknowledgement marker is present) if either:
+
+  - its name starts with one of the gated verb prefixes:
+    create_, transition_, link_, record_, open_, update_, apply_,
+    reject_, add_, end_, import_, reactivate_, deactivate_, release_,
+    reserve_, supersede_, start_, evaluate_, skip_; or
+  - its name is in the small explicit allowlist below for write-side
+    tools whose name does not match any of those prefixes (currently
+    just `log_event`).
+
+acknowledge_contract is intentionally excluded — it IS the gate call —
+and so is `route_task` (read-side router). The prefix rule was
+introduced in v0.23.0 to close the auto-renew gap that VastLark
+(BACK-20260425_1235) surfaced: tools like `create_binding` weren't in
+the explicit list, so a session that only used binding tools never
+renewed its marker and the next unrelated write hit the gate.
 
 Additionally, Write | Edit | MultiEdit calls that target a path starting
 with context/ (resolved relative to cwd) are blocked.
@@ -74,19 +86,55 @@ _MARKER_SUBDIR = Path("context") / ".state" / "skill-gate"
 # re-acknowledge.
 _ACK_LIFETIME_HOURS = 12
 
-# Write-side processkit MCP tools that require an acknowledged contract.
+# Write-side processkit MCP tool name prefixes — every tool whose name
+# starts with one of these is treated as a contract-gated write call.
+# Matches the prefix vocabulary enumerated in the compliance contract
+# itself (create_*, transition_*, link_*, record_*, open_*) plus the
+# additional surface that has accreted across MCP servers since the
+# original short list was written (update_*, apply_*, reject_*, add_*,
+# end_*, import_*, reactivate_*, deactivate_*, release_*, reserve_*,
+# supersede_*, start_*, evaluate_*, skip_*).
+#
+# An explicit allowlist (`_LOCKED_PROCESSKIT_TOOLS`) is retained for
+# documentation and for the small number of tools whose name does not
+# begin with one of the prefixes (currently: log_event). On every check
+# the matcher consults BOTH — prefix OR explicit name — so adding a new
+# write-side tool with a conventional verb prefix needs no gate update.
+# See BACK-20260425_1235-VastLark.
+_LOCKED_PREFIXES: tuple[str, ...] = (
+    "create_",
+    "transition_",
+    "link_",
+    "record_",
+    "open_",
+    "update_",
+    "apply_",
+    "reject_",
+    "add_",
+    "end_",
+    "import_",
+    "reactivate_",
+    "deactivate_",
+    "release_",
+    "reserve_",
+    "supersede_",
+    "start_",
+    "evaluate_",
+    "skip_",
+)
+
+# Tools that are write-side but do NOT match any of the prefixes above.
+# Currently just `log_event` (verb+noun, not verb_noun shape).
 _LOCKED_PROCESSKIT_TOOLS = frozenset(
     {
-        "create_workitem",
-        "transition_workitem",
-        "record_decision",
-        "link_entities",
-        "open_discussion",
-        "create_artifact",
         "log_event",
-        "create_note",
     }
 )
+
+# Tools that match a locked prefix but must NOT be gated. Empty for now;
+# kept here so future additions can be allowlisted explicitly without
+# weakening the prefix rule.
+_LOCKED_PREFIX_EXCEPTIONS: frozenset[str] = frozenset()
 
 # Generic file-editing tools that are locked only when targeting context/.
 _FILE_WRITE_TOOLS = frozenset({"Write", "Edit", "MultiEdit"})
@@ -173,6 +221,11 @@ def _targets_context(tool_name: str, tool_input: dict, cwd: str) -> bool:
 def _is_locked(tool_name: str, tool_input: dict, cwd: str) -> bool:
     """Return True if this tool call requires an acknowledged contract."""
     if tool_name in _LOCKED_PROCESSKIT_TOOLS:
+        return True
+    if (
+        tool_name not in _LOCKED_PREFIX_EXCEPTIONS
+        and tool_name.startswith(_LOCKED_PREFIXES)
+    ):
         return True
     if _targets_context(tool_name, tool_input, cwd):
         return True
