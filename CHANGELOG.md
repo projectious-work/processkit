@@ -5,6 +5,158 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.23.0] — 2026-04-26
+
+A focused batch release: governance filter implementation that gives
+the v0.22.1 RoyalFern schema fields runtime teeth, plus four scaffolding
+bug-fixes (CalmArch / RapidDaisy / VastLark) and four new validators &
+tools (TidyGrove / NobleBrook / AmberCliff). Eight WorkItems in total,
+all detect-or-fix improvements with no breaking changes.
+
+Implementation followed two waves: wave one (CalmArch + RapidDaisy +
+VastLark + SolidWolf) shipped sequentially; wave two (TidyGrove +
+NobleBrook + AmberCliff + BraveMeadow) ran as four parallel
+sonnet-tier subagents, one per WI, against disjoint target dirs.
+
+### Added
+
+- **feat(model-recommender): query_models() RoyalFern filters (SolidWolf).**
+  `BACK-20260426_1214` — query_models() gains 9 governance / data-privacy
+  filter kwargs sourced from the RoyalFern fields landed in v0.22.1:
+  `phi_hipaa_eligible`, `pii_eligible`, `gdpr_eligible`,
+  `training_on_customer_data` (enum match), `data_retention_days_max`
+  (numeric ceiling; accepts the literal `"zero"`, rejects `"unknown"`),
+  `jurisdiction_country_in` (HQ membership), `legal_regime_in` (any-match
+  on `applicable_legal_regimes`), `data_residency_in` (any-match on
+  `data_residency_regions`), and `max_latency_p50_ms`. Missing-field
+  semantics: a model lacking the relevant field is REJECTED — conservative
+  governance default. `_profile_block` surfaces the new fields on every
+  result so callers can verify what filter they got hits on. The four
+  query_models() examples in the model-recommender SKILL.md (HIPAA,
+  jurisdiction, training, retention) now return non-empty result sets
+  against the live 34-model roster (16/20/10/15 hits respectively).
+- **feat(release-audit): new skill (TidyGrove).**
+  `BACK-20260409_1830` — `context/skills/processkit/release-audit/`
+  ships a detect-only validator that runs four passes before a release
+  tag: entity-file frontmatter compliance (apiVersion / kind / id-vs-
+  filename), SKILL.md structural compliance (required frontmatter
+  fields + four required body sections), MCP-server tool annotation
+  presence, and skill cross-reference resolution. Single Markdown
+  report, exit 0 / 1, command `pk-release-audit`. First live run
+  surfaces 105 pre-existing ERRORs (legacy aibox migration prose,
+  team-member sub-files using an alt schema, non-processkit skills
+  missing the `layer` field) — flagged for separate triage and not
+  blocking this release.
+- **feat(pk-doctor): `skill_dag` check (NobleBrook).**
+  `BACK-20260409_1738` — new pk-doctor check walks every SKILL.md,
+  builds the dependency graph from each `metadata.processkit.uses[]`,
+  and validates: missing-references (every used skill exists), cycles
+  (iterative DFS with 3-colour marking), and layer constraints (a
+  skill at layer N may only reference skills at layer ≤ N). On the
+  live tree the first run found 0 cycles, 0 missing refs, and 5 layer
+  violations — all five resolved in this release as a content-only
+  layer bump (see *Fixed* below).
+- **feat(skill-finder): user-facing `catalog` MCP tool (AmberCliff).**
+  `BACK-20260410_1840` — new `catalog()` tool on
+  `processkit-skill-finder`. Signature:
+  `catalog(category, tag, keyword, columns, sort_by, output)` with
+  `output ∈ {"markdown", "json", "yaml"}` and column projection on
+  any frontmatter field. Defaults to a Markdown table of every skill
+  sorted by name. Reuses `_all_skills()` — no new SQLite plumbing.
+  SKILL.md gains a "Catalog queries" section with trigger phrases
+  ("list skills", "show me all skills in X", "skills as JSON") and
+  five example invocations.
+
+### Changed
+
+- **change(skill-gate): prefix-based PreToolUse matcher (VastLark).**
+  `BACK-20260425_1235` — `check_route_task_called.py` switches from an
+  explicit allowlist to a prefix-based matcher. Any tool whose name
+  starts with `create_`, `transition_`, `link_`, `record_`, `open_`,
+  `update_`, `apply_`, `reject_`, `add_`, `end_`, `import_`,
+  `reactivate_`, `deactivate_`, `release_`, `reserve_`, `supersede_`,
+  `start_`, `evaluate_`, or `skip_` is now gate-locked, plus an
+  explicit allowlist for `log_event` (verb+noun shape). Closes the
+  auto-renew gap that surfaced in the 2026-04-25 session when only
+  `create_binding` traffic ran across a midnight boundary and the
+  marker expired despite continuous compliant writes. 40 new test
+  cases in `test_hooks.py`.
+- **change(workitem-management + all entity-writing MCPs): YAML
+  literal-block-scalar serialization (CalmArch).**
+  `BACK-20260425_1755` — `context/skills/_lib/processkit/frontmatter.py`
+  adopts a custom `SafeDumper` subclass with a `str` representer that
+  emits `|` block-scalar style for any string containing a newline,
+  normalizing trailing whitespace to a single `\n` (canonical clip-
+  chomp shape). `parse()` re-attaches the trailing `\n` the regex
+  consumed at the `\n---` boundary. Markdown bodies with pipe-tables,
+  fenced code blocks, and backslashes now round-trip safely instead
+  of failing PyYAML re-parse. The fix lives in the shared lib so
+  every entity-writing MCP (workitem-management, decision-record,
+  event-log, …) benefits. 8 new tests cover the QuickBison repro
+  shape.
+- **change(model-recommender): `_entity_to_legacy()` propagates RoyalFern fields.**
+  Pass-through for `vendor_model_id`, `knowledge_cutoff`,
+  `latency_p50_ms`, `jurisdiction`, and `data_privacy` from
+  `Model.versions[]` into the legacy-shape entry that `query_models()`
+  iterates over. Required to make the SolidWolf filters above work
+  end-to-end against the real model roster.
+- **change(skill-finder): SKILL.md "Catalog queries" section.**
+  Documents the new `catalog()` tool, trigger phrases, and example
+  invocations.
+
+### Fixed
+
+- **fix(event-log): log_event MCP now validates required `actor` field
+  (RapidDaisy).**
+  `BACK-20260425_1755` — `log_event()` calls
+  `schema.validate_spec("LogEntry", spec)` before write. Calls
+  missing or with empty `actor` return `{"error": "..."}` and write
+  no file. Previously the schema-required field was silently omitted,
+  producing LogEntry files that pk-doctor's `schema_filename` check
+  flagged as ERRORs after the fact (and required a hand-fix). 3 new
+  tests cover missing-actor, valid-actor, empty-actor cases. Docstring
+  + module preamble updated to mark `actor` as required.
+- **fix(skills): layer-value bumps to satisfy `uses[]` declarations.**
+  Surfaced by the new NobleBrook skill_dag check on its first live
+  run. Five layer violations resolved by promoting the affected skills
+  to a layer ≥ their highest declared dependency:
+  - `engineering/changelog`: layer 2 → 3 (uses `release-semver` at 3).
+  - `processkit/status-briefing`: layer 2 → 4 (uses `agent-management` at 4).
+  - `processkit/status-update-writer`: layer 2 → 4 (uses `agent-management` at 4).
+  - `product/onboarding-guide`: layer 2 → 4 (uses `agent-management` at 4).
+  Behavior unchanged; only the frontmatter `metadata.processkit.layer`
+  values change.
+
+### Verified (no changes needed)
+
+- **chore(owner-profiling): reference files complete (BraveMeadow).**
+  `BACK-20260410_1049` — verified
+  `owner-profiling/references/observable-signals.md` (105 lines, 37
+  signals × 6 categories) and `interview-protocol.md` (128 lines)
+  are present, complete, spec-compliant against
+  `NOTE-20260410_1046-StoutSwan`, and mirror-clean. No file changes.
+
+### Notes
+
+- v0.23.0 is a **minor** release — additive features and pure bug
+  fixes, no breaking changes. Consumers on v0.22.1 can adopt with no
+  migration steps.
+- The release-audit skill's first live run reports 105 ERRORs of
+  pre-existing tree issues; these are NOT blockers for v0.23.0 and
+  will be triaged in a separate v0.23.x content-cleanup pass.
+- Two cross-project bugs were filed upstream during the prep window
+  (no processkit-side fix): aibox#56 (CleverRiver — same-version
+  migrations) and aibox#57 (FierceWren — content-diff overwrites
+  locally-added entity content). Workaround in place: run `git status`
+  after every `aibox sync`.
+- pk-doctor green at release time: 0 ERROR / 2 WARN / 11 INFO. The
+  two WARNs are the unchanged `context/.processkit-provenance.toml`
+  drift (known v0.22.0 stamping bug, acknowledged in aibox v0.20.0
+  release notes and tolerated). One additional INFO comes from the
+  new skill_dag check.
+
+---
+
 ## [v0.22.1] — 2026-04-26
 
 A focused point release shipping the RoyalFern Model schema enhancement
