@@ -19,6 +19,7 @@ from . import (
     mcp_config_drift,
     server_header_drift,
     preauth_applied,
+    skill_dag,
 )
 
 # (name, module). Name is the --category= token and the key in the
@@ -35,6 +36,7 @@ REGISTRY = [
     ("mcp_config_drift", mcp_config_drift),
     ("server_header_drift", server_header_drift),
     ("preauth_applied", preauth_applied),
+    ("skill_dag", skill_dag),
 ]
 
 

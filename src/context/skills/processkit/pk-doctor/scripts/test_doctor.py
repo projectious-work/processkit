@@ -506,6 +506,209 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 10: skill_dag — clean roster (no missing refs, no cycles, no violations)
+# ---------------------------------------------------------------------------
+print("\n[10] skill_dag — clean roster produces 0 errors")
+
+from checks.skill_dag import run as _skill_dag_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    skills = root / "context" / "skills"
+    # category: processkit; skills: alpha (layer 0) and beta (layer 1 uses alpha)
+    (skills / "processkit" / "alpha").mkdir(parents=True)
+    (skills / "processkit" / "alpha" / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            name: alpha
+            metadata:
+              processkit:
+                layer: 0
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (skills / "processkit" / "beta").mkdir(parents=True)
+    (skills / "processkit" / "beta" / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            name: beta
+            metadata:
+              processkit:
+                layer: 1
+                uses:
+                  - skill: alpha
+                    purpose: depends on alpha
+            ---
+            """),
+        encoding="utf-8",
+    )
+    ctx = {"repo_root": root}
+    results = _skill_dag_run(ctx)
+    errors = [r for r in results if r.severity == "ERROR"]
+    infos = [r for r in results if r.id == "skill.dag.summary"]
+    check("10a: clean roster — 0 ERRORs", len(errors) == 0,
+          f"errors: {[r.message for r in errors]}")
+    check("10b: summary INFO emitted", len(infos) == 1, str(infos))
+    check("10c: walked 2 skills in summary",
+          infos and "walked 2 skill(s)" in infos[0].message,
+          infos[0].message if infos else "")
+
+# ---------------------------------------------------------------------------
+# Test 11: skill_dag — missing reference triggers ERROR
+# ---------------------------------------------------------------------------
+print("\n[11] skill_dag — missing reference")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    skills = root / "context" / "skills"
+    (skills / "processkit" / "foo").mkdir(parents=True)
+    (skills / "processkit" / "foo" / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            name: foo
+            metadata:
+              processkit:
+                layer: 2
+                uses:
+                  - skill: nonexistent-bar
+                    purpose: references a skill that does not exist
+            ---
+            """),
+        encoding="utf-8",
+    )
+    ctx = {"repo_root": root}
+    results = _skill_dag_run(ctx)
+    missing_errors = [r for r in results if r.id == "skill.dag.missing-ref"]
+    check("11a: missing-ref ERROR fired",
+          len(missing_errors) == 1,
+          f"got: {[r.message for r in missing_errors]}")
+    check("11b: error message names both skills",
+          missing_errors and "foo" in missing_errors[0].message and "nonexistent-bar" in missing_errors[0].message,
+          missing_errors[0].message if missing_errors else "")
+
+# ---------------------------------------------------------------------------
+# Test 12: skill_dag — 3-node cycle triggers ERROR
+# ---------------------------------------------------------------------------
+print("\n[12] skill_dag — 3-node cycle detection")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    skills = root / "context" / "skills"
+    for sname, dep in [("aaa", "ccc"), ("bbb", "aaa"), ("ccc", "bbb")]:
+        (skills / "processkit" / sname).mkdir(parents=True)
+        (skills / "processkit" / sname / "SKILL.md").write_text(
+            textwrap.dedent(f"""\
+                ---
+                name: {sname}
+                metadata:
+                  processkit:
+                    layer: 1
+                    uses:
+                      - skill: {dep}
+                        purpose: cyclic dep
+                ---
+                """),
+            encoding="utf-8",
+        )
+    ctx = {"repo_root": root}
+    results = _skill_dag_run(ctx)
+    cycle_errors = [r for r in results if r.id == "skill.dag.cycle"]
+    check("12a: cycle ERROR fired",
+          len(cycle_errors) >= 1,
+          f"got: {[r.message for r in cycle_errors]}")
+    check("12b: cycle message contains 'cycle detected'",
+          any("cycle detected" in r.message for r in cycle_errors),
+          str([r.message for r in cycle_errors]))
+
+# ---------------------------------------------------------------------------
+# Test 13: skill_dag — layer violation triggers ERROR
+# ---------------------------------------------------------------------------
+print("\n[13] skill_dag — layer violation")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    skills = root / "context" / "skills"
+    # low (layer 0) uses high (layer 3) — violation
+    (skills / "processkit" / "low").mkdir(parents=True)
+    (skills / "processkit" / "low" / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            name: low
+            metadata:
+              processkit:
+                layer: 0
+                uses:
+                  - skill: high
+                    purpose: upward layer reference
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (skills / "processkit" / "high").mkdir(parents=True)
+    (skills / "processkit" / "high" / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            name: high
+            metadata:
+              processkit:
+                layer: 3
+            ---
+            """),
+        encoding="utf-8",
+    )
+    ctx = {"repo_root": root}
+    results = _skill_dag_run(ctx)
+    layer_errors = [r for r in results if r.id == "skill.dag.layer-violation"]
+    check("13a: layer-violation ERROR fired",
+          len(layer_errors) == 1,
+          f"got: {[r.message for r in layer_errors]}")
+    check("13b: error message mentions both layers",
+          layer_errors and "layer 0" in layer_errors[0].message and "layer 3" in layer_errors[0].message,
+          layer_errors[0].message if layer_errors else "")
+    check("13c: error message names both skills",
+          layer_errors and "low" in layer_errors[0].message and "high" in layer_errors[0].message,
+          layer_errors[0].message if layer_errors else "")
+
+# ---------------------------------------------------------------------------
+# Test 14: skill_dag -- --category=skill_dag integration
+# ---------------------------------------------------------------------------
+print("\n[14] skill_dag — integration via --category=skill_dag")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    # Stub drift + minimal seed
+    (root / "scripts").mkdir()
+    drift = root / "scripts" / "check-src-context-drift.sh"
+    drift.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    drift.chmod(0o755)
+    # One clean skill under context/skills/
+    skills = root / "context" / "skills"
+    (skills / "processkit" / "clean-skill").mkdir(parents=True)
+    (skills / "processkit" / "clean-skill" / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            name: clean-skill
+            metadata:
+              processkit:
+                layer: 0
+            ---
+            """),
+        encoding="utf-8",
+    )
+    stub = root / ".doctor-logentry.json"
+    result = _run_doctor(root, "--category=skill_dag", stub_path=stub)
+    check("14a: --category=skill_dag runs without crash",
+          result.returncode in (0, 1),
+          f"got {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}")
+    check("14b: skill_dag section present in output",
+          "## skill_dag" in result.stdout,
+          result.stdout[-400:])
+    check("14c: summary line present",
+          "walked" in result.stdout and "skill(s)" in result.stdout,
+          result.stdout[-400:])
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()

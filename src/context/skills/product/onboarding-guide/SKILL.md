@@ -9,7 +9,7 @@ metadata:
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: product
-    layer: 2
+    layer: 4
     uses:
       - skill: agent-management
         purpose: Understand context budget principles and what files to include in the always-load set.

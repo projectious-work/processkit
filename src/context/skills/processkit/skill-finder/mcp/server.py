@@ -15,9 +15,13 @@ Tools:
 
     list_skills(category?)
         -> [{skill, description, category, has_mcp}]
+
+    catalog(category?, tag?, keyword?, columns?, sort_by?, output?)
+        -> str (markdown table or fenced JSON/YAML) | list[dict] (json)
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import sys
@@ -127,7 +131,8 @@ def _score(task: str, phrases: list[str]) -> float:
 
 
 def _read_skill_frontmatter(skill_md: Path) -> dict:
-    """Extract name, description, category from SKILL.md frontmatter."""
+    """Extract name, description, category, and other fields from SKILL.md
+    frontmatter."""
     try:
         import yaml
         text = skill_md.read_text(encoding="utf-8")
@@ -138,14 +143,24 @@ def _read_skill_frontmatter(skill_md: Path) -> dict:
         if not isinstance(fm, dict):
             return {}
         meta = fm.get("metadata", {}).get("processkit", {})
+        provides = meta.get("provides", {}) or {}
+        mcp_tools = provides.get("mcp_tools", []) or []
+        tags = meta.get("tags", []) or []
         return {
             "name": fm.get("name", skill_md.parent.name),
             "description": (fm.get("description") or "").strip(),
             "category": meta.get("category", ""),
             "layer": meta.get("layer"),
+            "version": meta.get("version", ""),
+            "tags": tags if isinstance(tags, list) else [],
+            "allowed_tools": mcp_tools if isinstance(mcp_tools, list) else [],
         }
     except Exception:
-        return {"name": skill_md.parent.name, "description": "", "category": ""}
+        return {
+            "name": skill_md.parent.name,
+            "description": "",
+            "category": "",
+        }
 
 
 def _all_skills() -> list[dict]:
@@ -309,6 +324,197 @@ def list_skills(category: str | None = None) -> list[dict]:
         }
         for s in skills
     ]
+
+
+# ---------------------------------------------------------------------------
+# Catalog helpers
+# ---------------------------------------------------------------------------
+
+_CATALOG_COLUMNS = (
+    "name",
+    "category",
+    "description",
+    "tags",
+    "version",
+    "layer",
+    "allowed_tools",
+    "has_mcp",
+    "skill_md_path",
+)
+
+_DEFAULT_COLUMNS = ["name", "category", "description"]
+_DEFAULT_SORT = "name"
+
+
+def _skill_to_row(skill: dict, columns: list[str]) -> dict:
+    """Extract requested columns from a skill dict."""
+    row: dict = {}
+    for col in columns:
+        if col == "name":
+            row["name"] = skill.get("name") or skill.get("skill", "")
+        elif col == "description":
+            # First line only for compact display
+            desc = (skill.get("description") or "").split("\n")[0].strip()
+            row["description"] = desc
+        elif col == "tags":
+            row["tags"] = skill.get("tags", [])
+        elif col == "allowed_tools":
+            row["allowed_tools"] = skill.get("allowed_tools", [])
+        elif col == "has_mcp":
+            row["has_mcp"] = skill.get("has_mcp", False)
+        elif col == "layer":
+            row["layer"] = skill.get("layer")
+        elif col == "version":
+            row["version"] = skill.get("version", "")
+        elif col == "skill_md_path":
+            row["skill_md_path"] = skill.get("skill_md_path", "")
+        elif col == "category":
+            row["category"] = skill.get("category", "")
+        else:
+            row[col] = skill.get(col)
+    return row
+
+
+def _render_markdown(rows: list[dict], columns: list[str]) -> str:
+    """Render rows as a Markdown table."""
+    if not rows:
+        return "_No skills matched._"
+    # Build header
+    header = " | ".join(columns)
+    sep = " | ".join(["---"] * len(columns))
+    lines = [f"| {header} |", f"| {sep} |"]
+    for row in rows:
+        cells = []
+        for col in columns:
+            val = row.get(col)
+            if isinstance(val, list):
+                cell = ", ".join(str(v) for v in val)
+            elif val is None:
+                cell = ""
+            else:
+                cell = str(val)
+            # Escape pipe chars inside cells
+            cell = cell.replace("|", "\\|")
+            cells.append(cell)
+        lines.append("| " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
+def _render_yaml(rows: list[dict]) -> str:
+    """Render rows as a YAML fenced block."""
+    import yaml
+    return "```yaml\n" + yaml.dump(rows, allow_unicode=True) + "```"
+
+
+@server.tool(
+    annotations=ToolAnnotations(
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=False,
+    )
+)
+def catalog(
+    category: str | None = None,
+    tag: str | None = None,
+    keyword: str | None = None,
+    columns: list[str] | None = None,
+    sort_by: str | None = None,
+    output: str = "markdown",
+) -> str | list[dict]:
+    """Return a queryable view of the processkit skill catalog.
+
+    Supports filtering, column selection, sorting, and multiple output
+    formats. Use for user-facing skill discovery ("what skills do we
+    have?", "show me all skills in engineering", "skills as JSON").
+
+    Parameters
+    ----------
+    category:
+        Filter to one category directory. One of: processkit,
+        engineering, devops, data-ai, product, documents, design.
+        Omit for all skills.
+    tag:
+        Filter to skills that carry this tag in their frontmatter
+        tags list. Case-insensitive exact match.
+    keyword:
+        Case-insensitive substring search across skill name and
+        first line of description.
+    columns:
+        Which columns to include. Allowed values: name, category,
+        description, tags, version, layer, allowed_tools, has_mcp,
+        skill_md_path. Default: [name, category, description].
+    sort_by:
+        Column to sort by. Default: name. Any column from the columns
+        list is accepted; unknown columns fall back to name.
+    output:
+        One of "markdown" (default), "json", or "yaml".
+        "markdown" returns a Markdown table string.
+        "json" returns a list[dict] directly (no fencing).
+        "yaml" returns a YAML fenced code block string.
+
+    Returns
+    -------
+    str   for output="markdown" or output="yaml"
+    list  for output="json"
+    """
+    cols = list(columns) if columns else _DEFAULT_COLUMNS
+    # Validate columns
+    unknown = [c for c in cols if c not in _CATALOG_COLUMNS]
+    if unknown:
+        return (
+            f"Unknown column(s): {unknown}. "
+            f"Allowed: {list(_CATALOG_COLUMNS)}"
+        )
+
+    sort_col = sort_by if sort_by in _CATALOG_COLUMNS else _DEFAULT_SORT
+
+    # --- Gather skills via existing _all_skills() ---
+    skills = _all_skills()
+
+    # --- Apply filters ---
+    if category:
+        skills = [s for s in skills if s.get("category") == category]
+
+    if tag:
+        tag_lower = tag.lower()
+        skills = [
+            s for s in skills
+            if any(
+                t.lower() == tag_lower
+                for t in (s.get("tags") or [])
+            )
+        ]
+
+    if keyword:
+        kw = keyword.lower()
+        skills = [
+            s for s in skills
+            if kw in (s.get("name") or "").lower()
+            or kw in (s.get("description") or "").lower()
+        ]
+
+    # --- Sort ---
+    def _sort_key(s: dict):
+        val = s.get(sort_col)
+        if val is None:
+            return ""
+        if isinstance(val, list):
+            return str(val)
+        return str(val).lower()
+
+    skills.sort(key=_sort_key)
+
+    # --- Project to requested columns ---
+    rows = [_skill_to_row(s, cols) for s in skills]
+
+    # --- Render ---
+    output_lower = (output or "markdown").lower()
+    if output_lower == "json":
+        return rows
+    if output_lower == "yaml":
+        return _render_yaml(rows)
+    return _render_markdown(rows, cols)
 
 
 if __name__ == "__main__":

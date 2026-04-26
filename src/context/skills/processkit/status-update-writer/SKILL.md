@@ -9,7 +9,7 @@ metadata:
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
     category: processkit
-    layer: 2
+    layer: 4
     uses:
       - skill: workitem-management
         purpose: Query current workitem state and priorities to populate the update accurately.

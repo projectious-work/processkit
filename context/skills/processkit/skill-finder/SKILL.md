@@ -19,6 +19,7 @@ metadata:
       mcp_tools:
         - find_skill
         - list_skills
+        - catalog
 ---
 
 # Skill Finder
@@ -254,6 +255,103 @@ Once you have identified the right skill:
 
 If no skill in this index matches, check `skills/INDEX.md` for the full
 catalog, or use `skill-builder` to author a new skill for the gap.
+
+## Catalog queries
+
+The `catalog` MCP tool provides user-facing skill discovery. Use it when
+the user wants to browse, filter, or export the skill roster rather than
+find a specific skill for a task.
+
+### Trigger phrases
+
+| User says… | Action |
+|---|---|
+| "list skills", "what skills do we have" | `catalog()` — full list, Markdown |
+| "show me all skills in engineering" | `catalog(category="engineering")` |
+| "show me all skills in <category>" | `catalog(category="<category>")` |
+| "skills as JSON", "give me the skill list as JSON" | `catalog(output="json")` |
+| "skills with model in the name", "find skills about model" | `catalog(keyword="model")` |
+| "list skills with columns name and layer" | `catalog(columns=["name","layer"])` |
+| "show processkit skills as YAML" | `catalog(category="processkit", output="yaml")` |
+
+### Tool signature
+
+```python
+def catalog(
+    category: str | None = None,
+    tag: str | None = None,
+    keyword: str | None = None,
+    columns: list[str] | None = None,
+    sort_by: str | None = None,
+    output: str = "markdown",  # "markdown" | "json" | "yaml"
+) -> str | list[dict]
+```
+
+**Defaults:** all skills, `columns=["name","category","description"]`,
+`sort_by="name"`, `output="markdown"`.
+
+**Available columns:**
+
+| Column | Source |
+|---|---|
+| `name` | `name` frontmatter field |
+| `category` | Category directory name |
+| `description` | First line of `description` frontmatter field |
+| `tags` | `metadata.processkit.tags` list |
+| `version` | `metadata.processkit.version` |
+| `layer` | `metadata.processkit.layer` |
+| `allowed_tools` | `metadata.processkit.provides.mcp_tools` list |
+| `has_mcp` | True if `mcp/server.py` exists for the skill |
+| `skill_md_path` | Relative path to SKILL.md from project root |
+
+### Example invocations
+
+**1. Default — all skills as a Markdown table (name, category, description)**
+
+```
+catalog()
+```
+
+Returns a Markdown table with ~130+ rows, sorted by name.
+Shape: `str` (Markdown table).
+
+**2. Filter by category, JSON output**
+
+```
+catalog(category="processkit", output="json")
+```
+
+Returns only processkit-category skills as a JSON array.
+Shape: `list[dict]` — e.g.
+`[{"name": "artifact-management", "category": "processkit",
+"description": "Register and retrieve completed deliverables."}, …]`
+
+**3. Keyword search, restricted columns**
+
+```
+catalog(keyword="model", columns=["name", "category", "description"])
+```
+
+Returns all skills whose `name` or `description` contains "model"
+(case-insensitive). Shape: `str` (Markdown table).
+
+**4. Custom columns with YAML output**
+
+```
+catalog(columns=["name", "layer", "has_mcp"], output="yaml")
+```
+
+Returns a YAML fenced code block listing name, layer, and has_mcp for
+every skill, sorted by name.
+
+**5. Tag filter**
+
+```
+catalog(tag="routing", columns=["name", "category", "tags"])
+```
+
+Filters to skills that carry `"routing"` in their frontmatter `tags`
+list (exact match, case-insensitive).
 
 ## Gotchas
 
