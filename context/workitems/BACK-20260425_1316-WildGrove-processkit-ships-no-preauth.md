@@ -4,11 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260425_1316-WildGrove-processkit-ships-no-preauth
   created: '2026-04-25T13:16:20+00:00'
-  updated: '2026-04-25T17:17:16+00:00'
+  updated: '2026-04-26T12:05:24+00:00'
 spec:
   title: processkit ships no preauth for MCP tools — derived projects re-prompt on
     every container rebuild
-  state: in-progress
+  state: done
   type: bug
   priority: high
   description: "## Symptom\n\nAfter a derived-project (e.g. aibox) devcontainer rebuild,\
@@ -68,4 +68,14 @@ spec:
     \ to pass.\n- The `enabledMcpjsonServers` list is sourced from a single source\
     \ of truth (the manifest), not duplicated."
   started_at: '2026-04-25T17:17:16+00:00'
+  completed_at: '2026-04-26T12:05:24+00:00'
 ---
+
+## Transition note (2026-04-26T12:05:20+00:00)
+
+Phase B landed in aibox v0.20.0: .claude/settings.json now contains the preauth merge from context/skills/processkit/skill-gate/assets/preauth.json (18 mcp__processkit-* allow patterns + 18 enabledMcpjsonServers + _processkit_managed_keys block). pk-doctor preauth_applied check: 0 ERROR / 0 WARN / 1 INFO — "preauth.json fully merged into .claude/settings.json (18 permission patterns, 18 servers)". The 2 preauth_applied WARNs that gated this WI have flipped to 1 INFO.
+
+
+## Transition note (2026-04-26T12:05:24+00:00)
+
+Closed. Phase A shipped in processkit v0.22.0; Phase B shipped in aibox v0.20.0; verified via pk-doctor preauth_applied INFO. Acceptance criterion (the 2 preauth_applied WARNs flip to 1 INFO) met.
