@@ -12,8 +12,9 @@ metadata:
     layer: 0
     provides:
       primitives: []
-      mcp_tools: [reindex, query_entities, get_entity, search_entities, query_events, list_errors, 
-            stats]
+      mcp_tools: [reindex, query_entities, get_entity, search_entities,
+            semantic_status, semantic_search_entities, hybrid_search_entities,
+            query_events, list_errors, stats]
 ---
 
 # Index Management
@@ -43,6 +44,9 @@ every entity-creating skill.
 - **`query_entities(kind?, state?, limit?)`** — list entities matching filters
 - **`get_entity(id)`** — fetch a single entity by ID
 - **`search_entities(text, limit?)`** — FTS5 search across titles, bodies, specs
+- **`semantic_status()`** — report semantic chunk/vector availability
+- **`semantic_search_entities(text, limit?)`** — sqlite-vec semantic search when available
+- **`hybrid_search_entities(text, limit?)`** — RRF over FTS5 + semantic results, with FTS-only fallback
 - **`query_events(event_type?, subject?, actor?, limit?)`** — query the event log
 - **`list_errors()`** — files that failed to parse during the last reindex
 - **`stats()`** — counts of entities/events/errors in the index
@@ -86,6 +90,10 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Using `search_entities` for exact-ID lookup.** `search_entities`
   is ranked FTS5 search over parsed content, with a fallback substring
   search for invalid FTS syntax. Use `get_entity(id)` for exact lookup.
+- **Assuming semantic search is always active.** The semantic chunk table
+  is always rebuilt, but vector KNN requires the optional `sqlite-vec`
+  extension to load. Check `semantic_status()`; use
+  `hybrid_search_entities()` when you want an FTS-backed fallback.
 - **Re-indexing inside a hot loop.** A full reindex walks the whole
   `context/` tree and is expensive. Batch your writes and reindex
   once at the end, not after every entity.
@@ -99,6 +107,8 @@ Three tables — see `src/lib/processkit/index.py` for the DDL.
 ```sql
 entities(id, kind, api_version, path, created, updated, title, state, labels_json, spec_json, body)
 entities_fts(id, kind, state, title, body, spec_json)
+semantic_chunks(rowid, chunk_id, entity_id, kind, state, path, ordinal, text)
+entity_vec(embedding)
 events(id, timestamp, event_type, actor, subject, subject_kind, summary, details_json, correlation_id, path)
 errors(path, message)
 ```
@@ -113,6 +123,13 @@ the searchable fields from `entities` and is cleared/rebuilt during
 `reindex()`. If a stripped-down SQLite build lacks FTS5, the index still
 opens and `search_entities` falls back to the previous `LIKE %text%`
 behaviour.
+
+`semantic_chunks` is a rebuildable chunk table. When the optional
+`sqlite-vec` package can be imported and loaded, `entity_vec` is created
+as a `vec0` virtual table containing deterministic local embeddings for
+those chunks. The initial embedding strategy is provider-neutral
+`local-hashed-bag-of-words`; it gives a stable offline baseline and a
+storage contract for later provider/local embedding model upgrades.
 
 ### Reindex strategy
 
@@ -151,4 +168,7 @@ The index database path is configurable via:
 - **FTS5 search.** Search uses SQLite FTS5 ranking when available and
   falls back to `LIKE %text%` for invalid FTS syntax or unsupported
   SQLite builds.
+- **Optional sqlite-vec.** Semantic search uses sqlite-vec only when the
+  extension is installed and loadable; otherwise semantic search returns
+  no vector results and hybrid search falls back to FTS5.
 - **No incremental indexing.** Every reindex is a full sweep.

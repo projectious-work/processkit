@@ -5,6 +5,7 @@
 #   "mcp[cli]>=1.0",
 #   "pyyaml>=6.0",
 #   "jsonschema>=4.0",
+#   "sqlite-vec>=0.1.0",
 # ]
 # ///
 """processkit index-management MCP server.
@@ -18,6 +19,9 @@ Tools provided:
     query_entities(kind?, state?, limit?)  -> [entities]
     get_entity(id)                         -> entity | null
     search_entities(text, limit?)          -> [entities]
+    semantic_status()                      -> {capabilities}
+    semantic_search_entities(text, limit?) -> [entities]
+    hybrid_search_entities(text, limit?)   -> [entities]
     query_events(event_type?, subject?, actor?, limit?) -> [events]
     list_errors()                          -> [{path, message}]
     stats()                                -> counts
@@ -168,6 +172,58 @@ def search_entities(text: str, limit: int = 50) -> list[dict]:
     _, db = _open()
     try:
         return index.search_entities(db, text, limit=limit)
+    finally:
+        db.close()
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def semantic_status() -> dict:
+    """Return semantic-index capability and row counts."""
+    _, db = _open()
+    try:
+        return index.semantic_status(db)
+    finally:
+        db.close()
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def semantic_search_entities(text: str, limit: int = 50) -> list[dict]:
+    """Search entities semantically via sqlite-vec when available.
+
+    Returns an empty list when sqlite-vec is not installed or cannot be
+    loaded; use hybrid_search_entities for an FTS-backed fallback.
+    """
+    _, db = _open()
+    try:
+        return index.semantic_search_entities(db, text, limit=limit)
+    finally:
+        db.close()
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def hybrid_search_entities(text: str, limit: int = 50) -> list[dict]:
+    """Combine FTS5 and sqlite-vec semantic results with RRF.
+
+    Falls back to FTS5-only search when sqlite-vec is unavailable.
+    """
+    _, db = _open()
+    try:
+        return index.hybrid_search_entities(db, text, limit=limit)
     finally:
         db.close()
 

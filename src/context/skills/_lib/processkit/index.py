@@ -11,10 +11,14 @@ JSON for queries we did not anticipate.
 from __future__ import annotations
 
 import json
+import math
 import sqlite3
+import struct
 from dataclasses import dataclass
+from hashlib import blake2b
 from pathlib import Path
 from typing import Any, Iterable
+import re
 
 from . import entity as entity_mod
 from . import paths
@@ -72,6 +76,29 @@ CREATE VIRTUAL TABLE IF NOT EXISTS entities_fts USING fts5(
 );
 """
 
+VECTOR_DIMENSIONS = 128
+
+SEMANTIC_SCHEMA_DDL = """
+CREATE TABLE IF NOT EXISTS semantic_chunks (
+    rowid INTEGER PRIMARY KEY AUTOINCREMENT,
+    chunk_id TEXT UNIQUE NOT NULL,
+    entity_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    state TEXT,
+    path TEXT NOT NULL,
+    ordinal INTEGER NOT NULL,
+    text TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_semantic_chunks_entity ON semantic_chunks (entity_id);
+CREATE INDEX IF NOT EXISTS idx_semantic_chunks_kind ON semantic_chunks (kind);
+"""
+
+VEC_SCHEMA_DDL = f"""
+CREATE VIRTUAL TABLE IF NOT EXISTS entity_vec USING vec0(
+    embedding float[{VECTOR_DIMENSIONS}]
+);
+"""
+
 
 @dataclass
 class IndexStats:
@@ -92,12 +119,18 @@ def open_db(path: Path | None = None) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     conn.executescript(SCHEMA_DDL)
+    conn.executescript(SEMANTIC_SCHEMA_DDL)
     try:
         conn.executescript(FTS_SCHEMA_DDL)
     except sqlite3.OperationalError:
         # FTS5 is built into supported processkit environments, but keep
         # the index usable on stripped-down SQLite builds.
         pass
+    if _load_sqlite_vec(conn):
+        try:
+            conn.executescript(VEC_SCHEMA_DDL)
+        except sqlite3.OperationalError:
+            pass
     return conn
 
 
@@ -112,6 +145,9 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
     db.execute("DELETE FROM errors")
     if _has_fts(db):
         db.execute("DELETE FROM entities_fts")
+    if _has_vec(db):
+        db.execute("DELETE FROM entity_vec")
+    db.execute("DELETE FROM semantic_chunks")
     n_entities = 0
     n_events = 0
     n_errors = 0
@@ -172,6 +208,7 @@ def _insert_entity(db: sqlite3.Connection, ent) -> None:
         ),
     )
     _upsert_fts(db, ent, title=title, spec_json=spec_json)
+    _upsert_semantic(db, ent, title=title, spec_json=spec_json)
 
 
 def _has_fts(db: sqlite3.Connection) -> bool:
@@ -206,6 +243,124 @@ def _upsert_fts(
             spec_json,
         ),
     )
+
+
+def _load_sqlite_vec(db: sqlite3.Connection) -> bool:
+    """Load sqlite-vec if the optional package is installed."""
+    try:
+        import sqlite_vec  # type: ignore
+    except Exception:
+        return False
+    try:
+        db.enable_load_extension(True)
+        sqlite_vec.load(db)
+        db.enable_load_extension(False)
+        return True
+    except Exception:
+        try:
+            db.enable_load_extension(False)
+        except Exception:
+            pass
+        return False
+
+
+def _has_vec(db: sqlite3.Connection) -> bool:
+    row = db.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'entity_vec'"
+    ).fetchone()
+    return row is not None
+
+
+def _tokenize(text: str) -> list[str]:
+    return re.findall(r"[a-zA-Z0-9_]+", text.lower())
+
+
+def _embed_text(text: str) -> list[float]:
+    """Deterministic local embedding used for provider-neutral indexing.
+
+    This is intentionally simple: hashed bag-of-words into a fixed-size
+    normalized vector. Projects can later replace this with provider or
+    local model embeddings without changing the sqlite-vec storage shape.
+    """
+    vec = [0.0] * VECTOR_DIMENSIONS
+    for tok in _tokenize(text):
+        digest = blake2b(tok.encode("utf-8"), digest_size=8).digest()
+        bucket = int.from_bytes(digest[:4], "little") % VECTOR_DIMENSIONS
+        sign = 1.0 if digest[4] & 1 else -1.0
+        vec[bucket] += sign
+    norm = math.sqrt(sum(v * v for v in vec))
+    if norm:
+        vec = [v / norm for v in vec]
+    return vec
+
+
+def _serialize_vector(vec: list[float]) -> bytes:
+    try:
+        import sqlite_vec  # type: ignore
+
+        return sqlite_vec.serialize_float32(vec)
+    except Exception:
+        return struct.pack(f"{len(vec)}f", *vec)
+
+
+def _semantic_chunks(ent, *, title: str | None, spec_json: str) -> list[str]:
+    text_parts = [title or "", ent.body or "", spec_json]
+    text = "\n\n".join(p for p in text_parts if p)
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
+    chunks: list[str] = []
+    current = ""
+    for para in paragraphs:
+        if len(current) + len(para) + 2 <= 1200:
+            current = f"{current}\n\n{para}".strip()
+        else:
+            if current:
+                chunks.append(current)
+            current = para[:1200]
+    if current:
+        chunks.append(current)
+    return chunks or ([text[:1200]] if text else [])
+
+
+def _upsert_semantic(
+    db: sqlite3.Connection,
+    ent,
+    *,
+    title: str | None,
+    spec_json: str,
+) -> None:
+    rows = db.execute(
+        "SELECT rowid FROM semantic_chunks WHERE entity_id = ?",
+        (ent.id,),
+    ).fetchall()
+    if _has_vec(db):
+        for row in rows:
+            db.execute("DELETE FROM entity_vec WHERE rowid = ?", (row["rowid"],))
+    db.execute("DELETE FROM semantic_chunks WHERE entity_id = ?", (ent.id,))
+
+    chunks = _semantic_chunks(ent, title=title, spec_json=spec_json)
+    for ordinal, chunk in enumerate(chunks):
+        chunk_id = f"{ent.id}#{ordinal}"
+        cur = db.execute(
+            """
+            INSERT INTO semantic_chunks
+            (chunk_id, entity_id, kind, state, path, ordinal, text)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                chunk_id,
+                ent.id,
+                ent.kind,
+                (ent.spec or {}).get("state"),
+                str(ent.path) if ent.path else "",
+                ordinal,
+                chunk,
+            ),
+        )
+        if _has_vec(db):
+            db.execute(
+                "INSERT INTO entity_vec (rowid, embedding) VALUES (?, ?)",
+                (cur.lastrowid, _serialize_vector(_embed_text(chunk))),
+            )
 
 
 def _insert_event(db: sqlite3.Connection, ent) -> None:
@@ -409,6 +564,80 @@ def search_entities(
         (like, like, like, like, int(limit)),
     ).fetchall()
     return [dict(r) for r in rows]
+
+
+def semantic_status(db: sqlite3.Connection) -> dict[str, Any]:
+    """Return semantic-index capability and row counts."""
+    chunks = db.execute("SELECT COUNT(*) FROM semantic_chunks").fetchone()[0]
+    return {
+        "chunks": chunks,
+        "sqlite_vec_available": _has_vec(db),
+        "dimensions": VECTOR_DIMENSIONS,
+        "embedding": "local-hashed-bag-of-words",
+    }
+
+
+def semantic_search_entities(
+    db: sqlite3.Connection,
+    text: str,
+    *,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    """Search semantic chunks via sqlite-vec when available."""
+    if not _has_vec(db):
+        return []
+    rows = db.execute(
+        """
+        SELECT
+            e.id, e.kind, e.title, e.state, e.created, e.path,
+            MIN(v.distance) AS distance
+        FROM entity_vec v
+        JOIN semantic_chunks c ON c.rowid = v.rowid
+        JOIN entities e ON e.id = c.entity_id
+        WHERE v.embedding MATCH ? AND k = ?
+        GROUP BY e.id
+        ORDER BY distance ASC
+        LIMIT ?
+        """,
+        (
+            _serialize_vector(_embed_text(text)),
+            max(int(limit) * 4, int(limit)),
+            int(limit),
+        ),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def hybrid_search_entities(
+    db: sqlite3.Connection,
+    text: str,
+    *,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    """Combine FTS5 and sqlite-vec results with reciprocal-rank fusion."""
+    keyword = search_entities(db, text, limit=max(int(limit) * 4, int(limit)))
+    semantic = semantic_search_entities(db, text, limit=max(int(limit) * 4, int(limit)))
+    if not semantic:
+        return keyword[: int(limit)]
+
+    scores: dict[str, float] = {}
+    rows: dict[str, dict[str, Any]] = {}
+    for rank, row in enumerate(keyword, start=1):
+        rows.setdefault(row["id"], dict(row))
+        scores[row["id"]] = scores.get(row["id"], 0.0) + 1.0 / (60 + rank)
+    for rank, row in enumerate(semantic, start=1):
+        merged = rows.setdefault(row["id"], dict(row))
+        if "distance" in row:
+            merged["semantic_distance"] = row["distance"]
+        scores[row["id"]] = scores.get(row["id"], 0.0) + 1.0 / (60 + rank)
+
+    ranked = sorted(scores, key=lambda entity_id: scores[entity_id], reverse=True)
+    out = []
+    for entity_id in ranked[: int(limit)]:
+        row = rows[entity_id]
+        row["hybrid_score"] = scores[entity_id]
+        out.append(row)
+    return out
 
 
 def query_events(

@@ -824,6 +824,22 @@ def run():
         print("search api-latency fallback:", len(s_fallback))
         assert any(r["id"] == a_url["id"] for r in s_fallback)
 
+        semantic_status = get_tool(idx, "semantic_status")
+        sem_status = semantic_status()
+        print("semantic status:", sem_status)
+        assert sem_status["chunks"] >= stats["entities"]
+        assert sem_status["dimensions"] == 128
+
+        semantic = get_tool(idx, "semantic_search_entities")
+        sem = semantic(text="sprint retrospective lessons", limit=10)
+        print("semantic search:", len(sem), "sqlite_vec:", sem_status["sqlite_vec_available"])
+        assert isinstance(sem, list)
+
+        hybrid = get_tool(idx, "hybrid_search_entities")
+        h = hybrid(text='"Sprint 42"', limit=10)
+        print("hybrid search:", len(h))
+        assert any(r["id"] == art_id for r in h)
+
         events = get_tool(idx, "query_events")
         ev = events(subject=wi_id)
         print("events for wi:", ev)
