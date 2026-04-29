@@ -4,26 +4,8 @@ kind: Schema
 metadata:
   id: SCHEMA-team-member
   target_kind: TeamMember
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-22T00:00:00Z
-x-allowed-seniority:
-  - junior
-  - specialist
-  - expert
-  - senior
-  - principal
-x-memory-tiers:
-  - working
-  - episodic
-  - semantic
-  - procedural
-  - relational
-  - lessons
-x-sensitivity-levels:
-  - public
-  - internal
-  - confidential
-  - pii
 spec:
   description: >
     A persistent participant in the project with stable identity,
@@ -40,6 +22,24 @@ spec:
   id_prefix: TEAMMEMBER
   state_machine: null
   default_directory: context/team-members
+  seniority_levels:
+    - junior
+    - specialist
+    - expert
+    - senior
+    - principal
+  memory_tiers:
+    - working
+    - episodic
+    - semantic
+    - procedural
+    - relational
+    - lessons
+  sensitivity_levels:
+    - public
+    - internal
+    - confidential
+    - pii
   metadata_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object

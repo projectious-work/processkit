@@ -2,23 +2,23 @@
 
 processkit ships a preauth spec at
 `context/skills/processkit/skill-gate/assets/preauth.json` listing the
-`permissions.allow[]` patterns and `enabledMcpjsonServers[]` entries
-that aibox sync should merge into a derived project's
-`.claude/settings.json`. Until aibox#55 ships and a sync run picks the
-new spec up, derived projects are re-prompted for every processkit MCP
-tool after each container rebuild (see
+Claude Code `permissions.allow[]` / `enabledMcpjsonServers[]` entries
+and Codex `mcp.allowed_tools[]` entries that aibox sync should merge
+into derived-project harness config. Until aibox#55 ships and a sync run
+picks the new spec up, derived projects are re-prompted for every
+processkit MCP tool after each container rebuild (see
 `BACK-20260425_1316-WildGrove`).
 
-This check compares the live `.claude/settings.json` against the spec
-and reports the gap. It is detect-only (no fix) — the actual merge
-lives in aibox.
+This check compares live `.claude/settings.json` and `.codex/config.toml`
+against the spec and reports the gap. It is detect-only (no fix) — the
+actual merge lives in aibox.
 
 Findings:
 
 - preauth.json missing
   → ERROR preauth_applied.spec-missing
-- `.claude/settings.json` missing or unreadable
-  → SKIP (INFO with `not-applicable`) — project does not use Claude Code
+- `.claude/settings.json` or `.codex/config.toml` missing
+  → SKIP that harness (INFO with `not-applicable`)
 - spec entries missing from `permissions.allow[]` or
   `enabledMcpjsonServers[]`
   → WARN preauth_applied.permissions-missing /
@@ -26,12 +26,13 @@ Findings:
 - spec drift vs the MCP manifest
   (`context/.processkit-mcp-manifest.json`)
   → WARN preauth_applied.spec-drift
-- everything aligned
-  → INFO preauth_applied.in-sync
+- each harness aligned
+  → INFO preauth_applied.<harness>-in-sync
 """
 
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
@@ -40,6 +41,7 @@ from .common import CheckResult
 
 _SPEC_REL = Path("context/skills/processkit/skill-gate/assets/preauth.json")
 _SETTINGS_REL = Path(".claude/settings.json")
+_CODEX_CONFIG_REL = Path(".codex/config.toml")
 _MANIFEST_REL = Path("context/.processkit-mcp-manifest.json")
 
 
@@ -48,6 +50,61 @@ def _load_json(path: Path) -> dict | None:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return None
+
+
+def _load_codex_allowed_tools(path: Path) -> set[str] | None:
+    """Return ``[mcp].allowed_tools`` from Codex config.
+
+    This intentionally parses only the small TOML subset aibox emits so
+    pk-doctor stays Python 3.10 compatible without adding a TOML parser.
+    """
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+
+    in_mcp = False
+    collecting = False
+    buffer: list[str] = []
+    bracket_balance = 0
+
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            in_mcp = line == "[mcp]"
+            collecting = False
+            buffer = []
+            bracket_balance = 0
+            continue
+        if not in_mcp:
+            continue
+        if collecting:
+            buffer.append(line)
+            bracket_balance += line.count("[") - line.count("]")
+            if bracket_balance <= 0:
+                break
+            continue
+        if line.startswith("allowed_tools") and "=" in line:
+            value = line.split("=", 1)[1].strip()
+            buffer.append(value)
+            bracket_balance = value.count("[") - value.count("]")
+            if bracket_balance <= 0:
+                break
+            collecting = True
+
+    if not buffer:
+        return set()
+
+    raw_value = "\n".join(buffer)
+    try:
+        parsed = ast.literal_eval(raw_value)
+    except (SyntaxError, ValueError):
+        return None
+    if not isinstance(parsed, list):
+        return None
+    return {item for item in parsed if isinstance(item, str)}
 
 
 def _expected_servers_from_manifest(manifest: dict) -> set[str]:
@@ -75,7 +132,7 @@ def run(ctx) -> list[CheckResult]:
             id="preauth_applied.spec-missing",
             message=(
                 f"{_SPEC_REL.as_posix()} not found; processkit ships this "
-                "spec for aibox to merge into .claude/settings.json"
+                "spec for aibox to merge into harness config"
             ),
         )]
 
@@ -90,6 +147,10 @@ def run(ctx) -> list[CheckResult]:
 
     spec_perms = set((spec.get("permissions") or {}).get("allow") or [])
     spec_servers = set(spec.get("enabledMcpjsonServers") or [])
+    spec_codex_tools = set(
+        (((spec.get("codex") or {}).get("mcp") or {}).get("allowed_tools"))
+        or spec_perms
+    )
 
     results: list[CheckResult] = []
 
@@ -132,71 +193,120 @@ def run(ctx) -> list[CheckResult]:
         results.append(CheckResult(
             severity="INFO",
             category="preauth_applied",
-            id="preauth_applied.not-applicable",
+            id="preauth_applied.claude-not-applicable",
             message=(
                 ".claude/settings.json not present — Claude Code preauth "
                 "check skipped (project may use a different harness)."
             ),
         ))
-        return results
+    else:
+        settings = _load_json(settings_path)
+        if settings is None:
+            results.append(CheckResult(
+                severity="ERROR",
+                category="preauth_applied",
+                id="preauth_applied.settings-unreadable",
+                message=f"could not parse {_SETTINGS_REL.as_posix()}",
+            ))
+        else:
+            live_perms = set(
+                ((settings.get("permissions") or {}).get("allow")) or []
+            )
+            live_servers = set(settings.get("enabledMcpjsonServers") or [])
 
-    settings = _load_json(settings_path)
-    if settings is None:
-        results.append(CheckResult(
-            severity="ERROR",
-            category="preauth_applied",
-            id="preauth_applied.settings-unreadable",
-            message=f"could not parse {_SETTINGS_REL.as_posix()}",
-        ))
-        return results
+            missing_perms = sorted(spec_perms - live_perms)
+            if missing_perms:
+                preview = ", ".join(missing_perms[:5])
+                if len(missing_perms) > 5:
+                    preview += f" (+{len(missing_perms) - 5} more)"
+                results.append(CheckResult(
+                    severity="WARN",
+                    category="preauth_applied",
+                    id="preauth_applied.permissions-missing",
+                    message=(
+                        f"{len(missing_perms)} preauth permission pattern(s) "
+                        f"not in .claude/settings.json permissions.allow "
+                        f"({preview}); merge gated by aibox#55"
+                    ),
+                    suggested_fix="aibox sync (once aibox#55 ships)",
+                ))
 
-    live_perms = set(((settings.get("permissions") or {}).get("allow")) or [])
-    live_servers = set(settings.get("enabledMcpjsonServers") or [])
+            missing_servers = sorted(spec_servers - live_servers)
+            if missing_servers:
+                preview = ", ".join(missing_servers[:5])
+                if len(missing_servers) > 5:
+                    preview += f" (+{len(missing_servers) - 5} more)"
+                results.append(CheckResult(
+                    severity="WARN",
+                    category="preauth_applied",
+                    id="preauth_applied.servers-missing",
+                    message=(
+                        f"{len(missing_servers)} preauth server(s) not in "
+                        f".claude/settings.json enabledMcpjsonServers "
+                        f"({preview}); merge gated by aibox#55"
+                    ),
+                    suggested_fix="aibox sync (once aibox#55 ships)",
+                ))
+            if not missing_perms and not missing_servers:
+                results.append(CheckResult(
+                    severity="INFO",
+                    category="preauth_applied",
+                    id="preauth_applied.claude-in-sync",
+                    message=(
+                        "preauth.json fully merged into "
+                        ".claude/settings.json "
+                        f"({len(spec_perms)} permission patterns, "
+                        f"{len(spec_servers)} servers)."
+                    ),
+                ))
 
-    missing_perms = sorted(spec_perms - live_perms)
-    if missing_perms:
-        preview = ", ".join(missing_perms[:5])
-        if len(missing_perms) > 5:
-            preview += f" (+{len(missing_perms) - 5} more)"
-        results.append(CheckResult(
-            severity="WARN",
-            category="preauth_applied",
-            id="preauth_applied.permissions-missing",
-            message=(
-                f"{len(missing_perms)} preauth permission pattern(s) not in "
-                f".claude/settings.json permissions.allow ({preview}); "
-                "merge gated by aibox#55"
-            ),
-            suggested_fix="aibox sync (once aibox#55 ships)",
-        ))
-
-    missing_servers = sorted(spec_servers - live_servers)
-    if missing_servers:
-        preview = ", ".join(missing_servers[:5])
-        if len(missing_servers) > 5:
-            preview += f" (+{len(missing_servers) - 5} more)"
-        results.append(CheckResult(
-            severity="WARN",
-            category="preauth_applied",
-            id="preauth_applied.servers-missing",
-            message=(
-                f"{len(missing_servers)} preauth server(s) not in "
-                f".claude/settings.json enabledMcpjsonServers ({preview}); "
-                "merge gated by aibox#55"
-            ),
-            suggested_fix="aibox sync (once aibox#55 ships)",
-        ))
-
-    if not results:
+    codex_path = repo_root / _CODEX_CONFIG_REL
+    if not codex_path.is_file():
         results.append(CheckResult(
             severity="INFO",
             category="preauth_applied",
-            id="preauth_applied.in-sync",
+            id="preauth_applied.codex-not-applicable",
             message=(
-                "preauth.json fully merged into .claude/settings.json "
-                f"({len(spec_perms)} permission patterns, "
-                f"{len(spec_servers)} servers)."
+                ".codex/config.toml not present — Codex preauth check "
+                "skipped (project may use a different harness)."
             ),
         ))
+    else:
+        live_codex_tools = _load_codex_allowed_tools(codex_path)
+        if live_codex_tools is None:
+            results.append(CheckResult(
+                severity="ERROR",
+                category="preauth_applied",
+                id="preauth_applied.codex-config-unreadable",
+                message=f"could not parse {_CODEX_CONFIG_REL.as_posix()}",
+            ))
+        else:
+            missing_codex_tools = sorted(spec_codex_tools - live_codex_tools)
+            if missing_codex_tools:
+                preview = ", ".join(missing_codex_tools[:5])
+                if len(missing_codex_tools) > 5:
+                    preview += f" (+{len(missing_codex_tools) - 5} more)"
+                results.append(CheckResult(
+                    severity="WARN",
+                    category="preauth_applied",
+                    id="preauth_applied.codex-tools-missing",
+                    message=(
+                        f"{len(missing_codex_tools)} preauth tool pattern(s) "
+                        f"not in .codex/config.toml [mcp].allowed_tools "
+                        f"({preview}); merge gated by aibox#55"
+                    ),
+                    suggested_fix="aibox sync (once aibox#55 ships)",
+                ))
+            else:
+                results.append(CheckResult(
+                    severity="INFO",
+                    category="preauth_applied",
+                    id="preauth_applied.codex-in-sync",
+                    message=(
+                        "preauth.json fully merged into "
+                        ".codex/config.toml "
+                        f"({len(spec_codex_tools)} tool patterns)."
+                    ),
+                ))
 
     return results

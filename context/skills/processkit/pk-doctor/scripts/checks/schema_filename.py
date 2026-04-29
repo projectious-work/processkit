@@ -70,7 +70,7 @@ def _check_actor_id_pattern(
         if slug in allowed_role_ids:
             return None  # role class in allowlist — OK
         return (
-            f"role-actor ID '{slug}' not in x-allowed-role-ids allowlist"
+            f"role-actor ID '{slug}' not in spec.role_actor_ids allowlist"
         )
     return (
         "does not match identity class "
@@ -224,9 +224,13 @@ def run(ctx) -> list[CheckResult]:
             # No schemas AND no entity dir for this kind — skip silently.
             continue
         # Cache allowed role IDs per kind (actor only, cheap to compute).
-        allowed_role_ids: list[str] = (
-            schema.get("x-allowed-role-ids", []) if schema else []
-        )
+        allowed_role_ids: list[str] = []
+        if schema:
+            schema_spec = schema.get("spec", {})
+            allowed_role_ids = (
+                schema_spec.get("role_actor_ids")
+                or schema.get("x-allowed-role-ids", [])
+            )
         for path in _iter_entity_files(ctx_root, kind_dir, since_files):
             walked_count += 1
             fm, parse_err = _parse_frontmatter(path)

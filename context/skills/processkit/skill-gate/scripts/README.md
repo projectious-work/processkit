@@ -115,9 +115,10 @@ entries originating from the spec are managed by sync. Write-side processkit
 tools remain safety-gated by the `check_route_task_called.py` PreToolUse hook
 above — preauth is not a safety regression.
 
-The `pk-doctor preauth_applied` check WARNs derived projects when the hooks
-block is present but the preauth surface is not — a self-diagnostic for "your
-aibox is older than v0.x.y; run `aibox sync` after upgrading".
+The `pk-doctor preauth_applied` check WARNs derived projects when the
+preauth surface is missing from Claude Code or Codex config — a
+self-diagnostic for "your aibox is older than v0.x.y; run `aibox sync`
+after upgrading".
 
 ### Codex CLI — `.codex/hooks.json`
 
@@ -133,6 +134,12 @@ aibox is older than v0.x.y; run `aibox sync` after upgrading".
   }
 }
 ```
+
+Codex MCP preauth is declared in
+`context/skills/processkit/skill-gate/assets/preauth.json` under
+`codex.mcp.allowed_tools`. aibox sync should merge those patterns into
+`.codex/config.toml` `[mcp].allowed_tools` while preserving user-added
+entries.
 
 > **Known limitation (Codex):** as of 2026-04-14, Codex CLI `PreToolUse`
 > only intercepts `Bash` calls (upstream openai/codex#16732).

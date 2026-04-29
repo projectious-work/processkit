@@ -17,6 +17,8 @@ metadata:
         purpose: Pull current project state when generating the today's priorities section.
       - skill: workitem-management
         purpose: Query in-progress and next-up WorkItems for the today's priorities section.
+      - skill: migration-management
+        purpose: Surface pending and in-progress migrations before normal work.
     commands:
       - name: pk-resume
         args: ""
@@ -42,11 +44,12 @@ Pull from these sources in order, weighting by freshness:
 
 ```
 1. session.handover LogEntry  — most recent; weight by age (see below)
-2. WorkItems (in_progress + blocked)  — current state via workitem-management
-3. session.standup LogEntries — last 1-3 entries since last handover
-4. git log --oneline -5       — recent commits
-5. DecisionRecords (proposed) — open decisions needing attention
-6. Any time-sensitive flags   — deadlines, blockers, scheduled events
+2. Migrations (pending + in-progress) — upgrade work via migration-management
+3. WorkItems (in_progress + blocked)  — current state via workitem-management
+4. session.standup LogEntries — last 1-3 entries since last handover
+5. git log --oneline -5       — recent commits
+6. DecisionRecords (proposed) — open decisions needing attention
+7. Any time-sensitive flags   — deadlines, blockers, scheduled events
 ```
 
 **Handover staleness rule** — before using the most recent `session.handover`
@@ -89,6 +92,10 @@ the user configuring anything.
 
 - [Decision X] — owner: [name], due by: [date or "unscheduled"]
 - [Decision Y] — [brief description]
+
+## Pending migrations
+
+- [Migration ID] — [source/version], next action: review/apply/reject
 
 ## Blockers and risks
 
@@ -146,7 +153,8 @@ Bad examples (too vague):
 If you cannot write a specific one-liner for today, the briefing
 itself is probably too generic.
 
-This skill also provides the `/status-briefing-generate` slash command for direct invocation — see `commands/status-briefing-generate.md`.
+This skill also provides the `/pk-resume` slash command for direct
+invocation — see `commands/pk-resume.md`.
 
 ### Keeping it short
 
@@ -162,6 +170,10 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
 - **Treating a stale handover as current.** A `session.handover` written 10 days ago reflects a state that may have completely changed. Always check `details.session_date` before using a handover as a source. If it is more than 7 days old, skip it and reconstruct from git log and WorkItem state instead. Presenting stale handover content as "what happened last session" when the last session was a week ago misleads the user.
 - **Reading only the handover note without checking WorkItem state.** The handover captures what was true at session end; WorkItem state shows what has been actively changed since. A briefing that contradicts current WorkItem state (e.g., listing an item as "next up" when it is now done) will erode trust immediately. Always cross-check both.
+- **Hiding pending migrations.** Session start is the safest point to catch
+  upgrade drift. Always query pending and in-progress migrations. If any are
+  present, surface them before normal priorities and propose review via
+  `migration-management`; do not silently apply them.
 - **Listing everything instead of prioritizing.** A briefing that reports all 12 open workitems is not a briefing — it's a dump. The value of a status briefing is triage: surface the 3 things that matter today, not an inventory of everything that exists. If in doubt about what to prioritize, ask — do not pad.
 - **Making the "state of play" section too optimistic.** Briefings written by the agent often smooth over problems to avoid delivering bad news. If the project is blocked, at risk, or behind, the state of play must say so clearly — not "making good progress with a few items to resolve." The user is about to spend their session on this; accurate state matters.
 - **Not including a one-liner.** The "one-liner to carry" section is the hardest to write and the most valuable. Skipping it produces a briefing that reports status without providing orientation. Every briefing must end with one sentence that captures the dominant constraint or priority for the session.

@@ -4,17 +4,8 @@ kind: Schema
 metadata:
   id: SCHEMA-actor
   target_kind: Actor
-  version: "1.1.0"
+  version: "1.2.0"
   created: 2026-04-07T00:00:00Z
-x-allowed-role-ids:
-  - assistant
-  - developer
-  - jr-architect
-  - jr-developer
-  - jr-researcher
-  - pm-claude
-  - sr-architect
-  - sr-researcher
 spec:
   description: >
     A participant in the project: human, AI agent, or service. Actors do
@@ -24,6 +15,15 @@ spec:
   id_prefix: ACTOR
   state_machine: null
   default_directory: context/actors
+  role_actor_ids:
+    - assistant
+    - developer
+    - jr-architect
+    - jr-developer
+    - jr-researcher
+    - product-manager
+    - sr-architect
+    - sr-researcher
   metadata_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
@@ -35,7 +35,7 @@ spec:
         description: >
           Two accepted shapes: identity class
           (ACTOR-<YYYYMMDD_HHMM>-<WordPair>-<slug>) or role class
-          (ACTOR-<kebab-slug> where slug is in x-allowed-role-ids).
+          (ACTOR-<kebab-slug> where slug is in spec.role_actor_ids).
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object

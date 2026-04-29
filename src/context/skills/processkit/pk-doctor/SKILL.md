@@ -107,6 +107,12 @@ Additional checks added after Phase 1:
   user-driven (regenerate manifest + restart harness). Per
   DEC-20260424_0127-QuickPine (SharpBrook split, RapidSwan ships the
   dep-drift half).
+- **`preauth_applied`** — compares
+  `context/skills/processkit/skill-gate/assets/preauth.json` against
+  `.claude/settings.json` and `.codex/config.toml`. WARNs when aibox has
+  not merged processkit MCP preauthorization into either harness config,
+  which is the common cause of reauthorization prompts after container
+  rebuilds.
 
 ### What doctor will NEVER do
 

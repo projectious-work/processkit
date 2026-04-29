@@ -4,22 +4,8 @@ kind: Schema
 metadata:
   id: SCHEMA-model
   target_kind: Model
-  version: "1.0.0"
+  version: "1.1.0"
   created: 2026-04-22T00:00:00Z
-x-capacity-tiers:
-  - xs
-  - s
-  - m
-  - l
-  - xl
-  - xxl
-x-efforts:
-  - none
-  - low
-  - medium
-  - high
-  - extra-high
-  - max
 spec:
   description: >
     A first-class Model artifact: one file per (provider, family)
@@ -35,6 +21,20 @@ spec:
   id_prefix: MODEL
   state_machine: null
   default_directory: context/models
+  capacity_tiers:
+    - xs
+    - s
+    - m
+    - l
+    - xl
+    - xxl
+  effort_levels:
+    - none
+    - low
+    - medium
+    - high
+    - extra-high
+    - max
   metadata_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object

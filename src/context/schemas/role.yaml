@@ -4,34 +4,9 @@ kind: Schema
 metadata:
   id: SCHEMA-role
   target_kind: Role
-  version: "2.0.0"
+  version: "2.1.0"
   created: 2026-04-22T00:00:00Z
   supersedes: SCHEMA-role@1.0.0
-x-allowed-seniority:
-  - junior
-  - specialist
-  - expert
-  - senior
-  - principal
-x-function-groups:
-  - engineering-software
-  - platform-infra
-  - data-ml
-  - research-rnd
-  - security
-  - qa
-  - architecture
-  - devrel-docs
-  - product-program
-  - design-ux
-  - marketing
-  - sales-customer
-  - people-hr
-  - finance
-  - legal-compliance
-  - operations
-  - executive
-  - support
 spec:
   description: >
     A named set of responsibilities a TeamMember or ephemeral
@@ -49,6 +24,31 @@ spec:
   id_prefix: ROLE
   state_machine: null
   default_directory: context/roles
+  seniority_levels:
+    - junior
+    - specialist
+    - expert
+    - senior
+    - principal
+  function_groups:
+    - engineering-software
+    - platform-infra
+    - data-ml
+    - research-rnd
+    - security
+    - qa
+    - architecture
+    - devrel-docs
+    - product-program
+    - design-ux
+    - marketing
+    - sales-customer
+    - people-hr
+    - finance
+    - legal-compliance
+    - operations
+    - executive
+    - support
   metadata_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object

@@ -40,7 +40,10 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 _SCRIPTS_DIR = Path(__file__).resolve().parent
 _DOCTOR = _SCRIPTS_DIR / "doctor.py"
-_REPO_ROOT = Path(__file__).resolve().parents[5]  # skills/processkit/pk-doctor/scripts → repo root
+_REPO_ROOT = next(
+    p for p in Path(__file__).resolve().parents
+    if (p / "src" / "context" / "schemas").is_dir()
+)
 _SCHEMAS_SRC = _REPO_ROOT / "src" / "context" / "schemas"
 
 PASS = "\033[32mPASS\033[0m"
@@ -308,7 +311,7 @@ from checks.schema_filename import _check_actor_id_pattern  # noqa: E402
 
 _ALLOWED = [
     "assistant", "developer", "jr-architect", "jr-developer",
-    "jr-researcher", "pm-claude", "sr-architect", "sr-researcher",
+    "jr-researcher", "product-manager", "sr-architect", "sr-researcher",
 ]
 
 # valid identity-class ID → no error
@@ -322,14 +325,14 @@ check(
 # valid role-class ID in allowlist → no error
 check(
     "role class in allowlist OK",
-    _check_actor_id_pattern("ACTOR-pm-claude", _ALLOWED) is None,
+    _check_actor_id_pattern("ACTOR-product-manager", _ALLOWED) is None,
 )
 
 # role-class ID NOT in allowlist → ERROR
 result_not_in_list = _check_actor_id_pattern("ACTOR-hacker", _ALLOWED)
 check(
     "role class not in allowlist → error",
-    result_not_in_list is not None and "not in x-allowed-role-ids" in result_not_in_list,
+    result_not_in_list is not None and "not in spec.role_actor_ids" in result_not_in_list,
     repr(result_not_in_list),
 )
 
@@ -356,6 +359,54 @@ check(
     result_bad_dt is not None,
     repr(result_bad_dt),
 )
+
+# ---------------------------------------------------------------------------
+# Test 6b: preauth_applied — Codex allowed_tools gap is detected
+# ---------------------------------------------------------------------------
+print("\n[6b] preauth_applied — Codex allowed_tools gap")
+
+from checks.preauth_applied import run as _preauth_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    spec_dir = (
+        root / "context" / "skills" / "processkit" / "skill-gate" / "assets"
+    )
+    spec_dir.mkdir(parents=True)
+    (spec_dir / "preauth.json").write_text(
+        json.dumps({
+            "version": 1,
+            "permissions": {"allow": ["mcp__processkit-a__*"]},
+            "enabledMcpjsonServers": ["processkit-a"],
+            "codex": {
+                "mcp": {
+                    "allowed_tools": [
+                        "mcp__processkit-a__*",
+                        "mcp__processkit-b__*",
+                    ],
+                },
+            },
+        }),
+        encoding="utf-8",
+    )
+    (root / ".codex").mkdir()
+    (root / ".codex" / "config.toml").write_text(
+        textwrap.dedent("""\
+            [mcp]
+            allowed_tools = ["mcp__processkit-a__*"]
+            """),
+        encoding="utf-8",
+    )
+    results = _preauth_run({"repo_root": root})
+    codex_warns = [
+        r for r in results if r.id == "preauth_applied.codex-tools-missing"
+    ]
+    check("Codex missing allowed_tools emits WARN", len(codex_warns) == 1)
+    check(
+        "Codex WARN names missing processkit tool",
+        codex_warns and "mcp__processkit-b__*" in codex_warns[0].message,
+        codex_warns[0].message if codex_warns else "",
+    )
 
 # ---------------------------------------------------------------------------
 # Test 7: pk-doctor integration — invalid actor ID triggers ERROR

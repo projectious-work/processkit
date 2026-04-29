@@ -48,14 +48,15 @@ expertise, preferences, working style.
 ## Actor ID classes
 
 Two accepted ID shapes for Actor entities (see `context/schemas/actor.yaml`
-`x-allowed-role-ids` and `DEC-20260421_2036-SoundIvy-two-class-actor-ids`):
+`spec.role_actor_ids` and `DEC-20260421_2036-SoundIvy-two-class-actor-ids`):
 
 **Role actor** — `ACTOR-<kebab-slug>`
 
 Stable identifier for a durable team role filled by successive agents or
-people (e.g. `ACTOR-pm-claude`, `ACTOR-sr-architect`). Current allowlist
-(from `x-allowed-role-ids` in `actor.yaml`): `assistant`, `developer`,
-`jr-architect`, `jr-developer`, `jr-researcher`, `pm-claude`,
+people (e.g. `ACTOR-product-manager`, `ACTOR-sr-architect`). Current
+allowlist (from `spec.role_actor_ids` in `actor.yaml`): `assistant`,
+`developer`, `jr-architect`, `jr-developer`, `jr-researcher`,
+`product-manager`,
 `sr-architect`, `sr-researcher`. Use when the actor represents a role, not
 an individual.
 
@@ -67,7 +68,7 @@ historical figure (owner, legacy backfill, session-specific agent). Example:
 
 **Adding a role to the allowlist**
 
-Requires amending `x-allowed-role-ids` in `context/schemas/actor.yaml`
+Requires amending `spec.role_actor_ids` in `context/schemas/actor.yaml`
 (and its `src/` mirror). This is a cross-cutting schema change — record a
 DecisionRecord explaining why the new role is needed before making the
 change. pk-doctor will ERROR on any `ACTOR-<slug>` ID whose slug is not in
