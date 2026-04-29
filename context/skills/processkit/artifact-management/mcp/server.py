@@ -281,11 +281,13 @@ def update_artifact(
     owner: str | None = None,
     produced_by: str | None = None,
     tags: list[str] | None = None,
+    touch_updated_at: bool = True,
 ) -> dict:
     """Update metadata fields on an existing Artifact.
 
     Only the fields you supply are changed; omitted fields are
-    preserved. Returns ``{ok, id}``.
+    preserved. Set ``touch_updated_at=False`` for metadata-only updates
+    that should not restamp ``metadata.updated``. Returns ``{ok, id}``.
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
@@ -325,7 +327,7 @@ def update_artifact(
     if errors:
         return {"error": "schema validation failed", "details": errors}
 
-    ent.write()
+    ent.write(touch_updated=touch_updated_at)
     db = index.open_db()
     try:
         index.upsert_entity(db, ent)

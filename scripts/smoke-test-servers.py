@@ -486,6 +486,24 @@ def run():
         assert g_updated["version"] == "1.0"
         assert "final" in g_updated["tags"]
 
+        def _updated_line(text: str) -> str | None:
+            for line in text.splitlines():
+                if line.strip().startswith("updated:"):
+                    return line.strip()
+            return None
+
+        a_url_path = Path(a_url["path"])
+        before_touchless = _updated_line(a_url_path.read_text(encoding="utf-8"))
+        u_touchless = update_art(
+            id=a_url["id"],
+            version="1.0",
+            touch_updated_at=False,
+        )
+        print("update_artifact touchless:", u_touchless)
+        assert u_touchless["ok"]
+        after_touchless = _updated_line(a_url_path.read_text(encoding="utf-8"))
+        assert after_touchless == before_touchless
+
         # 4h. migration-management
         #     Seed two pending Migration fixtures directly on disk (aibox
         #     sync generates these in real life), then exercise start /

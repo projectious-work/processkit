@@ -10,7 +10,7 @@ Artifact registration, retrieval, and update. Layer 2 — depends on
 | `create_artifact(name, kind, location?, format?, version?, owner?, produced_by?, tags?, description?)` | Register a new Artifact under `context/artifacts/` |
 | `get_artifact(id)` | Fetch one Artifact with full spec |
 | `query_artifacts(kind?, owner?, tags?, limit?)` | List Artifacts matching filters |
-| `update_artifact(id, name?, kind?, location?, format?, version?, owner?, produced_by?, tags?)` | Update metadata fields on an existing Artifact |
+| `update_artifact(id, name?, kind?, location?, format?, version?, owner?, produced_by?, tags?, touch_updated_at?)` | Update metadata fields on an existing Artifact |
 | `reload_schemas()` | Clear in-process schema + state-machine caches so a disk edit is picked up without a server restart (returns `{ok, cleared: {schemas, state_machines}}`). Scope: this server only. PEP 723 dep edits still require a harness restart. See DEC-QuickPine. |
 
 ## Valid kinds
@@ -28,6 +28,9 @@ Artifact registration, retrieval, and update. Layer 2 — depends on
   the Markdown body.
 - `update_artifact` only modifies fields you supply; omitted fields
   are preserved.
+- Pass `touch_updated_at=false` for metadata-only updates that should
+  not restamp `metadata.updated` and invalidate an agent's prior
+  body-read freshness checks.
 
 ## Running
 

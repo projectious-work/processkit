@@ -103,8 +103,17 @@ class Entity:
     def to_text(self) -> str:
         return render(self.to_dict(), self.body)
 
-    def write(self, path: Path | str | None = None) -> Path:
-        """Write the entity to disk. Sets `metadata.updated` to now.
+    def write(
+        self,
+        path: Path | str | None = None,
+        *,
+        touch_updated: bool = True,
+    ) -> Path:
+        """Write the entity to disk.
+
+        By default, sets `metadata.updated` to now. Callers that are
+        intentionally performing metadata-only rewrites can pass
+        ``touch_updated=False`` to avoid an extra freshness stamp.
 
         If `path` is provided it overrides `self.path`. The parent
         directory is created if missing.
@@ -115,7 +124,7 @@ class Entity:
         target.parent.mkdir(parents=True, exist_ok=True)
         # Stamp updated only if the entity already had a created time
         # different from now (avoid stamping on initial create).
-        if self.metadata.get("created"):
+        if touch_updated and self.metadata.get("created"):
             now = _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
             if self.metadata.get("created") != now:
                 self.metadata["updated"] = now

@@ -109,9 +109,11 @@ Common queries via `query_artifacts`:
 ### Updating
 
 Use `update_artifact` to revise metadata (new version, updated
-location, changed owner). To replace the body content of a
-self-hosted artifact, update the Markdown body via `update_artifact`
-or by editing the file directly followed by reindex.
+location, changed owner). Pass `touch_updated_at=false` for
+metadata-only updates that should not restamp `metadata.updated` and
+invalidate an agent's prior body-read freshness checks. To replace the
+body content of a self-hosted artifact, update the Markdown body via
+`update_artifact` or by editing the file directly followed by reindex.
 
 ## Gotchas
 
