@@ -60,6 +60,18 @@ CREATE TABLE IF NOT EXISTS errors (
 );
 """
 
+FTS_SCHEMA_DDL = """
+CREATE VIRTUAL TABLE IF NOT EXISTS entities_fts USING fts5(
+    id UNINDEXED,
+    kind UNINDEXED,
+    state UNINDEXED,
+    title,
+    body,
+    spec_json,
+    tokenize='unicode61'
+);
+"""
+
 
 @dataclass
 class IndexStats:
@@ -80,6 +92,12 @@ def open_db(path: Path | None = None) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     conn.executescript(SCHEMA_DDL)
+    try:
+        conn.executescript(FTS_SCHEMA_DDL)
+    except sqlite3.OperationalError:
+        # FTS5 is built into supported processkit environments, but keep
+        # the index usable on stripped-down SQLite builds.
+        pass
     return conn
 
 
@@ -92,6 +110,8 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
     db.execute("DELETE FROM entities")
     db.execute("DELETE FROM events")
     db.execute("DELETE FROM errors")
+    if _has_fts(db):
+        db.execute("DELETE FROM entities_fts")
     n_entities = 0
     n_events = 0
     n_errors = 0
@@ -129,6 +149,8 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
 
 def _insert_entity(db: sqlite3.Connection, ent) -> None:
     spec = ent.spec or {}
+    title = spec.get("title") or spec.get("name")
+    spec_json = json.dumps(spec, default=str)
     db.execute(
         """
         INSERT OR REPLACE INTO entities
@@ -142,11 +164,46 @@ def _insert_entity(db: sqlite3.Connection, ent) -> None:
             str(ent.path) if ent.path else "",
             str(ent.created),
             str(ent.updated) if ent.updated else None,
-            spec.get("title") or spec.get("name"),
+            title,
             spec.get("state"),
             json.dumps(ent.labels) if ent.labels else None,
-            json.dumps(spec, default=str),
+            spec_json,
             ent.body or None,
+        ),
+    )
+    _upsert_fts(db, ent, title=title, spec_json=spec_json)
+
+
+def _has_fts(db: sqlite3.Connection) -> bool:
+    row = db.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'entities_fts'"
+    ).fetchone()
+    return row is not None
+
+
+def _upsert_fts(
+    db: sqlite3.Connection,
+    ent,
+    *,
+    title: str | None,
+    spec_json: str,
+) -> None:
+    """Mirror an entity row into the optional FTS5 search table."""
+    if not _has_fts(db):
+        return
+    db.execute("DELETE FROM entities_fts WHERE id = ?", (ent.id,))
+    db.execute(
+        """
+        INSERT INTO entities_fts (id, kind, state, title, body, spec_json)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            ent.id,
+            ent.kind,
+            (ent.spec or {}).get("state"),
+            title or "",
+            ent.body or "",
+            spec_json,
         ),
     )
 
@@ -322,6 +379,25 @@ def search_entities(
     *,
     limit: int = 50,
 ) -> list[dict[str, Any]]:
+    if _has_fts(db):
+        try:
+            rows = db.execute(
+                """
+                SELECT e.id, e.kind, e.title, e.state, e.created, e.path
+                FROM entities_fts f
+                JOIN entities e ON e.id = f.id
+                WHERE entities_fts MATCH ?
+                ORDER BY rank
+                LIMIT ?
+                """,
+                (text, int(limit)),
+            ).fetchall()
+            return [dict(r) for r in rows]
+        except sqlite3.OperationalError:
+            # Preserve the previous forgiving substring-search behaviour
+            # for punctuation-heavy or otherwise invalid FTS5 queries.
+            pass
+
     like = f"%{text}%"
     rows = db.execute(
         """

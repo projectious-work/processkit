@@ -813,6 +813,17 @@ def run():
         print("search lint:", len(s))
         assert any(r["id"] == wi_id for r in s)
 
+        s_phrase = search(text='"Sprint 42"', limit=10)
+        print("search Sprint 42 phrase:", len(s_phrase))
+        assert any(r["id"] == art_id for r in s_phrase)
+
+        # Hyphen-heavy strings are invalid or surprising in raw FTS5 MATCH
+        # syntax; search_entities must preserve the old forgiving LIKE
+        # fallback for those agent queries.
+        s_fallback = search(text="api-latency", limit=10)
+        print("search api-latency fallback:", len(s_fallback))
+        assert any(r["id"] == a_url["id"] for r in s_fallback)
+
         events = get_tool(idx, "query_events")
         ev = events(subject=wi_id)
         print("events for wi:", ev)

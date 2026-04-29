@@ -42,7 +42,7 @@ every entity-creating skill.
 - **`reindex()`** — rebuild the SQLite index from scratch
 - **`query_entities(kind?, state?, limit?)`** — list entities matching filters
 - **`get_entity(id)`** — fetch a single entity by ID
-- **`search_entities(text, limit?)`** — full-text search across IDs, titles, bodies, specs
+- **`search_entities(text, limit?)`** — FTS5 search across titles, bodies, specs
 - **`query_events(event_type?, subject?, actor?, limit?)`** — query the event log
 - **`list_errors()`** — files that failed to parse during the last reindex
 - **`stats()`** — counts of entities/events/errors in the index
@@ -84,9 +84,8 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
   semantically valid. Schema validation is a separate concern from
   parse success.
 - **Using `search_entities` for exact-ID lookup.** `search_entities`
-  is full-text — it ranks by relevance and may miss exact ID matches
-  if the ID appears in many bodies. Use `get_entity(id)` for exact
-  lookup.
+  is ranked FTS5 search over parsed content, with a fallback substring
+  search for invalid FTS syntax. Use `get_entity(id)` for exact lookup.
 - **Re-indexing inside a hot loop.** A full reindex walks the whole
   `context/` tree and is expensive. Batch your writes and reindex
   once at the end, not after every entity.
@@ -99,6 +98,7 @@ Three tables — see `src/lib/processkit/index.py` for the DDL.
 
 ```sql
 entities(id, kind, api_version, path, created, updated, title, state, labels_json, spec_json, body)
+entities_fts(id, kind, state, title, body, spec_json)
 events(id, timestamp, event_type, actor, subject, subject_kind, summary, details_json, correlation_id, path)
 errors(path, message)
 ```
@@ -107,6 +107,12 @@ errors(path, message)
 anticipate. `entities` and `events` overlap for LogEntry rows: a LogEntry
 appears in both, with the `events` table denormalizing the event-specific
 fields for fast filtering.
+
+`entities_fts` is a rebuildable SQLite FTS5 virtual table. It mirrors
+the searchable fields from `entities` and is cleared/rebuilt during
+`reindex()`. If a stripped-down SQLite build lacks FTS5, the index still
+opens and `search_entities` falls back to the previous `LIKE %text%`
+behaviour.
 
 ### Reindex strategy
 
@@ -142,6 +148,7 @@ The index database path is configurable via:
 - **WAL mode enabled (v0.4.0+).** Multiple readers and a single writer
   are safe; concurrent writes still serialize via WAL. Typical
   AI-assisted sessions are single-writer anyway.
-- **No FTS.** Search uses `LIKE %text%`. SQLite FTS5 integration lands
-  in a later release.
+- **FTS5 search.** Search uses SQLite FTS5 ranking when available and
+  falls back to `LIKE %text%` for invalid FTS syntax or unsupported
+  SQLite builds.
 - **No incremental indexing.** Every reindex is a full sweep.

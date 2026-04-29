@@ -11,7 +11,7 @@ processkit MCP servers (which call `upsert_entity` after writing files).
 | `reindex()`                                                    | Walk `context/`, rebuild the index from scratch  |
 | `query_entities(kind?, state?, limit?)`                        | List entities matching filters                   |
 | `get_entity(id)`                                               | Fetch one entity by ID                           |
-| `search_entities(text, limit?)`                                | Full-text search (LIKE-based at v0.3.0)         |
+| `search_entities(text, limit?)`                                | FTS5-ranked search with LIKE fallback           |
 | `query_events(event_type?, subject?, actor?, limit?)`          | Query the LogEntry events table                  |
 | `list_errors()`                                                | Files that failed to parse during last reindex   |
 | `stats()`                                                      | Count of entities/events/errors in the index     |
@@ -42,7 +42,8 @@ STDIO. Subsequent runs are near-instant due to uv's environment cache.
 ## Limitations
 
 - WAL mode enabled (v0.4.0+); concurrent writes still serialize.
-- Search is `LIKE %text%`, not FTS5 (BACK-005).
+- Search uses SQLite FTS5 when available and falls back to
+  `LIKE %text%` for invalid FTS syntax or SQLite builds without FTS5.
 - No incremental indexing — `reindex()` is a full sweep (BACK-006).
 
 ## Configuration
