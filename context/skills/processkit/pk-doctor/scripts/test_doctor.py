@@ -755,9 +755,72 @@ with tempfile.TemporaryDirectory() as tmp:
     check("14b: skill_dag section present in output",
           "## skill_dag" in result.stdout,
           result.stdout[-400:])
-    check("14c: summary line present",
-          "walked" in result.stdout and "skill(s)" in result.stdout,
-          result.stdout[-400:])
+check("14c: summary line present",
+      "walked" in result.stdout and "skill(s)" in result.stdout,
+      result.stdout[-400:])
+
+# ---------------------------------------------------------------------------
+# Test 15: context_consumption checkpoint/report CLI
+# ---------------------------------------------------------------------------
+print("\n[15] context_consumption — checkpoint report labels local estimates")
+
+from checks.context_consumption import (  # noqa: E402
+    compare_checkpoints as _compare_context_checkpoints,
+    write_checkpoint as _write_context_checkpoint,
+)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / ".agents" / "skills" / "pk-resume").mkdir(parents=True)
+    (root / ".agents" / "skills" / "pk-resume" / "SKILL.md").write_text(
+        "resume command\n",
+        encoding="utf-8",
+    )
+    (root / "context" / "skills" / "processkit" / "alpha").mkdir(parents=True)
+    (root / "context" / "skills" / "processkit" / "alpha" / "SKILL.md").write_text(
+        "alpha skill\n",
+        encoding="utf-8",
+    )
+
+    _write_context_checkpoint(root, "before")
+    (root / ".agents" / "skills" / "pk-extra").mkdir(parents=True)
+    (root / ".agents" / "skills" / "pk-extra" / "SKILL.md").write_text(
+        "extra command adapter text\n" * 3,
+        encoding="utf-8",
+    )
+    _write_context_checkpoint(root, "after")
+
+    report = _compare_context_checkpoints(root, "before", "after")
+    check(
+        "report has positive token delta",
+        report["totals"]["delta"]["estimated_tokens"] > 0,
+        json.dumps(report["totals"], indent=2),
+    )
+    check(
+        "report labels estimates as non-billing",
+        "not provider-billed token usage" in report["billing_notice"],
+        report["billing_notice"],
+    )
+    check(
+        "top file delta attributes added command adapter",
+        any(
+            item["path"] == ".agents/skills/pk-extra/SKILL.md"
+            and item["status"] == "added"
+            for item in report["top_file_deltas"]
+        ),
+        json.dumps(report["top_file_deltas"], indent=2)[:500],
+    )
+
+    cli = _SCRIPTS_DIR / "checks" / "context_consumption.py"
+    result = subprocess.run(
+        [sys.executable, str(cli), "--repo-root", str(root), "report", "before", "after"],
+        capture_output=True,
+        text=True,
+    )
+    check("report CLI exits 0", result.returncode == 0, result.stderr)
+    check("report CLI prints billing notice",
+          "not provider-billed token usage" in result.stdout,
+          result.stdout)
 
 # ---------------------------------------------------------------------------
 # Summary

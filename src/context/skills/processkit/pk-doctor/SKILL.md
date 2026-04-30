@@ -118,6 +118,15 @@ Additional checks added after Phase 1:
   MCP configs) using `ceil(utf8 bytes / 4)` as the provider-neutral
   token heuristic. It is intentionally not an MCP tool, so measurement
   does not add another tool schema to the harness context.
+  It also exposes a local checkpoint/report CLI:
+  ```sh
+  python context/skills/processkit/pk-doctor/scripts/checks/context_consumption.py checkpoint <label>
+  python context/skills/processkit/pk-doctor/scripts/checks/context_consumption.py report <before> <after>
+  ```
+  Checkpoints are JSON files under
+  `context/.state/context-consumption/checkpoints/`. Reports compare
+  observed processkit payloads and label token counts as local estimates,
+  not provider-billed usage.
 
 ### What doctor will NEVER do
 

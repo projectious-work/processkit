@@ -268,7 +268,13 @@ def _has_vec(db: sqlite3.Connection) -> bool:
     row = db.execute(
         "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'entity_vec'"
     ).fetchone()
-    return row is not None
+    if row is None:
+        return False
+    try:
+        db.execute("SELECT rowid FROM entity_vec LIMIT 0").fetchall()
+        return True
+    except sqlite3.OperationalError:
+        return False
 
 
 def _tokenize(text: str) -> list[str]:
