@@ -871,6 +871,13 @@ def run():
         lm_rejected = list_mig(state="rejected")
         assert any(m["id"] == _mig2_id for m in lm_rejected)
 
+        migrate_v2 = get_tool(mig, "migrate_context_to_v2")
+        v2_plan = migrate_v2(dry_run=True)
+        print("migrate_context_to_v2 dry run:", v2_plan["changed_count"])
+        assert v2_plan["dry_run"] is True
+        assert v2_plan["ok"] is True
+        assert v2_plan["changed_count"] >= 1
+
         # Assert migration events landed in the log
         from processkit import index as _index
         _db = _index.open_db()
