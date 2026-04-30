@@ -173,6 +173,8 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
             db.close()
         return IndexStats(0, 0, 0)
     for path in sorted(context_dir.rglob("*.md")):
+        if not _should_index_path(context_dir, path):
+            continue
         try:
             ent = entity_mod.load(path)
         except entity_mod.NotAnEntityError:
@@ -210,6 +212,17 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
     if own:
         db.close()
     return IndexStats(n_entities, n_events, n_errors)
+
+
+def _should_index_path(context_dir: Path, path: Path) -> bool:
+    """Return whether ``path`` is a project entity, not packaged support data."""
+    for excluded in ("skills", "templates"):
+        try:
+            path.relative_to(context_dir / excluded)
+            return False
+        except ValueError:
+            continue
+    return True
 
 
 def _insert_entity(

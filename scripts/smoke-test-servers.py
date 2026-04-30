@@ -124,6 +124,23 @@ def run():
         )
         _wi_dst.mkdir(parents=True, exist_ok=True)
         shutil.copy(_wi_src, _wi_dst / "SKILL.md")
+        _wi_assets = _wi_dst / "assets"
+        _wi_assets.mkdir(parents=True, exist_ok=True)
+        (_wi_assets / "workitem-template.md").write_text(
+            "---\n"
+            "apiVersion: processkit.projectious.work/v2\n"
+            "kind: WorkItem\n"
+            "metadata:\n"
+            "  id: BACK-template-asset\n"
+            "  created: 2026-04-30T00:00:00Z\n"
+            "spec:\n"
+            "  title: Skill asset template must not enter project index\n"
+            "  state: backlog\n"
+            "  type: task\n"
+            "  priority: medium\n"
+            "---\n",
+            encoding="utf-8",
+        )
 
         # Seed a minimal processes/ directory with a release.md override
         # so task-router's process_override lookup can be exercised.
@@ -1085,6 +1102,7 @@ def run():
         assert wi_id in wi_row_ids
         assert proc["id"] in wi_row_ids
         assert sep["id"] in wi_row_ids
+        assert "BACK-template-asset" not in wi_row_ids
         assert len(wi_rows) >= 5
 
         search = get_tool(idx, "search_entities")

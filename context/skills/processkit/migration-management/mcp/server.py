@@ -568,6 +568,16 @@ def _is_relative_to(path: Path, base: Path) -> bool:
         return False
 
 
+def _should_upsert_index(root: Path, path: Path) -> bool:
+    if path.suffix != ".md":
+        return False
+    ctx = root / "context"
+    return not (
+        _is_relative_to(path, ctx / "skills")
+        or _is_relative_to(path, ctx / "templates")
+    )
+
+
 def _apply_v2_entity_updates(ent: entity.Entity) -> bool:
     changed = False
     if ent.apiVersion != API_VERSION:
@@ -937,14 +947,15 @@ def migrate_context_to_v2(dry_run: bool = True) -> dict:
                 _write_context_entity(ent, write_path, plain_yaml=plain_yaml)
                 if target is not None and path.exists():
                     path.unlink()
-                try:
-                    db = index.open_db()
+                if _should_upsert_index(root, write_path):
                     try:
-                        index.upsert_entity(db, ent)
-                    finally:
-                        db.close()
-                except Exception:
-                    pass
+                        db = index.open_db()
+                        try:
+                            index.upsert_entity(db, ent)
+                        finally:
+                            db.close()
+                    except Exception:
+                        pass
 
     if not dry_run:
         log.log_side_effect(
