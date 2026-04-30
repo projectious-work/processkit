@@ -48,12 +48,38 @@ _NOUNS = (
 
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
+_SUMMARY_WORD_RE = re.compile(r"[A-Za-z0-9]+")
 
 
-def _slugify(text: str, max_words: int = 4) -> str:
+def _slugify(text: str, max_words: int = 6) -> str:
     cleaned = _SLUG_RE.sub("-", text.lower()).strip("-")
     parts = [p for p in cleaned.split("-") if p]
     return "-".join(parts[:max_words])
+
+
+def validate_slug_summary(
+    text: str | None,
+    *,
+    min_words: int = 4,
+    max_words: int = 6,
+) -> list[str]:
+    """Validate a caller-supplied semantic slug summary.
+
+    MCP servers cannot reliably summarize long descriptions on their own.
+    Callers may provide a compact human/LLM-authored summary instead; the
+    server validates only the shape and then slugifies it deterministically.
+    """
+    if text is None:
+        return []
+    words = _SUMMARY_WORD_RE.findall(text)
+    if len(words) < min_words or len(words) > max_words:
+        return [
+            (
+                "slug_summary must contain "
+                f"{min_words}-{max_words} words; got {len(words)}"
+            )
+        ]
+    return []
 
 
 def _word_pair(rng: random.Random, style: str = "kebab") -> str:

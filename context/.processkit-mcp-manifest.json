@@ -1,10 +1,14 @@
 {
   "aggregate_sha256": "92d6eedc1755a7ce9d69a1013393e36cc616e411d1daa4c9c5484cefe4536651",
-  "generated_at": "2026-04-29T16:35:21Z",
+  "generated_at": "2026-04-29T20:06:57Z",
   "per_server_header": [
     {
       "path": "context/skills/processkit/actor-profile/mcp/server.py",
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+    },
+    {
+      "path": "context/skills/processkit/aggregate-mcp/mcp/server.py",
+      "sha256": "e67c7cb4eabea3c15f3c8681e42a4e65c47ebc3dd39a3f5cd6e426c21c284025"
     },
     {
       "path": "context/skills/processkit/artifact-management/mcp/server.py",

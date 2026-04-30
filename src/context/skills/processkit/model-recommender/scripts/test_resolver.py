@@ -338,6 +338,30 @@ def test_layer_7_project_bias_reorders(project_root):
     assert cands[0].model_id == "MODEL-google-gemini-flash"
 
 
+def test_project_provider_preference_substitutes_blocked_default(project_root):
+    _add_binding(project_root, "BIND-role", "model-assignment",
+                 "ROLE-software-engineer", "MODEL-anthropic-claude-sonnet",
+                 conditions={"seniority": "expert", "rank": 1})
+    _add_binding(project_root, "BIND-veto", "model-assignment",
+                 "SCOPE-myproj", "MODEL-anthropic-claude-sonnet",
+                 conditions={"blocked": True})
+    _add_binding(project_root, "BIND-pref", "model-assignment",
+                 "SCOPE-myproj", "MODEL-openai-gpt-5",
+                 conditions={"provider_preference": ["openai"]})
+
+    cands, trace = R.resolve(
+        "ROLE-software-engineer",
+        seniority="expert",
+        scope="SCOPE-myproj",
+        explain=True,
+    )
+
+    assert cands[0].model_id == "MODEL-openai-gpt-5"
+    assert cands[0].source_layer == 5
+    assert "Provider-equivalent fallback" in cands[0].rationale
+    assert trace[0]["action"] == "project_veto"
+
+
 def test_layer_8_shim_fallback_fires_and_emits_warning(project_root):
     # No bindings anywhere; role.default_model = haiku.
     _add_role_default(project_root, "ROLE-software-engineer",

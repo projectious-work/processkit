@@ -156,6 +156,12 @@ def run():
         art = import_server("artifact-management")
         mig = import_server("migration-management")
         skf = import_server("skill-finder")
+        agg = import_server("aggregate-mcp")
+
+        aggregate_tools = get_tool(agg, "list_aggregate_tools")()
+        print("aggregate-mcp tool count:", aggregate_tools["count"])
+        assert aggregate_tools["count"] >= 90
+        assert "create_workitem" in agg.server._tool_manager._tools
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -179,11 +185,19 @@ def run():
 
         # 2. workitem flow
         create_wi = get_tool(wi, "create_workitem")
+        bad_summary = create_wi(
+            title="Bad summary shape",
+            slug_summary="too short",
+        )
+        print("create_workitem bad slug_summary:", bad_summary)
+        assert bad_summary.get("error") == "invalid slug_summary"
+
         result = create_wi(
             title="Add aibox lint command",
             type="story",
             priority="high",
             description="Walk context/ and validate frontmatter.",
+            slug_summary="validate context frontmatter automatically",
         )
         print("create_workitem:", result)
         assert "id" in result and result["state"] == "backlog"

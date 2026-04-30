@@ -89,13 +89,17 @@ or a Note while the thing is still being made.
 
 1. Choose `kind` from the table above.
 2. Write a short, descriptive `name`.
-3. Set `location` for pointer artifacts (URL, path, bucket key).
+3. Provide `slug_summary` when available: 4-6 meaningful words that
+   summarize the durable deliverable. The server validates this shape
+   and turns it into the ID slug; if omitted, the name remains the
+   backwards-compatible fallback.
+4. Set `location` for pointer artifacts (URL, path, bucket key).
    Omit or set to the entity file path for self-hosted artifacts.
-4. Set `produced_by` to the WorkItem or Process ID that produced it.
-5. Set `owner` to the responsible Actor ID.
-6. Add `tags` for retrieval (topic, project, format, etc.).
-7. Write the file to `context/artifacts/ART-<id>.md`.
-8. Log `artifact.created`.
+5. Set `produced_by` to the WorkItem or Process ID that produced it.
+6. Set `owner` to the responsible Actor ID.
+7. Add `tags` for retrieval (topic, project, format, etc.).
+8. Write the file to `context/artifacts/ART-<id>.md`.
+9. Log `artifact.created`.
 
 ### Querying
 

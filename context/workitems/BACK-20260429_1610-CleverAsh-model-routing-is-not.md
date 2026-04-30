@@ -10,10 +10,11 @@ metadata:
     provider_independence: 'true'
     derived_projects: 'true'
     possible_aibox_followup: 'true'
+  updated: '2026-04-29T20:08:01+00:00'
 spec:
   title: Model routing is not provider-independent across roles, team-members, and
     derived projects
-  state: backlog
+  state: done
   type: bug
   priority: high
   description: |
@@ -24,4 +25,20 @@ spec:
     Possible aibox responsibility: if derived projects do not receive or refresh model artifacts, team-members, model-assignment bindings, or generated MCP/command config during sync/rebuild, file a linked aibox issue with reproduction evidence. This processkit bug should first define the expected contract and local correctness checks so any aibox propagation defect is precise.
 
     Acceptance criteria: provider-neutral routing tests cover OpenAI-preferred, Anthropic-preferred, and no-provider-preference projects; explain-routing shows why a provider wins; default bindings avoid provider-specific role names and single-provider lock-in; pk-doctor or release audit catches missing model/team-member/binding propagation; derived-project simulation verifies sync-visible model routing state.
+  started_at: '2026-04-29T20:07:45+00:00'
+  completed_at: '2026-04-29T20:08:01+00:00'
 ---
+
+## Transition note (2026-04-29T20:07:45+00:00)
+
+Implemented resolver provider-equivalent fallback. When a project scope veto blocks a role binding target and provider_preference is set, resolver now substitutes an explicit or inferred equivalent model from the preferred provider instead of returning no viable candidate. Added regression coverage for OpenAI substitution of blocked Anthropic role defaults.
+
+
+## Transition note (2026-04-29T20:07:52+00:00)
+
+Validation completed: resolver unit tests passed, smoke tests passed, drift guard passed, pk-doctor passed with only the existing aibox#55 Codex warning, release-audit passed with existing warnings only.
+
+
+## Transition note (2026-04-29T20:08:01+00:00)
+
+Closed as processkit-side fix. Remaining broader UX around visible active actor and harness-specific subagent export is tracked separately in new backlog items.

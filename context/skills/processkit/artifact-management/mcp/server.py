@@ -97,6 +97,7 @@ def create_artifact(
     produced_by: str | None = None,
     tags: list[str] | None = None,
     description: str | None = None,
+    slug_summary: str | None = None,
 ) -> dict:
     """Register a new Artifact in context/artifacts/.
 
@@ -119,6 +120,9 @@ def create_artifact(
                 f"{sorted(_VALID_KINDS)}"
             )
         }
+    summary_errors = ids.validate_slug_summary(slug_summary)
+    if summary_errors:
+        return {"error": "invalid slug_summary", "details": summary_errors}
 
     root = paths.find_project_root()
     cfg = config.load_config(root)
@@ -134,7 +138,7 @@ def create_artifact(
         format=cfg.id_format,
         word_style=cfg.id_word_style,
         datetime_prefix=cfg.id_datetime_prefix,
-        slug_text=name if cfg.id_slug else None,
+        slug_text=(slug_summary or name) if cfg.id_slug else None,
         existing=existing,
     )
 

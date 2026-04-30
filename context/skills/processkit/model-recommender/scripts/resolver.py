@@ -78,6 +78,12 @@ _EFFORT_INDEX = {e: i for i, e in enumerate(EFFORT_ORDER)}
 
 _SENIORITY_ORDER = ["junior", "specialist", "expert", "senior", "principal"]
 
+_PROVIDER_EQUIVALENTS = {
+    ("MODEL-anthropic-claude-haiku", "openai"): "MODEL-openai-o4-mini",
+    ("MODEL-anthropic-claude-sonnet", "openai"): "MODEL-openai-gpt-5",
+    ("MODEL-anthropic-claude-opus", "openai"): "MODEL-openai-gpt-5-pro",
+}
+
 
 class NoViableModelError(RuntimeError):
     """Raised when no candidate model can be resolved after all 8 layers."""
@@ -328,6 +334,85 @@ def _binding_to_candidate(
     )
 
 
+def _provider_equivalent_binding(
+    binding: dict,
+    preferred_providers: list[str],
+) -> dict | None:
+    """Return a provider-preferred equivalent binding when one exists."""
+    target = binding.get("target")
+    if not target or not preferred_providers:
+        return None
+
+    source = _get_model(target)
+    if not source:
+        return None
+
+    for provider in preferred_providers:
+        provider_key = provider.lower()
+        explicit = _PROVIDER_EQUIVALENTS.get((target, provider_key))
+        if explicit and _get_model(explicit):
+            replacement = dict(binding)
+            replacement["target"] = explicit
+            conds = dict(binding.get("conditions") or {})
+            rationale = conds.get("rationale")
+            equivalent_note = (
+                f"Provider-equivalent fallback from {target} to {explicit} "
+                f"because project prefers {provider}."
+            )
+            conds["rationale"] = (
+                f"{rationale}; {equivalent_note}"
+                if rationale else equivalent_note
+            )
+            replacement["conditions"] = conds
+            return replacement
+
+        inferred = _infer_provider_equivalent(source, provider_key)
+        if inferred:
+            replacement = dict(binding)
+            replacement["target"] = inferred
+            conds = dict(binding.get("conditions") or {})
+            rationale = conds.get("rationale")
+            equivalent_note = (
+                f"Provider-equivalent fallback from {target} to {inferred} "
+                f"because project prefers {provider}."
+            )
+            conds["rationale"] = (
+                f"{rationale}; {equivalent_note}"
+                if rationale else equivalent_note
+            )
+            replacement["conditions"] = conds
+            return replacement
+    return None
+
+
+def _infer_provider_equivalent(source: dict, provider: str) -> str | None:
+    """Pick the closest model from a preferred provider using tier + dimensions."""
+    source_tier = source.get("equivalent_tier")
+    source_dims = source.get("dimensions") or {}
+    db = _index.open_db()
+    try:
+        rows = _index.query_entities(db, kind="Model", limit=1000)
+    finally:
+        db.close()
+
+    best: tuple[float, str] | None = None
+    for row in rows:
+        model = _get_model(row["id"])
+        if not model:
+            continue
+        if str(model.get("provider", "")).lower() != provider:
+            continue
+        dims = model.get("dimensions") or {}
+        tier_penalty = 0 if model.get("equivalent_tier") == source_tier else 10
+        distance = float(tier_penalty)
+        for key in ("reasoning", "engineering", "speed", "breadth", "reliability"):
+            distance += abs(int(dims.get(key, 0) or 0) - int(source_dims.get(key, 0) or 0))
+        candidate = (distance, row["id"])
+        if best is None or candidate < best:
+            best = candidate
+    return best[1] if best else None
+
+
 def _capability_ok(model: dict, hints: dict | None) -> tuple[bool, str]:
     """Return (ok, reason). Reason is empty if ok is True."""
     if not hints:
@@ -421,6 +506,12 @@ def resolve(
     candidates: list[ResolvedCandidate] = []
     preferred_providers: list[str] = []
     expected_tokens: int | None = task_hints.get("expected_tokens")
+    project_bindings: list[dict] = _load_bindings_for_subject(scope) if scope else []
+    for b in project_bindings:
+        pref = (b.get("conditions") or {}).get("provider_preference")
+        if pref:
+            preferred_providers = list(pref)
+            break
 
     # -- Layer 1: Task-pinned override ----------------------------------------
     model_pin = task_hints.get("model_pin")
@@ -486,8 +577,7 @@ def resolve(
     # -- Layer 3: Project veto (blocked list) ---------------------------------
     blocked: set[str] = set()
     if scope:
-        proj_bindings = _load_bindings_for_subject(scope)
-        for b in proj_bindings:
+        for b in project_bindings:
             conds = b.get("conditions") or {}
             if conds.get("blocked") is True:
                 blocked.add(b.get("target", ""))
@@ -547,7 +637,12 @@ def resolve(
                 if isinstance(rc, tuple):
                     continue
                 if rc.model_id in blocked:
-                    continue
+                    equivalent = _provider_equivalent_binding(b, preferred_providers)
+                    if not equivalent:
+                        continue
+                    rc = _binding_to_candidate(equivalent, layer=5)
+                    if isinstance(rc, tuple) or rc.model_id in blocked:
+                        continue
                 model = _get_model(rc.model_id)
                 if model is None:
                     continue
@@ -579,7 +674,12 @@ def resolve(
         if isinstance(rc, tuple):
             continue
         if rc.model_id in blocked:
-            continue
+            equivalent = _provider_equivalent_binding(b, preferred_providers)
+            if not equivalent:
+                continue
+            rc = _binding_to_candidate(equivalent, layer=6)
+            if isinstance(rc, tuple) or rc.model_id in blocked:
+                continue
         model = _get_model(rc.model_id)
         if model is None:
             continue
@@ -596,19 +696,12 @@ def resolve(
 
     # -- Layer 7: Project bias (reorder only) ---------------------------------
     if scope:
-        proj_bindings = _load_bindings_for_subject(scope)
-        for b in proj_bindings:
-            conds = b.get("conditions") or {}
-            pref = conds.get("provider_preference")
-            if pref:
-                preferred_providers = list(pref)
-                break
         trace.append({
             "step": 7, "layer": 7, "action": "project_bias",
             "count_before": len(candidates), "count_after": len(candidates),
             "details": {
                 "provider_preference": preferred_providers,
-                "cost_bias": _collect_cost_bias(proj_bindings),
+                "cost_bias": _collect_cost_bias(project_bindings),
             },
         })
     else:

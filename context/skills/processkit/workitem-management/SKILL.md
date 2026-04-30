@@ -79,11 +79,15 @@ bother.
 
 1. Pick the `type`.
 2. Write a short, imperative `title`.
-3. Set `state` to the initial state (`backlog` by default).
-4. Set `priority` if known (`critical`/`high`/`medium`/`low`).
-5. Assign to an Actor (optional at creation).
-6. Write the file to `context/workitems/BACK-<id>.md`.
-7. Log `workitem.created`.
+3. Provide `slug_summary` when available: 4-6 meaningful words that
+   summarize the durable problem or outcome. The server validates this
+   shape and turns it into the ID slug; if omitted, the title remains
+   the backwards-compatible fallback.
+4. Set `state` to the initial state (`backlog` by default).
+5. Set `priority` if known (`critical`/`high`/`medium`/`low`).
+6. Assign to an Actor (optional at creation).
+7. Write the file to `context/workitems/BACK-<id>.md`.
+8. Log `workitem.created`.
 
 ### Transitioning
 
