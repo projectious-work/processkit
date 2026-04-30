@@ -8,9 +8,10 @@ metadata:
     area: context
     release: next
     source: user-request
+  updated: '2026-04-30T08:49:36+00:00'
 spec:
   title: Measure processkit context consumption
-  state: backlog
+  state: done
   type: spike
   priority: medium
   description: 'Investigate and implement optional measurability for context consumed
@@ -19,4 +20,20 @@ spec:
     briefing payload size, and per-harness startup prompt contribution. The implementation
     should be optional, provider-neutral, and should avoid sending project content
     to external tokenizers unless the user opts in.'
+  started_at: '2026-04-30T08:49:23+00:00'
+  completed_at: '2026-04-30T08:49:36+00:00'
 ---
+
+## Transition note (2026-04-30T08:49:23+00:00)
+
+Implemented pk-doctor INFO-only context consumption measurement and context budget loading.
+
+
+## Transition note (2026-04-30T08:49:29+00:00)
+
+Implementation and validation complete.
+
+
+## Transition note (2026-04-30T08:49:36+00:00)
+
+Validated with py_compile, team-manager tests, pk-doctor context_consumption, drift guard, and server smoke test.

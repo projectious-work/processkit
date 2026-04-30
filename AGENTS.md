@@ -121,6 +121,9 @@ identities live as **TeamMembers** under `context/team-members/<slug>/`
 (directory tree: persona + A2A card + tiered memory). Ad-hoc
 invocations are ephemeral `(role, seniority)` dispatches resolved via
 `model-recommender.resolve_model` against `model-assignment` bindings.
+If `team-manager.get_active_interlocutor` returns a configured
+TeamMember, show that identity at session start; otherwise state that
+the current speaker is an ephemeral harness agent.
 
 Charters: `DEC-20260422_0233-SpryTulip` (team-member model + memory),
 `DEC-20260422_0234-BraveFalcon` (role catalog + seniority),

@@ -113,6 +113,11 @@ Additional checks added after Phase 1:
   not merged processkit MCP preauthorization into either harness config,
   which is the common cause of reauthorization prompts after container
   rebuilds.
+- **`context_consumption`** — emits an INFO-only estimate of processkit
+  context footprint by group (`startup`, command adapters, skill docs,
+  MCP configs) using `ceil(utf8 bytes / 4)` as the provider-neutral
+  token heuristic. It is intentionally not an MCP tool, so measurement
+  does not add another tool schema to the harness context.
 
 ### What doctor will NEVER do
 

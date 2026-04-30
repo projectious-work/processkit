@@ -110,6 +110,16 @@ def load_config(root: Path | None = None) -> Config:
     else:
         directory_overrides, sharding, index_path = _legacy_index_settings(root)
 
+    budget_cfg = _load_toml(
+        _skill_config_dir(root, "agent-management") / "settings.toml"
+    )
+    if budget_cfg is not None:
+        context_budget = budget_cfg.get("context", {}).get("budget", {})
+        if not context_budget:
+            context_budget = budget_cfg.get("context_budget", {})
+    else:
+        context_budget = _legacy_context_budget(root)
+
     return Config(
         id_format=id_format,
         id_slug=id_slug,
@@ -118,6 +128,7 @@ def load_config(root: Path | None = None) -> Config:
         directory_overrides=directory_overrides,
         sharding=sharding,
         index_path=index_path,
+        context_budget=context_budget,
     )
 
 
@@ -137,3 +148,10 @@ def _legacy_index_settings(root: Path) -> tuple[dict, dict, str | None]:
         return {}, {}, None
     ctx = data.get("context", {})
     return ctx.get("directories", {}), ctx.get("sharding", {}), None
+
+
+def _legacy_context_budget(root: Path) -> dict:
+    data = _load_toml(root / "aibox.toml")
+    if data is None:
+        return {}
+    return data.get("context", {}).get("budget", {})

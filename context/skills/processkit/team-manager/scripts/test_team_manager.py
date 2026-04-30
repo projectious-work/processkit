@@ -363,6 +363,30 @@ def test_get_nonexistent(server_mod):
     assert "error" in r
 
 
+def test_active_interlocutor_roundtrip(server_mod, project_root: Path):
+    server_mod.create_team_member(
+        name="Alice", type="ai-agent", slug="alice",
+        default_role="ROLE-product-manager",
+        default_seniority="senior",
+    )
+    r = server_mod.set_active_interlocutor("alice")
+    assert r["ok"] is True
+    assert r["interlocutor"]["speaker_prefix"] == "Alice [TEAMMEMBER-alice]"
+
+    got = server_mod.get_active_interlocutor()
+    assert got["configured"] is True
+    assert got["interlocutor"]["id"] == "TEAMMEMBER-alice"
+    assert (project_root / "context" / "team" / "session-identity.json").is_file()
+
+
+def test_active_interlocutor_rejects_inactive(server_mod):
+    server_mod.create_team_member(name="Alice Chen", type="human", slug="alice-chen")
+    server_mod.deactivate_team_member("alice-chen")
+    r = server_mod.set_active_interlocutor("alice-chen")
+    assert "error" in r
+    assert "inactive" in r["error"]
+
+
 # ---------------------------------------------------------------------------
 # init_memory_tree tool
 # ---------------------------------------------------------------------------
@@ -784,6 +808,48 @@ def test_import_rejects_missing_signature(server_mod, project_root: Path, tmp_pa
         export_import.import_bundle(
             out, project_root / "context" / "team-members", assets_dir,
         )
+
+
+def test_export_claude_subagent_adapter(server_mod, project_root: Path):
+    server_mod.create_team_member(
+        name="Alice", type="ai-agent", slug="alice",
+        default_role="ROLE-software-engineer",
+        default_seniority="expert",
+    )
+    server_mod.init_memory_tree("alice")
+    persona = project_root / "context" / "team-members" / "alice" / "persona.md"
+    persona.write_text("# Alice\n\nPragmatic implementation specialist.\n")
+
+    r = server_mod.export_claude_subagent("alice")
+    assert r["written"] is True
+    out = project_root / ".claude" / "agents" / "alice.md"
+    text = out.read_text()
+    assert "name: alice\n" in text
+    assert "model: inherit\n" in text
+    assert "tools:" not in text
+    assert "TeamMember TEAMMEMBER-alice" in text
+    assert "Pragmatic implementation specialist." in text
+
+
+def test_export_claude_subagents_skips_humans_by_default(server_mod, project_root: Path):
+    server_mod.create_team_member(name="Alice Chen", type="human", slug="alice-chen")
+    server_mod.create_team_member(name="Alice", type="ai-agent", slug="alice")
+
+    r = server_mod.export_claude_subagents()
+    assert r["count"] == 1
+    assert (project_root / ".claude" / "agents" / "alice.md").is_file()
+    assert not (project_root / ".claude" / "agents" / "alice-chen.md").exists()
+    assert any(item.get("skipped") == "human" for item in r["results"])
+
+
+def test_export_claude_subagent_rejects_output_outside_project(
+    server_mod, tmp_path: Path
+):
+    server_mod.create_team_member(name="Alice", type="ai-agent", slug="alice")
+    outside = tmp_path.parent / "outside-project"
+    r = server_mod.export_claude_subagent("alice", output_dir=str(outside))
+    assert "error" in r
+    assert "project root" in r["error"]
 
 
 # ---------------------------------------------------------------------------

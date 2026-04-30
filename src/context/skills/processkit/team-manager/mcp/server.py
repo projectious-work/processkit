@@ -21,6 +21,8 @@ Lifecycle:
                        personality?, email?, handle?, joined_at?) -> {id, path}
     get_team_member(id) -> {...} | {error}
     list_team_members(type?, active_only?, role?, limit?) -> [members]
+    get_active_interlocutor(scope?) -> {configured, interlocutor?}
+    set_active_interlocutor(id, scope?) -> {ok, interlocutor}
     update_team_member(id, **fields) -> {ok, id, updated}
     deactivate_team_member(id, left_at?) -> {ok, id, left_at}
     reactivate_team_member(id) -> {ok, id}
@@ -36,6 +38,9 @@ Memory tree:
 
 Export/import:
     export_team_member(slug, output_path?) -> {path, redacted}
+    export_claude_subagent(slug, output_dir?, overwrite?) -> {path}
+    export_claude_subagents(output_dir?, active_only?, include_humans?,
+                            overwrite?) -> {results}
     import_team_member(tarball_path) -> {slug, path}
 
 Consistency:
@@ -45,7 +50,9 @@ Consistency:
 from __future__ import annotations
 
 import datetime as _dt
+import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -93,6 +100,7 @@ _UPDATABLE_FIELDS = {
 }
 
 _SLUG_RE = __import__("re").compile(r"^[a-z][a-z0-9-]*$")
+_CLAUDE_AGENT_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +147,129 @@ def _load_tm(root: Path, id_or_slug: str) -> entity.Entity | None:
 
 def _pool_path() -> Path:
     return Path(__file__).resolve().parent.parent / "data" / "name-pool.yaml"
+
+
+def _identity_path(root: Path) -> Path:
+    return root / "context" / "team" / "session-identity.json"
+
+
+def _team_member_summary(ent: entity.Entity) -> dict:
+    spec = ent.spec or {}
+    role = spec.get("default_role") or "ephemeral-role"
+    seniority = spec.get("default_seniority") or "unspecified"
+    return {
+        "id": ent.id,
+        "type": spec.get("type"),
+        "name": spec.get("name"),
+        "slug": spec.get("slug"),
+        "default_role": spec.get("default_role"),
+        "default_seniority": spec.get("default_seniority"),
+        "active": spec.get("active", True),
+        "label": f"{spec.get('name')} ({ent.id}; {role}/{seniority})",
+        "speaker_prefix": f"{spec.get('name')} [{ent.id}]",
+    }
+
+
+def _read_json(path: Path) -> dict:
+    if not path.is_file():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _strip_frontmatter(text: str) -> str:
+    if not text.startswith("---\n"):
+        return text.strip()
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return text.strip()
+    return text[end + 5:].strip()
+
+
+def _yaml_scalar(value: str) -> str:
+    return json.dumps(value, ensure_ascii=False)
+
+
+def _claude_agent_prompt(root: Path, ent: entity.Entity) -> str:
+    spec = ent.spec or {}
+    slug = spec.get("slug") or ent.id.removeprefix("TEAMMEMBER-")
+    persona_path = _tm_dir(root, slug) / "persona.md"
+    persona = ""
+    if persona_path.is_file():
+        persona = _strip_frontmatter(persona_path.read_text(encoding="utf-8"))
+
+    role = spec.get("default_role") or "ephemeral-role"
+    seniority = spec.get("default_seniority") or "unspecified"
+    lines = [
+        f"You are {spec.get('name')}, processkit TeamMember {ent.id}.",
+        "",
+        "Processkit identity:",
+        f"- Type: {spec.get('type')}",
+        f"- Canonical slug: {slug}",
+        f"- Default role: {role}",
+        f"- Default seniority: {seniority}",
+        "",
+        "Use this subagent when the requested work matches this TeamMember's",
+        "role, persona, or durable project memory. Treat this file as a",
+        "Claude Code adapter over processkit's provider-neutral TeamMember",
+        "model, not as the canonical identity record.",
+        "",
+        "Do not claim to be the session's active interlocutor unless",
+        "`team-manager.get_active_interlocutor` returns this TeamMember.",
+    ]
+    if persona:
+        lines.extend(["", "Persona:", "", persona])
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _write_claude_agent(root: Path, ent: entity.Entity, dest_dir: Path, overwrite: bool) -> dict:
+    spec = ent.spec or {}
+    slug = spec.get("slug") or ent.id.removeprefix("TEAMMEMBER-")
+    if not _CLAUDE_AGENT_NAME_RE.match(slug):
+        return {"id": ent.id, "slug": slug, "error": "slug is not a valid Claude Code agent name"}
+    if spec.get("exportable") is False:
+        return {"id": ent.id, "slug": slug, "skipped": "exportable=false"}
+
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / f"{slug}.md"
+    if dest.exists() and not overwrite:
+        return {"id": ent.id, "slug": slug, "path": str(dest), "skipped": "exists"}
+
+    role = spec.get("default_role") or "ephemeral-role"
+    seniority = spec.get("default_seniority") or "unspecified"
+    description = (
+        f"Use {spec.get('name')} for processkit work matching "
+        f"{role}/{seniority}; derived from TeamMember {ent.id}."
+    )
+    body = [
+        "---",
+        f"name: {slug}",
+        f"description: {_yaml_scalar(description)}",
+        "model: inherit",
+        "---",
+        "",
+        _claude_agent_prompt(root, ent).rstrip(),
+        "",
+    ]
+    dest.write_text("\n".join(body), encoding="utf-8")
+    return {"id": ent.id, "slug": slug, "path": str(dest), "written": True}
+
+
+def _claude_output_dir(root: Path, output_dir: str | None) -> Path | dict:
+    if output_dir:
+        raw = Path(output_dir)
+        dest = raw if raw.is_absolute() else root / raw
+    else:
+        dest = root / ".claude" / "agents"
+    resolved_root = root.resolve()
+    resolved_dest = dest.resolve()
+    if not resolved_dest.is_relative_to(resolved_root):
+        return {"error": f"output_dir must stay under project root: {root}"}
+    return dest
 
 
 # ---------------------------------------------------------------------------
@@ -337,6 +468,100 @@ def list_team_members(
         if len(out) >= limit:
             break
     return out
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def get_active_interlocutor(scope: str | None = None) -> dict:
+    """Return the configured active interlocutor for harness sessions.
+
+    This is session identity, not lifecycle state. `TeamMember.spec.active`
+    still means whether a TeamMember can participate at all.
+    """
+    root = paths.find_project_root()
+    identity_file = _identity_path(root)
+    configured_scope = scope or "default"
+    try:
+        data = _read_json(identity_file)
+    except (OSError, json.JSONDecodeError) as e:
+        return {"error": f"could not read {identity_file}: {e}"}
+
+    entries = data.get("scopes") or {}
+    entry = entries.get(configured_scope) or entries.get("default")
+    if not entry:
+        return {
+            "configured": False,
+            "scope": configured_scope,
+            "path": str(identity_file),
+            "message": "no active interlocutor configured; call set_active_interlocutor",
+        }
+
+    member_id = entry.get("team_member")
+    ent = _load_tm(root, member_id or "")
+    if ent is None:
+        return {
+            "configured": True,
+            "scope": configured_scope,
+            "path": str(identity_file),
+            "error": f"configured team-member {member_id!r} not found",
+        }
+
+    summary = _team_member_summary(ent)
+    return {
+        "configured": True,
+        "scope": configured_scope,
+        "path": str(identity_file),
+        "updated_at": entry.get("updated_at"),
+        "interlocutor": summary,
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def set_active_interlocutor(id: str, scope: str | None = None) -> dict:
+    """Set the active interlocutor shown at harness/session start."""
+    root = paths.find_project_root()
+    ent = _load_tm(root, id)
+    if ent is None:
+        return {"error": f"team-member {id!r} not found"}
+    if not ent.spec.get("active", True):
+        return {"error": f"team-member {ent.id!r} is inactive"}
+
+    identity_file = _identity_path(root)
+    try:
+        data = _read_json(identity_file)
+    except (OSError, json.JSONDecodeError) as e:
+        return {"error": f"could not read {identity_file}: {e}"}
+
+    configured_scope = scope or "default"
+    data.setdefault("version", 1)
+    data.setdefault("scopes", {})
+    data["scopes"][configured_scope] = {
+        "team_member": ent.id,
+        "updated_at": _now_iso(),
+    }
+    _write_json(identity_file, data)
+
+    log.log_side_effect(
+        "TeamMember", ent.id, "team_member.active_interlocutor_set",
+        f"Set active interlocutor for scope {configured_scope!r} to {ent.id!r}",
+        root=root,
+        actor=ent.id,
+    )
+    return {
+        "ok": True,
+        "scope": configured_scope,
+        "path": str(identity_file),
+        "interlocutor": _team_member_summary(ent),
+    }
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -579,6 +804,90 @@ def export_team_member(slug: str, output_path: str | None = None) -> dict:
         actor=f"TEAMMEMBER-{slug}",
     )
     return {"path": str(dest), "redacted": summary["redacted"], "included": summary["included"]}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def export_claude_subagent(
+    slug: str,
+    output_dir: str | None = None,
+    overwrite: bool = True,
+) -> dict:
+    """Export one TeamMember as a Claude Code project subagent adapter.
+
+    Writes `.claude/agents/<slug>.md` by default. The generated file uses
+    `model: inherit` and omits `tools`, so Claude Code inherits the main
+    session model and tool permissions instead of baking processkit routing
+    into a provider-specific adapter.
+    """
+    root = paths.find_project_root()
+    ent = _load_tm(root, slug)
+    if ent is None:
+        return {"error": f"team-member {slug!r} not found"}
+    dest_dir = _claude_output_dir(root, output_dir)
+    if isinstance(dest_dir, dict):
+        return dest_dir
+    result = _write_claude_agent(root, ent, dest_dir, overwrite)
+    if result.get("written"):
+        log.log_side_effect(
+            "TeamMember", ent.id, "team_member.claude_subagent_exported",
+            f"Exported TeamMember {ent.id!r} as Claude Code subagent",
+            root=root,
+            actor=ent.id,
+        )
+    return result
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def export_claude_subagents(
+    output_dir: str | None = None,
+    active_only: bool = True,
+    include_humans: bool = False,
+    overwrite: bool = True,
+) -> dict:
+    """Export provider-neutral TeamMembers to Claude Code subagent files."""
+    root = paths.find_project_root()
+    dest_dir = _claude_output_dir(root, output_dir)
+    if isinstance(dest_dir, dict):
+        return dest_dir
+    members = list_team_members(active_only=active_only, limit=1000)
+    results: list[dict] = []
+    for member in members:
+        if member.get("type") == "human" and not include_humans:
+            results.append({
+                "id": member.get("id"),
+                "slug": member.get("slug"),
+                "skipped": "human",
+            })
+            continue
+        ent = _load_tm(root, member["id"])
+        if ent is None:
+            results.append({
+                "id": member.get("id"),
+                "slug": member.get("slug"),
+                "error": "not found",
+            })
+            continue
+        results.append(_write_claude_agent(root, ent, dest_dir, overwrite))
+
+    written = [r for r in results if r.get("written")]
+    if written:
+        log.log_side_effect(
+            "TeamMember", "TEAMMEMBER", "team_member.claude_subagents_exported",
+            f"Exported {len(written)} TeamMember Claude Code subagent adapter(s)",
+            root=root,
+            actor="system",
+        )
+    return {"output_dir": str(dest_dir), "count": len(written), "results": results}
 
 
 @server.tool(annotations=ToolAnnotations(

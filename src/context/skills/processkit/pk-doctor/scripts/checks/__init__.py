@@ -20,6 +20,7 @@ from . import (
     server_header_drift,
     preauth_applied,
     skill_dag,
+    context_consumption,
 )
 
 # (name, module). Name is the --category= token and the key in the
@@ -37,6 +38,7 @@ REGISTRY = [
     ("server_header_drift", server_header_drift),
     ("preauth_applied", preauth_applied),
     ("skill_dag", skill_dag),
+    ("context_consumption", context_consumption),
 ]
 
 

@@ -27,6 +27,8 @@ metadata:
         - create_team_member
         - get_team_member
         - list_team_members
+        - get_active_interlocutor
+        - set_active_interlocutor
         - update_team_member
         - deactivate_team_member
         - reactivate_team_member
@@ -36,6 +38,8 @@ metadata:
         - suggest_name
         - init_memory_tree
         - export_team_member
+        - export_claude_subagent
+        - export_claude_subagents
         - import_team_member
         - check_consistency
         - check_all_consistency
@@ -69,12 +73,13 @@ subdirectories + optional `private/` (gitignored).
 ### Invocation surface
 
 This skill is not a CLI; it is reached entirely via MCP tools served
-by `mcp/server.py`. Fifteen tools cluster into five capability
-groups (lifecycle, name pool, memory scaffolding, export/import,
-consistency). Every write tool logs an `event-log` entry and updates
+by `mcp/server.py`. Tools cluster into six capability groups
+(lifecycle, session identity, name pool, memory scaffolding,
+export/import, consistency). Every write tool logs an `event-log` entry and updates
 the SQLite index automatically — callers do not log or reindex by
 hand. Read tools (`get_team_member`, `list_team_members`,
-`list_available_names`, `suggest_name`, `check_consistency`) are
+`get_active_interlocutor`, `list_available_names`, `suggest_name`,
+`check_consistency`) are
 side-effect-free and safe to call from any agent context.
 
 ### Capability groups
@@ -82,9 +87,10 @@ side-effect-free and safe to call from any agent context.
 | Group | Tools | Use when |
 |---|---|---|
 | Lifecycle | `create_team_member`, `get_team_member`, `list_team_members`, `update_team_member`, `deactivate_team_member`, `reactivate_team_member` | Adding, editing, retiring or restoring a persistent team-member entity |
+| Session identity | `get_active_interlocutor`, `set_active_interlocutor` | Showing which persistent TeamMember, if any, is the current harness interlocutor |
 | Name pool | `reserve_name`, `release_name`, `list_available_names`, `suggest_name` | Choosing or rotating an AI persona name; the pool is the canonical source of truth for AI-agent slugs |
 | Memory scaffolding | `init_memory_tree` | Creating the six tier subdirectories + frontmatter-validated headers under `context/team-members/<slug>/` |
-| Export / import | `export_team_member`, `import_team_member` | Moving a TeamMember between projects or backing up a persona; export redacts confidential/PII memory |
+| Export / import | `export_team_member`, `export_claude_subagent`, `export_claude_subagents`, `import_team_member` | Moving a TeamMember between projects or generating provider-specific adapter files; tarball export redacts confidential/PII memory |
 | Consistency | `check_consistency`, `check_all_consistency` | Pre-release health-check; CI validation; ad-hoc audits |
 
 ### Common workflows
@@ -110,6 +116,24 @@ persona back, call `reactivate_team_member(slug)`.
 `import_team_member(tarball_path)`. Schema and Agent Card are
 re-validated on import; signature presence is required (crypto
 verification is deferred).
+
+**Showing the active interlocutor.**
+`set_active_interlocutor(id)` writes
+`context/team/session-identity.json` with the TeamMember that should be
+presented as the harness's main speaker. `get_active_interlocutor()`
+returns a compact label and speaker prefix for status briefings and
+session-start UI. This is session identity, not lifecycle state:
+`TeamMember.spec.active` continues to mean whether a TeamMember is
+eligible to participate at all.
+
+**Exporting Claude Code subagents.**
+`export_claude_subagent(slug)` writes one generated adapter to
+`.claude/agents/<slug>.md`; `export_claude_subagents()` exports all
+active non-human TeamMembers by default. The generated file uses
+Claude Code's Markdown + YAML frontmatter format, sets `model:
+inherit`, and omits `tools` so Claude Code inherits the main session's
+model and permissions. TeamMember remains the canonical,
+provider-neutral identity; `.claude/agents/*.md` is only an adapter.
 
 **Pre-release audit.** `check_all_consistency()` → triage findings by
 severity. Errors block release; warnings are advisory.

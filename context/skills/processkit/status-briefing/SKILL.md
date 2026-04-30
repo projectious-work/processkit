@@ -44,12 +44,13 @@ Pull from these sources in order, weighting by freshness:
 
 ```
 1. session.handover LogEntry  — most recent; weight by age (see below)
-2. Migrations (pending + in-progress) — upgrade work via migration-management
-3. WorkItems (in_progress + blocked)  — current state via workitem-management
-4. session.standup LogEntries — last 1-3 entries since last handover
-5. git log --oneline -5       — recent commits
-6. DecisionRecords (proposed) — open decisions needing attention
-7. Any time-sensitive flags   — deadlines, blockers, scheduled events
+2. Active interlocutor — current speaker via team-manager, if configured
+3. Migrations (pending + in-progress) — upgrade work via migration-management
+4. WorkItems (in_progress + blocked)  — current state via workitem-management
+5. session.standup LogEntries — last 1-3 entries since last handover
+6. git log --oneline -5       — recent commits
+7. DecisionRecords (proposed) — open decisions needing attention
+8. Any time-sensitive flags   — deadlines, blockers, scheduled events
 ```
 
 **Handover staleness rule** — before using the most recent `session.handover`
@@ -72,6 +73,8 @@ the user configuring anything.
 # Status Briefing — [Date]
 
 ## State of play
+
+[If configured: Active interlocutor: Name (TEAMMEMBER-id; role/seniority).]
 
 [1-3 sentences on overall project health and phase. Honest —
 "on track", "at risk on [milestone]", or "blocked on [dependency]".]
@@ -174,6 +177,10 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
   upgrade drift. Always query pending and in-progress migrations. If any are
   present, surface them before normal priorities and propose review via
   `migration-management`; do not silently apply them.
+- **Blurring persistent identity and ephemeral dispatch.** If
+  `team-manager.get_active_interlocutor` returns a TeamMember, show that
+  identity explicitly. If it is not configured, say the session is an
+  ephemeral harness agent rather than implying a named persona is speaking.
 - **Listing everything instead of prioritizing.** A briefing that reports all 12 open workitems is not a briefing — it's a dump. The value of a status briefing is triage: surface the 3 things that matter today, not an inventory of everything that exists. If in doubt about what to prioritize, ask — do not pad.
 - **Making the "state of play" section too optimistic.** Briefings written by the agent often smooth over problems to avoid delivering bad news. If the project is blocked, at risk, or behind, the state of play must say so clearly — not "making good progress with a few items to resolve." The user is about to spend their session on this; accurate state matters.
 - **Not including a one-liner.** The "one-liner to carry" section is the hardest to write and the most valuable. Skipping it produces a briefing that reports status without providing orientation. Every briefing must end with one sentence that captures the dominant constraint or priority for the session.

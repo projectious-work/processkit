@@ -136,6 +136,10 @@ rather than assuming you are alone.
   `private/`; the last is gitignored by `.gitignore.example`).
 - **Ephemeral invocations** are `(role, seniority)` dispatches resolved
   at call time — no team-member entity needed.
+- **Active interlocutor** is session state resolved through
+  `team-manager.get_active_interlocutor`. If configured, show the
+  TeamMember identity at session start; otherwise state that the current
+  speaker is an ephemeral harness agent.
 - **Models** live under `context/models/` as first-class entities, one
   per `(provider, family)` with nested versions. Each declares an
   `equivalent_tier` in the T-shirt capacity ladder
