@@ -144,8 +144,9 @@ appends a log entry recording the before/after state.
 
 **Triggers:** When the user says "remember this", "note this idea",
 "capture this", or "link this to another note".
-**Tools:** None (file-based via SKILL.md instructions)
-**Layers:** Layer 4
+**Tools:** `create_note`, `capture_inbox_item`, `claim_inbox_item`,
+`complete_inbox_item`, `fail_inbox_item`
+**Layers:** Layer 2
 
 Key capabilities:
 
@@ -157,6 +158,7 @@ Key capabilities:
 - Each link requires a `context` sentence explaining *why* the connection
   matters — tags group, links argue
 - Notes stored under `context/notes/`
+- Hook inbox lifecycle for interrupt, ambient, and next-cycle items
 
 <details><summary>Example usage</summary>
 

@@ -5,6 +5,24 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Added breaking-v2 workflow and projection MCP surfaces:
+  hook-inbox note management, process-instance and SEP handoff helpers,
+  schedule and budget binding helpers, agent-card projection,
+  eval-gate authoring, security policy projections, and v2 contract
+  doctor checks.
+- Expanded smoke coverage to exercise the new v2 MCP tools directly.
+
+### Changed
+
+- Updated release-facing docs for the 22-server MCP surface and the
+  new Note and Migration MCP support.
+
+---
+
 ## [v0.24.0] — 2026-04-30
 
 A minor release focused on model-routing depth, context lifecycle

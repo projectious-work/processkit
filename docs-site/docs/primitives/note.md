@@ -13,8 +13,8 @@ knowledge (insight).
 |---|---|
 | **ID prefix** | `NOTE` |
 | **State machine** | `note` |
-| **MCP server** | none (file-based) |
-| **Skill** | `note-management` (Layer 4) |
+| **MCP server** | `note-management` |
+| **Skill** | `note-management` (Layer 2) |
 
 ## State machine
 
@@ -54,7 +54,15 @@ fleeting → insight
 | `source` | string | For `reference` notes: URL, book title, or conversation |
 | `promotes_to` | object | `{kind, id}` — target entity when promoted |
 | `review_due` | date | When the note should be reviewed |
+| `inbox` | object | Hook-inbox status and routing metadata |
 | `links` | object[] | Typed edges to other Notes (see below) |
+
+## Hook inbox
+
+The `note-management` MCP server can capture external or
+agent-generated interrupts as Notes with `spec.inbox`. Inbox items move
+through `captured`, `claimed`, `completed`, or `failed`, with an
+`injection_mode` of `interrupt`, `ambient`, or `next-cycle`.
 
 ## Links — typed Zettelkasten edges
 

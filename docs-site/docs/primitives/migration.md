@@ -14,7 +14,7 @@ represent the delta an agent must apply to bring the project's
 |---|---|
 | **ID prefix** | `MIG` |
 | **State machine** | `migration` |
-| **MCP server** | none (managed by aibox sync) |
+| **MCP server** | `migration-management` |
 | **Skill** | `migration-management` (Layer 3) |
 
 ## State machine
@@ -52,6 +52,15 @@ pending → in-progress → applied
 | `applied_at` | datetime | When migration reached `applied` |
 | `applied_by` | string | Actor ID that finalised the migration |
 | `rejected_reason` | string | If rejected, why |
+| `source_api_version` | string | API version before a v2 conversion |
+| `target_api_version` | string | API version after a v2 conversion |
+| `source_processkit_version` | string | processkit version before conversion |
+| `target_processkit_version` | string | processkit version after conversion |
+| `apply_mode` | string | Migration apply mode (`one-shot`, etc.) |
+
+The `migration-management` MCP server manages migration state
+transitions and provides `migrate_context_to_v2(dry_run=true)` for the
+breaking v2 API conversion path.
 
 ### `affected_files` classification values
 

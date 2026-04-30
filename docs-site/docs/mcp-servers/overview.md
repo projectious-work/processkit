@@ -11,10 +11,10 @@ either edit entity files directly (following the SKILL.md instructions)
 or call an MCP tool (which validates against the schema and state machine).
 Both are first-class; MCP is not required.
 
-## Status at v0.18.0
+## Status
 
-**Sixteen MCP servers ship** across Layers 0–3 of the processkit skill
-hierarchy, plus two routing servers (and `skill-gate` — see Rail 3). They live under
+**Twenty-two MCP servers ship** across processkit's primitive,
+workflow, projection, routing, and guard skills. They live under
 `context/skills/processkit/<skill>/mcp/server.py` and share a Python
 utility library at `context/skills/_lib/processkit/`.
 
@@ -37,14 +37,24 @@ utility library at `context/skills/_lib/processkit/`.
 
 | Server | Tools |
 |---|---|
-| [`workitem-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/workitem-management/mcp/) | `create_workitem`, `transition_workitem`, `query_workitems`, `get_workitem`, `link_workitems` |
+| [`workitem-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/workitem-management/mcp/) | `create_workitem`, `create_process_instance`, `create_sep_handoff`, `transition_workitem`, `query_workitems`, `get_workitem`, `link_workitems` |
 | [`decision-record`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/decision-record/mcp/) | `record_decision`, `transition_decision`, `query_decisions`, `get_decision`, `supersede_decision`, `link_decision_to_workitem` |
 | [`artifact-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/artifact-management/mcp/) | `create_artifact`, `get_artifact`, `query_artifacts`, `update_artifact` |
+| [`note-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/note-management/mcp/) | `create_note`, `capture_inbox_item`, `claim_inbox_item`, `complete_inbox_item`, `fail_inbox_item` |
 | [`scope-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/scope-management/mcp/) | `create_scope`, `get_scope`, `list_scopes`, `transition_scope` |
-| [`gate-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/gate-management/mcp/) | `create_gate`, `get_gate`, `list_gates`, `evaluate_gate` |
-| [`binding-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/binding-management/mcp/) | `create_binding`, `end_binding`, `query_bindings`, `resolve_bindings_for` |
+| [`gate-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/gate-management/mcp/) | `create_gate`, `create_gate_template`, `get_gate`, `list_gates`, `evaluate_gate` |
+| [`binding-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/binding-management/mcp/) | `create_binding`, `create_time_window`, `create_budget_application`, `end_binding`, `query_bindings`, `resolve_bindings_for` |
 | [`discussion-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/discussion-management/mcp/) | `open_discussion`, `get_discussion`, `list_discussions`, `transition_discussion`, `add_outcome` |
+| [`migration-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/migration-management/mcp/) | `list_migrations`, `get_migration`, `start_migration`, `apply_migration`, `reject_migration`, `migrate_context_to_v2` |
 | [`model-recommender`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/model-recommender/mcp/) | `list_models`, `get_profile`, `query_models`, `compare_models`, `get_pricing`, `check_availability`, `get_config`, `set_config` |
+
+### Layer 3 — Workflow and projections
+
+| Server | Tools |
+|---|---|
+| [`agent-card`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/agent-card/mcp/) | `project_agent_card` |
+| [`eval-gate-authoring`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/eval-gate-authoring/mcp/) | `collect_run_outputs`, `codify_eval`, `calibrate_judge`, `bind_eval_to_runs` |
+| [`security-projections`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/security-projections/mcp/) | `project_agent_ids_rule`, `project_tetragon_tracing_policy` |
 
 ### Routing (cross-layer)
 
@@ -52,6 +62,7 @@ utility library at `context/skills/_lib/processkit/`.
 |---|---|
 | [`skill-finder`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/skill-finder/mcp/) | `find_skill`, `list_skills` |
 | [`task-router`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/task-router/mcp/) | `route_task` — returns skill + process override + MCP tool in one call |
+| [`skill-gate`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/skill-gate/mcp/) | `acknowledge_contract`, `check_contract_acknowledged`, `skip_decision_record` |
 
 A standalone smoke test (no MCP transport, just direct function calls)
 runs all servers via:
@@ -126,6 +137,6 @@ tier. Without them, agents cannot use the entity layer correctly:
 
 Tier-specific servers (`actor-profile`, `role-management`,
 `scope-management`, `gate-management`, `binding-management`,
-`model-recommender`) are registered based on the installed package
-tier. `artifact-management` is available in all tiers that include
-the `artifact-management` skill.
+`model-recommender`, and the workflow/projection servers) are registered
+based on the installed package tier. `artifact-management` and
+`note-management` are available in tiers that include their skills.
