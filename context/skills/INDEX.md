@@ -55,7 +55,7 @@ Layer 2 (core entities and operator workflows):
   `category-management`, `cross-reference-management`,
   `binding-management` **MCP**, `status-briefing`,
   `note-management`, `session-handover`, `standup-context`,
-  `status-update-writer`
+  `status-update-writer`, `context-archiving` **MCP**
 
 Layer 3 (process orchestration):
 - `process-management`, `state-machine-management`, `gate-management`,

@@ -27,10 +27,12 @@ the caller can escalate to LLM confirmation when confidence < 0.5.
 """
 from __future__ import annotations
 
+import json
 import math
 import os
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 
@@ -369,35 +371,95 @@ def _score_tokens(task: str, phrases: list[str]) -> float:
     return best
 
 
-def _phase1_groups(task: str) -> list[tuple[float, str]]:
-    """Score all domain groups. Returns [(score, group_name)] sorted desc."""
-    scored = [
-        (s, name)
-        for name, g in DOMAIN_GROUPS.items()
-        if (s := _score_tokens(task, g["keywords"])) > 0
-    ]
+def _char_ngrams(text: str, n: int = 3) -> Counter[str]:
+    normalized = re.sub(r"\s+", " ", text.lower()).strip()
+    if len(normalized) <= n:
+        return Counter([normalized]) if normalized else Counter()
+    return Counter(normalized[i:i + n] for i in range(len(normalized) - n + 1))
+
+
+def _cosine(a: Counter[str], b: Counter[str]) -> float:
+    if not a or not b:
+        return 0.0
+    dot = sum(v * b.get(k, 0) for k, v in a.items())
+    norm_a = math.sqrt(sum(v * v for v in a.values()))
+    norm_b = math.sqrt(sum(v * v for v in b.values()))
+    if not norm_a or not norm_b:
+        return 0.0
+    return dot / (norm_a * norm_b)
+
+
+def _score_embedding_style(task: str, phrases: list[str]) -> float:
+    """Local semantic-ish score using character n-gram cosine similarity."""
+    task_vec = _char_ngrams(task)
+    best = 0.0
+    for phrase in phrases:
+        best = max(best, _cosine(task_vec, _char_ngrams(phrase)))
+    return best
+
+
+def _score_phrases(task: str, phrases: list[str], mode: str) -> tuple[float, str]:
+    token_score = _score_tokens(task, phrases)
+    if mode == "token":
+        return token_score, "token"
+    embedding_score = _score_embedding_style(task, phrases)
+    if mode == "embedding":
+        return embedding_score, "embedding"
+    if embedding_score > token_score:
+        return embedding_score, "embedding"
+    return token_score, "token"
+
+
+def _cheap_model_hint() -> dict:
+    cfg_path = (
+        _project_root()
+        / "context"
+        / "skills"
+        / "processkit"
+        / "model-recommender"
+        / "mcp"
+        / "user_config.json"
+    )
+    try:
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    except Exception:
+        cfg = {}
+    configured = (cfg.get("model_classes") or {}).get("fast")
+    return {
+        "configured": bool(configured),
+        "model_class": "fast",
+        "model": configured,
+    }
+
+
+def _phase1_groups(task: str, scoring_mode: str = "auto") -> list[tuple[float, str, str]]:
+    """Score all domain groups. Returns [(score, group_name, basis)]."""
+    scored = []
+    for name, g in DOMAIN_GROUPS.items():
+        score, basis = _score_phrases(task, g["keywords"], scoring_mode)
+        if score > 0:
+            scored.append((score, name, basis))
     scored.sort(key=lambda x: -x[0])
     return scored
 
 
 def _phase2_tools(
-    task: str, group_name: str
-) -> list[tuple[float, str, str]]:
-    """Score tools within a group. Returns [(score, tool_name, rationale)]."""
+    task: str, group_name: str, scoring_mode: str = "auto"
+) -> list[tuple[float, str, str, str]]:
+    """Score tools within a group."""
     group = DOMAIN_GROUPS[group_name]
-    server_name = group["server"]
     scored = []
     for tool_name, tool_desc in group["tools"]:
         phrases = [tool_name.replace("_", " "), tool_desc]
-        s = _score_tokens(task, phrases)
+        s, basis = _score_phrases(task, phrases, scoring_mode)
         if s > 0:
             name_score = _score_tokens(task, [tool_name.replace("_", " ")])
             rationale = (
                 f"task vocabulary matches tool name '{tool_name}'"
                 if name_score >= 0.5
-                else "task vocabulary matches tool description"
+                else f"task matches tool description via {basis} scoring"
             )
-            scored.append((s, tool_name, rationale))
+            scored.append((s, tool_name, rationale, basis))
     scored.sort(key=lambda x: -x[0])
     return scored
 
@@ -516,7 +578,11 @@ def _skill_finder_fallback(task: str) -> dict | None:
         openWorldHint=False,
     )
 )
-def route_task(task_description: str) -> dict:
+def route_task(
+    task_description: str,
+    allow_llm_escalation: bool = False,
+    scoring_mode: str = "auto",
+) -> dict:
     """Route a task to the matching processkit skill, process override,
     and MCP tool — in a single call, without an LLM.
 
@@ -528,14 +594,18 @@ def route_task(task_description: str) -> dict:
     Two-phase heuristic routing:
       Phase 1 — keyword match to a domain group (eliminates ~90 %
                  of candidates; no LLM needed).
-      Phase 2 — token-overlap scoring within the matched group's tools.
+      Phase 2 — token-overlap or local embedding-style scoring within the
+                 matched group's tools.
       Fallback — skill-finder trigger-phrase table for cross-domain
                  tasks not covered by any domain group.
 
     When ``confidence < 0.5`` (routing_basis == "needs_llm_confirm"),
-    surface ``candidate_tools`` to the user or an LLM for confirmation
-    before proceeding. The router never blocks — it always returns its
-    best guess. 1% rule: if there is a 1% chance a processkit skill covers this task, call route_task before acting.
+    surface ``candidate_tools`` to the user or an LLM for confirmation.
+    If ``allow_llm_escalation`` is true, the response includes the
+    configured fast-model class hint, but this server does not make
+    provider network calls itself. The router never blocks — it always
+    returns its best guess. 1% rule: if there is a 1% chance a processkit
+    skill covers this task, call route_task before acting.
 
     Parameters
     ----------
@@ -565,9 +635,11 @@ def route_task(task_description: str) -> dict:
     task = task_description.strip()
     if not task:
         return {"error": "task_description must not be empty"}
+    if scoring_mode not in ("auto", "token", "embedding"):
+        return {"error": "scoring_mode must be auto, token, or embedding"}
 
     # ── Phase 1: domain group scoring ─────────────────────────────────────
-    group_scores = _phase1_groups(task)
+    group_scores = _phase1_groups(task, scoring_mode=scoring_mode)
 
     if not group_scores or group_scores[0][0] < 0.3:
         # Fallback: skill-finder trigger table
@@ -590,20 +662,21 @@ def route_task(task_description: str) -> dict:
             ),
         }
 
-    best_group_score, best_group = group_scores[0]
+    best_group_score, best_group, group_basis = group_scores[0]
     group = DOMAIN_GROUPS[best_group]
     server_name: str = group["server"]
     skill_name: str = group["skill"]
 
     # ── Phase 2: tool scoring within group ────────────────────────────────
-    tool_scores = _phase2_tools(task, best_group)
+    tool_scores = _phase2_tools(task, best_group, scoring_mode=scoring_mode)
 
     if tool_scores:
-        best_tool_score, best_tool, best_rationale = tool_scores[0]
+        best_tool_score, best_tool, best_rationale, tool_basis = tool_scores[0]
     else:
         best_tool, _ = group["tools"][0]
         best_tool_score = best_group_score * 0.5
         best_rationale = f"defaulted to first tool in '{best_group}' group"
+        tool_basis = group_basis
 
     # Confidence = geometric mean of group and tool scores
     confidence = round(math.sqrt(best_group_score * best_tool_score), 2)
@@ -620,11 +693,12 @@ def route_task(task_description: str) -> dict:
     # ── Candidate tools (top-3 for transparency + fallback) ───────────────
     candidates: list[dict] = []
     seen: set[str] = set()
-    for score, tool_name, rationale in tool_scores[:3]:
+    for score, tool_name, rationale, basis in tool_scores[:3]:
         candidates.append({
             "tool_qualified": f"{server_name}__{tool_name}",
             "score": round(score, 2),
             "rationale": rationale,
+            "scoring_basis": basis,
         })
         seen.add(tool_name)
 
@@ -650,6 +724,7 @@ def route_task(task_description: str) -> dict:
         "domain_group": best_group,
         "confidence": confidence,
         "routing_basis": routing_basis,
+        "scoring_basis": {"group": group_basis, "tool": tool_basis},
         "candidate_tools": candidates,
     }
 
@@ -659,6 +734,21 @@ def route_task(task_description: str) -> dict:
     # Surface close runner-up group when scores are within 20 %
     if len(group_scores) > 1 and group_scores[1][0] >= best_group_score * 0.8:
         result["also_consider_group"] = group_scores[1][1]
+
+    if allow_llm_escalation and routing_basis == "needs_llm_confirm":
+        hint = _cheap_model_hint()
+        result["llm_escalation"] = {
+            "status": (
+                "configured_but_not_invoked"
+                if hint["configured"] else "not_configured"
+            ),
+            "reason": (
+                "task-router is a read-only stdio MCP server and does not "
+                "make provider network calls; caller should confirm among "
+                "candidate_tools or invoke the configured fast model."
+            ),
+            **hint,
+        }
 
     return result
 

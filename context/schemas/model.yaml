@@ -4,7 +4,7 @@ kind: Schema
 metadata:
   id: SCHEMA-model
   target_kind: Model
-  version: "1.1.0"
+  version: "1.2.0"
   created: 2026-04-22T00:00:00Z
 spec:
   description: >
@@ -13,11 +13,12 @@ spec:
     monolithic model_scores.json registry
     (DEC-20260422_0234-LoyalComet). Each Model carries capability
     dimensions (R/E/S/B/L/G scored 1–5), efforts_supported,
-    modalities, access_tier, pricing per version, and an
-    equivalent_tier mapping to processkit's provider-neutral
-    T-shirt capacity ladder (xs/s/m/l/xl/xxl). Binding entities of
-    type 'model-assignment' reference Models for role/team-member/
-    project routing (see binding.yaml).
+    modalities, access_tier, pricing per version, token/accounting
+    metadata, open-weight/deployment metadata, and an equivalent_tier
+    mapping to processkit's provider-neutral T-shirt capacity ladder
+    (xs/s/m/l/xl/xxl). Binding entities of type 'model-assignment'
+    reference Models for role/team-member/project routing
+    (see binding.yaml).
   id_prefix: MODEL
   state_machine: null
   default_directory: context/models
@@ -65,6 +66,46 @@ spec:
         description: >
           Family within the provider. E.g. claude-opus, claude-sonnet,
           claude-haiku, gpt-5, gpt-5-mini, gemini-2-5-pro.
+      model_classes:
+        type: array
+        items:
+          type: string
+          enum: [fast, standard, powerful]
+        description: >
+          Provider-neutral routing classes this model can satisfy.
+          `fast` favours latency/cost, `standard` is the default
+          balanced class, and `powerful` is reserved for hardest
+          reasoning/engineering tasks. Projects map these classes to
+          concrete model IDs in model-recommender config.
+      architecture:
+        type: object
+        additionalProperties: true
+        description: >
+          Technical metadata useful for open and self-hosted models.
+          Recommended keys: model_type, parameter_count, active_parameters,
+          tokenizer, instruct_type, base_model, quantization, context_method.
+      license:
+        type: object
+        additionalProperties: true
+        description: >
+          Licensing and weights access. Recommended keys: name, url,
+          open_weights, commercial_use, derivative_use, acceptable_use_url.
+      deployment:
+        type: object
+        additionalProperties: true
+        description: >
+          Deployment characteristics. Recommended keys: hosting_options,
+          min_vram_gb, recommended_vram_gb, supported_runtimes,
+          self_hostable, provider_endpoints.
+      supported_parameters:
+        type: array
+        items:
+          type: string
+        description: >
+          API parameters/features this family supports, such as tools,
+          tool_choice, structured_outputs, response_format, temperature,
+          top_p, stop, seed, reasoning, include_reasoning, batch,
+          prompt_caching, code_execution, web_search, grounding.
       versions:
         type: array
         minItems: 1
@@ -112,6 +153,33 @@ spec:
                   type: number
                 input_cache_write:
                   type: number
+                request:
+                  type: number
+                image:
+                  type: number
+                audio:
+                  type: number
+                video:
+                  type: number
+                internal_reasoning:
+                  type: number
+                web_search:
+                  type: number
+            token_accounting:
+              type: object
+              additionalProperties: true
+              description: >
+                How usage is counted and billed. Recommended keys:
+                tokenizer, input_modalities_tokenized, output_modalities_tokenized,
+                reasoning_tokens_billed_as, cache_read_counts_toward_rate_limit,
+                cache_write_counts_toward_rate_limit.
+            rate_limits:
+              type: object
+              additionalProperties: true
+              description: >
+                Provider- or tier-specific rate-limit metadata. Recommended
+                keys: rpm, tpm, input_tpm, output_tpm, daily_requests,
+                daily_tokens, tier, source_url.
             max_thinking_budget:
               type: integer
               description: >

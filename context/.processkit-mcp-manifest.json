@@ -1,6 +1,6 @@
 {
   "aggregate_sha256": "92d6eedc1755a7ce9d69a1013393e36cc616e411d1daa4c9c5484cefe4536651",
-  "generated_at": "2026-04-29T20:06:57Z",
+  "generated_at": "2026-04-30T12:42:14Z",
   "per_server_header": [
     {
       "path": "context/skills/processkit/actor-profile/mcp/server.py",
@@ -17,6 +17,10 @@
     {
       "path": "context/skills/processkit/binding-management/mcp/server.py",
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+    },
+    {
+      "path": "context/skills/processkit/context-archiving/mcp/server.py",
+      "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
     },
     {
       "path": "context/skills/processkit/decision-record/mcp/server.py",

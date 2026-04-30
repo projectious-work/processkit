@@ -105,7 +105,7 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 Three tables — see `src/lib/processkit/index.py` for the DDL.
 
 ```sql
-entities(id, kind, api_version, path, created, updated, title, state, labels_json, spec_json, body)
+entities(id, kind, api_version, path, storage_location, created, updated, title, state, labels_json, spec_json, body)
 entities_fts(id, kind, state, title, body, spec_json)
 semantic_chunks(rowid, chunk_id, entity_id, kind, state, path, ordinal, text)
 entity_vec(embedding)
@@ -114,9 +114,10 @@ errors(path, message)
 ```
 
 `spec_json` holds the full `spec` block as JSON for queries we did not
-anticipate. `entities` and `events` overlap for LogEntry rows: a LogEntry
-appears in both, with the `events` table denormalizing the event-specific
-fields for fast filtering.
+anticipate. `storage_location` is `NULL` for hot-tree files and points at cold
+archive payloads for archived entities. `entities` and `events` overlap for
+LogEntry rows: a LogEntry appears in both, with the `events` table
+denormalizing the event-specific fields for fast filtering.
 
 `entities_fts` is a rebuildable SQLite FTS5 virtual table. It mirrors
 the searchable fields from `entities` and is cleared/rebuilt during

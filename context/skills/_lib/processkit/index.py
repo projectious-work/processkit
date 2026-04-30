@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS entities (
     kind TEXT NOT NULL,
     api_version TEXT NOT NULL,
     path TEXT NOT NULL,
+    storage_location TEXT,
     created TEXT NOT NULL,
     updated TEXT,
     title TEXT,
@@ -119,6 +120,7 @@ def open_db(path: Path | None = None) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     conn.executescript(SCHEMA_DDL)
+    _migrate_schema(conn)
     conn.executescript(SEMANTIC_SCHEMA_DDL)
     try:
         conn.executescript(FTS_SCHEMA_DDL)
@@ -132,6 +134,16 @@ def open_db(path: Path | None = None) -> sqlite3.Connection:
         except sqlite3.OperationalError:
             pass
     return conn
+
+
+def _migrate_schema(db: sqlite3.Connection) -> None:
+    """Apply lightweight additive migrations for existing index DBs."""
+    columns = {
+        row["name"]
+        for row in db.execute("PRAGMA table_info(entities)").fetchall()
+    }
+    if "storage_location" not in columns:
+        db.execute("ALTER TABLE entities ADD COLUMN storage_location TEXT")
 
 
 def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> IndexStats:
@@ -177,27 +189,50 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
         if ent.kind == "LogEntry":
             _insert_event(db, ent)
             n_events += 1
+    for manifest_path in sorted((context_dir / "archives").rglob("*.json")):
+        try:
+            archived_entities, archived_events = _insert_archive_manifest(
+                db,
+                manifest_path,
+            )
+            n_entities += archived_entities
+            n_events += archived_events
+        except Exception as e:
+            db.execute(
+                "INSERT OR REPLACE INTO errors (path, message) VALUES (?, ?)",
+                (str(manifest_path), str(e)),
+            )
+            n_errors += 1
     db.commit()
     if own:
         db.close()
     return IndexStats(n_entities, n_events, n_errors)
 
 
-def _insert_entity(db: sqlite3.Connection, ent) -> None:
+def _insert_entity(
+    db: sqlite3.Connection,
+    ent,
+    *,
+    storage_location: str | None = None,
+) -> None:
     spec = ent.spec or {}
     title = spec.get("title") or spec.get("name")
     spec_json = json.dumps(spec, default=str)
     db.execute(
         """
         INSERT OR REPLACE INTO entities
-        (id, kind, api_version, path, created, updated, title, state, labels_json, spec_json, body)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (
+            id, kind, api_version, path, storage_location, created, updated,
+            title, state, labels_json, spec_json, body
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             ent.id,
             ent.kind,
             ent.apiVersion,
             str(ent.path) if ent.path else "",
+            storage_location,
             str(ent.created),
             str(ent.updated) if ent.updated else None,
             title,
@@ -208,7 +243,46 @@ def _insert_entity(db: sqlite3.Connection, ent) -> None:
         ),
     )
     _upsert_fts(db, ent, title=title, spec_json=spec_json)
-    _upsert_semantic(db, ent, title=title, spec_json=spec_json)
+    _upsert_semantic(
+        db,
+        ent,
+        title=title,
+        spec_json=spec_json,
+        storage_location=storage_location,
+    )
+
+
+def _insert_archive_manifest(
+    db: sqlite3.Connection,
+    manifest_path: Path,
+) -> tuple[int, int]:
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    archive_path = data.get("archive_path")
+    archive_id = data.get("archive_id") or manifest_path.stem
+    entity_count = 0
+    event_count = 0
+    for item in data.get("entities") or []:
+        metadata = dict(item.get("metadata") or {})
+        spec = dict(item.get("spec") or {})
+        original_path = item.get("original_path") or item.get("path") or ""
+        member_path = item.get("member_path") or original_path
+        location = item.get("storage_location")
+        if not location:
+            location = f"{archive_path}::{member_path}" if archive_path else archive_id
+        ent = entity_mod.Entity(
+            apiVersion=item.get("apiVersion") or item.get("api_version") or "",
+            kind=item.get("kind") or "",
+            metadata=metadata,
+            spec=spec,
+            body=item.get("body_index") or "",
+            path=Path(original_path) if original_path else None,
+        )
+        _insert_entity(db, ent, storage_location=location)
+        entity_count += 1
+        if ent.kind == "LogEntry":
+            _insert_event(db, ent)
+            event_count += 1
+    return entity_count, event_count
 
 
 def _has_fts(db: sqlite3.Connection) -> bool:
@@ -333,6 +407,7 @@ def _upsert_semantic(
     *,
     title: str | None,
     spec_json: str,
+    storage_location: str | None = None,
 ) -> None:
     rows = db.execute(
         "SELECT rowid FROM semantic_chunks WHERE entity_id = ?",
@@ -357,7 +432,7 @@ def _upsert_semantic(
                 ent.id,
                 ent.kind,
                 (ent.spec or {}).get("state"),
-                str(ent.path) if ent.path else "",
+                storage_location or (str(ent.path) if ent.path else ""),
                 ordinal,
                 chunk,
             ),
@@ -374,7 +449,10 @@ def _insert_event(db: sqlite3.Connection, ent) -> None:
     db.execute(
         """
         INSERT OR REPLACE INTO events
-        (id, timestamp, event_type, actor, subject, subject_kind, summary, details_json, correlation_id, path)
+        (
+            id, timestamp, event_type, actor, subject, subject_kind, summary,
+            details_json, correlation_id, path
+        )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
@@ -423,7 +501,10 @@ def query_entities(
     state: str | None = None,
     limit: int = 50,
 ) -> list[dict[str, Any]]:
-    sql = "SELECT id, kind, title, state, created, updated, path FROM entities WHERE 1=1"
+    sql = (
+        "SELECT id, kind, title, state, created, updated, path,"
+        " storage_location FROM entities WHERE 1=1"
+    )
     params: list[Any] = []
     if kind:
         sql += " AND kind = ?"
@@ -438,7 +519,10 @@ def query_entities(
 
 def get_entity(db: sqlite3.Connection, id: str) -> dict[str, Any] | None:
     row = db.execute(
-        "SELECT id, kind, title, state, created, updated, path, spec_json, labels_json FROM entities WHERE id = ?",
+        (
+            "SELECT id, kind, title, state, created, updated, path,"
+            " storage_location, spec_json, labels_json FROM entities WHERE id = ?"
+        ),
         (id,),
     ).fetchone()
     if not row:
@@ -489,7 +573,7 @@ def resolve_entity(
     def _fetch(where: str, params: list[Any]) -> list[dict[str, Any]]:
         sql = (
             "SELECT id, kind, title, state, created, updated, path,"
-            " spec_json, labels_json FROM entities WHERE " + where
+            " storage_location, spec_json, labels_json FROM entities WHERE " + where
         )
         if kind:
             sql += " AND kind = ?"
@@ -544,7 +628,9 @@ def search_entities(
         try:
             rows = db.execute(
                 """
-                SELECT e.id, e.kind, e.title, e.state, e.created, e.path
+                SELECT
+                    e.id, e.kind, e.title, e.state, e.created, e.path,
+                    e.storage_location
                 FROM entities_fts f
                 JOIN entities e ON e.id = f.id
                 WHERE entities_fts MATCH ?
@@ -562,7 +648,7 @@ def search_entities(
     like = f"%{text}%"
     rows = db.execute(
         """
-        SELECT id, kind, title, state, created, path
+        SELECT id, kind, title, state, created, path, storage_location
         FROM entities
         WHERE id LIKE ? OR title LIKE ? OR body LIKE ? OR spec_json LIKE ?
         ORDER BY created DESC LIMIT ?
@@ -596,6 +682,7 @@ def semantic_search_entities(
         """
         SELECT
             e.id, e.kind, e.title, e.state, e.created, e.path,
+            e.storage_location,
             MIN(v.distance) AS distance
         FROM entity_vec v
         JOIN semantic_chunks c ON c.rowid = v.rowid

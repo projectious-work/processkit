@@ -44,9 +44,10 @@ Two-phase heuristic, no LLM call required:
    Scores the task against 13 domain groups by keyword overlap.
    Eliminates ~90% of candidates in one pass.
 
-2. **Phase 2 — tool ranking** (token overlap within the matched group).
-   Scores the ~3–6 tools in the matched group. Returns the top tool
-   with rationale and two runner-up candidates.
+2. **Phase 2 — tool ranking** (token overlap or local embedding-style
+   cosine scoring within the matched group). Scores the ~3–6 tools in
+   the matched group. Returns the top tool with rationale and two
+   runner-up candidates.
 
 3. **Fallback** — if no group scores ≥ 0.3, falls back to the
    skill-finder trigger-phrase table for cross-domain or meta tasks.
@@ -68,6 +69,11 @@ Two-phase heuristic, no LLM call required:
 `routing_basis` will be `needs_llm_confirm`. Show `candidate_tools[]`
 to the user or pass them to an LLM for disambiguation. Do NOT call a
 `create_*` tool without confirmation when confidence is low.
+
+Callers may pass `allow_llm_escalation=true`; the router then returns a
+`llm_escalation` status with the configured `fast` model class hint. The
+stdio MCP server does not make provider network calls itself, so the caller
+owns the actual cheap-model confirmation step.
 
 ### When `process_override` is present
 

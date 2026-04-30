@@ -55,6 +55,8 @@ _TIER_LABEL = {
     "xs":  "Small",
 }
 
+MODEL_CLASSES = ("fast", "standard", "powerful")
+
 _DIM_KEY_TO_LETTER = {
     "reasoning": "R",
     "engineering": "E",
@@ -130,6 +132,11 @@ def _entity_to_legacy(entity: dict) -> list[dict]:
             "name": f"{family} {vid}".strip(),
             "provider": provider_display,
             "tier": spec.get("rationale") or tier_label,
+            "model_classes": spec.get("model_classes") or [],
+            "architecture": spec.get("architecture") or {},
+            "license": spec.get("license") or {},
+            "deployment": spec.get("deployment") or {},
+            "supported_parameters": spec.get("supported_parameters") or [],
             "context_k": ctx_k,
             "governance_warning": ver.get("governance_warning"),
             "pricing": pricing,
@@ -143,6 +150,8 @@ def _entity_to_legacy(entity: dict) -> list[dict]:
             "vendor_model_id": ver.get("vendor_model_id"),
             "knowledge_cutoff": ver.get("knowledge_cutoff"),
             "latency_p50_ms": ver.get("latency_p50_ms"),
+            "token_accounting": ver.get("token_accounting") or {},
+            "rate_limits": ver.get("rate_limits") or {},
             "jurisdiction": ver.get("jurisdiction") or {},
             "data_privacy": ver.get("data_privacy") or {},
         })
@@ -196,7 +205,14 @@ def _load_config() -> dict:
     if CONFIG_FILE.exists():
         with open(CONFIG_FILE) as f:
             return json.load(f)
-    return {"available_models": [], "blocked_models": [], "require_governance_min": 0, "budget_tier": "any", "preferred_providers": []}
+    return {
+        "available_models": [],
+        "blocked_models": [],
+        "require_governance_min": 0,
+        "budget_tier": "any",
+        "preferred_providers": [],
+        "model_classes": {},
+    }
 
 def _save_config(cfg: dict):
     with open(CONFIG_FILE, "w") as f:
@@ -225,7 +241,10 @@ def _apply_user_filter(models: list[dict], cfg: dict) -> list[dict]:
             continue
         if gov_min and m["dimensions"]["G"]["score"] < gov_min:
             continue
-        if budget == "low" and m["dimensions"]["S"]["sub"]["cost_efficiency"] < 3:
+        cost_score = m["dimensions"]["S"].get("sub", {}).get(
+            "cost_efficiency", m["dimensions"]["S"]["score"]
+        )
+        if budget == "low" and cost_score < 3:
             continue
         result.append(m)
 
@@ -233,6 +252,75 @@ def _apply_user_filter(models: list[dict], cfg: dict) -> list[dict]:
     if preferred:
         result.sort(key=lambda m: 0 if m["provider"] in preferred else 1)
     return result
+
+def _price_for_sort(m: dict) -> float:
+    price = (m.get("pricing") or {}).get("output_per_1m")
+    return float(price) if price is not None else 0.0
+
+def _model_class_score(model_class: str, m: dict) -> float:
+    dims = m["dimensions"]
+    R = dims["R"]["score"]
+    E = dims["E"]["score"]
+    S = dims["S"]["score"]
+    B = dims["B"]["score"]
+    L = dims["L"]["score"]
+    G = dims["G"]["score"]
+    price = _price_for_sort(m)
+    price_penalty = min(price / 10.0, 5.0)
+    declared_bonus = 1.0 if model_class in m.get("model_classes", []) else 0.0
+    if model_class == "fast":
+        return (3 * S) + L + E + declared_bonus - price_penalty
+    if model_class == "standard":
+        return E + L + R + S + (0.5 * G) + declared_bonus - (0.5 * price_penalty)
+    if model_class == "powerful":
+        return (2 * R) + (2 * E) + L + B + declared_bonus - (0.25 * price_penalty)
+    return 0.0
+
+def _configured_model_ids_for_class(cfg: dict, model_class: str) -> list[str]:
+    configured = (cfg.get("model_classes") or {}).get(model_class)
+    if configured is None:
+        return []
+    if isinstance(configured, str):
+        return [configured]
+    if isinstance(configured, list):
+        return [str(x) for x in configured]
+    return []
+
+def _select_model_for_class(
+    model_class: str,
+    data: dict,
+    cfg: dict,
+    *,
+    apply_user_filter: bool,
+) -> tuple[dict | None, str, list[dict]]:
+    models = list(data["models"])
+    visible = _apply_user_filter(models, cfg) if apply_user_filter else models
+    visible_by_id = {m["id"]: m for m in visible}
+    all_by_id = {m["id"]: m for m in models}
+
+    configured = _configured_model_ids_for_class(cfg, model_class)
+    for mid in configured:
+        if mid in visible_by_id:
+            alternatives = [
+                _profile_block(m, "summary")
+                for m in visible
+                if m["id"] != mid
+            ][:3]
+            return visible_by_id[mid], "configured", alternatives
+
+    scored = sorted(
+        visible,
+        key=lambda m: (-_model_class_score(model_class, m), _price_for_sort(m), m["id"]),
+    )
+    if not scored:
+        return None, "none", []
+    alternatives = [_profile_block(m, "summary") for m in scored[1:4]]
+    basis = "scored"
+    if configured and any(mid in all_by_id for mid in configured):
+        basis = "configured_model_not_accessible"
+    elif configured:
+        basis = "configured_model_unknown"
+    return scored[0], basis, alternatives
 
 def _profile_block(m: dict, scope: str = "summary") -> dict:
     dims = m["dimensions"]
@@ -250,6 +338,17 @@ def _profile_block(m: dict, scope: str = "summary") -> dict:
     # can verify the fact a filter was acting on without a second call.
     for k in ("vendor_model_id", "knowledge_cutoff", "latency_p50_ms"):
         if m.get(k) is not None:
+            out[k] = m[k]
+    for k in (
+        "model_classes",
+        "architecture",
+        "license",
+        "deployment",
+        "supported_parameters",
+        "token_accounting",
+        "rate_limits",
+    ):
+        if m.get(k):
             out[k] = m[k]
     if m.get("jurisdiction"):
         out["jurisdiction"] = m["jurisdiction"]
@@ -763,8 +862,57 @@ def get_config() -> dict:
         "require_governance_min": cfg.get("require_governance_min", 0),
         "budget_tier": cfg.get("budget_tier", "any"),
         "preferred_providers": cfg.get("preferred_providers", []),
+        "model_classes": cfg.get("model_classes", {}),
         "note": "Empty available_models means all models are included (unfiltered). Add model IDs to restrict.",
     }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def get_model_for_class(
+    model_class: str,
+    apply_user_filter: bool = True,
+    explain: bool = False,
+) -> dict:
+    """Resolve a provider-neutral model class to a concrete model.
+
+    ``model_class`` must be one of ``fast``, ``standard``, or ``powerful``.
+    User config may pin class mappings with ``model_classes``. Without a
+    pin, the resolver scores currently visible models using class-specific
+    priorities: speed/cost for fast, balanced engineering/reliability for
+    standard, and reasoning/engineering for powerful.
+    """
+    cls = model_class.strip().lower()
+    if cls not in MODEL_CLASSES:
+        return {
+            "error": (
+                "model_class must be one of: "
+                + ", ".join(MODEL_CLASSES)
+            )
+        }
+    data = _load_scores()
+    cfg = _load_config()
+    selected, basis, alternatives = _select_model_for_class(
+        cls,
+        data,
+        cfg,
+        apply_user_filter=apply_user_filter,
+    )
+    if selected is None:
+        return {"model_class": cls, "error": "no accessible models"}
+    result = {
+        "model_class": cls,
+        "basis": basis,
+        "model": _profile_block(selected, "summary"),
+    }
+    if explain:
+        result["configured"] = _configured_model_ids_for_class(cfg, cls)
+        result["alternatives"] = alternatives
+    return result
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -779,6 +927,7 @@ def set_config(
     require_governance_min: Optional[int] = None,
     budget_tier: Optional[str] = None,
     preferred_providers: Optional[list[str]] = None,
+    model_classes: Optional[dict] = None,
 ) -> dict:
     """
     Update user configuration. Only fields provided are changed; omitted fields keep current values.
@@ -792,6 +941,9 @@ def set_config(
     budget_tier: "any" | "low" (prefer cost_efficiency >= 3) | "medium" | "high"
     preferred_providers: list of providers to prioritize in rankings.
       Example: ["Anthropic", "Mistral"]
+    model_classes: optional map from fast/standard/powerful to a model ID
+      or ordered list of model IDs. Example:
+      {"fast": "claude-haiku-4.5", "standard": "claude-sonnet-4.6"}
 
     Returns the updated configuration.
 
@@ -833,6 +985,26 @@ def set_config(
         if bad:
             return {"error": f"Unknown providers: {bad}. Valid: {sorted(valid_providers)}"}
         cfg["preferred_providers"] = preferred_providers
+
+    if model_classes is not None:
+        bad_classes = [k for k in model_classes if k not in MODEL_CLASSES]
+        if bad_classes:
+            return {
+                "error": (
+                    "Unknown model classes: "
+                    f"{bad_classes}. Valid: {list(MODEL_CLASSES)}"
+                )
+            }
+        bad_models: list[str] = []
+        normalized: dict[str, str | list[str]] = {}
+        for cls, value in model_classes.items():
+            ids = value if isinstance(value, list) else [value]
+            ids = [str(mid) for mid in ids]
+            bad_models.extend(mid for mid in ids if mid not in valid_ids)
+            normalized[cls] = ids if isinstance(value, list) else ids[0]
+        if bad_models:
+            return {"error": f"Unknown model IDs: {bad_models}."}
+        cfg["model_classes"] = normalized
 
     _save_config(cfg)
     return {"ok": True, "config": cfg}

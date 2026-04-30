@@ -116,6 +116,29 @@ Some skills don't fit any pattern — pure knowledge skills like
 `python-best-practices` or `code-review`. That's fine. Use no pattern;
 just write the conventions clearly.
 
+### Library expert skills
+
+When the target skill is a library expert, use
+`references/library-expert-template.md` as the starting point. Library expert
+skills are version-pinned and recipe-heavy: the baked-in examples are primary,
+and RAG/live-doc lookup is reserved for newer versions, missing recipes, or
+integration-specific details.
+
+Add these library-expert steps before frontmatter is final:
+
+1. Verify the current stable version from official docs.
+2. Choose the version range the skill owns; avoid unbounded "latest"
+   claims.
+3. Collect 5-15 common tasks as recipe candidates.
+4. Prefer official examples, release notes, and migration guides over
+   blog posts.
+5. Decide the escalation rule for live docs or RAG before writing
+   recipes.
+
+Library expert skills must include `metadata.library` with `name`,
+`version`, `homepage`, and `docs`. If any of those are unknown, stop at
+a spike note instead of publishing the skill as authoritative.
+
 ### Step 4 — Frontmatter
 
 Generate the YAML frontmatter following the Agent Skills standard.
@@ -215,6 +238,11 @@ checklist (Skills Master Class Level 2):
 Plus Anthropic's troubleshooting playbook (PDF p25-27): under-trigger,
 over-trigger, instructions not followed, large context. Each has a
 known fix listed there.
+
+For library expert skills, also run the library-specific self-check
+from `references/library-expert-template.md`: version is explicit,
+recipes are runnable or clearly marked unverified, live-doc escalation
+is defined, and examples do not mix major versions.
 
 If any check fails, fix it before continuing.
 

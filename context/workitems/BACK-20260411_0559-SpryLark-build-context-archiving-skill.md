@@ -8,9 +8,10 @@ metadata:
     component: skills
     area: context
     related_decision: DEC-20260411_0559-RapidFjord-three-tier-hot-warm
+  updated: '2026-04-30T12:39:50+00:00'
 spec:
   title: Build context-archiving skill and MCP server — hot/cold tier management
-  state: backlog
+  state: done
   type: story
   priority: medium
   description: 'Implement the cold tier of the three-tier storage architecture (DEC-20260411_0559-RapidFjord).
@@ -22,4 +23,20 @@ spec:
     querying cold-tier metadata, and extracting archived content. Event log archiving
     (JSONL → tar.gz) follows the same pattern: index retains id/timestamp/type/subject
     permanently, payload requires extraction.'
+  started_at: '2026-04-30T11:03:42+00:00'
+  completed_at: '2026-04-30T12:39:50+00:00'
 ---
+
+## Transition note (2026-04-30T11:03:42+00:00)
+
+Started context-archiving skill: added read-only skill docs and server code for policy/candidate planning. Destructive archive creation, extraction, and storage_location index updates remain open.
+
+
+## Transition note (2026-04-30T12:38:53+00:00)
+
+Implemented context-archiving v0.2 write path: dry-run planning, archive creation, manifest indexing, payload extraction, and archived LogEntry event indexing. Validation passed.
+
+
+## Transition note (2026-04-30T12:39:50+00:00)
+
+Implemented context-archiving v0.2 write path: dry-run planning, archive creation, manifest indexing, payload extraction, and archived LogEntry event indexing. Validation passed.

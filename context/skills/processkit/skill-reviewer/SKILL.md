@@ -27,7 +27,7 @@ metadata:
     commands:
       - name: pk-skill-audit
         args: "skill-name"
-        description: "Run a full 12-category review of the named skill"
+        description: "Run a full 13-category review of the named skill"
 ---
 
 # Skill Reviewer
@@ -60,9 +60,9 @@ is for everything else (auditing, fixing, retrofitting).
 - Bulk operation: **populate Gotchas across the whole catalog** by
   running skill-reviewer over every skill in `src/skills/`.
 
-### The review checklist (11 categories)
+### The review checklist (13 categories)
 
-For each skill, check all 12 categories. Surface findings under one
+For each skill, check all 13 categories. Surface findings under one
 of the three severity buckets at the end.
 
 #### 1. Frontmatter compliance (Agent Skills standard)
@@ -296,9 +296,30 @@ fails to execute a step.
   the gap between verbal commitment ("I'll do X") and execution
   ("called the tool"). Missing = should-fix.
 
+#### 13. Library expert specialization
+
+Run this category when the skill is a library expert, API expert, SDK
+guide, framework recipe book, or similar version-sensitive domain skill.
+
+- `metadata.library` exists with `name`, `version`, `homepage`,
+  `docs`, and `source_date`. Missing `metadata.library` on a library
+  expert = must-fix; missing individual fields = should-fix.
+- The Intro or Overview states the version range the skill covers.
+  Ambiguous "latest" claims are should-fix unless backed by a live-doc
+  workflow.
+- Recipe examples use one major version's API at a time. Mixed major
+  versions = must-fix because they generate broken copy-paste code.
+- Each recipe includes imports, setup, or prerequisites needed to run
+  it. Missing runnable context = should-fix.
+- The skill has a RAG Escalation or live-doc escalation section that
+  says when to leave baked-in recipes. Missing escalation policy =
+  should-fix.
+- Gotchas include stale API risk and project-version mismatch risk.
+  Missing both = should-fix.
+
 ### The findings report
 
-After running through all 12 categories, output a structured report:
+After running through all 13 categories, output a structured report:
 
 ```markdown
 # Review: <skill-name>
@@ -392,7 +413,7 @@ Agent-specific failure modes when running skill-reviewer:
   breaks delegation. This is a must-fix that's easy to miss.
 - **Reviewing your own work without skepticism.** If skill-reviewer
   is being used to review a skill that skill-builder just created,
-  the temptation is to rubber-stamp. Run all 11 categories anyway —
+  the temptation is to rubber-stamp. Run all 13 categories anyway —
   the whole point of the brownfield/greenfield split is independent
   validation.
 - **Skipping Category 10 because no commands/ folder is visible.**
@@ -423,7 +444,7 @@ Agent-specific failure modes when running skill-reviewer:
 
 Manual flow:
 1. Read the SKILL.md file in full.
-2. Walk through Categories 1-11.
+2. Walk through Categories 1-13.
 3. For each finding, classify severity.
 4. Generate the report in the format above.
 

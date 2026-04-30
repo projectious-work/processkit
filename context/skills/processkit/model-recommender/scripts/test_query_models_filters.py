@@ -34,6 +34,7 @@ def _make_model(
     data_privacy: dict | None = None,
     jurisdiction: dict | None = None,
     latency_p50_ms: int | None = None,
+    model_classes: list[str] | None = None,
 ) -> dict:
     """Build a single legacy-shape model entry for unit testing the filter."""
     return {
@@ -41,6 +42,7 @@ def _make_model(
         "name": mid,
         "provider": "Test",
         "tier": "test",
+        "model_classes": model_classes or [],
         "context_k": 200,
         "governance_warning": None,
         "pricing": {"input_per_1m": 1.0, "output_per_1m": 1.0, "currency": "USD", "hosting": "api"},
@@ -108,6 +110,8 @@ def fake_scores(monkeypatch):
         # CN-shape: not HIPAA-eligible, CN HQ, training opt-out, unknown retention.
         _make_model(
             mid="cn-no-hipaa",
+            R=2,
+            E=2,
             G=2,
             jurisdiction={
                 "vendor_hq_country": "CN",
@@ -145,6 +149,50 @@ def test_no_filter_returns_all(fake_scores):
         "cn-no-hipaa",
         "open-no-privacy",
     }
+
+
+def test_get_model_for_class_uses_configured_mapping(fake_scores, monkeypatch):
+    server = fake_scores
+    monkeypatch.setattr(
+        server,
+        "_load_config",
+        lambda: {"model_classes": {"fast": "hipaa-us-30day"}},
+    )
+
+    out = server.get_model_for_class("fast", apply_user_filter=False)
+
+    assert out["basis"] == "configured"
+    assert out["model"]["id"] == "hipaa-us-30day"
+
+
+def test_get_model_for_class_scores_when_unconfigured(fake_scores):
+    server = fake_scores
+
+    out = server.get_model_for_class("powerful", apply_user_filter=False)
+
+    assert out["basis"] == "scored"
+    assert out["model"]["id"] in {
+        "hipaa-us-strict",
+        "hipaa-us-30day",
+        "open-no-privacy",
+    }
+
+
+def test_get_model_for_class_respects_user_filter(fake_scores, monkeypatch):
+    server = fake_scores
+    monkeypatch.setattr(
+        server,
+        "_load_config",
+        lambda: {
+            "available_models": ["cn-no-hipaa"],
+            "model_classes": {"fast": "hipaa-us-30day"},
+        },
+    )
+
+    out = server.get_model_for_class("fast", explain=True)
+
+    assert out["basis"] == "configured_model_not_accessible"
+    assert out["model"]["id"] == "cn-no-hipaa"
 
 
 def test_phi_hipaa_eligible_filter(fake_scores):

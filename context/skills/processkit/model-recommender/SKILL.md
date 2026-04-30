@@ -15,7 +15,16 @@ metadata:
     uses: []
     provides:
       primitives: []
-      mcp_tools: [list_models, get_profile, compare_models, query_models, get_pricing, check_availability, get_config, set_config]
+      mcp_tools:
+        - list_models
+        - get_profile
+        - compare_models
+        - query_models
+        - get_pricing
+        - check_availability
+        - get_config
+        - set_config
+        - get_model_for_class
       assets: []
       processes: [model-profiling, task-routing, roster-refresh, setup-questionnaire]
     commands:
@@ -43,6 +52,10 @@ model), and **Roster Refresh** (live internet research to update benchmark
 scores and discover new models). Gates always apply before capability scoring:
 a model the user can't access or that is currently down is excluded regardless
 of how well it scores.
+
+For the complete provider/model/version characteristic matrix, including
+open-weight metadata, token accounting, rate limits, and model-class routing,
+see `references/model-characteristics.md`.
 
 ## Overview
 
@@ -84,6 +97,18 @@ before any HIPAA-touching task is routed).
 - `knowledge_cutoff` (date) — vendor-published training cutoff
 - `vendor_model_id` — exact SDK model id (`claude-opus-4-7-20251031`)
 - `latency_p50_ms` — quantitative companion to `S` score
+
+`Model` artifacts may also carry:
+
+- `model_classes[]` — `fast`, `standard`, and/or `powerful` routing class
+  hints
+- `architecture` — parameter count, tokenizer, quantization, base/instruct
+  lineage
+- `license` — open-weight and commercial-use terms
+- `deployment` — self-hosting/runtime/VRAM facts
+- `supported_parameters[]` — tools, structured outputs, prompt caching,
+  reasoning, grounding, batch, and similar endpoint features
+- `versions[].token_accounting` and `versions[].rate_limits`
 
 **Score rubric:**
 
@@ -175,6 +200,7 @@ filtered lists, or pricing analysis.
 | `get_pricing(sort_by="value_score")` | Value-for-money ranking |
 | `check_availability()` | Live status before routing a plan |
 | `get_config()` / `set_config(...)` | Show or update user access list |
+| `get_model_for_class("fast")` | Resolve fast/standard/powerful to a concrete model |
 
 ---
 

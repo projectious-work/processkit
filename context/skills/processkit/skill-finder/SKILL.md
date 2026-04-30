@@ -126,10 +126,11 @@ that skill before proceeding.
 | "write a handover", "shutting down", "container restart" | `session-handover` |
 | "status briefing", "catch me up", "state of things" | `status-briefing` |
 | "groom the context", "clean up context" | `context-grooming` |
+| "archive context", "cold tier", "archive old workitems" | `context-archiving` |
 | "second opinion", "devil's advocate", "poke holes in this" | `devils-advocate` |
 | "multiple perspectives", "board of advisors" | `board-of-advisors` |
 | "research this", "I'm not sure about this fact" | `research-with-confidence` |
-| "build a new skill", "author a skill" | `skill-builder` |
+| "build a new skill", "author a skill", "library expert skill" | `skill-builder` |
 | "review this skill", "is this skill good" | `skill-reviewer` |
 | "route this task", "what should I do", "which tool", "route_task" | `task-router` |
 | "session start", "which skill applies", "check skill-finder", "1% rule" | `skill-gate` |
@@ -236,7 +237,8 @@ For the full catalog, read `skills/INDEX.md`.
 - `email-drafter` — professional email drafting with copy-paste output
 
 **Meta**
-- `skill-builder` — design and author new processkit skills
+- `skill-builder` — design and author new processkit skills, including
+  library expert recipe skills
 - `skill-reviewer` — review a skill against the processkit standard
 - `research-with-confidence` — structured research with explicit confidence labels
 - `devils-advocate` — adversarial analysis of a plan or proposal
