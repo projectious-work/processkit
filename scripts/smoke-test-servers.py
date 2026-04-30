@@ -155,6 +155,10 @@ def run():
         disc = import_server("discussion-management")
         art = import_server("artifact-management")
         mig = import_server("migration-management")
+        note = import_server("note-management")
+        agent_card = import_server("agent-card")
+        eval_gate = import_server("eval-gate-authoring")
+        security = import_server("security-projections")
         skf = import_server("skill-finder")
         agg = import_server("aggregate-mcp")
 
@@ -518,6 +522,181 @@ def run():
         after_touchless = _updated_line(a_url_path.read_text(encoding="utf-8"))
         assert after_touchless == before_touchless
 
+        # 4g.1. v2 workflow/projection helpers
+        create_gate_template = get_tool(gate, "create_gate_template")
+        gt = create_gate_template(template="interrupt-fire")
+        print("create_gate_template interrupt-fire:", gt)
+        assert "id" in gt and gt["name"] == "interrupt-fire"
+
+        create_note = get_tool(note, "create_note")
+        note_created = create_note(
+            title="Investigate provider route budget signal",
+            body="Check whether budget bindings feed provider routing.",
+            type="question",
+            tags=["v2", "budget"],
+            slug_summary="investigate provider route budget",
+        )
+        print("create_note:", note_created)
+        assert "id" in note_created
+
+        capture_inbox = get_tool(note, "capture_inbox_item")
+        inbox = capture_inbox(
+            title="Interrupt current work for budget breach",
+            body="Provider route exceeded the configured budget threshold.",
+            injection_mode="interrupt",
+            channel="smoke-test",
+            target_workitem=wi_id,
+        )
+        print("capture_inbox_item:", inbox)
+        assert inbox["inbox"]["status"] == "captured"
+        assert inbox["inbox"]["injection_mode"] == "interrupt"
+
+        claim_inbox = get_tool(note, "claim_inbox_item")
+        claimed = claim_inbox(id=inbox["id"], actor=actor_id)
+        print("claim_inbox_item:", claimed)
+        assert claimed["ok"] and claimed["inbox"]["status"] == "claimed"
+
+        complete_inbox = get_tool(note, "complete_inbox_item")
+        completed = complete_inbox(
+            id=inbox["id"],
+            actor=actor_id,
+            result={"workitem": wi_id},
+        )
+        print("complete_inbox_item:", completed)
+        assert completed["ok"] and completed["inbox"]["status"] == "completed"
+
+        proc_def = create_art(
+            name="Smoke process definition",
+            kind="process-definition",
+            description="# Smoke process\n\n1. Plan\n2. Execute\n",
+        )
+        schedule_rule = create_art(
+            name="Weekday maintenance window",
+            kind="schedule-rule",
+            description="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
+        )
+        cost_policy = create_art(
+            name="Smoke provider budget",
+            kind="cost-policy",
+            description='{"monthly_cap_usd": 25}',
+        )
+        assert all("id" in x for x in [proc_def, schedule_rule, cost_policy])
+
+        create_process = get_tool(wi, "create_process_instance")
+        proc = create_process(
+            title="Run smoke process instance",
+            process_definition_artifact=proc_def["id"],
+            steps=["Plan smoke run carefully", "Execute smoke run carefully"],
+            priority="medium",
+        )
+        print("create_process_instance:", proc)
+        assert "id" in proc and len(proc["children"]) == 2
+
+        create_sep = get_tool(wi, "create_sep_handoff")
+        sep = create_sep(
+            title="Escalate smoke exception review",
+            source_actor=actor_id,
+            target="human-review",
+            payload={"reason": "smoke-test"},
+        )
+        print("create_sep_handoff:", sep)
+        assert "id" in sep
+
+        create_time_window = get_tool(bind, "create_time_window")
+        tw = create_time_window(
+            subject=proc["id"],
+            target=actor_id,
+            recurrence_rule_artifact=schedule_rule["id"],
+            description="Smoke process weekday window",
+        )
+        print("create_time_window:", tw)
+        assert "id" in tw
+
+        create_budget = get_tool(bind, "create_budget_application")
+        budget = create_budget(
+            cost_policy_artifact=cost_policy["id"],
+            target="provider-router",
+            enforcement_point="provider-router.dispatch",
+            cap_usd=25.0,
+        )
+        print("create_budget_application:", budget)
+        assert "id" in budget
+
+        agent_card_art = create_art(
+            name="Smoke agent card",
+            kind="agent-card",
+            description=(
+                '{"description":"Smoke agent","capabilities":["tools"],'
+                '"endpoints":{"mcp":"stdio"}}'
+            ),
+        )
+        project_card = get_tool(agent_card, "project_agent_card")
+        card = project_card(
+            artifact_id=agent_card_art["id"],
+            output_path=".well-known/smoke-agent-card.json",
+        )
+        print("project_agent_card:", card["checksum"])
+        assert card["written"]
+        assert Path(card["output_path"]).is_file()
+
+        (workdir / "context" / "runs").mkdir(parents=True, exist_ok=True)
+        (workdir / "context" / "runs" / "run-001.json").write_text(
+            '{"id":"run-001","output":"ok"}\n',
+            encoding="utf-8",
+        )
+        collect_runs = get_tool(eval_gate, "collect_run_outputs")
+        runs = collect_runs()
+        print("collect_run_outputs:", runs)
+        assert any(r["path"] == "context/runs/run-001.json" for r in runs)
+
+        codify_eval = get_tool(eval_gate, "codify_eval")
+        evspec = codify_eval(
+            category_id="smoke",
+            name="Smoke output quality",
+            eval_kind="llm-as-judge",
+            description="Judge whether the smoke output is acceptable.",
+            judge="MODEL-smoke-judge",
+        )
+        print("codify_eval:", evspec)
+        assert "artifact_id" in evspec and "gate_id" in evspec
+
+        calibrate = get_tool(eval_gate, "calibrate_judge")
+        cal = calibrate(
+            judge_id="MODEL-smoke-judge",
+            eval_artifact_id=evspec["artifact_id"],
+            agreement=0.95,
+            sample_n=20,
+        )
+        print("calibrate_judge:", cal)
+        assert cal["ok"]
+
+        bind_eval = get_tool(eval_gate, "bind_eval_to_runs")
+        evbind = bind_eval(
+            eval_artifact_id=evspec["artifact_id"],
+            target="run-output",
+            description="Smoke eval binding",
+        )
+        print("bind_eval_to_runs:", evbind)
+        assert "id" in evbind
+
+        ids_rule_art = create_art(
+            name="Smoke IDS rule",
+            kind="agent-ids-rule",
+            description=(
+                '{"match":{"tool":"shell"},"action":"alert",'
+                '"kprobes":[{"call":"sys_execve","syscall":true}]}'
+            ),
+        )
+        project_ids = get_tool(security, "project_agent_ids_rule")
+        ids_proj = project_ids(artifact_id=ids_rule_art["id"])
+        print("project_agent_ids_rule:", ids_proj["checksum"])
+        assert ids_proj["written"] and Path(ids_proj["output_path"]).is_file()
+
+        project_tetragon = get_tool(security, "project_tetragon_tracing_policy")
+        tet_proj = project_tetragon(artifact_id=ids_rule_art["id"])
+        print("project_tetragon_tracing_policy:", tet_proj["checksum"])
+        assert tet_proj["written"] and Path(tet_proj["output_path"]).is_file()
+
         # 4h. migration-management
         #     Seed two pending Migration fixtures directly on disk (aibox
         #     sync generates these in real life), then exercise start /
@@ -744,12 +923,24 @@ def run():
         from processkit import index as _index
         _db = _index.open_db()
         try:
-            _ev_created = _index.query_events(_db, event_type="workitem.created", subject=wi_id)
-            _ev_transitioned = _index.query_events(_db, event_type="workitem.transitioned", subject=wi_id)
+            _ev_created = _index.query_events(
+                _db,
+                event_type="workitem.created",
+                subject=wi_id,
+            )
+            _ev_transitioned = _index.query_events(
+                _db,
+                event_type="workitem.transitioned",
+                subject=wi_id,
+            )
             _ev_dec = _index.query_events(_db, event_type="decision.created")
             _ev_scope = _index.query_events(_db, event_type="scope.created")
             _ev_gate = _index.query_events(_db, event_type="gate.created")
-            _ev_gate_eval = _index.query_events(_db, event_type="gate.passed", subject=gate_id)
+            _ev_gate_eval = _index.query_events(
+                _db,
+                event_type="gate.passed",
+                subject=gate_id,
+            )
             _ev_disc = _index.query_events(_db, event_type="discussion.opened")
             _ev_art = _index.query_events(_db, event_type="artifact.created")
         finally:
@@ -771,7 +962,7 @@ def run():
         assert len(_ev_disc) >= 1, "discussion.opened log entry missing"
         assert len(_ev_art) >= 1, "artifact.created log entry missing"
 
-        # ── Systemic self-attribution guard (BACK-20260421_0209-*) ────────────
+        # Systemic self-attribution guard (BACK-20260421_0209-*).
         # Every entity-mutating MCP tool must pass actor=<subject-id> to its
         # log helper so the emitted LogEntry passes schema validation (actor
         # is a required field on LogEntry). Spot-check the four canonical
@@ -787,8 +978,14 @@ def run():
         _db_sa = _index.open_db()
         try:
             for _evt, _subj, _label in _sa_cases:
-                _rows = _index.query_events(_db_sa, event_type=_evt, subject=_subj)
-                assert _rows, f"{_label}: no {_evt!r} LogEntry found for {_subj!r}"
+                _rows = _index.query_events(
+                    _db_sa,
+                    event_type=_evt,
+                    subject=_subj,
+                )
+                assert _rows, (
+                    f"{_label}: no {_evt!r} LogEntry found for {_subj!r}"
+                )
                 _full = _index.get_entity(_db_sa, _rows[0]["id"])
                 assert _full and _full.get("path"), (
                     f"{_label}: LogEntry row has no path: {_full}"
@@ -805,7 +1002,7 @@ def run():
         finally:
             _db_sa.close()
         print("systemic self-attribution guard: 4 tools OK")
-        # ── end systemic self-attribution guard ──────────────────────────────
+        # End systemic self-attribution guard.
 
         # 6. index management
         reindex = get_tool(idx, "reindex")
@@ -815,12 +1012,19 @@ def run():
         # gate-eval-log + discussion + work-binding + artifacts + migrations
         # + side-effect logs
         assert stats["entities"] >= 13
-        assert stats["events"] >= 7, f"expected at least 7 events (log side effects), got {stats['events']}"
+        assert stats["events"] >= 7, (
+            "expected at least 7 events (log side effects), "
+            f"got {stats['events']}"
+        )
 
         query_e = get_tool(idx, "query_entities")
         wi_rows = query_e(kind="WorkItem")
         print("query_entities WorkItem:", len(wi_rows))
-        assert len(wi_rows) == 1
+        wi_row_ids = {row["id"] for row in wi_rows}
+        assert wi_id in wi_row_ids
+        assert proc["id"] in wi_row_ids
+        assert sep["id"] in wi_row_ids
+        assert len(wi_rows) >= 5
 
         search = get_tool(idx, "search_entities")
         s = search(text="lint", limit=10)
@@ -1056,10 +1260,12 @@ def run():
                 + "\n\nFix: append the canonical 1%-rule sentence to each "
                 "tool's docstring in its server.py."
             )
-        print("1% rule guard: all 10 locked tools carry the '1% rule' string.")
-        # ── end 1% rule guard ─────────────────────────────────────────────────
+        print(
+            "1% rule guard: all 10 locked tools carry the '1% rule' string."
+        )
+        # End 1% rule guard.
 
-        # ── BraveBird: reload_schemas live-reload regression guard ────────────
+        # BraveBird: reload_schemas live-reload regression guard.
         # Each of the 4 schema-active servers (event-log, workitem,
         # decision-record, artifact-management) must expose a
         # reload_schemas tool that clears the _lib schema + state_machine
@@ -1079,7 +1285,10 @@ def run():
             assert "cleared" in _result, (
                 f"reload_schemas on {_srv_name}: missing 'cleared' field"
             )
-            assert set(_result["cleared"].keys()) >= {"schemas", "state_machines"}, (
+            assert set(_result["cleared"].keys()) >= {
+                "schemas",
+                "state_machines",
+            }, (
                 f"reload_schemas on {_srv_name}: cleared missing keys, "
                 f"got {_result['cleared'].keys()}"
             )
@@ -1087,7 +1296,7 @@ def run():
             "reload_schemas guard: all 4 schema-active servers expose a "
             "callable reload_schemas with correct shape."
         )
-        # ── end BraveBird guard ───────────────────────────────────────────────
+        # End BraveBird guard.
 
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:
