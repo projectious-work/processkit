@@ -4,7 +4,7 @@ description: |
   Build and maintain a structured personal-context portfolio for the project owner — identity, working style, goals, team, decision patterns. Includes both an interview protocol for bootstrapping and observable-signal patterns for incremental refinement. Use to bootstrap an owner profile (interview), to refine an existing profile (target one file), or to incrementally update the profile based on observed patterns from a normal session (the agent watches for signals and proposes additions when evidence accrues).
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-owner-profiling
     version: "1.0.0"
     created: 2026-04-07T00:00:00Z

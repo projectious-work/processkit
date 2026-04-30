@@ -4,7 +4,7 @@ description: |
   Test-driven development workflow — red-green-refactor, naming, doubles, when to apply. Use when writing code with TDD, practicing the red-green-refactor cycle, deciding between TDD and test-after, naming tests, choosing test doubles, or exploring property-based and mutation testing.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-tdd-workflow
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

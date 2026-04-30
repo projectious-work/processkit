@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: WorkItem
 metadata:
   id: BACK-20260423_0829-TrueQuail-aibox-installer-reconcile-mcp

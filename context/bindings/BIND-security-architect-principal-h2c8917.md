@@ -1,9 +1,9 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Binding
 metadata:
   id: BIND-security-architect-principal-h2c8917
-  created: 2026-04-22T00:00:00Z
+  created: 2026-04-22 00:00:00+00:00
 spec:
   type: model-assignment
   subject: ROLE-security-architect
@@ -15,6 +15,7 @@ spec:
     rank: 1
     effort_floor: extra-high
     effort_ceiling: max
-    rationale: "Principal security architect — adversarial deep-dive; G:5"
-  description: "default-pack: Principal security architect — adversarial deep-dive; G:5"
+    rationale: Principal security architect — adversarial deep-dive; G:5
+  description: 'default-pack: Principal security architect — adversarial deep-dive;
+    G:5'
 ---

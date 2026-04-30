@@ -4,7 +4,7 @@ description: |
   CI/CD pipeline setup — GitHub Actions, testing, linting, deployment. Use when setting up CI from scratch, adding GitHub Actions, automating tests, wiring up deployment, or improving an existing build pipeline.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-ci-cd-setup
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

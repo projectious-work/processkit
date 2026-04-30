@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: DecisionRecord
 metadata:
   id: DEC-20260423_0838-SnowyFox-v0-19-2-scope

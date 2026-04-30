@@ -4,7 +4,7 @@ description: |
   Append-only event log — the probabilistic record of everything that happened in the project. Use whenever something notable happens that the project should remember — work items created/transitioned, decisions recorded, bindings changed, incidents occurred, releases shipped.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-event-log
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -63,7 +63,7 @@ Every LogEntry is a YAML-frontmatter Markdown file:
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: LogEntry
 metadata:
   id: LOG-<generated-id>

@@ -5,7 +5,7 @@ description: >
   low coupling, and AI agent context efficiency.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-software-modularization
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

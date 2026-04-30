@@ -4,7 +4,7 @@ description: |
   Generates Excalidraw diagrams programmatically as hand-drawn-style JSON. Use when creating architecture diagrams, flowcharts, or hand-drawn-style visuals for documentation, or when converting existing diagrams to editable Excalidraw JSON.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-excalidraw
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

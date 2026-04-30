@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: DecisionRecord
 metadata:
   id: DEC-20260422_0926-MerryArch-auto-create-github-releases

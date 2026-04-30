@@ -1,23 +1,30 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix
-  created: 2026-04-14T15:45:00Z
+  created: 2026-04-14 15:45:00+00:00
 spec:
-  name: "Follow-up harness capability matrix — Cursor, OpenCode, Aider"
+  name: Follow-up harness capability matrix — Cursor, OpenCode, Aider
   kind: document
   location: context/artifacts/ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix.md
   format: markdown
-  version: "1.0.0"
-  tags: [research, enforcement, cursor, opencode, aider, capability-matrix, harness-adapters]
+  version: 1.0.0
+  tags:
+  - research
+  - enforcement
+  - cursor
+  - opencode
+  - aider
+  - capability-matrix
+  - harness-adapters
   produced_by: BACK-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
   owner: ACTOR-junior-researcher
   links:
     workitem: BACK-20260414_1436-WideNet-cursor-opencode-aider-adapter-scoping
     inputs:
-      - ART-20260414_1230-ReachReady-processkit-enforcement-research
-      - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
+    - ART-20260414_1230-ReachReady-processkit-enforcement-research
+    - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
 ---
 
 # Follow-up harness capability matrix — Cursor, OpenCode, Aider

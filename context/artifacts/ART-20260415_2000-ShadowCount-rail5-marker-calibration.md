@@ -1,24 +1,30 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260415_2000-ShadowCount-rail5-marker-calibration
-  created: 2026-04-15T20:00:00Z
+  created: 2026-04-15 20:00:00+00:00
 spec:
-  name: "Rail 5 shadow-mode calibration — Tier-A marker precision/recall"
+  name: Rail 5 shadow-mode calibration — Tier-A marker precision/recall
   kind: document
   location: context/artifacts/ART-20260415_2000-ShadowCount-rail5-marker-calibration.md
   format: markdown
-  version: "1.0.0"
-  tags: [research, enforcement, rail5, calibration, decision-record,
-         precision-recall, shadow-mode]
+  version: 1.0.0
+  tags:
+  - research
+  - enforcement
+  - rail5
+  - calibration
+  - decision-record
+  - precision-recall
+  - shadow-mode
   produced_by: BACK-20260415_1800-ShadowCount-rail5-marker-calibration
   owner: ACTOR-sr-researcher
   links:
     workitem: BACK-20260415_1800-ShadowCount-rail5-marker-calibration
     inputs:
-      - ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research
-      - context/skills/processkit/skill-gate/scripts/decision_markers.py
+    - ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research
+    - context/skills/processkit/skill-gate/scripts/decision_markers.py
     related_decisions: []
 ---
 

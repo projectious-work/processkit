@@ -4,7 +4,7 @@ description: |
   Webhook design and consumption — payload format, HMAC signatures, idempotency, retries, dead-letter queues, security. Use when implementing a webhook consumer, designing an event-notification system, adding signature verification, or debugging duplicate or failed webhook deliveries.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-webhook-integration
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

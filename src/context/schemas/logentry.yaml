@@ -39,6 +39,7 @@ spec:
     - gate.failed
     - gate.waived
     - github.issue.closed
+    - external_issue.created
     - inbox.captured
     - inbox.claimed
     - inbox.completed
@@ -54,7 +55,16 @@ spec:
     - migration.rejected
     - migration.v2-context-converted
     - note.created
+    - process.backlog_review
+    - process.behavioral_norms_encoded
+    - process.id-format-redesign
     - process.instance.created
+    - process.prd_review_completed
+    - process.prd_review_started
+    - process.prd_relocated
+    - process.prd_updated
+    - process.skill_updated
+    - research.completed
     - release.published
     - retro.action_item_created
     - retro.completed
@@ -80,6 +90,8 @@ spec:
     - team_member.updated
     - workitem.archive-moved
     - workitem.created
+    - workitem.note
+    - workitem.rewritten
     - workitem.transitioned
     - scope.archive-moved
     - note.archive-moved
@@ -94,6 +106,9 @@ spec:
     - security.agent_ids_rule_projected
     - security.tetragon_policy_projected
     - sep.handoff.created
+    - skill.implemented
+    - decision.re-recorded
+    - entity.renamed
     - test.event
     - test.fixture
   spec_schema:

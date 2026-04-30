@@ -73,16 +73,16 @@ spec:
         type: string
         description: "Optional. The primitive kind of the target."
       scope:
-        type: string
+        type: [string, "null"]
         pattern: "^SCOPE-[a-zA-Z0-9_-]+$"
         description: "Optional. Scope ID within which this binding applies."
       valid_from:
-        type: string
+        type: [string, "null"]
         description: >
           Optional. When the binding starts being in effect. Date or
           ISO 8601 datetime.
       valid_until:
-        type: string
+        type: [string, "null"]
         description: "Optional. When the binding stops being in effect."
       conditions:
         type: object

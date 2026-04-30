@@ -1,7 +1,7 @@
 # Template for a new LogEntry. Fields marked TODO must be replaced.
 # The MCP server (Phase 3) replaces `id` and `created` automatically.
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: LogEntry
 metadata:
   id: LOG-TODO

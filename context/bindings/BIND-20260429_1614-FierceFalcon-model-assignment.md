@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Binding
 metadata:
   id: BIND-20260429_1614-FierceFalcon-model-assignment

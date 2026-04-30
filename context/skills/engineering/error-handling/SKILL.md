@@ -4,7 +4,7 @@ description: |
   Error handling across languages — Result types, exceptions, retries, circuit breakers, and structured error responses. Use when designing error handling for a module or service, choosing between Result types and exceptions, building error hierarchies, implementing retries or circuit breakers, or reviewing code for missing or poor error handling.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-error-handling
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

@@ -4,7 +4,7 @@ description: |
   Docker Compose patterns for multi-service apps — health checks, networking, volumes, dependencies. Use when writing or editing docker-compose files, designing multi-service architectures, debugging container networking, or managing volumes and service dependencies.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-container-orchestration
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

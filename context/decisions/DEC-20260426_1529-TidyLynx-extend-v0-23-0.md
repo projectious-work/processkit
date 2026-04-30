@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: DecisionRecord
 metadata:
   id: DEC-20260426_1529-TidyLynx-extend-v0-23-0
@@ -7,32 +7,17 @@ metadata:
 spec:
   title: 'Extend v0.23.0 scope: add TidyGrove + NobleBrook + AmberCliff + BraveMeadow'
   state: accepted
-  decision: 'Add four small backlog items to the v0.23.0 batch on top of the four
-    already done (CalmArch, RapidDaisy, VastLark, SolidWolf):
+  decision: |
+    Add four small backlog items to the v0.23.0 batch on top of the four already done (CalmArch, RapidDaisy, VastLark, SolidWolf):
 
+    - BACK-20260409_1830-TidyGrove — Release audit skill (validate entity files, skills, structure pre-tag).
+    - BACK-20260409_1738-NobleBrook — Skill DAG validator (cycle + layer-constraint checks).
+    - BACK-20260410_1840-AmberCliff — skill-finder catalog query mode (user-facing discovery).
+    - BACK-20260410_1049-BraveMeadow — Verify owner-profiling reference files (observable-signals.md + interview-protocol.md).
 
-    - BACK-20260409_1830-TidyGrove — Release audit skill (validate entity files, skills,
-    structure pre-tag).
+    Implementation will be parallelized via four subagents at sonnet tier (matches the team-roster 85% Sonnet allocation), one per WI, working concurrently. Files touched are largely disjoint (release-audit/ new, pk-doctor/ check, skill-finder/ extension, owner-profiling/ verification) so merge risk is low.
 
-    - BACK-20260409_1738-NobleBrook — Skill DAG validator (cycle + layer-constraint
-    checks).
-
-    - BACK-20260410_1840-AmberCliff — skill-finder catalog query mode (user-facing
-    discovery).
-
-    - BACK-20260410_1049-BraveMeadow — Verify owner-profiling reference files (observable-signals.md
-    + interview-protocol.md).
-
-
-    Implementation will be parallelized via four subagents at sonnet tier (matches
-    the team-roster 85% Sonnet allocation), one per WI, working concurrently. Files
-    touched are largely disjoint (release-audit/ new, pk-doctor/ check, skill-finder/
-    extension, owner-profiling/ verification) so merge risk is low.
-
-
-    Release flow stays the same as v0.22.1: bump aibox.lock processkit pin → CHANGELOG
-    entry → stamp src/PROVENANCE.toml → commit → tag → push → gh release create →
-    gh release view verify.'
+    Release flow stays the same as v0.22.1: bump aibox.lock processkit pin → CHANGELOG entry → stamp src/PROVENANCE.toml → commit → tag → push → gh release create → gh release view verify.
   context: DEC-20260426_1214-SoundLark fixed the v0.22.1/v0.23.0 release shape with
     v0.23.0 floored at CalmArch + RapidDaisy + VastLark + SolidWolf and "additions
     TBD" pending owner grooming. Owner has now finished grooming and selected four

@@ -1,24 +1,29 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
   created: '2026-04-15T15:45:00+00:00'
 spec:
-  name: "team-creator skill — Phase 3 dogfood diff (TeamWeaver)"
+  name: team-creator skill — Phase 3 dogfood diff (TeamWeaver)
   kind: diagnostic
   location: context/artifacts/ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff.md
   format: markdown
-  version: "1.0.0"
-  tags: [team-creator, dogfood, tiering-formula, acceptance-gate, diagnostic]
+  version: 1.0.0
+  tags:
+  - team-creator
+  - dogfood
+  - tiering-formula
+  - acceptance-gate
+  - diagnostic
   produced_by: BACK-20260415_1505-TeamWeaver-team-creator-skill
   owner: ACTOR-sr-researcher
   links:
     workitem: BACK-20260415_1505-TeamWeaver-team-creator-skill
     inputs:
-      - ART-20260415_1505-TeamWeaver-team-creator-skill-design
-      - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
-      - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition
+    - ART-20260415_1505-TeamWeaver-team-creator-skill-design
+    - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
+    - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition
 ---
 
 # team-creator skill — Phase 3 Dogfood Diff

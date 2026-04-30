@@ -4,7 +4,7 @@ description: |
   Drafts clear, professional emails ready to copy and paste — from a brief description of the situation, audience, and intent. Use when asked to write, draft, or compose an email, reply to a message, or suggest how to phrase something professionally.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-email-drafter
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

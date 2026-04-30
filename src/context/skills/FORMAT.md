@@ -1,10 +1,11 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Documentation
 metadata:
   id: SKILL-FORMAT
-  title: "Skill Package Format Specification"
-  version: "2.0.0"
+  title: Skill Package Format Specification
+  version: 2.0.0
+  created: '2026-04-30T16:28:29+00:00'
 spec:
   level: 3
 ---
@@ -74,7 +75,7 @@ description: |
   done", "what's blocked", "create a bug for X", or "what's in review".
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-workitem-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -378,7 +379,7 @@ values:
 ```yaml
 # assets/workitem.yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: WorkItem
 metadata:
   id: BACK-TODO           # MCP server replaces with generated ID

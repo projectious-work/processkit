@@ -1,27 +1,34 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
-  created: 2026-04-14T14:30:00Z
+  created: 2026-04-14 14:30:00+00:00
 spec:
-  name: "processkit enforcement — implementation plan (hybrid: hooks + acknowledge_contract + tool-description 1% rule)"
+  name: 'processkit enforcement — implementation plan (hybrid: hooks + acknowledge_contract
+    + tool-description 1% rule)'
   kind: document
   location: context/artifacts/ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan.md
   format: markdown
-  version: "1.0.0"
-  tags: [architecture, enforcement, processkit, hooks, mcp, aibox]
+  version: 1.0.0
+  tags:
+  - architecture
+  - enforcement
+  - processkit
+  - hooks
+  - mcp
+  - aibox
   produced_by: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
   owner: ACTOR-sr-architect
   links:
     workitem: BACK-20260414_1245-FirmFoundation-enforcement-implementation-plan
     inputs:
-      - ART-20260414_1230-ReachReady-processkit-enforcement-research
-      - ART-20260414_1230-ReachReady-processkit-enforcement-research-summary
-      - ART-20260414_0935-AuditSurface-mcp-enforcement-surface
+    - ART-20260414_1230-ReachReady-processkit-enforcement-research
+    - ART-20260414_1230-ReachReady-processkit-enforcement-research-summary
+    - ART-20260414_0935-AuditSurface-mcp-enforcement-surface
     related_decisions:
-      - DEC-20260411_0802-RoyalComet-reliable-skill-invocation-provider
-      - DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list
+    - DEC-20260411_0802-RoyalComet-reliable-skill-invocation-provider
+    - DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list
 ---
 
 # processkit enforcement — implementation plan

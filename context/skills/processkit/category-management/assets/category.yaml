@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Category
 metadata:
   id: CAT-TODO
@@ -9,8 +9,8 @@ spec:
   description: TODO
   axis: TODO
   values:
-    - name: TODO
-      description: TODO
+  - name: TODO
+    description: TODO
   applies_to: []
   default: null
   multi: false

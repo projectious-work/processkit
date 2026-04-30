@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: DecisionRecord
 metadata:
   id: DEC-20260424_0101-SolidBadger-split-v0-20-0

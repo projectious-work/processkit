@@ -82,7 +82,7 @@ the SQLite index (via `index-management`) replaces it.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Note
 metadata:
   id: NOTE-20260408_1501-amber-fox-error-field-names
@@ -258,7 +258,7 @@ responsibility on a weekly basis.
 
 ```markdown
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Note
 metadata:
   id: NOTE-{{YYYYMMDD_HHMM}}-{{word-pair}}[-{{slug}}]

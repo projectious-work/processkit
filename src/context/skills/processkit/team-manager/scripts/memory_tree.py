@@ -111,7 +111,7 @@ def _card_template(entity_obj: Any | None, slug: str) -> str:
 def _entity_stub(slug: str) -> str:
     return (
         "---\n"
-        "apiVersion: processkit.projectious.work/v1\n"
+        "apiVersion: processkit.projectious.work/v2\n"
         "kind: TeamMember\n"
         "metadata:\n"
         f"  id: TEAMMEMBER-{slug}\n"

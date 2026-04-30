@@ -4,7 +4,7 @@ description: |
   Generates clear, structured status updates for stakeholders — from project context, backlog state, or a brief description of recent work. Use when asked to write a status update, weekly report, progress summary, or team briefing about a project or initiative.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-status-update-writer
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

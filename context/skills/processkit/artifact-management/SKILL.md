@@ -7,7 +7,7 @@ description: |
   deliverable that should be registered in the project catalog.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-artifact-management
     version: "1.0.0"
     created: 2026-04-11T00:00:00Z

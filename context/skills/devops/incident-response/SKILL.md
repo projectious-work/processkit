@@ -4,7 +4,7 @@ description: |
   Production incident handling — triage, communicate, mitigate, fix, postmortem. Use when production is broken, users are affected, an outage is in progress, or a deploy has caused regressions and the priority is restoring service.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-incident-response
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

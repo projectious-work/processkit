@@ -1,16 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260409_0000-KindCrane-processkit-product-requirements-document
-  created: 2026-04-09T00:00:00Z
+  created: 2026-04-09 00:00:00+00:00
 spec:
   name: processkit Product Requirements Document
   kind: document
   location: context/artifacts/ART-20260409_0000-KindCrane-processkit-product-requirements-document.md
   format: markdown
-  version: "0.7.0"
-  tags: [prd, product, requirements]
+  version: 0.7.0
+  tags:
+  - prd
+  - product
+  - requirements
 ---
 
 # Product Requirements Document — processkit

@@ -4,7 +4,7 @@ description: |
   Manage Metric entities — quantified observations the project cares about (velocity, error rates, lead time, NPS). Use when defining or recording a quantitative measure — team velocity, error rate, lead time, customer satisfaction score.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-metrics-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -38,7 +38,7 @@ data. processkit stores the definition, not the time series.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Metric
 metadata:
   id: METRIC-velocity

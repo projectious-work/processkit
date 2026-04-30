@@ -11,6 +11,7 @@ validation in MCP servers. Validation uses the ``jsonschema`` library
 """
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -66,6 +67,7 @@ def validate_spec(kind: str, spec: dict[str, Any]) -> list[str]:
         schema = load_schema(kind)
     except SchemaError:
         return []
+    normalized_spec = _json_compatible(spec)
     json_schema = schema.get("spec_schema")
     if not json_schema:
         errors: list[str] = []
@@ -76,11 +78,16 @@ def validate_spec(kind: str, spec: dict[str, Any]) -> list[str]:
             errors = []
         else:
             validator = jsonschema.Draft202012Validator(json_schema)
-            iter_errors = validator.iter_errors(spec)
+            iter_errors = validator.iter_errors(normalized_spec)
             sorted_errors = sorted(iter_errors, key=lambda e: list(e.absolute_path))
             errors = [_format_error(e) for e in sorted_errors]
-    errors.extend(_validate_known_vocabulary(kind, spec, schema))
+    errors.extend(_validate_known_vocabulary(kind, normalized_spec, schema))
     return errors
+
+
+def _json_compatible(spec: dict[str, Any]) -> dict[str, Any]:
+    """Return ``spec`` as JSON-compatible data before JSON Schema checks."""
+    return json.loads(json.dumps(spec, default=str))
 
 
 def _validate_known_vocabulary(

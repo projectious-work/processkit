@@ -88,7 +88,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "workitems" / "BACK-20260420_1200-GoodApple-valid-item.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: WorkItem
             metadata:
               id: BACK-20260420_1200-GoodApple-valid-item
@@ -107,7 +107,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "workitems" / "BACK-bad-filename.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: WorkItem
             metadata:
               id: BACK-20260420_1300-BadApple-item
@@ -125,7 +125,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "logs" / "LOG-toplevel-misplaced.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: LogEntry
             metadata:
               id: LOG-toplevel-misplaced
@@ -145,7 +145,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "migrations" / "pending" / "MIG-20260101T000000.md").write_text(
         textwrap.dedent(f"""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: Migration
             metadata:
               id: MIG-20260101T000000
@@ -228,7 +228,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "workitems" / "BACK-20260420_1400-CleanBad-invalid.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: WorkItem
             metadata:
               id: BACK-20260420_1400-CleanBad-invalid
@@ -429,7 +429,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "actors" / "ACTOR-hacker.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: Actor
             metadata:
               id: ACTOR-hacker
@@ -480,7 +480,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "logs" / "LOG-20260425_1100-Fixture-event.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: LogEntry
             metadata:
               id: LOG-20260425_1100-Fixture-event
@@ -530,7 +530,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "migrations" / "MIG-20260425T1100-test-fixture.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: Migration
             metadata:
               id: MIG-20260425T1100-test-fixture

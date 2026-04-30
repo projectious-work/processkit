@@ -1,12 +1,14 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Context
 metadata:
   id: OWNER-20260409_2054-GoalsAnd-context
   privacy: project-private
   created: TODO
 spec:
-  description: "Owner goals, priorities, domain expertise, and beginner areas. Helps the agent weigh tradeoffs and calibrate its explanations to the owner's actual knowledge level."
+  description: Owner goals, priorities, domain expertise, and beginner areas. Helps
+    the agent weigh tradeoffs and calibrate its explanations to the owner's actual
+    knowledge level.
 ---
 
 # Goals and Context

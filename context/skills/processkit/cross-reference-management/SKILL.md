@@ -4,7 +4,7 @@ description: |
   Conventions and helpers for lightweight relationships between entities expressed as frontmatter references (not first-class Binding entities). Use when linking two entities with a simple, unscoped, untemporal relationship — 'this work item blocks that one', 'this decision relates to that work item'. For scoped/temporal relationships, use binding-management instead.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-cross-reference-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z

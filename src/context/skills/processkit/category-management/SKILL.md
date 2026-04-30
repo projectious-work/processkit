@@ -4,7 +4,7 @@ description: |
   Manage Category entities — taxonomies and classification schemes that group other entities by type, area, tier, etc. Use when defining a new classification axis (priority levels, bug severity, feature tier, product area) that other entities will be tagged with.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-category-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -42,7 +42,7 @@ Don't create a Category for one-off tags or freeform labels.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Category
 metadata:
   id: CAT-priority

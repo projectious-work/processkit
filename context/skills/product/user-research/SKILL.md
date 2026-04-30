@@ -4,7 +4,7 @@ description: |
   Structures user research — planning sessions, synthesizing findings, and translating insights into product decisions. Use when planning user interviews, analyzing research data, creating personas or journey maps, or turning qualitative feedback into structured recommendations.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-user-research
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

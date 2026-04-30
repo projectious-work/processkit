@@ -4,7 +4,7 @@ description: |
   Python conventions and patterns — typing, testing, project layout, tooling. Use when writing or reviewing Python code, setting up a new Python project, or deciding on tooling, typing, or testing conventions.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-python-best-practices
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

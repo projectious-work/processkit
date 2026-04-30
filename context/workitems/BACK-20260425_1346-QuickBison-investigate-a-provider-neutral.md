@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: WorkItem
 metadata:
   id: BACK-20260425_1346-QuickBison-investigate-a-provider-neutral

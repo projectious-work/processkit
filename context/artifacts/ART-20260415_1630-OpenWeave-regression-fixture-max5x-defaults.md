@@ -1,23 +1,28 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260415_1630-OpenWeave-regression-fixture-max5x-defaults
   created: '2026-04-15T16:30:00+00:00'
 spec:
-  name: "team-creator regression fixture — Max-5× kit defaults (OpenWeave)"
+  name: team-creator regression fixture — Max-5× kit defaults (OpenWeave)
   kind: test-fixture
   location: context/artifacts/ART-20260415_1630-OpenWeave-regression-fixture-max5x-defaults.md
   format: markdown
-  version: "1.0.0"
-  tags: [team-creator, regression-fixture, openweave, kit-defaults, acceptance-gate]
+  version: 1.0.0
+  tags:
+  - team-creator
+  - regression-fixture
+  - openweave
+  - kit-defaults
+  - acceptance-gate
   produced_by: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
   owner: ACTOR-developer
   links:
     workitem: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
     inputs:
-      - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
-      - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
+    - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
+    - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
 ---
 
 # team-creator Regression Fixture — Max-5× Kit Defaults

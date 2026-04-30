@@ -4,7 +4,7 @@ description: |
   Domain-Driven Design strategic and tactical patterns — bounded contexts, aggregates, value objects, context mapping. Use when modeling a complex business domain, defining microservice boundaries, designing aggregates, establishing a ubiquitous language, or refactoring a big ball of mud into well-defined contexts.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-domain-driven-design
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

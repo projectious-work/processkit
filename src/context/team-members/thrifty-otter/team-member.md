@@ -1,9 +1,9 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: TeamMember
 metadata:
   id: TEAMMEMBER-thrifty-otter
-  created: 2026-04-22T00:00:00Z
+  created: 2026-04-22 00:00:00+00:00
 spec:
   type: human
   name: Bernhard
@@ -12,12 +12,21 @@ spec:
   default_role: ROLE-ceo
   default_seniority: principal
   personality:
-    communication_style: "direct, pragmatic, terse; values crisp updates over narration"
-    voice: "first-person, collaborative"
-    declared_expertise: [product-strategy, systems-architecture, ai-agent-orchestration]
+    communication_style: direct, pragmatic, terse; values crisp updates over narration
+    voice: first-person, collaborative
+    declared_expertise:
+    - product-strategy
+    - systems-architecture
+    - ai-agent-orchestration
   memory:
     enabled: true
-    tiers: [working, episodic, semantic, procedural, relational, lessons]
+    tiers:
+    - working
+    - episodic
+    - semantic
+    - procedural
+    - relational
+    - lessons
     consolidation_cadence:
       per_task: true
       daily_journal: true
@@ -26,7 +35,7 @@ spec:
     decay_enabled: true
   exportable: false
   active: true
-  joined_at: "2026-04-21T01:44:06+00:00"
+  joined_at: '2026-04-21T01:44:06+00:00'
 ---
 
 # Bernhard — project owner

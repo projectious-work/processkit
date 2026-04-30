@@ -4,7 +4,7 @@ description: |
   Manage Gate entities — validation checkpoints that processes must pass (code review, security scan, tests). Use when defining or updating a checkpoint a process must pass — code review, tests green, security scan, stakeholder approval.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-gate-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -50,7 +50,7 @@ to declare what has to be true before a step can complete.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Gate
 metadata:
   id: GATE-code-review

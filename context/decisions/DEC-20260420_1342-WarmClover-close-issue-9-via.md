@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: DecisionRecord
 metadata:
   id: DEC-20260420_1342-WarmClover-close-issue-9-via

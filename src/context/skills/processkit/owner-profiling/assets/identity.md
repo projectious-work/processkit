@@ -1,12 +1,13 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Context
 metadata:
   id: OWNER-identity
   privacy: public
   created: TODO
 spec:
-  description: "Owner identity — name, role, what I do, what I'm known for. The single most important file an agent reads about the owner."
+  description: Owner identity — name, role, what I do, what I'm known for. The single
+    most important file an agent reads about the owner.
 ---
 
 # Identity

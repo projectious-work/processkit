@@ -4,7 +4,7 @@ description: |
   Modern Java 17+ — records, sealed types, pattern matching, streams, Spring Boot. Use when writing or reviewing Java 17+ code, modernizing legacy Java, or working in Spring Boot services.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-java-patterns
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

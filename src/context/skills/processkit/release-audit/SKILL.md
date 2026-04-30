@@ -10,7 +10,7 @@ description: |
   file under `context/`.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-release-audit
     version: "1.0.0"
     created: 2026-04-26T00:00:00Z
@@ -61,7 +61,7 @@ Exit code `0` = clean (0 ERRORs). Exit code `1` = at least one ERROR found.
    `bindings`, `scopes`, `gates`, `roles`, `migrations`, `team`, `team-members`,
    `notes`, `discussions`). For each file verifies:
    - YAML frontmatter is present and parseable (between `---` markers).
-   - `apiVersion: processkit.projectious.work/v1` is present.
+   - `apiVersion: processkit.projectious.work/v2` is present.
    - `kind:` is present and is one of the 13 registered kinds.
    - `metadata.id` is present and matches the filename stem.
 

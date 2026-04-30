@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Discussion
 metadata:
   id: DISC-20260410_1038-MightyDaisy-what-universal-primitives-and

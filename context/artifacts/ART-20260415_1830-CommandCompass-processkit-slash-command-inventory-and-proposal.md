@@ -1,22 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260415_1830-CommandCompass-processkit-slash-command-inventory-and-proposal
-  created: 2026-04-15T18:30:00Z
+  created: 2026-04-15 18:30:00+00:00
 spec:
-  name: "CommandCompass — processkit slash-command inventory and v0.17.0 proposal"
+  name: CommandCompass — processkit slash-command inventory and v0.17.0 proposal
   kind: document
   location: context/artifacts/ART-20260415_1830-CommandCompass-processkit-slash-command-inventory-and-proposal.md
   format: markdown
-  version: "1.0.0"
-  tags: [research, slash-commands, provider-neutral, v0.17.0, proposal]
+  version: 1.0.0
+  tags:
+  - research
+  - slash-commands
+  - provider-neutral
+  - v0.17.0
+  - proposal
   produced_by: ACTOR-sr-researcher
   owner: ACTOR-sr-researcher
   links:
     inputs:
-      - ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research
-      - ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix
+    - ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research
+    - ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix
     related_decisions: []
 ---
 

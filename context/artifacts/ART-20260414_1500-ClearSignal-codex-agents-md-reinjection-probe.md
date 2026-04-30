@@ -1,23 +1,29 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260414_1500-ClearSignal-codex-agents-md-reinjection-probe
-  created: 2026-04-14T15:00:00Z
+  created: 2026-04-14 15:00:00+00:00
 spec:
-  name: "Codex CLI AGENTS.md re-injection probe — session-start-only, not per-turn"
+  name: Codex CLI AGENTS.md re-injection probe — session-start-only, not per-turn
   kind: document
   location: context/artifacts/ART-20260414_1500-ClearSignal-codex-agents-md-reinjection-probe.md
   format: markdown
-  version: "1.0.0"
-  tags: [research, codex, enforcement, processkit, agents-md, hooks]
+  version: 1.0.0
+  tags:
+  - research
+  - codex
+  - enforcement
+  - processkit
+  - agents-md
+  - hooks
   produced_by: BACK-20260414_1435-QuietProbe-codex-reinjection-probe
   owner: ACTOR-jr-researcher
   links:
     workitem: BACK-20260414_1435-QuietProbe-codex-reinjection-probe
     related_artifacts:
-      - ART-20260414_1230-ReachReady-processkit-enforcement-research
-      - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
+    - ART-20260414_1230-ReachReady-processkit-enforcement-research
+    - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
 ---
 
 # Codex CLI AGENTS.md re-injection probe

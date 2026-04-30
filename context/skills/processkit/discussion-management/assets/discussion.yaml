@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Discussion
 metadata:
   id: DISC-TODO
@@ -7,10 +7,10 @@ metadata:
   created: TODO
   participants: []
 spec:
-  state: active          # active | resolved | archived
+  state: active
   question: TODO
   related: []
-  outcomes: []           # DEC IDs produced
+  outcomes: []
   opened_at: TODO
   closed_at: null
 ---

@@ -1,21 +1,19 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: WorkItem
 metadata:
   id: BACK-20260410_1840-SleekSky-theme-creator-skill
   created: '2026-04-10T18:40:00+00:00'
 spec:
-  title: Create theme-creator skill — color theory, palette generation, Radix-style scales
+  title: Create theme-creator skill — color theory, palette generation, Radix-style
+    scales
   state: backlog
   type: story
   priority: medium
-  description: >
-    New skill: theme-creator. Deeply specialized color skill, separate from but
-    coordinating with brand-design (StoutCrow / BACK-20260410_1050-StoutCrow).
-
+  description: |
+    New skill: theme-creator. Deeply specialized color skill, separate from but coordinating with brand-design (StoutCrow / BACK-20260410_1050-StoutCrow).
 
     **Scope:**
-
     1. Deep internet research (web search) on how major color tools work — Coolors,
        ColorMagic, Designs.ai Colormatcher, Adobe Color, Paletton, Colormind,
        PaletteMaker — covering generation algorithms, harmony models, psychology
@@ -47,10 +45,7 @@ spec:
        embedded knowledge).
 
 
-    **Relationship to StoutCrow:** brand-design covers brand identity holistically
-    (logo, typography, voice, visual language). theme-creator is the color-specialist
-    sub-skill. brand-design invokes theme-creator for the color subsystem.
-
+    **Relationship to StoutCrow:** brand-design covers brand identity holistically (logo, typography, voice, visual language). theme-creator is the color-specialist sub-skill. brand-design invokes theme-creator for the color subsystem.
 
     Use skill-builder. Add to design category (post-reorganization).
 ---

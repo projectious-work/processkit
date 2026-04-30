@@ -6,6 +6,6 @@
   "tool_name": "Write",
   "tool_input": {
     "file_path": "context/workitems/FEAT-99999999_0000-TestItem-fixture.md",
-    "content": "---\napiVersion: processkit.projectious.work/v1\nkind: WorkItem\n---\n"
+    "content": "---\napiVersion: processkit.projectious.work/v2\nkind: WorkItem\n---\n"
   }
 }

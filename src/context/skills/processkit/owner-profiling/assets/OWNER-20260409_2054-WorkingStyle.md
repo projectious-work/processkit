@@ -1,12 +1,14 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Context
 metadata:
   id: OWNER-20260409_2054-WorkingStyle
   privacy: project-private
   created: TODO
 spec:
-  description: "Owner working style — communication preferences, hard constraints, strong preferences, role/responsibilities, things to avoid. The highest-leverage file per session — agent should always load this."
+  description: Owner working style — communication preferences, hard constraints,
+    strong preferences, role/responsibilities, things to avoid. The highest-leverage
+    file per session — agent should always load this.
 ---
 
 # Working Style

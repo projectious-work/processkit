@@ -1,24 +1,32 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260415_1600-OpenWeave-openweave-skill-design
   created: '2026-04-15T16:00:00+00:00'
 spec:
-  name: "team-creator openness — Phase 1 design (OpenWeave)"
+  name: team-creator openness — Phase 1 design (OpenWeave)
   kind: design
   location: context/artifacts/ART-20260415_1600-OpenWeave-openweave-skill-design.md
   format: markdown
-  version: "1.0.0"
-  tags: [team-creator, skill-design, openweave, configurable-defaults, landscape-override, weight-override, tier-thresholds, role-archetypes]
+  version: 1.0.0
+  tags:
+  - team-creator
+  - skill-design
+  - openweave
+  - configurable-defaults
+  - landscape-override
+  - weight-override
+  - tier-thresholds
+  - role-archetypes
   produced_by: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
   owner: ACTOR-jr-architect
   links:
     workitem: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
     inputs:
-      - ART-20260415_1505-TeamWeaver-team-creator-skill-design
-      - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
-      - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
+    - ART-20260415_1505-TeamWeaver-team-creator-skill-design
+    - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
+    - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
 ---
 
 # team-creator openness — Phase 1 Design (OpenWeave)

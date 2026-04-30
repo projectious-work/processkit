@@ -4,7 +4,7 @@ description: |
   Manage Schedule entities — time-based triggers and recurring cadences (daily standup, weekly review, monthly retro). Use when defining a recurring cadence — daily/weekly/monthly — that triggers a process or reminder.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-schedule-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -32,7 +32,7 @@ quarterly planning.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Schedule
 metadata:
   id: SCHED-daily-standup

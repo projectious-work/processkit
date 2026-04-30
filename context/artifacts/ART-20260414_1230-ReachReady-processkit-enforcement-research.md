@@ -1,24 +1,31 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260414_1230-ReachReady-processkit-enforcement-research
-  created: 2026-04-14T12:30:00Z
+  created: 2026-04-14 12:30:00+00:00
 spec:
-  name: "Why agents ignore processkit — research-with-confidence report"
+  name: Why agents ignore processkit — research-with-confidence report
   kind: document
   location: context/artifacts/ART-20260414_1230-ReachReady-processkit-enforcement-research.md
   format: markdown
-  version: "1.0.0"
-  tags: [research, enforcement, processkit, agents, mcp, hooks, agents-md]
+  version: 1.0.0
+  tags:
+  - research
+  - enforcement
+  - processkit
+  - agents
+  - mcp
+  - hooks
+  - agents-md
   produced_by: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
   owner: ACTOR-sr-researcher
   links:
     workitem: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
     inputs:
-      - ART-20260414_0935-AuditSurface-mcp-enforcement-surface
+    - ART-20260414_0935-AuditSurface-mcp-enforcement-surface
     related_decisions:
-      - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition
+    - DEC-20260414_0900-TeamRoster-permanent-ai-team-composition
 ---
 
 # Why agents ignore processkit — research-with-confidence report

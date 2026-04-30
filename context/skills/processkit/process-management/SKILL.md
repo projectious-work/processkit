@@ -4,7 +4,7 @@ description: |
   Manage Process entities — declarative sequences of steps with roles, gates, and a definition of done. Use when defining a reusable workflow — code review, release, incident response, onboarding — that the project wants to run consistently.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-process-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -37,7 +37,7 @@ just defines them.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Process
 metadata:
   id: PROC-code-review

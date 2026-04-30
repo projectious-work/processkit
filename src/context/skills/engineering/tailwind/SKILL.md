@@ -4,7 +4,7 @@ description: |
   Tailwind CSS v4 — utility-first styling, responsive design, dark mode, and component extraction. Use when building or reviewing Tailwind-based UIs, setting up Tailwind v4, or designing responsive or dark-mode styling.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-tailwind
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

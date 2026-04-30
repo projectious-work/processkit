@@ -4,7 +4,7 @@ description: |
   Frontend architecture and UI design — component hierarchies, accessibility, performance, state management. Use when designing frontend architecture, building component hierarchies, making something accessible, optimizing Core Web Vitals, or choosing a state management approach.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-frontend-design
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

@@ -4,7 +4,7 @@ description: |
   Define and customize StateMachine entities — the state/transition graphs used by WorkItems, DecisionRecords, and other primitives with lifecycle. Use when a project needs to customize the default state machine for a primitive (add states, change transitions) or define a state machine for a custom entity type.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-state-machine-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -33,7 +33,7 @@ for custom entities.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: StateMachine
 metadata:
   id: SM-workitem

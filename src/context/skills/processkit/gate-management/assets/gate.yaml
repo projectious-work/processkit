@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Gate
 metadata:
   id: GATE-TODO
@@ -7,7 +7,7 @@ metadata:
 spec:
   name: TODO
   description: TODO
-  kind: manual           # manual | automated | hybrid
+  kind: manual
   validator: TODO
   validator_command: null
   required_roles: []

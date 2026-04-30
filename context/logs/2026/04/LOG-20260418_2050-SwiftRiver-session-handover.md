@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: LogEntry
 metadata:
   id: LOG-20260418_2050-SwiftRiver-session-handover
@@ -8,12 +8,12 @@ spec:
   event_type: session.handover
   timestamp: '2026-04-18T20:50:00Z'
   actor: ACTOR-pm-claude
-  summary: "v0.18.2 RELEASED — #8 fixed, skip_decision_record + contract v2
-    + drift guard + SnappyTrout shipped; MCP write tools still unreachable
-    this session (pre-release sync), catch-up deferred to post-aibox-sync"
+  summary: 'v0.18.2 RELEASED — #8 fixed, skip_decision_record + contract v2 + drift
+    guard + SnappyTrout shipped; MCP write tools still unreachable this session (pre-release
+    sync), catch-up deferred to post-aibox-sync'
   details:
-    session_date: "2026-04-18"
-    session_duration: "Short release session. Single PM actor + owner."
+    session_date: '2026-04-18'
+    session_duration: Short release session. Single PM actor + owner.
     current_state: |
       processkit is tagged `v0.18.2` on `main`, pushed, GitHub release
       published with tarball + sha256, issue #8 closed.
@@ -81,140 +81,130 @@ spec:
 
       5. Wrote this handover (hand-authored, same deviation as the
          last 3 handovers — log_event MCP still not reachable).
-
     open_threads:
-      - id: harness-reload-still-pending
-        state: "unblock path known — owner action required"
-        note: |
-          The running Claude Code harness still has the v0.18.1
-          merged `.mcp.json` loaded. To unblock MCP write tools
-          (record_decision, create_workitem, transition_workitem,
-          log_event, reindex, query_entities, search_entities, …):
+    - id: harness-reload-still-pending
+      state: unblock path known — owner action required
+      note: |
+        The running Claude Code harness still has the v0.18.1
+        merged `.mcp.json` loaded. To unblock MCP write tools
+        (record_decision, create_workitem, transition_workitem,
+        log_event, reindex, query_entities, search_entities, …):
 
-            1. Re-run `aibox sync` on the host (or inside the
-               container if the CLI is present there). aibox will
-               see the new v0.18.2 tag, fetch the tarball, and
-               regenerate `/workspace/.mcp.json` from the v0.18.2
-               per-skill configs (which carry the correct paths).
-            2. Restart the Claude Code session (or `/mcp reconnect`
-               once the on-disk config is correct).
-            3. Verify via ToolSearch that query_workitems,
-               record_decision, create_workitem, log_event,
-               reindex, query_entities, search_entities all appear.
+          1. Re-run `aibox sync` on the host (or inside the
+             container if the CLI is present there). aibox will
+             see the new v0.18.2 tag, fetch the tarball, and
+             regenerate `/workspace/.mcp.json` from the v0.18.2
+             per-skill configs (which carry the correct paths).
+          2. Restart the Claude Code session (or `/mcp reconnect`
+             once the on-disk config is correct).
+          3. Verify via ToolSearch that query_workitems,
+             record_decision, create_workitem, log_event,
+             reindex, query_entities, search_entities all appear.
 
-          The aibox CLI was not available inside the current
-          container (no binary on PATH). The v0.18.2 release itself
-          is the unblock — nothing else needed on the processkit
-          side.
-
-      - id: mcp-catch-up-deferred
-        state: "ready to execute immediately after harness reload"
-        note: |
-          Post-reload plan (all previously planned for this session,
-          bumped to the next):
-            a. reindex() — picks up the 4 hand-written handovers:
-               LOG-20260417_0900-SteadyAnchor,
-               LOG-20260418_0115-TrueMirror,
-               LOG-20260418_1930-GreenGate,
-               LOG-20260418_2050-SwiftRiver (this one).
-            b. record_decision for DEC-20260417_1800-CapabilityProfile
-               Routing (strip CLEANUP-REQUIRED marker, log_event
-               the re-record).
-            c. route_task + create_workitem for /pk-retro backlog
-               (kind: FEAT, state: backlog, title
-               "Add /pk-retro skill — post-release retrospective").
-               Motivation: v0.15.0-v0.18.0 drift + v0.18.1 hotfix +
-               v0.18.2 (this session's release) is enough of a
-               pattern that a retrospective skill pays for itself.
-            d. transition_workitem BACK-20260410_1049-SnappyTrout →
-               done (shipped in v0.18.2). log_event.
-            e. transition_workitem BACK-20260411_0802-LivelyTulip →
-               done (verified shipped, no additional code needed).
-               log_event.
-            f. log_event session.release for v0.18.2.
-            g. Optional: record_decision for "ship v0.18.2 despite
-               MCP write deviation" if retrospectively worth the
-               index entry. Currently only a skip_decision_record
-               marker under `.state/skill-gate/` (24h TTL).
-
-      - id: pending-migrations-v0.18.1-noop
-        state: "will be superseded by next aibox sync"
-        note: |
-          context/migrations/pending/MIG-20260418T183311 and
-          MIG-RUNTIME-20260418T183310 are v0.18.1→v0.18.1 no-ops
-          documenting local drift that is now in v0.18.2. The
-          v0.18.1→v0.18.2 migration generated by the next aibox
-          sync will make them redundant. Safe to delete or leave
-          in pending/; the post-sync migration review will deal
-          with them.
-
-      - id: runtime-vs-release-drift-class
-        state: "noted for future consideration; out of scope for
-          v0.18.2"
-        note: |
-          Observation from this session: the harness-reload blocker
-          is the same shape as the v0.15.0–v0.18.0 drift — a silent
-          divergence between on-disk config and the running process.
-          scripts/check-src-context-drift.sh catches on-disk vs
-          on-disk. A runtime guard that verifies every MCP server
-          in the merged config actually handshakes at session start
-          would catch this class. Candidate for /pk-retro output.
-
+        The aibox CLI was not available inside the current
+        container (no binary on PATH). The v0.18.2 release itself
+        is the unblock — nothing else needed on the processkit
+        side.
+    - id: mcp-catch-up-deferred
+      state: ready to execute immediately after harness reload
+      note: |
+        Post-reload plan (all previously planned for this session,
+        bumped to the next):
+          a. reindex() — picks up the 4 hand-written handovers:
+             LOG-20260417_0900-SteadyAnchor,
+             LOG-20260418_0115-TrueMirror,
+             LOG-20260418_1930-GreenGate,
+             LOG-20260418_2050-SwiftRiver (this one).
+          b. record_decision for DEC-20260417_1800-CapabilityProfile
+             Routing (strip CLEANUP-REQUIRED marker, log_event
+             the re-record).
+          c. route_task + create_workitem for /pk-retro backlog
+             (kind: FEAT, state: backlog, title
+             "Add /pk-retro skill — post-release retrospective").
+             Motivation: v0.15.0-v0.18.0 drift + v0.18.1 hotfix +
+             v0.18.2 (this session's release) is enough of a
+             pattern that a retrospective skill pays for itself.
+          d. transition_workitem BACK-20260410_1049-SnappyTrout →
+             done (shipped in v0.18.2). log_event.
+          e. transition_workitem BACK-20260411_0802-LivelyTulip →
+             done (verified shipped, no additional code needed).
+             log_event.
+          f. log_event session.release for v0.18.2.
+          g. Optional: record_decision for "ship v0.18.2 despite
+             MCP write deviation" if retrospectively worth the
+             index entry. Currently only a skip_decision_record
+             marker under `.state/skill-gate/` (24h TTL).
+    - id: pending-migrations-v0.18.1-noop
+      state: will be superseded by next aibox sync
+      note: |
+        context/migrations/pending/MIG-20260418T183311 and
+        MIG-RUNTIME-20260418T183310 are v0.18.1→v0.18.1 no-ops
+        documenting local drift that is now in v0.18.2. The
+        v0.18.1→v0.18.2 migration generated by the next aibox
+        sync will make them redundant. Safe to delete or leave
+        in pending/; the post-sync migration review will deal
+        with them.
+    - id: runtime-vs-release-drift-class
+      state: noted for future consideration; out of scope for v0.18.2
+      note: |
+        Observation from this session: the harness-reload blocker
+        is the same shape as the v0.15.0–v0.18.0 drift — a silent
+        divergence between on-disk config and the running process.
+        scripts/check-src-context-drift.sh catches on-disk vs
+        on-disk. A runtime guard that verifies every MCP server
+        in the merged config actually handshakes at session start
+        would catch this class. Candidate for /pk-retro output.
     decisions_made_this_session:
-      - |
-        Ship v0.18.2 via the file-only release pipeline, accepting
-        that the MCP catch-up steps (reindex, record_decision,
-        create_workitem for /pk-retro, transition_workitem for
-        SnappyTrout + LivelyTulip, log_event for the release) will
-        run in the next session after an aibox re-sync. Rationale:
-        the release is itself the unblock, so delaying it to first
-        repair the harness is circular. The catch-up is deferrable
-        and the deviation is bounded (4 hand-written handovers, one
-        decision record re-entry).
-      - |
-        Skip the decision-language acknowledgement via
-        skip_decision_record rather than record_decision. Rationale:
-        owner approval ("Yes, please proceed with v0.18.2 release")
-        is an operational go-ahead, not a cross-cutting decision.
-        The "ship despite MCP write deviation" choice is captured
-        in the commit messages, CHANGELOG, and this handover — a
-        formal DecisionRecord can be added post-sync if retrospective
-        review says it is worth the index entry.
-      - |
-        Bump docs-site version references (intro.md, installing.md,
-        packages/overview.md) to v0.18.2 as part of the release
-        commit, matching the v0.18.1 precedent (commit 8668d66).
-        Added a compatibility-matrix row for v0.18.2 in
-        installing.md.
-      - |
-        Leave context/migrations/pending/ untracked. The two new
-        v0.18.1→v0.18.1 no-op migrations in there will be superseded
-        by the next aibox sync's v0.18.1→v0.18.2 migration; no value
-        in committing them to git.
-
+    - |
+      Ship v0.18.2 via the file-only release pipeline, accepting
+      that the MCP catch-up steps (reindex, record_decision,
+      create_workitem for /pk-retro, transition_workitem for
+      SnappyTrout + LivelyTulip, log_event for the release) will
+      run in the next session after an aibox re-sync. Rationale:
+      the release is itself the unblock, so delaying it to first
+      repair the harness is circular. The catch-up is deferrable
+      and the deviation is bounded (4 hand-written handovers, one
+      decision record re-entry).
+    - |
+      Skip the decision-language acknowledgement via
+      skip_decision_record rather than record_decision. Rationale:
+      owner approval ("Yes, please proceed with v0.18.2 release")
+      is an operational go-ahead, not a cross-cutting decision.
+      The "ship despite MCP write deviation" choice is captured
+      in the commit messages, CHANGELOG, and this handover — a
+      formal DecisionRecord can be added post-sync if retrospective
+      review says it is worth the index entry.
+    - |
+      Bump docs-site version references (intro.md, installing.md,
+      packages/overview.md) to v0.18.2 as part of the release
+      commit, matching the v0.18.1 precedent (commit 8668d66).
+      Added a compatibility-matrix row for v0.18.2 in
+      installing.md.
+    - |
+      Leave context/migrations/pending/ untracked. The two new
+      v0.18.1→v0.18.1 no-op migrations in there will be superseded
+      by the next aibox sync's v0.18.1→v0.18.2 migration; no value
+      in committing them to git.
     artifacts_produced:
-      - "Release asset: /workspace/dist/processkit-v0.18.2.tar.gz (726K)"
-      - "Release asset: /workspace/dist/processkit-v0.18.2.tar.gz.sha256"
-      - "GitHub release: https://github.com/projectious-work/processkit/releases/tag/v0.18.2"
-      - "Git tag: v0.18.2 (pushed to origin)"
-      - "LOG-20260418_2050-SwiftRiver-session-handover.md (this file,
-        hand-written)"
-
+    - 'Release asset: /workspace/dist/processkit-v0.18.2.tar.gz (726K)'
+    - 'Release asset: /workspace/dist/processkit-v0.18.2.tar.gz.sha256'
+    - 'GitHub release: https://github.com/projectious-work/processkit/releases/tag/v0.18.2'
+    - 'Git tag: v0.18.2 (pushed to origin)'
+    - LOG-20260418_2050-SwiftRiver-session-handover.md (this file, hand-written)
     git_context:
       branch: main
-      head: "451a930 chore: regenerate src/PROVENANCE.toml for v0.18.2"
+      head: '451a930 chore: regenerate src/PROVENANCE.toml for v0.18.2'
       tag: v0.18.2
-      remote: "origin (in sync at v0.18.2)"
+      remote: origin (in sync at v0.18.2)
       clean: true
       working_tree_summary: |
         Clean except for context/migrations/pending/ (2 untracked
         no-op migration files — see open_threads).
-
     token_budget_snapshot:
-      opus_share: "~95% (all work this session — diagnosis, commits,
-        release pipeline, handover; single-actor PM session)"
-      sonnet_share: "0%"
-      haiku_share: "0%"
+      opus_share: ~95% (all work this session — diagnosis, commits, release pipeline,
+        handover; single-actor PM session)
+      sonnet_share: 0%
+      haiku_share: 0%
       note: |
         Short release session with no worker dispatch — PM executed
         the whole pipeline in one seat. Off the 5/85/10 target on
@@ -222,7 +212,6 @@ spec:
         diagnosis benefit from staying in one head. Expected to
         rebalance in the next session once catch-up + /pk-retro
         WorkItem + any backlog dispatch runs.
-
     next_recommended_action: |
       1. Owner: re-run `aibox sync` on the host → /workspace/.mcp.json
          regenerates with v0.18.2 paths. Restart the Claude Code

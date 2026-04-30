@@ -4,7 +4,7 @@ description: |
   Codebase architecture analysis — patterns, ADRs, structural review, C4 diagrams. Use when evaluating a codebase's architecture, choosing a pattern for a new project, writing an Architecture Decision Record, reviewing for layer violations, or generating C4 diagrams.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-software-architecture
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

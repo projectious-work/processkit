@@ -4,7 +4,7 @@ description: |
   Manage Constraint entities — rules and limits the project must respect (budget, latency SLO, team size, compliance). Use when recording a rule, limit, or boundary that affects decisions — budget ceiling, latency SLO, regulatory requirement, team bandwidth.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-constraint-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -33,7 +33,7 @@ referenceable from decisions and visible to trade-off analysis.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Constraint
 metadata:
   id: CONST-p99-latency

@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Binding
 metadata:
   id: BIND-20260425_0956-RoyalEagle-model-assignment

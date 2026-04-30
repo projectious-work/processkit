@@ -1,31 +1,33 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
   created: '2026-04-15T15:25:00+00:00'
 spec:
-  name: "AI provider comparison — April 2026 (structured summary)"
+  name: AI provider comparison — April 2026 (structured summary)
   kind: reference-dataset
   location: context/artifacts/ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured.md
   format: markdown
-  version: "1.0.0"
-  tags: [landscape, landscape-summary, providers, models, cost, benchmarks, team-creator]
+  version: 1.0.0
+  tags:
+  - landscape
+  - landscape-summary
+  - providers
+  - models
+  - cost
+  - benchmarks
+  - team-creator
   owner: ACTOR-jr-developer
   processed_by: ACTOR-jr-developer
   processed_at: '2026-04-15T15:25:00+00:00'
   source_artifact: ART-20260415_1510-LandscapeSnapshot-ai-provider-comparison-april-2026
-  summary: >
-    Structured markdown extraction of six major AI providers (Anthropic,
-    OpenAI, Google Gemini, Mistral, xAI Grok, DeepSeek) with 8 tables covering
-    subscription tiers, €90/mo budget analysis, coding benchmarks, decision
-    matrix, automated agent policy, head-to-head comparison, model ladder, and
-    API pricing. Extracted from HTML snapshot captured 2026-04-14. All tables,
-    prices, and model names preserved verbatim.
+  summary: |
+    Structured markdown extraction of six major AI providers (Anthropic, OpenAI, Google Gemini, Mistral, xAI Grok, DeepSeek) with 8 tables covering subscription tiers, €90/mo budget analysis, coding benchmarks, decision matrix, automated agent policy, head-to-head comparison, model ladder, and API pricing. Extracted from HTML snapshot captured 2026-04-14. All tables, prices, and model names preserved verbatim.
   consumes:
-    - ART-20260415_1510-LandscapeSnapshot-ai-provider-comparison-april-2026
+  - ART-20260415_1510-LandscapeSnapshot-ai-provider-comparison-april-2026
   consumed_by:
-    - BACK-20260415_1505-TeamWeaver-team-creator-skill
+  - BACK-20260415_1505-TeamWeaver-team-creator-skill
   freshness: |
     Snapshots of the provider landscape go stale within a quarter.
     Re-capture before every `team-rebalance` run. This snapshot is

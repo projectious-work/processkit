@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: LogEntry
 metadata:
   id: LOG-20260418_1930-GreenGate-session-handover
@@ -8,11 +8,11 @@ spec:
   event_type: session.handover
   timestamp: '2026-04-18T19:30:00Z'
   actor: ACTOR-pm-claude
-  summary: "Session handover — v0.18.2 staged (issue #8 fix, contract v2, drift
-    guard, SnappyTrout/LivelyTulip, threads 1–3 closed) — not yet released"
+  summary: 'Session handover — v0.18.2 staged (issue #8 fix, contract v2, drift guard,
+    SnappyTrout/LivelyTulip, threads 1–3 closed) — not yet released'
   details:
-    session_date: "2026-04-18"
-    session_duration: "Single session. PM + 5 parallel workers + owner."
+    session_date: '2026-04-18'
+    session_duration: Single session. PM + 5 parallel workers + owner.
     current_state: |
       processkit is still tagged at v0.18.1 on `main`. All v0.18.2
       content is staged on the working tree but NOT yet committed or
@@ -95,104 +95,94 @@ spec:
       Fixed (issue #8, AGENTS.md stale command), Added (skip_decision_
       record, contract v2, drift guard, SnappyTrout checklist, standup/
       status split), Closed work (SnappyTrout, LivelyTulip).
-
     open_threads:
-      - id: harness-reload-blocker
-        state: "still blocking — MCP client in the running Claude Code
-          harness loaded the old merged config at startup and never
-          picked up the fixed mcp-config.json paths"
-        note: |
-          Everything that requires `record_decision`, `create_workitem`,
-          `transition_workitem`, `log_event`, `query_entities`, or
-          `reindex` is blocked until the harness is restarted or
-          `/mcp reconnect` is issued. The on-disk config is correct
-          and servers launch cleanly when invoked by the smoke test.
-          Next session MUST reload before attempting Phases 1.3, 1.4,
-          2.3, 3.4, 4.5, 5 release tail.
-
-      - id: v0.18.2-not-released
-        state: staged on working tree, not committed
-        note: |
-          All v0.18.2 file changes are in the working tree. Nothing
-          committed, nothing tagged, nothing pushed. PROVENANCE not
-          stamped. Tarball not built. gh release not created. Issue
-          #8 not closed. The v0.18.2 CHANGELOG entry is in place.
-          Release pipeline is sequential (drift-guard, smoke,
-          stamp, 3 commits, tag, push, tarball, release, close #8,
-          handover-via-log_event).
-
-      - id: handover-log-not-written-via-MCP
-        state: "acknowledged deviation (same as LOG-20260418_0115 and
-          LOG-20260417_0900)"
-        note: |
-          This file was hand-written because log_event MCP is not
-          reachable this session. Run reindex after harness reload
-          to pick it up. Same for the prior two handovers.
-
-      - id: DEC-20260417_1800-unindexed
-        state: "still deferred, same CLEANUP-REQUIRED marker as before"
-        note: |
-          Plan was Phase 2.3. Re-record via record_decision once MCP
-          is reachable. No content change; just index the existing
-          decision through the proper tool.
-
-      - id: pk-retro-backlog-item
-        state: "not created yet"
-        note: |
-          Phase 3.4. Plan: route_task then create_workitem with kind=FEAT,
-          state=backlog, title "Add /pk-retro skill — post-release
-          retrospective". Motivation: v0.15.0–v0.18.0 drift + v0.18.1
-          hotfix + v0.18.2 (this session) shows enough of a pattern
-          that a retrospective skill would pay for itself.
-
-      - id: pending-migration-flag-upstream-pk-resume
-        state: "resolved this session"
-        note: |
-          MIG-20260418T172222 surfaced that /workspace/AGENTS.md line
-          45 still said `morning-briefing-generate` (renamed in
-          v0.17.0). Fixed to `pk-resume` in this session. Mirror
-          already OK.
-
+    - id: harness-reload-blocker
+      state: still blocking — MCP client in the running Claude Code harness loaded
+        the old merged config at startup and never picked up the fixed mcp-config.json
+        paths
+      note: |
+        Everything that requires `record_decision`, `create_workitem`,
+        `transition_workitem`, `log_event`, `query_entities`, or
+        `reindex` is blocked until the harness is restarted or
+        `/mcp reconnect` is issued. The on-disk config is correct
+        and servers launch cleanly when invoked by the smoke test.
+        Next session MUST reload before attempting Phases 1.3, 1.4,
+        2.3, 3.4, 4.5, 5 release tail.
+    - id: v0.18.2-not-released
+      state: staged on working tree, not committed
+      note: |
+        All v0.18.2 file changes are in the working tree. Nothing
+        committed, nothing tagged, nothing pushed. PROVENANCE not
+        stamped. Tarball not built. gh release not created. Issue
+        #8 not closed. The v0.18.2 CHANGELOG entry is in place.
+        Release pipeline is sequential (drift-guard, smoke,
+        stamp, 3 commits, tag, push, tarball, release, close #8,
+        handover-via-log_event).
+    - id: handover-log-not-written-via-MCP
+      state: acknowledged deviation (same as LOG-20260418_0115 and LOG-20260417_0900)
+      note: |
+        This file was hand-written because log_event MCP is not
+        reachable this session. Run reindex after harness reload
+        to pick it up. Same for the prior two handovers.
+    - id: DEC-20260417_1800-unindexed
+      state: still deferred, same CLEANUP-REQUIRED marker as before
+      note: |
+        Plan was Phase 2.3. Re-record via record_decision once MCP
+        is reachable. No content change; just index the existing
+        decision through the proper tool.
+    - id: pk-retro-backlog-item
+      state: not created yet
+      note: |
+        Phase 3.4. Plan: route_task then create_workitem with kind=FEAT,
+        state=backlog, title "Add /pk-retro skill — post-release
+        retrospective". Motivation: v0.15.0–v0.18.0 drift + v0.18.1
+        hotfix + v0.18.2 (this session) shows enough of a pattern
+        that a retrospective skill would pay for itself.
+    - id: pending-migration-flag-upstream-pk-resume
+      state: resolved this session
+      note: |
+        MIG-20260418T172222 surfaced that /workspace/AGENTS.md line
+        45 still said `morning-briefing-generate` (renamed in
+        v0.17.0). Fixed to `pk-resume` in this session. Mirror
+        already OK.
     decisions_made_this_session:
-      - |
-        Treat MIG-20260418T090604 as a no-op record rather than
-        re-applying the migration. The content shipped as part of the
-        v0.18.1 hotfix (commit 39c894e). Worker B verified file-by-file
-        that every listed new-upstream path exists and every
-        removed-upstream is absent. Flipped state and moved to applied/.
-      - |
-        Close LivelyTulip as delivered without additional code.
-        WorkItem scope is exactly find_skill + list_skills; both are
-        already shipped in skill-finder MCP server and pass smoke
-        tests. Supersedes BACK-AmberCliff per the WorkItem body.
-      - |
-        Bump compliance-contract.md asset to v2 in the same release as
-        the skip_decision_record MCP tool. The two halves must ship
-        together because the v2 clause references the tool. Old session
-        .ack markers carrying the v1 hash are allowed to go stale —
-        that is the correct re-acknowledge-on-change behavior.
-      - |
-        Drift guard allowlist explicitly includes the 11 dogfood-only
-        data directories under context/. That is not a leak; those
-        directories don't exist under src/context/ and are not meant
-        to. The guard asserts the *shippable* template tree matches
-        what the dogfood uses, not the dogfood's project data.
-      - |
-        Do NOT write a separate "session-start" skill for SnappyTrout.
-        The checklist belongs inline in AGENTS.md and
-        session-handover/SKILL.md. A standalone skill would be scope
-        creep and would sit one indirection layer away from where the
-        reader needs to see it.
-
+    - |
+      Treat MIG-20260418T090604 as a no-op record rather than
+      re-applying the migration. The content shipped as part of the
+      v0.18.1 hotfix (commit 39c894e). Worker B verified file-by-file
+      that every listed new-upstream path exists and every
+      removed-upstream is absent. Flipped state and moved to applied/.
+    - |
+      Close LivelyTulip as delivered without additional code.
+      WorkItem scope is exactly find_skill + list_skills; both are
+      already shipped in skill-finder MCP server and pass smoke
+      tests. Supersedes BACK-AmberCliff per the WorkItem body.
+    - |
+      Bump compliance-contract.md asset to v2 in the same release as
+      the skip_decision_record MCP tool. The two halves must ship
+      together because the v2 clause references the tool. Old session
+      .ack markers carrying the v1 hash are allowed to go stale —
+      that is the correct re-acknowledge-on-change behavior.
+    - |
+      Drift guard allowlist explicitly includes the 11 dogfood-only
+      data directories under context/. That is not a leak; those
+      directories don't exist under src/context/ and are not meant
+      to. The guard asserts the *shippable* template tree matches
+      what the dogfood uses, not the dogfood's project data.
+    - |
+      Do NOT write a separate "session-start" skill for SnappyTrout.
+      The checklist belongs inline in AGENTS.md and
+      session-handover/SKILL.md. A standalone skill would be scope
+      creep and would sit one indirection layer away from where the
+      reader needs to see it.
     artifacts_produced:
-      - "scripts/check-src-context-drift.sh (new)"
-      - "v0.18.2 CHANGELOG entry (staged, not committed)"
-
+    - scripts/check-src-context-drift.sh (new)
+    - v0.18.2 CHANGELOG entry (staged, not committed)
     git_context:
       branch: main
-      head: "bfa01e4 (unchanged from v0.18.1 tip)"
+      head: bfa01e4 (unchanged from v0.18.1 tip)
       tag: v0.18.1
-      remote: "origin (in sync at v0.18.1)"
+      remote: origin (in sync at v0.18.1)
       clean: false
       working_tree_summary: |
         ~30+ modified/new files across AGENTS.md, CHANGELOG.md,
@@ -200,17 +190,15 @@ spec:
         session-handover}/, and src/ mirrors, plus the 24 mcp-config.json
         patches (12 × 2 trees), plus 3 migrations moved from pending/
         to applied/, plus this handover log.
-
     token_budget_snapshot:
-      opus_share: "~15% (PM coordination, plan, 5 worker dispatches,
-        1 inline fix for AGENTS.md pk-resume stale reference, 1 inline
-        fix for smoke-test-servers.py version binding, CHANGELOG draft,
-        this handover)"
-      sonnet_share: "~80% (Workers A–F: issue #8 patch, migrations,
-        skip_decision_record + contract v2 + test_hooks, drift guard +
-        tarball wiring, SnappyTrout; 5 of 6 Sonnet)"
-      haiku_share: "~5% (Worker C only — /pk-standup vs /pk-status
-        split, 11 tool uses, 19s duration)"
+      opus_share: ~15% (PM coordination, plan, 5 worker dispatches, 1 inline fix for
+        AGENTS.md pk-resume stale reference, 1 inline fix for smoke-test-servers.py
+        version binding, CHANGELOG draft, this handover)
+      sonnet_share: '~80% (Workers A–F: issue #8 patch, migrations, skip_decision_record
+        + contract v2 + test_hooks, drift guard + tarball wiring, SnappyTrout; 5 of
+        6 Sonnet)'
+      haiku_share: ~5% (Worker C only — /pk-standup vs /pk-status split, 11 tool uses,
+        19s duration)
       note: |
         Closer to target 5/85/10 mix than recent sessions. Opus stayed
         in coordinator / policy lane except for two small inline fixes
@@ -218,7 +206,6 @@ spec:
         by Worker E (initial run flagged 3 skill-gate files Worker D
         had just touched — tree settled to PASS after both workers
         finished) was a nice ordering check.
-
     next_recommended_action: |
       1. RELOAD the harness (`/mcp reconnect` or restart session) so
          the new MCP servers become reachable. Without this, steps 2–7

@@ -9,7 +9,7 @@ description: |
   "compose a team", "rebalance the team", "review the team".
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-team-creator
     version: "1.2.0"
     created: 2026-04-15T00:00:00Z

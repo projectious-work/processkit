@@ -4,7 +4,7 @@ description: |
   TypeScript patterns — strict mode, discriminated unions, runtime validation, Result types. Use when writing or reviewing TypeScript, setting up a project's tsconfig, or designing type-safe data flows.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-typescript-patterns
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

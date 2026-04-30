@@ -6,7 +6,7 @@ description: >
   at the start of every processkit domain task.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-task-router
     version: "1.0.0"
     created: 2026-04-11T00:00:00Z

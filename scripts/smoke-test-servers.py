@@ -23,6 +23,7 @@ import os
 import sys
 import tempfile
 import shutil
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 PROCESSKIT = Path(__file__).resolve().parent.parent
@@ -133,11 +134,61 @@ def run():
             "# Release process override\n"
         )
 
+        # Seed a YAML entity so the v2 migration helper covers schemas /
+        # state machines, not only Markdown entities.
+        _smoke_sm = context_root / "state-machines" / "smoke.yaml"
+        _smoke_sm.write_text(
+            "---\n"
+            "apiVersion: processkit.projectious.work/v1\n"
+            "kind: StateMachine\n"
+            "metadata:\n"
+            "  id: SM-smoke\n"
+            "  name: smoke\n"
+            "spec:\n"
+            "  initial: start\n"
+            "  terminal: [done]\n"
+            "  states:\n"
+            "    start:\n"
+            "      transitions:\n"
+            "        - to: done\n"
+            "    done:\n"
+            "      transitions: []\n",
+            encoding="utf-8",
+        )
+
         # Clear caches in lib modules so they pick up the new project
         # (config.load_config is no longer cached — reads disk on every call)
         from processkit import paths, schema, state_machine, config, index
         schema.load_schema.cache_clear()
         state_machine.load.cache_clear()
+
+        # YAML loaders return native date/datetime objects for unquoted
+        # timestamps; validation must treat those as their serialized JSON
+        # representation so historical context remains valid under v2.
+        _date_errs = schema.validate_spec(
+            "Note",
+            {
+                "title": "Smoke dated note",
+                "body": "Validate YAML-native date compatibility.",
+                "type": "question",
+                "state": "captured",
+                "review_due": date(2026, 4, 30),
+            },
+        )
+        assert _date_errs == [], _date_errs
+        _datetime_errs = schema.validate_spec(
+            "Migration",
+            {
+                "source": "processkit",
+                "from_version": "v1",
+                "to_version": "v2",
+                "state": "pending",
+                "generated_by": "smoke-test",
+                "generated_at": datetime(2026, 4, 30, tzinfo=timezone.utc),
+                "summary": "Validate YAML-native datetime compatibility.",
+            },
+        )
+        assert _datetime_errs == [], _datetime_errs
 
         # Import servers
         tr = import_server("task-router")
@@ -877,6 +928,9 @@ def run():
         assert v2_plan["dry_run"] is True
         assert v2_plan["ok"] is True
         assert v2_plan["changed_count"] >= 1
+        assert (
+            "context/state-machines/smoke.yaml" in v2_plan["changed_paths"]
+        ), v2_plan["changed_paths"][:20]
 
         # Assert migration events landed in the log
         from processkit import index as _index

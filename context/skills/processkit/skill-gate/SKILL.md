@@ -10,7 +10,7 @@ description: |
   MCP tool.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-skill-gate
     version: "1.0.0"
     created: 2026-04-11T08:00:00Z

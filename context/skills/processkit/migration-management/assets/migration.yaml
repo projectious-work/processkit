@@ -1,22 +1,27 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Migration
 metadata:
   id: MIG-TODO
   created: TODO
 spec:
-  source: TODO              # aibox | processkit | processkit-acme | ...
-  source_url: TODO          # git URL of the upstream source
-  from_version: TODO        # semver tag the project is on
-  to_version: TODO          # semver tag the project is moving to
-  state: pending            # pending | in-progress | applied | rejected
-  generated_by: TODO        # aibox sync | user | ...
-  generated_at: TODO        # ISO 8601 UTC
-  summary: TODO             # one line for INDEX.md
+  source: TODO
+  source_url: TODO
+  from_version: TODO
+  to_version: TODO
+  state: pending
+  generated_by: TODO
+  generated_at: TODO
+  summary: TODO
   affected_files: []
   affected_groups: []
-  plan: ""                  # filled in after user approval
+  plan: ''
   progress_notes: []
+  source_api_version: processkit.projectious.work/v1
+  source_processkit_version: TODO
+  target_api_version: processkit.projectious.work/v2
+  target_processkit_version: TODO
+  apply_mode: one-shot
 ---
 
 # Migration briefing

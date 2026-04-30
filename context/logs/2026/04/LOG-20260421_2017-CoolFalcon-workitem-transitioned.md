@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: LogEntry
 metadata:
   id: LOG-20260421_2017-CoolFalcon-workitem-transitioned

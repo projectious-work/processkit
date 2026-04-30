@@ -53,11 +53,11 @@ spec:
         enum: [critical, high, medium, low]
         description: "Business priority."
       assignee:
-        type: string
+        type: [string, "null"]
         pattern: "^(ACTOR|TEAMMEMBER)-[a-zA-Z0-9_-]+$"
         description: "ID of the Actor or TeamMember currently responsible. Use a Binding for scoped assignments."
       parent:
-        type: string
+        type: [string, "null"]
         pattern: "^BACK-[a-zA-Z0-9_-]+$"
         description: "ID of a parent work item (for hierarchical decomposition)."
       children:
@@ -85,7 +85,7 @@ spec:
           pattern: "^DEC-[a-zA-Z0-9_-]+$"
         description: "DecisionRecord IDs that motivated or constrained this work."
       scope:
-        type: string
+        type: [string, "null"]
         description: "Scope ID (sprint, milestone, project). For scoped, temporal assignment use a Binding instead."
       estimate:
         type: object

@@ -4,7 +4,7 @@ description: |
   Manage Migration entities — pending, in-progress, and applied transitions between upstream source versions. Use when an upstream source bumps version (processkit, aibox, a community package), when a user wants to draft a migration plan, when an agent needs to reason about pending migrations, or when working through an in-progress migration.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-migration-management
     version: "1.0.0"
     created: 2026-04-07T00:00:00Z

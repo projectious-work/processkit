@@ -4,7 +4,7 @@ description: |
   SEO — on-page, technical, structured data, Core Web Vitals, and mobile-first indexing. Use when optimizing a website for search engines, adding meta tags or structured data, fixing Core Web Vitals, or auditing technical SEO.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-seo-optimization
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

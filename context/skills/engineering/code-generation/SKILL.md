@@ -4,7 +4,7 @@ description: |
   Code generation patterns — template engines, AST manipulation, scaffolding, build-step generation. Use when building or extending a code generator, choosing a template engine, deciding whether to generate code or write an abstraction, adding codegen as a build step, or implementing macro/AST transformations.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-code-generation
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

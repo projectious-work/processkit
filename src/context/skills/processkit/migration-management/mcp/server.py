@@ -40,10 +40,12 @@ from __future__ import annotations
 
 import datetime as _dt
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
 
+import yaml
 
 def _find_lib() -> Path:
     env = os.environ.get("PROCESSKIT_LIB_PATH")
@@ -66,6 +68,7 @@ from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import API_VERSION, __version__ as PK_VERSION  # noqa: E402
 from processkit import entity, index, log, paths, state_machine  # noqa: E402
+from processkit.frontmatter import _BlockStyleDumper  # noqa: E402
 
 server = FastMCP("processkit-migration-management")
 
@@ -448,13 +451,121 @@ def _commit_transition(
 
 def _iter_context_entities(root: Path) -> list[Path]:
     out: list[Path] = []
-    for p in sorted((root / "context").rglob("*.md")):
-        if "/templates/" in str(p):
-            continue
-        if p.name.startswith("INDEX"):
-            continue
-        out.append(p)
+    for pattern in ("*.md", "*.yaml"):
+        for p in (root / "context").rglob(pattern):
+            if "/templates/" in str(p):
+                continue
+            out.append(p)
+    out.sort()
     return out
+
+
+def _load_context_entity(path: Path) -> tuple[entity.Entity, bool]:
+    """Load a frontmatter or plain-YAML processkit entity.
+
+    The historical tree uses both Markdown-frontmatter entities and pure
+    YAML entities for schemas/state machines. The v2 migration must cover
+    both without forcing the pure YAML files into frontmatter form.
+    """
+    try:
+        return entity.load(path), False
+    except entity.NotAnEntityError:
+        if path.suffix not in {".yaml", ".yml"}:
+            raise
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise
+        required = {"apiVersion", "kind", "metadata", "spec"}
+        if not required.issubset(data):
+            raise
+        metadata = data["metadata"]
+        spec = data["spec"]
+        if not isinstance(metadata, dict) or not isinstance(spec, dict):
+            raise entity.EntityError(f"{path}: metadata/spec must be mappings")
+        if "id" not in metadata:
+            raise entity.EntityError(f"{path}: metadata.id is required")
+        return entity.Entity(
+            apiVersion=data["apiVersion"],
+            kind=data["kind"],
+            metadata=metadata,
+            spec=spec,
+            extra={
+                k: v for k, v in data.items()
+                if k not in ("apiVersion", "kind", "metadata", "spec")
+            },
+            path=path,
+        ), True
+
+
+def _write_context_entity(
+    ent: entity.Entity,
+    path: Path,
+    *,
+    plain_yaml: bool,
+) -> None:
+    if not plain_yaml:
+        ent.write(path, touch_updated=False)
+        return
+    yaml_text = yaml.dump(
+        ent.to_dict(),
+        Dumper=_BlockStyleDumper,
+        sort_keys=False,
+        default_flow_style=False,
+        allow_unicode=True,
+    )
+    path.write_text(yaml_text, encoding="utf-8")
+    ent.path = path
+
+
+def _year_month(ent: entity.Entity) -> tuple[str, str] | None:
+    for raw in (ent.metadata.get("created"), ent.id):
+        if raw is None:
+            continue
+        text = raw.isoformat() if hasattr(raw, "isoformat") else str(raw)
+        match = re.search(
+            r"(?P<year>\d{4})[-_]?(?P<month>\d{2})[-_]?\d{2}",
+            text,
+        )
+        if match:
+            return match.group("year"), match.group("month")
+    return None
+
+
+def _v2_layout_target(
+    root: Path,
+    path: Path,
+    ent: entity.Entity,
+) -> Path | None:
+    if ent.apiVersion != API_VERSION:
+        return None
+    ym = _year_month(ent)
+    if ym is None:
+        return None
+    year, month = ym
+    ctx = root / "context"
+    if ent.kind == "Note" and _is_relative_to(path, ctx / "notes"):
+        return ctx / "notes" / year / month / path.name
+    if (
+        ent.kind == "WorkItem"
+        and ent.spec.get("state") in {"done", "cancelled"}
+        and _is_relative_to(path, ctx / "workitems")
+    ):
+        return ctx / "workitems" / "done" / year / month / path.name
+    if (
+        ent.kind == "Scope"
+        and ent.spec.get("state") in {"completed", "cancelled"}
+        and _is_relative_to(path, ctx / "scopes")
+    ):
+        return ctx / "scopes" / "done" / year / month / path.name
+    return None
+
+
+def _is_relative_to(path: Path, base: Path) -> bool:
+    try:
+        path.relative_to(base)
+        return True
+    except ValueError:
+        return False
 
 
 def _apply_v2_entity_updates(ent: entity.Entity) -> bool:
@@ -796,16 +907,36 @@ def migrate_context_to_v2(dry_run: bool = True) -> dict:
     errors: list[dict] = []
     for path in _iter_context_entities(root):
         try:
-            ent = entity.load(path)
+            ent, plain_yaml = _load_context_entity(path)
         except entity.NotAnEntityError:
             continue
         except entity.EntityError as exc:
             errors.append({"path": str(path.relative_to(root)), "error": str(exc)})
             continue
-        if _apply_v2_entity_updates(ent):
-            changed_paths.append(str(path.relative_to(root)))
+        except Exception:
+            continue
+        changed = _apply_v2_entity_updates(ent)
+        target = _v2_layout_target(root, path, ent)
+        if target == path:
+            target = None
+        if changed or target is not None:
+            if target is not None:
+                changed_paths.append(
+                    f"{path.relative_to(root)} -> {target.relative_to(root)}"
+                )
+            else:
+                changed_paths.append(str(path.relative_to(root)))
             if not dry_run:
-                ent.write(path, touch_updated=False)
+                write_path = target or path
+                if target is not None and target.exists():
+                    errors.append({
+                        "path": str(path.relative_to(root)),
+                        "error": f"target already exists: {target.relative_to(root)}",
+                    })
+                    continue
+                _write_context_entity(ent, write_path, plain_yaml=plain_yaml)
+                if target is not None and path.exists():
+                    path.unlink()
                 try:
                     db = index.open_db()
                     try:

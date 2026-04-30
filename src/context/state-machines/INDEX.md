@@ -10,7 +10,7 @@ with the same name in their `context/state-machines/` directory.
 ## Shape
 
 ```yaml
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: StateMachine
 metadata:
   id: SM-<name>

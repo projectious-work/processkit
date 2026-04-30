@@ -1,9 +1,9 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Binding
 metadata:
   id: BIND-product-manager-senior-hf3f8e9
-  created: 2026-04-22T00:00:00Z
+  created: 2026-04-22 00:00:00+00:00
 spec:
   type: model-assignment
   subject: ROLE-product-manager
@@ -16,5 +16,5 @@ spec:
     effort_floor: medium
     effort_ceiling: high
     rationale: Senior PM — discovery synthesis and roadmap writing
-  description: "default-pack: Senior PM — discovery synthesis and roadmap writing"
+  description: 'default-pack: Senior PM — discovery synthesis and roadmap writing'
 ---

@@ -1,16 +1,20 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260414_1230-ReachReady-processkit-enforcement-research-summary
-  created: 2026-04-14T12:30:00Z
+  created: 2026-04-14 12:30:00+00:00
 spec:
-  name: "Executive summary — why agents ignore processkit"
+  name: Executive summary — why agents ignore processkit
   kind: document
   location: context/artifacts/ART-20260414_1230-ReachReady-processkit-enforcement-research-summary.md
   format: markdown
-  version: "1.0.0"
-  tags: [research, enforcement, processkit, summary]
+  version: 1.0.0
+  tags:
+  - research
+  - enforcement
+  - processkit
+  - summary
   produced_by: BACK-20260414_0930-ReliableReach-processkit-enforcement-research
   owner: ACTOR-sr-researcher
   links:

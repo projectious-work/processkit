@@ -4,7 +4,7 @@ description: |
   Manage Binding entities — scoped, temporal, many-to-many relationships between any two primitives. Use when a relationship between two entities needs scope, time, or its own attributes — e.g. 'Alice is the tech lead for project X from Jan to June' or 'the security gate applies to the release process only on the main branch'.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-binding-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -83,7 +83,7 @@ actually need the extra dimensions.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Binding
 metadata:
   id: BIND-bright-falcon

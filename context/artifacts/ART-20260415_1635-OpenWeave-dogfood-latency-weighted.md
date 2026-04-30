@@ -1,24 +1,30 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260415_1635-OpenWeave-dogfood-latency-weighted
   created: '2026-04-15T16:35:00+00:00'
 spec:
-  name: "team-creator dogfood — latency-weighted override demonstration (OpenWeave)"
+  name: team-creator dogfood — latency-weighted override demonstration (OpenWeave)
   kind: diagnostic
   location: context/artifacts/ART-20260415_1635-OpenWeave-dogfood-latency-weighted.md
   format: markdown
-  version: "1.0.0"
-  tags: [team-creator, dogfood, openweave, latency-weighted, weight-override, acceptance-gate]
+  version: 1.0.0
+  tags:
+  - team-creator
+  - dogfood
+  - openweave
+  - latency-weighted
+  - weight-override
+  - acceptance-gate
   produced_by: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
   owner: ACTOR-developer
   links:
     workitem: BACK-20260415_1600-OpenWeave-team-creator-user-configurable-defaults
     inputs:
-      - ART-20260415_1630-OpenWeave-regression-fixture-max5x-defaults
-      - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
-      - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
+    - ART-20260415_1630-OpenWeave-regression-fixture-max5x-defaults
+    - ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff
+    - ART-20260415_1525-LandscapeSummary-ai-provider-comparison-april-2026-structured
 ---
 
 # team-creator Dogfood — Latency-Weighted Override Demonstration

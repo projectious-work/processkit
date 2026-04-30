@@ -1,15 +1,16 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Context
 metadata:
   id: GROOM-TODO
   privacy: project-private
   created: TODO
 spec:
-  description: "Grooming report — proposals for archive, summarization, and skill disablement. State: pending → approved → applied."
-  state: pending           # pending | approved | applied
+  description: 'Grooming report — proposals for archive, summarization, and skill
+    disablement. State: pending → approved → applied.'
+  state: pending
   generated: TODO
-  generated_by: TODO       # agent identifier
+  generated_by: TODO
 ---
 
 # Grooming report — TODO date

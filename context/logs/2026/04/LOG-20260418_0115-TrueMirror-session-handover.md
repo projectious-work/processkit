@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: LogEntry
 metadata:
   id: LOG-20260418_0115-TrueMirror-session-handover
@@ -8,10 +8,12 @@ spec:
   event_type: session.handover
   timestamp: '2026-04-18T01:15:00Z'
   actor: ACTOR-pm-claude
-  summary: "Session handover — v0.18.1 hotfix shipped (src↔context drift sync + #7 hookEventName fix)"
+  summary: 'Session handover — v0.18.1 hotfix shipped (src↔context drift sync + #7
+    hookEventName fix)'
   details:
-    session_date: "2026-04-17 → 2026-04-18"
-    session_duration: "Continued from compacted prior session; v0.18.0 ship + issue #7 triage + v0.18.1 hotfix"
+    session_date: 2026-04-17 → 2026-04-18
+    session_duration: 'Continued from compacted prior session; v0.18.0 ship + issue
+      #7 triage + v0.18.1 hotfix'
     current_state: |
       processkit is at v0.18.1, tagged and published. Working tree is
       clean, remote is in sync.
@@ -68,116 +70,103 @@ spec:
 
       GitHub release published with tarball + sha256 sidecar. Issue #7
       commented and closed.
-
     open_threads:
-      - id: AGENTS.md-v2-vs-contract-v1-inconsistency
-        state: documented, deferred
-        note: |
-          AGENTS.md template carries pk-compliance-contract v2 marker
-          (including the decision-language clause that references
-          skip_decision_record). But skill-gate/assets/
-          compliance-contract.md (printed by the hook into
-          additionalContext) is still v1. Clauses remain a strict
-          superset in v2 — not a contradiction — but internally
-          inconsistent. Documented in v0.18.1 CHANGELOG + release notes
-          as a known non-blocking follow-up. Reconciliation requires:
-          (a) bumping the asset to v2 content, (b) implementing the
-          skip_decision_record MCP tool on skill-gate/mcp/server.py,
-          (c) re-running the smoke test since contract_hash changes
-          will invalidate existing markers.
-
-      - id: DEC-20260417_1800-unindexed
-        state: deferred (same as before release)
-        note: |
-          DEC-20260417_1800-CapabilityProfileRouting was hand-written
-          (not created via record_decision MCP) because aibox #53
-          blocked MCP config merge at the time. The CLEANUP-REQUIRED
-          marker is still on it. Re-record once aibox#53 lands and
-          .mcp.json is properly wired in this dogfood project.
-
-      - id: pk-standup-vs-pk-status-duplication
-        state: "not started (v0.17.0 authoring glitch, still open)"
-        note: |
-          /pk-standup and /pk-status have identical bodies. Should be
-          differentiated in a later release (v0.18.2?). Trivial fix.
-
-      - id: workspace-cli-file-not-found
-        state: "owner-project diagnosis, NOT processkit's bug"
-        note: |
-          Downstream project at /workspace/cli (separate dev container,
-          not mounted here) reports:
-            UserPromptSubmit operation blocked by hook:
-            python3: can't open file
-            '/workspace/cli/context/skills/processkit/skill-gate/scripts/
-            emit_compliance_contract.py': No such file or directory
-          This is a file-not-found, not the hookEventName envelope
-          error. Root cause is one of: (a) aibox sync / init never ran
-          in that project, (b) .claude/settings.json hook path doesn't
-          match install layout, (c) install partial. Upgrading to
-          v0.18.1 alone won't fix — the derived project must run
-          aibox sync after bumping processkit_version. Confirmed NOT
-          a processkit bug in this session.
-
-      - id: LOG-entity-not-indexed-via-MCP
-        state: "acknowledged deviation from compliance contract"
-        note: |
-          This handover log was hand-written rather than created via
-          log_event MCP tool because the dogfood project's .mcp.json
-          wiring is still blocked on aibox #53. Next session should
-          run reindex to pick up this entry. Same for the previous
-          v0.18.0 release handover. Pre-existing issue, not a new
-          deviation.
-
+    - id: AGENTS.md-v2-vs-contract-v1-inconsistency
+      state: documented, deferred
+      note: |
+        AGENTS.md template carries pk-compliance-contract v2 marker
+        (including the decision-language clause that references
+        skip_decision_record). But skill-gate/assets/
+        compliance-contract.md (printed by the hook into
+        additionalContext) is still v1. Clauses remain a strict
+        superset in v2 — not a contradiction — but internally
+        inconsistent. Documented in v0.18.1 CHANGELOG + release notes
+        as a known non-blocking follow-up. Reconciliation requires:
+        (a) bumping the asset to v2 content, (b) implementing the
+        skip_decision_record MCP tool on skill-gate/mcp/server.py,
+        (c) re-running the smoke test since contract_hash changes
+        will invalidate existing markers.
+    - id: DEC-20260417_1800-unindexed
+      state: deferred (same as before release)
+      note: |
+        DEC-20260417_1800-CapabilityProfileRouting was hand-written
+        (not created via record_decision MCP) because aibox #53
+        blocked MCP config merge at the time. The CLEANUP-REQUIRED
+        marker is still on it. Re-record once aibox#53 lands and
+        .mcp.json is properly wired in this dogfood project.
+    - id: pk-standup-vs-pk-status-duplication
+      state: not started (v0.17.0 authoring glitch, still open)
+      note: |
+        /pk-standup and /pk-status have identical bodies. Should be
+        differentiated in a later release (v0.18.2?). Trivial fix.
+    - id: workspace-cli-file-not-found
+      state: owner-project diagnosis, NOT processkit's bug
+      note: |
+        Downstream project at /workspace/cli (separate dev container,
+        not mounted here) reports:
+          UserPromptSubmit operation blocked by hook:
+          python3: can't open file
+          '/workspace/cli/context/skills/processkit/skill-gate/scripts/
+          emit_compliance_contract.py': No such file or directory
+        This is a file-not-found, not the hookEventName envelope
+        error. Root cause is one of: (a) aibox sync / init never ran
+        in that project, (b) .claude/settings.json hook path doesn't
+        match install layout, (c) install partial. Upgrading to
+        v0.18.1 alone won't fix — the derived project must run
+        aibox sync after bumping processkit_version. Confirmed NOT
+        a processkit bug in this session.
+    - id: LOG-entity-not-indexed-via-MCP
+      state: acknowledged deviation from compliance contract
+      note: |
+        This handover log was hand-written rather than created via
+        log_event MCP tool because the dogfood project's .mcp.json
+        wiring is still blocked on aibox #53. Next session should
+        run reindex to pick up this entry. Same for the previous
+        v0.18.0 release handover. Pre-existing issue, not a new
+        deviation.
     decisions_made_this_session:
-      - |
-        Chose v0.18.1 as a pure-sync hotfix rather than bundling
-        additional changes. Scope was strictly "make src/context/
-        match context/ as of now, ship, close issue #7". Three
-        parallel workers dispatched (skill-gate, pk-* commands,
-        team-creator + assets), all returned clean. AGENTS.md
-        template merge done by PM directly to preserve placeholder
-        tokens.
-      - |
-        AGENTS.md template: used `pk-resume` in the new Session start
-        block rather than the stale `morning-briefing-generate`
-        reference that existed in the runtime AGENTS.md. Runtime
-        reference was a stale glitch — command was renamed in v0.17.0
-        to pk-resume. Template now points at the command that
-        actually exists at v0.18.1.
-      - |
-        Deferred AGENTS.md v2 ↔ contract asset v1 reconciliation
-        out of v0.18.1 scope. Decision: the existing inconsistency
-        was accepted by whoever bumped AGENTS.md to v2 originally;
-        porting it forward unchanged is the minimum-surprise choice
-        for a hotfix. Reconcile in a future release alongside the
-        skip_decision_record tool implementation.
-
+    - |
+      Chose v0.18.1 as a pure-sync hotfix rather than bundling
+      additional changes. Scope was strictly "make src/context/
+      match context/ as of now, ship, close issue #7". Three
+      parallel workers dispatched (skill-gate, pk-* commands,
+      team-creator + assets), all returned clean. AGENTS.md
+      template merge done by PM directly to preserve placeholder
+      tokens.
+    - |
+      AGENTS.md template: used `pk-resume` in the new Session start
+      block rather than the stale `morning-briefing-generate`
+      reference that existed in the runtime AGENTS.md. Runtime
+      reference was a stale glitch — command was renamed in v0.17.0
+      to pk-resume. Template now points at the command that
+      actually exists at v0.18.1.
+    - |
+      Deferred AGENTS.md v2 ↔ contract asset v1 reconciliation
+      out of v0.18.1 scope. Decision: the existing inconsistency
+      was accepted by whoever bumped AGENTS.md to v2 originally;
+      porting it forward unchanged is the minimum-surprise choice
+      for a hotfix. Reconcile in a future release alongside the
+      skip_decision_record tool implementation.
     artifacts_produced: []
-
     git_context:
       branch: main
       head: bfa01e4
       tag: v0.18.1
       remote: origin (in sync)
       clean: true
-
     token_budget_snapshot:
-      opus_share: "~35% (PM coordinator role, worker dispatch,
-        AGENTS.md template merge, release pipeline, release-notes
-        drafting, issue-#7 diagnosis). High because session was
-        short + tightly coordinated."
-      sonnet_share: "~55% (3 parallel workers, each a general-purpose
-        agent: skill-gate sync + test run, /pk-* command renames,
-        team-creator + schema + INDEX.md sync)"
-      haiku_share: "~10% (no explicit Haiku dispatch this session;
-        minor reads/diffs)"
+      opus_share: ~35% (PM coordinator role, worker dispatch, AGENTS.md template merge,
+        release pipeline, release-notes drafting, issue-#7 diagnosis). High because
+        session was short + tightly coordinated.
+      sonnet_share: '~55% (3 parallel workers, each a general-purpose agent: skill-gate
+        sync + test run, /pk-* command renames, team-creator + schema + INDEX.md sync)'
+      haiku_share: ~10% (no explicit Haiku dispatch this session; minor reads/diffs)
       note: |
         Opus still overweight vs 5/85/10 target, but justified for
         a release pipeline with parallelization and policy calls
         (which workers to dispatch, what to commit together, how to
         word the release notes). The workers did the heavy file-IO
         in Sonnet.
-
     next_recommended_action: |
       1. Run /pk-resume at next session start — morning-briefing will
          pick up this handover and surface the open threads.

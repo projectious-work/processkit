@@ -4,7 +4,7 @@ description: |
   Secure coding practices grounded in the OWASP Top 10. Use when reviewing code for security issues, implementing input validation, hardening web applications, or adding defenses against injection, XSS, or CSRF.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-secure-coding
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

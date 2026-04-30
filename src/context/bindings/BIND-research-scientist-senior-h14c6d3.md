@@ -1,9 +1,9 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Binding
 metadata:
   id: BIND-research-scientist-senior-h14c6d3
-  created: 2026-04-22T00:00:00Z
+  created: 2026-04-22 00:00:00+00:00
 spec:
   type: model-assignment
   subject: ROLE-research-scientist
@@ -16,5 +16,5 @@ spec:
     effort_floor: high
     effort_ceiling: extra-high
     rationale: Senior researcher — rigorous scientific reasoning
-  description: "default-pack: Senior researcher — rigorous scientific reasoning"
+  description: 'default-pack: Senior researcher — rigorous scientific reasoning'
 ---

@@ -4,7 +4,7 @@ description: |
   Blameless postmortem writing — timeline, root cause analysis, corrective actions. Use when writing an incident postmortem, conducting a post-incident review, building a postmortem template, or coaching a team toward blameless culture.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-postmortem-writing
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

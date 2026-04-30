@@ -4,7 +4,7 @@ description: |
   Generates and maintains CHANGELOG.md files following Keep a Changelog conventions — from git history, commit messages, or a description of changes. Use when asked to write a changelog, update release notes, or document what changed in a version.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-changelog
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

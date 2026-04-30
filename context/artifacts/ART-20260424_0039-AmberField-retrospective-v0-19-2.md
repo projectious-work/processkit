@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260424_0039-AmberField-retrospective-v0-19-2
@@ -81,4 +81,3 @@ Post-release blameless retrospective. Scope: the v0.19.2 cycle
 3. **A new pk-doctor check will find ghost-of-christmas-past issues on first run.** Expect and budget for the follow-up WI (HappyFinch was entirely surfaced by the new check landing). This is the feature, not a bug.
 4. **Sub-agent delegation is best for read/research or purely edit-existing-file work.** For anything that creates new files or directories, either (a) keep it in the main session, or (b) pre-create empty scaffolds so the sub-agent only edits.
 5. **Call `acknowledge_contract` at session start, not lazily on first block** — and re-ack explicitly when sessions cross natural boundaries (midnight, reconnect).
-

@@ -1,25 +1,31 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Artifact
 metadata:
   id: ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research
-  created: 2026-04-15T16:00:00Z
+  created: 2026-04-15 16:00:00+00:00
 spec:
-  name: "Rail 5 research — auto-capture of decisions from planning discussions"
+  name: Rail 5 research — auto-capture of decisions from planning discussions
   kind: document
   location: context/artifacts/ART-20260415_1600-QuietLedger-rail5-auto-decision-capture-research.md
   format: markdown
-  version: "1.0.0"
-  tags: [research, enforcement, rail5, decision-record, hooks, provider-neutral]
+  version: 1.0.0
+  tags:
+  - research
+  - enforcement
+  - rail5
+  - decision-record
+  - hooks
+  - provider-neutral
   produced_by: BACK-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
   owner: ACTOR-sr-researcher
   links:
     workitem: BACK-20260415_1520-GapScout-enforcement-rail5-auto-decision-capture
     inputs:
-      - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
-      - ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix
+    - ART-20260414_1430-SteadyBeacon-enforcement-implementation-plan
+    - ART-20260414_1545-SharpGrid-follow-up-harness-capability-matrix
     related_decisions:
-      - DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list
+    - DEC-20260414_1430-SteelLatch-enforcement-mcp-tool-description-list
 ---
 
 # Rail 5 research — auto-capture of decisions from planning discussions
