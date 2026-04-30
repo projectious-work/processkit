@@ -5,6 +5,64 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.24.0] — 2026-04-30
+
+A minor release focused on model-routing depth, context lifecycle
+management, and operator diagnostics. It adds richer model/provider
+metadata, local semantic routing support, a read-safe context archiving
+skill, context-consumption reporting, and team/model assignment
+infrastructure. No breaking changes are intended for existing consumers.
+
+### Added
+
+- Added model-class assignment and richer model/provider characteristics:
+  provider, model, version, effort, architecture, license, deployment,
+  latency/speed, context length, token accounting, access, rate limits,
+  and supported runtime parameters.
+- Added `get_model_for_class()` and class-based routing metadata to the
+  model recommender so callers can resolve fast, balanced, deep, and
+  specialized model classes consistently.
+- Added the `context-archiving` skill and MCP server for planning and
+  creating archive tarballs, extracting archived payloads, and keeping
+  archived entities queryable through the index.
+- Added archive-aware index metadata via `storage_location`, including
+  archived LogEntry event-query support.
+- Added task-router v0.2 scoring with local n-gram semantic matching,
+  scoring basis details, and low-confidence LLM-escalation metadata.
+- Added context-consumption checkpoint reports and team identity /
+  model-assignment bindings for role-based routing.
+- Added optional sqlite-vec semantic search and FTS5-backed index search.
+- Added a library-expert skill template plus skill-builder and
+  skill-reviewer guidance for version-scoped library expertise.
+
+### Changed
+
+- Improved processkit routing and MCP ergonomics across task-router,
+  skill-finder, model-recommender, and related docs.
+- Refined harness diagnostics and pk-doctor drift reporting, including
+  server-header drift coverage.
+- Updated model schemas in both `context/` and `src/context/` to carry
+  the broader model-characteristics surface.
+
+### Fixed
+
+- Fixed artifact metadata updates so callers can avoid restamping
+  freshness-sensitive `metadata.updated` values.
+- Restored the docs-site build after the v0.23.1 release line.
+
+### Notes
+
+- v0.24.0 is a **minor** release because it introduces new
+  backwards-compatible capabilities. The context-archiving MCP server is
+  implemented, but harness registration remains gated on installer sync
+  support for new per-skill MCP config entries.
+- Pre-release validation on the release branch retains the known optional
+  release-audit warnings for unused entity directories (`actors/`,
+  `scopes/`, `gates/`) and the known pk-doctor preauth warning gated by
+  aibox#55.
+
+---
+
 ## [v0.23.1] — 2026-04-26
 
 A focused content+code patch resolving the 106 ERRORs surfaced by the
