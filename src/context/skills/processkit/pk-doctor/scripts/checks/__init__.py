@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from . import (
     schema_filename,
+    schema_vocabulary,
     sharding,
     migrations,
     migration_integrity,
@@ -27,6 +28,7 @@ from . import (
 # per-category tally block of the doctor.report LogEntry.
 REGISTRY = [
     ("schema_filename", schema_filename),
+    ("schema_vocabulary", schema_vocabulary),
     ("sharding", sharding),
     ("migrations", migrations),
     ("migration_integrity", migration_integrity),

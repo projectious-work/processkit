@@ -18,9 +18,9 @@ The public modules are:
 See `src/lib/README.md` for the import strategy from MCP server scripts.
 """
 
-__version__ = "0.3.0"
+__version__ = "2.0.0-alpha.1"
 
-API_VERSION = "processkit.projectious.work/v1"
+API_VERSION = "processkit.projectious.work/v2"
 
 # Prefix registry — primitive kind → ID prefix
 KIND_PREFIXES = {

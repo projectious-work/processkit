@@ -56,10 +56,14 @@ from processkit import config, entity, ids, index, log, paths, schema  # noqa: E
 
 server = FastMCP("processkit-artifact-management")
 
-_VALID_KINDS = {
-    "document", "design", "dataset", "build", "slides",
-    "video", "spec", "diagram", "url", "other",
-}
+def _valid_kinds() -> set[str]:
+    values = schema.known_values("Artifact", "known_kinds")
+    if values:
+        return set(values)
+    return {
+        "document", "design", "dataset", "build", "slides",
+        "video", "spec", "diagram", "url", "other",
+    }
 
 
 def _now_iso() -> str:
@@ -113,11 +117,12 @@ def create_artifact(
     within a named processkit skill before using this tool.
     1% rule: call route_task first; commit in the same turn — deferred writes are dropped.
     """
-    if kind not in _VALID_KINDS:
+    valid_kinds = _valid_kinds()
+    if kind not in valid_kinds:
         return {
             "error": (
                 f"invalid kind {kind!r}; must be one of "
-                f"{sorted(_VALID_KINDS)}"
+                f"{sorted(valid_kinds)}"
             )
         }
     summary_errors = ids.validate_slug_summary(slug_summary)
@@ -241,9 +246,10 @@ def query_artifacts(
     Filters: ``kind`` (exact match), ``owner`` (Actor ID),
     ``tags`` (all supplied tags must be present on the artifact).
     """
-    if kind and kind not in _VALID_KINDS:
+    valid_kinds = _valid_kinds()
+    if kind and kind not in valid_kinds:
         return [{"error": (
-            f"invalid kind {kind!r}; must be one of {sorted(_VALID_KINDS)}"
+            f"invalid kind {kind!r}; must be one of {sorted(valid_kinds)}"
         )}]
     db = index.open_db()
     try:
@@ -298,11 +304,12 @@ def update_artifact(
     tool. 1% rule: call route_task first; commit in the same turn —
     deferred writes are dropped.
     """
-    if kind is not None and kind not in _VALID_KINDS:
+    valid_kinds = _valid_kinds()
+    if kind is not None and kind not in valid_kinds:
         return {
             "error": (
                 f"invalid kind {kind!r}; must be one of "
-                f"{sorted(_VALID_KINDS)}"
+                f"{sorted(valid_kinds)}"
             )
         }
     root = paths.find_project_root()

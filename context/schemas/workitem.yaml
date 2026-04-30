@@ -1,10 +1,10 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Schema
 metadata:
   id: SCHEMA-workitem
   target_kind: WorkItem
-  version: "1.0.0"
+  version: "2.0.0-alpha.1"
   created: 2026-04-06T00:00:00Z
 spec:
   description: >
@@ -15,6 +15,18 @@ spec:
   id_prefix: BACK
   state_machine: workitem
   default_directory: context/workitems
+  known_types:
+    - task
+    - story
+    - bug
+    - epic
+    - spike
+    - chore
+    - research
+    - process-instance
+    - process-step
+    - sep-handoff
+    - run
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
@@ -34,9 +46,8 @@ spec:
         description: "Current state. Must be a state in the referenced state machine."
       type:
         type: string
-        enum: [task, story, bug, epic, spike, chore]
         default: task
-        description: "Subtype of work item. Conventions; not enforced by the state machine."
+        description: "Closed v2 WorkItem subtype declared in spec.known_types."
       priority:
         type: string
         enum: [critical, high, medium, low]

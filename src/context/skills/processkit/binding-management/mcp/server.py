@@ -51,7 +51,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, log, paths  # noqa: E402
+from processkit import config, entity, ids, index, log, paths, schema  # noqa: E402
 
 server = FastMCP("processkit-binding-management")
 
@@ -91,6 +91,10 @@ def _is_active(spec: dict, at: str | None = None) -> bool:
     return True
 
 
+def _valid_types() -> set[str]:
+    return set(schema.known_values("Binding", "known_types"))
+
+
 @server.tool(annotations=ToolAnnotations(
     readOnlyHint=False,
     destructiveHint=False,
@@ -125,6 +129,14 @@ def create_binding(
     conditions: optional freeform conditions object
     description: optional one-line summary
     """
+    valid_types = _valid_types()
+    if valid_types and type not in valid_types:
+        return {
+            "error": (
+                f"invalid type {type!r}; must be one of "
+                f"{sorted(valid_types)}"
+            )
+        }
     root = paths.find_project_root()
     cfg = config.load_config(root)
     bind_dir = paths.context_dir("Binding", root)
@@ -161,8 +173,12 @@ def create_binding(
     if description:
         spec["description"] = description
 
+    errors = schema.validate_spec("Binding", spec)
+    if errors:
+        return {"error": "schema validation failed", "details": errors}
+
     ent = entity.new("Binding", new_id, spec)
-    target_path = bind_dir / f"{new_id}.md"
+    target_path = paths.entity_path("Binding", new_id, None, root)
     ent.write(target_path)
 
     db = index.open_db()

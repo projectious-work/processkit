@@ -49,6 +49,20 @@ class Config:
     def directory_for(self, kind: str) -> str | None:
         return self.directory_overrides.get(kind)
 
+    def sharding_for(self, kind: str) -> dict[str, Any] | None:
+        """Return sharding config for ``kind`` with v1/v2 key tolerance.
+
+        Configuration files historically used exact primitive names
+        (``[sharding.LogEntry]``). The v2 plan uses lower-case sections
+        (``[sharding.logentry]``). The runtime accepts both while the
+        schema contract itself remains v2-only.
+        """
+        return (
+            self.sharding.get(kind)
+            or self.sharding.get(kind.lower())
+            or self.sharding.get(kind.replace("-", "").lower())
+        )
+
 
 def _load_toml(path: Path) -> dict | None:
     """Read and parse a TOML file. Returns None on any error."""
