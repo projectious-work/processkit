@@ -4,9 +4,9 @@ description: |
   Captures, reviews, and promotes Note entities — the lightweight knowledge capture primitive in processkit. Notes are quick-capture units (thoughts, insights, questions, references) that are reviewed periodically and promoted to WorkItems, DecisionRecords, or other primitives when they ripen. Use when the user says "remember this", "note that", "I had an idea", or when running a periodic note review session.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-note-management
-    version: "1.0.0"
+    version: "2.0.0-alpha.1"
     created: 2026-04-08T00:00:00Z
     category: processkit
     layer: 2
@@ -20,6 +20,14 @@ metadata:
       - name: pk-note-promote
         args: "note-id"
         description: "Promote a fleeting note to a more permanent artifact"
+    provides:
+      primitives: [Note]
+      mcp_tools:
+        - create_note
+        - capture_inbox_item
+        - claim_inbox_item
+        - complete_inbox_item
+        - fail_inbox_item
 ---
 
 # Note Management
@@ -32,6 +40,11 @@ artifacts. Inspired by the Zettelkasten model: capture fast (fleeting),
 refine deliberately (permanent), link explicitly, and promote when
 something becomes actionable. The review cycle is what gives notes
 their value — unreviewed notes are just noise.
+
+In v2, note-management also owns the hook inbox. External or
+agent-generated interrupts enter as Notes with `spec.inbox`, then move
+through captured, claimed, completed, or failed before they are
+promoted or linked into tracked work.
 
 ## Overview
 

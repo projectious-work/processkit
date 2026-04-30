@@ -185,6 +185,71 @@ spec:
       - if:
           properties:
             type:
+              const: budget-application
+          required: [type]
+        then:
+          properties:
+            subject:
+              type: string
+              pattern: "^ART-[a-zA-Z0-9_-]+$"
+              description: "Subject must be a cost-policy Artifact."
+            conditions:
+              type: object
+              required: [enforcement_point]
+              properties:
+                enforcement_point:
+                  type: string
+                cap_usd:
+                  type: number
+                  minimum: 0
+                warning_threshold:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+      - if:
+          properties:
+            type:
+              const: provider-route
+          required: [type]
+        then:
+          properties:
+            conditions:
+              type: object
+              required: [provider, model, enforcement_point]
+              properties:
+                provider:
+                  type: string
+                  minLength: 1
+                model:
+                  type: string
+                  minLength: 1
+                version:
+                  type: string
+                effort:
+                  type: string
+                enforcement_point:
+                  type: string
+      - if:
+          properties:
+            type:
+              const: ids-rule-applies-to
+          required: [type]
+        then:
+          properties:
+            subject:
+              type: string
+              pattern: "^ART-[a-zA-Z0-9_-]+$"
+              description: "Subject must be an agent-ids-rule Artifact."
+            conditions:
+              type: object
+              properties:
+                enforcement_point:
+                  type: string
+                rule_checksum:
+                  type: string
+      - if:
+          properties:
+            type:
               const: time-window
           required: [type]
         then:

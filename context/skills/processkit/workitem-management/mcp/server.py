@@ -58,7 +58,6 @@ from processkit import config, entity, ids, index, paths, log, schema, state_mac
 
 server = FastMCP("processkit-workitem-management")
 
-_VALID_TYPES = {"task", "story", "bug", "epic", "spike", "chore"}
 _VALID_PRIORITIES = {"critical", "high", "medium", "low"}
 _VALID_RELATIONS = {"blocks", "blocked_by", "parent", "children", "related_decisions"}
 
@@ -81,6 +80,13 @@ def _load_workitem(root: Path, id: str) -> entity.Entity | None:
     finally:
         db.close()
     return None
+
+
+def _valid_types() -> set[str]:
+    values = schema.known_values("WorkItem", "known_types")
+    if values:
+        return set(values)
+    return {"task", "story", "bug", "epic", "spike", "chore"}
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -108,8 +114,9 @@ def create_workitem(
     operating within a named processkit skill before using this tool.
     1% rule: call route_task first; commit in the same turn — deferred writes are dropped.
     """
-    if type not in _VALID_TYPES:
-        return {"error": f"invalid type {type!r}; must be one of {sorted(_VALID_TYPES)}"}
+    valid_types = _valid_types()
+    if type not in valid_types:
+        return {"error": f"invalid type {type!r}; must be one of {sorted(valid_types)}"}
     if priority not in _VALID_PRIORITIES:
         return {"error": f"invalid priority {priority!r}"}
     summary_errors = ids.validate_slug_summary(slug_summary)
@@ -177,6 +184,171 @@ def create_workitem(
         actor=new_id,
     )
     return {"id": new_id, "path": str(target), "state": initial_state}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def create_process_instance(
+    title: str,
+    process_definition_artifact: str,
+    steps: list[str],
+    priority: str = "medium",
+    scope: str | None = None,
+    assignee: str | None = None,
+    description: str | None = None,
+    slug_summary: str | None = None,
+) -> dict:
+    """Create a process-instance WorkItem and child process-step items.
+
+    ``process_definition_artifact`` must reference the Artifact that
+    describes the reusable process. ``steps`` are created as ordered
+    child WorkItems. Prerequisite: call find_skill(task_description) or
+    confirm you are already operating within a named processkit skill
+    before using this tool. 1% rule: call route_task first; commit in
+    the same turn — deferred writes are dropped.
+    """
+    if not process_definition_artifact.startswith("ART-"):
+        return {"error": "process_definition_artifact must be an ART-* id"}
+    if not steps:
+        return {"error": "steps must contain at least one process step"}
+
+    created_parent = create_workitem(
+        title=title,
+        type="process-instance",
+        priority=priority,
+        assignee=assignee,
+        description=description,
+        scope=scope,
+        slug_summary=slug_summary or title,
+    )
+    if "error" in created_parent:
+        return created_parent
+
+    root = paths.find_project_root()
+    parent = _load_workitem(root, created_parent["id"])
+    if parent is None:
+        return {"error": f"created parent {created_parent['id']!r} could not be reloaded"}
+    parent.spec["process_definition_artifact"] = process_definition_artifact
+
+    children: list[str] = []
+    child_results: list[dict] = []
+    for idx, step_title in enumerate(steps, start=1):
+        created_step = create_workitem(
+            title=step_title,
+            type="process-step",
+            priority=priority,
+            assignee=assignee,
+            parent=parent.id,
+            scope=scope,
+            slug_summary=step_title,
+        )
+        if "error" in created_step:
+            return {
+                "error": "failed to create process step",
+                "details": created_step,
+                "created_parent": created_parent,
+                "created_steps": child_results,
+            }
+        child = _load_workitem(root, created_step["id"])
+        if child is not None:
+            child.spec["process_instance"] = parent.id
+            child.spec["step_order"] = idx
+            child.spec["process_definition_artifact"] = process_definition_artifact
+            child.write()
+            db = index.open_db()
+            try:
+                index.upsert_entity(db, child)
+            finally:
+                db.close()
+        children.append(created_step["id"])
+        child_results.append(created_step)
+
+    parent.spec["children"] = children
+    parent.write()
+    db = index.open_db()
+    try:
+        index.upsert_entity(db, parent)
+    finally:
+        db.close()
+
+    log.log_side_effect(
+        "WorkItem", parent.id, "process.instance.created",
+        f"Created process instance {parent.id!r} from {process_definition_artifact!r}",
+        root=root,
+        actor=parent.id,
+        details={"steps": children, "process_definition_artifact": process_definition_artifact},
+    )
+    return {
+        "id": parent.id,
+        "path": str(parent.path),
+        "state": parent.spec.get("state"),
+        "children": child_results,
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def create_sep_handoff(
+    title: str,
+    source_actor: str,
+    target: str,
+    payload: dict,
+    priority: str = "high",
+    scope: str | None = None,
+    description: str | None = None,
+) -> dict:
+    """Create a human-supervision SEP handoff WorkItem.
+
+    The resulting WorkItem has ``type=sep-handoff`` and stores the
+    source actor, target, and structured payload in spec. Prerequisite:
+    call find_skill(task_description) or confirm you are already
+    operating within a named processkit skill before using this tool.
+    1% rule: call route_task first; commit in the same turn — deferred
+    writes are dropped.
+    """
+    if not isinstance(payload, dict) or not payload:
+        return {"error": "payload must be a non-empty object"}
+    created = create_workitem(
+        title=title,
+        type="sep-handoff",
+        priority=priority,
+        description=description,
+        scope=scope,
+        slug_summary=title,
+    )
+    if "error" in created:
+        return created
+
+    root = paths.find_project_root()
+    ent = _load_workitem(root, created["id"])
+    if ent is None:
+        return {"error": f"created handoff {created['id']!r} could not be reloaded"}
+    ent.spec["source_actor"] = source_actor
+    ent.spec["target"] = target
+    ent.spec["handoff_payload"] = payload
+    ent.write()
+    db = index.open_db()
+    try:
+        index.upsert_entity(db, ent)
+    finally:
+        db.close()
+
+    log.log_side_effect(
+        "WorkItem", ent.id, "sep.handoff.created",
+        f"Created SEP handoff {ent.id!r} for {target!r}",
+        root=root,
+        actor=source_actor,
+        details={"target": target},
+    )
+    return {"id": ent.id, "path": str(ent.path), "state": ent.spec.get("state")}
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -253,8 +425,6 @@ def query_workitems(
         rows = index.query_entities(db, kind="WorkItem", state=state, limit=limit * 4)
     finally:
         db.close()
-    if type:
-        rows = [r for r in rows if (r.get("title") and True)]  # placeholder, type filter applied below
     out = []
     for r in rows:
         full = get_workitem(r["id"])

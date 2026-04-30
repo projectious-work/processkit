@@ -13,7 +13,7 @@ utilities (not a public skill category).
 
 ```
 skills/
-  processkit/    — 34 skills for operating the processkit system
+  processkit/    — 43 skills for operating the processkit system
   engineering/   — 46 skills: software design, architecture, backend, languages
   devops/        — 15 skills: infrastructure, CI/CD, ops, monitoring
   data-ai/       — 11 skills: data science, ML, AI/LLM, embeddings
@@ -37,7 +37,7 @@ skills/
 
 ## processkit skill hierarchy
 
-The 34 processkit/ skills form a strict dependency hierarchy where
+The 43 processkit/ skills form a strict dependency hierarchy where
 `layer: 0-4` skills depend only downward; the `layer: null` routing and
 meta skills sit outside that dependency chain:
 
@@ -54,21 +54,23 @@ Layer 2 (core entities and operator workflows):
   `artifact-management` **MCP**, `scope-management`,
   `category-management`, `cross-reference-management`,
   `binding-management` **MCP**, `status-briefing`,
-  `note-management`, `session-handover`, `standup-context`,
+  `note-management` **MCP**, `session-handover`, `standup-context`,
   `status-update-writer`, `context-archiving` **MCP**
 
 Layer 3 (process orchestration):
 - `process-management`, `state-machine-management`, `gate-management`,
   `schedule-management`, `constraint-management`, `migration-management`,
-  `retrospective`
+  `retrospective`, `agent-card` **MCP**,
+  `eval-gate-authoring` **MCP**, `security-projections` **MCP**
 
 Layer 4 (cross-cutting coordination):
 - `discussion-management`, `owner-profiling`, `context-grooming`,
   `agent-management`
 
 Layer null (routing and meta skills):
-- `model-recommender`, `skill-builder`, `skill-finder`, `skill-gate`,
-  `skill-reviewer`, `task-router`
+- `aggregate-mcp`, `model-recommender`, `pk-doctor`,
+  `release-audit`, `skill-builder`, `skill-finder`, `skill-gate`,
+  `skill-reviewer`, `task-router`, `team-creator`, `team-manager`
 
 Technical and language skills (engineering/, devops/, data-ai/, etc.) are
 also `layer: null` — the hierarchy above applies only to processkit/

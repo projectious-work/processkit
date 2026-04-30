@@ -10,6 +10,7 @@ from __future__ import annotations
 from . import (
     schema_filename,
     schema_vocabulary,
+    v2_contracts,
     sharding,
     migrations,
     migration_integrity,
@@ -29,6 +30,7 @@ from . import (
 REGISTRY = [
     ("schema_filename", schema_filename),
     ("schema_vocabulary", schema_vocabulary),
+    ("v2_contracts", v2_contracts),
     ("sharding", sharding),
     ("migrations", migrations),
     ("migration_integrity", migration_integrity),

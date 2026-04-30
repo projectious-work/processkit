@@ -202,6 +202,77 @@ def create_binding(
     idempotentHint=False,
     openWorldHint=False,
 ))
+def create_time_window(
+    subject: str,
+    target: str,
+    recurrence_rule_artifact: str,
+    valid_from: str | None = None,
+    valid_until: str | None = None,
+    scope: str | None = None,
+    description: str | None = None,
+) -> dict:
+    """Create a schedule demotion Binding of type ``time-window``.
+
+    ``recurrence_rule_artifact`` must reference an Artifact of kind
+    ``schedule-rule``. Prerequisite: call find_skill(task_description)
+    or confirm you are already operating within a named processkit
+    skill before using this tool. 1% rule: call route_task first;
+    commit in the same turn — deferred writes are dropped.
+    """
+    if not recurrence_rule_artifact.startswith("ART-"):
+        return {"error": "recurrence_rule_artifact must be an ART-* id"}
+    return create_binding(
+        type="time-window",
+        subject=subject,
+        target=target,
+        scope=scope,
+        valid_from=valid_from,
+        valid_until=valid_until,
+        conditions={"recurrence_rule": recurrence_rule_artifact},
+        description=description,
+    )
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def create_budget_application(
+    cost_policy_artifact: str,
+    target: str,
+    enforcement_point: str,
+    cap_usd: float | None = None,
+    scope: str | None = None,
+    valid_from: str | None = None,
+    valid_until: str | None = None,
+    description: str | None = None,
+) -> dict:
+    """Bind a cost-policy Artifact to a target with budget metadata."""
+    if not cost_policy_artifact.startswith("ART-"):
+        return {"error": "cost_policy_artifact must be an ART-* id"}
+    conditions: dict = {"enforcement_point": enforcement_point}
+    if cap_usd is not None:
+        conditions["cap_usd"] = cap_usd
+    return create_binding(
+        type="budget-application",
+        subject=cost_policy_artifact,
+        target=target,
+        scope=scope,
+        valid_from=valid_from,
+        valid_until=valid_until,
+        conditions=conditions,
+        description=description,
+    )
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
 def end_binding(id: str, end_date: str | None = None) -> dict:
     """End a Binding by setting ``valid_until`` to ``end_date`` (default today).
 

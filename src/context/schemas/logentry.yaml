@@ -40,6 +40,9 @@ spec:
     - gate.waived
     - github.issue.closed
     - inbox.captured
+    - inbox.claimed
+    - inbox.completed
+    - inbox.failed
     - inbox.triaged
     - inbox.injected
     - interrupt.fired
@@ -49,6 +52,9 @@ spec:
     - migration.transitioned
     - migration.applied
     - migration.rejected
+    - migration.v2-context-converted
+    - note.created
+    - process.instance.created
     - release.published
     - retro.action_item_created
     - retro.completed
@@ -81,7 +87,13 @@ spec:
     - cost.budget.warning
     - cost.budget.breach
     - cost.sep-escalated
+    - eval.bound
     - eval.judge.calibrated
+    - eval.spec.created
+    - agent_card.projected
+    - security.agent_ids_rule_projected
+    - security.tetragon_policy_projected
+    - sep.handoff.created
     - test.event
     - test.fixture
   spec_schema:
@@ -96,10 +108,14 @@ spec:
       timestamp:
         type: string
         format: date-time
-        description: "When the event occurred (ISO 8601 UTC). Distinct from metadata.created which is when the log file was written."
+        description: >
+          When the event occurred (ISO 8601 UTC). Distinct from
+          metadata.created which is when the log file was written.
       actor:
         type: string
-        description: "ID of the actor who caused the event. May be an ACTOR- ID or a raw agent name."
+        description: >
+          ID of the actor who caused the event. May be an ACTOR- ID or
+          a raw agent name.
       subject:
         type: string
         description: "ID of the entity the event concerns (work item, decision, etc.)."

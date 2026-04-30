@@ -1,10 +1,14 @@
 {
-  "aggregate_sha256": "92d6eedc1755a7ce9d69a1013393e36cc616e411d1daa4c9c5484cefe4536651",
-  "generated_at": "2026-04-30T13:53:01Z",
+  "aggregate_sha256": "72e85491a9c4bc4f443335564947d55e079b2ac17861215d1f5ec036a2dc261b",
+  "generated_at": "2026-04-30T16:08:29Z",
   "per_server_header": [
     {
       "path": "context/skills/processkit/actor-profile/mcp/server.py",
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+    },
+    {
+      "path": "context/skills/processkit/agent-card/mcp/server.py",
+      "sha256": "aba8150d6533eadba8e7152a09c36740959d81dddfb3b6199fbf53a2edccaa71"
     },
     {
       "path": "context/skills/processkit/aggregate-mcp/mcp/server.py",
@@ -28,6 +32,10 @@
     },
     {
       "path": "context/skills/processkit/discussion-management/mcp/server.py",
+      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+    },
+    {
+      "path": "context/skills/processkit/eval-gate-authoring/mcp/server.py",
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
     },
     {
@@ -55,12 +63,20 @@
       "sha256": "ed9fa339d5c162d2ce5f583d82479a9df701cab84bc03009c7d32f675f2978ee"
     },
     {
+      "path": "context/skills/processkit/note-management/mcp/server.py",
+      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+    },
+    {
       "path": "context/skills/processkit/role-management/mcp/server.py",
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
     },
     {
       "path": "context/skills/processkit/scope-management/mcp/server.py",
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+    },
+    {
+      "path": "context/skills/processkit/security-projections/mcp/server.py",
+      "sha256": "aba8150d6533eadba8e7152a09c36740959d81dddfb3b6199fbf53a2edccaa71"
     },
     {
       "path": "context/skills/processkit/skill-finder/mcp/server.py",
@@ -89,6 +105,10 @@
       "sha256": "b5b6f3137c0503707427dc45c508b51096d3681758500f312d237fee766539ef"
     },
     {
+      "path": "context/skills/processkit/agent-card/mcp/mcp-config.json",
+      "sha256": "7d93aa475dbf6685d38f8b6eb55a3dd2996d60a0bce7bbaa26cc92220d303724"
+    },
+    {
       "path": "context/skills/processkit/artifact-management/mcp/mcp-config.json",
       "sha256": "e09c0fe9c1e4e63cdb3aa73382d71e9a4b861b6c81777239a353c2c34d6d6f9a"
     },
@@ -103,6 +123,10 @@
     {
       "path": "context/skills/processkit/discussion-management/mcp/mcp-config.json",
       "sha256": "789e045f3e45f0f5ae95c1eaf99ce7b914dbde8a5bccc4d1da1eab001fe1a9ad"
+    },
+    {
+      "path": "context/skills/processkit/eval-gate-authoring/mcp/mcp-config.json",
+      "sha256": "10197b1700007b6b455257af51ab3864e30438bfe51cc37f3e13465410bbef6e"
     },
     {
       "path": "context/skills/processkit/event-log/mcp/mcp-config.json",
@@ -129,12 +153,20 @@
       "sha256": "fbbe9faf06b7a94056ab3734b2a15f37128246fb581b713f4d008d31351a51fc"
     },
     {
+      "path": "context/skills/processkit/note-management/mcp/mcp-config.json",
+      "sha256": "85c2647b01060028420f0102178a490360e312dc7a1e1ef87531b20f52059697"
+    },
+    {
       "path": "context/skills/processkit/role-management/mcp/mcp-config.json",
       "sha256": "5010739924c1a9dbc1386e10a6151dfb2ad423160a66d85417039c7d95da11fa"
     },
     {
       "path": "context/skills/processkit/scope-management/mcp/mcp-config.json",
       "sha256": "85ca13e76490c3bdd7eefbfbc51950bebdce2e7b7e8df5dd0e01c594b81a0d58"
+    },
+    {
+      "path": "context/skills/processkit/security-projections/mcp/mcp-config.json",
+      "sha256": "ad54d8a91255cf4f66d8da650510fee193865f12a0985bda8ed30a08e91c0c37"
     },
     {
       "path": "context/skills/processkit/skill-finder/mcp/mcp-config.json",

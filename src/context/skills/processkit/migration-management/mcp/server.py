@@ -64,6 +64,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
+from processkit import API_VERSION, __version__ as PK_VERSION  # noqa: E402
 from processkit import entity, index, log, paths, state_machine  # noqa: E402
 
 server = FastMCP("processkit-migration-management")
@@ -445,6 +446,38 @@ def _commit_transition(
     return new_path
 
 
+def _iter_context_entities(root: Path) -> list[Path]:
+    out: list[Path] = []
+    for p in sorted((root / "context").rglob("*.md")):
+        if "/templates/" in str(p):
+            continue
+        if p.name.startswith("INDEX"):
+            continue
+        out.append(p)
+    return out
+
+
+def _apply_v2_entity_updates(ent: entity.Entity) -> bool:
+    changed = False
+    if ent.apiVersion != API_VERSION:
+        ent.apiVersion = API_VERSION
+        changed = True
+    if ent.kind == "Migration":
+        spec = ent.spec
+        defaults = {
+            "source_api_version": "processkit.projectious.work/v1",
+            "source_processkit_version": spec.get("from_version") or "unknown",
+            "target_api_version": API_VERSION,
+            "target_processkit_version": spec.get("to_version") or PK_VERSION,
+            "apply_mode": "one-shot",
+        }
+        for key, value in defaults.items():
+            if not spec.get(key):
+                spec[key] = value
+                changed = True
+    return changed
+
+
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
@@ -736,6 +769,70 @@ def reject_migration(id: str, reason: str) -> dict:
         "from_state": original,
         "to_state": "rejected",
         "path": str(ent.path),
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def migrate_context_to_v2(dry_run: bool = True) -> dict:
+    """Convert processkit entity files in-place to the v2 API contract.
+
+    This is the single hard conversion path for the breaking v2 line:
+    every processkit entity outside ``context/templates/`` is restamped
+    to ``processkit.projectious.work/v2``. Migration entities also gain
+    explicit source/target API and processkit version fields. With
+    ``dry_run=True`` only reports planned changes. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool. 1% rule:
+    call route_task first; commit in the same turn — deferred writes
+    are dropped.
+    """
+    root = paths.find_project_root()
+    changed_paths: list[str] = []
+    errors: list[dict] = []
+    for path in _iter_context_entities(root):
+        try:
+            ent = entity.load(path)
+        except entity.NotAnEntityError:
+            continue
+        except entity.EntityError as exc:
+            errors.append({"path": str(path.relative_to(root)), "error": str(exc)})
+            continue
+        if _apply_v2_entity_updates(ent):
+            changed_paths.append(str(path.relative_to(root)))
+            if not dry_run:
+                ent.write(path, touch_updated=False)
+                try:
+                    db = index.open_db()
+                    try:
+                        index.upsert_entity(db, ent)
+                    finally:
+                        db.close()
+                except Exception:
+                    pass
+
+    if not dry_run:
+        log.log_side_effect(
+            "Migration",
+            "processkit-v2",
+            "migration.v2-context-converted",
+            f"Converted {len(changed_paths)} processkit entities to {API_VERSION}",
+            root=root,
+            actor="processkit-migration-management",
+            details={"changed_paths": changed_paths[:200], "errors": errors},
+        )
+    return {
+        "ok": not errors,
+        "dry_run": dry_run,
+        "api_version": API_VERSION,
+        "processkit_version": PK_VERSION,
+        "changed_count": len(changed_paths),
+        "changed_paths": changed_paths,
+        "errors": errors,
     }
 
 
