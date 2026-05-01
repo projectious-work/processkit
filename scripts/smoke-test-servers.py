@@ -613,6 +613,16 @@ def run():
         print("create_note:", note_created)
         assert "id" in note_created
 
+        prepare_inbox_dirs = get_tool(note, "prepare_hook_inbox_dirs")
+        inbox_dirs = prepare_inbox_dirs()
+        print("prepare_hook_inbox_dirs:", sorted(inbox_dirs["dirs"]))
+        assert inbox_dirs["ok"]
+        for state in ("inbox", "claimed", "done", "failed"):
+            assert (Path(inbox_dirs["dirs"][state])).is_dir()
+        bad_inbox_dirs = prepare_inbox_dirs(base_dir="../bad")
+        print("prepare_hook_inbox_dirs bad (expected error):", bad_inbox_dirs)
+        assert "error" in bad_inbox_dirs
+
         capture_inbox = get_tool(note, "capture_inbox_item")
         inbox = capture_inbox(
             title="Interrupt current work for budget breach",

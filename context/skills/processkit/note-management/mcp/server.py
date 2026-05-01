@@ -41,6 +41,7 @@ server = FastMCP("processkit-note-management")
 
 _VALID_NOTE_TYPES = {"fleeting", "insight", "reference", "question"}
 _VALID_INJECTION_MODES = {"interrupt", "ambient", "next-cycle"}
+_HOOK_INBOX_STATES = ("inbox", "claimed", "done", "failed")
 
 
 def _now_iso() -> str:
@@ -73,6 +74,43 @@ def _write_and_index(ent: entity.Entity) -> None:
         index.upsert_entity(db, ent)
     finally:
         db.close()
+
+
+def _safe_relative_dir(value: str) -> Path:
+    path = Path(value)
+    if path.is_absolute() or ".." in path.parts:
+        raise ValueError("base_dir must be a relative path without '..'")
+    return path
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def prepare_hook_inbox_dirs(base_dir: str = "tasks") -> dict:
+    """Create the canonical hook-adapter drop directories.
+
+    Creates ``tasks/inbox/``, ``tasks/claimed/``, ``tasks/done/``, and
+    ``tasks/failed/`` by default. Drop adapters can use this layout as
+    their hand-off boundary before calling ``capture_inbox_item``.
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn —
+    deferred writes are dropped.
+    """
+    try:
+        rel_base = _safe_relative_dir(base_dir)
+    except ValueError as exc:
+        return {"error": str(exc)}
+    root = paths.find_project_root()
+    created: dict[str, str] = {}
+    for state in _HOOK_INBOX_STATES:
+        target = root / rel_base / state
+        target.mkdir(parents=True, exist_ok=True)
+        created[state] = str(target)
+    return {"ok": True, "base_dir": str(root / rel_base), "dirs": created}
 
 
 @server.tool(annotations=ToolAnnotations(

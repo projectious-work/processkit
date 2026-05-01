@@ -46,6 +46,13 @@ agent-generated interrupts enter as Notes with `spec.inbox`, then move
 through captured, claimed, completed, or failed before they are
 promoted or linked into tracked work.
 
+Hook adapters use a filesystem hand-off layout rooted at `tasks/`:
+`tasks/inbox/`, `tasks/claimed/`, `tasks/done/`, and `tasks/failed/`.
+Run `prepare_hook_inbox_dirs()` before wiring a drop adapter. The
+adapter may place raw payloads in `tasks/inbox/`, but the canonical
+processkit record is still created through `capture_inbox_item()` as a
+`Note(type=fleeting, state=captured)` with `spec.inbox`.
+
 ## Overview
 
 ### Note types
