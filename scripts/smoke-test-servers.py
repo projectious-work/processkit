@@ -94,6 +94,13 @@ def run():
             PROCESSKIT / "src" / "context" / "state-machines",
             context_root / "state-machines",
         )
+        shutil.copytree(
+            PROCESSKIT
+            / "src" / "context" / "skills"
+            / "processkit" / "index-management" / "config",
+            context_root
+            / "skills" / "processkit" / "index-management" / "config",
+        )
 
         os.chdir(workdir)
 
@@ -453,6 +460,12 @@ def run():
         print("bad scope transition (expected error):", bad_scope_t)
         assert "error" in bad_scope_t
 
+        ts_done = transition_scope(id=scope_id, to_state="completed")
+        print("transition_scope completed:", ts_done)
+        assert ts_done["ok"] and ts_done["archived"] is True
+        assert "/scopes/done/" in ts_done["path"]
+        assert Path(ts_done["path"]).is_file()
+
         list_scopes = get_tool(scope, "list_scopes")
         ls = list_scopes(kind="sprint")
         print("list_scopes sprint:", len(ls))
@@ -601,6 +614,26 @@ def run():
         gt = create_gate_template(template="interrupt-fire")
         print("create_gate_template interrupt-fire:", gt)
         assert "id" in gt and gt["name"] == "interrupt-fire"
+
+        archive_wi = create_wi(
+            title="Archive terminal WorkItem in smoke",
+            type="task",
+            priority="medium",
+            slug_summary="archive terminal workitem smoke",
+        )
+        assert "id" in archive_wi
+        archive_wi_id = archive_wi["id"]
+        archive_wi_initial_path = Path(archive_wi["path"])
+        t_archive_start = transition_wi(id=archive_wi_id, to_state="in-progress")
+        assert t_archive_start["ok"] and not t_archive_start["archived"]
+        t_archive_review = transition_wi(id=archive_wi_id, to_state="review")
+        assert t_archive_review["ok"] and not t_archive_review["archived"]
+        t_archive_done = transition_wi(id=archive_wi_id, to_state="done")
+        print("transition_workitem done archive:", t_archive_done)
+        assert t_archive_done["ok"] and t_archive_done["archived"] is True
+        assert "/workitems/done/" in t_archive_done["path"]
+        assert Path(t_archive_done["path"]).is_file()
+        assert not archive_wi_initial_path.exists()
 
         create_note = get_tool(note, "create_note")
         note_created = create_note(
@@ -1029,6 +1062,16 @@ def run():
             )
             _ev_dec = _index.query_events(_db, event_type="decision.created")
             _ev_scope = _index.query_events(_db, event_type="scope.created")
+            _ev_scope_archive = _index.query_events(
+                _db,
+                event_type="scope.archive-moved",
+                subject=scope_id,
+            )
+            _ev_wi_archive = _index.query_events(
+                _db,
+                event_type="workitem.archive-moved",
+                subject=archive_wi_id,
+            )
             _ev_gate = _index.query_events(_db, event_type="gate.created")
             _ev_gate_eval = _index.query_events(
                 _db,
@@ -1043,6 +1086,8 @@ def run():
         print("log side effects — workitem.transitioned:", len(_ev_transitioned))
         print("log side effects — decision.created:", len(_ev_dec))
         print("log side effects — scope.created:", len(_ev_scope))
+        print("log side effects — scope.archive-moved:", len(_ev_scope_archive))
+        print("log side effects — workitem.archive-moved:", len(_ev_wi_archive))
         print("log side effects — gate.created:", len(_ev_gate))
         print("log side effects — gate.passed:", len(_ev_gate_eval))
         print("log side effects — discussion.opened:", len(_ev_disc))
@@ -1051,6 +1096,8 @@ def run():
         assert len(_ev_transitioned) >= 1, "workitem.transitioned log entry missing"
         assert len(_ev_dec) >= 1, "decision.created log entry missing"
         assert len(_ev_scope) >= 1, "scope.created log entry missing"
+        assert len(_ev_scope_archive) >= 1, "scope.archive-moved log entry missing"
+        assert len(_ev_wi_archive) >= 1, "workitem.archive-moved log entry missing"
         assert len(_ev_gate) >= 1, "gate.created log entry missing"
         assert len(_ev_gate_eval) >= 1, "gate.passed log entry missing"
         assert len(_ev_disc) >= 1, "discussion.opened log entry missing"

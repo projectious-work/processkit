@@ -82,6 +82,36 @@ def _load_workitem(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
+def _write_index_and_archive_if_terminal(
+    ent: entity.Entity,
+    *,
+    root: Path,
+    to_state: str,
+) -> tuple[Path, bool]:
+    old_path = ent.path
+    target = paths.entity_path(
+        "WorkItem",
+        ent.id,
+        str(ent.metadata.get("created") or ""),
+        root,
+        state=to_state,
+    )
+    archived = old_path is not None and old_path.resolve() != target.resolve()
+    if archived:
+        ent.write(target)
+        if old_path and old_path.exists():
+            old_path.unlink()
+    else:
+        ent.write()
+
+    db = index.open_db()
+    try:
+        index.upsert_entity(db, ent)
+    finally:
+        db.close()
+    return ent.path or target, archived
+
+
 def _valid_types() -> set[str]:
     values = schema.known_values("WorkItem", "known_types")
     if values:
@@ -390,13 +420,27 @@ def transition_workitem(id: str, to_state: str, note: str | None = None) -> dict
     if note:
         ent.body = (ent.body or "") + f"\n\n## Transition note ({_now_iso()})\n\n{note}\n"
 
-    ent.write()
-
-    db = index.open_db()
     try:
-        index.upsert_entity(db, ent)
-    finally:
-        db.close()
+        sm = state_machine.load("workitem")
+        should_archive = sm.is_terminal(to_state)
+    except state_machine.StateMachineError:
+        should_archive = False
+
+    if should_archive:
+        final_path, archived = _write_index_and_archive_if_terminal(
+            ent,
+            root=root,
+            to_state=to_state,
+        )
+    else:
+        ent.write()
+        db = index.open_db()
+        try:
+            index.upsert_entity(db, ent)
+        finally:
+            db.close()
+        final_path = ent.path
+        archived = False
 
     log.log_side_effect(
         "WorkItem", id, "workitem.transitioned",
@@ -404,7 +448,22 @@ def transition_workitem(id: str, to_state: str, note: str | None = None) -> dict
         root=root,
         actor=id,
     )
-    return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
+    if archived:
+        log.log_side_effect(
+            "WorkItem", id, "workitem.archive-moved",
+            f"Archived terminal WorkItem {id!r} to {final_path}",
+            root=root,
+            actor=id,
+            details={"path": str(final_path)},
+        )
+    return {
+        "ok": True,
+        "id": id,
+        "from_state": from_state,
+        "to_state": to_state,
+        "path": str(final_path) if final_path else None,
+        "archived": archived,
+    }
 
 
 @server.tool(annotations=ToolAnnotations(
