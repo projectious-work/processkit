@@ -823,6 +823,171 @@ with tempfile.TemporaryDirectory() as tmp:
           result.stdout)
 
 # ---------------------------------------------------------------------------
+# Test 16: v2 plan guardrails from SmoothRiver Sprint A/C/D catalogue
+# ---------------------------------------------------------------------------
+print("\n[16] v2 plan guardrails — vocabulary, sharding, contracts")
+
+from checks.schema_vocabulary import run as _schema_vocab_run  # noqa: E402
+from checks.sharding import run as _sharding_run  # noqa: E402
+from checks.v2_contracts import run as _v2_contracts_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "context" / "schemas").mkdir(parents=True)
+    (root / "context" / "artifacts").mkdir(parents=True)
+    (root / "context" / "bindings").mkdir(parents=True)
+    (root / "context" / "workitems").mkdir(parents=True)
+    (root / "context" / "skills" / "processkit" /
+     "index-management" / "config").mkdir(parents=True)
+
+    (root / "context" / "schemas" / "artifact.yaml").write_text(
+        textwrap.dedent("""\
+            spec:
+              known_kinds: [document, cost-policy]
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "schemas" / "binding.yaml").write_text(
+        textwrap.dedent("""\
+            spec:
+              known_types: [role-assignment, triage-classification]
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "schemas" / "workitem.yaml").write_text(
+        "spec:\n  known_types: [task]\n",
+        encoding="utf-8",
+    )
+    (root / "context" / "schemas" / "logentry.yaml").write_text(
+        "spec:\n  known_event_types: [test.event]\n",
+        encoding="utf-8",
+    )
+    (root / "context" / "artifacts" / "ART-bad-kind.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Artifact
+            metadata:
+              id: ART-bad-kind
+              created: 2026-04-30T00:00:00Z
+            spec:
+              name: Bad kind
+              kind: unknown-policy-shape
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "bindings" / "BIND-bad-type.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Binding
+            metadata:
+              id: BIND-bad-type
+              created: 2026-04-30T00:00:00Z
+            spec:
+              type: unknown-binding-shape
+              subject: ART-a
+              target: ART-b
+            ---
+            """),
+        encoding="utf-8",
+    )
+    vocab_results = _schema_vocab_run({"repo_root": root})
+    check(
+        "16a: unknown Artifact kind emits plan check ID",
+        any(r.id == "schema.unknown-kind-without-schema-entry"
+            for r in vocab_results),
+    )
+    check(
+        "16b: unknown Binding type emits plan check ID",
+        any(r.id == "schema.unknown-type-without-schema-entry"
+            for r in vocab_results),
+    )
+
+    settings = (
+        root / "context" / "skills" / "processkit" /
+        "index-management" / "config" / "settings.toml"
+    )
+    settings.write_text(
+        textwrap.dedent("""\
+            [sharding.workitem]
+            pattern = "date-shard"
+            template = "{year}/{month}/"
+            activate_above_count = 1
+            """),
+        encoding="utf-8",
+    )
+    for suffix in ("one", "two"):
+        (root / "context" / "workitems" / f"BACK-{suffix}.md").write_text(
+            textwrap.dedent(f"""\
+                ---
+                apiVersion: processkit.projectious.work/v2
+                kind: WorkItem
+                metadata:
+                  id: BACK-{suffix}
+                  created: 2026-04-30T00:00:00Z
+                spec:
+                  title: {suffix}
+                  state: backlog
+                  type: task
+                ---
+                """),
+            encoding="utf-8",
+        )
+    sharding_results = _sharding_run({"repo_root": root})
+    check(
+        "16c: workitem threshold check fires",
+        any(r.id == "sharding.workitem-shard-threshold"
+            for r in sharding_results),
+    )
+
+    (root / "context" / "artifacts" / "ART-new-policy.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Artifact
+            metadata:
+              id: ART-new-policy
+              created: 2026-04-30T00:00:00Z
+            spec:
+              name: New policy
+              kind: cost-policy
+              supersedes: [ART-missing-policy]
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "bindings" / "BIND-triage.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Binding
+            metadata:
+              id: BIND-triage
+              created: 2026-04-30T00:00:00Z
+            spec:
+              type: triage-classification
+              subject: NOTE-a
+              target: BACK-one
+              conditions: {}
+            ---
+            """),
+        encoding="utf-8",
+    )
+    contract_results = _v2_contracts_run({"repo_root": root})
+    check(
+        "16d: policy supersedes chain-break check fires",
+        any(r.id == "v2.policy-supersedes-chain-break"
+            for r in contract_results),
+    )
+    check(
+        "16e: inbox injection-mode check fires",
+        any(r.id == "v2.inbox-injection-mode-untyped"
+            for r in contract_results),
+    )
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()

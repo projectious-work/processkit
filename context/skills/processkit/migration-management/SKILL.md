@@ -35,6 +35,23 @@ The agent and the user work through it together over one or more sessions —
 drafting a plan, applying changes, then archiving the result. This skill is
 how the agent navigates that lifecycle.
 
+Migration is also the upstream-source-version transition primitive. Use it for
+every upstream Schema change, every adopted third-party spec version change
+(A2A, ACP, Cilium CRDs, kagent CRDs if adopted), and every auditable data-fix.
+The Migration records the exact source version transition through
+`source_api_version`, `source_processkit_version`, `target_api_version`, and
+`target_processkit_version`; `pk-doctor` treats missing version metadata as a
+schema vocabulary error for v2 content.
+
+Two subtype patterns are canonical:
+
+- `Migration{kind=schema-extension}` documents an extension to a Schema
+  vocabulary such as `Artifact.spec.known_kinds` or
+  `Binding.spec.known_types`.
+- `Migration{kind=data-fix}` documents a correction to already-emitted data.
+  For LogEntry repair, the original event is superseded by reference and never
+  deleted; this preserves the append-only event-log invariant.
+
 ## Overview
 
 ### The migration directory layout

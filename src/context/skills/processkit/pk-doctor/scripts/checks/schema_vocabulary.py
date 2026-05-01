@@ -17,10 +17,30 @@ from .common import CheckResult
 
 
 VOCAB_CHECKS = {
-    "Artifact": ("artifacts", "known_kinds", "kind", "schema.unknown-artifact-kind"),
-    "Binding": ("bindings", "known_types", "type", "schema.unknown-binding-type"),
-    "WorkItem": ("workitems", "known_types", "type", "schema.unknown-workitem-type"),
-    "LogEntry": ("logs", "known_event_types", "event_type", "schema.unknown-event-type"),
+    "Artifact": (
+        "artifacts",
+        "known_kinds",
+        "kind",
+        "schema.unknown-kind-without-schema-entry",
+    ),
+    "Binding": (
+        "bindings",
+        "known_types",
+        "type",
+        "schema.unknown-type-without-schema-entry",
+    ),
+    "WorkItem": (
+        "workitems",
+        "known_types",
+        "type",
+        "schema.unknown-type-without-schema-entry",
+    ),
+    "LogEntry": (
+        "logs",
+        "known_event_types",
+        "event_type",
+        "schema.unknown-event-type-without-schema-entry",
+    ),
 }
 
 MIGRATION_VERSION_FIELDS = {

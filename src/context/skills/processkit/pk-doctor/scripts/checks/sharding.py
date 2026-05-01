@@ -32,6 +32,37 @@ VALID_MIG_BUCKETS = {"pending", "in-progress", "applied"}
 CLI_MIGRATION_RE = re.compile(r"^\d{8}_\d{4}_\d+\.\d+\.\d+-to-\d+\.\d+\.\d+\.md$")
 
 
+def _read_workitem_sharding_config(repo_root: Path) -> dict[str, object]:
+    path = (
+        repo_root / "context" / "skills" / "processkit" /
+        "index-management" / "config" / "settings.toml"
+    )
+    if not path.is_file():
+        return {}
+    in_section = False
+    values: dict[str, object] = {}
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            section = line.strip("[]").lower()
+            in_section = section in {"sharding.workitem", "sharding.work-item"}
+            continue
+        if not in_section or "=" not in line:
+            continue
+        key, value = [part.strip() for part in line.split("=", 1)]
+        value = value.strip().strip('"')
+        if key == "activate_above_count":
+            try:
+                values[key] = int(value)
+            except ValueError:
+                values[key] = value
+        else:
+            values[key] = value
+    return values
+
+
 def _read_state(path: Path) -> str | None:
     try:
         text = path.read_text(encoding="utf-8")
@@ -196,6 +227,66 @@ def run(ctx) -> list[CheckResult]:
                         f"state '{state}' not under {dirname}/done/YYYY/MM/"
                     ),
                     entity_ref=str(p.relative_to(repo_root)),
+                ))
+
+    # ------------------ workitem threshold activation ---------------------
+    workitem_cfg = _read_workitem_sharding_config(repo_root)
+    threshold = workitem_cfg.get("activate_above_count")
+    if threshold is not None:
+        if not isinstance(threshold, int) or threshold < 1:
+            results.append(CheckResult(
+                severity="ERROR",
+                category="sharding",
+                id="sharding.workitem-shard-threshold",
+                message=(
+                    "index-management sharding.workitem.activate_above_count "
+                    f"must be a positive integer, got {threshold!r}"
+                ),
+            ))
+        elif (ctx_root / "workitems").is_dir():
+            pattern = str(
+                workitem_cfg.get("pattern") or workitem_cfg.get("scheme") or ""
+            )
+            flat_live = 0
+            sharded_live = 0
+            for p in (ctx_root / "workitems").rglob("*.md"):
+                if since_files is not None and p not in since_files:
+                    continue
+                if p.name.startswith("INDEX") or not _is_v2(p):
+                    continue
+                state = _read_state(p)
+                if state in {"done", "cancelled"}:
+                    continue
+                rel_parts = p.relative_to(ctx_root / "workitems").parts
+                if len(rel_parts) == 1:
+                    flat_live += 1
+                elif (
+                    len(rel_parts) >= 3
+                    and YYYY_RE.match(rel_parts[0])
+                    and MM_RE.match(rel_parts[1])
+                ):
+                    sharded_live += 1
+            if flat_live > threshold and pattern not in {"date", "date-shard"}:
+                results.append(CheckResult(
+                    severity="ERROR",
+                    category="sharding",
+                    id="sharding.workitem-shard-threshold",
+                    message=(
+                        f"flat live WorkItem count {flat_live} exceeds "
+                        f"activate_above_count {threshold}, but pattern "
+                        f"is {pattern!r}, not date-shard"
+                    ),
+                ))
+            if flat_live > threshold and sharded_live == 0:
+                results.append(CheckResult(
+                    severity="ERROR",
+                    category="sharding",
+                    id="sharding.workitem-shard-threshold",
+                    message=(
+                        f"flat live WorkItem count {flat_live} exceeds "
+                        f"activate_above_count {threshold}, but no live "
+                        "WorkItems exist under workitems/YYYY/MM/"
+                    ),
                 ))
 
     results.append(CheckResult(
