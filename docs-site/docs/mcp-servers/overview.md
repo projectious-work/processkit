@@ -31,7 +31,7 @@ utility library at `context/skills/_lib/processkit/`.
 | Server | Tools |
 |---|---|
 | [`actor-profile`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/actor-profile/mcp/) | `create_actor`, `get_actor`, `update_actor`, `deactivate_actor`, `list_actors` |
-| [`role-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/role-management/mcp/) | `create_role`, `get_role`, `update_role`, `list_roles`, `link_role_to_actor` |
+| [`role-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/role-management/mcp/) | `create_role`, `create_role_template`, `get_role`, `update_role`, `list_roles`, `link_role_to_actor` |
 
 ### Layer 2 — Core entities
 

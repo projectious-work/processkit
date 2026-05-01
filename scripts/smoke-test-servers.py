@@ -409,10 +409,16 @@ def run():
         assert "id" in r and r["id"].startswith("ROLE-")
         role_id = r["id"]
 
+        create_role_template = get_tool(role, "create_role_template")
+        triage_role = create_role_template(template="inbox-triage")
+        print("create_role_template inbox-triage:", triage_role)
+        assert "id" in triage_role and triage_role["id"].startswith("ROLE-")
+
         list_roles = get_tool(role, "list_roles")
         lr = list_roles()
         print("list_roles:", len(lr))
         assert any(x["id"] == role_id for x in lr)
+        assert any(x["id"] == triage_role["id"] for x in lr)
 
         link_rta = get_tool(role, "link_role_to_actor")
         lk = link_rta(
