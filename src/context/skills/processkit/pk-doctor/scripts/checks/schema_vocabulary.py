@@ -41,6 +41,12 @@ VOCAB_CHECKS = {
         "event_type",
         "schema.unknown-event-type-without-schema-entry",
     ),
+    "Migration": (
+        "migrations",
+        "known_kinds",
+        "kind",
+        "schema.unknown-migration-kind-without-schema-entry",
+    ),
 }
 
 MIGRATION_VERSION_FIELDS = {

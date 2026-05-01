@@ -6,6 +6,7 @@ metadata:
   created: TODO
 spec:
   source: TODO
+  kind: source-upgrade
   source_url: TODO
   from_version: TODO
   to_version: TODO

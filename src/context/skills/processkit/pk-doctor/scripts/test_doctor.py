@@ -836,6 +836,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "schemas").mkdir(parents=True)
     (root / "context" / "artifacts").mkdir(parents=True)
     (root / "context" / "bindings").mkdir(parents=True)
+    (root / "context" / "migrations" / "applied").mkdir(parents=True)
     (root / "context" / "workitems").mkdir(parents=True)
     (root / "context" / "skills" / "processkit" /
      "index-management" / "config").mkdir(parents=True)
@@ -860,6 +861,10 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     (root / "context" / "schemas" / "logentry.yaml").write_text(
         "spec:\n  known_event_types: [test.event]\n",
+        encoding="utf-8",
+    )
+    (root / "context" / "schemas" / "migration.yaml").write_text(
+        "spec:\n  known_kinds: [source-upgrade, schema-extension, data-fix]\n",
         encoding="utf-8",
     )
     (root / "context" / "artifacts" / "ART-bad-kind.md").write_text(
@@ -893,6 +898,30 @@ with tempfile.TemporaryDirectory() as tmp:
             """),
         encoding="utf-8",
     )
+    (root / "context" / "migrations" / "applied" /
+     "MIG-bad-kind.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Migration
+            metadata:
+              id: MIG-bad-kind
+              created: 2026-04-30T00:00:00Z
+            spec:
+              source: processkit
+              kind: mystery-transition
+              from_version: v0.1.0
+              to_version: v0.2.0
+              state: applied
+              source_api_version: processkit.projectious.work/v1
+              source_processkit_version: v0.1.0
+              target_api_version: processkit.projectious.work/v2
+              target_processkit_version: v0.2.0
+              apply_mode: one-shot
+            ---
+            """),
+        encoding="utf-8",
+    )
     vocab_results = _schema_vocab_run({"repo_root": root})
     check(
         "16a: unknown Artifact kind emits plan check ID",
@@ -902,6 +931,11 @@ with tempfile.TemporaryDirectory() as tmp:
     check(
         "16b: unknown Binding type emits plan check ID",
         any(r.id == "schema.unknown-type-without-schema-entry"
+            for r in vocab_results),
+    )
+    check(
+        "16c: unknown Migration kind emits plan check ID",
+        any(r.id == "schema.unknown-migration-kind-without-schema-entry"
             for r in vocab_results),
     )
 
@@ -937,7 +971,7 @@ with tempfile.TemporaryDirectory() as tmp:
         )
     sharding_results = _sharding_run({"repo_root": root})
     check(
-        "16c: workitem threshold check fires",
+        "16d: workitem threshold check fires",
         any(r.id == "sharding.workitem-shard-threshold"
             for r in sharding_results),
     )
@@ -977,12 +1011,12 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     contract_results = _v2_contracts_run({"repo_root": root})
     check(
-        "16d: policy supersedes chain-break check fires",
+        "16e: policy supersedes chain-break check fires",
         any(r.id == "v2.policy-supersedes-chain-break"
             for r in contract_results),
     )
     check(
-        "16e: inbox injection-mode check fires",
+        "16f: inbox injection-mode check fires",
         any(r.id == "v2.inbox-injection-mode-untyped"
             for r in contract_results),
     )

@@ -25,6 +25,12 @@ spec:
   id_prefix: MIG
   state_machine: migration
   default_directory: context/migrations
+  known_kinds:
+    - source-upgrade
+    - schema-extension
+    - data-fix
+    - runtime
+    - content
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
@@ -37,6 +43,12 @@ spec:
           Identifier of the upstream source: "aibox", "processkit",
           "processkit-acme", or any community package name. Should match the
           [project] field in PROVENANCE.toml of that source.
+      kind:
+        type: string
+        description: >
+          Optional closed v2 Migration subtype declared in
+          spec.known_kinds. Use schema-extension for Schema vocabulary
+          changes and data-fix for auditable repairs.
       source_url:
         type: string
         description: >
