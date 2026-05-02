@@ -102,7 +102,6 @@ const sidebars = {
         'reference/migration',
         'reference/privacy',
         'reference/v2-contracts',
-        'reference/aibox-release-handover',
       ],
     },
   ],

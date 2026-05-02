@@ -95,10 +95,9 @@ upgrading.
   supports `--tree=context`, `--tree=src-context`, and `--tree=both` so
   local dogfood context and shipped release content can be audited under
   the right expectations.
-- **Added an explicit aibox handover document.**
-  `docs-site/docs/reference/aibox-release-handover.md` explains what
-  aibox must own after this processkit release: installing the pinned
-  release, supervising the gateway daemon, generating harness MCP config,
+- **Captured aibox follow-up responsibilities as internal processkit
+  context.** The handover covers installing the pinned release,
+  supervising the gateway daemon, generating harness MCP config,
   exposing user-facing daemon/reset knobs, preserving provider
   neutrality, and implementing the optional harder reset path.
 

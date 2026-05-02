@@ -1,12 +1,28 @@
 ---
-sidebar_position: 9
-title: "aibox Release Handover"
+apiVersion: processkit.projectious.work/v1
+kind: Artifact
+metadata:
+  id: ART-20260502_1814-TallBadger-aibox-release-handover-processkit-v025
+  created: '2026-05-02T18:14:52+00:00'
+spec:
+  name: aibox release handover for processkit v0.25.0
+  kind: document
+  format: markdown
+  version: v0.25.0
+  produced_by: BACK-20260502_0953-LoyalWillow-aibox-release-handover-document
+  tags:
+  - aibox
+  - handover
+  - internal
+  - processkit-v0.25.0
+  - mcp-gateway
+  produced_at: '2026-05-02T18:14:52+00:00'
 ---
 
 # aibox Release Handover
 
-This handover is for the aibox integration work that follows the next
-processkit release.
+This internal handover is for the aibox integration work that follows the
+processkit v0.25.0 release.
 
 ## MCP gateway daemon
 
