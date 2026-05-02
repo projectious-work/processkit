@@ -4,7 +4,7 @@ description: |
   Systematic refactoring with Fowler's catalog, GoF patterns, and code smell detection. Use when restructuring code without changing behavior — cleaning up smells, applying patterns, reducing duplication, or preparing a module for an upcoming feature.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-refactoring
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

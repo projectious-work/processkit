@@ -4,7 +4,7 @@ description: |
   Generate unique entity IDs following the project's configured format. The write-side foundation that every entity-creating skill depends on. Use whenever a new entity is being created and needs an ID, or when validating an ID format, or to inspect the project's ID configuration.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-id-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z

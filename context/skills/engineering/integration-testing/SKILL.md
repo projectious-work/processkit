@@ -4,7 +4,7 @@ description: |
   Integration and E2E testing patterns — testcontainers, fixtures, API mocking, snapshots, and CI isolation. Use when writing integration tests against databases, APIs, or queues; setting up testcontainers or fixture infrastructure; mocking external APIs; or debugging flaky tests.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-integration-testing
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

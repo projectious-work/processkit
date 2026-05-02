@@ -1,9 +1,9 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Binding
 metadata:
   id: BIND-software-engineer-junior-h92feb2
-  created: 2026-04-22 00:00:00+00:00
+  created: 2026-04-22T00:00:00Z
 spec:
   type: model-assignment
   subject: ROLE-software-engineer
@@ -16,6 +16,5 @@ spec:
     effort_floor: low
     effort_ceiling: medium
     rationale: Junior IC coding — fast, cheap, sufficient for routine tickets
-  description: 'default-pack: Junior IC coding — fast, cheap, sufficient for routine
-    tickets'
+  description: "default-pack: Junior IC coding — fast, cheap, sufficient for routine tickets"
 ---

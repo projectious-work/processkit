@@ -70,9 +70,14 @@ Conventional binding types:
 |-----------------------|--------------|-------------|
 | `role-assignment`     | Actor        | Role        |
 | `work-assignment`     | WorkItem     | Actor       |
-| `process-gate`        | Process      | Gate        |
-| `process-scope`       | Process      | Scope       |
-| `schedule-scope`      | Schedule     | Scope       |
+| `workitem-gate`       | WorkItem     | Gate        |
+| `scope-gate`          | Scope        | Gate        |
+| `time-window`         | any          | any         |
+| `budget-application`  | Artifact     | WorkItem/Scope |
+
+Legacy `process-gate`, `process-scope`, and `schedule-scope` Bindings
+are v1 migration inputs only. New v2 relationships should target the
+concrete WorkItem, Scope, Artifact, or Gate being governed.
 
 See the [`binding-management` skill](https://github.com/projectious-work/processkit/blob/main/src/skills/binding-management/SKILL.md)
 for the full spec.

@@ -4,7 +4,7 @@ description: |
   Testing approach — unit vs integration vs E2E, coverage goals, organization. Use when deciding what to test, choosing between unit/integration/E2E tests, planning a test strategy for new functionality, or setting coverage goals.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-testing-strategy
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

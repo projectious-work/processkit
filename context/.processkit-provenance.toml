@@ -1,16 +1,17 @@
 # Aibox-managed live install marker. DO NOT EDIT.
-# Written by `aibox sync` immediately before aibox.lock is bumped.
+# Written by `aibox apply` immediately before aibox.lock is bumped.
 schema_version = 1
 
 [install]
-processkit_version = "v0.23.1"
+processkit_version = "v0.24.0"
 processkit_source = "https://github.com/projectious-work/processkit.git"
-installed_at = "2026-04-26T16:11:07.353084+00:00"
-cli_version = "0.21.1"
+installed_at = "2026-05-01T16:39:43.854442+00:00"
+cli_version = "0.22.0"
 
 [manifest]
-skill_count = 38
+skill_count = 40
 schema_count = 22
 process_count = 5
 state_machine_count = 7
-install_hash = "b1181cf00c872a230ad0d19e87edfc7f6498511e8ccbdb22c553f624fd5b1785"
+release_asset_sha256 = "b73c503dd2d794a23e77788b40c10c842bf6dfd927ce5795875d406e3d63b6cd"
+install_hash = "b526eae8f9a8ef2b5810ce788ea7378792831e9d5d62cc08e1f52277e33b023c"

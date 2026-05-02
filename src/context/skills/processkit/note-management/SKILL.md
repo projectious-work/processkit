@@ -53,6 +53,12 @@ adapter may place raw payloads in `tasks/inbox/`, but the canonical
 processkit record is still created through `capture_inbox_item()` as a
 `Note(type=fleeting, state=captured)` with `spec.inbox`.
 
+The note-management MCP server may be reached directly from this skill's
+`mcp/mcp-config.json` or through the processkit gateway. Gateway
+deployments must surface only the processkit servers present in the
+installed/merged MCP configuration; this skill does not imply that
+unrelated processkit tools are available.
+
 ## Overview
 
 ### Note types

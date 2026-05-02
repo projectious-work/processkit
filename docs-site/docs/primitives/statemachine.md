@@ -5,17 +5,26 @@ title: "StateMachine"
 
 # StateMachine
 
-A state/transition graph that defines valid lifecycle states and allowed
-transitions for a primitive kind. processkit ships default state machines
-for WorkItem, DecisionRecord, Migration, Scope, Discussion, and Note.
-Projects can override or extend them.
+Legacy v1 state/transition graph entity. In the SmoothTiger/SmoothRiver
+v2 direction, processkit no longer presents `StateMachine` as a
+first-class shipped entity surface. State machines still exist as
+validation machinery used by MCP servers, but users should not model
+new workflow records as StateMachine entities.
 
 | | |
 |---|---|
-| **ID prefix** | `SM` |
+| **ID prefix** | `SM` (legacy v1) |
 | **State machine** | none (meta-primitive) |
 | **MCP server** | none |
-| **Skill** | `state-machine-management` (Layer 3) |
+| **Skill** | `state-machine-management` (legacy authoring guidance) |
+
+## v2 replacement
+
+Use the owning MCP server for lifecycle transitions. It loads the
+appropriate implementation contract and returns structured errors for
+invalid transitions. Project workflows should be expressed with
+WorkItems, Artifacts, Gates, and Bindings rather than new
+StateMachine records.
 
 ## Fields
 
@@ -90,10 +99,10 @@ spec:
 
 ## Notes
 
-- State machine definitions live in `context/state-machines/` as YAML
-  files indexed by the SQLite index.
+- Legacy state machine definitions may exist in `context/state-machines/`
+  during v1 migration, but they are not first-class v2 entities.
 - MCP servers load the state machine for a given `kind` and enforce
   valid transitions — invalid transition attempts return a structured error.
-- To override a default state machine, create a new StateMachine entity
-  with the same `kind` name as the primitive and reference it in your
-  project config.
+- For v2, change lifecycle behavior in the owning MCP server or a
+  reviewed implementation contract, then migrate affected records
+  explicitly. Do not create new StateMachine records.

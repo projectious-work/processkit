@@ -4,7 +4,7 @@ description: |
   SQLite-backed index over all entity files in the project. The read-side foundation for every other MCP server. Use whenever an agent needs to look up entities by ID, kind, state, or text — instead of grepping the filesystem.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-index-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z

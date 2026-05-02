@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Model
 metadata:
   id: MODEL-xai-grok-4-1

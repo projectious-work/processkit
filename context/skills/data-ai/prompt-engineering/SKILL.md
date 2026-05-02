@@ -4,7 +4,7 @@ description: |
   Prompt design patterns — few-shot, chain-of-thought, structured output, injection defense. Use when crafting or refining LLM prompts, designing system prompts for agents, requesting structured output, defending against prompt injection, building reusable prompt templates, or iterating on prompt quality.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-prompt-engineering
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

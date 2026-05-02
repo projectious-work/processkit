@@ -13,12 +13,20 @@ process artifacts (standups, retros, session handovers) on top of minimal.
 
 ## What managed adds on top of minimal
 
-**Process primitives (all 16 new skills):**
+**Process primitives and cross-cutting process skills:**
 `role-management`, `decision-record`, `scope-management`,
 `category-management`, `cross-reference-management`, `binding-management`,
 `process-management`, `state-machine-management`, `gate-management`,
 `schedule-management`, `constraint-management`, `discussion-management`,
 `metrics-management`.
+
+`process-management`, `schedule-management`, and `state-machine-management`
+are included for legacy v1 migration guidance. They are not first-class
+v2 primitive authoring surfaces.
+
+`metrics-management` remains a managed-package skill, but Metric is no
+longer a primitive. Metric specifications are tracked as artifacts and
+observations as LogEntries or external time-series data.
 
 **Lightweight process artifacts:**
 `backlog-context`, `decisions-adr`, `standup-context`, `session-handover`,

@@ -10,10 +10,12 @@ const config = {
   organizationName: 'projectious-work',
   projectName: 'processkit',
   onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
   i18n: { defaultLocale: 'en', locales: ['en'] },
   markdown: {
     format: 'detect',
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
   },
   presets: [['classic', {
     docs: {

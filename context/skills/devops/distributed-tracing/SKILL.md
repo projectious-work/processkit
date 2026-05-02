@@ -4,7 +4,7 @@ description: |
   Distributed tracing with OpenTelemetry — spans, context propagation, sampling. Use when instrumenting a distributed system, debugging requests that span services, setting up OpenTelemetry, choosing a sampling strategy, or understanding latency across service boundaries.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-distributed-tracing
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

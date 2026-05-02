@@ -25,7 +25,7 @@ metadata:
 `task-router` is the primary routing entry point for processkit agents.
 Call `route_task(task_description)` once at the start of any domain
 task. It returns — in a single call, without an LLM — the matching
-skill, the project-specific process override (if any), and the
+skill, the legacy project-specific process override (if any), and the
 recommended MCP tool. Use it instead of calling `find_skill()` directly.
 
 ## Overview
@@ -58,7 +58,8 @@ Two-phase heuristic, no LLM call required:
 |---|---|
 | `skill` | Load this skill's SKILL.md before acting |
 | `skill_description_excerpt` | First 150 chars of skill description — judge fit without loading the full file |
-| `process_override` | If present: read this file before the skill — it contains project-specific overrides |
+| `process_override` | Legacy v1 compatibility. If present, read this file before the skill; it contains project-specific overrides from `context/processes/` |
+| `process_override_status` | Present with `process_override`; currently `legacy-v1` |
 | `tool_qualified` | `{server}__{tool}` — collision-safe tool identifier |
 | `confidence` | 0.0–1.0 geometric mean of group and tool scores |
 | `routing_basis` | `keyword_match` = confident; `needs_llm_confirm` = escalate to user/LLM |
@@ -79,8 +80,13 @@ owns the actual cheap-model confirmation step.
 
 Read the process override file **before** the generic skill. It
 contains project-specific step overrides, gates, and blockers that
-supersede the skill defaults. Example: `context/processes/PROC-release.md`
-overrides `release-semver` for this project.
+supersede the skill defaults.
+
+This is a legacy v1 compatibility surface. v2 processkit releases do not
+ship first-class Process entities or `src/context/processes/`. Existing
+projects may still carry live `context/processes/*.md` files as migration
+source state; when found, the router returns them with
+`process_override_status: legacy-v1`.
 
 ## Gotchas
 
@@ -93,6 +99,9 @@ overrides `release-semver` for this project.
 - **Task description quality matters.** Verb-noun phrases score best:
   "create work item", "record decision", "log event". Single words
   ("task", "log") are ambiguous — add context.
+- **Process overrides are compatibility data.** Do not create new v2
+  Process entities for router overrides. Prefer skill configuration,
+  definition Artifacts, or WorkItems that describe process instances.
 
 ## Full reference
 

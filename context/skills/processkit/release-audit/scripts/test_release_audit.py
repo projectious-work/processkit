@@ -34,6 +34,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from release_audit import (  # noqa: E402
+    AuditTarget,
     run_entity_files,
     run_skill_structure,
     run_mcp_annotations,
@@ -151,6 +152,21 @@ class TestCleanTree:
         t = tally(findings)
         assert t["ERROR"] == 0
 
+    def test_src_context_target_allows_missing_dogfood_entity_dirs(self, tmp_path):
+        """Deliverable tree can omit dogfood entity dirs without WARNs."""
+        target = AuditTarget(
+            label="src-context",
+            repo_root=tmp_path,
+            context_root=tmp_path / "src" / "context",
+            require_entity_dirs=False,
+        )
+        (target.context_root / "skills").mkdir(parents=True, exist_ok=True)
+
+        findings = run_entity_files(target)
+        t = tally(findings)
+        assert t["ERROR"] == 0
+        assert t["WARN"] == 0
+
     def test_cross_references_resolved(self, tmp_path):
         """Skill that uses another existing skill → 0 ERRORs."""
         _make_skill(tmp_path, "processkit", "dep-skill")
@@ -235,7 +251,7 @@ class TestMissingKind:
             "workitems",
             "BACK-20260101_1200-BadVer-sample",
             "WorkItem",
-            override_api_version="processkit.projectious.work/v0",
+            override_api_version="processkit.projectious.work/v1",
         )
         findings = run_entity_files(tmp_path)
         error_ids = [f.id for f in findings if f.severity == "ERROR"]
@@ -334,6 +350,50 @@ class TestMissingGotchasSection:
             f.id == "skill.missing-field" and "layer" in f.message
             for f in errors
         ), f"Expected skill.missing-field ERROR for layer. Got: {errors}"
+
+    def test_missing_processkit_api_version_is_error(self, tmp_path):
+        """SKILL.md missing metadata.processkit.apiVersion surfaces ERROR."""
+        skill_dir = tmp_path / "context" / "skills" / "processkit" / "no-api"
+        skill_dir.mkdir(parents=True, exist_ok=True)
+        content = textwrap.dedent("""\
+            ---
+            name: no-api
+            description: |
+              Missing processkit API version.
+            metadata:
+              processkit:
+                id: SKILL-no-api
+                version: "1.0.0"
+                category: processkit
+                layer: 3
+            ---
+
+            # no-api
+
+            ## Intro
+
+            Content.
+
+            ## Overview
+
+            Content.
+
+            ## Gotchas
+
+            Content.
+
+            ## Full reference
+
+            Content.
+        """)
+        (skill_dir / "SKILL.md").write_text(content, encoding="utf-8")
+
+        findings = run_skill_structure(tmp_path)
+        errors = [f for f in findings if f.severity == "ERROR"]
+        assert any(
+            f.id == "skill.missing-field" and "apiVersion" in f.message
+            for f in errors
+        ), f"Expected skill.missing-field ERROR for apiVersion. Got: {errors}"
 
 
 # ---------------------------------------------------------------------------

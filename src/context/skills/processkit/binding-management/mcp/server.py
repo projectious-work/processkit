@@ -120,7 +120,7 @@ def create_binding(
 
     Parameters
     ----------
-    type:        binding type (e.g. "role-assignment", "process-gate")
+    type:        binding type (e.g. "role-assignment", "time-window")
     subject:    ID of the "from" entity
     target:     ID of the "to" entity
     scope:      optional scope ID limiting where the binding applies

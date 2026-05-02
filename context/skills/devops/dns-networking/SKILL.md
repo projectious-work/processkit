@@ -4,7 +4,7 @@ description: |
   DNS records, IP addressing, subnetting, common protocols, and diagnostic tools. Use when configuring DNS records, debugging resolution or connectivity, planning subnets, analyzing HTTPS/TLS errors, or diagnosing latency and routing issues.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-dns-networking
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

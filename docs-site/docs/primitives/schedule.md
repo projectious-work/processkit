@@ -5,15 +5,25 @@ title: "Schedule"
 
 # Schedule
 
-A time-based trigger or recurring cadence. processkit defines Schedules;
-an external runner (aibox, cron, CI) reads them and fires the trigger.
+Legacy v1 time-based trigger or recurring cadence. In the
+SmoothTiger/SmoothRiver v2 direction, processkit no longer presents
+`Schedule` as a first-class shipped entity surface. Use
+`Binding(type=time-window)` with `conditions.recurrence_rule` for the
+durable contract; an external runner still performs execution.
 
 | | |
 |---|---|
-| **ID prefix** | `SCHED` |
+| **ID prefix** | `SCHED` (legacy v1) |
 | **State machine** | none |
 | **MCP server** | none |
-| **Skill** | `schedule-management` (Layer 3) |
+| **Skill** | `schedule-management` (legacy authoring guidance) |
+
+## v2 replacement
+
+Use the `binding-management` server's `create_time_window` path for
+time windows. `pk-doctor`'s `v2_contracts` check requires
+`Binding(type=time-window)` records to include
+`conditions.recurrence_rule`.
 
 ## Fields
 
@@ -60,10 +70,11 @@ spec:
 
 ## Notes
 
-- processkit **defines** schedules but does **not execute** them. The
-  consumer (aibox, CI, cron daemon) is responsible for reading the
-  Schedule and firing the trigger at the right time.
+- Legacy v1 Schedule records are documentation for migration only. In
+  v2, an external runner reads `Binding(type=time-window)` records and
+  fires the target at the right time.
 - `last_run` and `next_run` are advisory fields set by the runner — not
-  enforced by processkit.
-- Bind a Schedule to a Scope via a `schedule-scope` Binding to associate
-  it with a sprint or milestone.
+  enforced by processkit on legacy records.
+- Scope a recurring cadence by binding the governed WorkItem, Artifact,
+  or Scope through `type: time-window`; do not create new
+  `schedule-scope` Bindings.

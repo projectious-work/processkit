@@ -5,12 +5,19 @@ title: "Overview"
 
 # Processes — Overview
 
-A **Process** is a declarative definition of a workflow: a sequence of
-steps, the roles involved, the gates that must pass, and the definition
-of done. processkit does NOT execute processes — agents and humans do.
-processkit just defines them.
+A v1 **Process** was a declarative workflow definition: a sequence of
+steps, roles, gates, and definition of done. In the
+SmoothTiger/SmoothRiver v2 direction, processkit does not ship Process
+as a first-class entity surface. A concrete run is a process-instance
+WorkItem; a reusable definition is an Artifact; gates and bindings hold
+the enforceable policy around the run.
+
+processkit still does not execute workflows. Agents, humans, schedulers,
+or CI systems perform the work and record progress through MCP tools.
 
 ## Shape
+
+Legacy v1 shape:
 
 ```yaml
 ---
@@ -41,15 +48,20 @@ spec:
 ---
 ```
 
-## Formal process definitions
+## v2 shape
 
-processkit ships the `process-management` skill that describes how to write
-and read Process entities. Formal definitions for the common workflows
-(`bug-fix`, `code-review`, `feature-development`, `release`) are planned
-for a future release — they will appear as YAML files under
-`context/processes/` once shipped.
+For v2 documentation and checks, use:
+
+- `WorkItem` with `spec.type: process-instance` for the run.
+- `Artifact` for a process definition, referenced from the WorkItem.
+- `Gate` for pass/fail checkpoints.
+- `Binding` for policy, budget, scope, and time-window relationships.
+
+`pk-doctor`'s `v2_contracts` check verifies that process-instance
+WorkItems point at a definition.
 
 ## See also
 
-- [`process-management` skill](https://github.com/projectious-work/processkit/blob/main/src/skills/process-management/SKILL.md)
+- [`workitem-management` MCP server](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/workitem-management/mcp/)
+- [`artifact-management` MCP server](https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/artifact-management/mcp/)
 - [Skills → Hierarchy](../skills/hierarchy)

@@ -4,7 +4,7 @@ description: |
   Flutter and Dart development — widget architecture, state management, navigation, and cross-platform layout. Use when building Flutter apps, choosing a state-management approach, designing responsive layouts, or reviewing widget code.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-flutter-development
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

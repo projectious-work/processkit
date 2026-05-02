@@ -4,7 +4,7 @@ description: |
   Chart selection, color accessibility, annotation, and dashboard design. Use when creating charts, designing dashboards, choosing visualization types, improving chart readability, or reviewing data presentations for clarity.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-data-visualization
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

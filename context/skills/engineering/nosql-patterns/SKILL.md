@@ -4,7 +4,7 @@ description: |
   NoSQL patterns for document, key-value, wide-column, and graph stores. Access-pattern-driven design and consistency models. Use when choosing between NoSQL store types, designing a document or single-table model, picking a consistency level, or migrating between relational and NoSQL.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-nosql-patterns
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

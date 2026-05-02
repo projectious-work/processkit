@@ -12,7 +12,7 @@ Tools:
 
     route_task(task_description)
         -> {skill, skill_description_excerpt, process_override?,
-            server, tool, tool_qualified, domain_group, confidence,
+            process_override_status?, server, tool, tool_qualified, domain_group, confidence,
             routing_basis, candidate_tools[], also_consider_group?}
 
 Two-phase heuristic routing (no LLM call required):
@@ -489,7 +489,12 @@ def _read_skill_description(skill_name: str) -> str:
 
 
 def _find_process_override(skill_name: str) -> str | None:
-    """Return relative path to context/processes/<name>.md if it exists."""
+    """Return legacy v1 context/processes/<name>.md override if present.
+
+    v2 processkit releases do not ship first-class Process entities or
+    src/context/processes/. Existing projects may still carry live
+    context/processes/*.md files as migration-source compatibility data.
+    """
     processes_dir = _project_root() / "context" / "processes"
     if not processes_dir.exists():
         return None
@@ -618,8 +623,10 @@ def route_task(
     On match:
       skill                    — processkit skill name to load
       skill_description_excerpt — first 150 chars of skill description
-      process_override         — path to project-specific process file
-                                 (only present when one exists)
+      process_override         — legacy v1 path to a project-specific
+                                 process file (only present when one exists)
+      process_override_status  — present with process_override; currently
+                                 "legacy-v1"
       server                   — MCP server to connect to
       tool                     — recommended tool name
       tool_qualified           — "{server}__{tool}" collision-safe form
@@ -649,6 +656,7 @@ def route_task(
             result = dict(fb)
             if po:
                 result["process_override"] = po
+                result["process_override_status"] = "legacy-v1"
             result["hint"] = (
                 "No domain group matched; routed via skill-finder trigger "
                 "table. Load the skill SKILL.md before proceeding."
@@ -730,6 +738,7 @@ def route_task(
 
     if process_override:
         result["process_override"] = process_override
+        result["process_override_status"] = "legacy-v1"
 
     # Surface close runner-up group when scores are within 20 %
     if len(group_scores) > 1 and group_scores[1][0] >= best_group_score * 0.8:

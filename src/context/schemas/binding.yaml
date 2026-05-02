@@ -17,7 +17,9 @@ spec:
 
     v1.1.0 change (DEC-20260422_0234-LoyalComet): added conditional
     validation for type='model-assignment' bindings, enumerating the
-    fields used by the 8-layer resolution precedence.
+    fields used by the 8-layer resolution precedence. In v2 these
+    bindings target model-recommender roster/profile IDs, not first-class
+    Model entities.
 
     v2.0.0 change: Binding type is a closed vocabulary declared in
     spec.known_types. Forks extend the vocabulary through schema-extension
@@ -102,7 +104,10 @@ spec:
             target:
               type: string
               pattern: "^MODEL-[a-z0-9-]+$"
-              description: "Target must be a MODEL ID."
+              description: >
+                Target must be a model-recommender roster/profile ID. The
+                MODEL- prefix is retained for resolver compatibility; it
+                does not imply a shipped Model entity primitive.
             conditions:
               type: object
               additionalProperties: true

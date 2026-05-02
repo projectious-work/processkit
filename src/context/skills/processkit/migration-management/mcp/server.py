@@ -142,8 +142,14 @@ def _summarize(ent: entity.Entity) -> dict[str, Any]:
     return {
         "id": ent.id,
         "source": spec.get("source"),
+        "kind": spec.get("kind"),
         "from_version": spec.get("from_version"),
         "to_version": spec.get("to_version"),
+        "source_api_version": spec.get("source_api_version"),
+        "source_processkit_version": spec.get("source_processkit_version"),
+        "target_api_version": spec.get("target_api_version"),
+        "target_processkit_version": spec.get("target_processkit_version"),
+        "apply_mode": spec.get("apply_mode"),
         "state": spec.get("state"),
         "summary": spec.get("summary"),
         "path": str(ent.path) if ent.path else None,
@@ -415,7 +421,28 @@ def _validate_and_transition(
         state_machine.validate_transition("migration", from_state, to_state)
     except state_machine.StateMachineError as e:
         return {"error": str(e)}
+    missing = _missing_v2_version_fields(ent)
+    if missing:
+        return {
+            "error": (
+                f"Migration {ent.id!r} is v2 but missing required "
+                f"source-version field(s): {missing}"
+            )
+        }
     return None
+
+
+def _missing_v2_version_fields(ent: entity.Entity) -> list[str]:
+    if ent.apiVersion != API_VERSION:
+        return []
+    required = (
+        "source_api_version",
+        "source_processkit_version",
+        "target_api_version",
+        "target_processkit_version",
+        "apply_mode",
+    )
+    return sorted(k for k in required if not ent.spec.get(k))
 
 
 def _commit_transition(
@@ -464,8 +491,9 @@ def _load_context_entity(path: Path) -> tuple[entity.Entity, bool]:
     """Load a frontmatter or plain-YAML processkit entity.
 
     The historical tree uses both Markdown-frontmatter entities and pure
-    YAML entities for schemas/state machines. The v2 migration must cover
-    both without forcing the pure YAML files into frontmatter form.
+    YAML vocabulary files for schema/state-machine definitions. The v2
+    migration must cover both without forcing the pure YAML files into
+    frontmatter form.
     """
     try:
         return entity.load(path), False
@@ -686,9 +714,15 @@ def get_migration(id: str) -> dict:
         "id": ent.id,
         "state": ent.spec.get("state"),
         "source": ent.spec.get("source"),
+        "kind": ent.spec.get("kind"),
         "source_url": ent.spec.get("source_url"),
         "from_version": ent.spec.get("from_version"),
         "to_version": ent.spec.get("to_version"),
+        "source_api_version": ent.spec.get("source_api_version"),
+        "source_processkit_version": ent.spec.get("source_processkit_version"),
+        "target_api_version": ent.spec.get("target_api_version"),
+        "target_processkit_version": ent.spec.get("target_processkit_version"),
+        "apply_mode": ent.spec.get("apply_mode"),
         "summary": ent.spec.get("summary"),
         "generated_by": ent.spec.get("generated_by"),
         "generated_at": _iso(ent.spec.get("generated_at")) or None,
@@ -873,6 +907,14 @@ def reject_migration(id: str, reason: str) -> dict:
         state_machine.validate_transition("migration", original, "rejected")
     except state_machine.StateMachineError as e:
         return {"error": str(e)}
+    missing = _missing_v2_version_fields(ent)
+    if missing:
+        return {
+            "error": (
+                f"Migration {ent.id!r} is v2 but missing required "
+                f"source-version field(s): {missing}"
+            )
+        }
 
     ent.spec["rejected_reason"] = reason
     ent.spec["rejected_at"] = _now_iso()

@@ -133,6 +133,36 @@ def test_create_archive_rejects_active_state(tmp_path, monkeypatch):
     assert "active" in out["error"]
 
 
+def test_create_archive_omitted_state_skips_active_rows(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "AGENTS.md").write_text("# test\n", encoding="utf-8")
+    done = tmp_path / "context" / "workitems" / "BACK-old-done.md"
+    active = tmp_path / "context" / "workitems" / "BACK-active.md"
+    _write_entity(done, entity_id="BACK-old-done", state="done")
+    _write_entity(active, entity_id="BACK-active", state="in-progress")
+
+    from processkit import index
+
+    db = index.open_db()
+    try:
+        index.reindex(tmp_path, db)
+    finally:
+        db.close()
+
+    server = _load_server()
+    out = server.create_archive(
+        kind="WorkItem",
+        state=None,
+        older_than_days=30,
+        dry_run=False,
+    )
+
+    assert out["ok"] is True
+    assert out["archived"] == 1
+    assert not done.exists()
+    assert active.exists()
+
+
 def test_archived_log_entry_remains_event_queryable(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "AGENTS.md").write_text("# test\n", encoding="utf-8")

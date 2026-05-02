@@ -1,7 +1,11 @@
 ---
 name: binding-management
 description: |
-  Manage Binding entities — scoped, temporal, many-to-many relationships between any two primitives. Use when a relationship between two entities needs scope, time, or its own attributes — e.g. 'Alice is the tech lead for project X from Jan to June' or 'the security gate applies to the release process only on the main branch'.
+  Manage Binding entities — scoped, temporal, many-to-many relationships
+  between v2 entity surfaces. Use when a relationship needs scope, time,
+  or its own attributes — e.g. 'Alice is the tech lead for project X from
+  Jan to June' or 'the security gate applies to this release WorkItem only
+  on the main branch'.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
@@ -33,17 +37,16 @@ A Binding is an entity that connects two other entities with optional scope,
 temporality, and conditions. It is the junction-table pattern promoted to
 a primitive, and it is the right choice whenever a relationship is more than
 a simple "A references B" — for example "Alice is the tech lead on project X
-for 2026," or "the security gate applies to the release process only on the
-main branch."
+for 2026," or "the security gate applies to this release WorkItem only on
+the main branch."
 
 > **MCP server.** This skill ships a self-contained MCP server at
 > `mcp/server.py` (PEP 723 script — requires `uv` and Python ≥ 3.10 on
-> PATH). Agent harnesses reach its tools by reading a single MCP config
-> file at startup, so the contents of `mcp/mcp-config.json` must be merged
-> into the harness's MCP config and placed at the harness-specific path
-> before this skill is usable. If processkit was installed by an installer,
-> that wiring is the installer's responsibility; if processkit was
-> installed manually, the project owner must do it by hand.
+> PATH). Agent harnesses may reach it directly from this skill's
+> `mcp/mcp-config.json` or through the processkit gateway. Gateway
+> deployments must surface only the processkit servers present in the
+> installed/merged MCP configuration; this skill does not imply that
+> unrelated processkit tools are available.
 
 ## Overview
 
@@ -58,8 +61,8 @@ main branch."
 | "DEC-x is related to BACK-y"                              | cross-ref             |
 | "Alice is a developer" (globally, permanently)            | cross-ref (in Actor)  |
 | "Alice is tech lead on project X for 2026"                | **Binding**           |
-| "The security gate applies to the release process"       | cross-ref (in Process)|
-| "The security gate applies to release process *only on main branch*" | **Binding** |
+| "The security gate applies to releases generally"        | cross-ref             |
+| "The security gate applies to this release WorkItem *only on main branch*" | **Binding** |
 | "Sprint 42 runs from Apr 1 to Apr 14 and scopes these items" | **Binding**        |
 
 If in doubt, prefer the cross-reference. Promote to a Binding only when you
@@ -73,11 +76,19 @@ actually need the extra dimensions.
 |-----------------------|--------------|-------------|
 | `role-assignment`     | Actor        | Role        |
 | `work-assignment`     | WorkItem     | Actor       |
-| `process-gate`        | Process      | Gate        |
-| `process-scope`       | Process      | Scope       |
-| `schedule-scope`      | Schedule     | Scope       |
+| `workitem-gate`       | WorkItem     | Gate        |
+| `scope-gate`          | Scope        | Gate        |
+| `time-window`         | any          | any         |
+| `budget-application`  | Artifact     | WorkItem/Scope |
 | `constraint-scope`    | Constraint   | Scope       |
 | `category-assignment` | any          | Category    |
+
+In v2, Process and Schedule are not modeled as first-class binding
+endpoints. Use the concrete entity being governed (for example a
+WorkItem, Scope, Gate, or Artifact) and encode schedule-like recurrence
+through a `time-window` Binding with an Artifact-backed recurrence rule.
+Use `budget-application` to bind cost-policy Artifacts to the WorkItems
+or Scopes they govern.
 
 ### Shape
 

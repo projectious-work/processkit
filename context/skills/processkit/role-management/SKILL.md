@@ -4,7 +4,7 @@ description: |
   Create and maintain Role entities — named sets of responsibilities that actors can fill. Use when defining a new role in the project (developer, reviewer, tech-lead, release-manager) or updating an existing role's responsibilities.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-role-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -63,7 +63,7 @@ Create a Role when:
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Role
 metadata:
   id: ROLE-reviewer

@@ -49,6 +49,7 @@ spec:
     - interrupt.fired
     - interrupt.drained
     - logentry.corrected
+    - metric.recorded
     - milestone
     - migration.transitioned
     - migration.applied

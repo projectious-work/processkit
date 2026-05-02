@@ -4,7 +4,7 @@ description: |
   Translates data analysis into clear narratives and recommendations that non-technical audiences can act on. Use when presenting analysis results, writing data-driven reports, creating executive summaries from dashboards, or when data needs to be communicated as a decision rather than as numbers.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-data-storytelling
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

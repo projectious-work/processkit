@@ -147,7 +147,6 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 | Scope           | `SCOPE`  |
 | Category        | `CAT`    |
 | Gate            | `GATE`   |
-| Metric          | `METRIC` |
 | Schedule        | `SCHED`  |
 | Constraint      | `CONST`  |
 | Context         | `CTX`    |

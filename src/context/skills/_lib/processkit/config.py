@@ -17,9 +17,9 @@ Skill config locations:
         [directories]
         WorkItem = "workitems"   # override default subdir under context/
 
-        [sharding.LogEntry]
-        scheme  = "date"
-        pattern = "context/logs/{year}/{month}/"
+        [sharding.logentry]
+        pattern  = "date-shard"
+        template = "{year}/{month}/"
 
 Legacy fallback: if skill config files are absent, settings are read
 from the [context] section of aibox.toml. Defaults apply if neither
@@ -50,18 +50,13 @@ class Config:
         return self.directory_overrides.get(kind)
 
     def sharding_for(self, kind: str) -> dict[str, Any] | None:
-        """Return sharding config for ``kind`` with v1/v2 key tolerance.
+        """Return v2 sharding config for ``kind``.
 
-        Configuration files historically used exact primitive names
-        (``[sharding.LogEntry]``). The v2 plan uses lower-case sections
-        (``[sharding.logentry]``). The runtime accepts both while the
-        schema contract itself remains v2-only.
+        v2 settings use lower-case, punctuation-free primitive keys such
+        as ``[sharding.logentry]`` and ``[sharding.workitem]``.
         """
-        return (
-            self.sharding.get(kind)
-            or self.sharding.get(kind.lower())
-            or self.sharding.get(kind.replace("-", "").lower())
-        )
+        key = kind.replace("-", "").lower()
+        return self.sharding.get(key)
 
 
 def _load_toml(path: Path) -> dict | None:

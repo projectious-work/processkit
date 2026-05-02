@@ -235,7 +235,16 @@ def run():
         eval_gate = import_server("eval-gate-authoring")
         security = import_server("security-projections")
         skf = import_server("skill-finder")
+        gateway = import_server("processkit-gateway")
         agg = import_server("aggregate-mcp")
+
+        gateway_tools = get_tool(gateway, "list_gateway_tools")()
+        print("processkit-gateway tool count:", gateway_tools["count"])
+        assert gateway_tools["count"] >= 90
+        assert gateway_tools["runtime"]["transport"] == "stdio"
+        assert "create_workitem" in gateway.server._tool_manager._tools
+        gateway_health = get_tool(gateway, "gateway_health")()
+        assert gateway_health["ok"] is True
 
         aggregate_tools = get_tool(agg, "list_aggregate_tools")()
         print("aggregate-mcp tool count:", aggregate_tools["count"])

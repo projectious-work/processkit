@@ -8,7 +8,7 @@ None.
 
 None.
 
-## Applied (22)
+## Applied (23)
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
@@ -29,13 +29,14 @@ None.
 | 2026-04-23 | MIG-RUNTIME-20260423T070617 — aibox-runtime-home 0.18.7 → 0.18.7 | 0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected) |
 | 2026-04-25 | MIG-20260425T124926 — processkit v0.21.0 → v0.21.0 | 0 changed upstream, 0 conflicts, 564 new, 0 removed (52 groups affected) |
 | 2026-04-25 | MIG-RUNTIME-20260425T125036 — aibox-runtime-home 0.19.0 → 0.19.0 | 0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected) |
+| 2026-05-01 | MIG-RUNTIME-20260501T163943 — aibox-runtime-home 0.21.2 → 0.22.0 | 3 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected) |
 |  | MIG-20260410T215118 — processkit v0.10.0 → v0.10.0 | AGENTS.md conflict: local customised file retained. |
 |  | MIG-20260411T042618 — processkit v0.11.1 → v0.11.1 | AGENTS.md conflict: local customised file retained. |
 |  | MIG-20260418T090604 — processkit v0.17.0 → v0.18.1 | 0 changed upstream, 8 conflicts, 49 new, 23 removed (7 groups affected) |
 |  | MIG-20260418T172222 — processkit v0.18.1 → v0.18.1 | 0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected) |
 |  | MIG-RUNTIME-20260418T090604 — aibox-runtime-home 0.18.3 → 0.18.5 | 0 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected) |
 
-## Rejected (5)
+## Rejected (6)
 
 | Date       | Migration                                | Reason |
 |------------|------------------------------------------|--------|
@@ -44,6 +45,7 @@ None.
 | 2026-04-25 | MIG-20260425T164303 — processkit v0.21.0 → v0.21.0 | Defective aibox-sync output. Same-version (v0.21.0→v0.21.0) yet 564 entries marked new-upstream and unchanged=0; affect… |
 | 2026-04-26 | MIG-RUNTIME-20260426T161215 — aibox-runtime-home 0.21.1 → 0.21.1 | Defective same-version (0.21.1→0.21.1) migration emitted by aibox-runtime-home: affected_groups=2 but affected_files=[]… |
 | 2026-04-29 | MIG-RUNTIME-20260428T132454 — aibox-runtime-home 0.21.1 → 0.21.1 | Rejected as a defective same-version runtime-home migration: from_version and to_version are both 0.21.1, affected_file… |
+| 2026-05-02 | MIG-RUNTIME-20260502T060922 — aibox-runtime-home 0.22.0 → 0.22.0 | Rejected after review: generated same-version runtime migration (0.22.0 -> 0.22.0) with no affected_files and only chan… |
 
 ## CLI Migrations
 

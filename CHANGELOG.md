@@ -7,19 +7,190 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+_No unreleased changes yet._
+
+---
+
+## [v0.25.0] — 2026-05-02
+
+v0.25.0 is a **breaking pre-1.0 minor release**. It completes the
+SmoothTiger/SmoothRiver v2 deliverable boundary, adds the new
+provider-neutral `processkit-gateway` MCP entry point, removes legacy
+first-class primitives from the shipped `src/context/` surface, and
+turns the release checks into executable gates. The release remains below
+1.0 because processkit is still evolving its public compatibility
+contract; consumers should read the breaking-change notes before
+upgrading.
+
+### Breaking Changes
+
+- **`src/context/` is now the release deliverable boundary.** The shipped
+  tree is validated as a consumer-facing package, not as a mirror of this
+  repository's live dogfood `context/`. Runtime project memory,
+  generated logs, local decisions, and migration history remain in the
+  consuming project's `context/`; only the versioned processkit
+  primitives, skills, schemas, state machines, and release metadata ship
+  from `src/context/`.
+- **`Metric`, `Model`, `Process`, `Schedule`, and `StateMachine` are no
+  longer shipped as first-class v2 entity primitives.** Their schemas,
+  shipped entity directories, and primitive asset schemas were removed
+  from `src/context/`. Existing projects may still keep those files as
+  migration-source or project-local memory, but new processkit releases
+  do not promise these directories or schemas as part of the v2 package
+  contract.
+- **Model assignments are no longer typed as `Model` entity bindings.**
+  Shipped model-assignment Binding files now reference model-recommender
+  roster/profile identifiers directly and no longer carry
+  `target_kind: Model`. Consumers that validated these bindings against
+  the old first-class `Model` primitive must update that logic.
+- **Task-router process overrides are legacy-v1 compatibility data.**
+  The `process_override` field is retained for older derived projects,
+  but the server now identifies it as `legacy-v1` metadata. New v2
+  routing should rely on skill and tool routing rather than first-class
+  `Process` entities.
+- **The release gate now rejects dogfood-only content in `src/context/`.**
+  `scripts/check-src-context-drift.sh --release-deliverable` fails if
+  the shipped tree contains local project memory, demoted primitive
+  schemas, demoted entity directories, or `target_kind` references to
+  removed primitives. This can break downstream packaging flows that
+  assumed `context/` and `src/context/` were interchangeable.
+
 ### Added
 
-- Added breaking-v2 workflow and projection MCP surfaces:
-  hook-inbox note management, process-instance and SEP handoff helpers,
-  schedule and budget binding helpers, agent-card projection,
+- **Added `processkit-gateway`, a provider-neutral MCP gateway.** The new
+  gateway speaks standard MCP on the harness side and processkit's
+  skill/entity/tool layer on the implementation side. It does not call
+  Anthropic, OpenAI, or other provider APIs; harness-specific behavior
+  remains limited to installer/config adapters.
+- **Added gateway runtime helpers under
+  `context/skills/_lib/processkit/gateway/`.** The library covers tool
+  catalog loading, module loading, registry construction, session and
+  permission helpers, transport helpers, daemon runtime wiring, lazy
+  registration, and stdio proxy support.
+- **Added gateway transports and modes.** The gateway can run as direct
+  stdio (`serve --transport stdio`), as a localhost streamable HTTP
+  daemon (`serve --transport streamable-http --host 127.0.0.1 --port
+  8000 --path /mcp`), or through `stdio-proxy --url ...` for harnesses
+  that only support command-launched MCP servers.
+- **Added lazy catalog support for lower idle memory.** The gateway can
+  generate and consume `mcp/tool-catalog.json` so it can list tool
+  metadata without importing every backing MCP server at startup. Hot
+  modules are loaded on first use and remain available through the
+  gateway runtime.
+- **Added gateway health and discovery tools.** `list_gateway_tools` and
+  `gateway_health` expose the gateway's registered source servers,
+  imported tools, duplicate-name handling, and runtime mode for harness
+  diagnostics.
+- **Added gateway verification coverage.** New tests cover direct
+  gateway registration, daemon runtime behavior, stdio proxy behavior,
+  and aggregate/gateway compatibility. `scripts/measure-mcp-gateway.py`
+  measures process count and tool coverage across granular, aggregate,
+  gateway, and daemon-proxy modes.
+- **Added v2 workflow and projection MCP surfaces.** The release includes
+  hook-inbox note-management helpers, process-instance and SEP handoff
+  helpers, schedule and budget binding helpers, agent-card projection,
   eval-gate authoring, security policy projections, and v2 contract
   doctor checks.
-- Expanded smoke coverage to exercise the new v2 MCP tools directly.
+- **Added release-audit target selection.** The release-audit script now
+  supports `--tree=context`, `--tree=src-context`, and `--tree=both` so
+  local dogfood context and shipped release content can be audited under
+  the right expectations.
+- **Added an explicit aibox handover document.**
+  `docs-site/docs/reference/aibox-release-handover.md` explains what
+  aibox must own after this processkit release: installing the pinned
+  release, supervising the gateway daemon, generating harness MCP config,
+  exposing user-facing daemon/reset knobs, preserving provider
+  neutrality, and implementing the optional harder reset path.
 
 ### Changed
 
-- Updated release-facing docs for the 22-server MCP surface and the
-  new Note and Migration MCP support.
+- **Release packaging now enforces the deliverable boundary.**
+  `scripts/build-release-tarball.sh` runs the release-boundary guard and
+  the `src-context` release audit before building a tarball. A release
+  artifact is no longer just a copy operation; it must pass the shipped
+  package contract first.
+- **pk-doctor drift checks now wrap the release-boundary guard.** The
+  drift category reports whether `src/context` is a valid release
+  deliverable, making the same invariant available during normal project
+  health checks.
+- **MCP manifest generation and drift checks were tightened.** The MCP
+  config manifest remains the installer-facing signal that aibox should
+  re-merge generated harness MCP config even when the processkit version
+  number has not changed.
+- **`aggregate-mcp` remains as a compatibility bridge.** It was updated
+  to coexist with `processkit-gateway` and keep unique tool names stable
+  while qualifying duplicate helper names as `<skill_slug>__<tool_name>`.
+- **Docs now describe the 25-server MCP surface.** The MCP server
+  overview documents per-skill servers, `aggregate-mcp`, the new
+  gateway, direct stdio, streamable HTTP daemon mode, and stdio proxy
+  mode.
+- **Harness guidance now covers Claude Code, Codex, OpenCode, Hermes,
+  Aider, and other MCP-capable clients.** The guidance keeps processkit
+  usable without aibox while documenting the integration points aibox can
+  automate in managed devcontainers.
+- **v2 contract docs now explain demoted primitives and migration
+  expectations.** The docs make clear which old primitives are
+  migration-source only and which v2 primitives remain durable shipped
+  entities.
+- **SKILL documentation was brought up to the release-audit contract.**
+  `agent-card`, `eval-gate-authoring`, `security-projections`,
+  `processkit-gateway`, and release-audit-facing docs now include the
+  required sections and clearer operational guidance.
+- **The docs site now has a root route and modern Docusaurus markdown
+  hook configuration.** This removes the `/processkit/` navbar broken
+  link warning and the deprecated `siteConfig.onBrokenMarkdownLinks`
+  warning during docs builds.
+
+### Removed
+
+- Removed shipped `src/context/models/` and `src/context/processes/`.
+  These remain valid as project-local migration-source memory in a live
+  consuming context, but they are no longer part of the released
+  processkit v2 package.
+- Removed shipped demoted primitive schemas from `src/context/schemas/`:
+  `metric.yaml`, `model.yaml`, `process.yaml`, `schedule.yaml`, and
+  `statemachine.yaml`.
+- Removed shipped demoted primitive asset schemas from
+  metrics-management, process-management, schedule-management, and
+  state-machine-management.
+- Removed `target_kind: Model` from shipped model-assignment Binding
+  files.
+- Removed the docs primitive page for `Metric` as a first-class shipped
+  primitive.
+
+### Migration Notes
+
+- The normal upgrade path is still the existing migration flow. aibox
+  should continue to generate and apply migrations as it does today.
+- The proposed harder reset path is optional and belongs in aibox as an
+  explicit user-selected mode of `aibox apply` or `aibox reset`. That
+  flow should export project memory, bootstrap a fresh `context/` tree
+  from the new processkit release, re-import preserved entities with
+  updated references/schema fields, and write an auditable migration
+  record.
+- aibox should not re-create removed `Model`, `Process`, `Metric`,
+  `Schedule`, or `StateMachine` release schemas during sync. Existing
+  local project files of those kinds should be treated as preserved
+  migration-source memory or project-local content.
+- Harnesses can still use per-skill MCP servers directly. aibox is not a
+  runtime dependency of processkit; it is the recommended installer,
+  supervisor, and harness-config manager for managed devcontainers.
+
+### Verification
+
+- Release-audit tests passed for both dogfood and shipped trees:
+  `26 passed`.
+- Gateway and aggregate MCP tests passed: `30 passed`.
+- `scripts/check-src-context-drift.sh --release-deliverable` passed.
+- `release_audit.py --tree=src-context` passed with
+  `0 ERROR / 0 WARN / 485 INFO`.
+- `pk-doctor --category=drift --no-log` passed with
+  `0 ERROR / 0 WARN / 1 INFO`.
+- `uv run scripts/smoke-test-servers.py` passed across the MCP server
+  smoke suite.
+- `scripts/measure-mcp-gateway.py --format text --include-metadata`
+  reported the expected one-process gateway and daemon-proxy modes with
+  `130` tools across `23` source servers.
 
 ---
 

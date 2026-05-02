@@ -9,7 +9,7 @@ The agent just moved `BACK-calm-fox` ("Add aibox lint command") from
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: LogEntry
 metadata:
   id: LOG-bright-owl

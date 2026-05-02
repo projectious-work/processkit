@@ -4,7 +4,7 @@ description: |
   Systematic debugging — reproduce, read the error, isolate, hypothesize, fix, verify, document. Use when tracking down a bug, unexpected behavior, or test failure — including phrases like "this doesn't work", "why is this failing", or "help me debug".
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-debugging
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

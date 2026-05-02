@@ -1,10 +1,10 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Schema
 metadata:
   id: SCHEMA-note
   target_kind: Note
-  version: "2.0.0-alpha.1"
+  version: "1.0.0"
   created: 2026-04-08T00:00:00Z
 spec:
   description: >
@@ -42,14 +42,10 @@ spec:
         type: string
         minLength: 1
         maxLength: 120
-        description: >
-          One-line summary. Should be a self-contained claim or
-          question, not a topic label.
+        description: "One-line summary. Should be a self-contained claim or question, not a topic label."
       body:
         type: string
-        description: >
-          The note content. Fleeting notes may be a single sentence;
-          permanent notes should be self-contained.
+        description: "The note content. Fleeting notes may be a single sentence; permanent notes should be self-contained."
       type:
         type: string
         enum: [fleeting, insight, reference, question]
@@ -84,42 +80,11 @@ spec:
               id:
                 type: string
             required: [kind, id]
-        description: >
-          When a note is promoted, record the target primitive kind and
-          ID. Null when not yet promoted.
+        description: "When a note is promoted, record the target primitive kind and ID. Null when not yet promoted."
       review_due:
         type: string
         format: date
         description: "Date by which this note should be reviewed. Set automatically on capture."
-      inbox:
-        type: object
-        additionalProperties: true
-        description: >
-          Optional hook-inbox envelope for externally captured or
-          interrupting work. Used by note-management MCP tools before
-          a Note is promoted or linked to a WorkItem.
-        properties:
-          status:
-            type: string
-            enum: [captured, claimed, completed, failed]
-          injection_mode:
-            type: string
-            enum: [interrupt, ambient, next-cycle]
-          channel:
-            type: string
-          claimed_by:
-            type: string
-          claimed_at:
-            type: string
-            format: date-time
-          completed_at:
-            type: string
-            format: date-time
-          failed_at:
-            type: string
-            format: date-time
-          error:
-            type: string
       links:
         type: array
         description: >

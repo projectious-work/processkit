@@ -1,14 +1,12 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Context
 metadata:
   id: OWNER-team-and-relationships
   privacy: user-private
   created: TODO
 spec:
-  description: Per-person notes about collaborators — communication style, sensitivities,
-    mutual dependencies. NEVER checked into git. Lives under context/owner/private/
-    which is gitignored.
+  description: "Per-person notes about collaborators — communication style, sensitivities, mutual dependencies. NEVER checked into git. Lives under context/owner/private/ which is gitignored."
 ---
 
 # Team and Relationships

@@ -5,7 +5,7 @@ description: >
   assignment, handoff protocols, and per-session context budgeting.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-agent-management
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

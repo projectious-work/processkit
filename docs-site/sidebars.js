@@ -33,7 +33,6 @@ const sidebars = {
             'primitives/discussion',
             'primitives/gate',
             'primitives/migration',
-            'primitives/metric',
             'primitives/schedule',
             'primitives/constraint',
             'primitives/category',
@@ -92,6 +91,7 @@ const sidebars = {
       type: 'category', label: 'MCP Servers',
       items: [
         'mcp-servers/overview',
+        'mcp-servers/harness-compatibility',
       ],
     },
     {
@@ -101,6 +101,8 @@ const sidebars = {
         'reference/id-formats',
         'reference/migration',
         'reference/privacy',
+        'reference/v2-contracts',
+        'reference/aibox-release-handover',
       ],
     },
   ],

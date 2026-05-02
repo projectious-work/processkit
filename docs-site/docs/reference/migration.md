@@ -84,6 +84,33 @@ aibox migrate      # walks through the pending migration with you
 aibox lint         # structural validation after migration is applied
 ```
 
+## v1 to v2 context migration
+
+The v2 deliverable direction is intentionally breaking: processkit does
+not provide compatibility shims that let v1 and v2 contracts coexist
+inside the same shipped `src/` tree. A live v1 project context is valid
+only as a migration source until the generated migration is worked
+through.
+
+The explicit path is:
+
+1. Keep the live project on its pinned v1 processkit version until
+   `aibox sync` creates the v2 `Migration`.
+2. Review the generated briefing, including `source_api_version`,
+   `target_api_version`, `source_processkit_version`, and
+   `target_processkit_version`.
+3. Run the v2 migration through `migration-management` with dry-run
+   diagnostics first.
+4. Apply the approved plan, then run `aibox lint` and the processkit
+   smoke checks.
+
+This path is the only supported bridge for v1 contexts. v2 schemas and
+index semantics are authoritative once the migration is applied.
+
+Provenance: `DEC-20260430_1416-SmoothTiger-adopt-breaking-v2-implementation-plan-for`
+and
+https://github.com/projectious-work/internal/blob/main/context/artifacts/ART-20260430_1242-SmoothRiver-processkit-project-work-plan.md.
+
 ## Configurable source URL
 
 The `[processkit] source` field accepts any git URL. The default

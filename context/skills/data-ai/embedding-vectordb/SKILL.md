@@ -4,7 +4,7 @@ description: |
   Vector embeddings and vector DB patterns — model choice, similarity metrics, index tuning. Use when choosing an embedding model, picking or migrating between vector databases, optimizing semantic search quality or latency, or building a hybrid (dense + sparse) retrieval pipeline.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-embedding-vectordb
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

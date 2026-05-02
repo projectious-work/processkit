@@ -1,9 +1,9 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Binding
 metadata:
   id: BIND-security-architect-junior-hf79510
-  created: 2026-04-22 00:00:00+00:00
+  created: 2026-04-22T00:00:00Z
 spec:
   type: model-assignment
   subject: ROLE-security-architect
@@ -15,7 +15,6 @@ spec:
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Junior security architect — threat-model drafting; G:5 required
-  description: 'default-pack: Junior security architect — threat-model drafting; G:5
-    required'
+    rationale: "Junior security architect — threat-model drafting; G:5 required"
+  description: "default-pack: Junior security architect — threat-model drafting; G:5 required"
 ---

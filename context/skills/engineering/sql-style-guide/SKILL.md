@@ -4,7 +4,7 @@ description: |
   SQL style — snake_case, singular tables, named constraints, one-clause-per-line formatting. Use when writing or reviewing SQL, designing schemas, or naming tables, columns, constraints, and migrations.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-sql-style-guide
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

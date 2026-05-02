@@ -4,7 +4,7 @@ description: |
   Schema migration workflows — zero-downtime expand/contract, batched backfills, and rollback strategies. Use when planning a schema migration, reviewing migration scripts, troubleshooting a slow or failed migration, or rolling back a deployed change.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-database-migration
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

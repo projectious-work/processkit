@@ -4,7 +4,7 @@ description: |
   System design methodology — requirements, capacity estimation, component design, trade-offs. Use when designing a new distributed system, evaluating an existing architecture for scalability or cost, performing back-of-envelope capacity estimation, or preparing for a system design review.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-system-design
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

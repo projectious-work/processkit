@@ -282,7 +282,7 @@ def test_migrate_preserves_existing_created_timestamp(tmp_migrate):
     # Seed an existing file with a custom timestamp.
     (out / "MODEL-anthropic-claude-opus.md").write_text(
         "---\n"
-        "apiVersion: processkit.projectious.work/v2\n"
+        "apiVersion: processkit.projectious.work/v1\n"
         "kind: Model\n"
         "metadata:\n"
         "  id: MODEL-anthropic-claude-opus\n"

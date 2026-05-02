@@ -4,7 +4,7 @@ description: |
   Generates a structured onboarding guide for a new agent or human joining a project — covering codebase orientation, process context, first tasks, and key contacts. Use when asked to onboard someone new, write a getting-started guide, or create a "first week" plan for a project.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-onboarding-guide
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

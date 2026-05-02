@@ -103,7 +103,11 @@ def _candidate_rows(
 
     candidates: list[dict] = []
     for row in rows:
-        if row.get("storage_location"):
+        location = str(row.get("storage_location") or "")
+        if location and location != "live":
+            continue
+        row_state = row.get("state")
+        if row_state in ACTIVE_STATES:
             continue
         created = _parse_date(row.get("created"))
         updated = _parse_date(row.get("updated")) or created

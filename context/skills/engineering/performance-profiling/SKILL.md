@@ -4,7 +4,7 @@ description: |
   Performance analysis and profiling for CPU, memory, and I/O — flame graphs, benchmarks, regression detection. Use when identifying performance bottlenecks, profiling CPU/memory/I/O, interpreting flame graphs, setting up benchmarking or regression detection, or optimizing a slow function or endpoint.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-performance-profiling
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

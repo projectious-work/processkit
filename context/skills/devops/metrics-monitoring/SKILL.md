@@ -4,7 +4,7 @@ description: |
   Application metrics with RED/USE methods, Prometheus types, dashboards, and SLO alerting. Use when instrumenting an application with metrics, designing dashboards, setting up alerting, choosing between metric types, defining SLIs/SLOs, or applying RED, USE, or the four golden signals.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-metrics-monitoring
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

@@ -4,7 +4,7 @@ description: |
   Caching patterns — cache-aside, write-through, TTL strategies, invalidation, HTTP caching. Use when adding caching to reduce latency or DB load, choosing between caching patterns, configuring HTTP cache headers, debugging stale data or stampedes, or designing an invalidation strategy.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-caching-strategies
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

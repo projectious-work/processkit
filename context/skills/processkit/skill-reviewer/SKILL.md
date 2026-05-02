@@ -6,7 +6,7 @@ description: >
   producing a categorized findings report and draft Gotchas.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-skill-reviewer
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

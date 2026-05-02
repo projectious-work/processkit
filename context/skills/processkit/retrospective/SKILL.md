@@ -8,7 +8,7 @@ description: |
   "retrospective", or "post-mortem".
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-retrospective
     version: "1.0.0"
     created: 2026-04-21T00:00:00Z

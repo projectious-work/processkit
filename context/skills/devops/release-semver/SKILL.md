@@ -4,7 +4,7 @@ description: |
   Semantic versioning releases — version bumps, changelogs, tags, publishing. Use when preparing a new release: deciding the version bump, drafting the changelog, tagging the commit, and publishing to the project's distribution channel.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-release-semver
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

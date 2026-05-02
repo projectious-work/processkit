@@ -1,6 +1,6 @@
-"""drift check — wraps scripts/check-src-context-drift.sh.
+"""release-boundary check — wraps scripts/check-src-context-drift.sh.
 
-Exit 0  → one INFO "trees in sync".
+Exit 0  → one INFO "release boundary valid".
 Exit 1  → one WARN per non-empty line of the script's stderr report.
 Exit 2+ → one ERROR (script usage error or missing).
 """
@@ -25,7 +25,7 @@ def run(ctx) -> list[CheckResult]:
         )]
 
     proc = subprocess.run(
-        ["bash", str(script)],
+        ["bash", str(script), "--release-deliverable"],
         cwd=str(repo_root),
         capture_output=True,
         text=True,
@@ -36,7 +36,7 @@ def run(ctx) -> list[CheckResult]:
             severity="INFO",
             category="drift",
             id="drift.in-sync",
-            message="context/ and src/context/ are in sync",
+            message="src/context release deliverable boundary is valid",
         )]
     if rc == 1:
         results: list[CheckResult] = []
@@ -48,8 +48,17 @@ def run(ctx) -> list[CheckResult]:
         # hint text and produces spurious WARN findings.
         for line in proc.stderr.splitlines():
             line = line.strip()
-            if line.startswith("Only in ") or (
-                line.startswith("Files ") and line.endswith(" differ")
+            if line.startswith("- "):
+                line = line[2:]
+            if line.startswith("  - "):
+                line = line[4:]
+            if (
+                line.startswith("Only in ")
+                or (line.startswith("Files ") and line.endswith(" differ"))
+                or line.startswith("missing ")
+                or line.startswith("dogfood-only ")
+                or line.startswith("demoted ")
+                or line.startswith("shipped ")
             ):
                 results.append(CheckResult(
                     severity="WARN",

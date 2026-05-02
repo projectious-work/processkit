@@ -4,7 +4,7 @@ description: |
   Creates data-driven infographics and charts as accessible SVG. Use when visualizing data, choosing a chart type, generating an SVG chart or infographic, or reviewing a visualization for clarity and accuracy.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-infographics
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

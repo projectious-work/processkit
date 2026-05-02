@@ -78,36 +78,6 @@ def _load_scope(root: Path, id: str) -> entity.Entity | None:
     return None
 
 
-def _write_index_and_archive_if_terminal(
-    ent: entity.Entity,
-    *,
-    root: Path,
-    to_state: str,
-) -> tuple[Path, bool]:
-    old_path = ent.path
-    target = paths.entity_path(
-        "Scope",
-        ent.id,
-        str(ent.metadata.get("created") or ""),
-        root,
-        state=to_state,
-    )
-    archived = old_path is not None and old_path.resolve() != target.resolve()
-    if archived:
-        ent.write(target)
-        if old_path and old_path.exists():
-            old_path.unlink()
-    else:
-        ent.write()
-
-    db = index.open_db()
-    try:
-        index.upsert_entity(db, ent)
-    finally:
-        db.close()
-    return ent.path or target, archived
-
-
 @server.tool(annotations=ToolAnnotations(
     readOnlyHint=False,
     destructiveHint=False,
@@ -252,27 +222,13 @@ def transition_scope(id: str, to_state: str) -> dict:
         return {"error": str(e)}
 
     ent.spec["state"] = to_state
-    try:
-        sm = state_machine.load("scope")
-        should_archive = sm.is_terminal(to_state)
-    except state_machine.StateMachineError:
-        should_archive = False
+    ent.write()
 
-    if should_archive:
-        final_path, archived = _write_index_and_archive_if_terminal(
-            ent,
-            root=root,
-            to_state=to_state,
-        )
-    else:
-        ent.write()
-        db = index.open_db()
-        try:
-            index.upsert_entity(db, ent)
-        finally:
-            db.close()
-        final_path = ent.path
-        archived = False
+    db = index.open_db()
+    try:
+        index.upsert_entity(db, ent)
+    finally:
+        db.close()
 
     log.log_side_effect(
         "Scope", id, "scope.transitioned",
@@ -280,22 +236,7 @@ def transition_scope(id: str, to_state: str) -> dict:
         root=root,
         actor=id,
     )
-    if archived:
-        log.log_side_effect(
-            "Scope", id, "scope.archive-moved",
-            f"Archived terminal Scope {id!r} to {final_path}",
-            root=root,
-            actor=id,
-            details={"path": str(final_path)},
-        )
-    return {
-        "ok": True,
-        "id": id,
-        "from_state": from_state,
-        "to_state": to_state,
-        "path": str(final_path) if final_path else None,
-        "archived": archived,
-    }
+    return {"ok": True, "id": id, "from_state": from_state, "to_state": to_state}
 
 
 @server.tool(annotations=ToolAnnotations(

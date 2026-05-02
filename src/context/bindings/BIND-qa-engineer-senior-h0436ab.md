@@ -9,7 +9,6 @@ spec:
   subject: ROLE-qa-engineer
   subject_kind: Role
   target: MODEL-anthropic-claude-sonnet
-  target_kind: Model
   conditions:
     seniority: senior
     rank: 1

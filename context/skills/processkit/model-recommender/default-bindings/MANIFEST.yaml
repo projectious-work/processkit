@@ -1,13 +1,16 @@
-apiVersion: processkit.projectious.work/v2
+---
+apiVersion: processkit.projectious.work/v1
 kind: DefaultBindingPack
 metadata:
   id: PACK-default-model-assignments
   version: 1.0.0
   created: 2026-04-22 00:00:00+00:00
 spec:
-  description: |
-    Shipped defaults mapping (role, seniority) → Model at rank 1. Each entry is a seed to be instantiated via create_binding during installer/import; seeds are not themselves Binding entities yet.
-    Projects override by creating their own bindings (same (subject, seniority) key at a lower rank; or a SCOPE-level binding that vetoes or biases the roster). See DEC-20260422_0234-LoyalComet for the 8-layer precedence.
+  description: 'Shipped defaults mapping (role, seniority) → Model at rank 1. Each entry is a seed to be instantiated via
+    create_binding during installer/import; seeds are not themselves Binding entities yet.
+
+    Projects override by creating their own bindings (same (subject, seniority) key at a lower rank; or a SCOPE-level binding
+    that vetoes or biases the roster). See DEC-20260422_0234-LoyalComet for the 8-layer precedence.'
   bindings:
   - type: model-assignment
     subject: ROLE-software-engineer
@@ -44,8 +47,7 @@ spec:
       rank: 1
       effort_floor: low
       effort_ceiling: medium
-      rationale: 'Seed: Specialist software-engineer — inherits junior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist software-engineer — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-software-engineer
     target: MODEL-anthropic-claude-sonnet
@@ -54,8 +56,7 @@ spec:
       rank: 1
       effort_floor: medium
       effort_ceiling: high
-      rationale: 'Seed: Expert software-engineer — inherits senior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert software-engineer — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-solutions-architect
     target: MODEL-anthropic-claude-sonnet
@@ -91,8 +92,7 @@ spec:
       rank: 1
       effort_floor: low
       effort_ceiling: medium
-      rationale: 'Seed: Specialist solutions-architect — inherits junior defaults
-        pending role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist solutions-architect — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-solutions-architect
     target: MODEL-anthropic-claude-opus
@@ -101,8 +101,7 @@ spec:
       rank: 1
       effort_floor: medium
       effort_ceiling: high
-      rationale: 'Seed: Expert solutions-architect — inherits senior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert solutions-architect — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-product-manager
     target: MODEL-anthropic-claude-haiku
@@ -138,8 +137,7 @@ spec:
       rank: 1
       effort_floor: low
       effort_ceiling: medium
-      rationale: 'Seed: Specialist product-manager — inherits junior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist product-manager — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-product-manager
     target: MODEL-anthropic-claude-sonnet
@@ -148,8 +146,7 @@ spec:
       rank: 1
       effort_floor: medium
       effort_ceiling: high
-      rationale: 'Seed: Expert product-manager — inherits senior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert product-manager — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-research-scientist
     target: MODEL-anthropic-claude-sonnet
@@ -185,8 +182,7 @@ spec:
       rank: 1
       effort_floor: medium
       effort_ceiling: high
-      rationale: 'Seed: Specialist research-scientist — inherits junior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist research-scientist — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-research-scientist
     target: MODEL-anthropic-claude-opus
@@ -195,8 +191,7 @@ spec:
       rank: 1
       effort_floor: high
       effort_ceiling: extra-high
-      rationale: 'Seed: Expert research-scientist — inherits senior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert research-scientist — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-ai-research-scientist
     target: MODEL-anthropic-claude-sonnet
@@ -232,8 +227,8 @@ spec:
       rank: 1
       effort_floor: medium
       effort_ceiling: high
-      rationale: 'Seed: Specialist ai-research-scientist — inherits junior defaults
-        pending role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist ai-research-scientist — inherits junior defaults pending role-specific tuning (KeenFern
+        v0.21.0)'
   - type: model-assignment
     subject: ROLE-ai-research-scientist
     target: MODEL-anthropic-claude-opus
@@ -242,8 +237,7 @@ spec:
       rank: 1
       effort_floor: high
       effort_ceiling: extra-high
-      rationale: 'Seed: Expert ai-research-scientist — inherits senior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert ai-research-scientist — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-data-scientist
     target: MODEL-anthropic-claude-haiku
@@ -279,8 +273,7 @@ spec:
       rank: 1
       effort_floor: low
       effort_ceiling: medium
-      rationale: 'Seed: Specialist data-scientist — inherits junior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist data-scientist — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-data-scientist
     target: MODEL-anthropic-claude-sonnet
@@ -289,8 +282,7 @@ spec:
       rank: 1
       effort_floor: medium
       effort_ceiling: high
-      rationale: 'Seed: Expert data-scientist — inherits senior defaults pending role-specific
-        tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert data-scientist — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-qa-engineer
     target: MODEL-anthropic-claude-haiku
@@ -326,8 +318,7 @@ spec:
       rank: 1
       effort_floor: low
       effort_ceiling: medium
-      rationale: 'Seed: Specialist qa-engineer — inherits junior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist qa-engineer — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-qa-engineer
     target: MODEL-anthropic-claude-sonnet
@@ -336,8 +327,7 @@ spec:
       rank: 1
       effort_floor: medium
       effort_ceiling: high
-      rationale: 'Seed: Expert qa-engineer — inherits senior defaults pending role-specific
-        tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert qa-engineer — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-security-architect
     target: MODEL-anthropic-claude-sonnet
@@ -373,8 +363,7 @@ spec:
       rank: 1
       effort_floor: medium
       effort_ceiling: high
-      rationale: 'Seed: Specialist security-architect — inherits junior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist security-architect — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-security-architect
     target: MODEL-anthropic-claude-opus
@@ -383,8 +372,7 @@ spec:
       rank: 1
       effort_floor: high
       effort_ceiling: extra-high
-      rationale: 'Seed: Expert security-architect — inherits senior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert security-architect — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-technical-writer
     target: MODEL-anthropic-claude-haiku
@@ -420,8 +408,7 @@ spec:
       rank: 1
       effort_floor: low
       effort_ceiling: medium
-      rationale: 'Seed: Specialist technical-writer — inherits junior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist technical-writer — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-technical-writer
     target: MODEL-anthropic-claude-sonnet
@@ -430,8 +417,7 @@ spec:
       rank: 1
       effort_floor: low
       effort_ceiling: medium
-      rationale: 'Seed: Expert technical-writer — inherits senior defaults pending
-        role-specific tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert technical-writer — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-assistant
     target: MODEL-anthropic-claude-haiku
@@ -467,8 +453,7 @@ spec:
       rank: 1
       effort_floor: none
       effort_ceiling: low
-      rationale: 'Seed: Specialist assistant — inherits junior defaults pending role-specific
-        tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Specialist assistant — inherits junior defaults pending role-specific tuning (KeenFern v0.21.0)'
   - type: model-assignment
     subject: ROLE-assistant
     target: MODEL-anthropic-claude-haiku
@@ -477,5 +462,4 @@ spec:
       rank: 1
       effort_floor: low
       effort_ceiling: medium
-      rationale: 'Seed: Expert assistant — inherits senior defaults pending role-specific
-        tuning (KeenFern v0.21.0)'
+      rationale: 'Seed: Expert assistant — inherits senior defaults pending role-specific tuning (KeenFern v0.21.0)'

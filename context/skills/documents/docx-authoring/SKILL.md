@@ -4,7 +4,7 @@ description: |
   Creating Word documents programmatically with python-docx — headings, styles, tables, lists, images, and sections. Use when generating DOCX reports, proposals, contracts, letters, or any structured Word document from data or templates.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-docx-authoring
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

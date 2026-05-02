@@ -5,7 +5,7 @@ description: >
   open threads, next action, and git context for session continuity.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-20260408_0000-SessionHandover
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
@@ -110,7 +110,7 @@ Example: `context/logs/2026/04/LOG-20260410_0020-SnowyEmber-session-handover.md`
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: LogEntry
 metadata:
   id: LOG-{{YYYYMMDD_HHMM}}-{{WordPair}}-session-handover

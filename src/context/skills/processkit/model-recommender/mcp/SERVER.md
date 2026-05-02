@@ -4,6 +4,11 @@ Structured query engine for the model roster. Provides capability scoring,
 sub-dimension drill-down, comparison, user access configuration, and live
 provider status checks.
 
+This server documents its own tool contract only. In gateway deployments,
+the gateway must expose only the processkit servers present in the
+installed/merged MCP configuration; this file is not an aggregate tool
+manifest and does not imply every processkit tool is available.
+
 ## Tools
 
 | Tool | Purpose |
@@ -21,8 +26,13 @@ provider status checks.
 
 | File | Purpose |
 |---|---|
-| `model_scores.json` | Source of truth: all model profiles with sub-dimension scores, pricing, metadata |
+| `model_scores.json` | Source of truth: all roster records with sub-dimension scores, pricing, metadata |
 | `user_config.json` | User's access list, blocked models, governance floor, budget tier, preferred providers |
+
+Older installs may still carry `context/models/MODEL-*.md` entity cards.
+The server can read those as a compatibility fallback when
+`model_scores.json` is absent, but v2 does not treat Model as a
+first-class processkit primitive.
 
 ## Running
 

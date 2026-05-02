@@ -4,7 +4,7 @@ description: |
   Record decisions with rationale, alternatives, and consequences — the ADR pattern as a primitive. Use when a consequential choice is made — architecture, tooling, process, scope, trade-off. Capture WHY, not just WHAT.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-decision-record
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -68,7 +68,7 @@ with no downside, decisions already documented somewhere authoritative.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: DecisionRecord
 metadata:
   id: DEC-steady-river

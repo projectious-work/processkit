@@ -9,7 +9,6 @@ spec:
   subject: ROLE-assistant
   subject_kind: Role
   target: MODEL-anthropic-claude-sonnet
-  target_kind: Model
   conditions:
     seniority: principal
     rank: 1

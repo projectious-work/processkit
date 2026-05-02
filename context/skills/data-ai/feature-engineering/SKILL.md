@@ -4,7 +4,7 @@ description: |
   Feature engineering for ML — encoding, imputation, scaling, selection, time-series features. Use when preparing data for an ML model, encoding categoricals, handling missing data, building time-series features, or selecting features from a wide table.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-feature-engineering
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

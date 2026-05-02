@@ -4,7 +4,7 @@ description: |
   Retrieval-Augmented Generation pipelines — ingestion, chunking, embedding, vector stores, retrieval, evaluation. Use when building a RAG pipeline, choosing chunking strategies or embedding models, debugging retrieval quality or hallucinations, evaluating an existing RAG system, or scaling/migrating vector stores.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-rag-engineering
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

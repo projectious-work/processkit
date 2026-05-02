@@ -1,14 +1,14 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Role
 metadata:
   id: ROLE-TODO
   created: TODO
 spec:
-  name: TODO
-  description: TODO
+  name: TODO             # kebab-case, matches id suffix
+  description: TODO      # one sentence
   responsibilities:
-  - TODO
+    - TODO
   skills_required: []
   default_scope: project
 ---

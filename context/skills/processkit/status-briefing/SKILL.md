@@ -4,7 +4,7 @@ description: |
   Generates a concise status briefing from project context — synthesizing current state, open decisions, key risks, and today's priority actions into a focused session-start orientation. Use at the start of a session when asked for a briefing, "what's the state of things", "catch me up", or "what should I focus on today."
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-status-briefing
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

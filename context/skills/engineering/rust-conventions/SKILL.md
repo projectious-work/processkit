@@ -4,7 +4,7 @@ description: |
   Rust conventions — error handling with anyhow/thiserror, module layout, clippy. Use when writing or reviewing Rust code, organizing modules, or deciding on error handling, naming, and testing conventions.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-rust-conventions
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

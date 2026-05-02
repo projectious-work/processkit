@@ -26,6 +26,7 @@ Exit 1 = at least one test failed.
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import subprocess
 import sys
@@ -195,6 +196,8 @@ with tempfile.TemporaryDirectory() as tmp:
     check("sharding section present", "## sharding" in result.stdout)
     check("migrations section present", "## migrations" in result.stdout)
     check("drift section present", "## drift" in result.stdout)
+    check("MCP health section present", "## mcp_config_drift" in result.stdout)
+    check("MCP gateway section present", "## mcp_gateway" in result.stdout)
     check("totals line present", "## totals" in result.stdout)
     check("stub log payload written", stub.is_file())
     if stub.is_file():
@@ -406,6 +409,169 @@ with tempfile.TemporaryDirectory() as tmp:
         "Codex WARN names missing processkit tool",
         codex_warns and "mcp__processkit-b__*" in codex_warns[0].message,
         codex_warns[0].message if codex_warns else "",
+    )
+
+# ---------------------------------------------------------------------------
+# Test 6c: MCP gateway mode is an intentional derived-project alternative
+# ---------------------------------------------------------------------------
+print("\n[6c] mcp gateway — manifest + harness gateway mode")
+
+from checks.mcp_config_drift import (  # noqa: E402
+    _aggregate as _mcp_manifest_aggregate,
+    _sha256_of_file as _mcp_config_sha256,
+    run as _mcp_config_drift_run,
+)
+from checks.mcp_gateway import run as _mcp_gateway_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    granular_cfg = (
+        root / "context" / "skills" / "processkit" /
+        "artifact-management" / "mcp" / "mcp-config.json"
+    )
+    gateway_cfg = (
+        root / "context" / "skills" / "processkit" /
+        "processkit-gateway" / "mcp" / "mcp-config.json"
+    )
+    granular_cfg.parent.mkdir(parents=True)
+    gateway_cfg.parent.mkdir(parents=True)
+    granular_cfg.write_text(
+        json.dumps({
+            "mcpServers": {
+                "processkit-artifact-management": {
+                    "command": "uv",
+                    "args": [
+                        "run",
+                        "context/skills/processkit/artifact-management/"
+                        "mcp/server.py",
+                    ],
+                },
+            },
+        }),
+        encoding="utf-8",
+    )
+    gateway_cfg.write_text(
+        json.dumps({
+            "mcpServers": {
+                "processkit-gateway": {
+                    "command": "uv",
+                    "args": [
+                        "run",
+                        "context/skills/processkit/processkit-gateway/"
+                        "mcp/server.py",
+                    ],
+                    "env": {"PROCESSKIT_MCP_MODE": "gateway"},
+                },
+            },
+        }),
+        encoding="utf-8",
+    )
+    per_skill = [{
+        "path": (
+            "context/skills/processkit/artifact-management/"
+            "mcp/mcp-config.json"
+        ),
+        "sha256": _mcp_config_sha256(granular_cfg),
+    }]
+    per_gateway = [{
+        "path": (
+            "context/skills/processkit/processkit-gateway/"
+            "mcp/mcp-config.json"
+        ),
+        "sha256": _mcp_config_sha256(gateway_cfg),
+    }]
+    (root / "context").mkdir(exist_ok=True)
+    (root / "context" / ".processkit-mcp-manifest.json").write_text(
+        json.dumps({
+            "version": 1,
+            "generated_at": "2026-05-02T00:00:00Z",
+            "processkit_version": "v0.test",
+            "per_skill": per_skill,
+            "per_gateway": per_gateway,
+            "per_server_header": [],
+            "aggregate_sha256": _mcp_manifest_aggregate(per_skill),
+        }),
+        encoding="utf-8",
+    )
+    (root / "aibox.lock").write_text("[processkit]\n", encoding="utf-8")
+    (root / ".mcp.json").write_text(
+        json.dumps({"mcpServers": {"processkit-gateway": {}}}),
+        encoding="utf-8",
+    )
+
+    drift_results = _mcp_config_drift_run({"repo_root": root})
+    check(
+        "gateway-only .mcp.json does not trip harness-stale",
+        any(r.id == "mcp_config_drift.gateway-mode" for r in drift_results),
+        [r.to_dict() for r in drift_results],
+    )
+
+    (root / ".mcp.json").write_text(
+        json.dumps({
+            "mcpServers": {
+                "processkit-gateway": {},
+                "processkit-artifact-management": {},
+            },
+        }),
+        encoding="utf-8",
+    )
+    gateway_results = _mcp_gateway_run({"repo_root": root})
+    check(
+        "mixed gateway + granular registration emits WARN",
+        any(r.id == "mcp_gateway.mixed-registration"
+            and r.severity == "WARN" for r in gateway_results),
+        [r.to_dict() for r in gateway_results],
+    )
+
+# ---------------------------------------------------------------------------
+# Test 6d: manifest generator keeps gateway outside granular aggregate
+# ---------------------------------------------------------------------------
+print("\n[6d] manifest generator — gateway metadata is separate")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    granular_cfg = (
+        root / "context" / "skills" / "processkit" /
+        "artifact-management" / "mcp" / "mcp-config.json"
+    )
+    gateway_cfg = (
+        root / "context" / "skills" / "processkit" /
+        "processkit-gateway" / "mcp" / "mcp-config.json"
+    )
+    granular_cfg.parent.mkdir(parents=True)
+    gateway_cfg.parent.mkdir(parents=True)
+    granular_cfg.write_text(
+        '{"mcpServers":{"processkit-artifact-management":{}}}\n',
+        encoding="utf-8",
+    )
+    gateway_cfg.write_text(
+        '{"mcpServers":{"processkit-gateway":{}}}\n',
+        encoding="utf-8",
+    )
+
+    generator_path = _REPO_ROOT / "scripts" / "generate-mcp-manifest.py"
+    spec = importlib.util.spec_from_file_location(
+        "generate_mcp_manifest_test", generator_path
+    )
+    assert spec and spec.loader
+    generator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(generator)
+
+    entries = generator._collect_entries(root)
+    gateway_entries = generator._collect_gateway_entries(root)
+    check(
+        "gateway config excluded from per_skill entries",
+        [e["path"] for e in entries] == [
+            "context/skills/processkit/artifact-management/mcp/mcp-config.json"
+        ],
+        entries,
+    )
+    check(
+        "gateway config collected separately",
+        [e["path"] for e in gateway_entries] == [
+            "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
+        ],
+        gateway_entries,
     )
 
 # ---------------------------------------------------------------------------
@@ -937,6 +1103,30 @@ with tempfile.TemporaryDirectory() as tmp:
         "16c: unknown Migration kind emits plan check ID",
         any(r.id == "schema.unknown-migration-kind-without-schema-entry"
             for r in vocab_results),
+    )
+
+    (root / "src" / "context" / "schemas").mkdir(parents=True)
+    (root / "src" / "context" / "schemas" / "model.yaml").write_text(
+        "kind: Schema\nmetadata:\n  id: SCHEMA-model\nspec: {}\n",
+        encoding="utf-8",
+    )
+    (root / "src" / "context" / "schemas" / "INDEX.md").write_text(
+        "- [model.yaml](model.yaml)\n"
+        "- [statemachine.yaml](statemachine.yaml)\n",
+        encoding="utf-8",
+    )
+    demotion_results = _schema_vocab_run({"repo_root": root})
+    check(
+        "16c2: demoted first-class Model schema is blocked from src/",
+        any(r.id == "schema.demoted-kind-still-shipped"
+            and "model.yaml" in r.message
+            for r in demotion_results),
+    )
+    check(
+        "16c3: demoted first-class schema index entry is blocked from src/",
+        any(r.id == "schema.demoted-kind-still-indexed"
+            and "StateMachine" in r.message
+            for r in demotion_results),
     )
 
     settings = (

@@ -7,7 +7,7 @@
 # ///
 """release_audit.py — detect-only pre-release validation for a processkit repo.
 
-Walks the live context/ tree and validates:
+Walks the live context/ tree or shipped src/context/ tree and validates:
 
 1. entity_files   — frontmatter, apiVersion, kind, metadata.id vs filename
 2. skill_structure — SKILL.md frontmatter fields + four required sections
@@ -18,7 +18,7 @@ Outputs a single human-readable Markdown report on stdout.
 Exit 0 if no ERRORs; exit 1 otherwise.
 
 Usage:
-    release_audit.py [--repo-root=PATH]
+    release_audit.py [--repo-root=PATH] [--tree=context|src-context|both]
 
 Provenance: WorkItem BACK-20260409_1830-TidyGrove.
 """
@@ -59,7 +59,7 @@ ENTITY_DIRS: dict[str, str] = {
 
 REGISTERED_KINDS: frozenset[str] = frozenset(ENTITY_DIRS.values())
 
-EXPECTED_API_VERSION = "processkit.projectious.work/v1"
+EXPECTED_API_VERSION = "processkit.projectious.work/v2"
 
 # ---------------------------------------------------------------------------
 # Required SKILL.md frontmatter fields (dot-path notation).
@@ -68,6 +68,7 @@ EXPECTED_API_VERSION = "processkit.projectious.work/v1"
 SKILL_REQUIRED_FIELDS: list[str] = [
     "name",
     "description",
+    "metadata.processkit.apiVersion",
     "metadata.processkit.id",
     "metadata.processkit.version",
     "metadata.processkit.category",
@@ -124,6 +125,33 @@ class Finding:
     extra: dict = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class AuditTarget:
+    label: str
+    repo_root: Path
+    context_root: Path
+    require_entity_dirs: bool = True
+
+
+def _coerce_target(target_or_root: AuditTarget | Path) -> AuditTarget:
+    if isinstance(target_or_root, AuditTarget):
+        return target_or_root
+    repo_root = Path(target_or_root)
+    return AuditTarget(
+        label="context",
+        repo_root=repo_root,
+        context_root=repo_root / "context",
+        require_entity_dirs=True,
+    )
+
+
+def _rel(path: Path, repo_root: Path) -> str:
+    try:
+        return str(path.relative_to(repo_root))
+    except ValueError:
+        return str(path)
+
+
 def tally(findings: list[Finding]) -> dict[str, int]:
     out = {"ERROR": 0, "WARN": 0, "INFO": 0}
     for f in findings:
@@ -167,19 +195,25 @@ def _get_nested(data: dict, dotpath: str):
 # Check 1: entity_files
 # ---------------------------------------------------------------------------
 
-def run_entity_files(repo_root: Path) -> list[Finding]:
+def run_entity_files(target_or_root: AuditTarget | Path) -> list[Finding]:
+    target = _coerce_target(target_or_root)
+    repo_root = target.repo_root
     findings: list[Finding] = []
-    context = repo_root / "context"
+    context = target.context_root
 
     for dir_name, expected_kind in ENTITY_DIRS.items():
         entity_dir = context / dir_name
         if not entity_dir.is_dir():
-            findings.append(Finding(
-                severity="WARN",
-                category="entity_files",
-                id="entity.missing-dir",
-                message=f"Expected entity directory does not exist: context/{dir_name}/",
-            ))
+            if target.require_entity_dirs:
+                findings.append(Finding(
+                    severity="WARN",
+                    category="entity_files",
+                    id="entity.missing-dir",
+                    message=(
+                        "Expected entity directory does not exist: "
+                        f"{_rel(entity_dir, repo_root)}/"
+                    ),
+                ))
             continue
 
         # team-members/ has a directory-tree layout; walk it specially so we
@@ -205,9 +239,8 @@ def run_entity_files(repo_root: Path) -> list[Finding]:
             continue
 
         for md_path in sorted(md_files):
-            rel = md_path.relative_to(repo_root)
             stem = md_path.stem
-            ref = str(rel)
+            ref = _rel(md_path, repo_root)
 
             # Skip aibox CLI migration prose docs and the migrations INDEX.md.
             # These live alongside real Migration entities but are narrative
@@ -348,9 +381,11 @@ def run_entity_files(repo_root: Path) -> list[Finding]:
 # Check 2: skill_structure
 # ---------------------------------------------------------------------------
 
-def run_skill_structure(repo_root: Path) -> list[Finding]:
+def run_skill_structure(target_or_root: AuditTarget | Path) -> list[Finding]:
+    target = _coerce_target(target_or_root)
+    repo_root = target.repo_root
     findings: list[Finding] = []
-    skills_dir = repo_root / "context" / "skills"
+    skills_dir = target.context_root / "skills"
 
     skill_files = sorted(skills_dir.rglob("SKILL.md"))
     if not skill_files:
@@ -358,7 +393,7 @@ def run_skill_structure(repo_root: Path) -> list[Finding]:
             severity="WARN",
             category="skill_structure",
             id="skill.no-skills-found",
-            message="No SKILL.md files found under context/skills/",
+            message=f"No SKILL.md files found under {_rel(skills_dir, repo_root)}/",
         ))
         return findings
 
@@ -509,9 +544,11 @@ def _extract_tool_blocks(source: str) -> list[tuple[int, str]]:
     return blocks
 
 
-def run_mcp_annotations(repo_root: Path) -> list[Finding]:
+def run_mcp_annotations(target_or_root: AuditTarget | Path) -> list[Finding]:
+    target = _coerce_target(target_or_root)
+    repo_root = target.repo_root
     findings: list[Finding] = []
-    skills_dir = repo_root / "context" / "skills"
+    skills_dir = target.context_root / "skills"
 
     server_files = sorted(skills_dir.rglob("mcp/server.py"))
     if not server_files:
@@ -519,7 +556,7 @@ def run_mcp_annotations(repo_root: Path) -> list[Finding]:
             severity="INFO",
             category="mcp_annotations",
             id="mcp.no-servers",
-            message="No mcp/server.py files found under context/skills/",
+            message=f"No mcp/server.py files found under {_rel(skills_dir, repo_root)}/",
         ))
         return findings
 
@@ -624,10 +661,11 @@ def run_mcp_annotations(repo_root: Path) -> list[Finding]:
 # Check 4: cross_references
 # ---------------------------------------------------------------------------
 
-def _build_skill_index(repo_root: Path) -> dict[str, Path]:
-    """Build {skill_name: SKILL.md path} index from all context/skills/**."""
+def _build_skill_index(target_or_root: AuditTarget | Path) -> dict[str, Path]:
+    """Build {skill_name: SKILL.md path} index from all target skills/**."""
+    target = _coerce_target(target_or_root)
     index: dict[str, Path] = {}
-    skills_dir = repo_root / "context" / "skills"
+    skills_dir = target.context_root / "skills"
     for skill_md in skills_dir.rglob("SKILL.md"):
         # skill name = the directory containing SKILL.md
         skill_name = skill_md.parent.name
@@ -635,10 +673,12 @@ def _build_skill_index(repo_root: Path) -> dict[str, Path]:
     return index
 
 
-def run_cross_references(repo_root: Path) -> list[Finding]:
+def run_cross_references(target_or_root: AuditTarget | Path) -> list[Finding]:
+    target = _coerce_target(target_or_root)
+    repo_root = target.repo_root
     findings: list[Finding] = []
-    skills_dir = repo_root / "context" / "skills"
-    skill_index = _build_skill_index(repo_root)
+    skills_dir = target.context_root / "skills"
+    skill_index = _build_skill_index(target)
 
     skill_files = sorted(skills_dir.rglob("SKILL.md"))
     for skill_path in skill_files:
@@ -691,7 +731,8 @@ def run_cross_references(repo_root: Path) -> list[Finding]:
                     id="xref.unresolved",
                     message=(
                         f"{skill_name} → {dep_name} — no SKILL.md found "
-                        f"at context/skills/<category>/{dep_name}/SKILL.md"
+                        f"at {_rel(skills_dir, repo_root)}/<category>/"
+                        f"{dep_name}/SKILL.md"
                     ),
                     entity_ref=ref,
                 ))
@@ -709,10 +750,12 @@ SEV_GLYPH = {"ERROR": "E", "WARN": "W", "INFO": "i"}
 def _format_report(
     per_check: dict[str, list[Finding]],
     repo_root: Path,
+    target_label: str,
 ) -> str:
     lines: list[str] = []
     lines.append(f"# pk-release-audit v{AUDIT_VERSION}")
     lines.append(f"repo_root: {repo_root}")
+    lines.append(f"tree: {target_label}")
     lines.append("")
     grand = {"ERROR": 0, "WARN": 0, "INFO": 0}
 
@@ -764,6 +807,26 @@ def _resolve_repo_root(explicit: Optional[str]) -> Path:
         return Path.cwd()
 
 
+def _targets_for_tree(repo_root: Path, tree: str) -> list[AuditTarget]:
+    targets = {
+        "context": AuditTarget(
+            label="context",
+            repo_root=repo_root,
+            context_root=repo_root / "context",
+            require_entity_dirs=True,
+        ),
+        "src-context": AuditTarget(
+            label="src-context",
+            repo_root=repo_root,
+            context_root=repo_root / "src" / "context",
+            require_entity_dirs=False,
+        ),
+    }
+    if tree == "both":
+        return [targets["context"], targets["src-context"]]
+    return [targets[tree]]
+
+
 def main(argv: Optional[list[str]] = None) -> int:
     p = argparse.ArgumentParser(
         prog="pk-release-audit",
@@ -771,19 +834,31 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     p.add_argument("--repo-root", default=None,
                    help="Explicit repo root path. Defaults to git rev-parse --show-toplevel.")
+    p.add_argument(
+        "--tree",
+        choices=["context", "src-context", "both"],
+        default="context",
+        help=(
+            "Tree to audit. context is the live dogfood tree; src-context "
+            "is the shipped release deliverable tree."
+        ),
+    )
     args = p.parse_args(argv)
 
     repo_root = _resolve_repo_root(args.repo_root)
 
-    per_check: dict[str, list[Finding]] = {}
-    for check_name, check_fn in CHECKS:
-        per_check[check_name] = check_fn(repo_root)
+    reports: list[str] = []
+    total_errors = 0
+    for target in _targets_for_tree(repo_root, args.tree):
+        per_check: dict[str, list[Finding]] = {}
+        for check_name, check_fn in CHECKS:
+            per_check[check_name] = check_fn(target)
 
-    report = _format_report(per_check, repo_root)
-    print(report)
+        reports.append(_format_report(per_check, repo_root, target.label))
+        total_errors += sum(tally(findings)["ERROR"] for findings in per_check.values())
 
-    grand_errors = sum(tally(findings)["ERROR"] for findings in per_check.values())
-    return 1 if grand_errors > 0 else 0
+    print("\n---\n".join(reports))
+    return 1 if total_errors > 0 else 0
 
 
 if __name__ == "__main__":

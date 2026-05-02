@@ -4,6 +4,11 @@ Upstream-migration lifecycle — list, read, start, apply, and reject
 Migrations. Layer 3 — depends on `event-log`, `index-management`,
 and `id-management`.
 
+This server documents its own tool contract only. In gateway deployments,
+the gateway must expose only the processkit servers present in the
+installed/merged MCP configuration; this file is not an aggregate tool
+manifest.
+
 ## Tools
 
 | Tool                                   | Purpose                                                                                                  |
@@ -24,7 +29,7 @@ pending → in-progress → applied (terminal)
      rejected (terminal)
 ```
 
-Source: `src/primitives/state-machines/migration.yaml`. The directory
+Source: `context/state-machines/migration.yaml`. The directory
 a Migration file lives in mirrors `spec.state` — every write-side tool
 moves the file atomically with the state update.
 
@@ -71,6 +76,10 @@ Every write-side tool refreshes `context/migrations/INDEX.md`:
 `spec` is re-validated against `context/schemas/migration.yaml` before
 any file move. A schema failure aborts the transition with the spec
 untouched on disk.
+
+For v2 migrations, write-side transitions also require the source and
+target API/processkit version fields plus `apply_mode`. This preserves
+state-machine semantics while making the upstream-version edge explicit.
 
 ## Running
 

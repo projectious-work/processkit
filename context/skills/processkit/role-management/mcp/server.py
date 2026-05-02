@@ -61,26 +61,6 @@ from processkit import config, entity, ids, index, log, paths, schema  # noqa: E
 server = FastMCP("processkit-role-management")
 
 _VALID_SCOPES = {"project", "sprint", "permanent"}
-_ROLE_TEMPLATES = {
-    "inbox-triage": {
-        "description": (
-            "Classify hook-inbox Notes and route them to the appropriate "
-            "WorkItem with an injection mode."
-        ),
-        "responsibilities": [
-            "Review captured inbox Notes for urgency and target work.",
-            "Create triage-classification Bindings with an injection mode.",
-            "Escalate interrupt-class items before the current WorkItem continues.",
-            "Mark completed or failed inbox handling outcomes.",
-        ],
-        "skills_required": [
-            "note-management",
-            "binding-management",
-            "workitem-management",
-        ],
-        "default_scope": "project",
-    },
-}
 
 
 def _now_iso() -> str:
@@ -191,38 +171,6 @@ def create_role(
         actor=new_id,
     )
     return {"id": new_id, "path": str(target_path), "name": name}
-
-
-@server.tool(annotations=ToolAnnotations(
-    readOnlyHint=False,
-    destructiveHint=False,
-    idempotentHint=False,
-    openWorldHint=False,
-))
-def create_role_template(template: str, name: str | None = None) -> dict:
-    """Instantiate a built-in starter Role template.
-
-    Templates: ``inbox-triage``. Prerequisite: call
-    find_skill(task_description) or confirm you are already operating
-    within a named processkit skill before using this tool. 1% rule:
-    call route_task first; commit in the same turn — deferred writes
-    are dropped.
-    """
-    if template not in _ROLE_TEMPLATES:
-        return {
-            "error": (
-                f"invalid template {template!r}; must be one of "
-                f"{sorted(_ROLE_TEMPLATES)}"
-            )
-        }
-    spec = dict(_ROLE_TEMPLATES[template])
-    return create_role(
-        name=name or template,
-        description=spec["description"],
-        responsibilities=spec["responsibilities"],
-        skills_required=spec["skills_required"],
-        default_scope=spec["default_scope"],
-    )
 
 
 @server.tool(annotations=ToolAnnotations(

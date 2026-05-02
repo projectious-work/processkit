@@ -5,7 +5,7 @@ description: >
   archived entity metadata queryable through the shared index.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-context-archiving
     version: "0.2.0"
     created: 2026-04-30T00:00:00Z

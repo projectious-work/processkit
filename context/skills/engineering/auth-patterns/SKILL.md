@@ -4,7 +4,7 @@ description: |
   Authentication and authorization patterns — OAuth2, JWT, sessions, RBAC/ABAC. Use when implementing login flows, securing APIs, managing tokens, designing permission systems, or reviewing auth code.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-auth-patterns
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

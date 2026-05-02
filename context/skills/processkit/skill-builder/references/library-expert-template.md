@@ -13,7 +13,7 @@ description: >
   recipes and current-docs escalation guidance.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-<library-name>
     version: "1.0.0"
     created: <YYYY-MM-DDTHH:MM:SSZ>

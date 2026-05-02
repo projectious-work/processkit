@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Model
 metadata:
   id: MODEL-alibaba-qwen2-5-72b

@@ -4,7 +4,7 @@ description: |
   Writing effective project documentation — READMEs, API doc comments, and inline comments that explain why. Use when writing or improving documentation — READMEs, doc comments, inline comments, or when code lacks explanation for non-obvious behavior.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-documentation
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

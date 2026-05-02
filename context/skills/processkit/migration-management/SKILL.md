@@ -4,7 +4,7 @@ description: |
   Manage Migration entities — pending, in-progress, and applied transitions between upstream source versions. Use when an upstream source bumps version (processkit, aibox, a community package), when a user wants to draft a migration plan, when an agent needs to reason about pending migrations, or when working through an in-progress migration.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-migration-management
     version: "1.0.0"
     created: 2026-04-07T00:00:00Z
@@ -34,23 +34,6 @@ package) version, it writes a Migration entity into `context/migrations/pending/
 The agent and the user work through it together over one or more sessions —
 drafting a plan, applying changes, then archiving the result. This skill is
 how the agent navigates that lifecycle.
-
-Migration is also the upstream-source-version transition primitive. Use it for
-every upstream Schema change, every adopted third-party spec version change
-(A2A, ACP, Cilium CRDs, kagent CRDs if adopted), and every auditable data-fix.
-The Migration records the exact source version transition through
-`source_api_version`, `source_processkit_version`, `target_api_version`, and
-`target_processkit_version`; `pk-doctor` treats missing version metadata as a
-schema vocabulary error for v2 content.
-
-Two subtype patterns are canonical:
-
-- `Migration{kind=schema-extension}` documents an extension to a Schema
-  vocabulary such as `Artifact.spec.known_kinds` or
-  `Binding.spec.known_types`.
-- `Migration{kind=data-fix}` documents a correction to already-emitted data.
-  For LogEntry repair, the original event is superseded by reference and never
-  deleted; this preserves the append-only event-log invariant.
 
 ## Overview
 

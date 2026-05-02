@@ -21,7 +21,7 @@ metadata:
         purpose: Complementary health check — pk-doctor covers schema/drift/migration checks; release-audit covers entity frontmatter, skill structure, MCP tool annotations, and cross-references.
     commands:
       - name: pk-release-audit
-        args: "[--repo-root=<path>]"
+        args: "[--repo-root=<path>] [--tree=context|src-context|both]"
         description: "Run the pre-release validation sweep and print a single report."
 ---
 
@@ -50,13 +50,19 @@ ERROR is found. This makes it suitable as a blocking CI gate before `git tag`.
 /pk-release-audit                       # detect-only; all four checks; report to stdout
 uv run --script context/skills/processkit/release-audit/scripts/release_audit.py
 uv run --script .../release_audit.py --repo-root=/path/to/repo
+uv run --script .../release_audit.py --tree=src-context
+uv run --script .../release_audit.py --tree=both
 ```
 
 Exit code `0` = clean (0 ERRORs). Exit code `1` = at least one ERROR found.
+The default `context` tree is the live dogfood/project tree. `src-context`
+audits the shipped release deliverable tree under `src/context/` and does
+not warn when dogfood-only entity directories such as `workitems/` or
+`decisions/` are absent.
 
 ### The four checks
 
-1. **`entity_files`** — walks every `context/<dir>/*.md` for the registered
+1. **`entity_files`** — walks every selected tree's `<dir>/*.md` for the registered
    entity directories (`workitems`, `decisions`, `logs`, `artifacts`, `actors`,
    `bindings`, `scopes`, `gates`, `roles`, `migrations`, `team`, `team-members`,
    `notes`, `discussions`). For each file verifies:
@@ -65,21 +71,22 @@ Exit code `0` = clean (0 ERRORs). Exit code `1` = at least one ERROR found.
    - `kind:` is present and is one of the 13 registered kinds.
    - `metadata.id` is present and matches the filename stem.
 
-2. **`skill_structure`** — walks every `context/skills/**/SKILL.md`. For each
+2. **`skill_structure`** — walks every selected tree's `skills/**/SKILL.md`. For each
    file verifies:
-   - Frontmatter has `name`, `description`, `metadata.processkit.id`,
-     `metadata.processkit.version`, `metadata.processkit.category`,
-     `metadata.processkit.layer`.
+   - Frontmatter has `name`, `description`,
+     `metadata.processkit.apiVersion`, `metadata.processkit.id`,
+     `metadata.processkit.version`, `metadata.processkit.category`, and
+     `metadata.processkit.layer` for processkit-category skills.
    - Body contains the four required sections: `## Intro`, `## Overview`,
      `## Gotchas`, `## Full reference`.
 
-3. **`mcp_annotations`** — walks every `context/skills/**/mcp/server.py`.
+3. **`mcp_annotations`** — walks every selected tree's `skills/**/mcp/server.py`.
    For each file verifies that every `@server.tool(...)` decoration includes
    an `annotations=ToolAnnotations(...)` argument containing all four required
    hint keys: `readOnlyHint`, `destructiveHint`, `idempotentHint`,
    `openWorldHint`.
 
-4. **`cross_references`** — walks every `context/skills/**/SKILL.md` and reads
+4. **`cross_references`** — walks every selected tree's `skills/**/SKILL.md` and reads
    `metadata.processkit.uses[*].skill`. For each named skill, checks that a
    corresponding `SKILL.md` exists at `context/skills/<category>/<name>/SKILL.md`
    (searches all category directories, not just `processkit/`). ERROR per
@@ -132,7 +139,8 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Running release-audit against a partial tree.** The script walks the live
   `context/` tree from the detected repo root. Running it in a worktree or
   checkout missing some files will produce false ERRORs for every absent entity
-  directory. Always run from the full working tree.
+  directory. Use `--tree=src-context` when auditing only the shipped
+  release deliverable.
 - **Ignoring WARNs before a release.** WARNs indicate structural drift that
   does not prevent the release but will accumulate into ERRORs in future
   versions. Address all WARNs before a minor or major release.
@@ -142,12 +150,13 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 ### CLI contract
 
 ```
-release_audit.py [--repo-root=PATH]
+release_audit.py [--repo-root=PATH] [--tree=context|src-context|both]
 ```
 
-| Flag          | Meaning |
-|---------------|---------|
+| Flag | Meaning |
+|------|---------|
 | `--repo-root` | Explicit repo root path. Defaults to `git rev-parse --show-toplevel`. |
+| `--tree` | `context` audits the live tree, `src-context` audits the release deliverable tree, and `both` audits both. |
 
 ### Registered entity kinds
 
@@ -171,6 +180,7 @@ release_audit.py [--repo-root=PATH]
 
 - `name` (string)
 - `description` (string)
+- `metadata.processkit.apiVersion` (string)
 - `metadata.processkit.id` (string, must start with `SKILL-`)
 - `metadata.processkit.version` (string)
 - `metadata.processkit.category` (string)

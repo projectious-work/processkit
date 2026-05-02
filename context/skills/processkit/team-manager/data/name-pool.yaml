@@ -1,4 +1,4 @@
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: NamePool
 metadata:
   id: NAMEPOOL-team-manager

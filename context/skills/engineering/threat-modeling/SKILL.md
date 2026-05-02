@@ -4,7 +4,7 @@ description: |
   Threat modeling with STRIDE — data flow diagrams, trust boundaries, risk. Use when designing a new system, reviewing architecture for security, conducting a security review, or prioritizing security work by risk.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-threat-modeling
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

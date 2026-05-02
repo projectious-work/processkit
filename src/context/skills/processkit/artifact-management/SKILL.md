@@ -48,10 +48,11 @@ Two storage patterns are equally valid:
 
 > **MCP server.** This skill ships a self-contained MCP server at
 > `mcp/server.py` (PEP 723 script — requires `uv` and Python ≥ 3.10
-> on PATH). Agent harnesses reach its tools by reading a single MCP
-> config file at startup, so the contents of `mcp/mcp-config.json`
-> must be merged into the harness's MCP config and placed at the
-> harness-specific path before this skill is usable.
+> on PATH). Agent harnesses may reach it directly from this skill's
+> `mcp/mcp-config.json` or through the processkit gateway. Gateway
+> deployments must surface only the processkit servers present in the
+> installed/merged MCP configuration; this skill does not imply that
+> unrelated processkit tools are available.
 
 ## Overview
 
@@ -95,7 +96,7 @@ or a Note while the thing is still being made.
    backwards-compatible fallback.
 4. Set `location` for pointer artifacts (URL, path, bucket key).
    Omit or set to the entity file path for self-hosted artifacts.
-5. Set `produced_by` to the WorkItem or Process ID that produced it.
+5. Set `produced_by` to the WorkItem or other producing entity ID.
 6. Set `owner` to the responsible Actor ID.
 7. Add `tags` for retrieval (topic, project, format, etc.).
 8. Write the file to `context/artifacts/ART-<id>.md`.
@@ -140,7 +141,7 @@ Agent-specific failure modes:
   the release, for compliance, or for future reference. Registering
   every intermediate build output creates noise.
 - **Forgetting `produced_by`.** Linking the artifact back to the
-  WorkItem or Process that produced it is cheap and makes the
+  WorkItem or other entity that produced it is cheap and makes the
   catalog navigable. Always set it when the provenance is known.
 
 ## Full reference
@@ -158,7 +159,7 @@ See `src/context/schemas/artifact.yaml` for the authoritative schema.
 | `version`     | no       | Version identifier for the artifact                   |
 | `checksum`    | no       | Hash for integrity verification                       |
 | `owner`       | no       | Actor ID responsible for the artifact                 |
-| `produced_by` | no       | Entity ID (WorkItem, Process) that produced this      |
+| `produced_by` | no       | Entity ID that produced this, usually a WorkItem      |
 | `produced_at` | no       | ISO 8601 datetime when the artifact was produced      |
 | `tags`        | no       | Freeform tags for retrieval                           |
 

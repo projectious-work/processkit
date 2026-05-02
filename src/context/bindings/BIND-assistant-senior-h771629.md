@@ -9,7 +9,6 @@ spec:
   subject: ROLE-assistant
   subject_kind: Role
   target: MODEL-anthropic-claude-haiku
-  target_kind: Model
   conditions:
     seniority: senior
     rank: 1

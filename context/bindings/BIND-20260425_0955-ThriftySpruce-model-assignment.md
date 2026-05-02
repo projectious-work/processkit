@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Binding
 metadata:
   id: BIND-20260425_0955-ThriftySpruce-model-assignment

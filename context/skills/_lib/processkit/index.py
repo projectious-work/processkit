@@ -113,9 +113,6 @@ def open_db(path: Path | None = None) -> sqlite3.Connection:
     db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
-    vec_available = _load_sqlite_vec(conn)
-    if not vec_available:
-        _forget_unloadable_vec_table(conn)
     # WAL mode lets multiple MCP servers read while one writes without
     # hitting "database is locked". Persists across connections — only
     # needs to be set once per database file, but PRAGMA is cheap to
@@ -131,7 +128,7 @@ def open_db(path: Path | None = None) -> sqlite3.Connection:
         # FTS5 is built into supported processkit environments, but keep
         # the index usable on stripped-down SQLite builds.
         pass
-    if vec_available:
+    if _load_sqlite_vec(conn):
         try:
             conn.executescript(VEC_SCHEMA_DDL)
         except sqlite3.OperationalError:
@@ -173,8 +170,6 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
             db.close()
         return IndexStats(0, 0, 0)
     for path in sorted(context_dir.rglob("*.md")):
-        if not _should_index_path(context_dir, path):
-            continue
         try:
             ent = entity_mod.load(path)
         except entity_mod.NotAnEntityError:
@@ -214,17 +209,6 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
     return IndexStats(n_entities, n_events, n_errors)
 
 
-def _should_index_path(context_dir: Path, path: Path) -> bool:
-    """Return whether ``path`` is a project entity, not packaged support data."""
-    for excluded in ("skills", "templates"):
-        try:
-            path.relative_to(context_dir / excluded)
-            return False
-        except ValueError:
-            continue
-    return True
-
-
 def _insert_entity(
     db: sqlite3.Connection,
     ent,
@@ -234,8 +218,6 @@ def _insert_entity(
     spec = ent.spec or {}
     title = spec.get("title") or spec.get("name")
     spec_json = json.dumps(spec, default=str)
-    if storage_location is None and ent.path:
-        storage_location = paths.storage_location_for_path(ent.kind, ent.path)
     db.execute(
         """
         INSERT OR REPLACE INTO entities
@@ -354,35 +336,6 @@ def _load_sqlite_vec(db: sqlite3.Connection) -> bool:
         except Exception:
             pass
         return False
-
-
-def _forget_unloadable_vec_table(db: sqlite3.Connection) -> None:
-    """Remove stale sqlite-vec schema entries when the extension is absent.
-
-    The shared index database is used by every MCP server. Some servers do
-    not declare the optional ``sqlite-vec`` dependency, so a database that
-    contains a ``vec0`` virtual table can make otherwise ordinary writes
-    fail with ``no such module: vec0``. The vector table is rebuildable
-    index cache, so dropping its schema entry is safe; semantic chunk rows
-    remain available for FTS-only fallback.
-    """
-    try:
-        db.execute("DROP TABLE IF EXISTS entity_vec")
-        return
-    except sqlite3.OperationalError:
-        pass
-    try:
-        db.execute("PRAGMA writable_schema=ON")
-        db.execute(
-            "DELETE FROM sqlite_master WHERE type = 'table' AND name = 'entity_vec'"
-        )
-        db.execute("PRAGMA writable_schema=OFF")
-        db.commit()
-    except sqlite3.OperationalError:
-        try:
-            db.execute("PRAGMA writable_schema=OFF")
-        except sqlite3.OperationalError:
-            pass
 
 
 def _has_vec(db: sqlite3.Connection) -> bool:

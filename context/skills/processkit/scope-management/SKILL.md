@@ -4,7 +4,7 @@ description: |
   Manage Scope entities — bounded containers grouping related work (sprint, milestone, project, quarter). Use when creating or updating a grouping boundary — sprint, milestone, quarter, project, release — that other entities will reference.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-scope-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -61,7 +61,7 @@ Bindings reference scopes to say "I apply within this container."
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Scope
 metadata:
   id: SCOPE-sprint-42

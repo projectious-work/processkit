@@ -12,9 +12,11 @@ on-disk per-skill `mcp-config.json` files. Three findings matter:
   from `mcpServers`)            → ERROR mcp_config_drift.harness-stale
 
 The harness-stale check only runs when the repo looks like a derived
-project (`aibox.lock` AND `.mcp.json` both present at the repo root). In
-the processkit repo itself only the first two checks apply. See
-DEC-20260423_2049-VastLake and projectious-work/aibox#54.
+project (`aibox.lock` AND `.mcp.json` both present at the repo root).
+Gateway-only registration is an intentional opt-in alternative to the
+granular per-skill server set. In the processkit repo itself only the
+first two checks apply. See DEC-20260423_2049-VastLake and
+projectious-work/aibox#54.
 """
 
 from __future__ import annotations
@@ -24,6 +26,15 @@ import json
 from pathlib import Path
 
 from .common import CheckResult
+
+
+GATEWAY_CONFIG_REL = Path(
+    "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
+)
+SRC_GATEWAY_CONFIG_REL = Path(
+    "src/context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
+)
+GATEWAY_SERVER_NAME = "processkit-gateway"
 
 
 def _canonical_json(data: object) -> str:
@@ -47,18 +58,34 @@ def _collect_current(repo_root: Path) -> list[dict]:
     seen: set[str] = set()
     for cfg in sorted(skills_root.glob("*/*/mcp/mcp-config.json")):
         rel = cfg.relative_to(repo_root).as_posix()
+        if rel == GATEWAY_CONFIG_REL.as_posix():
+            continue
         if rel in seen:
             continue
         seen.add(rel)
         entries.append({"path": rel, "sha256": _sha256_of_file(cfg)})
     for cfg in sorted(skills_root.glob("*/mcp/mcp-config.json")):
         rel = cfg.relative_to(repo_root).as_posix()
+        if rel == GATEWAY_CONFIG_REL.as_posix():
+            continue
         if rel in seen:
             continue
         seen.add(rel)
         entries.append({"path": rel, "sha256": _sha256_of_file(cfg)})
     entries.sort(key=lambda e: e["path"])
     return entries
+
+
+def _collect_gateway_current(repo_root: Path) -> list[dict]:
+    cfg = repo_root / GATEWAY_CONFIG_REL
+    if not cfg.is_file():
+        cfg = repo_root / SRC_GATEWAY_CONFIG_REL
+    if not cfg.is_file():
+        return []
+    return [{
+        "path": GATEWAY_CONFIG_REL.as_posix(),
+        "sha256": _sha256_of_file(cfg),
+    }]
 
 
 def _manifest_server_names(manifest: dict) -> list[str]:
@@ -79,7 +106,19 @@ def _manifest_server_names(manifest: dict) -> list[str]:
             continue
         if mcp_idx >= 1:
             slug = parts[mcp_idx - 1]
+            if slug == GATEWAY_SERVER_NAME:
+                names.append(GATEWAY_SERVER_NAME)
+                continue
             names.append(f"processkit-{slug}")
+    return names
+
+
+def _gateway_server_names(manifest: dict) -> list[str]:
+    names: list[str] = []
+    for entry in manifest.get("per_gateway") or []:
+        path = entry.get("path", "")
+        if path == GATEWAY_CONFIG_REL.as_posix():
+            names.append(GATEWAY_SERVER_NAME)
     return names
 
 
@@ -111,6 +150,7 @@ def run(ctx) -> list[CheckResult]:
 
     try:
         current = _collect_current(repo_root)
+        current_gateway = _collect_gateway_current(repo_root)
     except Exception as e:
         return [CheckResult(
             severity="ERROR",
@@ -143,6 +183,19 @@ def run(ctx) -> list[CheckResult]:
             suggested_fix="uv run scripts/generate-mcp-manifest.py",
         )]
 
+    manifest_gateway = manifest.get("per_gateway") or []
+    if current_gateway != manifest_gateway:
+        return [CheckResult(
+            severity="WARN",
+            category="mcp_config_drift",
+            id="mcp_config_drift.gateway-manifest-stale",
+            message=(
+                "gateway MCP config changed since manifest was generated; "
+                "run `scripts/generate-mcp-manifest.py`"
+            ),
+            suggested_fix="uv run scripts/generate-mcp-manifest.py",
+        )]
+
     # Derived-project harness-stale check.
     aibox_lock = repo_root / "aibox.lock"
     mcp_json = repo_root / ".mcp.json"
@@ -157,6 +210,18 @@ def run(ctx) -> list[CheckResult]:
                 message=f"could not parse {mcp_json.relative_to(repo_root)}: {e}",
             )]
         servers = (merged or {}).get("mcpServers") or {}
+        gateway_expected = _gateway_server_names(manifest)
+        gateway_registered = any(name in servers for name in gateway_expected)
+        if gateway_registered:
+            return [CheckResult(
+                severity="INFO",
+                category="mcp_config_drift",
+                id="mcp_config_drift.gateway-mode",
+                message=(
+                    "MCP config manifest in sync; derived .mcp.json uses "
+                    "gateway mode."
+                ),
+            )]
         expected = _manifest_server_names(manifest)
         missing = [name for name in expected if name not in servers]
         if missing:

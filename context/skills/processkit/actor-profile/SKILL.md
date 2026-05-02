@@ -4,7 +4,7 @@ description: |
   Create and maintain Actor entities — humans and AI agents that participate in the project. Use when adding a new collaborator (human or agent) to the project, updating their preferences/expertise, or querying who does what.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-actor-profile
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -100,7 +100,7 @@ commit message.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Actor
 metadata:
   id: ACTOR-alice

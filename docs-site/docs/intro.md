@@ -28,10 +28,12 @@ is the domain expert. The agent is the executor.
 
 ## What processkit ships
 
-- **20 process primitives** — WorkItem, LogEntry, DecisionRecord, Note,
-  Migration, Actor, Role, Binding, Scope, Category, Constraint, Gate, Schedule, Process,
-  StateMachine, Metric, Discussion, Artifact, Context, CrossReference.
-  Framework-agnostic building blocks shipped as YAML schemas + state machines.
+- **Process primitives** — WorkItem, LogEntry, DecisionRecord, Note,
+  Migration, Actor, Role, Binding, Scope, Category, Constraint, Gate,
+  Discussion, Artifact, Context, CrossReference, and legacy v1
+  workflow/time/lifecycle schemas. v2 keeps Process, Schedule, Model,
+  Metric, and StateMachine out of the first-class shipped entity
+  surface.
 - **128+ skills** — engineering, language, framework, infrastructure, design, data,
   security, AI/ML, process-primitive, document/asset creation, meta-cognitive,
   and role-specific skills (PRD writing, user research, legal review, data storytelling).
@@ -85,7 +87,7 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
 ## Where to go next
 
 - [Getting Started](./getting-started/overview) — install aibox, consume processkit, create your first entity
-- [Primitives](./primitives/overview) — the 20 building blocks and the entity file format
+- [Primitives](./primitives/overview) — process building blocks and the entity file format
 - [Skills](./skills/overview) — the skill package format and the catalog
 - [Packages](./packages/overview) — the five tiers and how to pick one
 - [Reference → Privacy Tiers](./reference/privacy) — public, project-private, user-private
@@ -160,4 +162,12 @@ Splitting content from infrastructure lets both sides evolve at their natural pa
   compliance contract v2 bump, `scripts/check-src-context-drift.sh` release-time
   drift guard, session-start skill-check checklist (SnappyTrout), and
   `/pk-standup` vs `/pk-status` differentiation.
+- **v2 direction** — SmoothTiger/SmoothRiver defines a no-shim breaking
+  contract: authoritative v2 schemas/index behavior, explicit migration
+  for v1 contexts, aggregate/gateway MCP direction, and demotion of
+  Model, Metric, Process, Schedule, and StateMachine from first-class
+  shipped entity surfaces. See
+  `DEC-20260430_1416-SmoothTiger-adopt-breaking-v2-implementation-plan-for`
+  and
+  https://github.com/projectious-work/internal/blob/main/context/artifacts/ART-20260430_1242-SmoothRiver-processkit-project-work-plan.md.
 - **v1.0.0** — first stable release (not yet scheduled)

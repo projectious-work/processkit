@@ -4,7 +4,7 @@ description: |
   Event-driven systems — pub/sub, event sourcing, CQRS, sagas, broker selection, reliability. Use when designing or migrating to an event-driven system, choosing a message broker, implementing event sourcing or CQRS, designing sagas, or reviewing async architectures for reliability and ordering.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-event-driven-architecture
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

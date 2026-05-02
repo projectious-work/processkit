@@ -4,7 +4,7 @@ description: |
   Audit project dependencies for vulnerabilities and outdated packages. Use when checking the security posture of dependencies, planning updates, or running a pre-release dependency review.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-dependency-audit
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

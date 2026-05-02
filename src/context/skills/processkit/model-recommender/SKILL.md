@@ -74,8 +74,8 @@ scores 1–5.
 | **Governance** | G | Privacy, sovereignty, compliance, auditability | Data retention policy, data sovereignty / region, self-hostable / open weights, compliance certs (SOC 2, HIPAA, GDPR), prompt injection resistance |
 
 The qualitative `G` 1–5 score is a fast filter; for hard requirements
-(HIPAA, GDPR, jurisdiction), use the structured fields on
-`Model.versions[]`:
+(HIPAA, GDPR, jurisdiction), use the structured fields on each roster
+version entry:
 
 - `jurisdiction.vendor_hq_country` (ISO-3166-1 alpha-2)
 - `jurisdiction.applicable_legal_regimes[]` (e.g. `EU-GDPR`, `US-HIPAA`,
@@ -92,13 +92,13 @@ These fields back the `G` score with auditable facts and let
 1–5 cutoff (e.g. require `data_privacy.phi_hipaa_eligible == true`
 before any HIPAA-touching task is routed).
 
-`Model.versions[]` also carries:
+Each roster version entry also carries:
 
 - `knowledge_cutoff` (date) — vendor-published training cutoff
 - `vendor_model_id` — exact SDK model id (`claude-opus-4-7-20251031`)
 - `latency_p50_ms` — quantitative companion to `S` score
 
-`Model` artifacts may also carry:
+Roster records may also carry:
 
 - `model_classes[]` — `fast`, `standard`, and/or `powerful` routing class
   hints

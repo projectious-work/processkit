@@ -116,5 +116,5 @@ content from infrastructure deliberately:
   new skills without an aibox release, and aibox can update its CLI
   without invalidating pinned processkit content.
 - **Smaller aibox.** aibox is a thin installer and environment manager.
-  It does not need to carry the full skill catalog, 22 MCP servers, and
-  primitive schemas in its own repo. processkit handles all of that.
+  It does not need to carry the full skill catalog, MCP server scripts,
+  and primitive schemas in its own repo. processkit handles all of that.

@@ -1,7 +1,10 @@
 ---
 name: gate-management
 description: |
-  Manage Gate entities — validation checkpoints that processes must pass (code review, security scan, tests). Use when defining or updating a checkpoint a process must pass — code review, tests green, security scan, stakeholder approval.
+  Manage Gate entities — validation checkpoints that WorkItems, scopes, or
+  policy applications must pass (code review, security scan, tests). Use
+  when defining or updating a checkpoint for v2 workflow surfaces — code
+  review, tests green, security scan, stakeholder approval.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
@@ -32,8 +35,8 @@ metadata:
 ## Intro
 
 A Gate is a validation checkpoint — "code review passed", "tests green",
-"security scan clean", "stakeholder signed off". Processes reference gates
-to declare what has to be true before a step can complete.
+"security scan clean", "stakeholder signed off". In v2, Bindings attach
+gates to concrete workflow surfaces such as WorkItems and Scopes.
 
 > **MCP server.** This skill ships a self-contained MCP server at
 > `mcp/server.py` (PEP 723 script — requires `uv` and Python ≥ 3.10 on
@@ -131,22 +134,23 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 | `blocking`        | bool          | `true` = cannot proceed if failed              |
 | `evidence_required` | bool        | Require a link/artifact in the pass event      |
 
-### Binding gates to processes
+### Binding gates to v2 workflow surfaces
 
-Use a Binding (`type: process-gate`) to apply a gate to a specific process,
-optionally scoped:
+Use `workitem-gate` for a concrete run or task, and `scope-gate` for a
+gate that applies across a Scope. Legacy `process-gate` Bindings are
+migration-only.
 
 ```yaml
 kind: Binding
 spec:
-  type: process-gate
-  subject: PROC-release
+  type: workitem-gate
+  subject: BACK-release-run
   target: GATE-security-scan
   scope: SCOPE-project-x
 ```
 
-This way the same Gate can apply to multiple processes, and the mapping
-changes without editing the Gate or Process files.
+This way the same Gate can apply to multiple runs or scopes, and the
+mapping changes without editing the Gate or governed entity.
 
 ### Waiving a gate
 

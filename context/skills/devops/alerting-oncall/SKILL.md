@@ -4,7 +4,7 @@ description: |
   Alert design and on-call practices — severity, runbooks, SLO burn-rate alerting, escalation. Use when designing alerts, writing runbooks, reducing alert fatigue, setting up escalation policies, implementing SLO-based alerting, or improving on-call processes.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-alerting-oncall
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

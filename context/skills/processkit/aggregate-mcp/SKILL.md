@@ -6,7 +6,7 @@ description: |
   as Codex, while keeping per-skill MCP servers available.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-aggregate-mcp
     version: "1.0.0"
     created: 2026-04-29T00:00:00Z

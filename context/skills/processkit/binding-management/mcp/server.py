@@ -51,7 +51,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import config, entity, ids, index, log, paths, schema  # noqa: E402
+from processkit import config, entity, ids, index, log, paths  # noqa: E402
 
 server = FastMCP("processkit-binding-management")
 
@@ -91,10 +91,6 @@ def _is_active(spec: dict, at: str | None = None) -> bool:
     return True
 
 
-def _valid_types() -> set[str]:
-    return set(schema.known_values("Binding", "known_types"))
-
-
 @server.tool(annotations=ToolAnnotations(
     readOnlyHint=False,
     destructiveHint=False,
@@ -129,14 +125,6 @@ def create_binding(
     conditions: optional freeform conditions object
     description: optional one-line summary
     """
-    valid_types = _valid_types()
-    if valid_types and type not in valid_types:
-        return {
-            "error": (
-                f"invalid type {type!r}; must be one of "
-                f"{sorted(valid_types)}"
-            )
-        }
     root = paths.find_project_root()
     cfg = config.load_config(root)
     bind_dir = paths.context_dir("Binding", root)
@@ -173,12 +161,8 @@ def create_binding(
     if description:
         spec["description"] = description
 
-    errors = schema.validate_spec("Binding", spec)
-    if errors:
-        return {"error": "schema validation failed", "details": errors}
-
     ent = entity.new("Binding", new_id, spec)
-    target_path = paths.entity_path("Binding", new_id, None, root)
+    target_path = bind_dir / f"{new_id}.md"
     ent.write(target_path)
 
     db = index.open_db()
@@ -194,77 +178,6 @@ def create_binding(
         actor=new_id,
     )
     return {"id": new_id, "path": str(target_path)}
-
-
-@server.tool(annotations=ToolAnnotations(
-    readOnlyHint=False,
-    destructiveHint=False,
-    idempotentHint=False,
-    openWorldHint=False,
-))
-def create_time_window(
-    subject: str,
-    target: str,
-    recurrence_rule_artifact: str,
-    valid_from: str | None = None,
-    valid_until: str | None = None,
-    scope: str | None = None,
-    description: str | None = None,
-) -> dict:
-    """Create a schedule demotion Binding of type ``time-window``.
-
-    ``recurrence_rule_artifact`` must reference an Artifact of kind
-    ``schedule-rule``. Prerequisite: call find_skill(task_description)
-    or confirm you are already operating within a named processkit
-    skill before using this tool. 1% rule: call route_task first;
-    commit in the same turn — deferred writes are dropped.
-    """
-    if not recurrence_rule_artifact.startswith("ART-"):
-        return {"error": "recurrence_rule_artifact must be an ART-* id"}
-    return create_binding(
-        type="time-window",
-        subject=subject,
-        target=target,
-        scope=scope,
-        valid_from=valid_from,
-        valid_until=valid_until,
-        conditions={"recurrence_rule": recurrence_rule_artifact},
-        description=description,
-    )
-
-
-@server.tool(annotations=ToolAnnotations(
-    readOnlyHint=False,
-    destructiveHint=False,
-    idempotentHint=False,
-    openWorldHint=False,
-))
-def create_budget_application(
-    cost_policy_artifact: str,
-    target: str,
-    enforcement_point: str,
-    cap_usd: float | None = None,
-    scope: str | None = None,
-    valid_from: str | None = None,
-    valid_until: str | None = None,
-    description: str | None = None,
-) -> dict:
-    """Bind a cost-policy Artifact to a target with budget metadata."""
-    if not cost_policy_artifact.startswith("ART-"):
-        return {"error": "cost_policy_artifact must be an ART-* id"}
-    conditions: dict = {"enforcement_point": enforcement_point}
-    if cap_usd is not None:
-        conditions["cap_usd"] = cap_usd
-    return create_binding(
-        type="budget-application",
-        subject=cost_policy_artifact,
-        target=target,
-        scope=scope,
-        valid_from=valid_from,
-        valid_until=valid_until,
-        conditions=conditions,
-        description=description,
-    )
 
 
 @server.tool(annotations=ToolAnnotations(

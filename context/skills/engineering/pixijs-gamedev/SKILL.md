@@ -4,7 +4,7 @@ description: |
   PixiJS 2D rendering and game development — sprites, animation loops, interaction, and WebGL/Canvas rendering. Use when building PixiJS apps, creating 2D games, integrating sprites and animations, or implementing interactive graphics in the browser.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-pixijs-gamedev
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

@@ -1,7 +1,10 @@
 ---
 name: constraint-management
 description: |
-  Manage Constraint entities — rules and limits the project must respect (budget, latency SLO, team size, compliance). Use when recording a rule, limit, or boundary that affects decisions — budget ceiling, latency SLO, regulatory requirement, team bandwidth.
+  Manage Constraint entities — rules and limits the project must respect
+  (budget, latency SLO, team size, compliance). Use when recording a rule,
+  limit, or boundary that affects decisions — budget ceiling, latency SLO,
+  regulatory requirement, team bandwidth.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
@@ -65,8 +68,9 @@ spec:
 - DecisionRecords link via `spec.related_constraints` when a decision was
   shaped by a constraint.
 - WorkItems add `labels.constraint` when the work exists because of a constraint.
-- Processes reference constraints via Bindings (`type: process-constraint`)
-  for scoped constraints.
+- Scope-specific constraints use Bindings such as `constraint-scope`.
+  Cost-policy Artifacts apply through `Binding(type=budget-application)`
+  to the WorkItem or Scope they govern.
 
 ## Gotchas
 

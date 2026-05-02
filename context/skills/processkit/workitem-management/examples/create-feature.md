@@ -12,7 +12,7 @@ Path: `context/workitems/BACK-calm-fox.md`
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: WorkItem
 metadata:
   id: BACK-calm-fox
@@ -60,7 +60,7 @@ After writing the file, create a LogEntry:
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: LogEntry
 metadata:
   id: LOG-bright-owl

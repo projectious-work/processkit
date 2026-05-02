@@ -7,8 +7,14 @@ title: "Installing"
 
 processkit is distributed as git tags of the
 [projectious-work/processkit](https://github.com/projectious-work/processkit)
-repository. You do not install it directly — you install aibox and pin a
-processkit tag in your project's `aibox.toml`.
+repository. The managed path is to install aibox and pin a processkit
+tag in your project's `aibox.toml`.
+
+aibox is not required by processkit at runtime. It is the installer and
+supervisor for managed projects: it fetches processkit content, writes
+provider-specific harness config, and starts the devcontainer. Users who
+install the same files by another method can point an MCP-capable
+harness directly at processkit's server commands.
 
 ## 1. Install aibox
 

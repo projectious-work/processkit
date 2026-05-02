@@ -4,7 +4,7 @@ description: |
   Software estimation and planning — story points, velocity, scope negotiation, technical debt budgeting, and statistical forecasting. Use when estimating effort, planning a sprint, negotiating scope with stakeholders, budgeting for technical debt, or forecasting completion dates.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-estimation-planning
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

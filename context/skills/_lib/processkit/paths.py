@@ -100,36 +100,11 @@ def context_dir(kind: str, root: Path | str | None = None) -> Path:
     return root / "context" / sub
 
 
-def _parse_iso_timestamp(created_at: str | None):
-    from datetime import datetime, timezone
-
-    if created_at:
-        ts_str = created_at.replace("Z", "+00:00")
-        try:
-            return datetime.fromisoformat(ts_str)
-        except ValueError:
-            pass
-    return datetime.now(timezone.utc)
-
-
-def _render_shard_template(template: str, *, base: Path, ts, state: str | None) -> Path:
-    rendered = template.format(
-        year=f"{ts.year:04d}",
-        month=f"{ts.month:02d}",
-        state=state or "",
-    ).strip("/")
-    if rendered.startswith("context/"):
-        return base.parent / rendered.removeprefix("context/")
-    return base / rendered
-
-
 def entity_path(
     kind: str,
     entity_id: str,
     created_at: str | None = None,
     root: Path | str | None = None,
-    state: str | None = None,
-    storage_location: str = "live",
 ) -> Path:
     """Return the full file path for a new entity, applying sharding rules.
 
@@ -143,82 +118,27 @@ def entity_path(
     not configured.
     """
     from . import config  # local import to avoid circular dependency
+    from datetime import datetime, timezone
 
     root = Path(root) if root else find_project_root()
     base = context_dir(kind, root)
     cfg = config.load_config(root)
 
-    shard = cfg.sharding_for(kind)
-    if shard:
-        ts = _parse_iso_timestamp(created_at)
-        terminal_states = set(shard.get("archive_states") or [])
-        if storage_location == "archive" or (state and state in terminal_states):
-            archive_template = shard.get("archive_template")
-            if archive_template:
-                return _render_shard_template(
-                    archive_template,
-                    base=base,
-                    ts=ts,
-                    state=state,
-                ) / f"{entity_id}.md"
-
-        pattern = shard.get("scheme") or shard.get("pattern")
-        template = shard.get("template")
-        if not template and isinstance(shard.get("pattern"), str):
-            pattern_value = shard["pattern"]
-            if "{" in pattern_value or "/" in pattern_value:
-                template = pattern_value
-        if pattern in {"date", "date-shard"}:
-            if template:
-                shard_dir = _render_shard_template(
-                    template,
-                    base=base,
-                    ts=ts,
-                    state=state,
-                )
-            else:
-                shard_dir = base / f"{ts.year:04d}" / f"{ts.month:02d}"
-            return shard_dir / f"{entity_id}.md"
-        if pattern == "lifecycle-shard" and state:
-            if template:
-                shard_dir = _render_shard_template(
-                    template,
-                    base=base,
-                    ts=ts,
-                    state=state,
-                )
-            else:
-                shard_dir = base / state
-            return shard_dir / f"{entity_id}.md"
+    shard = cfg.sharding.get(kind)
+    if shard and shard.get("scheme") == "date":
+        if created_at:
+            # Parse ISO 8601 — tolerate both "Z" and "+00:00" suffixes.
+            ts_str = created_at.replace("Z", "+00:00")
+            try:
+                ts = datetime.fromisoformat(ts_str)
+            except ValueError:
+                ts = datetime.now(timezone.utc)
+        else:
+            ts = datetime.now(timezone.utc)
+        shard_dir = base / f"{ts.year:04d}" / f"{ts.month:02d}"
+        return shard_dir / f"{entity_id}.md"
 
     return base / f"{entity_id}.md"
-
-
-def storage_location_for_path(
-    kind: str,
-    path: Path | str,
-    root: Path | str | None = None,
-) -> str:
-    """Return the v2 storage location label for an entity path."""
-    from . import config  # local import to avoid circular dependency
-
-    root = Path(root) if root else find_project_root()
-    p = Path(path)
-    try:
-        rel = p.resolve().relative_to((root / "context").resolve())
-    except ValueError:
-        return "external"
-    if rel.parts and rel.parts[0] == "archives":
-        return "archive"
-    cfg = config.load_config(root)
-    shard = cfg.sharding_for(kind)
-    if not shard:
-        return "live"
-    archive_template = str(shard.get("archive_template") or "")
-    archive_prefix = archive_template.removeprefix("context/").split("{", 1)[0].strip("/")
-    if archive_prefix and str(rel).startswith(archive_prefix):
-        return "archive"
-    return "live"
 
 
 def primitive_schemas_dir(root: Path | str | None = None) -> Path | None:

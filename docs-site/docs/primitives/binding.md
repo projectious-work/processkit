@@ -24,8 +24,8 @@ cross-reference field otherwise.
 | "A blocks B" | frontmatter `blocks: [BACK-...]` |
 | "Alice is a developer" (globally) | Actor's `roles: [ROLE-...]` |
 | "Alice is tech lead on Project X for Q2 2026" | **Binding** |
-| "Security gate applies to the release process on main" | **Binding** |
-| "Sprint 7 contains these work items" | **Binding** |
+| "Security gate applies to this release WorkItem on main" | **Binding** |
+| "Sprint 7 scopes these work items for Apr 1-14" | **Binding** |
 
 ## Fields
 
@@ -55,11 +55,17 @@ cross-reference field otherwise.
 |---|---|
 | `role-assignment` | Actor → Role (scoped) |
 | `work-assignment` | Actor → WorkItem (assigned to sprint/scope) |
-| `process-gate` | Process → Gate (this gate guards this process step) |
-| `process-scope` | Process → Scope (process runs within this scope) |
-| `schedule-scope` | Schedule → Scope (schedule fires within this scope) |
+| `workitem-gate` | WorkItem → Gate (this gate guards this run or task) |
+| `scope-gate` | Scope → Gate (this gate applies within this scope) |
+| `time-window` | Entity → Artifact/Scope (time or recurrence contract) |
+| `budget-application` | Artifact → WorkItem/Scope (cost policy applies here) |
 | `constraint-scope` | Constraint → Scope (constraint applies in this scope) |
 | `category-assignment` | Entity → Category value |
+
+Process and Schedule are not v2 Binding endpoints. Legacy
+`process-gate`, `process-scope`, and `schedule-scope` records should be
+migrated to concrete WorkItem, Scope, Artifact, Gate, or time-window
+relationships.
 
 ## Example
 

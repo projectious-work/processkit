@@ -78,16 +78,22 @@ if ! uv run "$REPO_ROOT/scripts/generate-mcp-manifest.py"; then
     exit 1
 fi
 
-# Drift guard: ensure context/ (dogfood) and src/context/ (shipped template)
-# are in sync before building the tarball.  If this fails, the release tree
-# is inconsistent with what the changelog claims; fix the drift first.
-echo "running drift guard: context/ vs src/context/" >&2
-if ! "$REPO_ROOT/scripts/check-src-context-drift.sh"; then
+# Release-boundary guard: validate the shipped src/context/ contract directly.
+# Live dogfood context/ may intentionally contain project memory and legacy
+# migration-source state that must not ship in the release tarball.
+echo "running release boundary guard: src/context deliverable" >&2
+if ! "$REPO_ROOT/scripts/check-src-context-drift.sh" --release-deliverable; then
     echo "" >&2
-    echo "error: drift guard failed — src/context/ does not match context/." >&2
-    echo "Run 'scripts/check-src-context-drift.sh --verbose' to inspect the diff," >&2
-    echo "copy updated files from context/ into src/context/, or add a justified" >&2
-    echo "entry to the ALLOWLIST_* constants in check-src-context-drift.sh." >&2
+    echo "error: release boundary guard failed — src/context/ is not shippable." >&2
+    echo "Run 'scripts/check-src-context-drift.sh --release-deliverable' to inspect" >&2
+    echo "forbidden dogfood content, demoted primitive leaks, or stale release files." >&2
+    exit 1
+fi
+
+echo "running release audit: src/context deliverable" >&2
+if ! uv run --script "$REPO_ROOT/context/skills/processkit/release-audit/scripts/release_audit.py" --tree=src-context; then
+    echo "" >&2
+    echo "error: release audit failed for src/context/." >&2
     exit 1
 fi
 

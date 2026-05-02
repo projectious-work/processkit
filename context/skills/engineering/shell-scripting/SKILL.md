@@ -4,7 +4,7 @@ description: |
   Bash scripting — strict mode, quoting, arg parsing, traps, shellcheck compliance. Use when writing or reviewing bash scripts, adding error handling and argument parsing, or fixing shellcheck warnings.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-shell-scripting
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

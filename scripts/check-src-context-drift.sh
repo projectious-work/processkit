@@ -10,8 +10,8 @@
 # detectable at release time rather than post-publish.
 #
 # Exit codes:
-#   0 — trees are in sync (after allowlisted paths are filtered out)
-#   1 — genuine drift detected; offending paths are printed to stderr
+#   0 — selected guard passed
+#   1 — genuine drift or release-contract violation detected
 #   2 — usage error
 
 set -euo pipefail
@@ -89,14 +89,16 @@ SRC="$REPO_ROOT/src/context"
 
 VERBOSE=0
 SHOW_HELP=0
+MODE="drift"
 
 for arg in "$@"; do
     case "$arg" in
         --help|-h)  SHOW_HELP=1 ;;
         --verbose)  VERBOSE=1   ;;
+        --release-deliverable) MODE="release-deliverable" ;;
         *)
             echo "unknown option: $arg" >&2
-            echo "usage: $0 [--help] [--verbose]" >&2
+            echo "usage: $0 [--help] [--verbose] [--release-deliverable]" >&2
             exit 2
             ;;
     esac
@@ -104,10 +106,11 @@ done
 
 if [[ $SHOW_HELP -eq 1 ]]; then
     cat <<'EOF'
-check-src-context-drift.sh — drift guard for context/ vs src/context/
+check-src-context-drift.sh — drift and release-deliverable guards
 
 SYNOPSIS
     scripts/check-src-context-drift.sh [--verbose]
+    scripts/check-src-context-drift.sh --release-deliverable
 
 DESCRIPTION
     Compares the dogfood context tree (context/) against the template tree
@@ -120,9 +123,17 @@ DESCRIPTION
     Run this before every release.  Wire it into build-release-tarball.sh
     so a drift-free tree is a hard pre-condition for building the tarball.
 
+    With --release-deliverable, this script validates the shipped
+    src/context/ contract directly instead of treating live dogfood context/
+    drift as a release blocker. Dogfood state can legitimately contain
+    project memory, generated harness state, and legacy migration-source
+    files that must not ship in a processkit release.
+
 OPTIONS
     --verbose   Also print the full filtered diff output, not just the
                 summary of offending paths.
+    --release-deliverable
+                Validate src/context/ as the release artifact boundary.
     --help      Show this help and exit.
 
 ALLOWLIST
@@ -145,6 +156,96 @@ if [[ ! -d "$DOGFOOD" ]]; then
 fi
 if [[ ! -d "$SRC" ]]; then
     echo "error: src context tree not found: $SRC" >&2
+    exit 1
+fi
+
+if [[ "$MODE" == "release-deliverable" ]]; then
+    failures=()
+
+    required_dirs=(
+        "bindings"
+        "roles"
+        "schemas"
+        "skills"
+        "state-machines"
+        "team"
+        "team-members"
+    )
+    for d in "${required_dirs[@]}"; do
+        if [[ ! -d "$SRC/$d" ]]; then
+            failures+=("missing required release directory: src/context/$d")
+        fi
+    done
+
+    forbidden_dirs=(
+        ".cache"
+        ".state"
+        "artifacts"
+        "decisions"
+        "discussions"
+        "logs"
+        "migrations"
+        "notes"
+        "templates"
+        "workitems"
+    )
+    for d in "${forbidden_dirs[@]}"; do
+        if [[ -e "$SRC/$d" ]]; then
+            failures+=("dogfood-only path must not ship: src/context/$d")
+        fi
+    done
+
+    demoted_dirs=(
+        "metrics"
+        "models"
+        "processes"
+        "schedules"
+        "statemachines"
+    )
+    for d in "${demoted_dirs[@]}"; do
+        if [[ -e "$SRC/$d" ]]; then
+            failures+=("demoted primitive path must not ship: src/context/$d")
+        fi
+    done
+
+    demoted_schemas=(
+        "metric.yaml"
+        "model.yaml"
+        "process.yaml"
+        "schedule.yaml"
+        "statemachine.yaml"
+    )
+    for f in "${demoted_schemas[@]}"; do
+        if [[ -e "$SRC/schemas/$f" ]]; then
+            failures+=("demoted primitive schema must not ship: src/context/schemas/$f")
+        fi
+    done
+
+    if [[ ! -f "$SRC/.processkit-mcp-manifest.json" ]]; then
+        failures+=("missing MCP manifest: src/context/.processkit-mcp-manifest.json")
+    fi
+
+    if command -v rg >/dev/null 2>&1; then
+        if rg -n '(^kind:\s*(Model|Process|Metric|Schedule)\s*$|target_kind:\s*(Model|Process|Metric|Schedule)\s*$)' "$SRC" >/dev/null 2>&1; then
+            failures+=(
+                "shipped src/context contains demoted entity vocabulary "
+                "(kind or target_kind for Model/Process/Metric/Schedule)"
+            )
+        fi
+    fi
+
+    if [[ ${#failures[@]} -eq 0 ]]; then
+        echo "OK: src/context release deliverable contract passed." >&2
+        exit 0
+    fi
+
+    echo "RELEASE DELIVERABLE CONTRACT VIOLATIONS:" >&2
+    printf '  - %s\n' "${failures[@]}" >&2
+    echo "" >&2
+    echo "To fix:" >&2
+    echo "  1. Keep project memory and legacy migration-source state in context/." >&2
+    echo "  2. Keep shipped release content under src/context/." >&2
+    echo "  3. Remove demoted primitive directories/schemas from src/context/." >&2
     exit 1
 fi
 

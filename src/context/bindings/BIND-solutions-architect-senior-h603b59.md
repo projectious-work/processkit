@@ -9,7 +9,6 @@ spec:
   subject: ROLE-solutions-architect
   subject_kind: Role
   target: MODEL-anthropic-claude-opus
-  target_kind: Model
   conditions:
     seniority: senior
     rank: 1

@@ -4,7 +4,7 @@ description: |
   FastAPI patterns — dependency injection, Pydantic models, async endpoints, middleware, and testing. Use when building FastAPI applications, designing API endpoints, adding authentication, or reviewing FastAPI code.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-fastapi-patterns
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

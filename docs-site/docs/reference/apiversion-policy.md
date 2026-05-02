@@ -28,7 +28,7 @@ parts.
 |-----------------------------------------|-------------------|------------------------------------------------------|
 | `processkit.projectious.work/v1`        | current (v0.1.0+) | Initial stable version                               |
 | `processkit.projectious.work/v1beta1`   | not used          | Reserved                                             |
-| `processkit.projectious.work/v2`        | future            | Bumped when a breaking change requires migration    |
+| `processkit.projectious.work/v2`        | planned           | Breaking contract with explicit migration required   |
 
 ### Non-breaking changes (stay at v1)
 
@@ -48,14 +48,30 @@ parts.
 
 ## Migration between versions
 
-When v2 is introduced:
+The SmoothTiger/SmoothRiver v2 direction is a **no-shim** contract:
+v2 schemas and index semantics become authoritative, and processkit does
+not add hidden dual-read or permissive validation paths for v1 data.
+Existing v1 contexts remain a migration source, not a long-term
+compatibility target.
 
-1. processkit ships both v1 and v2 schemas for a transition period.
-2. `aibox sync` generates a diff between the old upstream reference
+For a v1 context moving to v2:
+
+1. `aibox sync` generates a diff between the old upstream reference
    templates (stored verbatim in
    `context/templates/processkit/<old-version>/`) and the new ones.
-3. The diff is presented to the agent as a migration prompt.
-4. The agent applies the changes with human approval.
-5. After a deprecation window, v1 schemas are removed.
+2. A `Migration` entity records the affected files, source and target
+   `apiVersion`, source and target processkit versions, and the proposed
+   plan.
+3. The agent runs the migration through `migration-management`, using
+   dry-run diagnostics before applying changes.
+4. The user approves the project-specific plan before the migration
+   reaches `applied`.
+5. After migration, v2 validation rejects unknown kinds, stale primitive
+   assumptions, and ad hoc event/type vocabulary that v1 tolerated.
 
 No automatic in-place patching — migrations always go through the agent.
+
+Provenance: the v2 direction follows
+`DEC-20260430_1416-SmoothTiger-adopt-breaking-v2-implementation-plan-for`
+and the SmoothRiver work plan at
+https://github.com/projectious-work/internal/blob/main/context/artifacts/ART-20260430_1242-SmoothRiver-processkit-project-work-plan.md.

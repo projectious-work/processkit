@@ -65,4 +65,5 @@ spec:
   result in one call.
 - Advisory gates (`blocking: false`) surface warnings without halting
   the process.
-- Attach gates to process steps via a `process-gate` Binding.
+- Attach gates to concrete v2 surfaces via `workitem-gate` or
+  `scope-gate` Bindings. Legacy `process-gate` Bindings are migration-only.

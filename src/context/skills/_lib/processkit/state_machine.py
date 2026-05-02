@@ -1,13 +1,13 @@
 """State machine loading and transition validation.
 
-State machines live in two places:
+State-machine definitions live in two places:
 
-- ``src/primitives/state-machines/<name>.yaml`` — defaults shipped by processkit
+- ``src/context/state-machines/<name>.yaml`` - defaults shipped by processkit
 - ``context/state-machines/<name>.yaml`` — project overrides
 
-The override is preferred when both exist. Each file is itself a
-processkit entity (``kind: StateMachine``) with ``spec.initial``,
-``spec.terminal``, and ``spec.states``.
+The override is preferred when both exist. These YAML files use
+``kind: StateMachine`` as a runtime definition marker for the loader; in
+v2 they are not registered as first-class indexed primitives.
 """
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ def load(name: str, sm_dir: Path | None = None) -> StateMachine:
     except yaml.YAMLError as e:
         raise StateMachineError(f"invalid YAML in {candidate}: {e}") from e
     if not isinstance(data, dict) or data.get("kind") != "StateMachine":
-        raise StateMachineError(f"{candidate} is not a StateMachine entity")
+        raise StateMachineError(f"{candidate} is not a StateMachine definition")
     spec = data.get("spec", {})
     if "initial" not in spec or "states" not in spec:
         raise StateMachineError(f"{candidate} missing spec.initial or spec.states")

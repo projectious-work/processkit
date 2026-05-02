@@ -4,7 +4,7 @@ description: |
   Simulates a panel of expert advisors who each evaluate a problem from their distinct perspective — surfacing blind spots and generating more diverse thinking than a single viewpoint. Use when asked to get multiple perspectives, consult experts, think through a decision from different angles, or when a problem benefits from specialist input.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-board-of-advisors
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

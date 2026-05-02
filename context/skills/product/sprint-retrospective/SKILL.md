@@ -4,7 +4,7 @@ description: |
   Facilitates team or project retrospectives — what worked, what didn't, action items. Use at the end of a sprint, milestone, or project phase to reflect on what went well, what didn't, and what to try next.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-sprint-retrospective
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

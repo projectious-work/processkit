@@ -4,7 +4,7 @@ description: |
   Data quality framework — completeness, accuracy, consistency, validation, and contracts. Use when implementing data validation, setting up quality checks for a pipeline, defining data contracts between teams, or investigating data anomalies.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-data-quality
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

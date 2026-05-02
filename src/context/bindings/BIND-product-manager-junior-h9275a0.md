@@ -9,7 +9,6 @@ spec:
   subject: ROLE-product-manager
   subject_kind: Role
   target: MODEL-anthropic-claude-haiku
-  target_kind: Model
   conditions:
     seniority: junior
     rank: 1

@@ -4,7 +4,7 @@ description: |
   DataFrame operations with pandas and polars — groupby, joins, reshaping, performance. Use when manipulating tabular data, choosing between pandas and polars, optimizing DataFrame code, or translating between the two libraries.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-pandas-polars
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

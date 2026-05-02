@@ -4,7 +4,7 @@ description: |
   Structured code review with a checklist covering correctness, clarity, tests, security, performance, and style. Use when reviewing a PR, diff, or set of code changes before merging — including phrases like "review this", "check my changes", or "is this ready to merge".
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-code-review
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

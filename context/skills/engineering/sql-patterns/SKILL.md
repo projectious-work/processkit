@@ -4,7 +4,7 @@ description: |
   SQL query patterns, schema design, and optimization — joins, CTEs, window functions, indexing, and anti-patterns. Use when writing or optimizing SQL queries, designing or reviewing a relational schema, reading EXPLAIN plans, choosing indexes, or implementing pagination, deduplication, or analytical queries.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-sql-patterns
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

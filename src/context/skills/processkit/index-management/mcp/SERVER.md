@@ -2,7 +2,13 @@
 
 SQLite-backed index over all entity files in the project. Provides
 query/search/lookup tools used directly by agents and indirectly by other
-processkit MCP servers (which call `upsert_entity` after writing files).
+processkit MCP servers, which refresh the shared index after writing
+files.
+
+This server documents its own tool contract only. In gateway deployments,
+the gateway must expose only the processkit servers present in the
+installed/merged MCP configuration; this file is not an aggregate tool
+manifest.
 
 ## Tools
 
@@ -36,7 +42,7 @@ uv run /path/to/processkit/src/skills/index-management/mcp/server.py
 When installed by aibox into a consumer project:
 
 ```bash
-uv run context/skills/index-management/mcp/server.py
+uv run context/skills/processkit/index-management/mcp/server.py
 ```
 
 Either form first cold-starts uv (~5–10s), then runs the MCP server on

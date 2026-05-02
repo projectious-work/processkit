@@ -9,15 +9,12 @@ no RBAC enforcement attached.
 | Tool | Purpose |
 |---|---|
 | `create_role(name, description, responsibilities?, skills_required?, default_scope?)` | Create a new Role |
-| `create_role_template(template, name?)` | Instantiate a built-in starter Role template such as `inbox-triage` |
 | `get_role(id)` | Fetch a single Role by ID |
 | `update_role(id, ...)` | Update description, responsibilities, skills_required, default_scope (name is intentionally not updatable — supersede instead) |
 | `list_roles(default_scope?, limit?)` | List Role entities |
 | `link_role_to_actor(role_id, actor_id, scope?, valid_from?, valid_until?, description?)` | Create a Binding (type: role-assignment) connecting an Actor to a Role, with optional scope and time bounds |
 
 `default_scope` must be one of `project`, `sprint`, `permanent`.
-Built-in templates currently include `inbox-triage`, the starter role for
-classifying hook-inbox Notes and creating triage-classification Bindings.
 
 ## Storage
 

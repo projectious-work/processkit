@@ -4,7 +4,7 @@ description: |
   Create, transition, query, and link WorkItems — tasks, stories, bugs, epics. Use when the user asks to add, update, query, or link work items — backlog items, tasks, bugs, user stories, or epics.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-workitem-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z

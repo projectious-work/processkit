@@ -14,9 +14,9 @@ Also records `per_server_header`: sha256 of the PEP 723 inline metadata
 block (`# /// script` ... `# ///`) of every `mcp/server.py`. The
 pk-doctor `server_header_drift` check (RapidSwan) compares these against
 the live files to detect dep edits that need a harness restart.
-`aggregate_sha256` continues to cover per_skill mcp-config.json files
-only — it is the public contract aibox#54 watches and intentionally
-unaffected by header drift.
+`aggregate_sha256` continues to cover granular per_skill mcp-config.json
+files only — it is the public contract aibox#54 watches and intentionally
+unaffected by header drift or the optional gateway-mode config.
 
 Downstream installers (notably `aibox sync`) are expected to compare the
 `aggregate_sha256` against their last-merged state and re-merge the
@@ -46,6 +46,12 @@ MANIFEST_VERSION = 1
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOGFOOD_MANIFEST = REPO_ROOT / "context" / ".processkit-mcp-manifest.json"
 SRC_MANIFEST = REPO_ROOT / "src" / "context" / ".processkit-mcp-manifest.json"
+GATEWAY_CONFIG_REL = Path(
+    "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
+)
+SRC_GATEWAY_CONFIG_REL = Path(
+    "src/context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
+)
 
 
 def _canonical_json(data: object) -> str:
@@ -95,6 +101,8 @@ def _collect_entries(repo_root: Path) -> list[dict]:
     # Current layout: context/skills/<category>/<slug>/mcp/mcp-config.json
     for cfg in sorted(skills_root.glob("*/*/mcp/mcp-config.json")):
         rel = cfg.relative_to(repo_root).as_posix()
+        if rel == GATEWAY_CONFIG_REL.as_posix():
+            continue
         if rel in seen:
             continue
         seen.add(rel)
@@ -102,12 +110,32 @@ def _collect_entries(repo_root: Path) -> list[dict]:
     # Fallback flat layout: context/skills/<slug>/mcp/mcp-config.json
     for cfg in sorted(skills_root.glob("*/mcp/mcp-config.json")):
         rel = cfg.relative_to(repo_root).as_posix()
+        if rel == GATEWAY_CONFIG_REL.as_posix():
+            continue
         if rel in seen:
             continue
         seen.add(rel)
         entries.append({"path": rel, "sha256": _sha256_of_file(cfg)})
     entries.sort(key=lambda e: e["path"])
     return entries
+
+
+def _collect_gateway_entries(repo_root: Path) -> list[dict]:
+    """Return optional gateway-mode config entries.
+
+    Gateway mode is an opt-in alternative to registering every granular
+    processkit MCP config in a harness. Keep it outside the granular
+    aggregate so existing aibox#54 drift behavior remains stable.
+    """
+    cfg = repo_root / GATEWAY_CONFIG_REL
+    if not cfg.is_file():
+        cfg = repo_root / SRC_GATEWAY_CONFIG_REL
+    if not cfg.is_file():
+        return []
+    return [{
+        "path": GATEWAY_CONFIG_REL.as_posix(),
+        "sha256": _sha256_of_file(cfg),
+    }]
 
 
 def _extract_pep723_header(path: Path) -> str | None:
@@ -181,10 +209,11 @@ def _write_manifest(path: Path, manifest: dict) -> None:
 def main() -> int:
     try:
         entries = _collect_entries(REPO_ROOT)
+        gateway_entries = _collect_gateway_entries(REPO_ROOT)
     except Exception as e:
         print(f"error: failed to collect mcp-config.json files: {e}", file=sys.stderr)
         return 1
-    if not entries:
+    if not entries and not gateway_entries:
         print(
             "error: no context/skills/*/mcp/mcp-config.json files found",
             file=sys.stderr,
@@ -207,6 +236,7 @@ def main() -> int:
         existing
         and existing.get("aggregate_sha256") == aggregate
         and existing.get("per_skill") == entries
+        and existing.get("per_gateway") == gateway_entries
         and existing.get("per_server_header") == server_headers
         and existing.get("processkit_version") == version
         and isinstance(existing.get("generated_at"), str)
@@ -219,6 +249,7 @@ def main() -> int:
         "generated_at": generated_at,
         "processkit_version": version,
         "per_skill": entries,
+        "per_gateway": gateway_entries,
         "per_server_header": server_headers,
         "aggregate_sha256": aggregate,
     }

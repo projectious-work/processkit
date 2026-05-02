@@ -6,7 +6,7 @@ description: >
   Governance) and displaying a spider-chart profile.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-model-recommender
     version: "1.2.0"
     created: 2026-04-09T00:00:00Z

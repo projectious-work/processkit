@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Documentation
 metadata:
   id: FORMAT
@@ -26,7 +26,7 @@ both humans and tools to parse.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1        # required — schema version
+apiVersion: processkit.projectious.work/v2        # required — schema version
 kind: WorkItem                   # required — primitive type
 metadata:                        # required — identity and bookkeeping
   id: BACK-calm-fox              # required — unique within repo
@@ -50,7 +50,7 @@ Human-readable description, acceptance criteria, notes, history.
 
 | Key          | Required | Purpose                                                    |
 |--------------|----------|------------------------------------------------------------|
-| `apiVersion` | yes      | Schema version. Enables migrations. Always `processkit.projectious.work/v1` at v0.1.0. |
+| `apiVersion` | yes      | Schema version. Enables migrations. Shipped v2 release content uses `processkit.projectious.work/v2`. |
 | `kind`       | yes      | Primitive type. Determines which schema validates `spec`.  |
 | `metadata`   | yes      | Identity, timestamps, labels. Cross-cutting fields.        |
 | `spec`       | yes      | Entity-specific fields. Schema lives in `primitives/schemas/<kind>.yaml`. |
@@ -103,9 +103,9 @@ organizations fork or publish compatible primitives under their own domains.
 
 | apiVersion                              | Status            | Notes                                                 |
 |-----------------------------------------|-------------------|-------------------------------------------------------|
-| `processkit.projectious.work/v1`        | current (v0.1.0+) | Initial stable version.                               |
+| `processkit.projectious.work/v1`        | legacy            | Initial stable version and migration-source format.   |
 | `processkit.projectious.work/v1beta1`   | not used          | Reserved. Use `v1` directly for now.                  |
-| `processkit.projectious.work/v2`        | future            | Introduced when a breaking change requires migration. |
+| `processkit.projectious.work/v2`        | current           | Current shipped release contract.                     |
 
 Migrations are handled by `aibox sync`, which generates a diff between
 the old upstream reference templates (stored verbatim in
@@ -114,7 +114,7 @@ producing prompts for the agent to apply with human approval.
 
 ### kind registry
 
-The 19 primitive kinds (18 from v0.1.0 plus Migration added in v0.4.0):
+The shipped v2 primitive kinds are:
 
 | kind             | schema file                               | state machine? |
 |------------------|-------------------------------------------|----------------|
@@ -124,12 +124,8 @@ The 19 primitive kinds (18 from v0.1.0 plus Migration added in v0.4.0):
 | Migration        | `schemas/migration.yaml`                  | yes            |
 | Artifact         | `schemas/artifact.yaml` (Phase 2)         | no             |
 | Role             | `schemas/role.yaml` (Phase 2)             | no             |
-| Process          | `schemas/process.yaml` (Phase 2)          | no             |
-| StateMachine     | `schemas/statemachine.yaml` (Phase 2)     | no             |
 | Category         | `schemas/category.yaml` (Phase 2)         | no             |
 | Gate             | `schemas/gate.yaml` (Phase 2)             | no             |
-| Metric           | `schemas/metric.yaml` (Phase 2)           | no             |
-| Schedule         | `schemas/schedule.yaml` (Phase 2)         | no             |
 | Scope            | `schemas/scope.yaml` (Phase 2)            | yes (active/archived) |
 | Constraint       | `schemas/constraint.yaml` (Phase 2)       | no             |
 | Context          | `schemas/context.yaml` (Phase 2)          | no             |
@@ -150,6 +146,14 @@ the workflow.
 relationships are expressed as references in frontmatter (`blocks: [BACK-...]`,
 `related: [DEC-...]`). Use `Binding` instead when the relationship has its own
 scope, temporality, or attributes.
+
+`Metric`, `Model`, `Process`, `Schedule`, and `StateMachine` are legacy
+v1 migration-source kinds. v2 represents model data through the
+model-recommender roster/configuration surface, process definitions as
+Artifacts plus process-instance WorkItems, schedule concepts as time-window
+Bindings, and metric/policy definitions as artifact-backed configuration.
+Runtime state-machine YAML files remain implementation contracts; they are
+not user-authored StateMachine entities.
 
 ### spec validation
 
@@ -207,7 +211,7 @@ spec:
 
 ```yaml
 # Binding (first-class entity, own file)
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Binding
 metadata:
   id: BIND-bright-falcon

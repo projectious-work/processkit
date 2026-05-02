@@ -29,3 +29,30 @@ while emitting runtime policy files for enforcement systems. Agent-IDS
 rules project to canonical JSON. Tetragon tracing policies project to
 YAML shaped like Cilium Tetragon `TracingPolicy` resources.
 
+## Overview
+
+Projection tools read security policy Artifacts and write runtime policy
+files with deterministic content and checksums. The emitted files are
+deployment artifacts; processkit Artifacts remain the reviewed policy
+source.
+
+## Gotchas
+
+- Do not hand-edit projected policy files as the source of truth. Update
+  the source Artifact and project again.
+- Do not project broad enforcement policies without a related decision or
+  gate evidence explaining the rollout scope.
+- Treat missing projection checksums as stale output and regenerate before
+  release.
+
+## Full reference
+
+### MCP tools
+
+- `project_agent_ids_rule`
+- `project_tetragon_tracing_policy`
+
+### Source entities
+
+- `Artifact(spec.kind=agent-ids-rule)`
+- `Artifact(spec.kind=image-provenance-policy)`

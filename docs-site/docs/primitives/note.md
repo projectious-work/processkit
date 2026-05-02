@@ -64,6 +64,12 @@ agent-generated interrupts as Notes with `spec.inbox`. Inbox items move
 through `captured`, `claimed`, `completed`, or `failed`, with an
 `injection_mode` of `interrupt`, `ambient`, or `next-cycle`.
 
+Hook adapters may use the filesystem hand-off directories
+`tasks/inbox/`, `tasks/claimed/`, `tasks/done/`, and `tasks/failed/`.
+Use `prepare_hook_inbox_dirs` to create that layout, then
+`capture_inbox_item`, `claim_inbox_item`, `complete_inbox_item`, and
+`fail_inbox_item` to keep the canonical Note state in processkit.
+
 ## Links — typed Zettelkasten edges
 
 Each entry in `links` has:

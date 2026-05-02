@@ -29,12 +29,11 @@ every entity-creating skill.
 
 > **MCP server.** This skill ships a self-contained MCP server at
 > `mcp/server.py` (PEP 723 script — requires `uv` and Python ≥ 3.10 on
-> PATH). Agent harnesses reach its tools by reading a single MCP config
-> file at startup, so the contents of `mcp/mcp-config.json` must be merged
-> into the harness's MCP config and placed at the harness-specific path
-> before this skill is usable. If processkit was installed by an installer,
-> that wiring is the installer's responsibility; if processkit was
-> installed manually, the project owner must do it by hand.
+> PATH). Agent harnesses may reach it directly from this skill's
+> `mcp/mcp-config.json` or through the processkit gateway. Gateway
+> deployments must surface only the processkit servers present in the
+> installed/merged MCP configuration; this skill does not imply that
+> unrelated processkit tools are available.
 
 ## Overview
 
@@ -53,10 +52,11 @@ every entity-creating skill.
 
 ### When to use
 
-The MCP server runs continuously inside the dev container. Agents call it
-whenever they need fast lookup. Other MCP servers (`workitem-management`,
-`decision-record`, etc.) call `reindex` after writing a new entity to
-keep the index fresh.
+Agents call the MCP server whenever they need fast lookup. Other MCP
+servers (`workitem-management`, `decision-record`, etc.) refresh the
+index after writing a new entity to keep reads current. In gateway
+deployments, the gateway only routes to index-management if this server
+is present in the installed MCP configuration.
 
 ### Where the database lives
 
@@ -147,11 +147,11 @@ can fix them. The errors table is cleared at the start of each reindex.
 ### Tools that other servers call
 
 `workitem-management`, `decision-record`, `binding-management`, and
-`event-log` all call `index_management.upsert_entity` after writing a
-new file. This keeps the index in sync without a full reindex on every
-mutation. From an MCP-protocol perspective each server has its own
-process — they communicate by sharing the same SQLite database file
-(WAL mode would be enabled in a future release for concurrent writes).
+`event-log` all call the shared index library after writing a new file.
+This keeps the index in sync without a full reindex on every mutation.
+From an MCP-protocol perspective each configured server has its own
+process, or is reached through the gateway, and they communicate by
+sharing the same SQLite database file.
 
 ### Configuration
 

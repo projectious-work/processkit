@@ -4,7 +4,7 @@ description: |
   Data analysis workflow from import through modeling and communication. Use when analyzing a dataset, exploring data, building a statistical model, selecting features, or communicating findings to stakeholders.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-data-science
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

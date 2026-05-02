@@ -27,7 +27,7 @@ HERE = Path(__file__).parent
 SCORES_FILE = HERE / "model_scores.json"
 CONFIG_FILE = HERE / "user_config.json"
 
-# Walk up to repo root to find context/models/ (first-class Model artifacts).
+# Walk up to repo root to find legacy context/models/ entity cards.
 # The MCP lives at <repo>/context/skills/processkit/model-recommender/mcp/server.py
 # so HERE.parents[4] is the repo root:
 #   [0] model-recommender  [1] processkit  [2] skills
@@ -83,7 +83,7 @@ def _parse_frontmatter(text: str) -> dict | None:
 
 
 def _entity_to_legacy(entity: dict) -> list[dict]:
-    """Convert a Model entity artifact into one legacy JSON-style dict per
+    """Convert a legacy Model entity card into one JSON-style dict per
     version, so the existing server tools work unchanged.
     """
     spec = entity.get("spec", {})
@@ -159,11 +159,11 @@ def _entity_to_legacy(entity: dict) -> list[dict]:
 
 
 def _load_from_artifacts() -> dict | None:
-    """Load models from `context/models/*.md` entity artifacts.
+    """Load models from legacy `context/models/*.md` entity cards.
 
     Returns a dict in the same shape as model_scores.json (with "_meta"
-    and "models") when the directory exists and has ≥1 parseable
-    artifact; returns None otherwise (caller falls back to JSON).
+    and "models") when the directory exists and has at least one
+    parseable card; returns None otherwise.
     """
     if not MODELS_DIR.is_dir():
         return None
@@ -193,13 +193,16 @@ def _load_from_artifacts() -> dict | None:
 
 
 def _load_scores() -> dict:
-    # Prefer first-class Model artifacts when available; fall back to
-    # the legacy monolithic registry for backward compatibility.
+    # v2 treats the roster as this skill's data, not a first-class
+    # processkit primitive. Prefer the packaged roster and keep the old
+    # Model-entity loader only as an install/back-compat fallback.
+    if SCORES_FILE.exists():
+        with open(SCORES_FILE) as f:
+            return json.load(f)
     from_artifacts = _load_from_artifacts()
     if from_artifacts is not None:
         return from_artifacts
-    with open(SCORES_FILE) as f:
-        return json.load(f)
+    raise FileNotFoundError(f"model roster not found: {SCORES_FILE}")
 
 def _load_config() -> dict:
     if CONFIG_FILE.exists():

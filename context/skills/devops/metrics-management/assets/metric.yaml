@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Metric
 metadata:
   id: METRIC-TODO
@@ -8,7 +8,7 @@ spec:
   name: TODO
   description: TODO
   unit: TODO
-  direction: higher-is-better
+  direction: higher-is-better    # higher-is-better | lower-is-better | target
   measurement: TODO
   target: TODO
   tolerance: TODO

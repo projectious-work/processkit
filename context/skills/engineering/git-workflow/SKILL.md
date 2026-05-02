@@ -4,7 +4,7 @@ description: |
   Git workflow conventions — branch naming, conventional commits, PR descriptions, and merge strategy. Use when deciding on a branch name, writing a commit message or PR description, or choosing a merge strategy.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-git-workflow
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

@@ -4,7 +4,7 @@ description: |
   Protobuf schema design and gRPC service patterns — streaming, error handling, backward compatibility. Use when designing .proto files, implementing gRPC services or clients, choosing a streaming pattern, handling gRPC errors, or evolving a schema without breaking consumers.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-grpc-protobuf
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

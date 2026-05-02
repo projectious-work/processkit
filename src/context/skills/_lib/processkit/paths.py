@@ -21,9 +21,10 @@ a checkout):
     <processkit-root>/
       AGENTS.md
       src/
-        primitives/
-        skills/
-        lib/
+        context/
+          schemas/
+          state-machines/
+          skills/
       context/
 
 Servers may be invoked in either context. The functions here resolve
@@ -67,14 +68,22 @@ def find_project_root(start: Path | str | None = None) -> Path:
 def find_processkit_root(server_path: Path | str) -> Path | None:
     """Locate the processkit checkout root containing ``server_path``.
 
-    Looks for ``src/lib/processkit/__init__.py`` upward from the given
-    server script. Returns the directory containing ``src/`` or None if
-    the script is not running from a processkit checkout (e.g. installed
-    by aibox into ``context/skills/``).
+    Looks for ``src/context/skills/_lib/processkit/__init__.py`` upward from
+    the given server script. Returns the directory containing ``src/`` or None
+    if the script is not running from a processkit checkout (e.g. installed by
+    aibox into ``context/skills/``).
     """
     here = Path(server_path).resolve().parent
     while True:
-        if (here / "src" / "lib" / "processkit" / "__init__.py").is_file():
+        if (
+            here
+            / "src"
+            / "context"
+            / "skills"
+            / "_lib"
+            / "processkit"
+            / "__init__.py"
+        ).is_file():
             return here
         if here.parent == here:
             return None
@@ -225,14 +234,14 @@ def primitive_schemas_dir(root: Path | str | None = None) -> Path | None:
     """Where the JSON-Schema YAML files live.
 
     Tries the consumer's installed location (``context/schemas/``)
-    first, then the processkit checkout (``src/primitives/schemas/``).
+    first, then the processkit checkout (``src/context/schemas/``).
     Returns None if neither exists.
     """
     root = Path(root) if root else find_project_root()
     consumer = root / "context" / "schemas"
     if consumer.is_dir():
         return consumer
-    processkit = root / "src" / "primitives" / "schemas"
+    processkit = root / "src" / "context" / "schemas"
     if processkit.is_dir():
         return processkit
     return None
@@ -243,14 +252,14 @@ def state_machines_dir(root: Path | str | None = None) -> Path | None:
 
     Tries the consumer's installed location (``context/state-machines/``)
     first, then the processkit checkout
-    (``src/primitives/state-machines/``). Returns None if neither
+    (``src/context/state-machines/``). Returns None if neither
     exists.
     """
     root = Path(root) if root else find_project_root()
     consumer = root / "context" / "state-machines"
     if consumer.is_dir():
         return consumer
-    processkit = root / "src" / "primitives" / "state-machines"
+    processkit = root / "src" / "context" / "state-machines"
     if processkit.is_dir():
         return processkit
     return None

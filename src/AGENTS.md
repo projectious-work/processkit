@@ -140,10 +140,11 @@ rather than assuming you are alone.
   `team-manager.get_active_interlocutor`. If configured, show the
   TeamMember identity at session start; otherwise state that the current
   speaker is an ephemeral harness agent.
-- **Models** live under `context/models/` as first-class entities, one
-  per `(provider, family)` with nested versions. Each declares an
-  `equivalent_tier` in the T-shirt capacity ladder
-  (`xs / s / m / l / xl / xxl`, extensible both directions).
+- **Model data** is model-recommender roster/configuration data, not a
+  process primitive in the v2 contract. Existing v1 `context/models/`
+  trees are migration sources until the explicit v2 migration has
+  completed. Do not add compatibility shims that make v1 and v2 model
+  shapes both authoritative.
 - **Routing** via `model-recommender.resolve_model(role, seniority,
   team_member?, scope?, task_hints?)` — an 8-layer precedence chain
   reading `model-assignment` bindings from `context/bindings/`. A

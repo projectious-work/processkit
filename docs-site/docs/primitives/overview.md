@@ -5,13 +5,12 @@ title: "Overview"
 
 # Primitives — Overview
 
-processkit provides **20 process primitives** as universal building blocks.
-They are framework-agnostic — they appear in every serious process methodology
-(SAFe, PMBOK, CMMI, Scrum, Kanban). processkit ships their schemas, default
-state machines, and management skills, but does not impose a methodology on
-top of them.
+processkit provides a compact set of process primitives as universal
+building blocks. The v2 direction keeps durable project facts in the
+entity layer and moves workflow definitions, schedules, runtime model
+data, and lifecycle implementation details to narrower surfaces.
 
-## The 20 primitives
+## Registry and legacy schemas
 
 | Primitive         | Purpose                                                           | Prefix |
 |-------------------|-------------------------------------------------------------------|--------|
@@ -28,13 +27,22 @@ top of them.
 | **Category**      | Classification axis with defined values                          | CAT    |
 | **CrossReference**| Lightweight frontmatter relationship (not a file)                | —      |
 | **Gate**          | Validation checkpoint                                             | GATE   |
-| **Metric**        | Quantified observation                                            | METRIC |
-| **Schedule**      | Time-based trigger / cadence                                     | SCHED  |
+| **Schedule**      | Legacy v1 time trigger; v2 uses `Binding(type=time-window)`      | SCHED  |
 | **Constraint**    | Rule or limit the project must respect                          | CONST  |
 | **Context**       | Ambient knowledge and environment                                 | CTX    |
 | **Discussion**    | Multi-turn exploratory conversation                               | DISC   |
-| **Process**       | Declarative workflow definition                                  | PROC   |
-| **StateMachine**  | State/transition graph for lifecycle primitives                  | SM     |
+| **Process**       | Legacy v1 workflow entity; v2 uses process-instance WorkItems plus definition Artifacts | PROC |
+| **StateMachine**  | Legacy v1 lifecycle entity; v2 treats state machines as implementation contracts | SM |
+
+`Metric`, `Model`, `Process`, `Schedule`, and `StateMachine` are not
+first-class shipped entity surfaces in the SmoothTiger/SmoothRiver v2
+direction. Metric and policy definitions become artifact-backed
+specifications; readings and events are LogEntries or external time
+series. Model data belongs to model-recommender roster/configuration
+surfaces. Processes are represented by process-instance WorkItems with
+definition Artifacts. Schedules are represented by time-window Bindings.
+State machines remain validation machinery, not author-facing workflow
+records.
 
 ## Layered relationships
 
@@ -44,8 +52,8 @@ Primitives depend on each other through the skill hierarchy:
 Layer 0: index (infrastructure), id (infrastructure), LogEntry (event-log)
 Layer 1: Actor (actor-profile), Role (role-management)
 Layer 2: WorkItem, DecisionRecord, Scope, Category, Binding, CrossReference
-Layer 3: Process, StateMachine, Gate, Schedule, Constraint, Migration
-Layer 4: Discussion, Metric, Owner profile (owner-profiling), Context grooming
+Layer 3: Gate, Constraint, Migration, workflow/projection skills
+Layer 4: Discussion, metrics-management, Owner profile (owner-profiling), Context grooming
 ```
 
 Lower layers never depend on higher layers. The management skill for a
@@ -68,7 +76,7 @@ See [Primitives → Relationships](./relationships) for details.
 
 ## Schema coverage
 
-All 20 primitives ship with authoritative YAML schema files under
+The current schema tree includes these authoritative YAML schema files under
 [`src/context/schemas/`](https://github.com/projectious-work/processkit/tree/main/src/context/schemas/).
 The schemas define the `spec` fields, required vs optional, and enum
 constraints. MCP servers validate against the schema on every write call —

@@ -8,7 +8,7 @@ description: |
   that run daily standups.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-standup-context
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
@@ -56,7 +56,7 @@ Every standup has exactly four fields:
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: LogEntry
 metadata:
   id: LOG-<next-id>

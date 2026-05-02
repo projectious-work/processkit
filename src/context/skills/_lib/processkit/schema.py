@@ -1,6 +1,6 @@
 """Load primitive schemas and validate entity ``spec`` blocks.
 
-Schemas live in ``src/primitives/schemas/<kind-lowercase>.yaml`` and are
+Schemas live in ``src/context/schemas/<kind-lowercase>.yaml`` and are
 themselves processkit entities (``kind: Schema``). Each schema's
 ``spec.spec_schema`` is a JSON Schema (draft 2020-12) for the target
 primitive's ``spec`` block.
@@ -100,6 +100,7 @@ def _validate_known_vocabulary(
         ("Artifact", "kind", "known_kinds"),
         ("Binding", "type", "known_types"),
         ("LogEntry", "event_type", "known_event_types"),
+        ("Migration", "kind", "known_kinds"),
         ("WorkItem", "type", "known_types"),
     )
     errors: list[str] = []

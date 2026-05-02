@@ -4,7 +4,7 @@ description: |
   Structured logging strategy — levels, correlation IDs, context propagation, PII avoidance. Use when designing a logging approach, reviewing log statements, setting up log aggregation (ELK, Loki, CloudWatch), adding correlation IDs to a distributed system, or deciding what to log and what to keep out.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-logging-strategy
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

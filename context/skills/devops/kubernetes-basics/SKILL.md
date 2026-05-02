@@ -4,7 +4,7 @@ description: |
   Kubernetes cluster management — resources, networking, storage, Helm, troubleshooting. Use when writing Kubernetes manifests, running kubectl or helm, debugging pods and services, or configuring ingress, DNS, storage, or network policies.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-kubernetes-basics
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

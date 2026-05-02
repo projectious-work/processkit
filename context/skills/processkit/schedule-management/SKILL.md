@@ -1,7 +1,9 @@
 ---
 name: schedule-management
 description: |
-  Manage Schedule entities — time-based triggers and recurring cadences (daily standup, weekly review, monthly retro). Use when defining a recurring cadence — daily/weekly/monthly — that triggers a process or reminder.
+  Legacy/migration guidance for v1 Schedule entities. In v2, define
+  recurring cadences as Binding(type=time-window) records with recurrence
+  conditions instead of creating new Schedule records.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
@@ -22,73 +24,73 @@ metadata:
 
 ## Intro
 
-A Schedule is a time-based trigger describing when a process should run or
-a reminder should fire — daily standups, weekly retros, monthly ops reviews,
-quarterly planning.
+In v1, a Schedule was a time-based trigger describing when a process or
+reminder should fire. In v2, Schedule is not a first-class primitive
+authoring surface. Use `Binding(type=time-window)` with recurrence
+conditions, and let an external runner perform execution.
 
 ## Overview
 
-### Shape
+### v2 shape
 
 ```yaml
 ---
 apiVersion: processkit.projectious.work/v2
-kind: Schedule
+kind: Binding
 metadata:
-  id: SCHED-daily-standup
+  id: BIND-daily-standup-window
   created: 2026-04-06T00:00:00Z
 spec:
-  name: daily-standup
-  description: "Daily async standup at 09:00 local time."
-  cadence: daily
-  cron: "0 9 * * 1-5"
-  timezone: Europe/Berlin
-  triggers:
-    - process: standup
-  active: true
+  type: time-window
+  subject: BACK-daily-standup-run
+  target: ART-daily-standup-recurrence
+  conditions:
+    recurrence_rule: "FREQ=DAILY;BYHOUR=9;BYMINUTE=0"
+    timezone: Europe/Berlin
 ---
 ```
 
 ### Workflow
 
-1. Pick `SCHED-<name>`.
-2. Set a human `cadence` (`daily`/`weekly`/`monthly`/`quarterly`/`adhoc`/`custom`).
-3. For machine-readable scheduling, set `cron` + `timezone`.
-4. Link what it `triggers` — a process name, a reminder text, etc.
-5. Use Bindings to scope a schedule to a specific team or project.
+1. Pick the WorkItem, Scope, or Artifact governed by the time window.
+2. Create or reuse an Artifact for the recurrence contract if the rule
+   needs a durable definition.
+3. Create a `time-window` Binding with `conditions.recurrence_rule`.
+4. Include `conditions.timezone` when wall-clock time matters.
+5. Let the external runner read active time-window Bindings.
 
 ## Gotchas
 
 Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
-- **Schedule without timezone.** "Daily at 9am" is meaningless
+- **Time window without timezone.** "Daily at 9am" is meaningless
   across DST boundaries and timezone-distributed teams. Always
   specify the timezone explicitly (`UTC`, `Europe/Berlin`, etc.).
-  Schedules without timezone drift twice a year.
-- **Recurring schedule without an end date or `until`.** Some
-  schedules genuinely run forever; others should end with the
+  Time windows without timezone drift twice a year.
+- **Recurring time window without an end date or `until`.** Some
+  cadences genuinely run forever; others should end with the
   project, the quarter, or the team member's tenure. Make the
   termination condition explicit, even if it's "indefinite" — the
   decision to make it indefinite is itself a decision worth
   recording.
 - **Forgetting to handle missed runs.** What happens if the
-  schedule fires but the action fails? Does it retry? Skip? Page
-  oncall? A Schedule without a missed-run policy silently
+  time window fires but the action fails? Does it retry? Skip? Page
+  oncall? A cadence without a missed-run policy silently
   accumulates errors.
-- **Schedule fires without an action target.** A Schedule must
-  point at a Process, WorkItem template, or other actionable
+- **Time window fires without an action target.** A time-window Binding must
+  point at a WorkItem, Scope, Artifact, or other actionable
   artifact. "Trigger something at 9am" with no target is a
-  reminder, not a Schedule.
-- **Confusing schedule definition vs schedule execution.** The
-  Schedule entity defines WHEN something fires; the actual fire
-  events should be LogEntries (`schedule.fired`). Don't put
-  execution history in the Schedule entity itself.
+  reminder, not a durable cadence.
+- **Confusing cadence definition vs execution.** The time-window
+  Binding defines WHEN something fires; the actual fire events
+  should be LogEntries (`schedule.fired`). Don't put execution
+  history in the Binding itself.
 - **Hand-rolled cron expressions instead of using the schema.**
   Cron strings are infamous for off-by-one errors (every 5
-  minutes vs every minute past the 5th). Use the schema's
-  structured fields (interval, days, hours) when possible;
+  minutes vs every minute past the 5th). Use structured recurrence
+  fields or an explicit recurrence rule when possible;
   reserve cron strings for cases the schema can't express.
-- **Schedule that overlaps with another.** "Daily standup at 9am"
+- **Cadence that overlaps with another.** "Daily standup at 9am"
   and "weekly review at 9am Monday" both fire at 9am Monday. Be
   explicit about precedence — does one preempt the other, do
   both run, or does the agent skip one?
@@ -111,21 +113,22 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
 ### Execution
 
-processkit does NOT execute schedules. It describes them. An external
-runner (GitHub Actions, cron, a human, an agent on a loop) reads the
-Schedule and fires the trigger at the right time. The `triggers` field is
-the contract between the Schedule definition and whoever runs it.
+processkit does NOT execute cadences. It describes them. An external
+runner (GitHub Actions, cron, a human, an agent on a loop) reads active
+`time-window` Bindings and fires the target at the right time.
 
-### Scoped schedules
+### Scoped cadences
 
-A daily standup runs in one scope, not globally. Use a Binding:
+A daily standup runs in one scope, not globally. Use the governed Scope
+or a scoped WorkItem as the Binding subject:
 
 ```yaml
 kind: Binding
 spec:
-  type: schedule-scope
-  subject: SCHED-daily-standup
-  target: SCOPE-project-x
+  type: time-window
+  subject: SCOPE-project-x
+  target: ART-daily-standup-recurrence
 ```
 
-Then the runner fetches all schedules bound to the scope it's acting on.
+Then the runner fetches active time-window Bindings for the scope it is
+acting on.

@@ -1,10 +1,10 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Schema
 metadata:
   id: SCHEMA-model
   target_kind: Model
-  version: "2.0.0-alpha.1"
+  version: "1.2.0"
   created: 2026-04-22T00:00:00Z
 spec:
   description: >
@@ -77,14 +77,6 @@ spec:
           balanced class, and `powerful` is reserved for hardest
           reasoning/engineering tasks. Projects map these classes to
           concrete model IDs in model-recommender config.
-      routing_preferences:
-        type: object
-        additionalProperties: true
-        description: >
-          Provider-neutral preference hints used before resolving a
-          concrete version. Recommended keys: default_effort,
-          prefer_for_tasks, avoid_for_tasks, preferred_regions,
-          cost_bias, latency_bias, quality_bias.
       architecture:
         type: object
         additionalProperties: true
@@ -105,14 +97,6 @@ spec:
           Deployment characteristics. Recommended keys: hosting_options,
           min_vram_gb, recommended_vram_gb, supported_runtimes,
           self_hostable, provider_endpoints.
-      availability:
-        type: object
-        additionalProperties: true
-        description: >
-          Access characteristics across providers and deployments.
-          Recommended keys: access_tier, regions, account_tiers,
-          self_hostable, open_weights, offline_capable,
-          enterprise_contract_required.
       supported_parameters:
         type: array
         items:
@@ -189,15 +173,6 @@ spec:
                 tokenizer, input_modalities_tokenized, output_modalities_tokenized,
                 reasoning_tokens_billed_as, cache_read_counts_toward_rate_limit,
                 cache_write_counts_toward_rate_limit.
-            token_consumption_profile:
-              type: object
-              additionalProperties: true
-              description: >
-                Empirical token-use behavior for routing and budgeting.
-                Recommended keys: average_reasoning_multiplier,
-                tool_call_overhead_tokens, structured_output_overhead,
-                cache_hit_savings_ratio, summarization_pressure,
-                context_compaction_threshold.
             rate_limits:
               type: object
               additionalProperties: true
@@ -230,25 +205,6 @@ spec:
                 milliseconds, vendor-published or measured. Quantitative
                 companion to dimensions.speed (1-5). Best-effort; omit
                 if no reliable source.
-            latency_p95_ms:
-              type: integer
-              minimum: 1
-              description: >
-                Approximate p95 first-token / completion latency in
-                milliseconds, vendor-published or measured.
-            throughput_tokens_per_second:
-              type: number
-              minimum: 0
-              description: >
-                Approximate output throughput for sustained generation,
-                used as a companion to speed and latency routing.
-            benchmark_scores:
-              type: object
-              additionalProperties: true
-              description: >
-                Snapshot of externally sourced or internal benchmark
-                values. Include source URLs, measurement date, and
-                whether the score is vendor-published or measured.
             jurisdiction:
               type: object
               description: >

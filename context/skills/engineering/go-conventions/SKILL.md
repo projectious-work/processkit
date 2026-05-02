@@ -4,7 +4,7 @@ description: |
   Go idioms — error wrapping, small interfaces, goroutine lifecycle, table-driven tests. Use when writing or reviewing Go code, designing package layouts, or working through concurrency, error handling, and testing decisions.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-go-conventions
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

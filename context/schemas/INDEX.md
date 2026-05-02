@@ -10,7 +10,7 @@ MCP server (Phase 3).
 ## Shape
 
 ```yaml
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Schema
 metadata:
   id: SCHEMA-<kind>

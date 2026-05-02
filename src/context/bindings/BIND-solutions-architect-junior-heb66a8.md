@@ -9,7 +9,6 @@ spec:
   subject: ROLE-solutions-architect
   subject_kind: Role
   target: MODEL-anthropic-claude-sonnet
-  target_kind: Model
   conditions:
     seniority: junior
     rank: 1

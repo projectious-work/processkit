@@ -4,7 +4,7 @@ description: |
   Systematically challenges a plan, decision, or proposal — identifying assumptions, failure modes, and stronger alternatives. Use when asked to critique a plan, stress-test an idea, find weaknesses in a proposal, or when the user says "what am I missing" or "argue against this."
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-devils-advocate
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

@@ -5,16 +5,30 @@ title: "Process"
 
 # Process
 
-A declarative workflow definition — a sequence of steps, the roles
-involved, the gates that must pass, and the definition of done.
-processkit defines processes; agents and humans execute them.
+Legacy v1 declarative workflow definition. In the
+SmoothTiger/SmoothRiver v2 direction, processkit no longer presents
+`Process` as a first-class shipped entity surface. Use a
+process-instance WorkItem for a concrete run and an Artifact for the
+reusable process definition.
 
 | | |
 |---|---|
-| **ID prefix** | `PROC` |
+| **ID prefix** | `PROC` (legacy v1) |
 | **State machine** | none |
 | **MCP server** | none |
-| **Skill** | `process-management` (Layer 3) |
+| **Skill** | `process-management` (legacy authoring guidance) |
+
+## v2 replacement
+
+Use:
+
+- `WorkItem` with `spec.type: process-instance` for a workflow run.
+- `Artifact` with `spec.kind` describing the reusable process
+  definition.
+- `Gate` and `Binding` records for policies that apply to the run.
+
+`pk-doctor`'s `v2_contracts` check flags v2 process-instance WorkItems
+that do not point at a process definition.
 
 ## Fields
 

@@ -4,7 +4,7 @@ description: |
   Generating and manipulating PDF files — from HTML, DOCX, or raw content using reportlab, weasyprint, or pypdf. Use when producing PDF reports, invoices, certificates, or when merging, splitting, or extracting text from existing PDFs.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-pdf-workflow
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

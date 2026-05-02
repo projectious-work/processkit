@@ -16,7 +16,7 @@ errors.
 | 0     | Foundation                | `index-management`, `id-management`, `event-log`                                                       |
 | 1     | Primitive management      | `role-management`, `actor-profile`                                                                     |
 | 2     | Core entities             | `workitem-management`, `decision-record`, `scope-management`, `category-management`, `cross-reference-management`, `binding-management` |
-| 3     | Process orchestration     | `process-management`, `state-machine-management`, `gate-management`, `schedule-management`, `constraint-management` |
+| 3     | Workflow policy           | `gate-management`, `constraint-management`; legacy/migration guidance for `process-management`, `state-machine-management`, `schedule-management` |
 | 4     | Cross-cutting             | `discussion-management`, `metrics-management`                                                          |
 
 > **Layer 0 has three skills with one intra-layer edge.** `index-management`
@@ -36,11 +36,15 @@ errors.
   (who does things) and Roles (what things they do).
 - **Layer 2** — management for the primary work artifacts: WorkItems,
   DecisionRecords, Scopes. Depends on Layers 0–1.
-- **Layer 3** — the orchestration layer: Processes, Gates, Schedules,
-  Constraints, StateMachines. These tie Layer 2 entities together.
+- **Layer 3** — workflow policy: Gates and Constraints tie Layer 2
+  entities together. Process, Schedule, and StateMachine skills remain
+  as legacy/migration guidance; v2 expresses runs as WorkItems,
+  definitions as Artifacts, recurrence as `time-window` Bindings, and
+  lifecycle enforcement through MCP server contracts.
 - **Layer 4** — cross-cutting concerns that reference everything:
-  Discussions (which produce decisions, reference work items) and Metrics
-  (which measure anything).
+  Discussions produce decisions and reference work items; metrics-management
+  records metric specifications as artifacts and observations as LogEntries.
+  This is a skill-layer placement, not a Metric primitive.
 
 ## Technical/language skills are unlayered
 

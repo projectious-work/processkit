@@ -105,7 +105,7 @@ automatically.
 
 ## Next
 
-- Explore the [primitives](../primitives/overview) — 17 other kinds of
+- Explore the [primitives](../primitives/overview) — 18 other kinds of
   entity you can create.
 - Browse the [skill catalog](../skills/overview) to see what else the
   agent can do.

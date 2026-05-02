@@ -9,7 +9,6 @@ spec:
   subject: ROLE-qa-engineer
   subject_kind: Role
   target: MODEL-anthropic-claude-opus
-  target_kind: Model
   conditions:
     seniority: principal
     rank: 1

@@ -4,7 +4,7 @@ description: |
   Concurrency and parallelism patterns — async/await, threads, actors, channels, deadlock prevention. Use when choosing a concurrency model, designing concurrent or parallel pipelines, debugging deadlocks or race conditions, or reasoning about shared state and backpressure.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-concurrency-patterns
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

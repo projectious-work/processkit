@@ -4,7 +4,7 @@ description: |
   Data pipeline patterns — ETL/ELT, batch vs streaming, idempotency, orchestration. Use when designing a data pipeline, choosing between batch and streaming, implementing ingestion or transformation, setting up orchestration, or debugging pipeline failures.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-data-pipeline
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

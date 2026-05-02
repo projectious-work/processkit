@@ -4,7 +4,7 @@ description: |
   Aggregator health-check for a processkit-managed repository. Runs a fixed suite of detect-only checks over the live context/ tree plus src/context/ drift and surfaces ERROR / WARN / INFO findings in a single report. Use when the user invokes `/pk-doctor`, asks "is this repo healthy", or has just finished an upgrade and wants a sanity pass. Detect-only by default; `--fix` / `--fix-all` opt in to scoped repairs that route through existing MCP write tools only — doctor never hand-edits files under `context/`.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-pk-doctor
     version: "1.0.0"
     created: 2026-04-20T00:00:00Z

@@ -4,7 +4,7 @@ description: |
   Handle secrets safely — env vars, .env files, vaults, rotation. Use when dealing with API keys, passwords, tokens, database credentials, or any other sensitive value the application needs at runtime.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-secret-management
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

@@ -4,7 +4,7 @@ description: |
   LLM output evaluation — automated metrics, LLM-as-judge, A/B testing, regression testing. Use when measuring LLM output quality, comparing prompt or model versions, building an automated eval pipeline, setting up regression tests for prompt changes, or evaluating RAG systems and bias/safety.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-llm-evaluation
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

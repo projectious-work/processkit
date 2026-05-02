@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: Constraint
 metadata:
   id: CONST-TODO
@@ -7,8 +7,8 @@ metadata:
 spec:
   name: TODO
   description: TODO
-  kind: policy
-  severity: soft
+  kind: policy          # budget | slo | regulatory | capacity | dependency | policy | other
+  severity: soft        # hard | soft | advisory
   measurement: TODO
   target: TODO
   source: TODO

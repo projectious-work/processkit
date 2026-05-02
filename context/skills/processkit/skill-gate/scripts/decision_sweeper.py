@@ -224,7 +224,7 @@ def _write_note(project_root: Path, session_id: str, rows: list[dict], decision_
 
     lines: list[str] = [
         "---",
-        "apiVersion: processkit.projectious.work/v2",
+        "apiVersion: processkit.projectious.work/v1",
         "kind: Note",
         "metadata:",
         f"  id: NOTE-{session_id[:40]}-decision-candidates",

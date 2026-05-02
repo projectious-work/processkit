@@ -4,7 +4,7 @@ description: |
   Load testing methodology — test types, scenario design, capacity planning, CI integration. Use when planning or running a load test, choosing a load testing tool, designing scenarios, analyzing results, setting up performance testing in CI, or estimating capacity from test data.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-load-testing
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

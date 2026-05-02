@@ -1,14 +1,14 @@
 ---
-apiVersion: processkit.projectious.work/v2
+apiVersion: processkit.projectious.work/v1
 kind: TeamMember
 metadata:
   id: TEAMMEMBER-TODO
   created: TODO
 spec:
   type: ai-agent
-  name: TODO
-  slug: todo
-  default_role: ROLE-todo
+  name: TODO            # must be drawn from team-manager name pool
+  slug: TODO            # must match name (kebab-lowered) and be reserved
+  default_role: TODO    # ROLE-<slug>
   default_seniority: specialist
   personality:
     communication_style: terse, direct, pragmatic
@@ -21,13 +21,7 @@ spec:
     boundaries: []
   memory:
     enabled: true
-    tiers:
-    - working
-    - episodic
-    - semantic
-    - procedural
-    - relational
-    - lessons
+    tiers: [working, episodic, semantic, procedural, relational, lessons]
     consolidation_cadence:
       per_task: true
       daily_journal: true
@@ -37,18 +31,9 @@ spec:
   relationships: []
   exportable: true
   export_policy:
-    include:
-    - persona
-    - card
-    - knowledge
-    - skills
-    - lessons
-    exclude:
-    - journal
-    - relations
-    redact_sensitivity:
-    - confidential
-    - pii
+    include: [persona, card, knowledge, skills, lessons]
+    exclude: [journal, relations]
+    redact_sensitivity: [confidential, pii]
   active: true
   joined_at: TODO
 ---

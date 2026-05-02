@@ -4,7 +4,7 @@ description: |
   Data modeling — ER diagrams, normalization, denormalization trade-offs, relationship patterns, and schema evolution. Use when designing a new schema, critiquing an existing data model, choosing between normalized and denormalized designs, or modeling complex relationships like polymorphism, hierarchy, or temporal data.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-database-modeling
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

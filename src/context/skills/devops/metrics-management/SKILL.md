@@ -1,7 +1,10 @@
 ---
 name: metrics-management
 description: |
-  Manage Metric entities — quantified observations the project cares about (velocity, error rates, lead time, NPS). Use when defining or recording a quantitative measure — team velocity, error rate, lead time, customer satisfaction score.
+  Manage metric specifications and observations: quantified measures the
+  project cares about (velocity, error rates, lead time, NPS). Use when
+  defining or recording a quantitative measure: team velocity, error rate,
+  lead time, customer satisfaction score.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
@@ -14,41 +17,44 @@ metadata:
       - skill: event-log
         purpose: Log events to keep the audit trail accurate after every write.
     provides:
-      primitives: [Metric]
-      templates: [metric]
+      primitives: [Artifact, LogEntry]
+      templates: [metric-spec]
 ---
 
 # Metrics Management
 
 ## Intro
 
-A Metric is a named, quantified observation — something the project measures
-and cares about. Examples: team velocity per sprint, p99 latency, release
-frequency, error rate, customer NPS.
+A metric specification is an Artifact with `kind: metric-spec` that names a
+quantified measure the project cares about. Examples: team velocity per
+sprint, p99 latency, release frequency, error rate, customer NPS.
 
 ## Overview
 
-### Metric vs observation
+### Metric spec vs observation
 
-The Metric primitive defines *what is measured*. Individual readings of the
-metric are LogEntries (`event_type: metric.recorded`) or external time-series
-data. processkit stores the definition, not the time series.
+A metric-spec Artifact defines *what is measured*. Individual readings are
+LogEntries (`event_type: metric.recorded`) or external time-series data.
+processkit stores the definition, not the time series.
 
 ### Shape
 
 ```yaml
 ---
 apiVersion: processkit.projectious.work/v2
-kind: Metric
+kind: Artifact
 metadata:
-  id: METRIC-velocity
+  id: ART-velocity-metric-spec
   created: 2026-04-06T00:00:00Z
 spec:
   name: velocity
+  kind: metric-spec
   description: "Story points completed per sprint."
   unit: points
   direction: higher-is-better
-  measurement: "Sum of spec.estimate.value for WorkItems with spec.state=done in the sprint's SCOPE."
+  measurement: >
+    Sum of spec.estimate.value for WorkItems with spec.state=done in the
+    sprint's SCOPE.
   target: 40
   tolerance: "±20%"
   cadence: sprint
@@ -66,29 +72,29 @@ spec:
   event_type: metric.recorded
   timestamp: 2026-04-14T17:00:00Z
   actor: ACTOR-claude
-  subject: METRIC-velocity
-  subject_kind: Metric
+  subject: ART-velocity-metric-spec
+  subject_kind: Artifact
   summary: "Sprint 42 velocity: 38 points"
   details:
     value: 38
     scope: SCOPE-sprint-42
 ```
 
-The index MCP server (Phase 3) joins Metric definitions with their LogEntry
+The index MCP server joins metric-spec Artifacts with their LogEntry
 observations to produce time series.
 
 ## Gotchas
 
 Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
-- **Defining a Metric without a measurement source.** "We want to
-  improve velocity" is not a Metric; "Story points completed per
+- **Defining a metric spec without a measurement source.** "We want to
+  improve velocity" is not a metric spec; "Story points completed per
   sprint, measured from `query_workitems(state=done, scope=sprint-N)`"
-  is. Without a source, the Metric can't be measured and becomes
+  is. Without a source, the metric can't be measured and becomes
   decoration.
 - **Setting target values without a baseline.** "Reduce error rate
   by 50%" is meaningless if you don't know the current rate.
-  Always record the baseline at Metric creation time, and update
+  Always record the baseline when the metric spec is created, and update
   it explicitly when you reset goals.
 - **Confusing leading vs lagging indicators.** A leading indicator
   predicts future outcomes (PR review turnaround time); a lagging
@@ -96,20 +102,20 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
   optimize a lagging indicator if a leading one is available —
   feedback loops are slower.
 - **Metrics without owner or cadence.** "Who looks at this and how
-  often" is part of the Metric definition, not an afterthought.
+  often" is part of the metric definition, not an afterthought.
   Unowned metrics rot.
-- **Storing measurement values inline in the Metric entity.**
-  Metric entities define WHAT is measured, not the measurements
+- **Storing measurement values inline in the metric spec.**
+  Metric-spec artifacts define what is measured, not the measurements
   themselves. Time-series values belong in an external store
-  (Prometheus, BigQuery, …); the Metric entity references the
+  (Prometheus, BigQuery, ...); the metric spec references the
   store, not the data.
 - **Vanity metrics that don't drive decisions.** "Total LOC", "PR
   count", "tickets closed" sound impressive but don't predict
   anything actionable. If knowing the number wouldn't change what
   you do next, it's vanity — drop it.
 - **Hand-waving "trending up" without numbers.** When asked about
-  a Metric's status, fetch the actual value from the source the
-  Metric points at; don't synthesize a trend from memory.
+  a metric's status, fetch the actual value from the source the
+  metric spec points at; don't synthesize a trend from memory.
 
 ## Full reference
 
@@ -137,6 +143,6 @@ satisfaction, mean-time-to-recovery.
 
 ### Metrics vs goals
 
-A goal is a desired future state recorded in a Scope's `spec.goals`. A Metric
-is the quantitative thing the goal is measured by. One goal may reference
-multiple metrics; one metric may inform multiple goals.
+A goal is a desired future state recorded in a Scope's `spec.goals`. A metric
+spec is the quantitative thing the goal is measured by. One goal may reference
+multiple metric specs; one metric spec may inform multiple goals.

@@ -28,7 +28,7 @@ metadata:
 
 ## Intro
 
-A Migration is processkit's first-class representation of an upstream version
+A Migration is processkit's tracked representation of an upstream version
 bump. When `aibox sync` notices a new processkit (or aibox, or community
 package) version, it writes a Migration entity into `context/migrations/pending/`.
 The agent and the user work through it together over one or more sessions —
@@ -234,7 +234,7 @@ Frequently-used fields:
 | `new-upstream` | Upstream added a new file. Decide whether to take it. |
 | `removed-upstream` | Upstream removed a file the project still uses. Decide whether to remove locally or keep as a project-local fork. |
 
-### Why migrations are entities, not just markdown files
+### Why migrations are tracked entities, not just markdown files
 
 Three reasons:
 1. **Queryable.** The `index-management` MCP server indexes them. An agent can
@@ -290,6 +290,11 @@ and `applied/` directories, refreshes `context/migrations/INDEX.md`
 (preserving the hand-written Notes column and the trailing
 `## CLI Migrations` section), and writes a `migration.*` event via the
 side-effect log helper.
+
+In gateway deployments, these tools are available only when
+migration-management is present in the installed/merged MCP
+configuration. The gateway must not infer or expose unrelated
+processkit servers from this skill's documentation.
 
 ### What this skill does NOT do (yet)
 

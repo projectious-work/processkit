@@ -1,7 +1,10 @@
 ---
 name: process-management
 description: |
-  Manage Process entities — declarative sequences of steps with roles, gates, and a definition of done. Use when defining a reusable workflow — code review, release, incident response, onboarding — that the project wants to run consistently.
+  Legacy/migration guidance for v1 Process entities — declarative workflow
+  definitions with roles, gates, and a definition of done. In v2, use
+  process-instance WorkItems plus Artifact-backed definitions instead of
+  creating new Process records.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
@@ -26,19 +29,21 @@ metadata:
 
 ## Intro
 
-A Process is a declarative definition of a workflow: a sequence of steps,
-the roles involved, the gates that must pass, and the definition of done.
-processkit does NOT execute processes — agents and humans do. processkit
-just defines them.
+In v1, a Process was a declarative workflow definition: a sequence of
+steps, roles, gates, and a definition of done. In v2, Process is not a
+first-class primitive authoring surface. Model a concrete run as a
+WorkItem with `spec.type: process-instance`, keep the reusable definition
+as an Artifact, and attach gates, scope, time, and budget policy through
+Bindings.
 
 ## Overview
 
-### Shape
+### Legacy v1 shape
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v2
-kind: Process
+apiVersion: processkit.projectious.work/v1
+kind: <legacy Process>
 metadata:
   id: PROC-code-review
   created: 2026-04-06T00:00:00Z
@@ -69,25 +74,24 @@ spec:
 ---
 ```
 
-### Workflow
+### v2 workflow
 
-1. Pick `PROC-<name>`.
-2. List `triggers` — events that kick off the process.
-3. List required `roles`.
-4. Define `steps` in order. Each step names the actor role, optional skill,
-   description, and gates.
-5. Write a clear `definition_of_done`.
-6. Save to `context/processes/`.
+1. Create or reuse an Artifact that describes the reusable workflow.
+2. Create a WorkItem with `spec.type: process-instance` for each run.
+3. Reference the definition Artifact from the WorkItem.
+4. Attach gates with `Binding(type=workitem-gate)` or
+   `Binding(type=scope-gate)`.
+5. Attach recurrence or active windows with `Binding(type=time-window)`.
+6. Attach cost policy with `Binding(type=budget-application)`.
 
-### Running a process
+### Running a v2 process instance
 
-An agent running a process:
-1. Detects the trigger.
-2. Walks the steps in order.
-3. For each step, performs the action (often guided by `uses_skill`).
-4. Validates gates at each step — logs `gate.passed` / `gate.failed`.
-5. Logs `process.step.started` / `process.step.completed`.
-6. Exits when the last step completes or a blocking gate fails.
+An agent running a process-instance WorkItem:
+1. Reads the definition Artifact referenced by the WorkItem.
+2. Performs the next action, often guided by a skill.
+3. Evaluates attached Gates and logs `gate.passed` / `gate.failed`.
+4. Transitions the WorkItem through the owning MCP server.
+5. Exits when the WorkItem reaches a terminal state or a blocking gate fails.
 
 ## Gotchas
 
@@ -155,21 +159,22 @@ Default is sequential. Set `parallel: true` to run steps concurrently when
 they are independent. For conditional branching, write multiple processes
 and trigger them conditionally rather than embedding complex logic.
 
-### Scoping a process
+### Applying workflow policy in v2
 
-Use a Binding (`type: process-scope`) to apply a process to a specific
-project or team:
+Use v2 Binding types against the concrete governed entity:
 
 ```yaml
 kind: Binding
 spec:
-  type: process-scope
-  subject: PROC-code-review
-  target: SCOPE-project-x
+  type: workitem-gate
+  subject: BACK-release-run
+  target: GATE-security-scan
+  scope: SCOPE-project-x
 ```
 
 ### No workflow engine
 
-processkit does not ship an engine that executes processes. The Process
-definition is a contract between the definition and whoever runs it. Agents
-are the default runners; automation can take over specific steps.
+processkit does not ship an engine that executes workflows. The
+process-instance WorkItem and its definition Artifact form a contract
+between the definition and whoever runs it. Agents are the default runners;
+automation can take over specific steps.

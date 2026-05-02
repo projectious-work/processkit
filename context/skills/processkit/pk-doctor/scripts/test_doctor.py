@@ -88,7 +88,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "workitems" / "BACK-20260420_1200-GoodApple-valid-item.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v2
+            apiVersion: processkit.projectious.work/v1
             kind: WorkItem
             metadata:
               id: BACK-20260420_1200-GoodApple-valid-item
@@ -107,7 +107,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "workitems" / "BACK-bad-filename.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v2
+            apiVersion: processkit.projectious.work/v1
             kind: WorkItem
             metadata:
               id: BACK-20260420_1300-BadApple-item
@@ -125,7 +125,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "logs" / "LOG-toplevel-misplaced.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v2
+            apiVersion: processkit.projectious.work/v1
             kind: LogEntry
             metadata:
               id: LOG-toplevel-misplaced
@@ -145,7 +145,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "migrations" / "pending" / "MIG-20260101T000000.md").write_text(
         textwrap.dedent(f"""\
             ---
-            apiVersion: processkit.projectious.work/v2
+            apiVersion: processkit.projectious.work/v1
             kind: Migration
             metadata:
               id: MIG-20260101T000000
@@ -228,7 +228,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "workitems" / "BACK-20260420_1400-CleanBad-invalid.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v2
+            apiVersion: processkit.projectious.work/v1
             kind: WorkItem
             metadata:
               id: BACK-20260420_1400-CleanBad-invalid
@@ -429,7 +429,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "actors" / "ACTOR-hacker.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v2
+            apiVersion: processkit.projectious.work/v1
             kind: Actor
             metadata:
               id: ACTOR-hacker
@@ -480,7 +480,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "logs" / "LOG-20260425_1100-Fixture-event.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v2
+            apiVersion: processkit.projectious.work/v1
             kind: LogEntry
             metadata:
               id: LOG-20260425_1100-Fixture-event
@@ -530,7 +530,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "migrations" / "MIG-20260425T1100-test-fixture.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v2
+            apiVersion: processkit.projectious.work/v1
             kind: Migration
             metadata:
               id: MIG-20260425T1100-test-fixture
@@ -821,205 +821,6 @@ with tempfile.TemporaryDirectory() as tmp:
     check("report CLI prints billing notice",
           "not provider-billed token usage" in result.stdout,
           result.stdout)
-
-# ---------------------------------------------------------------------------
-# Test 16: v2 plan guardrails from SmoothRiver Sprint A/C/D catalogue
-# ---------------------------------------------------------------------------
-print("\n[16] v2 plan guardrails — vocabulary, sharding, contracts")
-
-from checks.schema_vocabulary import run as _schema_vocab_run  # noqa: E402
-from checks.sharding import run as _sharding_run  # noqa: E402
-from checks.v2_contracts import run as _v2_contracts_run  # noqa: E402
-
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    (root / "context" / "schemas").mkdir(parents=True)
-    (root / "context" / "artifacts").mkdir(parents=True)
-    (root / "context" / "bindings").mkdir(parents=True)
-    (root / "context" / "migrations" / "applied").mkdir(parents=True)
-    (root / "context" / "workitems").mkdir(parents=True)
-    (root / "context" / "skills" / "processkit" /
-     "index-management" / "config").mkdir(parents=True)
-
-    (root / "context" / "schemas" / "artifact.yaml").write_text(
-        textwrap.dedent("""\
-            spec:
-              known_kinds: [document, cost-policy]
-            """),
-        encoding="utf-8",
-    )
-    (root / "context" / "schemas" / "binding.yaml").write_text(
-        textwrap.dedent("""\
-            spec:
-              known_types: [role-assignment, triage-classification]
-            """),
-        encoding="utf-8",
-    )
-    (root / "context" / "schemas" / "workitem.yaml").write_text(
-        "spec:\n  known_types: [task]\n",
-        encoding="utf-8",
-    )
-    (root / "context" / "schemas" / "logentry.yaml").write_text(
-        "spec:\n  known_event_types: [test.event]\n",
-        encoding="utf-8",
-    )
-    (root / "context" / "schemas" / "migration.yaml").write_text(
-        "spec:\n  known_kinds: [source-upgrade, schema-extension, data-fix]\n",
-        encoding="utf-8",
-    )
-    (root / "context" / "artifacts" / "ART-bad-kind.md").write_text(
-        textwrap.dedent("""\
-            ---
-            apiVersion: processkit.projectious.work/v2
-            kind: Artifact
-            metadata:
-              id: ART-bad-kind
-              created: 2026-04-30T00:00:00Z
-            spec:
-              name: Bad kind
-              kind: unknown-policy-shape
-            ---
-            """),
-        encoding="utf-8",
-    )
-    (root / "context" / "bindings" / "BIND-bad-type.md").write_text(
-        textwrap.dedent("""\
-            ---
-            apiVersion: processkit.projectious.work/v2
-            kind: Binding
-            metadata:
-              id: BIND-bad-type
-              created: 2026-04-30T00:00:00Z
-            spec:
-              type: unknown-binding-shape
-              subject: ART-a
-              target: ART-b
-            ---
-            """),
-        encoding="utf-8",
-    )
-    (root / "context" / "migrations" / "applied" /
-     "MIG-bad-kind.md").write_text(
-        textwrap.dedent("""\
-            ---
-            apiVersion: processkit.projectious.work/v2
-            kind: Migration
-            metadata:
-              id: MIG-bad-kind
-              created: 2026-04-30T00:00:00Z
-            spec:
-              source: processkit
-              kind: mystery-transition
-              from_version: v0.1.0
-              to_version: v0.2.0
-              state: applied
-              source_api_version: processkit.projectious.work/v1
-              source_processkit_version: v0.1.0
-              target_api_version: processkit.projectious.work/v2
-              target_processkit_version: v0.2.0
-              apply_mode: one-shot
-            ---
-            """),
-        encoding="utf-8",
-    )
-    vocab_results = _schema_vocab_run({"repo_root": root})
-    check(
-        "16a: unknown Artifact kind emits plan check ID",
-        any(r.id == "schema.unknown-kind-without-schema-entry"
-            for r in vocab_results),
-    )
-    check(
-        "16b: unknown Binding type emits plan check ID",
-        any(r.id == "schema.unknown-type-without-schema-entry"
-            for r in vocab_results),
-    )
-    check(
-        "16c: unknown Migration kind emits plan check ID",
-        any(r.id == "schema.unknown-migration-kind-without-schema-entry"
-            for r in vocab_results),
-    )
-
-    settings = (
-        root / "context" / "skills" / "processkit" /
-        "index-management" / "config" / "settings.toml"
-    )
-    settings.write_text(
-        textwrap.dedent("""\
-            [sharding.workitem]
-            pattern = "date-shard"
-            template = "{year}/{month}/"
-            activate_above_count = 1
-            """),
-        encoding="utf-8",
-    )
-    for suffix in ("one", "two"):
-        (root / "context" / "workitems" / f"BACK-{suffix}.md").write_text(
-            textwrap.dedent(f"""\
-                ---
-                apiVersion: processkit.projectious.work/v2
-                kind: WorkItem
-                metadata:
-                  id: BACK-{suffix}
-                  created: 2026-04-30T00:00:00Z
-                spec:
-                  title: {suffix}
-                  state: backlog
-                  type: task
-                ---
-                """),
-            encoding="utf-8",
-        )
-    sharding_results = _sharding_run({"repo_root": root})
-    check(
-        "16d: workitem threshold check fires",
-        any(r.id == "sharding.workitem-shard-threshold"
-            for r in sharding_results),
-    )
-
-    (root / "context" / "artifacts" / "ART-new-policy.md").write_text(
-        textwrap.dedent("""\
-            ---
-            apiVersion: processkit.projectious.work/v2
-            kind: Artifact
-            metadata:
-              id: ART-new-policy
-              created: 2026-04-30T00:00:00Z
-            spec:
-              name: New policy
-              kind: cost-policy
-              supersedes: [ART-missing-policy]
-            ---
-            """),
-        encoding="utf-8",
-    )
-    (root / "context" / "bindings" / "BIND-triage.md").write_text(
-        textwrap.dedent("""\
-            ---
-            apiVersion: processkit.projectious.work/v2
-            kind: Binding
-            metadata:
-              id: BIND-triage
-              created: 2026-04-30T00:00:00Z
-            spec:
-              type: triage-classification
-              subject: NOTE-a
-              target: BACK-one
-              conditions: {}
-            ---
-            """),
-        encoding="utf-8",
-    )
-    contract_results = _v2_contracts_run({"repo_root": root})
-    check(
-        "16e: policy supersedes chain-break check fires",
-        any(r.id == "v2.policy-supersedes-chain-break"
-            for r in contract_results),
-    )
-    check(
-        "16f: inbox injection-mode check fires",
-        any(r.id == "v2.inbox-injection-mode-untyped"
-            for r in contract_results),
-    )
 
 # ---------------------------------------------------------------------------
 # Summary

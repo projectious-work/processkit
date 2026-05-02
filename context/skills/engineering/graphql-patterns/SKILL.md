@@ -4,7 +4,7 @@ description: |
   GraphQL schema design, resolver patterns, DataLoader, pagination, federation, and schema evolution. Use when designing a GraphQL schema, implementing resolvers, diagnosing N+1 problems, adding pagination, setting up federation, or evolving a schema without breaking clients.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-graphql-patterns
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

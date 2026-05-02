@@ -5,7 +5,8 @@ title: "Overview"
 
 # Getting Started — Overview
 
-processkit is consumed, not run directly. The typical workflow is:
+processkit is consumed by agent harnesses and project tooling. The
+typical managed workflow is:
 
 1. Install [aibox](https://projectious-work.github.io/aibox/) — this gives you the
    containerized runtime and the `aibox` CLI.
@@ -14,6 +15,11 @@ processkit is consumed, not run directly. The typical workflow is:
 4. Start working in the dev container — the agent has the skills available immediately.
 
 See [Installing](./installing) for the concrete steps.
+
+aibox is optional infrastructure, not a runtime dependency of
+processkit. The same installed `context/skills` tree can be used by
+Claude Code, Codex, OpenCode, Hermes, Aider integrations, or a custom
+MCP client when those tools are configured directly.
 
 ## What aibox init actually does
 
@@ -59,7 +65,8 @@ From v0.2.0 onwards, the skills come from the processkit tag pinned in
 
 ## Learning path
 
-1. Read [Primitives → Overview](../primitives/overview) to understand the 18 primitives.
+1. Read [Primitives → Overview](../primitives/overview) to understand
+   the 19 primitives.
 2. Read [Primitives → Format](../primitives/format) to learn the entity file shape.
 3. Read [Skills → Overview](../skills/overview) to learn what skills do.
 4. Pick a package ([Packages → Overview](../packages/overview)).

@@ -35,20 +35,27 @@ id_slug = false      # true | false
 | WorkItem        | `BACK`   |
 | LogEntry        | `LOG`    |
 | DecisionRecord  | `DEC`    |
+| Migration       | `MIG`    |
+| Artifact        | `ART`    |
+| Note            | `NOTE`   |
 | Actor           | `ACTOR`  |
 | Role            | `ROLE`   |
 | Binding         | `BIND`   |
 | Scope           | `SCOPE`  |
 | Category        | `CAT`    |
+| CrossReference  | —        |
 | Gate            | `GATE`   |
-| Metric          | `METRIC` |
-| Schedule        | `SCHED`  |
+| Schedule        | `SCHED` (legacy v1) |
 | Constraint      | `CONST`  |
 | Context         | `CTX`    |
 | Discussion      | `DISC`   |
-| Process         | `PROC`   |
-| StateMachine    | `SM`     |
-| Artifact        | `ART`    |
+| Process         | `PROC` (legacy v1) |
+| StateMachine    | `SM` (legacy v1) |
+
+`Metric`, `Model`, `Process`, `Schedule`, and `StateMachine` do not
+reserve first-class primitive prefixes in the v2 contract. The legacy
+prefixes remain documented so existing v1 contexts can be migrated and
+read correctly.
 
 ## Word generation
 

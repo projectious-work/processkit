@@ -4,7 +4,7 @@ description: |
   ML pipeline design — data versioning, experiment tracking, deployment patterns, drift monitoring. Use when building an ML pipeline from data to deployment, setting up MLOps tooling (DVC, MLflow, model registry), choosing deployment patterns (shadow, canary, A/B), or designing monitoring for drift and degradation.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v2
+    apiVersion: processkit.projectious.work/v1
     id: SKILL-ml-pipeline
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z
