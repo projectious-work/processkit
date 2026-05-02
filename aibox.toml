@@ -121,7 +121,7 @@ uv = { version = "0.7" }
 # Google       google         GEMINI_API_KEY
 # Mistral      mistral        MISTRAL_API_KEY
 [ai]
-harnesses = ["codex", "claude"]
+harnesses = ["codex"]
 # model_providers = ["anthropic", "openai"]  # optional: which API keys you have
 
 # =============================================================================

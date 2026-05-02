@@ -7,6 +7,10 @@ context/.cache/
 # processkit runtime state (skill-gate session markers, etc.) — regenerable
 context/.state/
 
+# generated upstream template mirrors — regenerable from pinned releases
+context/templates/aibox-home/
+context/templates/processkit/
+
 # user-private entity files (privacy: user-private convention)
 context/**/private/
 
