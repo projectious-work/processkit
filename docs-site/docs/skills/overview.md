@@ -13,7 +13,7 @@ conventions, gotchas, and decision rules of a domain expert.
 ## Skill package layout
 
 ```
-src/skills/<skill-name>/
+src/context/skills/<category>/<skill-name>/
   SKILL.md              ← agent instructions (Intro / Overview / Gotchas / Full reference)
   examples/             ← example outputs
   assets/               ← templates, reference data, reusable artifacts
@@ -40,8 +40,7 @@ countermeasure.
 
 ## Frontmatter
 
-Skills follow the [Anthropic Agent Skills spec](https://anthropic.com/). Each
-`SKILL.md` opens with YAML frontmatter:
+Each `SKILL.md` opens with YAML frontmatter:
 
 ```yaml
 ---
@@ -70,16 +69,15 @@ metadata:
 
 See [Skills → Format](./format) for the complete specification.
 
-## v0.18.0 catalog (130+ skills)
+## Current catalog (140 skills)
 
 | Category | Count | Examples |
 |---|---|---|
-| Engineering (language, framework, architecture, infra, security) | ~70 | python-best-practices, fastapi-patterns, terraform-basics |
-| Process-primitive | ~32 | workitem-management, decision-record, artifact-management, task-router, skill-gate |
-| Document / asset creation | 4 | docx-authoring, pptx-authoring, xlsx-modeling, pdf-workflow |
-| Meta-cognitive | 4 | research-with-confidence, devils-advocate, board-of-advisors, status-briefing |
-| Role-specific | 4 | prd-writing, user-research, data-storytelling, legal-review |
-| Data, design, AI/ML | ~23 | data-science, excalidraw, rag-engineering, llm-evaluation |
+| Processkit operations | 40+ | workitem-management, decision-record, processkit-gateway, task-router, skill-gate |
+| Engineering and devops | 45+ | python-best-practices, fastapi-patterns, terraform-basics, incident-response |
+| Data, AI, and research | 20+ | data-science, rag-engineering, llm-evaluation, research-with-confidence |
+| Product, design, and documents | 25+ | prd-writing, user-research, frontend-design, docx-authoring |
+| Role and coordination workflows | 10+ | session-handover, standup-context, retrospective, team-manager |
 
 All skills are **Pattern 5 (domain-specific intelligence)**: they encode
 what an expert in the domain carries in their head — conventions, gotchas,
@@ -102,14 +100,14 @@ to inspect or diff skills without cloning the full repo. Release assets
 live at:
 [github.com/projectious-work/processkit/releases](https://github.com/projectious-work/processkit/releases)
 
-**In a project using aibox** — After `aibox init`, skills are installed
-under `context/skills/processkit/<skill-name>/SKILL.md` in the project
-root. The `task-router` MCP server's `route_task(task_description)` call
-returns the matching skill, any project-specific process override, and the
-recommended MCP tool in a single call. `skill-finder` (`find_skill`,
-`list_skills`) is called internally by `task-router` and remains available
-directly. The index-management MCP server's `search_entities` tool can
-query skill metadata from the SQLite index.
+**In an installed project** — Skills are installed under
+`context/skills/<category>/<skill-name>/SKILL.md`. The `task-router` MCP
+server's `route_task(task_description)` call returns the matching skill,
+any legacy process override metadata, and the recommended MCP tool in a
+single call. `skill-finder` (`find_skill`, `list_skills`) is called
+internally by `task-router` and remains available directly. The
+index-management MCP server's `search_entities` tool can query skill
+metadata from the SQLite index.
 
 ## Where to go next
 

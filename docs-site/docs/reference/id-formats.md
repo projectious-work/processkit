@@ -67,8 +67,8 @@ time and a third component is appended if needed.
 ## Slugs
 
 When `id_slug = true`, a content-derived slug is appended to the ID body.
-For a WorkItem with title "Add aibox lint command", the slug would be
-`add-aibox-lint` (first N tokens, kebab-case, truncated).
+For a WorkItem with title "Add release audit check", the slug would be
+`add-release-audit-check` (first N tokens, kebab-case, truncated).
 
 Slugs are for human readability and do not affect uniqueness — the word
 or UUID portion still guarantees that.

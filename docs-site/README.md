@@ -59,10 +59,10 @@ docs-site/
 ## Content conventions
 
 - **Overview pages** introduce a section and link to the authoritative
-  source files in the repo (`src/primitives/FORMAT.md`, `src/skills/FORMAT.md`,
-  etc.). This keeps the docs in sync with the source and avoids duplication.
+  source files in the repo (`src/context/schemas/`,
+  `src/context/skills/FORMAT.md`, etc.). This keeps the docs in sync
+  with the source and avoids duplication.
 - **Catalog pages** under `skills/catalog/` describe the skills in each
-  category. They are migrated from the aibox docs-site and may need
-  refresh for processkit-specific language.
+  category and should describe processkit as a standalone project first.
 - **Reference pages** are deep technical documentation — apiVersion policy,
   ID formats, migration guide.

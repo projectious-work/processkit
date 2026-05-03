@@ -5,13 +5,13 @@ title: "Version Migration"
 
 # Version Migration
 
-processkit is distributed as git tags. Upgrading pinned versions is
-deliberate — neither aibox nor processkit follows the other automatically.
-Starting in **v0.4.0**, migrations are first-class processkit entities:
-each version-bump produces a `Migration` document under
-`context/migrations/pending/` that the user and agent work through together.
+processkit is distributed as versioned releases. Upgrading pinned
+versions is deliberate: processkit does not silently rewrite a consuming
+project's context. A version bump should produce a `Migration` document
+under `context/migrations/pending/` that the user and agent work through
+together.
 
-## The model (v0.4.0+)
+## The model
 
 processkit ships a generic diff script (`scripts/processkit-diff.sh`) that
 compares two tagged versions of any processkit-compatible source — upstream
@@ -20,8 +20,8 @@ The script reads `src/PROVENANCE.toml` at each tag (a single file mapping
 every shipped file to the tag in which it last changed) and emits a
 structured diff: added, removed, changed, unchanged.
 
-aibox is one consumer of this diff script. When `aibox sync` runs and
-notices a new pinned version, it:
+Managed installers can consume this diff model. For example, when
+`aibox sync` notices a new pinned version, it:
 
 1. Fetches the new tag into `~/.cache/aibox/processkit/<version>/`
 2. Calls the diff script (or reimplements its logic) to compare the
@@ -45,7 +45,7 @@ notices a new pinned version, it:
 
 The user reads the briefing, approves a project-specific plan, and the
 migration moves through `pending/` → `in-progress/` → `applied/`. See the
-[`migration-management` skill](https://github.com/projectious-work/processkit/blob/main/src/skills/migration-management/SKILL.md)
+[`migration-management` skill](https://github.com/projectious-work/processkit/blob/main/src/context/skills/processkit/migration-management/SKILL.md)
 for the workflow details.
 
 ## What's git-tracked vs cache
@@ -81,7 +81,7 @@ Then:
 ```bash
 aibox sync         # fetches new tag, generates the migration document
 aibox migrate      # walks through the pending migration with you
-aibox lint         # structural validation after migration is applied
+<validator>        # structural validation after migration is applied
 ```
 
 ## v1 to v2 context migration
@@ -101,15 +101,13 @@ The explicit path is:
    `target_processkit_version`.
 3. Run the v2 migration through `migration-management` with dry-run
    diagnostics first.
-4. Apply the approved plan, then run `aibox lint` and the processkit
-   smoke checks.
+4. Apply the approved plan, then run structural validation and the
+   processkit smoke checks.
 
 This path is the only supported bridge for v1 contexts. v2 schemas and
 index semantics are authoritative once the migration is applied.
 
-Provenance: `DEC-20260430_1416-SmoothTiger-adopt-breaking-v2-implementation-plan-for`
-and
-https://github.com/projectious-work/internal/blob/main/context/artifacts/ART-20260430_1242-SmoothRiver-processkit-project-work-plan.md.
+See the v0.25.0 changelog for the public breaking-change summary.
 
 ## Configurable source URL
 
@@ -171,5 +169,5 @@ version = "v0.3.0"   # was: "v0.4.0"
 
 then `aibox sync`. If the downgrade skips past a schema `apiVersion` bump,
 existing entities may become incompatible with the older schemas.
-`aibox lint` will flag the failures. You may need to manually edit or
+validation should flag the failures. You may need to manually edit or
 delete incompatible entities.

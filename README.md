@@ -150,11 +150,7 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Documentation site](https://projectious-work.github.io/processkit/docs/)
-- [Documentation source](docs-site/docs/intro.md)
-- [MCP server overview](https://projectious-work.github.io/processkit/docs/mcp-servers/overview/)
-- [Harness compatibility](https://projectious-work.github.io/processkit/docs/mcp-servers/harness-compatibility/)
-- [v2 contracts](https://projectious-work.github.io/processkit/docs/reference/v2-contracts/)
+- [Documentation](https://projectious-work.github.io/processkit/docs/)
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)

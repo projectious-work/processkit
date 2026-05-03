@@ -42,7 +42,7 @@ Conventional field names:
 | `superseded_by`     | This entity has been replaced            |
 | `implements`        | This entity implements a decision        |
 
-See the [`cross-reference-management` skill](https://github.com/projectious-work/processkit/blob/main/src/skills/cross-reference-management/SKILL.md)
+See the [`cross-reference-management` skill](https://github.com/projectious-work/processkit/blob/main/src/context/skills/processkit/cross-reference-management/SKILL.md)
 for the full list and conventions.
 
 ## Binding examples
@@ -79,7 +79,7 @@ Legacy `process-gate`, `process-scope`, and `schedule-scope` Bindings
 are v1 migration inputs only. New v2 relationships should target the
 concrete WorkItem, Scope, Artifact, or Gate being governed.
 
-See the [`binding-management` skill](https://github.com/projectious-work/processkit/blob/main/src/skills/binding-management/SKILL.md)
+See the [`binding-management` skill](https://github.com/projectious-work/processkit/blob/main/src/context/skills/processkit/binding-management/SKILL.md)
 for the full spec.
 
 ## Why Binding was generalized from RoleBinding

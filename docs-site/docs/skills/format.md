@@ -6,13 +6,13 @@ title: "Skill Package Format"
 # Skill Package Format
 
 This page summarizes the skill package format. The authoritative source is
-[`src/skills/FORMAT.md`](https://github.com/projectious-work/processkit/blob/main/src/skills/FORMAT.md)
+[`src/context/skills/FORMAT.md`](https://github.com/projectious-work/processkit/blob/main/src/context/skills/FORMAT.md)
 in the processkit repo.
 
 ## Directory layout
 
 ```
-src/skills/<skill-name>/
+src/context/skills/<category>/<skill-name>/
   SKILL.md              ← required — three-level agent instructions
   INDEX.md              ← optional — human-readable overview
   examples/             ← recommended — example outputs
@@ -65,7 +65,8 @@ provides:
   processes: [backlog-grooming]
 ```
 
-`aibox lint` cross-checks these against the actual files shipped in the skill.
+Installers and release checks can cross-check these promises against the
+actual files shipped in the skill.
 
 ## MCP server conventions (v0.3.0+)
 
@@ -85,5 +86,4 @@ if __name__ == "__main__":
     server.run(transport="stdio")
 ```
 
-Consumers need only Python ≥ 3.10 and `uv` — both already present in aibox
-containers.
+Consumers need only Python 3.10 or newer and `uv`.

@@ -20,7 +20,7 @@ backlog → in-progress → review → done
 (any state) → cancelled (terminal)
 ```
 
-Source: [`src/primitives/state-machines/workitem.yaml`](https://github.com/projectious-work/processkit/blob/main/src/primitives/state-machines/workitem.yaml).
+Source: [`src/context/state-machines/workitem.yaml`](https://github.com/projectious-work/processkit/blob/main/src/context/state-machines/workitem.yaml).
 
 ## DecisionRecord default
 
@@ -30,7 +30,7 @@ proposed → accepted → superseded (terminal)
   rejected (terminal)
 ```
 
-Source: [`src/primitives/state-machines/decisionrecord.yaml`](https://github.com/projectious-work/processkit/blob/main/src/primitives/state-machines/decisionrecord.yaml).
+Source: [`src/context/state-machines/decisionrecord.yaml`](https://github.com/projectious-work/processkit/blob/main/src/context/state-machines/decisionrecord.yaml).
 
 ## Overriding a default
 
@@ -43,7 +43,7 @@ Overrides must:
 - Not remove states that existing entities are currently in.
 - Add new transitions only from states that already exist.
 
-See the [`state-machine-management` skill](https://github.com/projectious-work/processkit/blob/main/src/skills/state-machine-management/SKILL.md)
+See the [`state-machine-management` skill](https://github.com/projectious-work/processkit/blob/main/src/context/skills/processkit/state-machine-management/SKILL.md)
 for details.
 
 ## Multiple machines for one kind

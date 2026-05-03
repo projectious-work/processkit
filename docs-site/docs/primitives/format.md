@@ -22,7 +22,7 @@ metadata:                                     # required
   labels:
     priority: high
 spec:                                         # required — entity-specific
-  title: "Add aibox lint command"
+  title: "Add a release audit check"
   state: in-progress
   assignee: ACTOR-alice
 ---
@@ -52,7 +52,7 @@ Human-readable description, acceptance criteria, notes, history.
 
 ## ID formats
 
-Configurable per project in `aibox.toml`:
+Configurable per project through installer or processkit settings:
 
 | `id_format` | `id_slug` | Example                     |
 |-------------|-----------|-----------------------------|
@@ -80,6 +80,6 @@ the evolution rules.
 ## Authoritative source
 
 The authoritative specification is
-[`src/primitives/FORMAT.md`](https://github.com/projectious-work/processkit/blob/main/src/primitives/FORMAT.md)
-in the processkit repo. This page is a condensed overview; the source file
-has more detail, including the kind registry and validation rules.
+[`src/context/schemas/`](https://github.com/projectious-work/processkit/tree/main/src/context/schemas)
+in the processkit repo. This page is a condensed overview; the shipped
+schema files define the authoritative `spec` contracts for each kind.

@@ -10,7 +10,7 @@ building blocks. The v2 direction keeps durable project facts in the
 entity layer and moves workflow definitions, schedules, runtime model
 data, and lifecycle implementation details to narrower surfaces.
 
-## Registry and legacy schemas
+## Shipped v2 entity schemas
 
 | Primitive         | Purpose                                                           | Prefix |
 |-------------------|-------------------------------------------------------------------|--------|
@@ -25,14 +25,13 @@ data, and lifecycle implementation details to narrower surfaces.
 | **Binding**       | Scoped/temporal relationship between two entities (generalized RoleBinding) | BIND |
 | **Scope**         | Bounded container (sprint, milestone, project, quarter, release) | SCOPE  |
 | **Category**      | Classification axis with defined values                          | CAT    |
-| **CrossReference**| Lightweight frontmatter relationship (not a file)                | —      |
 | **Gate**          | Validation checkpoint                                             | GATE   |
-| **Schedule**      | Legacy v1 time trigger; v2 uses `Binding(type=time-window)`      | SCHED  |
 | **Constraint**    | Rule or limit the project must respect                          | CONST  |
 | **Context**       | Ambient knowledge and environment                                 | CTX    |
 | **Discussion**    | Multi-turn exploratory conversation                               | DISC   |
-| **Process**       | Legacy v1 workflow entity; v2 uses process-instance WorkItems plus definition Artifacts | PROC |
-| **StateMachine**  | Legacy v1 lifecycle entity; v2 treats state machines as implementation contracts | SM |
+| **TeamMember**    | Persistent participant with persona, agent card, and memory tiers | TEAMMEMBER |
+
+## Demoted legacy surfaces
 
 `Metric`, `Model`, `Process`, `Schedule`, and `StateMachine` are not
 first-class shipped entity surfaces in the SmoothTiger/SmoothRiver v2
@@ -50,7 +49,7 @@ Primitives depend on each other through the skill hierarchy:
 
 ```
 Layer 0: index (infrastructure), id (infrastructure), LogEntry (event-log)
-Layer 1: Actor (actor-profile), Role (role-management)
+Layer 1: Actor (actor-profile), Role (role-management), TeamMember
 Layer 2: WorkItem, DecisionRecord, Scope, Category, Binding, CrossReference
 Layer 3: Gate, Constraint, Migration, workflow/projection skills
 Layer 4: Discussion, metrics-management, Owner profile (owner-profiling), Context grooming
@@ -82,8 +81,9 @@ The schemas define the `spec` fields, required vs optional, and enum
 constraints. MCP servers validate against the schema on every write call —
 schema errors surface as structured tool errors rather than silent bad data.
 
-`aibox lint` validates `apiVersion`, `kind`, and `metadata.id` structurally
-without requiring MCP servers — useful in CI or offline environments.
+Installer or CI validation can check the same file contracts without
+starting a full agent session. MCP write tools perform the authoritative
+write-path validation.
 
 ## Next
 

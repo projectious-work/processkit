@@ -5,91 +5,121 @@ title: "Installing"
 
 # Installing
 
-processkit is distributed as git tags of the
-[projectious-work/processkit](https://github.com/projectious-work/processkit)
-repository. The managed path is to install aibox and pin a processkit
-tag in your project's `aibox.toml`.
+processkit is distributed as versioned GitHub releases. Each release
+contains a tarball with the shipped `context/`, `.processkit/`, and
+agent entrypoint files. You can install those files manually or let a
+managed environment tool do it.
 
-aibox is not required by processkit at runtime. It is the installer and
-supervisor for managed projects: it fetches processkit content, writes
-provider-specific harness config, and starts the devcontainer. Users who
-install the same files by another method can point an MCP-capable
-harness directly at processkit's server commands.
+## Manual install
 
-## 1. Install aibox
+Download and unpack the release tarball:
 
-Follow the [aibox installation guide](https://projectious-work.github.io/aibox/docs/getting-started/installation).
-You need a recent enough version of aibox to consume processkit — see the
-compatibility matrix below.
+```bash
+curl -L \
+  https://github.com/projectious-work/processkit/releases/download/v0.25.0/processkit-v0.25.0.tar.gz \
+  -o processkit-v0.25.0.tar.gz
+tar -xzf processkit-v0.25.0.tar.gz
+```
 
-## 2. Pin a processkit version
+Copy the shipped files into your project:
 
-In your project's `aibox.toml`:
+```bash
+cp -a processkit-v0.25.0/context ./context
+cp -a processkit-v0.25.0/.processkit ./.processkit
+cp processkit-v0.25.0/AGENTS.md ./AGENTS.md
+```
+
+Then register the gateway with your harness. For stdio MCP:
+
+```json
+{
+  "mcpServers": {
+    "processkit-gateway": {
+      "command": "uv",
+      "args": [
+        "run",
+        "context/skills/processkit/processkit-gateway/mcp/server.py",
+        "serve",
+        "--transport",
+        "stdio"
+      ]
+    }
+  }
+}
+```
+
+For a long-running local daemon:
+
+```bash
+uv run context/skills/processkit/processkit-gateway/mcp/server.py \
+  serve --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp
+```
+
+For harnesses that only support stdio, connect to that daemon through
+the included proxy:
+
+```bash
+uv run context/skills/processkit/processkit-gateway/mcp/server.py \
+  stdio-proxy --url http://127.0.0.1:8000/mcp
+```
+
+## Per-skill MCP servers
+
+You can also register individual MCP servers when you want a smaller
+tool surface or per-server permissions:
+
+```bash
+uv run context/skills/processkit/workitem-management/mcp/server.py
+uv run context/skills/processkit/decision-record/mcp/server.py
+uv run context/skills/processkit/index-management/mcp/server.py
+```
+
+Use the gateway for the normal one-process setup. Use per-skill servers
+when your harness or security model benefits from narrower registration.
+
+## Managed install
+
+aibox can install and wire processkit automatically for managed
+devcontainer projects:
 
 ```toml
+[processkit]
+source = "https://github.com/projectious-work/processkit.git"
+version = "v0.25.0"
+
 [context]
 packages = ["managed"]
-processkit_version = "v0.18.2"
 ```
 
-`aibox init` and `aibox sync` will fetch that tag and cache it under
-`~/.cache/aibox/processkit/v0.18.2/`.
+In that mode aibox fetches the pinned processkit release, installs the
+selected package tier, writes harness MCP configuration, and records the
+resolved source in `aibox.lock`.
 
-## 3. Run `aibox init`
+This path is optional. processkit remains usable anywhere the files can
+be installed and the MCP server command can be launched.
+
+## Package tiers
+
+The shipped tiers are:
+
+- `minimal` — smallest useful context for individual work.
+- `managed` — default team context with backlog, decisions, scopes,
+  handovers, release, and documentation workflows.
+- `software` — engineering-heavy production software workflows.
+- `research` — data, ML, and research-heavy workflows.
+- `product` — product, design, frontend, and product-ops workflows.
+
+See [Packages](../packages/overview) for details.
+
+## Verify
+
+Run the docs build and MCP smoke test from a processkit checkout:
 
 ```bash
-aibox init --name my-project --process managed
+npm --prefix docs-site run build
+uv run scripts/smoke-test-servers.py
 ```
 
-On first run, aibox fetches processkit at the pinned tag (preferring
-the published release-asset tarball, falling back to a git fetch) and
-installs the selected package's skills into `context/skills/`, the
-shared lib into `context/skills/_lib/processkit/`, primitive schemas
-into `context/schemas/`, state machines into `context/state-machines/`,
-and process definitions into `context/processes/`. The full upstream
-reference templates are copied verbatim to
-`context/templates/processkit/<version>/` and `aibox.lock` is written
-at the project root.
-
-## 4. Verify
-
-```bash
-ls context/skills/
-aibox lint   # structural validation of context/
-```
-
-If `aibox lint` passes and the `context/skills/` directory contains the
-expected skills, you are ready to start working.
-
-## Compatibility matrix
-
-| processkit | aibox (min) | notes                                           |
-|------------|-------------|-------------------------------------------------|
-| `v0.1.0`   | 0.14.1      | Foundation only — no skills yet                 |
-| `v0.7.0`   | 0.17.0      | Full skill catalog + MCP servers                |
-| `v0.10.0`  | 0.17.0      | Skills in 7 category subdirectories             |
-| `v0.12.0`  | 0.17.12     | artifact-management MCP; processkit/ layout     |
-| `v0.13.0`  | 0.17.12     | task-router + skill-finder MCP; route_task()    |
-| `v0.14.0`  | 0.17.12     | enforcement Rails 1–4: contract + hooks + ack   |
-| `v0.15.0`  | 0.17.12     | team-creator skill; session-orientation wiring  |
-| `v0.16.0`  | 0.17.12     | canonical team schema fields; closes aibox #6   |
-| `v0.17.0`  | 0.17.12     | 13 /pk-* commands; OpenWeave; Rail 5; contract v2 |
-| `v0.18.0`  | 0.18.3      | CapabilityProfileRouting 3-layer models; 26 /pk-*; skill-gate decouple |
-| `v0.18.1`  | 0.18.3      | hotfix: src↔context sync; fixes #7 hookEventName in Claude Code 2.1+ |
-| `v0.18.2`  | 0.18.3      | fixes #8 mcp-config paths; skip_decision_record + contract v2; drift guard; SnappyTrout |
-
-aibox ships with a default processkit version pin. Overriding it in
-`aibox.toml` is how you opt into newer content without upgrading aibox (or
-vice versa).
-
-## Community skill packages
-
-Any GitHub repo with a `package.yaml` and a git tag can be installed as a
-processkit-compatible skill package:
-
-```bash
-aibox process install https://github.com/youruser/your-skills --tag v1.0.0
-```
-
-See the [aibox docs](https://projectious-work.github.io/aibox/) for the
-full community-package spec.
+Inside a consuming project, use your installer's validation command if
+one is available, and prefer processkit MCP tools for entity writes so
+schema validation and LogEntry side effects happen automatically.

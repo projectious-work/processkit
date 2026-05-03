@@ -22,8 +22,8 @@ Most entities omit the field entirely and inherit `project-private`.
 ## Filesystem rule for `user-private`
 
 Entities with `privacy: user-private` MUST live under a directory named
-`private/` somewhere within `context/`. The aibox-generated `.gitignore`
-includes:
+`private/` somewhere within `context/`. Projects should carry a
+`.gitignore` rule like:
 
 ```
 context/**/private/
@@ -40,9 +40,9 @@ are excluded from git:
 But NOT directories named `private/` outside `context/` (e.g.
 `cli/src/private/` would NOT be ignored by this rule).
 
-`aibox lint` (Phase 4.4) verifies that any entity with
-`privacy: user-private` lives under a `private/` directory under `context/`.
-A user-private entity outside such a directory is a lint error.
+Installers and validation tools should verify that any entity with
+`privacy: user-private` lives under a `private/` directory under
+`context/`. A user-private entity outside such a directory is invalid.
 
 ## Where the convention is used
 
@@ -91,8 +91,8 @@ If you want a `user-private` file outside any `private/` directory, you
 have two options:
 
 1. Move it under a `private/` directory (correct)
-2. Override the lint rule via `aibox.toml` (discouraged — defeats the
-   safety mechanism)
+2. Override the validation rule in local tooling (discouraged because it
+   defeats the safety mechanism)
 
 ## Public files
 

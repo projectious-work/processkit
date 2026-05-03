@@ -5,9 +5,9 @@ title: "Overview"
 
 # Packages — Overview
 
-Packages are opinionated bundles of skills that consumers select in their
-`aibox.toml`. Pick one tier as your starting point; fine-tune with
-`[skills] include/exclude` if needed.
+Packages are opinionated bundles of skills. Pick one tier as your
+starting point, then add or remove skills through your installer or local
+package metadata when you need a narrower context.
 
 ## The five tiers
 
@@ -47,15 +47,19 @@ minimal ── managed ── software ── product
 
 ## Using a package
 
+When installing manually, select a package by copying the shipped
+context and then enabling the tier through your own harness or installer
+configuration. Managed installers can expose this directly. For example,
+aibox uses:
+
 ```toml
 # aibox.toml
+[processkit]
+source = "https://github.com/projectious-work/processkit.git"
+version = "v0.25.0"
+
 [context]
 packages = ["software"]
-processkit_version = "v0.18.2"
-
-[skills]
-include = ["logo-design"]       # add to software
-exclude = ["terraform-basics"]  # remove from software
 ```
 
 ## Creating a project package
@@ -82,7 +86,7 @@ spec:
 ---
 ```
 
-then reference it in `aibox.toml`:
+then reference it from your installer or package selection config:
 
 ```toml
 [context]
@@ -92,29 +96,22 @@ packages = ["my-team"]
 ## Source files
 
 Each tier is defined in a YAML file in
-[`src/context/packages/`](https://github.com/projectious-work/processkit/tree/main/src/context/packages):
+[`src/.processkit/packages/`](https://github.com/projectious-work/processkit/tree/main/src/.processkit/packages):
 `minimal.yaml`, `managed.yaml`, `software.yaml`, `research.yaml`,
 `product.yaml`. The YAML is the source of truth; these docs pages
 summarize the intent.
 
-## Why processkit and aibox are separate projects
+## Why packages are standalone
 
-processkit and [aibox](https://github.com/projectious-work/aibox) split
-content from infrastructure deliberately:
+processkit packages are content, not environment machinery:
 
 - **Reusable content.** The skills, schemas, and MCP servers in processkit
-  work with any AI agent harness — Claude Code, Cursor, Codex CLI, or a
-  custom agent. They are not tied to aibox's devcontainer machinery.
+  work with any compatible agent harness or MCP client. They are not
+  tied to a specific devcontainer implementation.
 - **Forkable catalog.** Organisations can maintain a private fork of
   processkit with custom skills, schemas, and MCP servers. That fork is
-  consumable by aibox (or any other tool) without changes to the consumer.
-  A team's specialized domain knowledge lives in their fork, not in their
-  infrastructure.
+  consumable by any installer that can copy the release files and launch
+  the MCP commands.
 - **Independent release cadence.** Content (skills, primitives) changes
-  more frequently than infrastructure (container images, CLI). Splitting
-  the repos lets each side version independently — processkit can ship
-  new skills without an aibox release, and aibox can update its CLI
-  without invalidating pinned processkit content.
-- **Smaller aibox.** aibox is a thin installer and environment manager.
-  It does not need to carry the full skill catalog, MCP server scripts,
-  and primitive schemas in its own repo. processkit handles all of that.
+  more frequently than infrastructure. Keeping packages in processkit
+  lets users update process content without changing their harness.

@@ -5,68 +5,66 @@ title: "Overview"
 
 # Getting Started — Overview
 
-processkit is consumed by agent harnesses and project tooling. The
-typical managed workflow is:
+processkit is consumed by agent harnesses and project tooling. You can
+install it manually from a release tarball, or let an installer such as
+aibox do the copying and harness wiring for you.
 
-1. Install [aibox](https://projectious-work.github.io/aibox/) — this gives you the
-   containerized runtime and the `aibox` CLI.
-2. Run `aibox init` in a new or existing project, pinning a processkit tag.
-3. Pick a package tier (`minimal`, `managed`, `software`, `research`, `product`).
-4. Start working in the dev container — the agent has the skills available immediately.
+The minimal workflow is:
 
-See [Installing](./installing) for the concrete steps.
+1. Install a processkit release into your project's `context/` tree.
+2. Pick a package tier (`minimal`, `managed`, `software`, `research`,
+   or `product`).
+3. Register `processkit-gateway` with your MCP-capable harness.
+4. Use MCP tools for entity reads and writes instead of editing project
+   memory by hand.
 
-aibox is optional infrastructure, not a runtime dependency of
-processkit. The same installed `context/skills` tree can be used by
-Claude Code, Codex, OpenCode, Hermes, Aider integrations, or a custom
-MCP client when those tools are configured directly.
+See [Installing](./installing) for concrete commands.
 
-## What aibox init actually does
+## What gets installed
 
-For a new project:
+A processkit release contains:
 
-```bash
-aibox init \
-  --name my-project \
-  --process managed \
-  --ai claude \
-  --addons python
-```
+- `context/skills/` — the shipped skill catalog and per-skill MCP
+  servers.
+- `context/skills/_lib/processkit/` — shared Python runtime helpers used
+  by the MCP servers and gateway.
+- `context/schemas/` — the 16 shipped v2 project-memory schemas.
+- `context/state-machines/` — implementation contracts used by entity
+  management tools.
+- `.processkit/` — package tier metadata and release metadata.
+- `AGENTS.md` — a provider-neutral agent entry point.
 
-produces:
+Your project then owns its local memory under directories such as
+`context/workitems/`, `context/decisions/`, `context/artifacts/`,
+`context/notes/`, and `context/logs/`.
 
-- `aibox.toml` — aibox configuration, pinning aibox and processkit versions
-- `aibox.lock` — Cargo-style lockfile pinning the resolved processkit
-  source URL, version, and commit
-- `.devcontainer/` — Dockerfile, docker-compose.yml, devcontainer.json
-- `AGENTS.md` — root-level agent entry point (provider-neutral); a thin
-  `CLAUDE.md` (or other provider-specific file) points at it
-- `context/` — your project's management artifacts and the installed
-  processkit content:
-  - `context/skills/<name>/` — installed processkit skills
-    (provider-neutral path; nothing lands under `.claude/`)
-  - `context/skills/_lib/processkit/` — the shared lib for MCP servers
-  - `context/schemas/`, `context/state-machines/`, `context/processes/`
-    — installed primitives and process definitions
-  - `context/templates/processkit/<version>/` — verbatim reference
-    copies of every shipped file (used for `aibox sync` diffs)
-  - `context/workitems/`, `decisions/`, `logs/`, ... — your project's
-    own entity files
+## Managed install path
 
-From v0.2.0 onwards, the skills come from the processkit tag pinned in
-`aibox.toml`, not from aibox itself.
+Managed installers can add devcontainer lifecycle, harness config, and
+upgrade handling. aibox is the reference managed integration today: it
+can fetch a pinned processkit release, choose a package tier, write MCP
+config for the selected harness, and optionally supervise the gateway
+daemon.
+
+That is convenience infrastructure. The same installed processkit files
+can also be used directly by Claude Code, Codex, OpenCode, Hermes, Aider
+integrations, or a custom MCP client when those tools are configured
+manually.
 
 ## Requirements
 
-- Docker or OrbStack (for the dev container)
-- Python ≥ 3.10 and `uv` (already present inside aibox containers; required by
-  the Phase 3 MCP servers)
-- A supported AI provider: Claude Code, Aider, Gemini CLI, or Mistral
+- Python 3.10 or newer.
+- `uv`, used to run the Python MCP server scripts and resolve their
+  inline PEP 723 dependencies.
+- An MCP-capable harness if you want tool access. You can still read the
+  skills and schemas directly without MCP.
+- Docker or OrbStack only if your chosen environment manager uses a
+  devcontainer.
 
 ## Learning path
 
 1. Read [Primitives → Overview](../primitives/overview) to understand
-   the 19 primitives.
+   the durable entity model.
 2. Read [Primitives → Format](../primitives/format) to learn the entity file shape.
 3. Read [Skills → Overview](../skills/overview) to learn what skills do.
 4. Pick a package ([Packages → Overview](../packages/overview)).

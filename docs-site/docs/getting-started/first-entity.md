@@ -9,9 +9,9 @@ Create your first WorkItem and see how processkit's entity format works.
 
 ## Prerequisites
 
-- A project initialized with `aibox init` and a processkit tag pinned
-  (see [Installing](./installing))
-- The `managed` package or higher (any package that includes `workitem-management`)
+- A project with processkit installed (see [Installing](./installing)).
+- A package tier that includes `workitem-management`; `minimal` and
+  higher tiers include it.
 
 ## Creating a WorkItem by hand
 
@@ -42,14 +42,9 @@ spec:
 - [ ] Transition it to in-progress, then done
 ```
 
-Now run:
-
-```bash
-aibox lint
-```
-
-You should see a clean result — the file has `apiVersion`, `kind`, and
-`metadata.id`, which is all `aibox lint` checks structurally.
+If your installer has a validation command, run it now. The file has the
+core `apiVersion`, `kind`, `metadata.id`, and `spec` fields expected by
+the WorkItem schema.
 
 ## Transitioning
 
@@ -87,13 +82,13 @@ When you finish the task, transition to `done` and write another LogEntry.
 
 ## Doing this via an agent
 
-If you use Claude Code (or any MCP-capable agent), ask:
+If you use an MCP-capable agent, ask:
 
 > "Create a WorkItem for the task 'Walk through the processkit onboarding'
 > and log its creation."
 
-The `workitem-management` skill tells the agent what shape to produce. In
-v0.3.0, the agent can call the `workitem-management` MCP server directly:
+The `workitem-management` skill tells the agent what shape to produce.
+The agent can call the `workitem-management` MCP server directly:
 
 ```
 create_workitem(title="Walk through the processkit onboarding", type="task")
@@ -105,7 +100,7 @@ automatically.
 
 ## Next
 
-- Explore the [primitives](../primitives/overview) — 18 other kinds of
-  entity you can create.
+- Explore the [primitives](../primitives/overview) to see the durable
+  entity model.
 - Browse the [skill catalog](../skills/overview) to see what else the
   agent can do.
