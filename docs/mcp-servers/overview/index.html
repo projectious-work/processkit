@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-mcp-servers/overview" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Overview | processkit</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://projectious-work.github.io/processkit/docs/mcp-servers/overview"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Overview | processkit"><meta data-rh="true" name="description" content="processkit skills ship Python MCP servers that give agents"><meta data-rh="true" property="og:description" content="processkit skills ship Python MCP servers that give agents"><link data-rh="true" rel="icon" href="/processkit/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://projectious-work.github.io/processkit/docs/mcp-servers/overview"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/mcp-servers/overview" hreflang="en"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/mcp-servers/overview" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Overview","item":"https://projectious-work.github.io/processkit/docs/mcp-servers/overview"}]}</script><link rel="stylesheet" href="/processkit/assets/css/styles.c0aa031c.css">
+<script src="/processkit/assets/js/runtime~main.4b91e402.js" defer="defer"></script>
+<script src="/processkit/assets/js/main.ac9c6909.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/processkit/"><b class="navbar__title text--truncate">processkit</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/processkit/docs/">Docs</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/processkit/docs/"><span title="Introduction" class="linkLabel_WmDU">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/processkit/docs/getting-started/overview"><span title="Getting Started" class="categoryLinkLabel_W154">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/overview"><span title="Overview" class="linkLabel_WmDU">Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/installing"><span title="Installing" class="linkLabel_WmDU">Installing</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/first-entity"><span title="Your First Entity" class="linkLabel_WmDU">Your First Entity</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/primitives/overview"><span title="Primitives" class="categoryLinkLabel_W154">Primitives</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/skills/overview"><span title="Skills" class="categoryLinkLabel_W154">Skills</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/packages/overview"><span title="Packages" class="categoryLinkLabel_W154">Packages</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/processes/overview"><span title="Processes" class="categoryLinkLabel_W154">Processes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/processkit/docs/mcp-servers/overview"><span title="MCP Servers" class="categoryLinkLabel_W154">MCP Servers</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/processkit/docs/mcp-servers/overview"><span title="Overview" class="linkLabel_WmDU">Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/mcp-servers/harness-compatibility"><span title="Harness Compatibility" class="linkLabel_WmDU">Harness Compatibility</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/reference/apiversion-policy"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/processkit/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">MCP Servers</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Overview</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>MCP Servers — Overview</h1></header>
+<p>processkit skills ship <strong>Python MCP servers</strong> that give agents
+mechanical correctness on top of probabilistic reasoning. For entity
+work, agents should use the MCP tools rather than hand-editing files:
+write tools validate schemas, enforce state machines, and append
+LogEntries where the server owns the side effect.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="status">Status<a href="#status" class="hash-link" aria-label="Direct link to Status" title="Direct link to Status" translate="no">​</a></h2>
+<p><strong>Twenty-five MCP server scripts ship</strong> across processkit&#x27;s primitive,
+workflow, projection, routing, gateway, and guard skills. Most ship
+default <code>mcp-config.json</code> fragments. <code>aggregate-mcp</code> remains an
+alternate compatibility entry point and does not register itself by
+default; <code>context-archiving</code> also ships a server script without a
+default config fragment.</p>
+<p>Server scripts live under
+<code>context/skills/processkit/&lt;skill&gt;/mcp/server.py</code> and share a Python
+utility library at <code>context/skills/_lib/processkit/</code>.</p>
+<p>The current direction is gateway first for harnesses that pay startup
+cost per stdio process. Per-skill servers remain canonical, but clients
+may register one gateway process instead of the granular set when they
+want one provider-neutral processkit tool surface.</p>
+<p>processkit itself is usable without aibox. aibox is an installer and
+supervisor that can fetch processkit content, merge harness config, and
+manage a devcontainer. A user may also install the files by another
+method and point any MCP-capable harness at the shipped Python server
+commands directly.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="layer-0--foundation">Layer 0 — Foundation<a href="#layer-0--foundation" class="hash-link" aria-label="Direct link to Layer 0 — Foundation" title="Direct link to Layer 0 — Foundation" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Server</th><th>Tools</th></tr></thead><tbody><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/index-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>index-management</code></a></td><td><code>reindex</code>, <code>query_entities</code>, <code>get_entity</code>, <code>search_entities</code>, <code>query_events</code>, <code>list_errors</code>, <code>stats</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/id-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>id-management</code></a></td><td><code>generate_id</code>, <code>validate_id</code>, <code>list_used_ids</code>, <code>format_info</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/event-log/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>event-log</code></a></td><td><code>log_event</code>, <code>query_events</code>, <code>recent_events</code></td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="layer-1--identity">Layer 1 — Identity<a href="#layer-1--identity" class="hash-link" aria-label="Direct link to Layer 1 — Identity" title="Direct link to Layer 1 — Identity" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Server</th><th>Tools</th></tr></thead><tbody><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/actor-profile/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>actor-profile</code></a></td><td><code>create_actor</code>, <code>get_actor</code>, <code>update_actor</code>, <code>deactivate_actor</code>, <code>list_actors</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/role-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>role-management</code></a></td><td><code>create_role</code>, <code>create_role_template</code>, <code>get_role</code>, <code>update_role</code>, <code>list_roles</code>, <code>link_role_to_actor</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/team-manager/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>team-manager</code></a></td><td>TeamMember identity, active interlocutor, consistency, and agent-card helpers</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="layer-2--core-entities">Layer 2 — Core entities<a href="#layer-2--core-entities" class="hash-link" aria-label="Direct link to Layer 2 — Core entities" title="Direct link to Layer 2 — Core entities" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Server</th><th>Tools</th></tr></thead><tbody><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/workitem-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>workitem-management</code></a></td><td><code>create_workitem</code>, <code>create_process_instance</code>, <code>create_sep_handoff</code>, <code>transition_workitem</code>, <code>query_workitems</code>, <code>get_workitem</code>, <code>link_workitems</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/decision-record/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>decision-record</code></a></td><td><code>record_decision</code>, <code>transition_decision</code>, <code>query_decisions</code>, <code>get_decision</code>, <code>supersede_decision</code>, <code>link_decision_to_workitem</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/artifact-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>artifact-management</code></a></td><td><code>create_artifact</code>, <code>get_artifact</code>, <code>query_artifacts</code>, <code>update_artifact</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/note-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>note-management</code></a></td><td><code>prepare_hook_inbox_dirs</code>, <code>create_note</code>, <code>capture_inbox_item</code>, <code>claim_inbox_item</code>, <code>complete_inbox_item</code>, <code>fail_inbox_item</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/scope-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>scope-management</code></a></td><td><code>create_scope</code>, <code>get_scope</code>, <code>list_scopes</code>, <code>transition_scope</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/gate-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>gate-management</code></a></td><td><code>create_gate</code>, <code>create_gate_template</code>, <code>get_gate</code>, <code>list_gates</code>, <code>evaluate_gate</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/binding-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>binding-management</code></a></td><td><code>create_binding</code>, <code>create_time_window</code>, <code>create_budget_application</code>, <code>end_binding</code>, <code>query_bindings</code>, <code>resolve_bindings_for</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/discussion-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>discussion-management</code></a></td><td><code>open_discussion</code>, <code>get_discussion</code>, <code>list_discussions</code>, <code>transition_discussion</code>, <code>add_outcome</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/migration-management/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>migration-management</code></a></td><td><code>list_migrations</code>, <code>get_migration</code>, <code>start_migration</code>, <code>apply_migration</code>, <code>reject_migration</code>, <code>migrate_context_to_v2</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/model-recommender/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>model-recommender</code></a></td><td><code>list_models</code>, <code>get_profile</code>, <code>query_models</code>, <code>compare_models</code>, <code>get_pricing</code>, <code>check_availability</code>, <code>get_config</code>, <code>set_config</code></td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="layer-3--workflow-and-projections">Layer 3 — Workflow and projections<a href="#layer-3--workflow-and-projections" class="hash-link" aria-label="Direct link to Layer 3 — Workflow and projections" title="Direct link to Layer 3 — Workflow and projections" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Server</th><th>Tools</th></tr></thead><tbody><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/agent-card/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>agent-card</code></a></td><td><code>project_agent_card</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/eval-gate-authoring/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>eval-gate-authoring</code></a></td><td><code>collect_run_outputs</code>, <code>codify_eval</code>, <code>calibrate_judge</code>, <code>bind_eval_to_runs</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/security-projections/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>security-projections</code></a></td><td><code>project_agent_ids_rule</code>, <code>project_tetragon_tracing_policy</code></td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="gateway">Gateway<a href="#gateway" class="hash-link" aria-label="Direct link to Gateway" title="Direct link to Gateway" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Server</th><th>Tools</th></tr></thead><tbody><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/processkit-gateway/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>processkit-gateway</code></a></td><td><code>list_gateway_tools</code>, <code>gateway_health</code>, plus imported per-skill tools</td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/aggregate-mcp/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>aggregate-mcp</code></a></td><td><code>list_aggregate_tools</code> plus imported per-skill tools</td></tr></tbody></table>
+<p><code>processkit-gateway</code> is the provider-neutral gateway entry point. It can
+run as a direct stdio server, as a streamable HTTP daemon, or behind a
+lightweight stdio proxy for harnesses that only support command-backed
+MCP. Eager stdio remains the simplest mode. Daemon mode can use a
+catalog-backed lazy registration path so the gateway lists tools without
+importing every backing skill server at startup.</p>
+<p><code>aggregate-mcp</code> is the legacy one-process compatibility bridge. Both
+gateway surfaces keep unique tool names unchanged. If two source servers
+expose the same helper name, later duplicates are registered as
+<code>&lt;skill_slug&gt;__&lt;tool_name&gt;</code>.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="routing-cross-layer">Routing (cross-layer)<a href="#routing-cross-layer" class="hash-link" aria-label="Direct link to Routing (cross-layer)" title="Direct link to Routing (cross-layer)" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Server</th><th>Tools</th></tr></thead><tbody><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/skill-finder/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>skill-finder</code></a></td><td><code>find_skill</code>, <code>list_skills</code></td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/task-router/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>task-router</code></a></td><td><code>route_task</code> — returns skill + process override + MCP tool in one call</td></tr><tr><td><a href="https://github.com/projectious-work/processkit/tree/main/src/context/skills/processkit/skill-gate/mcp/" target="_blank" rel="noopener noreferrer" class=""><code>skill-gate</code></a></td><td><code>acknowledge_contract</code>, <code>check_contract_acknowledged</code>, <code>skip_decision_record</code></td></tr></tbody></table>
+<p>A standalone smoke test (no MCP transport, just direct function calls)
+runs all servers via:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token plain">uv run scripts/smoke-test-servers.py</span><br></span></code></pre></div></div>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="runtime-requirements">Runtime requirements<a href="#runtime-requirements" class="hash-link" aria-label="Direct link to Runtime requirements" title="Direct link to Runtime requirements" translate="no">​</a></h2>
+<p>Each MCP server is a standalone Python script using PEP 723 inline
+dependency metadata:</p>
+<div class="language-python codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-python codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token comment" style="color:rgb(98, 114, 164)">#!/usr/bin/env -S uv run</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token comment" style="color:rgb(98, 114, 164)"># /// script</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token comment" style="color:rgb(98, 114, 164)"># requires-python = &quot;&gt;=3.10&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token comment" style="color:rgb(98, 114, 164)"># dependencies = [&quot;mcp[cli]&gt;=1.0&quot;]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token comment" style="color:rgb(98, 114, 164)"># ///</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token keyword" style="color:rgb(189, 147, 249);font-style:italic">from</span><span class="token plain"> mcp</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token plain">server</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token plain">fastmcp </span><span class="token keyword" style="color:rgb(189, 147, 249);font-style:italic">import</span><span class="token plain"> FastMCP</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">server </span><span class="token operator">=</span><span class="token plain"> FastMCP</span><span class="token punctuation" style="color:rgb(248, 248, 242)">(</span><span class="token string" style="color:rgb(255, 121, 198)">&quot;&lt;skill-name&gt;&quot;</span><span class="token punctuation" style="color:rgb(248, 248, 242)">)</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token keyword" style="color:rgb(189, 147, 249);font-style:italic">if</span><span class="token plain"> __name__ </span><span class="token operator">==</span><span class="token plain"> </span><span class="token string" style="color:rgb(255, 121, 198)">&quot;__main__&quot;</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    server</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token plain">run</span><span class="token punctuation" style="color:rgb(248, 248, 242)">(</span><span class="token plain">transport</span><span class="token operator">=</span><span class="token string" style="color:rgb(255, 121, 198)">&quot;stdio&quot;</span><span class="token punctuation" style="color:rgb(248, 248, 242)">)</span><br></span></code></pre></div></div>
+<p>Consumers need only Python ≥ 3.10 and <code>uv</code> — both already present in
+aibox containers. First run pays a small cost for <code>uv</code> to resolve and
+cache dependencies; subsequent runs are near-instant.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="transport">Transport<a href="#transport" class="hash-link" aria-label="Direct link to Transport" title="Direct link to Transport" translate="no">​</a></h2>
+<p>Per-skill servers and <code>aggregate-mcp</code> use stdio. <code>processkit-gateway</code>
+supports stdio and streamable HTTP:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token plain">uv run context/skills/processkit/processkit-gateway/mcp/server.py \</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">  serve --transport stdio</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">uv run context/skills/processkit/processkit-gateway/mcp/server.py \</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">  serve --transport streamable-http --host 127.0.0.1 --port 8000 \</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">  --path /mcp</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain" style="display:inline-block"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">uv run context/skills/processkit/processkit-gateway/mcp/server.py \</span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">  stdio-proxy --url http://127.0.0.1:8000/mcp</span><br></span></code></pre></div></div>
+<p>The streamable HTTP daemon binds to localhost by default. Do not expose
+it on a non-local interface unless a deployment layer adds explicit
+authentication and network policy.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="configuration">Configuration<a href="#configuration" class="hash-link" aria-label="Direct link to Configuration" title="Direct link to Configuration" translate="no">​</a></h2>
+<p>Most skills that ship an MCP server include an <code>mcp/mcp-config.json</code>
+fragment:</p>
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">  </span><span class="token property">&quot;mcpServers&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token property">&quot;&lt;skill-name&gt;&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token property">&quot;command&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token string" style="color:rgb(255, 121, 198)">&quot;uv&quot;</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token property">&quot;args&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">[</span><span class="token string" style="color:rgb(255, 121, 198)">&quot;run&quot;</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"> </span><span class="token string" style="color:rgb(255, 121, 198)">&quot;context/skills/processkit/&lt;skill-name&gt;/mcp/server.py&quot;</span><span class="token punctuation" style="color:rgb(248, 248, 242)">]</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">  </span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><br></span></code></pre></div></div>
+<p><code>aibox init</code> merges these fragments into the consuming project&#x27;s MCP
+config file. Harnesses that support gateway mode may register
+<code>processkit-gateway</code> instead of merging the per-skill fragments:</p>
+<div class="language-json codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-json codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">  </span><span class="token property">&quot;mcpServers&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token property">&quot;processkit-gateway&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token property">&quot;command&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token string" style="color:rgb(255, 121, 198)">&quot;uv&quot;</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token property">&quot;args&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">[</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">        </span><span class="token string" style="color:rgb(255, 121, 198)">&quot;run&quot;</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">        </span><span class="token string" style="color:rgb(255, 121, 198)">&quot;context/skills/processkit/processkit-gateway/mcp/server.py&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token punctuation" style="color:rgb(248, 248, 242)">]</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token property">&quot;env&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">        </span><span class="token property">&quot;PROCESSKIT_MCP_MODE&quot;</span><span class="token operator">:</span><span class="token plain"> </span><span class="token string" style="color:rgb(255, 121, 198)">&quot;gateway&quot;</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">      </span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">  </span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><br></span></code></pre></div></div>
+<p>The install path is
+<code>context/skills/processkit/&lt;skill-name&gt;/</code> — the <code>processkit/</code>
+category subdirectory is part of the path. Provider-specific harness
+files (e.g. <code>.mcp.json</code> for Claude Code) are written by aibox at the
+right location for whichever harness the user picked.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="mode-matrix">Mode matrix<a href="#mode-matrix" class="hash-link" aria-label="Direct link to Mode matrix" title="Direct link to Mode matrix" translate="no">​</a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Mode</th><th>Status</th><th style="text-align:right">Process count</th><th>Best fit</th><th>Notes</th></tr></thead><tbody><tr><td>Per-skill MCP servers</td><td>Canonical</td><td style="text-align:right">Many</td><td>Fine-grained permissions and maximum compatibility</td><td>Each skill owns its server and config fragment.</td></tr><tr><td><code>aggregate-mcp</code></td><td>Compatibility</td><td style="text-align:right">One</td><td>Existing one-process configs</td><td>Legacy bridge; not the preferred new gateway name.</td></tr><tr><td><code>processkit-gateway</code> stdio</td><td>Current gateway</td><td style="text-align:right">One</td><td>Claude Code, Codex, OpenCode, and other command-launching harnesses</td><td>Provider-neutral eager stdio server.</td></tr><tr><td>Daemon plus stdio proxy</td><td>Current gateway</td><td style="text-align:right">One daemon plus lightweight proxies</td><td>Harnesses that restart stdio frequently</td><td>Requires a supervisor such as aibox or a user-managed daemon process.</td></tr></tbody></table>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="which-servers-are-mandatory">Which servers are mandatory<a href="#which-servers-are-mandatory" class="hash-link" aria-label="Direct link to Which servers are mandatory" title="Direct link to Which servers are mandatory" translate="no">​</a></h2>
+<p>For per-skill registration, the following servers should always be
+registered regardless of package tier. Without them, agents cannot use
+the entity layer correctly:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Server</th><th>Why mandatory</th></tr></thead><tbody><tr><td><code>index-management</code></td><td>Entity discovery and full-text search</td></tr><tr><td><code>id-management</code></td><td>ID generation for all entity kinds</td></tr><tr><td><code>workitem-management</code></td><td>Work tracking</td></tr><tr><td><code>discussion-management</code></td><td>Structured deliberation</td></tr><tr><td><code>decision-record</code></td><td>Decision capture</td></tr><tr><td><code>event-log</code></td><td>Audit trail</td></tr></tbody></table>
+<p>The same tools may be reached through <code>processkit-gateway</code> or
+<code>aggregate-mcp</code> when a harness uses a one-process entry point.</p>
+<p>Tier-specific servers (<code>actor-profile</code>, <code>role-management</code>,
+<code>scope-management</code>, <code>gate-management</code>, <code>binding-management</code>,
+<code>model-recommender</code>, and the workflow/projection servers) are registered
+based on the installed package tier. <code>artifact-management</code> and
+<code>note-management</code> are available in tiers that include their skills.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="compliance-expectations">Compliance expectations<a href="#compliance-expectations" class="hash-link" aria-label="Direct link to Compliance expectations" title="Direct link to Compliance expectations" translate="no">​</a></h2>
+<p>Agents should call <code>route_task(task_description)</code> before write-side
+processkit tool calls and use <code>find_skill</code> when a processkit skill might
+apply. Entity reads go through <code>index-management</code>; entity writes go
+through the owning management server. If a state change is not already
+logged by the MCP write tool, append a LogEntry with <code>event-log</code>.</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/projectious-work/processkit/tree/main/docs-site/docs/mcp-servers/overview.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/processkit/docs/processes/overview"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Overview</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/processkit/docs/mcp-servers/harness-compatibility"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Harness Compatibility</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#status" class="table-of-contents__link toc-highlight">Status</a><ul><li><a href="#layer-0--foundation" class="table-of-contents__link toc-highlight">Layer 0 — Foundation</a></li><li><a href="#layer-1--identity" class="table-of-contents__link toc-highlight">Layer 1 — Identity</a></li><li><a href="#layer-2--core-entities" class="table-of-contents__link toc-highlight">Layer 2 — Core entities</a></li><li><a href="#layer-3--workflow-and-projections" class="table-of-contents__link toc-highlight">Layer 3 — Workflow and projections</a></li><li><a href="#gateway" class="table-of-contents__link toc-highlight">Gateway</a></li><li><a href="#routing-cross-layer" class="table-of-contents__link toc-highlight">Routing (cross-layer)</a></li></ul></li><li><a href="#runtime-requirements" class="table-of-contents__link toc-highlight">Runtime requirements</a></li><li><a href="#transport" class="table-of-contents__link toc-highlight">Transport</a></li><li><a href="#configuration" class="table-of-contents__link toc-highlight">Configuration</a></li><li><a href="#mode-matrix" class="table-of-contents__link toc-highlight">Mode matrix</a></li><li><a href="#which-servers-are-mandatory" class="table-of-contents__link toc-highlight">Which servers are mandatory</a></li><li><a href="#compliance-expectations" class="table-of-contents__link toc-highlight">Compliance expectations</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/getting-started/overview">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/primitives/overview">Primitives</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/skills/overview">Skills</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/packages/overview">Packages</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Project</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://github.com/projectious-work/processkit/releases" target="_blank" rel="noopener noreferrer" class="footer__link-item">Releases<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">© 2026 projectious.work</div></div></div></footer></div>
+</body>
+</html>
