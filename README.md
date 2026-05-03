@@ -150,7 +150,8 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Introduction](docs-site/docs/intro.md)
+- [Documentation site](https://projectious-work.github.io/processkit/)
+- [Documentation source](docs-site/docs/intro.md)
 - [MCP server overview](docs-site/docs/mcp-servers/overview.md)
 - [Harness compatibility](docs-site/docs/mcp-servers/harness-compatibility.md)
 - [v2 contracts](docs-site/docs/reference/v2-contracts.md)
@@ -174,6 +175,12 @@ Common local checks:
 ```sh
 npm --prefix docs-site run build
 uv run scripts/smoke-test-servers.py
+```
+
+Release docs publishing is manual:
+
+```sh
+scripts/publish-docs-gh-pages.sh vX.Y.Z
 ```
 
 Release packaging is guarded by:

@@ -22,15 +22,17 @@ npm run serve         # serve the built site locally
 
 The site is published to GitHub Pages at
 [https://projectious-work.github.io/processkit/](https://projectious-work.github.io/processkit/).
-Deployment is manual via `npm run deploy` (following the same pattern as
-the aibox docs-site):
+Deployment is manual and happens from the repository root during a
+processkit release:
 
 ```bash
-GIT_USER=<your-github-username> npm run deploy
+scripts/publish-docs-gh-pages.sh vX.Y.Z
 ```
 
-See aibox's `context/work-instructions/RELEASE-PROCESS.md` for the full
-deployment protocol.
+The publish script runs the local Docusaurus build, copies
+`docs-site/build/` into a temporary worktree, commits the generated site,
+and pushes it to the `gh-pages` branch. The repository intentionally
+does not use a GitHub Actions workflow for docs publishing.
 
 ## Structure
 

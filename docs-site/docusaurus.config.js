@@ -36,7 +36,6 @@ const config = {
       title: 'processkit',
       items: [
         { type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs' },
-        { href: 'https://github.com/projectious-work/aibox', label: 'aibox', position: 'right' },
         { href: 'https://github.com/projectious-work/processkit', label: 'GitHub', position: 'right' },
       ],
     },
@@ -48,10 +47,6 @@ const config = {
           { label: 'Primitives', to: '/docs/primitives/overview' },
           { label: 'Skills', to: '/docs/skills/overview' },
           { label: 'Packages', to: '/docs/packages/overview' },
-        ]},
-        { title: 'Ecosystem', items: [
-          { label: 'aibox', href: 'https://github.com/projectious-work/aibox' },
-          { label: 'aibox docs', href: 'https://projectious-work.github.io/aibox/' },
         ]},
         { title: 'Project', items: [
           { label: 'GitHub', href: 'https://github.com/projectious-work/processkit' },

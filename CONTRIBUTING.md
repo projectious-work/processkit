@@ -208,7 +208,14 @@ To release a new tag:
    ```
    This is the preferred consumption path for aibox (DEC-025); aibox
    falls back to a git fetch if the asset is missing.
-9. Optionally trigger docs-site deploy (`cd docs-site && npm run deploy`)
+9. **Publish the documentation site to GitHub Pages:**
+   ```bash
+   scripts/publish-docs-gh-pages.sh vX.Y.Z
+   ```
+   The script builds `docs-site/` locally and pushes the generated
+   static site to the `gh-pages` branch. Do not add a GitHub Actions
+   workflow for this; processkit publishes docs as an explicit local
+   release step.
 
 ## Backlog and tracked work
 
