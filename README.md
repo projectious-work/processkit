@@ -1,33 +1,140 @@
 # processkit
 
-Provider-neutral process primitives, skills, and MCP servers for
-AI-assisted work environments.
+**Provider-neutral process memory, skills, and MCP tools for agentic
+software projects.**
 
-processkit is the content layer for
-[aibox](https://github.com/projectious-work/aibox): a versioned library
-of process primitives, domain skills, and MCP servers that helps agents
-work with project memory through validated tools instead of ad hoc file
-edits.
+processkit gives AI coding agents a structured project context they can
+read and write through validated tools instead of ad hoc Markdown,
+untracked scratch files, or provider-specific conventions.
 
-## What It Ships
+It ships as a versioned content and runtime layer that can be used
+directly with MCP-capable harnesses, installed manually into an existing
+repository, or wired by an external environment manager.
 
-- **Process primitives** for durable project memory, including
-  WorkItems, Decisions, Artifacts, Notes, Logs, Migrations, Actors,
-  Roles, Bindings, Scopes, Gates, Discussions, and related schemas.
-- **Domain skills** for engineering, product, data, design, documents,
-  devops, and processkit operations.
-- **MCP servers** that validate entity writes, enforce state machines,
-  maintain indexes, and expose processkit tools to agent harnesses.
-- **A provider-neutral gateway** that can expose processkit through a
-  single MCP entry point instead of many per-skill server processes.
+## Highlights
 
-## How It Fits With aibox
+- **140 skills** for software delivery, product work, research,
+  documentation, data, design, devops, and processkit operations.
+- **25 MCP server entry points** for validated reads, writes, discovery,
+  routing, release checks, and gateway access.
+- **16 project-memory schemas** covering WorkItems, Decisions,
+  Artifacts, Notes, Logs, Migrations, Actors, Roles, Bindings, Scopes,
+  Gates, Discussions, and related primitives.
+- **5 package tiers** so projects can choose a small bootstrap context
+  or a fuller managed workspace.
+- **One-process MCP gateway** for low-memory environments, plus
+  per-skill MCP servers for granular compatibility.
+- **Provider-neutral by design**: Claude, Codex, OpenCode, Hermes, Aider,
+  and other harnesses are integration targets, not dependencies.
 
-processkit owns the process semantics and shipped content. aibox owns
-installation, devcontainer wiring, harness configuration, and lifecycle
-management.
+## Why processkit?
 
-Projects usually consume processkit through `aibox.toml`:
+Most agent setups start with prompts and loose files. That works until a
+project needs durable decisions, repeatable migrations, stable handovers,
+auditable release checks, or multiple agents working from the same
+context.
+
+processkit provides the missing process layer:
+
+- Schemas define the shape of project memory.
+- Skills describe repeatable workflows.
+- MCP tools enforce validation and state transitions.
+- Indexes make the context searchable without raw filesystem scraping.
+- Release packaging keeps the shipped `src/context/` deliverable
+  separate from this repository's local dogfooding `context/`.
+
+The goal is not to replace your harness. The goal is to give any harness
+the same reliable process surface.
+
+## What Ships
+
+| Area | Includes |
+| --- | --- |
+| Process primitives | WorkItems, DecisionRecords, Artifacts, Notes, Logs, Migrations, Actors, Roles, Bindings, Scopes, Gates, Discussions |
+| Skills | Engineering, product, research, design, data, documents, devops, release, team, and processkit workflows |
+| MCP runtime | Per-skill servers, legacy aggregate MCP, and the current `processkit-gateway` |
+| Packaging | Minimal, managed, product, research, and software context packages |
+| Docs and checks | Documentation source, smoke tests, release audit helpers, drift checks, and tarball packaging scripts |
+
+## Manual Use
+
+Download a release tarball and copy the shipped context into your
+project:
+
+```sh
+curl -L \
+  https://github.com/projectious-work/processkit/releases/download/v0.25.0/processkit-v0.25.0.tar.gz \
+  -o processkit-v0.25.0.tar.gz
+tar -xzf processkit-v0.25.0.tar.gz
+
+cp -a processkit-v0.25.0/context ./context
+cp -a processkit-v0.25.0/.processkit ./.processkit
+cp processkit-v0.25.0/AGENTS.md ./AGENTS.md
+```
+
+Then point your harness at the gateway MCP server. For stdio-based MCP:
+
+```json
+{
+  "mcpServers": {
+    "processkit-gateway": {
+      "command": "uv",
+      "args": [
+        "run",
+        "context/skills/processkit/processkit-gateway/mcp/server.py",
+        "serve",
+        "--transport",
+        "stdio"
+      ]
+    }
+  }
+}
+```
+
+For a long-running local daemon:
+
+```sh
+uv run context/skills/processkit/processkit-gateway/mcp/server.py \
+  serve --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp
+```
+
+Harnesses that only support stdio can connect to that daemon through the
+included proxy:
+
+```sh
+uv run context/skills/processkit/processkit-gateway/mcp/server.py \
+  stdio-proxy --url http://127.0.0.1:8000/mcp
+```
+
+You can also run individual MCP servers when you want a smaller,
+explicit tool surface:
+
+```sh
+uv run context/skills/processkit/workitem-management/mcp/server.py
+uv run context/skills/processkit/decision-record/mcp/server.py
+uv run context/skills/processkit/index-management/mcp/server.py
+```
+
+## MCP Layouts
+
+processkit supports three MCP layouts:
+
+- **Gateway**: the preferred provider-neutral entry point. It exposes
+  processkit tools through stdio or streamable HTTP and can reduce idle
+  memory by replacing many Python server processes with one runtime.
+- **Per-skill servers**: one MCP server per capability area. This is
+  useful for harnesses with strict allowlists or incremental adoption.
+- **Aggregate MCP**: the legacy compatibility bridge retained for older
+  integrations.
+
+The gateway does not call model-provider APIs, store provider-specific
+state, or know model names. Harness-specific concerns stay outside
+processkit in thin config adapters.
+
+## Optional aibox Integration
+
+[aibox](https://github.com/projectious-work/aibox) can install and wire
+processkit automatically for devcontainers:
 
 ```toml
 [processkit]
@@ -38,39 +145,27 @@ version = "v0.25.0"
 packages = ["managed"]
 ```
 
-aibox then installs the selected package into the project `context/`
-tree, merges MCP configuration for the chosen harness, and records the
-resolved source in `aibox.lock`.
-
-## MCP Entry Points
-
-processkit supports both granular and one-process MCP layouts:
-
-- Per-skill MCP servers for fine-grained compatibility.
-- `aggregate-mcp` as the legacy one-process compatibility bridge.
-- `processkit-gateway` as the current provider-neutral gateway, with
-  direct stdio, streamable HTTP daemon, stdio proxy, and lazy catalog
-  modes.
-
-The gateway is not tied to Claude, Codex, OpenCode, Hermes, Aider, or
-any other harness. Harness-specific behavior belongs in thin installer
-and configuration adapters.
-
-## Current Status
-
-The current release line is pre-1.0. Breaking changes may still land in
-minor releases, and release notes call those out explicitly.
-
-`v0.25.0` is a breaking pre-1.0 release focused on the v2 deliverable
-boundary, demotion of legacy first-class primitives from shipped
-`src/context/`, and the new `processkit-gateway` MCP surface.
+That integration is convenient, but not required. processkit remains the
+standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Documentation site](https://projectious-work.github.io/processkit/)
+- [Introduction](docs-site/docs/intro.md)
+- [MCP server overview](docs-site/docs/mcp-servers/overview.md)
+- [Harness compatibility](docs-site/docs/mcp-servers/harness-compatibility.md)
+- [v2 contracts](docs-site/docs/reference/v2-contracts.md)
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
+
+## Status
+
+processkit is currently pre-1.0. Breaking changes can still land in
+minor releases, and release notes call them out explicitly.
+
+`v0.25.0` is a breaking release focused on the v2 deliverable boundary,
+demotion of legacy first-class primitives from shipped `src/context/`,
+and the new `processkit-gateway` MCP surface.
 
 ## Development
 
