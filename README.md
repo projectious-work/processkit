@@ -63,13 +63,13 @@ project:
 
 ```sh
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.25.0/processkit-v0.25.0.tar.gz \
-  -o processkit-v0.25.0.tar.gz
-tar -xzf processkit-v0.25.0.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.25.1/processkit-v0.25.1.tar.gz \
+  -o processkit-v0.25.1.tar.gz
+tar -xzf processkit-v0.25.1.tar.gz
 
-cp -a processkit-v0.25.0/context ./context
-cp -a processkit-v0.25.0/.processkit ./.processkit
-cp processkit-v0.25.0/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.25.1/context ./context
+cp -a processkit-v0.25.1/.processkit ./.processkit
+cp processkit-v0.25.1/AGENTS.md ./AGENTS.md
 ```
 
 Then point your harness at the gateway MCP server. For stdio-based MCP:
@@ -139,7 +139,7 @@ processkit automatically for devcontainers:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.25.0"
+version = "v0.25.1"
 
 [context]
 packages = ["managed"]
@@ -160,9 +160,9 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 processkit is currently pre-1.0. Breaking changes can still land in
 minor releases, and release notes call them out explicitly.
 
-`v0.25.0` is a breaking release focused on the v2 deliverable boundary,
-demotion of legacy first-class primitives from shipped `src/context/`,
-and the new `processkit-gateway` MCP surface.
+`v0.25.1` is the current patch release. It keeps the v0.25.0 gateway
+and v2 deliverable boundary and refreshes model-recommender routing with
+model lifecycle metadata and task-suitability classes.
 
 ## Development
 

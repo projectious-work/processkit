@@ -56,7 +56,7 @@ aibox uses:
 # aibox.toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.25.0"
+version = "v0.25.1"
 
 [context]
 packages = ["software"]

@@ -16,17 +16,17 @@ Download and unpack the release tarball:
 
 ```bash
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.25.0/processkit-v0.25.0.tar.gz \
-  -o processkit-v0.25.0.tar.gz
-tar -xzf processkit-v0.25.0.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.25.1/processkit-v0.25.1.tar.gz \
+  -o processkit-v0.25.1.tar.gz
+tar -xzf processkit-v0.25.1.tar.gz
 ```
 
 Copy the shipped files into your project:
 
 ```bash
-cp -a processkit-v0.25.0/context ./context
-cp -a processkit-v0.25.0/.processkit ./.processkit
-cp processkit-v0.25.0/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.25.1/context ./context
+cp -a processkit-v0.25.1/.processkit ./.processkit
+cp processkit-v0.25.1/AGENTS.md ./AGENTS.md
 ```
 
 Then register the gateway with your harness. For stdio MCP:
@@ -85,7 +85,7 @@ devcontainer projects:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.25.0"
+version = "v0.25.1"
 
 [context]
 packages = ["managed"]

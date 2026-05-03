@@ -11,6 +11,102 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.25.1] — 2026-05-03
+
+v0.25.1 is a **patch release** for the model-recommender after the
+v0.25.0 gateway and v2 deliverable release. It updates the shipped model
+market roster, makes model lifecycle explicit, and adds fine-grained task
+suitability routing while preserving the existing R/E/S/B/L/G scoring
+contract.
+
+### Added
+
+- **Added lifecycle metadata for model roster entries.** Models now carry
+  `active`, `legacy`, `deprecated`, `retired`, or `unverified` status so
+  processkit can distinguish “still offered but no longer top-ranked”
+  from “not callable anymore.” This prevents older but useful provider
+  models from disappearing from the roster merely because a newer model
+  has taken the top recommendation slot.
+- **Added 42 fine-grained task suitability classes.** The roster now
+  scores models for concrete work types such as `architecture`,
+  `debugging`, `code_review`, `summarization`, `rag`, `ocr`,
+  `voice`, `bulk_generation`, `privacy_sensitive`, and
+  `self_hosted_enterprise`. These classes sit on top of the stable
+  Reasoning, Engineering, Speed, Breadth, Reliability, and Governance
+  dimensions.
+- **Added task-class-aware MCP querying.** `query_models()` now accepts
+  `task_class`, `min_task_suitability`, `require_task_suitability`,
+  `lifecycle`, and `include_retired`, allowing callers to ask for
+  models that are suitable for a specific task without losing the
+  existing dimension filters.
+- **Added `list_task_classes()` to model-recommender MCP.** Callers can
+  inspect the live task taxonomy and its dimension profile instead of
+  hard-coding task-class names.
+- **Added current-market model entries across major providers.** The
+  roster now includes new or refreshed entries for OpenAI GPT-5.5,
+  GPT-5.2, GPT-5.2-Codex, Anthropic Claude Opus 4.7, Google Gemini 3
+  preview models, Mistral Medium 3.5 / Small 4 / Devstral 2, DeepSeek
+  V4, Moonshot Kimi K2.6, Z.AI GLM-5/5.1, xAI Grok 4.20 and Grok 4.1
+  Fast, Meta Llama 4 Scout/Maverick, Qwen3 Coder, Cohere Command A,
+  Amazon Nova 2 Lite, and NVIDIA Nemotron 3 Super.
+
+### Changed
+
+- **Model routing now separates availability from ranking.** A model that
+  remains available through a provider API can stay in the roster as
+  `legacy` or `deprecated`; routing can still select it for cost,
+  compatibility, privacy, or task-fit reasons.
+- **Resolver tie-breaking now understands task classes.** `resolve_model`
+  accepts `task_hints.task_class`, `task_hints.task_classes`,
+  `task_hints.min_task_suitability`, and
+  `task_hints.require_task_suitability`. Suitability only reorders
+  otherwise comparable candidates after binding layer/rank/provider
+  precedence, so project and team model bindings remain authoritative.
+- **Model migration helpers preserve lifecycle and task-suitability
+  metadata.** The legacy `migrate_models.py` path maps lifecycle into
+  version status and carries source URLs, model classes, and task
+  suitability into generated model artifacts for compatibility.
+- **The model-recommender documentation now documents lifecycle and task
+  suitability explicitly.** Workflow C clarifies that refreshes are
+  additive and should not delete still-offered models; Workflow B now
+  classifies tasks before applying the six-axis score.
+
+### Fixed
+
+- **Corrected the previous roster-refresh assumption that “demote” meant
+  remove.** The shipped behavior now keeps offered models and lowers
+  routing priority only through lifecycle/task-fit metadata.
+- **Corrected stale pricing/context metadata for several existing roster
+  entries.** Notable updates include GPT-5.5 API pricing/context,
+  GPT-5/GPT-5 Pro legacy pricing, o3 pricing/context, Gemini 2.5 Flash
+  pricing, and Kimi K2.6 API pricing.
+
+### Notes
+
+- This remains a patch release because processkit is still pre-1.0 and
+  the change is additive for consumers: existing model IDs, the six
+  dimension filters, `model_classes`, and user configuration continue to
+  work.
+- `unverified` entries remain visible only under the same conservative
+  assumptions as `_estimated` records; production routing can exclude
+  them with `include_estimated=False`.
+- Provider pricing and model availability change quickly. The roster
+  carries source URLs and should be refreshed again before making
+  budget-critical decisions.
+
+### Verification
+
+- `44 passed` for model-recommender query, migration, and default-binding
+  tests.
+- `29 passed` for resolver tests.
+- `python3 -m py_compile` passed for model-recommender server,
+  resolver, and migration helper.
+- `scripts/check-src-context-drift.sh --release-deliverable` passed.
+- `uv run scripts/smoke-test-servers.py` passed across the MCP smoke
+  suite.
+
+---
+
 ## [v0.25.0] — 2026-05-02
 
 v0.25.0 is a **breaking pre-1.0 minor release**. It completes the
