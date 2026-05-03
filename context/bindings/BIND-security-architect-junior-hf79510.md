@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-security-architect
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-governed-deep
   target_kind: Artifact
   conditions:
     seniority: junior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Junior security architect — threat-model drafting; G:5 required
-  description: 'default-pack: Junior security architect — threat-model drafting; G:5
-    required'
+    rationale: Provider-neutral governed-deep routing for ROLE-security-architect
+      junior; concrete model selected by runtime access gates.
+  description: Provider-neutral governed-deep model assignment for ROLE-security-architect
+    junior
 ---

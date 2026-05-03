@@ -16,6 +16,14 @@ _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---", re.S)
 _TIMESTAMPED_BIND_RE = re.compile(r"^BIND-\d{8}_\d{4}-")
 _DETERMINISTIC_BIND_RE = re.compile(r"^BIND-[a-z][a-z0-9-]+-h[0-9a-f]{6}$")
 _MODEL_SPEC_ID_RE = re.compile(r"^ART-\d{8}_\d{4}-ModelSpec-[a-z0-9-]+$")
+_MODEL_PROFILE_ID_RE = re.compile(r"^ART-\d{8}_\d{4}-ModelProfile-[a-z0-9-]+$")
+_PROVIDER_MODEL_TERMS = {
+    "openai", "gpt", "anthropic", "claude", "google", "gemini",
+    "deepseek", "qwen", "alibaba", "mistral", "codestral", "devstral",
+    "meta", "llama", "xai", "grok", "cohere", "command", "minimax",
+    "moonshot", "kimi", "nvidia", "nemotron", "microsoft", "phi",
+    "aws", "nova", "zai", "glm",
+}
 
 
 def _load_frontmatter(path: Path) -> dict[str, Any] | None:
@@ -53,9 +61,11 @@ def _model_score_ids(repo_root: Path) -> set[str]:
 
 def _model_spec_artifacts(
     repo_root: Path,
-) -> tuple[set[str], set[str], list[CheckResult]]:
+) -> tuple[set[str], set[str], set[str], list[CheckResult]]:
     ids: set[str] = set()
     profile_ids: set[str] = set()
+    model_profile_ids: set[str] = set()
+    profile_candidates: list[tuple[Path, str]] = []
     results: list[CheckResult] = []
     for root_name in ("context/artifacts", "src/context/artifacts"):
         artifacts = repo_root / root_name
@@ -66,10 +76,64 @@ def _model_spec_artifacts(
             if not fm:
                 continue
             spec = fm.get("spec") if isinstance(fm.get("spec"), dict) else {}
-            if fm.get("kind") != "Artifact" or spec.get("kind") != "model-spec":
+            if fm.get("kind") != "Artifact":
                 continue
             md = fm.get("metadata") if isinstance(fm.get("metadata"), dict) else {}
             artifact_id = str(md.get("id") or "")
+            if spec.get("kind") == "model-profile":
+                if artifact_id:
+                    model_profile_ids.add(artifact_id)
+                if not _MODEL_PROFILE_ID_RE.match(path.stem):
+                    results.append(CheckResult(
+                        severity="ERROR",
+                        category="context_hygiene",
+                        id="model-profile.filename-policy",
+                        message=(
+                            f"{path.relative_to(repo_root)} is a model-profile "
+                            "artifact but does not use the timestamped "
+                            "ART-YYYYMMDD_HHMM-ModelProfile-* filename policy"
+                        ),
+                        entity_ref=path.stem,
+                    ))
+                if artifact_id and not _MODEL_PROFILE_ID_RE.match(artifact_id):
+                    results.append(CheckResult(
+                        severity="ERROR",
+                        category="context_hygiene",
+                        id="model-profile.id-policy",
+                        message=(
+                            f"{path.relative_to(repo_root)} metadata.id "
+                            f"{artifact_id!r} does not use the timestamped "
+                            "ART-YYYYMMDD_HHMM-ModelProfile-* policy"
+                        ),
+                        entity_ref=artifact_id,
+                    ))
+                tail = path.stem.split("ModelProfile-", 1)[-1].lower()
+                leaked = sorted(
+                    term for term in _PROVIDER_MODEL_TERMS
+                    if re.search(rf"(^|-){re.escape(term)}($|-)", tail)
+                )
+                if leaked:
+                    results.append(CheckResult(
+                        severity="ERROR",
+                        category="context_hygiene",
+                        id="model-profile.provider-coded-name",
+                        message=(
+                            f"{path.relative_to(repo_root)} encodes provider/model "
+                            f"term(s) {leaked} in a provider-neutral profile name"
+                        ),
+                        entity_ref=path.stem,
+                        suggested_fix=(
+                            "rename the profile around capability need, not "
+                            "provider/model identity"
+                        ),
+                    ))
+                for candidate in spec.get("candidates", []) or []:
+                    if isinstance(candidate, dict) and candidate.get("model_spec"):
+                        profile_candidates.append((path, str(candidate["model_spec"])))
+                continue
+
+            if spec.get("kind") != "model-spec":
+                continue
             if artifact_id:
                 ids.add(artifact_id)
             profile_ids.update(str(x) for x in spec.get("profile_ids", []) or [])
@@ -101,10 +165,26 @@ def _model_spec_artifacts(
                     ),
                     entity_ref=artifact_id,
                 ))
-    return ids, profile_ids, results
+    for path, target in profile_candidates:
+        if target not in ids:
+            results.append(CheckResult(
+                severity="ERROR",
+                category="context_hygiene",
+                id="model-profile.missing-candidate",
+                message=(
+                    f"{path.relative_to(repo_root)} candidate references "
+                    f"missing model-spec artifact {target}"
+                ),
+                entity_ref=target,
+            ))
+    return ids, profile_ids, model_profile_ids, results
 
 
-def _scan_model_bindings(repo_root: Path, model_artifact_ids: set[str]) -> list[CheckResult]:
+def _scan_model_bindings(
+    repo_root: Path,
+    model_artifact_ids: set[str],
+    model_profile_ids: set[str],
+) -> list[CheckResult]:
     results: list[CheckResult] = []
     for root_name in ("context/bindings", "src/context/bindings"):
         root = repo_root / root_name
@@ -124,6 +204,8 @@ def _scan_model_bindings(repo_root: Path, model_artifact_ids: set[str]) -> list[
             if spec.get("type") != "model-assignment":
                 continue
             target = str(spec.get("target") or "")
+            subject = str(spec.get("subject") or "")
+            conds = spec.get("conditions") if isinstance(spec.get("conditions"), dict) else {}
             if target.startswith("MODEL-"):
                 results.append(CheckResult(
                     severity="WARN",
@@ -164,14 +246,37 @@ def _scan_model_bindings(repo_root: Path, model_artifact_ids: set[str]) -> list[
                     entity_ref=target,
                 ))
                 continue
-            if target not in model_artifact_ids:
+            if target in model_profile_ids:
+                pass
+            elif target in model_artifact_ids:
+                if (
+                    (subject.startswith("ROLE-") or subject.startswith("TEAMMEMBER-"))
+                    and conds.get("direct_model_pin") is not True
+                ):
+                    results.append(CheckResult(
+                        severity="ERROR",
+                        category="context_hygiene",
+                        id="model-binding.direct-role-model",
+                        message=(
+                            f"{path.relative_to(repo_root)} binds {subject} "
+                            "directly to a concrete model-spec. Role/TeamMember "
+                            "defaults must target provider-neutral model-profile "
+                            "artifacts unless explicitly marked direct_model_pin."
+                        ),
+                        entity_ref=target,
+                        suggested_fix=(
+                            "rewrite Role/TeamMember model-assignment target to "
+                            "Artifact(kind=model-profile)"
+                        ),
+                    ))
+            else:
                 results.append(CheckResult(
                     severity="ERROR",
                     category="context_hygiene",
                     id="model-binding.missing-target",
                     message=(
                         f"{path.relative_to(repo_root)} targets missing "
-                        f"model-spec artifact {target}"
+                        f"model profile/spec artifact {target}"
                     ),
                     entity_ref=target,
                 ))
@@ -251,6 +356,7 @@ def run(ctx) -> list[CheckResult]:
     (
         model_artifact_ids,
         artifact_profile_ids,
+        model_profile_ids,
         model_spec_results,
     ) = _model_spec_artifacts(repo_root)
     results.extend(model_spec_results)
@@ -287,7 +393,11 @@ def run(ctx) -> list[CheckResult]:
             extra={"sample": stale_profiles[:10]},
         ))
 
-    results.extend(_scan_model_bindings(repo_root, model_artifact_ids))
+    results.extend(_scan_model_bindings(
+        repo_root,
+        model_artifact_ids,
+        model_profile_ids,
+    ))
 
     artifacts = repo_root / "context" / "artifacts"
     for path in sorted(artifacts.glob("ART-*_0000-*.md")):

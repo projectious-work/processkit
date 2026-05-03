@@ -45,7 +45,10 @@ metadata:
 
 This skill scores AI models across six capability dimensions, two gate
 dimensions (Availability and User Access), and per-token pricing — then
-helps you pick the right model. It has three workflows: **Profile View**
+helps you pick the right model. Persistent Role and TeamMember routing
+uses provider-neutral `Artifact(kind=model-profile)` artifacts; those
+profiles expand to concrete `Artifact(kind=model-spec)` candidates only
+after runtime access gates are applied. It has three workflows: **Profile View**
 (spider-chart for one or more models, with optional sub-dimension drill-down),
 **Task Router** (cluster a task plan and route each cluster to the optimal
 model), and **Roster Refresh** (live internet research to update benchmark
@@ -153,6 +156,14 @@ When a model's gate status is unknown, ask the user rather than assuming it pass
 Cost is a sub-dimension of Speed (S.cost_efficiency) in the spider chart but
 is also surfaced explicitly because raw per-token prices and derived value
 matter independently of speed.
+
+**Model profile routing:** default Role/TeamMember bindings target
+`Artifact(kind=model-profile)` entities named for capability needs
+(`code-balanced`, `general-fast`, `research-deep`), not providers or
+model families. Concrete provider/model names belong in model-spec
+artifacts and in the profile's candidate list. This keeps identities and
+roles portable across Codex, Claude Code, Gemini CLI, Aider, Continue,
+Cursor, Copilot, OpenCode, Hermes, and future harnesses.
 
 **Per-token pricing:** stored on each `Artifact(kind=model-spec)` under
 `spec.versions[].pricing` and normalized by the MCP server. Use

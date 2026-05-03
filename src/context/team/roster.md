@@ -15,7 +15,11 @@ whenever a task needs routing.
 - `DEC-20260503_1424-ShinyBear` — model descriptions are
   `Artifact(kind=model-spec)` entities, not a separate Model primitive.
 - `DEC-20260503_1424-WiseBird` — bindings connect addressable
-  processkit entities; model-assignment targets model-spec artifacts.
+  processkit entities; model-assignment concrete targets are model-spec
+  artifacts.
+- `DEC-20260503_1829-LoyalComet` — Role and TeamMember defaults route
+  through provider-neutral `Artifact(kind=model-profile)` artifacts;
+  concrete models are selected after runtime access gates.
 
 Earlier roster decisions
 (`DEC-20260414_0900-TeamRoster-permanent-ai-team-composition`,
@@ -39,8 +43,14 @@ The team is now a thin overlay on three primitives:
    `(provider, family)` with versions nested. Each model spec declares
    an `equivalent_tier` in the T-shirt ladder
    (`xs / s / m / l / xl / xxl`).
-4. **Bindings** (`context/bindings/`) — `model-assignment` bindings
-   wire `(role, seniority)` → `(model-spec artifact, effort)`. The
+4. **Model profiles**
+   (`context/artifacts/ART-YYYYMMDD_HHMM-ModelProfile-*.md`) —
+   provider-neutral capability profiles such as `code-balanced` or
+   `research-deep`. Profile filenames must not encode provider or model
+   names; concrete provider/model candidates live inside the artifact.
+5. **Bindings** (`context/bindings/`) — `model-assignment` bindings
+   wire `(role, seniority)` or TeamMember identity to
+   `(model-profile artifact, effort)`. The
    default binding pack ships seeds at
    `context/skills/processkit/model-recommender/default-bindings/MANIFEST.yaml`.
 
@@ -171,7 +181,8 @@ warnings.
 6. Role default bindings (no seniority).
 7. Project bias bindings (`cost_bias`, `provider_preference`) —
    reorder, don't filter.
-8. Shim fallback (`role.spec.default_model`); emits warning.
+8. Shim fallback (`role.spec.default_model_profile`, then deprecated
+   `role.spec.default_model`); emits warning.
 
 Tie-breakers within a layer: project-preferred provider, lower cost,
 more recent GA version, higher reliability.
@@ -209,20 +220,26 @@ Per-project overrides for routing:
 binding-management.create_binding(
     type="model-assignment",
     subject="ROLE-product-manager",
-    target="ART-20260503_1424-ModelSpec-anthropic-claude-opus",
+    target="ART-20260503_1832-ModelProfile-general-deep",
     target_kind="Artifact",
     conditions={
         "seniority": "senior",
         "rank": 1,
         "effort_floor": "medium",
         "effort_ceiling": "extra-high",
-        "rationale": "Project-specific: PM does deep planning here, prefers Opus over default Sonnet"
+        "rationale": "Project-specific: PM does deep planning here"
     }
 )
 ```
 
 Lower-numbered ranks win; layer 5 (role+seniority) overrides layer 6
 (role default) overrides layer 8 (shim).
+
+Use direct `Artifact(kind=model-spec)` targets only for explicit pins,
+project vetoes, or temporary compatibility. Role and TeamMember defaults
+must use model profiles so Cora, roles, and exported team members remain
+portable across Codex, Claude Code, Gemini CLI, Aider, Continue, Cursor,
+Copilot, OpenCode, Hermes, and future harnesses.
 
 ## Refreshing the model roster
 
@@ -233,9 +250,8 @@ When a new model version ships:
    `context/artifacts/ART-YYYYMMDD_HHMM-ModelSpec-<provider>-<family>.md`
    to add a new `versions[]` entry; bump `equivalent_tier` if capacity
    shifted.
-3. If a new family unlocks rerankings in the default binding pack,
-   update
-   `context/skills/processkit/model-recommender/default-bindings/MANIFEST.yaml`
-   and re-materialise to `context/bindings/`.
+3. If a new family unlocks rerankings, add it to the relevant
+   `ModelProfile` candidate list. Update the default binding pack only
+   when a role/seniority should point to a different neutral profile.
 4. Record a DecisionRecord (`/pk-dec`) only if the change is
    cross-cutting.

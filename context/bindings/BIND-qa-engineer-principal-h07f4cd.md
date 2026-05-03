@@ -8,13 +8,14 @@ spec:
   type: model-assignment
   subject: ROLE-qa-engineer
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-code-deep
   target_kind: Artifact
   conditions:
     seniority: principal
     rank: 1
     effort_floor: high
     effort_ceiling: extra-high
-    rationale: Principal QA — test-architecture for complex systems
-  description: 'default-pack: Principal QA — test-architecture for complex systems'
+    rationale: Provider-neutral code-deep routing for ROLE-qa-engineer principal;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral code-deep model assignment for ROLE-qa-engineer principal
 ---

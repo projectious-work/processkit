@@ -7,15 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-machine-learning-engineer
-  target: ART-20260503_1424-ModelSpec-openai-gpt-5-pro
+  target: ART-20260503_1832-ModelProfile-code-deep
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: high
     effort_ceiling: extra-high
-    rationale: OpenAI GPT-5 Pro for embedding-policy, semantic retrieval, and hybrid
-      ranking design in Phase 2.
-  description: OpenAI senior machine-learning-engineer binding for sqlite-vec semantic
-    search
+    rationale: Provider-neutral code-deep routing for ROLE-machine-learning-engineer
+      senior; concrete model selected by runtime access gates.
+  description: Provider-neutral code-deep model assignment for ROLE-machine-learning-engineer
+    senior
 ---

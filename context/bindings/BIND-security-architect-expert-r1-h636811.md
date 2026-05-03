@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-security-architect
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-governed-deep
   target_kind: Artifact
   conditions:
     seniority: expert
     rank: 1
     effort_floor: high
     effort_ceiling: extra-high
-    rationale: 'Seed: Expert security-architect — inherits senior defaults pending
-      role-specific tuning (KeenFern v0.21.0)'
-  description: 'Seed: Expert security-architect'
+    rationale: Provider-neutral governed-deep routing for ROLE-security-architect
+      expert; concrete model selected by runtime access gates.
+  description: Provider-neutral governed-deep model assignment for ROLE-security-architect
+    expert
 ---

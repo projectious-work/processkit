@@ -8,13 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-qa-engineer
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-code-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Senior QA — test-strategy and flaky-test triage
-  description: 'default-pack: Senior QA — test-strategy and flaky-test triage'
+    rationale: Provider-neutral code-balanced routing for ROLE-qa-engineer senior;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral code-balanced model assignment for ROLE-qa-engineer
+    senior
 ---

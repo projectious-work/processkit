@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-data-scientist
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-haiku
+  target: ART-20260503_1832-ModelProfile-general-fast
   target_kind: Artifact
   conditions:
     seniority: specialist
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: 'Seed: Specialist data-scientist — inherits junior defaults pending
-      role-specific tuning (KeenFern v0.21.0)'
-  description: 'Seed: Specialist data-scientist'
+    rationale: Provider-neutral general-fast routing for ROLE-data-scientist specialist;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral general-fast model assignment for ROLE-data-scientist
+    specialist
 ---

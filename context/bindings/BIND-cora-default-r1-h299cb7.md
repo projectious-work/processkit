@@ -7,13 +7,14 @@ metadata:
 spec:
   type: model-assignment
   subject: TEAMMEMBER-cora
-  target: ART-20260503_1424-ModelSpec-openai-gpt-5
+  target: ART-20260503_1832-ModelProfile-general-balanced
   target_kind: Artifact
   conditions:
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Senior PM planning and acceptance using OpenAI equivalent to Claude
-      Sonnet for Codex/OpenAI-subscription sessions.
-  description: OpenAI preference for Cora in index-search implementation planning
+    rationale: Provider-neutral general-balanced routing for TEAMMEMBER-cora default;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral general-balanced model assignment for TEAMMEMBER-cora
+    default
 ---

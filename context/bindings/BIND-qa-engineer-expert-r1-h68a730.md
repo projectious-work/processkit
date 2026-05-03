@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-qa-engineer
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-code-balanced
   target_kind: Artifact
   conditions:
     seniority: expert
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: 'Seed: Expert qa-engineer — inherits senior defaults pending role-specific
-      tuning (KeenFern v0.21.0)'
-  description: 'Seed: Expert qa-engineer'
+    rationale: Provider-neutral code-balanced routing for ROLE-qa-engineer expert;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral code-balanced model assignment for ROLE-qa-engineer
+    expert
 ---

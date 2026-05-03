@@ -37,6 +37,7 @@ import json
 import os
 import sys
 import time
+import tomllib
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Iterable
@@ -117,6 +118,8 @@ class ResolvedCandidate:
     rank: int
     source_layer: int
     rationale: str = ""
+    profile_id: str | None = None
+    profile_rank: int = 1
 
     def key(self) -> tuple[str, str]:
         """Dedupe key: (model_id, effort)."""
@@ -219,6 +222,21 @@ def _get_model(model_id: str) -> dict | None:
     return spec
 
 
+def _get_artifact(artifact_id: str, expected_kind: str | None = None) -> dict | None:
+    """Return an Artifact spec, optionally constrained by spec.kind."""
+    spec = _get_entity_spec(artifact_id)
+    if not spec:
+        return None
+    if expected_kind and spec.get("kind") != expected_kind:
+        return None
+    spec["_id"] = artifact_id
+    return spec
+
+
+def _get_model_profile(profile_id: str) -> dict | None:
+    return _get_artifact(profile_id, expected_kind="model-profile")
+
+
 def _canonical_model_artifact_id(model_id: str) -> str:
     if model_id.startswith("MODEL-"):
         return _artifact_id_for_model_slug(model_id[len("MODEL-"):])
@@ -251,6 +269,166 @@ def _iter_model_specs() -> list[tuple[str, dict]]:
             spec["_id"] = row["id"]
             out.append((row["id"], spec))
     return out
+
+
+# ---------------------------------------------------------------------------
+# Runtime access helpers
+# ---------------------------------------------------------------------------
+
+_NATIVE_HARNESS_PROVIDERS = {
+    "claude": ["anthropic"],
+    "codex": ["openai"],
+    "gemini": ["google"],
+}
+_MULTI_PROVIDER_HARNESSES = {
+    "aider",
+    "continue",
+    "cursor",
+    "opencode",
+    "hermes",
+}
+
+
+def _repo_root() -> Path:
+    here = Path.cwd().resolve()
+    while True:
+        if (here / "AGENTS.md").is_file() or (here / "aibox.toml").is_file():
+            return here
+        if here.parent == here:
+            return Path.cwd().resolve()
+        here = here.parent
+
+
+def _load_user_config() -> dict:
+    root = _repo_root()
+    cfg_path = (
+        root
+        / "context/skills/processkit/model-recommender/mcp/user_config.json"
+    )
+    if not cfg_path.is_file():
+        return {}
+    try:
+        return json.loads(cfg_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _load_aibox_ai_config() -> dict:
+    path = _repo_root() / "aibox.toml"
+    if not path.is_file():
+        return {}
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    ai = data.get("ai") if isinstance(data, dict) else {}
+    return ai if isinstance(ai, dict) else {}
+
+
+def _provider_slug(value: str | None) -> str:
+    if not value:
+        return ""
+    return str(value).strip().lower().replace("_", "-")
+
+
+def _runtime_context(task_hints: dict | None = None) -> dict[str, Any]:
+    """Return local runtime access hints.
+
+    processkit can read local config, but aibox owns authoritative runtime
+    entitlement/quota detection. This helper is deliberately conservative:
+    explicit user_config wins, then aibox.toml model_providers, then native
+    single-provider harnesses. Multi-provider harnesses do not imply access
+    to any specific provider.
+    """
+    task_hints = task_hints or {}
+    cfg = _load_user_config()
+    ai = _load_aibox_ai_config()
+
+    hinted_providers = [
+        _provider_slug(x) for x in task_hints.get("available_providers", []) or []
+    ]
+    explicit_providers = [
+        _provider_slug(x) for x in cfg.get("available_providers", []) or []
+    ]
+    aibox_providers = [
+        _provider_slug(x) for x in ai.get("model_providers", []) or []
+    ]
+    harnesses = [_provider_slug(x) for x in ai.get("harnesses", []) or []]
+
+    allowed_providers: list[str] = []
+    source = "unrestricted"
+    if hinted_providers:
+        allowed_providers = hinted_providers
+        source = "task_hints.available_providers"
+    elif explicit_providers:
+        allowed_providers = explicit_providers
+        source = "user_config.available_providers"
+    elif aibox_providers:
+        allowed_providers = aibox_providers
+        source = "aibox.toml ai.model_providers"
+    elif harnesses and not any(h in _MULTI_PROVIDER_HARNESSES for h in harnesses):
+        for harness in harnesses:
+            allowed_providers.extend(_NATIVE_HARNESS_PROVIDERS.get(harness, []))
+        allowed_providers = sorted(set(allowed_providers))
+        source = "aibox.toml ai.harnesses"
+
+    preferred = [
+        _provider_slug(x) for x in cfg.get("preferred_providers", []) or []
+    ]
+    if not preferred:
+        preferred = allowed_providers[:]
+
+    return {
+        "allowed_providers": allowed_providers,
+        "provider_source": source,
+        "preferred_providers": preferred,
+        "available_models": [str(x) for x in cfg.get("available_models", []) or []],
+        "blocked_models": [str(x) for x in cfg.get("blocked_models", []) or []],
+        "harnesses": harnesses,
+    }
+
+
+def _model_access_aliases(model_id: str, model: dict) -> set[str]:
+    aliases = {model_id, _canonical_model_artifact_id(model_id)}
+    provider = _provider_slug(model.get("provider"))
+    family = str(model.get("family") or "")
+    if provider and family:
+        aliases.add(f"MODEL-{provider}-{family}")
+        aliases.add(f"{provider}-{family}")
+    if family:
+        aliases.add(family)
+    for version in model.get("versions") or []:
+        vid = str(version.get("version_id") or "")
+        vendor_id = str(version.get("vendor_model_id") or "")
+        if vendor_id:
+            aliases.add(vendor_id)
+        if family and vid and vid != "1":
+            aliases.add(f"{family}-{vid}")
+    return aliases
+
+
+def _model_runtime_ok(
+    model_id: str,
+    model: dict,
+    runtime: dict[str, Any],
+) -> tuple[bool, str]:
+    provider = _provider_slug(model.get("provider"))
+    aliases = _model_access_aliases(model_id, model)
+
+    blocked = set(runtime.get("blocked_models") or [])
+    if aliases & blocked:
+        return False, "blocked by user_config.blocked_models"
+
+    available = set(runtime.get("available_models") or [])
+    if available and not (aliases & available):
+        return False, "not listed in user_config.available_models"
+
+    allowed_providers = set(runtime.get("allowed_providers") or [])
+    if allowed_providers and provider not in allowed_providers:
+        source = runtime.get("provider_source") or "runtime provider gate"
+        return False, f"provider {provider!r} not allowed by {source}"
+
+    return True, ""
 
 
 def _model_versions_sorted(model: dict) -> list[dict]:
@@ -396,6 +574,76 @@ def _binding_to_candidate(
         source_layer=layer,
         rationale="; ".join(rationale_parts),
     )
+
+
+def _profile_candidate_bindings(binding: dict) -> list[dict] | tuple[None, str]:
+    """Expand a model-profile binding into synthetic model-spec bindings."""
+    target = str(binding.get("target") or "")
+    profile = _get_model_profile(target)
+    if profile is None:
+        return None, f"binding target {target!r} is not a model-profile artifact"
+
+    candidates = profile.get("candidates") or []
+    if not isinstance(candidates, list) or not candidates:
+        return None, f"model-profile {target!r} has no candidates"
+
+    expanded: list[dict] = []
+    profile_selection = profile.get("selection") or {}
+    for idx, candidate in enumerate(candidates, start=1):
+        if not isinstance(candidate, dict):
+            continue
+        model_spec = str(candidate.get("model_spec") or candidate.get("target") or "")
+        if not model_spec:
+            continue
+        replacement = dict(binding)
+        replacement["target"] = model_spec
+        replacement["target_kind"] = "Artifact"
+        conds = dict(binding.get("conditions") or {})
+        profile_rank = int(candidate.get("rank") or idx)
+        conds["_profile_id"] = target
+        conds["_profile_rank"] = profile_rank
+        conds["_profile_name"] = profile.get("name") or target
+        if candidate.get("version_pin") and not conds.get("version_pin"):
+            conds["version_pin"] = candidate["version_pin"]
+        for effort_key in ("effort_floor", "effort_ceiling"):
+            if candidate.get(effort_key) and not conds.get(effort_key):
+                conds[effort_key] = candidate[effort_key]
+            if profile_selection.get(effort_key) and not conds.get(effort_key):
+                conds[effort_key] = profile_selection[effort_key]
+        rationale = conds.get("rationale")
+        profile_note = f"Expanded model-profile {target} candidate rank {profile_rank}."
+        conds["rationale"] = f"{rationale}; {profile_note}" if rationale else profile_note
+        replacement["conditions"] = conds
+        expanded.append(replacement)
+    if not expanded:
+        return None, f"model-profile {target!r} has no usable candidates"
+    return expanded
+
+
+def _binding_to_candidates(
+    binding: dict,
+    layer: int,
+    default_effort: str | None = None,
+) -> list[ResolvedCandidate] | tuple[None, str]:
+    """Convert a model-assignment binding to one or more candidates."""
+    target = str(binding.get("target", ""))
+    bindings = [binding]
+    if "-ModelProfile-" in target:
+        expanded = _profile_candidate_bindings(binding)
+        if isinstance(expanded, tuple):
+            return expanded
+        bindings = expanded
+
+    out: list[ResolvedCandidate] = []
+    for b in bindings:
+        rc = _binding_to_candidate(b, layer=layer, default_effort=default_effort)
+        if isinstance(rc, tuple):
+            return rc
+        conds = b.get("conditions") or {}
+        rc.profile_id = conds.get("_profile_id")
+        rc.profile_rank = int(conds.get("_profile_rank") or 1)
+        out.append(rc)
+    return out
 
 
 def _provider_equivalent_binding(
@@ -547,7 +795,13 @@ def _tiebreak_key(
     """
     model = _get_model(cand.model_id) or {}
     provider = model.get("provider", "")
-    prov_rank = preferred_providers.index(provider) if provider in preferred_providers else len(preferred_providers) + 1
+    provider_key = _provider_slug(provider)
+    provider_prefs = [_provider_slug(p) for p in preferred_providers]
+    prov_rank = (
+        provider_prefs.index(provider_key)
+        if provider_key in provider_prefs
+        else len(provider_prefs) + 1
+    )
     task_fit = -_candidate_task_suitability(model, task_hints)
 
     # Cost: sum of input+output per 1M tokens for the selected version.
@@ -581,7 +835,7 @@ def _tiebreak_key(
     recency_key = (-year, -month, -day)
 
     # Use layer first so higher-precedence layers stay on top.
-    return (cand.source_layer, cand.rank, prov_rank, task_fit, cost,
+    return (cand.source_layer, cand.rank, cand.profile_rank, prov_rank, task_fit, cost,
             recency_key, reliability)
 
 
@@ -614,12 +868,15 @@ def resolve(
     candidates: list[ResolvedCandidate] = []
     preferred_providers: list[str] = []
     expected_tokens: int | None = task_hints.get("expected_tokens")
+    runtime = _runtime_context(task_hints)
     project_bindings: list[dict] = _load_bindings_for_subject(scope) if scope else []
     for b in project_bindings:
         pref = (b.get("conditions") or {}).get("provider_preference")
         if pref:
-            preferred_providers = list(pref)
+            preferred_providers = [_provider_slug(p) for p in pref]
             break
+    if not preferred_providers:
+        preferred_providers = list(runtime.get("preferred_providers") or [])
 
     # -- Layer 1: Task-pinned override ----------------------------------------
     model_pin = task_hints.get("model_pin")
@@ -669,10 +926,10 @@ def resolve(
         tm_bindings.sort(key=lambda b: int((b.get("conditions") or {}).get("rank", 99)))
         before = len(candidates)
         for b in tm_bindings:
-            rc = _binding_to_candidate(b, layer=2)
-            if isinstance(rc, tuple):
+            rcs = _binding_to_candidates(b, layer=2)
+            if isinstance(rcs, tuple):
                 continue
-            candidates.append(rc)
+            candidates.extend(rcs)
         trace.append({
             "step": 2, "layer": 2, "action": "team_member_preference",
             "count_before": before, "count_after": len(candidates),
@@ -715,6 +972,10 @@ def resolve(
             if model is None:
                 dropped.append({"model_id": c.model_id, "reason": "model not found"})
                 continue
+            ok_runtime, runtime_reason = _model_runtime_ok(c.model_id, model, runtime)
+            if not ok_runtime:
+                dropped.append({"model_id": c.model_id, "reason": runtime_reason})
+                continue
             ok, reason = _capability_ok(model, task_hints)
             if not ok:
                 dropped.append({"model_id": c.model_id, "reason": reason})
@@ -741,24 +1002,33 @@ def resolve(
         for b in role_bindings:
             conds = b.get("conditions") or {}
             if conds.get("seniority") == seniority:
-                rc = _binding_to_candidate(b, layer=5)
-                if isinstance(rc, tuple):
+                rcs = _binding_to_candidates(b, layer=5)
+                if isinstance(rcs, tuple):
                     continue
-                if rc.model_id in blocked:
-                    equivalent = _provider_equivalent_binding(b, preferred_providers)
-                    if not equivalent:
+                for rc in rcs:
+                    if rc.model_id in blocked:
+                        equivalent = _provider_equivalent_binding(b, preferred_providers)
+                        if not equivalent:
+                            continue
+                        equiv_rcs = _binding_to_candidates(equivalent, layer=5)
+                        if isinstance(equiv_rcs, tuple):
+                            continue
+                        rcs = equiv_rcs
+                        break
+                for rc in rcs:
+                    if rc.model_id in blocked:
                         continue
-                    rc = _binding_to_candidate(equivalent, layer=5)
-                    if isinstance(rc, tuple) or rc.model_id in blocked:
+                    model = _get_model(rc.model_id)
+                    if model is None:
                         continue
-                model = _get_model(rc.model_id)
-                if model is None:
-                    continue
-                ok, _ = _capability_ok(model, task_hints)
-                if not ok:
-                    continue
-                candidates.append(rc)
-                added_5 += 1
+                    ok_runtime, _ = _model_runtime_ok(rc.model_id, model, runtime)
+                    if not ok_runtime:
+                        continue
+                    ok, _ = _capability_ok(model, task_hints)
+                    if not ok:
+                        continue
+                    candidates.append(rc)
+                    added_5 += 1
         trace.append({
             "step": 5, "layer": 5, "action": "role_seniority_bindings",
             "count_before": before, "count_after": len(candidates),
@@ -778,24 +1048,33 @@ def resolve(
         conds = b.get("conditions") or {}
         if conds.get("seniority"):
             continue
-        rc = _binding_to_candidate(b, layer=6)
-        if isinstance(rc, tuple):
+        rcs = _binding_to_candidates(b, layer=6)
+        if isinstance(rcs, tuple):
             continue
-        if rc.model_id in blocked:
-            equivalent = _provider_equivalent_binding(b, preferred_providers)
-            if not equivalent:
+        for rc in rcs:
+            if rc.model_id in blocked:
+                equivalent = _provider_equivalent_binding(b, preferred_providers)
+                if not equivalent:
+                    continue
+                equiv_rcs = _binding_to_candidates(equivalent, layer=6)
+                if isinstance(equiv_rcs, tuple):
+                    continue
+                rcs = equiv_rcs
+                break
+        for rc in rcs:
+            if rc.model_id in blocked:
                 continue
-            rc = _binding_to_candidate(equivalent, layer=6)
-            if isinstance(rc, tuple) or rc.model_id in blocked:
+            model = _get_model(rc.model_id)
+            if model is None:
                 continue
-        model = _get_model(rc.model_id)
-        if model is None:
-            continue
-        ok, _ = _capability_ok(model, task_hints)
-        if not ok:
-            continue
-        candidates.append(rc)
-        added_6 += 1
+            ok_runtime, _ = _model_runtime_ok(rc.model_id, model, runtime)
+            if not ok_runtime:
+                continue
+            ok, _ = _capability_ok(model, task_hints)
+            if not ok:
+                continue
+            candidates.append(rc)
+            added_6 += 1
     trace.append({
         "step": 6, "layer": 6, "action": "role_default_bindings",
         "count_before": before, "count_after": len(candidates),
@@ -847,8 +1126,72 @@ def resolve(
     # -- Layer 8: Shim fallback ----------------------------------------------
     if not candidates:
         role_ent = _get_role(role)
+        default_model_profile = (role_ent or {}).get("default_model_profile")
         default_model = (role_ent or {}).get("default_model")
-        if default_model:
+        if default_model_profile:
+            synthetic = {
+                "target": default_model_profile,
+                "conditions": {"rank": 1, "rationale": "shim fallback (role.default_model_profile)"},
+            }
+            rcs = _binding_to_candidates(synthetic, layer=8, default_effort=task_hints.get("effort"))
+            if isinstance(rcs, tuple):
+                trace.append({
+                    "step": 8, "layer": 8, "action": "shim_profile_fallback_missing",
+                    "count_before": 0, "count_after": 0,
+                    "details": {"default_model_profile": default_model_profile,
+                                "reason": rcs[1]},
+                })
+                raise NoViableModelError(
+                    f"role {role!r} default_model_profile "
+                    f"{default_model_profile!r} failed: {rcs[1]}"
+                )
+            kept: list[ResolvedCandidate] = []
+            dropped_profile: list[dict] = []
+            for rc in rcs:
+                model = _get_model(rc.model_id)
+                if model is None:
+                    dropped_profile.append({"model_id": rc.model_id, "reason": "model not found"})
+                    continue
+                ok_runtime, runtime_reason = _model_runtime_ok(rc.model_id, model, runtime)
+                if not ok_runtime:
+                    dropped_profile.append({"model_id": rc.model_id, "reason": runtime_reason})
+                    continue
+                ok, reason = _capability_ok(model, task_hints)
+                if not ok:
+                    dropped_profile.append({"model_id": rc.model_id, "reason": reason})
+                    continue
+                kept.append(rc)
+            kept.sort(
+                key=lambda c: _tiebreak_key(
+                    c, preferred_providers, expected_tokens, task_hints
+                )
+            )
+            if kept:
+                candidates.extend(kept)
+                _emit_shim_warning(role, default_model_profile)
+                trace.append({
+                    "step": 8, "layer": 8, "action": "shim_profile_fallback",
+                    "count_before": 0, "count_after": len(kept),
+                    "details": {
+                        "default_model_profile": default_model_profile,
+                        "dropped": dropped_profile,
+                        "warning": "model.resolved.shim_fallback",
+                    },
+                })
+            else:
+                trace.append({
+                    "step": 8, "layer": 8, "action": "shim_profile_fallback_empty",
+                    "count_before": 0, "count_after": 0,
+                    "details": {
+                        "default_model_profile": default_model_profile,
+                        "dropped": dropped_profile,
+                    },
+                })
+                raise NoViableModelError(
+                    f"role {role!r} default_model_profile "
+                    f"{default_model_profile!r} produced no viable candidates"
+                )
+        elif default_model:
             model = _get_model(default_model)
             if model is None:
                 trace.append({
@@ -859,6 +1202,18 @@ def resolve(
                 })
                 raise NoViableModelError(
                     f"role {role!r} default_model {default_model!r} not found"
+                )
+            ok_runtime, runtime_reason = _model_runtime_ok(default_model, model, runtime)
+            if not ok_runtime:
+                trace.append({
+                    "step": 8, "layer": 8, "action": "shim_fallback_runtime_fail",
+                    "count_before": 0, "count_after": 0,
+                    "details": {"default_model": default_model,
+                                "reason": runtime_reason},
+                })
+                raise NoViableModelError(
+                    f"role {role!r} shim-fallback model {default_model!r} "
+                    f"failed runtime access check: {runtime_reason}"
                 )
             ok, reason = _capability_ok(model, task_hints)
             if not ok:

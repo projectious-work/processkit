@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-solutions-architect
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-general-deep
   target_kind: Artifact
   conditions:
     seniority: expert
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: 'Seed: Expert solutions-architect — inherits senior defaults pending
-      role-specific tuning (KeenFern v0.21.0)'
-  description: 'Seed: Expert solutions-architect'
+    rationale: Provider-neutral general-deep routing for ROLE-solutions-architect
+      expert; concrete model selected by runtime access gates.
+  description: Provider-neutral general-deep model assignment for ROLE-solutions-architect
+    expert
 ---

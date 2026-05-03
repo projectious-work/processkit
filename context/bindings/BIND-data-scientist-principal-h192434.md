@@ -8,13 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-data-scientist
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-research-deep
   target_kind: Artifact
   conditions:
     seniority: principal
     rank: 1
     effort_floor: high
     effort_ceiling: extra-high
-    rationale: Principal data scientist — methodology design and audits
-  description: 'default-pack: Principal data scientist — methodology design and audits'
+    rationale: Provider-neutral research-deep routing for ROLE-data-scientist principal;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral research-deep model assignment for ROLE-data-scientist
+    principal
 ---

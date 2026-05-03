@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-assistant
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-haiku
+  target: ART-20260503_1832-ModelProfile-general-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: Senior assistant — still fast, slightly more thinking budget
-  description: 'default-pack: Senior assistant — still fast, slightly more thinking
-    budget'
+    rationale: Provider-neutral general-balanced routing for ROLE-assistant senior;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral general-balanced model assignment for ROLE-assistant
+    senior
 ---

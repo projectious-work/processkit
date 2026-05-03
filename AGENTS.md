@@ -121,13 +121,19 @@ identities live as **TeamMembers** under `context/team-members/<slug>/`
 (directory tree: persona + A2A card + tiered memory). Ad-hoc
 invocations are ephemeral `(role, seniority)` dispatches resolved via
 `model-recommender.resolve_model` against `model-assignment` bindings.
+Role and TeamMember defaults bind to provider-neutral
+`Artifact(kind=model-profile)` entities; concrete
+`Artifact(kind=model-spec)` candidates are selected after runtime access
+gates. Model-spec filenames may encode provider/model names; model
+profiles, actors, roles, and team-member identities must not.
 If `team-manager.get_active_interlocutor` returns a configured
 TeamMember, show that identity at session start; otherwise state that
 the current speaker is an ephemeral harness agent.
 
 Charters: `DEC-20260422_0233-SpryTulip` (team-member model + memory),
 `DEC-20260422_0234-BraveFalcon` (role catalog + seniority),
-`DEC-20260422_0234-LoyalComet` (model artifacts + binding routing).
+`DEC-20260422_0234-LoyalComet` (model artifacts + binding routing),
+`DEC-20260503_1829-LoyalComet` (provider-neutral model profiles).
 See [`context/team/roster.md`](context/team/roster.md) and
 [`context/skills/processkit/team-manager/SKILL.md`](context/skills/processkit/team-manager/SKILL.md).
 

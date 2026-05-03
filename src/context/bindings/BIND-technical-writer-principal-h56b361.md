@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-technical-writer
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-writing-balanced
   target_kind: Artifact
   conditions:
     seniority: principal
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Principal tech writer — reference docs and API-design prose
-  description: 'default-pack: Principal tech writer — reference docs and API-design
-    prose'
+    rationale: Provider-neutral writing-balanced routing for ROLE-technical-writer
+      principal; concrete model selected by runtime access gates.
+  description: Provider-neutral writing-balanced model assignment for ROLE-technical-writer
+    principal
 ---

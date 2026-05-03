@@ -7,15 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-software-engineer
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-haiku
+  target: ART-20260503_1832-ModelProfile-code-fast
   target_kind: Artifact
   conditions:
     seniority: specialist
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: 'Seed: Specialist software-engineer — inherits junior defaults pending
-      role-specific tuning (KeenFern v0.21.0)'
-  description: 'Seed: Specialist software-engineer — inherits junior defaults pending
-    role-specific tuning'
+    rationale: Provider-neutral code-fast routing for ROLE-software-engineer specialist;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral code-fast model assignment for ROLE-software-engineer
+    specialist
 ---

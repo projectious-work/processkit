@@ -199,15 +199,15 @@ if [[ "$MODE" == "release-deliverable" ]]; then
         while IFS= read -r -d '' f; do
             rel="${f#$SRC/}"
             base="$(basename "$f")"
-            if [[ ! "$base" =~ ^ART-[0-9]{8}_[0-9]{4}-ModelSpec-[a-z0-9-]+\.md$ ]]; then
+            if [[ ! "$base" =~ ^ART-[0-9]{8}_[0-9]{4}-(ModelSpec|ModelProfile)-[a-z0-9-]+\.md$ ]]; then
                 failures+=("non-model artifact must not ship: src/context/$rel")
                 continue
             fi
             if ! grep -q '^kind: Artifact$' "$f"; then
                 failures+=("model artifact missing kind: Artifact: src/context/$rel")
             fi
-            if ! grep -q '^  kind: model-spec$' "$f"; then
-                failures+=("model artifact missing spec.kind=model-spec: src/context/$rel")
+            if ! grep -Eq '^  kind: model-(spec|profile)$' "$f"; then
+                failures+=("model artifact missing spec.kind=model-spec/profile: src/context/$rel")
             fi
         done < <(find "$SRC/artifacts" -type f -print0)
     fi

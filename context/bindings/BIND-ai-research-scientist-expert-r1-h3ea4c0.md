@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-ai-research-scientist
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-research-deep
   target_kind: Artifact
   conditions:
     seniority: expert
     rank: 1
     effort_floor: high
     effort_ceiling: extra-high
-    rationale: 'Seed: Expert ai-research-scientist — inherits senior defaults pending
-      role-specific tuning (KeenFern v0.21.0)'
-  description: 'Seed: Expert ai-research-scientist'
+    rationale: Provider-neutral research-deep routing for ROLE-ai-research-scientist
+      expert; concrete model selected by runtime access gates.
+  description: Provider-neutral research-deep model assignment for ROLE-ai-research-scientist
+    expert
 ---

@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-solutions-architect
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-general-deep
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Senior architect — frontier reasoning for system-design trade-offs
-  description: 'default-pack: Senior architect — frontier reasoning for system-design
-    trade-offs'
+    rationale: Provider-neutral general-deep routing for ROLE-solutions-architect
+      senior; concrete model selected by runtime access gates.
+  description: Provider-neutral general-deep model assignment for ROLE-solutions-architect
+    senior
 ---

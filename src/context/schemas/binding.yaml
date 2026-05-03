@@ -19,11 +19,16 @@ spec:
     validation for type='model-assignment' bindings, enumerating the
     fields used by the 8-layer resolution precedence.
 
-    v2.0.0 model-spec change
+    v2.0.0 model routing change
     (DEC-20260503_1424-ShinyBear,
-    DEC-20260503_1424-WiseBird): model-assignment bindings target
-    Artifact(kind=model-spec) entities. model-recommender JSON is a
-    projection/cache, not a canonical binding target.
+    DEC-20260503_1424-WiseBird,
+    DEC-20260503_1829-LoyalComet): default model-assignment bindings
+    from Roles and TeamMembers target Artifact(kind=model-profile)
+    entities. Profiles expand to concrete Artifact(kind=model-spec)
+    candidates after runtime access gates are applied. Direct model-spec
+    targets remain valid for explicit pins, project overrides, and
+    compatibility. model-recommender JSON is a projection/cache, not a
+    canonical binding target.
 
     v2.0.0 change: Binding type is a closed vocabulary declared in
     spec.known_types. Forks extend the vocabulary through schema-extension
@@ -107,10 +112,13 @@ spec:
           properties:
             target:
               type: string
-              pattern: "^ART-[0-9]{8}_[0-9]{4}-ModelSpec-[a-z0-9-]+$"
+              pattern: "^ART-[0-9]{8}_[0-9]{4}-(ModelSpec|ModelProfile)-[a-z0-9-]+$"
               description: >
-                Target must be a timestamped Artifact(kind=model-spec)
-                entity.
+                Target must be a timestamped Artifact(kind=model-profile)
+                or Artifact(kind=model-spec) entity. Role/TeamMember
+                defaults should use model-profile; direct model-spec is
+                reserved for explicit pins, project overrides, and
+                migration compatibility.
             target_kind:
               const: Artifact
               description: >
@@ -160,6 +168,12 @@ spec:
                 rationale:
                   type: string
                   description: "One-line reason this binding exists."
+                direct_model_pin:
+                  type: boolean
+                  description: >
+                    True only when a direct model-spec target is
+                    intentional rather than a default role/team routing
+                    contract.
       - if:
           properties:
             type:

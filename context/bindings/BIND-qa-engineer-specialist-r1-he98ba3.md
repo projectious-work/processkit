@@ -7,14 +7,14 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-qa-engineer
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-haiku
+  target: ART-20260503_1832-ModelProfile-code-fast
   target_kind: Artifact
   conditions:
     seniority: specialist
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: 'Seed: Specialist qa-engineer — inherits junior defaults pending role-specific
-      tuning (KeenFern v0.21.0)'
-  description: 'Seed: Specialist qa-engineer'
+    rationale: Provider-neutral code-fast routing for ROLE-qa-engineer specialist;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral code-fast model assignment for ROLE-qa-engineer specialist
 ---

@@ -8,13 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-research-scientist
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-research-deep
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: high
     effort_ceiling: extra-high
-    rationale: Senior researcher — rigorous scientific reasoning
-  description: 'default-pack: Senior researcher — rigorous scientific reasoning'
+    rationale: Provider-neutral research-deep routing for ROLE-research-scientist
+      senior; concrete model selected by runtime access gates.
+  description: Provider-neutral research-deep model assignment for ROLE-research-scientist
+    senior
 ---

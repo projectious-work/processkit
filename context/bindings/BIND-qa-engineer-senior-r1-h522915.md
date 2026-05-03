@@ -7,15 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-qa-engineer
-  target: ART-20260503_1424-ModelSpec-openai-gpt-5
+  target: ART-20260503_1832-ModelProfile-code-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: 'Temporary implementation-scope override: force OpenAI GPT-5 ahead
-      of existing same-rank Anthropic default while provider-bias routing bug is investigated
-      in BACK-20260429_1610-CleverAsh-model-routing-is-not.'
-  description: 'Implementation override: prefer OpenAI for senior QA engineer'
+    rationale: Provider-neutral code-balanced routing for ROLE-qa-engineer senior;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral code-balanced model assignment for ROLE-qa-engineer
+    senior
 ---

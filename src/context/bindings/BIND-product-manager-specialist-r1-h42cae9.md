@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-product-manager
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-haiku
+  target: ART-20260503_1832-ModelProfile-general-fast
   target_kind: Artifact
   conditions:
     seniority: specialist
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: 'Seed: Specialist product-manager — inherits junior defaults pending
-      role-specific tuning (KeenFern v0.21.0)'
-  description: 'Seed: Specialist product-manager'
+    rationale: Provider-neutral general-fast routing for ROLE-product-manager specialist;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral general-fast model assignment for ROLE-product-manager
+    specialist
 ---

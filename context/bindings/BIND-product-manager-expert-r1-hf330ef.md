@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-product-manager
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-general-balanced
   target_kind: Artifact
   conditions:
     seniority: expert
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: 'Seed: Expert product-manager — inherits senior defaults pending role-specific
-      tuning (KeenFern v0.21.0)'
-  description: 'Seed: Expert product-manager'
+    rationale: Provider-neutral general-balanced routing for ROLE-product-manager
+      expert; concrete model selected by runtime access gates.
+  description: Provider-neutral general-balanced model assignment for ROLE-product-manager
+    expert
 ---

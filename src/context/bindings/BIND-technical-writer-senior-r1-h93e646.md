@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-technical-writer
-  target: ART-20260503_1424-ModelSpec-openai-gpt-5
+  target: ART-20260503_1832-ModelProfile-writing-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: OpenAI GPT-5 equivalent to Claude Sonnet for concise technical documentation
-      updates in Codex/OpenAI-subscription sessions.
-  description: OpenAI senior technical-writer binding for index-search docs
+    rationale: Provider-neutral writing-balanced routing for ROLE-technical-writer
+      senior; concrete model selected by runtime access gates.
+  description: Provider-neutral writing-balanced model assignment for ROLE-technical-writer
+    senior
 ---

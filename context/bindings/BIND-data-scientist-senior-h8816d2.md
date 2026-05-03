@@ -8,13 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-data-scientist
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-general-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Senior data scientist — modelling and notebook work
-  description: 'default-pack: Senior data scientist — modelling and notebook work'
+    rationale: Provider-neutral general-balanced routing for ROLE-data-scientist senior;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral general-balanced model assignment for ROLE-data-scientist
+    senior
 ---

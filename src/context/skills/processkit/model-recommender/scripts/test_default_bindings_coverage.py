@@ -92,3 +92,19 @@ def test_no_duplicate_role_seniority_seeds():
     assert not duplicates, (
         f"duplicate rank-1 seeds for: {duplicates}"
     )
+
+
+def test_default_role_bindings_target_model_profiles():
+    data = _load_manifest()
+    bad: list[str] = []
+    for b in data["spec"]["bindings"]:
+        if b.get("type") != "model-assignment":
+            continue
+        target = str(b.get("target") or "")
+        if "-ModelProfile-" not in target:
+            bad.append(f"{b.get('subject')} -> {target}")
+
+    assert not bad, (
+        "Default role model-assignment seeds must target provider-neutral "
+        f"model-profile artifacts, not concrete model specs: {bad}"
+    )

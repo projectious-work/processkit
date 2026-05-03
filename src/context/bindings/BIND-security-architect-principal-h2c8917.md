@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-security-architect
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-governed-deep
   target_kind: Artifact
   conditions:
     seniority: principal
     rank: 1
     effort_floor: extra-high
     effort_ceiling: max
-    rationale: Principal security architect — adversarial deep-dive; G:5
-  description: 'default-pack: Principal security architect — adversarial deep-dive;
-    G:5'
+    rationale: Provider-neutral governed-deep routing for ROLE-security-architect
+      principal; concrete model selected by runtime access gates.
+  description: Provider-neutral governed-deep model assignment for ROLE-security-architect
+    principal
 ---

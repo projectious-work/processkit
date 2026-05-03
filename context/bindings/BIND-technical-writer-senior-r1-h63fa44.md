@@ -7,15 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-technical-writer
-  target: ART-20260503_1424-ModelSpec-openai-gpt-5
+  target: ART-20260503_1832-ModelProfile-writing-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: 'Temporary implementation-scope override: force OpenAI GPT-5 ahead
-      of existing same-rank Anthropic default while provider-bias routing bug is investigated
-      in BACK-20260429_1610-CleverAsh-model-routing-is-not.'
-  description: 'Implementation override: prefer OpenAI for senior technical-writer'
+    rationale: Provider-neutral writing-balanced routing for ROLE-technical-writer
+      senior; concrete model selected by runtime access gates.
+  description: Provider-neutral writing-balanced model assignment for ROLE-technical-writer
+    senior
 ---

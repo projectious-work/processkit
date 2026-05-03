@@ -1,8 +1,8 @@
 # model-recommender MCP server
 
 Structured query engine for the model roster. Provides capability scoring,
-sub-dimension drill-down, comparison, user access configuration, and live
-provider status checks.
+sub-dimension drill-down, comparison, user access configuration, provider-
+neutral model-profile expansion, and live provider status checks.
 
 This server documents its own tool contract only. In gateway deployments,
 the gateway must expose only the processkit servers present in the
@@ -21,15 +21,16 @@ manifest and does not imply every processkit tool is available.
 | `get_pricing(model_ids?, sort_by?)` | Per-token pricing + value score (capability per dollar); sort by output cost or value |
 | `check_availability(model_ids?)` | Fetch provider status pages; returns operational / degraded / major_outage / unknown |
 | `get_config()` | Show current user configuration (access list, governance floor, budget, preferences) |
-| `set_config(available_models?, blocked_models?, require_governance_min?, budget_tier?, preferred_providers?)` | Update user configuration |
+| `set_config(available_models?, blocked_models?, require_governance_min?, budget_tier?, preferred_providers?, available_providers?)` | Update user configuration |
 
 ## Storage
 
 | File | Purpose |
 |---|---|
 | `context/artifacts/ART-YYYYMMDD_HHMM-ModelSpec-*.md` | Source of truth: `Artifact(kind=model-spec)` roster records with versions, scores, pricing, and metadata |
+| `context/artifacts/ART-YYYYMMDD_HHMM-ModelProfile-*.md` | Provider-neutral Role/TeamMember routing profiles that expand to model-spec candidates after runtime access gates |
 | `model_scores.json` | Packaged projection/cache and compatibility fallback; also carries shared `_meta` pages |
-| `user_config.json` | User's access list, blocked models, governance floor, budget tier, preferred providers |
+| `user_config.json` | User's access list, blocked models, governance floor, budget tier, preferred providers, and available providers |
 
 Older installs may still carry `context/models/MODEL-*.md` entity cards.
 The server can read those as a compatibility fallback, but v2 does not
@@ -66,6 +67,16 @@ path as `_estimated` records.
 layered on top of the stable R/E/S/B/L/G scores. Missing suitability means
 unknown, not unsuitable, unless callers set `require_task_suitability=True`.
 
+**Role and TeamMember defaults target model profiles.** A persistent identity
+or role should bind to `Artifact(kind=model-profile)`, not directly to a
+provider/model. Concrete provider/model names belong in `ModelSpec` artifacts
+and in the profile candidate list. The resolver filters those candidates
+using `user_config.available_providers`, `aibox.toml [ai].model_providers`,
+or native harness hints such as `codex -> openai`, `claude -> anthropic`,
+and `gemini -> google`. Multi-provider harnesses such as Aider, Continue,
+Cursor, OpenCode, and Hermes require explicit provider config from aibox or
+the user before processkit can know real access.
+
 **Sub-dimension requirements** in `query_models` are supported for R, E, and B
 (the most commonly filtered). S, L, G sub-dims can be filtered post-query using
 `get_profile` if needed.
@@ -84,3 +95,6 @@ unknown, not unsuitable, unless callers set `require_task_suitability=True`.
    `_meta.validated` to the current quarter.
 7. Update `references/model-profiles.md` with the narrative profile.
 8. Update the summary table in `SKILL.md` Overview.
+9. If the model should participate in role/team routing, add it to the
+   relevant `ModelProfile` candidate list rather than changing Role or
+   TeamMember bindings directly.

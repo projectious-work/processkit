@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-software-engineer
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-code-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Senior IC coding — best price-capability ratio for day-to-day work
-  description: 'default-pack: Senior IC coding — best price-capability ratio for day-to-day
-    work'
+    rationale: Provider-neutral code-balanced routing for ROLE-software-engineer senior;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral code-balanced model assignment for ROLE-software-engineer
+    senior
 ---

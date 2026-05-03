@@ -117,6 +117,7 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     (tmp_path / "AGENTS.md").write_text("# test project\n")
     ctx = tmp_path / "context"
     (ctx / "models").mkdir(parents=True)
+    (ctx / "artifacts").mkdir(parents=True)
     (ctx / "roles").mkdir(parents=True)
     (ctx / "bindings").mkdir(parents=True)
     (ctx / "logs").mkdir(parents=True)
@@ -248,6 +249,27 @@ def _add_model(project_root: Path, **kwargs) -> None:
     model_id = kwargs.pop("id")
     _write_entity(project_root / "context" / "models", "Model", model_id,
                   _mk_model(model_id, **kwargs))
+    from processkit import index as _idx
+    _idx.reindex(project_root)
+    R.clear_cache()
+
+
+def _add_model_profile(
+    project_root: Path,
+    profile_id: str,
+    candidates: list[dict],
+) -> None:
+    _write_entity(project_root / "context" / "artifacts", "Artifact", profile_id, {
+        "name": "Test model profile",
+        "kind": "model-profile",
+        "profile_id": "test-profile",
+        "selection": {
+            "model_classes": ["standard", "powerful"],
+            "effort_floor": "medium",
+            "effort_ceiling": "high",
+        },
+        "candidates": candidates,
+    })
     from processkit import index as _idx
     _idx.reindex(project_root)
     R.clear_cache()
@@ -690,6 +712,75 @@ def test_task_suitability_missing_allowed_by_default(project_root):
     )
 
     assert cands[0].model_id == "MODEL-no-task-map"
+
+
+# ---------------------------------------------------------------------------
+# Provider-neutral model profiles
+# ---------------------------------------------------------------------------
+
+
+def test_model_profile_expands_to_candidates(project_root):
+    profile_id = "ART-20260503_1832-ModelProfile-code-balanced"
+    _add_model_profile(project_root, profile_id, [
+        {
+            "rank": 1,
+            "provider": "anthropic",
+            "model_spec": "MODEL-anthropic-claude-sonnet",
+        },
+        {
+            "rank": 2,
+            "provider": "openai",
+            "model_spec": "MODEL-openai-gpt-5",
+        },
+    ])
+    _add_binding(project_root, "BIND-profile", "model-assignment",
+                 "ROLE-software-engineer", profile_id,
+                 conditions={"seniority": "senior", "rank": 1})
+
+    cands = R.resolve("ROLE-software-engineer", seniority="senior")
+
+    assert [c.model_id for c in cands[:2]] == [
+        "MODEL-anthropic-claude-sonnet",
+        "MODEL-openai-gpt-5",
+    ]
+    assert cands[0].profile_id == profile_id
+
+
+def test_model_profile_respects_codex_runtime_provider_gate(project_root):
+    (project_root / "aibox.toml").write_text(
+        "[ai]\nharnesses = [\"codex\"]\n",
+        encoding="utf-8",
+    )
+    profile_id = "ART-20260503_1832-ModelProfile-code-balanced"
+    _add_model_profile(project_root, profile_id, [
+        {
+            "rank": 1,
+            "provider": "anthropic",
+            "model_spec": "MODEL-anthropic-claude-sonnet",
+        },
+        {
+            "rank": 2,
+            "provider": "openai",
+            "model_spec": "MODEL-openai-gpt-5",
+        },
+    ])
+    _add_binding(project_root, "BIND-profile", "model-assignment",
+                 "ROLE-software-engineer", profile_id,
+                 conditions={"seniority": "senior", "rank": 1})
+
+    cands, trace = R.resolve(
+        "ROLE-software-engineer",
+        seniority="senior",
+        explain=True,
+    )
+
+    assert [c.model_id for c in cands] == ["MODEL-openai-gpt-5"]
+    dropped = [
+        item
+        for step in trace if step["action"] == "role_seniority_bindings"
+        for item in step.get("details", {}).get("dropped", [])
+    ]
+    assert dropped == []  # role layer filters before append; no stale candidate leaks
 
 
 # ---------------------------------------------------------------------------

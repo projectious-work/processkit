@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-assistant
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-general-balanced
   target_kind: Artifact
   conditions:
     seniority: principal
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Principal assistant — full frontier capabilities when needed
-  description: 'default-pack: Principal assistant — full frontier capabilities when
-    needed'
+    rationale: Provider-neutral general-balanced routing for ROLE-assistant principal;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral general-balanced model assignment for ROLE-assistant
+    principal
 ---

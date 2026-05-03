@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-ai-research-scientist
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-research-deep
   target_kind: Artifact
   conditions:
     seniority: junior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: Junior AI researcher — familiar with agentic+tool-use patterns
-  description: 'default-pack: Junior AI researcher — familiar with agentic+tool-use
-    patterns'
+    rationale: Provider-neutral research-deep routing for ROLE-ai-research-scientist
+      junior; concrete model selected by runtime access gates.
+  description: Provider-neutral research-deep model assignment for ROLE-ai-research-scientist
+    junior
 ---

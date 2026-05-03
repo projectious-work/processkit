@@ -5,5 +5,6 @@
   "require_governance_min": 0,
   "budget_tier": "any",
   "preferred_providers": [],
+  "available_providers": [],
   "model_classes": {}
 }

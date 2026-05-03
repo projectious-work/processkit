@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-software-engineer
-  target: ART-20260503_1424-ModelSpec-openai-gpt-5
+  target: ART-20260503_1832-ModelProfile-code-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: OpenAI GPT-5 equivalent to Claude Sonnet for senior implementation
-      work in Codex/OpenAI-subscription sessions.
-  description: OpenAI senior software-engineer binding for index-search implementation
+    rationale: Provider-neutral code-balanced routing for ROLE-software-engineer senior;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral code-balanced model assignment for ROLE-software-engineer
+    senior
 ---

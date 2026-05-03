@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-product-manager
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target: ART-20260503_1832-ModelProfile-general-deep
   target_kind: Artifact
   conditions:
     seniority: principal
     rank: 1
     effort_floor: high
     effort_ceiling: extra-high
-    rationale: Principal PM — frontier reasoning for portfolio-scale trade-offs
-  description: 'default-pack: Principal PM — frontier reasoning for portfolio-scale
-    trade-offs'
+    rationale: Provider-neutral general-deep routing for ROLE-product-manager principal;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral general-deep model assignment for ROLE-product-manager
+    principal
 ---

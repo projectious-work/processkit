@@ -3,44 +3,50 @@
 <!-- pk-compliance-contract v2 BEGIN -->
 <!-- pk-compliance v2 -->
 
-## processkit Compliance Contract (ToC)
+## processkit Compliance Contract
 
-Ten non-negotiables — full text in
-[`context/skills/processkit/skill-gate/SKILL.md`](context/skills/processkit/skill-gate/SKILL.md):
-(1) `route_task` before writes; (2) 1% skill-finder rule; (3) commit
-to entity creation same turn; (4) write via MCP, never hand-edit
-`context/` YAML; (5) read via `index-management`; (6) log events for
-non-MCP state changes; (7) record accepted cross-cutting decisions;
-(8) acknowledge user decision language (`record_decision` or
-`skip_decision_record`); (9) `context/templates/` is read-only;
-(10) never hand-edit merged harness MCP config.
+Call `route_task(task_description)` before any `create_*`,
+`transition_*`, `link_*`, `record_*`, or `open_*` tool call.
+
+If there is even a 1% chance a processkit skill applies to the current
+task, consult `skill-finder` (or call `find_skill`) before acting.
+
+When you decide to create a WorkItem, DecisionRecord, Note, or Artifact,
+call the tool in the same turn — deferred entity creation is lost.
+
+Write entities through MCP tools, not by hand-editing files under
+`context/` — hand edits bypass schema validation, state-machine
+enforcement, and the event-log auto-entry.
+
+Read entities through `index-management` (`query_entities`,
+`get_entity`, `search_entities`) — do not use `ls`, `grep`, or raw
+filesystem walks under `context/`.
+
+Log an event after any state change that an MCP write did not already
+produce automatically.
+
+After a cross-cutting recommendation is accepted, call `record_decision`
+in the same turn.
+
+When the last five user messages contain explicit decision language
+(approved / decided / ship it / let's go / ok / yes / confirmed),
+either call `record_decision` in the same turn or call
+`skip_decision_record(reason=...)` to acknowledge the skip.
+
+Do not edit any file under `context/templates/` — it is a read-only
+upstream mirror used as a diff baseline.
+
+Do not hand-edit the generated harness MCP config — edit the per-skill
+`mcp-config.json` and let the installer re-merge.
 <!-- pk-compliance-contract v2 END -->
 
 ## About & session start
 
-<!-- PLACEHOLDER:PROJECT_DESCRIPTION class=B
-     One paragraph: what {{PROJECT_NAME}} does, who it is for, and what
-     success looks like. Anything longer belongs in README.md. -->
-{{PROJECT_DESCRIPTION}}
-
-Run `pk-resume` before acting. Provider-specific files (`CLAUDE.md`,
-`CODEX.md`, `.cursor/rules`, …) are thin pointers — edit **this** file.
-
-## First-time setup (delete once done)
-
-This file ships from
-[processkit](https://github.com/projectious-work/processkit) as a
-template. Scan for `{{TOKEN}}` strings and `<!-- PLACEHOLDER:TOKEN
-class=X -->` comments, then follow the matching protocol below. Delete
-this entire section once every placeholder is filled in.
-
-| Class | Source | What you do |
-|---|---|---|
-| **A — installer** | Installer substitutes at render time (`{{PROJECT_NAME}}`, `{{PROCESSKIT_VERSION}}`). | If still literal, read `aibox.toml` or ask the owner. |
-| **B — owner** | Owner-only info: description, conventions, gotchas. | Interview the owner one question at a time. |
-| **C — discoverable** | Build/test/lint commands from `package.json` / `Makefile` / `pyproject.toml` / etc. | Propose a value, owner confirms, write it in. |
-
-Unannotated placeholders default to **Class B**.
+processkit is a versioned, provider-neutral library of process
+primitives, skills, and MCP servers consumed by aibox and dogfooded
+here. Run `pk-resume` before acting. Provider-specific files
+(`CLAUDE.md`, `CODEX.md`, `.cursor/rules`) are thin pointers — edit
+**this** file.
 
 ## Skill guards (if/then)
 
@@ -84,21 +90,16 @@ main.
 
 ## Setup
 
-<!-- PLACEHOLDER:BUILD_COMMAND class=C -->
-<!-- PLACEHOLDER:TEST_COMMAND class=C -->
-<!-- PLACEHOLDER:LINT_COMMAND class=C -->
-
 ```sh
-{{BUILD_COMMAND}}
-{{TEST_COMMAND}}
-{{LINT_COMMAND}}
+npm --prefix docs-site install && npm --prefix docs-site run build
+uv run scripts/smoke-test-servers.py
 ```
 
 <!-- pk-commands BEGIN -->
 <!--
-build: "{{BUILD_COMMAND}}"
-test: "{{TEST_COMMAND}}"
-lint: "{{LINT_COMMAND}}"
+build: "npm --prefix docs-site run build"
+test: "uv run scripts/smoke-test-servers.py"
+lint: ""
 fmt: ""
 typecheck: ""
 -->
@@ -106,62 +107,60 @@ typecheck: ""
 
 ## Code style & PRs
 
-<!-- PLACEHOLDER:CODE_STYLE_NOTES class=B -->
-<!-- PLACEHOLDER:PR_CONVENTIONS class=B -->
-{{CODE_STYLE_NOTES}}
-{{PR_CONVENTIONS}}
+Hard-wrap Markdown/Python/YAML at 80 cols (exempt: tables, URLs,
+frontmatter, code fences). Conventional Commits; never `--no-verify`.
+`src/` ships to consumers, `context/` is local — never mix. Preferences
+live in per-skill `context/skills/<name>/config/settings.toml`. PRs:
+link WorkItem ID, squash-merge, green tests before merge.
 
-## processkit preferences
+## Team
 
-Runtime config lives in per-skill `context/skills/<name>/config/settings.toml`.
-MCP servers read them on every call — no restart needed.
-<!-- PLACEHOLDER:PROCESSKIT_PREFS class=B -->
-{{PROCESSKIT_PREFS}}
+51-role catalog under `context/roles/`, with **pure-ordinal seniority**
+(`junior → specialist → expert → senior → principal`). Persistent
+identities live as **TeamMembers** under `context/team-members/<slug>/`
+(directory tree: persona + A2A card + tiered memory). Ad-hoc
+invocations are ephemeral `(role, seniority)` dispatches resolved via
+`model-recommender.resolve_model` against `model-assignment` bindings.
+Role and TeamMember defaults bind to provider-neutral
+`Artifact(kind=model-profile)` entities; concrete
+`Artifact(kind=model-spec)` candidates are selected after runtime access
+gates. Model-spec filenames may encode provider/model names; model
+profiles, actors, roles, and team-member identities must not.
+If `team-manager.get_active_interlocutor` returns a configured
+TeamMember, show that identity at session start; otherwise state that
+the current speaker is an ephemeral harness agent.
 
-## AI agents on this project
-
-Configured providers: **{{AI_PROVIDERS}}**. Coordinate via the entity
-layer (`workitem-management`, `event-log`, `discussion-management`)
-rather than assuming you are alone.
-
-### Team model (v0.19.0)
-
-- **Roles** live under `context/roles/` — organisational labels for
-  routing. Seniority is a pure-ordinal attribute, not baked into slugs:
-  ladder `junior → specialist → expert → senior → principal`.
-- **Persistent identities** (humans + named AI personas + services)
-  live as directory trees under `context/team-members/<slug>/` —
-  entity file, `persona.md`, A2A `card.json`, and six memory tiers
-  (`knowledge/`, `journal/`, `skills/`, `relations/`, `lessons/`,
-  `private/`; the last is gitignored by `.gitignore.example`).
-- **Ephemeral invocations** are `(role, seniority)` dispatches resolved
-  at call time — no team-member entity needed.
-- **Active interlocutor** is session state resolved through
-  `team-manager.get_active_interlocutor`. If configured, show the
-  TeamMember identity at session start; otherwise state that the current
-  speaker is an ephemeral harness agent.
-- **Model data** is model-recommender roster/configuration data, not a
-  process primitive in the v2 contract. Existing v1 `context/models/`
-  trees are migration sources until the explicit v2 migration has
-  completed. Do not add compatibility shims that make v1 and v2 model
-  shapes both authoritative.
-- **Routing** via `model-recommender.resolve_model(role, seniority,
-  team_member?, scope?, task_hints?)` — an 8-layer precedence chain
-  reading `model-assignment` bindings from `context/bindings/`. A
-  default binding pack ships at
-  `context/skills/processkit/model-recommender/default-bindings/MANIFEST.yaml`.
-  Use `/pk-explain-routing` for a trace.
-
-Create a new persistent AI team-member with
-`team-manager.create_team_member(name, type=ai-agent, slug, default_role, default_seniority, ...)`;
-the `name` must come from the international name pool at
-`context/skills/processkit/team-manager/data/name-pool.yaml`.
+Charters: `DEC-20260422_0233-SpryTulip` (team-member model + memory),
+`DEC-20260422_0234-BraveFalcon` (role catalog + seniority),
+`DEC-20260422_0234-LoyalComet` (model artifacts + binding routing),
+`DEC-20260503_1829-LoyalComet` (provider-neutral model profiles).
+See [`context/team/roster.md`](context/team/roster.md) and
+[`context/skills/processkit/team-manager/SKILL.md`](context/skills/processkit/team-manager/SKILL.md).
 
 ## Project-specific notes
 
-<!-- PLACEHOLDER:NONOBVIOUS_GOTCHAS class=B -->
-{{NONOBVIOUS_GOTCHAS}}
+- Required MCP servers: `index-management`, `id-management`,
+  `workitem-management`, `discussion-management`, `decision-record`,
+  `event-log`, `skill-finder`, `task-router`.
+- Never edit `.devcontainer/Dockerfile`; use `Dockerfile.local`.
+- `apiVersion` locked through v1.x; `v2` requires a full migration.
+- `_find_lib()` uses cwd; smoke tests `os.chdir()` before invoking servers.
+
+## MCP config manifest
+
+`context/.processkit-mcp-manifest.json` records a sha256 per
+`context/skills/*/*/mcp/mcp-config.json` plus an `aggregate_sha256` over
+all of them. It is regenerated at release time by
+`scripts/generate-mcp-manifest.py` and mirrored into
+`src/context/` so consumers receive it in the release tarball.
+Downstream installers (notably `aibox sync`) are expected to compare the
+aggregate hash against their last-merged state and re-merge `.mcp.json`
+when they differ — independently of whether the processkit version
+changed. Without this signal, per-skill MCP-config edits made within a
+release cycle never reach derived projects until the next version bump.
+Tracking issue: [projectious-work/aibox#54](https://github.com/projectious-work/aibox/issues/54).
+The `mcp_config_drift` pk-doctor check validates the manifest locally.
 
 ---
 
-<sub>Scaffolded by processkit `{{PROCESSKIT_VERSION}}` on `{{INSTALL_DATE}}`. Re-rendered on each installer sync.</sub>
+<sub>Scaffolded by processkit `v0.18.1` on `2026-04-17`. Re-rendered on each installer sync.</sub>

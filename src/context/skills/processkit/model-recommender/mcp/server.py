@@ -251,6 +251,7 @@ def _load_config() -> dict:
         "require_governance_min": 0,
         "budget_tier": "any",
         "preferred_providers": [],
+        "available_providers": [],
         "model_classes": {},
     }
 
@@ -266,10 +267,14 @@ def _bar(score: int) -> str:
 def _label(score: int) -> str:
     return {5: "Exceptional", 4: "Strong", 3: "Moderate", 2: "Limited", 1: "Minimal"}.get(score, "—")
 
+def _provider_key(value: str) -> str:
+    return str(value).strip().lower().replace("_", "-")
+
 def _apply_user_filter(models: list[dict], cfg: dict) -> list[dict]:
     available = cfg.get("available_models", [])
     blocked = cfg.get("blocked_models", [])
-    preferred = cfg.get("preferred_providers", [])
+    preferred = {_provider_key(p) for p in cfg.get("preferred_providers", [])}
+    available_providers = {_provider_key(p) for p in cfg.get("available_providers", [])}
     gov_min = cfg.get("require_governance_min", 0)
     budget = cfg.get("budget_tier", "any")
 
@@ -278,6 +283,8 @@ def _apply_user_filter(models: list[dict], cfg: dict) -> list[dict]:
         if blocked and m["id"] in blocked:
             continue
         if available and m["id"] not in available:
+            continue
+        if available_providers and _provider_key(m["provider"]) not in available_providers:
             continue
         if gov_min and m["dimensions"]["G"]["score"] < gov_min:
             continue
@@ -290,7 +297,7 @@ def _apply_user_filter(models: list[dict], cfg: dict) -> list[dict]:
 
     # Prefer specified providers (stable sort — keep original order within groups)
     if preferred:
-        result.sort(key=lambda m: 0 if m["provider"] in preferred else 1)
+        result.sort(key=lambda m: 0 if _provider_key(m["provider"]) in preferred else 1)
     return result
 
 def _price_for_sort(m: dict) -> float:
@@ -994,6 +1001,7 @@ def get_config() -> dict:
         "require_governance_min": cfg.get("require_governance_min", 0),
         "budget_tier": cfg.get("budget_tier", "any"),
         "preferred_providers": cfg.get("preferred_providers", []),
+        "available_providers": cfg.get("available_providers", []),
         "model_classes": cfg.get("model_classes", {}),
         "note": "Empty available_models means all models are included (unfiltered). Add model IDs to restrict.",
     }
@@ -1059,6 +1067,7 @@ def set_config(
     require_governance_min: Optional[int] = None,
     budget_tier: Optional[str] = None,
     preferred_providers: Optional[list[str]] = None,
+    available_providers: Optional[list[str]] = None,
     model_classes: Optional[dict] = None,
 ) -> dict:
     """
@@ -1073,6 +1082,8 @@ def set_config(
     budget_tier: "any" | "low" (prefer cost_efficiency >= 3) | "medium" | "high"
     preferred_providers: list of providers to prioritize in rankings.
       Example: ["Anthropic", "Mistral"]
+    available_providers: list of providers the active runtime can call.
+      Example: ["OpenAI"] for Codex, ["Anthropic"] for Claude Code.
     model_classes: optional map from fast/standard/powerful to a model ID
       or ordered list of model IDs. Example:
       {"fast": "claude-haiku-4.5", "standard": "claude-sonnet-4.6"}
@@ -1087,6 +1098,7 @@ def set_config(
     data = _load_scores()
     valid_ids = {m["id"] for m in data["models"]}
     valid_providers = {m["provider"] for m in data["models"]}
+    valid_provider_keys = {_provider_key(p) for p in valid_providers}
 
     cfg = _load_config()
 
@@ -1113,10 +1125,16 @@ def set_config(
         cfg["budget_tier"] = budget_tier
 
     if preferred_providers is not None:
-        bad = [p for p in preferred_providers if p not in valid_providers]
+        bad = [p for p in preferred_providers if _provider_key(p) not in valid_provider_keys]
         if bad:
             return {"error": f"Unknown providers: {bad}. Valid: {sorted(valid_providers)}"}
         cfg["preferred_providers"] = preferred_providers
+
+    if available_providers is not None:
+        bad = [p for p in available_providers if _provider_key(p) not in valid_provider_keys]
+        if bad:
+            return {"error": f"Unknown providers: {bad}. Valid: {sorted(valid_providers)}"}
+        cfg["available_providers"] = available_providers
 
     if model_classes is not None:
         bad_classes = [k for k in model_classes if k not in MODEL_CLASSES]
@@ -1164,6 +1182,8 @@ def _candidate_to_dict(c) -> dict:
         "rank": c.rank,
         "source_layer": c.source_layer,
         "rationale": c.rationale,
+        "profile_id": getattr(c, "profile_id", None),
+        "profile_rank": getattr(c, "profile_rank", 1),
     }
 
 

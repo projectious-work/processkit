@@ -8,14 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-solutions-architect
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-general-balanced
   target_kind: Artifact
   conditions:
     seniority: junior
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: Junior architect — mid-frontier is enough for scoped design work
-  description: 'default-pack: Junior architect — mid-frontier is enough for scoped
-    design work'
+    rationale: Provider-neutral general-balanced routing for ROLE-solutions-architect
+      junior; concrete model selected by runtime access gates.
+  description: Provider-neutral general-balanced model assignment for ROLE-solutions-architect
+    junior
 ---

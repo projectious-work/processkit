@@ -107,10 +107,19 @@ spec:
         type: string
         pattern: ^ART-[0-9]{8}_[0-9]{4}-ModelSpec-[a-z0-9-]+$
         description: |
-          Optional shim fallback (Layer 8 of binding resolution;
-          DEC-20260422_0234-LoyalComet). Target is an
-          Artifact(kind=model-spec). Used only when no bindings match. A
-          warning is emitted whenever the shim resolves the model.
+          Deprecated compatibility shim fallback (Layer 8 of binding
+          resolution; DEC-20260422_0234-LoyalComet). Target is an
+          Artifact(kind=model-spec). Prefer default_model_profile. Used
+          only when no bindings match. A warning is emitted whenever the
+          shim resolves the model.
+      default_model_profile:
+        type: string
+        pattern: ^ART-[0-9]{8}_[0-9]{4}-ModelProfile-[a-z0-9-]+$
+        description: |
+          Optional provider-neutral shim fallback (Layer 8 of binding
+          resolution). Target is an Artifact(kind=model-profile), which
+          expands to concrete Artifact(kind=model-spec) candidates after
+          runtime access gates are applied.
       function_group:
         type: string
         enum:

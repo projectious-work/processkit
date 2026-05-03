@@ -11,6 +11,99 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.25.3] — 2026-05-03
+
+v0.25.3 is a **patch release** that makes role and team-member model
+routing portable across harnesses. Concrete provider/model descriptions
+remain timestamped `Artifact(kind=model-spec)` deliverables, while
+roles, actors, team members, and default assignments now bind to
+provider-neutral `Artifact(kind=model-profile)` artifacts.
+
+### Added
+
+- **Added provider-neutral model-profile artifacts.** processkit now
+  ships nine `Artifact(kind=model-profile)` deliverables covering
+  general, coding, research, writing, and governed routing profiles.
+  Model-profile filenames deliberately avoid provider and model names;
+  their content carries ranked candidate `Artifact(kind=model-spec)`
+  references.
+- **Added model-profile schema support.** Artifact schemas now recognize
+  `model-profile`, binding schemas allow model-assignment targets to be
+  either `ModelProfile` or `ModelSpec` artifacts, and role schemas expose
+  `default_model_profile` while keeping legacy `default_model`
+  compatibility.
+- **Added a model-profile migration helper.**
+  `migrate_model_profiles.py` creates the shipped profile artifacts and
+  rewrites role/team-member model-assignment bindings from concrete
+  model specs to profile targets.
+- **Added runtime provider access gates to the resolver.** The resolver
+  now expands model profiles into concrete model candidates only after
+  applying runtime access constraints from user config, `aibox.toml`
+  model providers, and native harnesses such as Codex, Claude, Gemini,
+  Aider, Continue, Cursor, OpenCode, and Hermes.
+- **Added `available_providers` to model-recommender configuration.**
+  MCP callers can declare which providers are callable in the current
+  environment without hard-coding a provider into role or team-member
+  bindings.
+- **Added pk-doctor checks for routing portability.** `pk-doctor` now
+  flags provider/model names in model-profile filenames, missing profile
+  candidate model specs, and Role/TeamMember bindings that directly pin a
+  ModelSpec without `conditions.direct_model_pin: true`.
+
+### Changed
+
+- **Role and team-member bindings now target model profiles.** Shipped
+  default bindings, including Cora's default, no longer point directly to
+  OpenAI, Anthropic, Google, or other concrete model artifacts.
+- **Concrete model specs remain provider/model named.** The release keeps
+  the v0.25.2 decision that `ModelSpec` artifacts map directly to
+  provider/model families and therefore may include provider/model names
+  in their filenames.
+- **Default binding documentation now describes two layers.**
+  Role/team-member defaults bind to profile artifacts; model profiles
+  list provider-specific model-spec candidates; project overrides may
+  still use direct ModelSpec pins when intentional.
+- **The release deliverable boundary accepts model-profile artifacts.**
+  `scripts/check-src-context-drift.sh --release-deliverable` now permits
+  timestamped `ModelProfile` artifacts in `src/context/artifacts/`.
+- **Team and model-recommender docs now define harness portability.**
+  The docs make aibox responsible for surfacing runtime provider access,
+  while processkit owns provider-neutral defaults and local fallback
+  checks.
+
+### Removed
+
+- **Removed dogfood-specific provider bias/veto bindings from the
+  deliverable.** The old processkit-local Codex/OpenAI preference and
+  Anthropic veto bindings no longer ship to derived projects.
+
+### Fixed
+
+- **Fixed Cora and role defaults under non-Codex harnesses.** Changing
+  `aibox.toml` from Codex to Claude, Gemini, OpenCode, Hermes, or another
+  supported harness no longer leaves role/team-member defaults bound to a
+  provider the harness cannot call.
+- **Fixed pk-doctor's blind spot around direct model pins.** The doctor
+  now distinguishes portable Role/TeamMember profile bindings from
+  explicit direct model pins.
+- **Fixed resolver explanations for profile-expanded candidates.**
+  Resolved candidates now carry `profile_id` and `profile_rank`, making
+  it visible which neutral profile produced the concrete model choice.
+
+### Verification
+
+- `pk-doctor --no-log` passed with `0 ERROR / 0 WARN`.
+- `scripts/check-src-context-drift.sh --release-deliverable` passed.
+- `release_audit.py --tree=src-context` passed with `0 ERROR / 0 WARN`.
+- `35 passed` for resolver and default-binding coverage tests.
+- `21 passed` for model-recommender MCP filter tests.
+- `20 passed` for model migration tests.
+- `26 passed` for release-audit tests.
+- `uv run scripts/smoke-test-servers.py` passed across the MCP smoke
+  suite.
+
+---
+
 ## [v0.25.2] — 2026-05-03
 
 v0.25.2 is a **patch release** that settles the v0.25 model-spec

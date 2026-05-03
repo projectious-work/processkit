@@ -7,15 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-product-manager
-  target: ART-20260503_1424-ModelSpec-openai-gpt-5
+  target: ART-20260503_1832-ModelProfile-general-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: OpenAI equivalent to Claude Sonnet for senior PM discovery synthesis
-      and acceptance planning.
-  description: OpenAI senior product-manager binding for index-search implementation
-    plan
+    rationale: Provider-neutral general-balanced routing for ROLE-product-manager
+      senior; concrete model selected by runtime access gates.
+  description: Provider-neutral general-balanced model assignment for ROLE-product-manager
+    senior
 ---

@@ -8,13 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-technical-writer
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-writing-balanced
   target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: Senior tech writer — style-sensitive long-form authoring
-  description: 'default-pack: Senior tech writer — style-sensitive long-form authoring'
+    rationale: Provider-neutral writing-balanced routing for ROLE-technical-writer
+      senior; concrete model selected by runtime access gates.
+  description: Provider-neutral writing-balanced model assignment for ROLE-technical-writer
+    senior
 ---

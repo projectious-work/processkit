@@ -59,6 +59,7 @@ spec:
     - schedule-rule
     - process-definition
     - model-spec
+    - model-profile
     - metric-spec
     - memory-index
     - eval-spec

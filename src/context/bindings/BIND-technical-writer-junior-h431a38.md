@@ -8,13 +8,15 @@ spec:
   type: model-assignment
   subject: ROLE-technical-writer
   subject_kind: Role
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-haiku
+  target: ART-20260503_1832-ModelProfile-general-fast
   target_kind: Artifact
   conditions:
     seniority: junior
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: Junior tech writer — fast drafts of routine docs
-  description: 'default-pack: Junior tech writer — fast drafts of routine docs'
+    rationale: Provider-neutral general-fast routing for ROLE-technical-writer junior;
+      concrete model selected by runtime access gates.
+  description: Provider-neutral general-fast model assignment for ROLE-technical-writer
+    junior
 ---

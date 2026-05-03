@@ -7,14 +7,15 @@ metadata:
 spec:
   type: model-assignment
   subject: ROLE-solutions-architect
-  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target: ART-20260503_1832-ModelProfile-general-balanced
   target_kind: Artifact
   conditions:
     seniority: specialist
     rank: 1
     effort_floor: low
     effort_ceiling: medium
-    rationale: 'Seed: Specialist solutions-architect — inherits junior defaults pending
-      role-specific tuning (KeenFern v0.21.0)'
-  description: 'Seed: Specialist solutions-architect'
+    rationale: Provider-neutral general-balanced routing for ROLE-solutions-architect
+      specialist; concrete model selected by runtime access gates.
+  description: Provider-neutral general-balanced model assignment for ROLE-solutions-architect
+    specialist
 ---
