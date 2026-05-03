@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">Privacy Tiers | processkit</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://projectious-work.github.io/processkit/docs/reference/privacy"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Privacy Tiers | processkit"><meta data-rh="true" name="description" content="processkit recognizes three privacy tiers for entities under context/."><meta data-rh="true" property="og:description" content="processkit recognizes three privacy tiers for entities under context/."><link data-rh="true" rel="icon" href="/processkit/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://projectious-work.github.io/processkit/docs/reference/privacy"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/reference/privacy" hreflang="en"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/reference/privacy" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Privacy Tiers","item":"https://projectious-work.github.io/processkit/docs/reference/privacy"}]}</script><link rel="stylesheet" href="/processkit/assets/css/styles.c0aa031c.css">
-<script src="/processkit/assets/js/runtime~main.6c639b5c.js" defer="defer"></script>
+<script src="/processkit/assets/js/runtime~main.8c7a2ad5.js" defer="defer"></script>
 <script src="/processkit/assets/js/main.ac9c6909.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -49,8 +49,8 @@ enforced by directory layout + a <code>.gitignore</code> rule.</p>
 <p>Most entities omit the field entirely and inherit <code>project-private</code>.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="filesystem-rule-for-user-private">Filesystem rule for <code>user-private</code><a href="#filesystem-rule-for-user-private" class="hash-link" aria-label="Direct link to filesystem-rule-for-user-private" title="Direct link to filesystem-rule-for-user-private" translate="no">​</a></h2>
 <p>Entities with <code>privacy: user-private</code> MUST live under a directory named
-<code>private/</code> somewhere within <code>context/</code>. The aibox-generated <code>.gitignore</code>
-includes:</p>
+<code>private/</code> somewhere within <code>context/</code>. Projects should carry a
+<code>.gitignore</code> rule like:</p>
 <div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token plain">context/**/private/</span><br></span></code></pre></div></div>
 <p>This pattern matches <code>private/</code> directories at <strong>any depth</strong> under
 <code>context/</code>, including directly under <code>context/</code> itself. So all of these
@@ -62,9 +62,9 @@ are excluded from git:</p>
 </ul>
 <p>But NOT directories named <code>private/</code> outside <code>context/</code> (e.g.
 <code>cli/src/private/</code> would NOT be ignored by this rule).</p>
-<p><code>aibox lint</code> (Phase 4.4) verifies that any entity with
-<code>privacy: user-private</code> lives under a <code>private/</code> directory under <code>context/</code>.
-A user-private entity outside such a directory is a lint error.</p>
+<p>Installers and validation tools should verify that any entity with
+<code>privacy: user-private</code> lives under a <code>private/</code> directory under
+<code>context/</code>. A user-private entity outside such a directory is invalid.</p>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="where-the-convention-is-used">Where the convention is used<a href="#where-the-convention-is-used" class="hash-link" aria-label="Direct link to Where the convention is used" title="Direct link to Where the convention is used" translate="no">​</a></h2>
 <ul>
 <li class=""><strong><code>owner-profiling</code> skill</strong>: <code>context/owner/private/team-and-relationships.md</code>
@@ -90,8 +90,8 @@ safety mechanism.</p>
 have two options:</p>
 <ol>
 <li class="">Move it under a <code>private/</code> directory (correct)</li>
-<li class="">Override the lint rule via <code>aibox.toml</code> (discouraged — defeats the
-safety mechanism)</li>
+<li class="">Override the validation rule in local tooling (discouraged because it
+defeats the safety mechanism)</li>
 </ol>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="public-files">Public files<a href="#public-files" class="hash-link" aria-label="Direct link to Public files" title="Direct link to Public files" translate="no">​</a></h2>
 <p><code>privacy: public</code> is documentation, not security — anything in a public
