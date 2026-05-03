@@ -133,6 +133,19 @@ def _archive_id(kind: Optional[str], state: Optional[str]) -> str:
     return "-".join(parts)
 
 
+def _jsonable(value):
+    """Convert entity metadata/spec values into JSON-serializable shapes."""
+    if isinstance(value, (dt.datetime, dt.date)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {str(k): _jsonable(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_jsonable(v) for v in value]
+    if isinstance(value, tuple):
+        return [_jsonable(v) for v in value]
+    return value
+
+
 @server.tool(annotations=ToolAnnotations(
     readOnlyHint=True,
     destructiveHint=False,
@@ -249,9 +262,9 @@ def create_archive(
                 "id": ent.id,
                 "kind": ent.kind,
                 "apiVersion": ent.apiVersion,
-                "metadata": ent.metadata,
-                "spec": ent.spec,
-                "labels": ent.labels,
+                "metadata": _jsonable(ent.metadata),
+                "spec": _jsonable(ent.spec),
+                "labels": _jsonable(ent.labels),
                 "original_path": member,
                 "member_path": member,
                 "storage_location": storage_location,

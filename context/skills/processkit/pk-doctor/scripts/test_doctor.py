@@ -26,6 +26,7 @@ Exit 1 = at least one test failed.
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import subprocess
 import sys
@@ -88,7 +89,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "workitems" / "BACK-20260420_1200-GoodApple-valid-item.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: WorkItem
             metadata:
               id: BACK-20260420_1200-GoodApple-valid-item
@@ -107,7 +108,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "workitems" / "BACK-bad-filename.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: WorkItem
             metadata:
               id: BACK-20260420_1300-BadApple-item
@@ -125,7 +126,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "logs" / "LOG-toplevel-misplaced.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: LogEntry
             metadata:
               id: LOG-toplevel-misplaced
@@ -145,7 +146,7 @@ def _seed_tree(root: Path) -> None:
     (ctx / "migrations" / "pending" / "MIG-20260101T000000.md").write_text(
         textwrap.dedent(f"""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: Migration
             metadata:
               id: MIG-20260101T000000
@@ -195,6 +196,8 @@ with tempfile.TemporaryDirectory() as tmp:
     check("sharding section present", "## sharding" in result.stdout)
     check("migrations section present", "## migrations" in result.stdout)
     check("drift section present", "## drift" in result.stdout)
+    check("MCP health section present", "## mcp_config_drift" in result.stdout)
+    check("MCP gateway section present", "## mcp_gateway" in result.stdout)
     check("totals line present", "## totals" in result.stdout)
     check("stub log payload written", stub.is_file())
     if stub.is_file():
@@ -228,7 +231,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "workitems" / "BACK-20260420_1400-CleanBad-invalid.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: WorkItem
             metadata:
               id: BACK-20260420_1400-CleanBad-invalid
@@ -409,6 +412,169 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 6c: MCP gateway mode is an intentional derived-project alternative
+# ---------------------------------------------------------------------------
+print("\n[6c] mcp gateway — manifest + harness gateway mode")
+
+from checks.mcp_config_drift import (  # noqa: E402
+    _aggregate as _mcp_manifest_aggregate,
+    _sha256_of_file as _mcp_config_sha256,
+    run as _mcp_config_drift_run,
+)
+from checks.mcp_gateway import run as _mcp_gateway_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    granular_cfg = (
+        root / "context" / "skills" / "processkit" /
+        "artifact-management" / "mcp" / "mcp-config.json"
+    )
+    gateway_cfg = (
+        root / "context" / "skills" / "processkit" /
+        "processkit-gateway" / "mcp" / "mcp-config.json"
+    )
+    granular_cfg.parent.mkdir(parents=True)
+    gateway_cfg.parent.mkdir(parents=True)
+    granular_cfg.write_text(
+        json.dumps({
+            "mcpServers": {
+                "processkit-artifact-management": {
+                    "command": "uv",
+                    "args": [
+                        "run",
+                        "context/skills/processkit/artifact-management/"
+                        "mcp/server.py",
+                    ],
+                },
+            },
+        }),
+        encoding="utf-8",
+    )
+    gateway_cfg.write_text(
+        json.dumps({
+            "mcpServers": {
+                "processkit-gateway": {
+                    "command": "uv",
+                    "args": [
+                        "run",
+                        "context/skills/processkit/processkit-gateway/"
+                        "mcp/server.py",
+                    ],
+                    "env": {"PROCESSKIT_MCP_MODE": "gateway"},
+                },
+            },
+        }),
+        encoding="utf-8",
+    )
+    per_skill = [{
+        "path": (
+            "context/skills/processkit/artifact-management/"
+            "mcp/mcp-config.json"
+        ),
+        "sha256": _mcp_config_sha256(granular_cfg),
+    }]
+    per_gateway = [{
+        "path": (
+            "context/skills/processkit/processkit-gateway/"
+            "mcp/mcp-config.json"
+        ),
+        "sha256": _mcp_config_sha256(gateway_cfg),
+    }]
+    (root / "context").mkdir(exist_ok=True)
+    (root / "context" / ".processkit-mcp-manifest.json").write_text(
+        json.dumps({
+            "version": 1,
+            "generated_at": "2026-05-02T00:00:00Z",
+            "processkit_version": "v0.test",
+            "per_skill": per_skill,
+            "per_gateway": per_gateway,
+            "per_server_header": [],
+            "aggregate_sha256": _mcp_manifest_aggregate(per_skill),
+        }),
+        encoding="utf-8",
+    )
+    (root / "aibox.lock").write_text("[processkit]\n", encoding="utf-8")
+    (root / ".mcp.json").write_text(
+        json.dumps({"mcpServers": {"processkit-gateway": {}}}),
+        encoding="utf-8",
+    )
+
+    drift_results = _mcp_config_drift_run({"repo_root": root})
+    check(
+        "gateway-only .mcp.json does not trip harness-stale",
+        any(r.id == "mcp_config_drift.gateway-mode" for r in drift_results),
+        [r.to_dict() for r in drift_results],
+    )
+
+    (root / ".mcp.json").write_text(
+        json.dumps({
+            "mcpServers": {
+                "processkit-gateway": {},
+                "processkit-artifact-management": {},
+            },
+        }),
+        encoding="utf-8",
+    )
+    gateway_results = _mcp_gateway_run({"repo_root": root})
+    check(
+        "mixed gateway + granular registration emits WARN",
+        any(r.id == "mcp_gateway.mixed-registration"
+            and r.severity == "WARN" for r in gateway_results),
+        [r.to_dict() for r in gateway_results],
+    )
+
+# ---------------------------------------------------------------------------
+# Test 6d: manifest generator keeps gateway outside granular aggregate
+# ---------------------------------------------------------------------------
+print("\n[6d] manifest generator — gateway metadata is separate")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    granular_cfg = (
+        root / "context" / "skills" / "processkit" /
+        "artifact-management" / "mcp" / "mcp-config.json"
+    )
+    gateway_cfg = (
+        root / "context" / "skills" / "processkit" /
+        "processkit-gateway" / "mcp" / "mcp-config.json"
+    )
+    granular_cfg.parent.mkdir(parents=True)
+    gateway_cfg.parent.mkdir(parents=True)
+    granular_cfg.write_text(
+        '{"mcpServers":{"processkit-artifact-management":{}}}\n',
+        encoding="utf-8",
+    )
+    gateway_cfg.write_text(
+        '{"mcpServers":{"processkit-gateway":{}}}\n',
+        encoding="utf-8",
+    )
+
+    generator_path = _REPO_ROOT / "scripts" / "generate-mcp-manifest.py"
+    spec = importlib.util.spec_from_file_location(
+        "generate_mcp_manifest_test", generator_path
+    )
+    assert spec and spec.loader
+    generator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(generator)
+
+    entries = generator._collect_entries(root)
+    gateway_entries = generator._collect_gateway_entries(root)
+    check(
+        "gateway config excluded from per_skill entries",
+        [e["path"] for e in entries] == [
+            "context/skills/processkit/artifact-management/mcp/mcp-config.json"
+        ],
+        entries,
+    )
+    check(
+        "gateway config collected separately",
+        [e["path"] for e in gateway_entries] == [
+            "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
+        ],
+        gateway_entries,
+    )
+
+# ---------------------------------------------------------------------------
 # Test 7: pk-doctor integration — invalid actor ID triggers ERROR
 # ---------------------------------------------------------------------------
 print("\n[7] pk-doctor integration — invalid actor ID emits ERROR")
@@ -429,7 +595,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "actors" / "ACTOR-hacker.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: Actor
             metadata:
               id: ACTOR-hacker
@@ -480,7 +646,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "logs" / "LOG-20260425_1100-Fixture-event.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: LogEntry
             metadata:
               id: LOG-20260425_1100-Fixture-event
@@ -530,7 +696,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "migrations" / "MIG-20260425T1100-test-fixture.md").write_text(
         textwrap.dedent("""\
             ---
-            apiVersion: processkit.projectious.work/v1
+            apiVersion: processkit.projectious.work/v2
             kind: Migration
             metadata:
               id: MIG-20260425T1100-test-fixture
@@ -821,6 +987,229 @@ with tempfile.TemporaryDirectory() as tmp:
     check("report CLI prints billing notice",
           "not provider-billed token usage" in result.stdout,
           result.stdout)
+
+# ---------------------------------------------------------------------------
+# Test 16: v2 plan guardrails from SmoothRiver Sprint A/C/D catalogue
+# ---------------------------------------------------------------------------
+print("\n[16] v2 plan guardrails — vocabulary, sharding, contracts")
+
+from checks.schema_vocabulary import run as _schema_vocab_run  # noqa: E402
+from checks.sharding import run as _sharding_run  # noqa: E402
+from checks.v2_contracts import run as _v2_contracts_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "context" / "schemas").mkdir(parents=True)
+    (root / "context" / "artifacts").mkdir(parents=True)
+    (root / "context" / "bindings").mkdir(parents=True)
+    (root / "context" / "migrations" / "applied").mkdir(parents=True)
+    (root / "context" / "workitems").mkdir(parents=True)
+    (root / "context" / "skills" / "processkit" /
+     "index-management" / "config").mkdir(parents=True)
+
+    (root / "context" / "schemas" / "artifact.yaml").write_text(
+        textwrap.dedent("""\
+            spec:
+              known_kinds: [document, cost-policy]
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "schemas" / "binding.yaml").write_text(
+        textwrap.dedent("""\
+            spec:
+              known_types: [role-assignment, triage-classification]
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "schemas" / "workitem.yaml").write_text(
+        "spec:\n  known_types: [task]\n",
+        encoding="utf-8",
+    )
+    (root / "context" / "schemas" / "logentry.yaml").write_text(
+        "spec:\n  known_event_types: [test.event]\n",
+        encoding="utf-8",
+    )
+    (root / "context" / "schemas" / "migration.yaml").write_text(
+        "spec:\n  known_kinds: [source-upgrade, schema-extension, data-fix]\n",
+        encoding="utf-8",
+    )
+    (root / "context" / "artifacts" / "ART-bad-kind.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Artifact
+            metadata:
+              id: ART-bad-kind
+              created: 2026-04-30T00:00:00Z
+            spec:
+              name: Bad kind
+              kind: unknown-policy-shape
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "bindings" / "BIND-bad-type.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Binding
+            metadata:
+              id: BIND-bad-type
+              created: 2026-04-30T00:00:00Z
+            spec:
+              type: unknown-binding-shape
+              subject: ART-a
+              target: ART-b
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "migrations" / "applied" /
+     "MIG-bad-kind.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Migration
+            metadata:
+              id: MIG-bad-kind
+              created: 2026-04-30T00:00:00Z
+            spec:
+              source: processkit
+              kind: mystery-transition
+              from_version: v0.1.0
+              to_version: v0.2.0
+              state: applied
+              source_api_version: processkit.projectious.work/v1
+              source_processkit_version: v0.1.0
+              target_api_version: processkit.projectious.work/v2
+              target_processkit_version: v0.2.0
+              apply_mode: one-shot
+            ---
+            """),
+        encoding="utf-8",
+    )
+    vocab_results = _schema_vocab_run({"repo_root": root})
+    check(
+        "16a: unknown Artifact kind emits plan check ID",
+        any(r.id == "schema.unknown-kind-without-schema-entry"
+            for r in vocab_results),
+    )
+    check(
+        "16b: unknown Binding type emits plan check ID",
+        any(r.id == "schema.unknown-type-without-schema-entry"
+            for r in vocab_results),
+    )
+    check(
+        "16c: unknown Migration kind emits plan check ID",
+        any(r.id == "schema.unknown-migration-kind-without-schema-entry"
+            for r in vocab_results),
+    )
+
+    (root / "src" / "context" / "schemas").mkdir(parents=True)
+    (root / "src" / "context" / "schemas" / "model.yaml").write_text(
+        "kind: Schema\nmetadata:\n  id: SCHEMA-model\nspec: {}\n",
+        encoding="utf-8",
+    )
+    (root / "src" / "context" / "schemas" / "INDEX.md").write_text(
+        "- [model.yaml](model.yaml)\n"
+        "- [statemachine.yaml](statemachine.yaml)\n",
+        encoding="utf-8",
+    )
+    demotion_results = _schema_vocab_run({"repo_root": root})
+    check(
+        "16c2: demoted first-class Model schema is blocked from src/",
+        any(r.id == "schema.demoted-kind-still-shipped"
+            and "model.yaml" in r.message
+            for r in demotion_results),
+    )
+    check(
+        "16c3: demoted first-class schema index entry is blocked from src/",
+        any(r.id == "schema.demoted-kind-still-indexed"
+            and "StateMachine" in r.message
+            for r in demotion_results),
+    )
+
+    settings = (
+        root / "context" / "skills" / "processkit" /
+        "index-management" / "config" / "settings.toml"
+    )
+    settings.write_text(
+        textwrap.dedent("""\
+            [sharding.workitem]
+            pattern = "date-shard"
+            template = "{year}/{month}/"
+            activate_above_count = 1
+            """),
+        encoding="utf-8",
+    )
+    for suffix in ("one", "two"):
+        (root / "context" / "workitems" / f"BACK-{suffix}.md").write_text(
+            textwrap.dedent(f"""\
+                ---
+                apiVersion: processkit.projectious.work/v2
+                kind: WorkItem
+                metadata:
+                  id: BACK-{suffix}
+                  created: 2026-04-30T00:00:00Z
+                spec:
+                  title: {suffix}
+                  state: backlog
+                  type: task
+                ---
+                """),
+            encoding="utf-8",
+        )
+    sharding_results = _sharding_run({"repo_root": root})
+    check(
+        "16d: workitem threshold check fires",
+        any(r.id == "sharding.workitem-shard-threshold"
+            for r in sharding_results),
+    )
+
+    (root / "context" / "artifacts" / "ART-new-policy.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Artifact
+            metadata:
+              id: ART-new-policy
+              created: 2026-04-30T00:00:00Z
+            spec:
+              name: New policy
+              kind: cost-policy
+              supersedes: [ART-missing-policy]
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "bindings" / "BIND-triage.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Binding
+            metadata:
+              id: BIND-triage
+              created: 2026-04-30T00:00:00Z
+            spec:
+              type: triage-classification
+              subject: NOTE-a
+              target: BACK-one
+              conditions: {}
+            ---
+            """),
+        encoding="utf-8",
+    )
+    contract_results = _v2_contracts_run({"repo_root": root})
+    check(
+        "16e: policy supersedes chain-break check fires",
+        any(r.id == "v2.policy-supersedes-chain-break"
+            for r in contract_results),
+    )
+    check(
+        "16f: inbox injection-mode check fires",
+        any(r.id == "v2.inbox-injection-mode-untyped"
+            for r in contract_results),
+    )
 
 # ---------------------------------------------------------------------------
 # Summary

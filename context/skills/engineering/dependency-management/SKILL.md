@@ -4,7 +4,7 @@ description: |
   Cross-language dependency management — lockfiles, version pinning, automated updates, security, and licenses. Use when setting up or reviewing lockfile strategy, configuring automated dependency updates, auditing dependencies for security or license issues, handling monorepo dependencies, or deciding whether to vendor.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-dependency-management
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

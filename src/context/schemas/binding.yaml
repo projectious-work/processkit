@@ -17,9 +17,13 @@ spec:
 
     v1.1.0 change (DEC-20260422_0234-LoyalComet): added conditional
     validation for type='model-assignment' bindings, enumerating the
-    fields used by the 8-layer resolution precedence. In v2 these
-    bindings target model-recommender roster/profile IDs, not first-class
-    Model entities.
+    fields used by the 8-layer resolution precedence.
+
+    v2.0.0 model-spec change
+    (DEC-20260503_1424-ShinyBear,
+    DEC-20260503_1424-WiseBird): model-assignment bindings target
+    Artifact(kind=model-spec) entities. model-recommender JSON is a
+    projection/cache, not a canonical binding target.
 
     v2.0.0 change: Binding type is a closed vocabulary declared in
     spec.known_types. Forks extend the vocabulary through schema-extension
@@ -103,11 +107,14 @@ spec:
           properties:
             target:
               type: string
-              pattern: "^MODEL-[a-z0-9-]+$"
+              pattern: "^ART-[0-9]{8}_[0-9]{4}-ModelSpec-[a-z0-9-]+$"
               description: >
-                Target must be a model-recommender roster/profile ID. The
-                MODEL- prefix is retained for resolver compatibility; it
-                does not imply a shipped Model entity primitive.
+                Target must be a timestamped Artifact(kind=model-spec)
+                entity.
+            target_kind:
+              const: Artifact
+              description: >
+                Model-assignment targets are model-spec Artifacts.
             conditions:
               type: object
               additionalProperties: true

@@ -5,7 +5,7 @@ description: >
   frontmatter, body sections, Gotchas, and trigger-phrase generation.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-skill-builder
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z
@@ -152,7 +152,7 @@ description: >
   <One-sentence imperative (verb-first): what the skill does.>
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-<kebab-case-name>
     version: "1.0.0"
     created: <YYYY-MM-DDTHH:MM:SSZ>

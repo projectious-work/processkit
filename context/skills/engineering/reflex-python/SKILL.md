@@ -4,7 +4,7 @@ description: |
   Reflex Python web framework for full-stack apps in pure Python — components, state, routing, and deployment. Use when building Reflex apps, designing component hierarchies, managing Reflex state, or deploying a Reflex application.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-reflex-python
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

@@ -8,7 +8,8 @@ spec:
   type: model-assignment
   subject: ROLE-assistant
   subject_kind: Role
-  target: MODEL-anthropic-claude-haiku
+  target: ART-20260503_1424-ModelSpec-anthropic-claude-haiku
+  target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1

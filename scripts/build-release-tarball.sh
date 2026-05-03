@@ -14,6 +14,7 @@
 #     lib/
 #     scaffolding/
 #     PROVENANCE.toml
+#     .gitignore.example
 #     INDEX.md
 #     LICENSE       (copied from repo root)
 #     CHANGELOG.md  (copied from repo root, if present)
@@ -109,8 +110,9 @@ if ! "$REPO_ROOT/scripts/stamp-provenance.sh" --check "$VERSION"; then
     exit 1
 fi
 
-# Copy the entire src/ tree into the staging dir at the top level.
-# Excludes: __pycache__/, .pyc files, .DS_Store, dotfiles inside src.
+# Copy the entire src/ tree into the staging dir at the top level, including
+# deliverable dotfiles such as .gitignore.example.
+# Excludes: __pycache__/, .pyc files, .DS_Store.
 echo "staging src/ → $STAGING_DIR/" >&2
 (cd "$SRC_DIR" && tar --exclude='__pycache__' \
                        --exclude='*.pyc' \

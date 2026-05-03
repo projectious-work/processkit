@@ -103,7 +103,11 @@ def _candidate_rows(
 
     candidates: list[dict] = []
     for row in rows:
-        if row.get("storage_location"):
+        location = str(row.get("storage_location") or "")
+        if location and location != "live":
+            continue
+        row_state = row.get("state")
+        if row_state in ACTIVE_STATES:
             continue
         created = _parse_date(row.get("created"))
         updated = _parse_date(row.get("updated")) or created
@@ -127,6 +131,19 @@ def _archive_id(kind: Optional[str], state: Optional[str]) -> str:
     if state:
         parts.append(state.replace("-", "_"))
     return "-".join(parts)
+
+
+def _jsonable(value):
+    """Convert entity metadata/spec values into JSON-serializable shapes."""
+    if isinstance(value, (dt.datetime, dt.date)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {str(k): _jsonable(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_jsonable(v) for v in value]
+    if isinstance(value, tuple):
+        return [_jsonable(v) for v in value]
+    return value
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -245,9 +262,9 @@ def create_archive(
                 "id": ent.id,
                 "kind": ent.kind,
                 "apiVersion": ent.apiVersion,
-                "metadata": ent.metadata,
-                "spec": ent.spec,
-                "labels": ent.labels,
+                "metadata": _jsonable(ent.metadata),
+                "spec": _jsonable(ent.spec),
+                "labels": _jsonable(ent.labels),
                 "original_path": member,
                 "member_path": member,
                 "storage_location": storage_location,

@@ -27,13 +27,13 @@ manifest and does not imply every processkit tool is available.
 
 | File | Purpose |
 |---|---|
-| `model_scores.json` | Source of truth: all roster records with sub-dimension scores, pricing, metadata |
+| `context/artifacts/ART-YYYYMMDD_HHMM-ModelSpec-*.md` | Source of truth: `Artifact(kind=model-spec)` roster records with versions, scores, pricing, and metadata |
+| `model_scores.json` | Packaged projection/cache and compatibility fallback; also carries shared `_meta` pages |
 | `user_config.json` | User's access list, blocked models, governance floor, budget tier, preferred providers |
 
 Older installs may still carry `context/models/MODEL-*.md` entity cards.
-The server can read those as a compatibility fallback when
-`model_scores.json` is absent, but v2 does not treat Model as a
-first-class processkit primitive.
+The server can read those as a compatibility fallback, but v2 does not
+treat Model as a first-class processkit primitive.
 
 ## Running
 
@@ -72,13 +72,15 @@ unknown, not unsuitable, unless callers set `require_task_suitability=True`.
 
 ## Adding new models
 
-1. Add an entry to `model_scores.json` following the existing schema.
+1. Add or update the relevant timestamped `context/artifacts/ART-YYYYMMDD_HHMM-ModelSpec-*.md`
+   model-spec artifact.
 2. Score all 6 dimensions and all sub-dimensions.
-3. Add `pricing` fields (see schema in model_scores.json).
+3. Add `pricing` fields to the version entry.
 4. Set `lifecycle` (`active`, `legacy`, `deprecated`, `retired`,
    `unverified`) and source URLs.
 5. Add `task_suitability` scores for the classes in
    `_meta.task_suitability_classes` where evidence is strong enough.
-6. Bump `_meta.validated` to the current quarter.
+6. Refresh any packaged `model_scores.json` projection and bump
+   `_meta.validated` to the current quarter.
 7. Update `references/model-profiles.md` with the narrative profile.
 8. Update the summary table in `SKILL.md` Overview.

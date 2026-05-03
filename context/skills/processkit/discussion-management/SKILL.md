@@ -4,7 +4,7 @@ description: |
   Manage Discussion entities — structured, multi-turn conversations that explore questions and produce decisions. Use when a question or design choice needs multi-turn exploration before a decision is reached — RFCs, design debates, trade-off analyses.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-discussion-management
     version: "1.0.0"
     created: 2026-04-06T00:00:00Z
@@ -58,7 +58,7 @@ outcome. Think of it as the audit trail behind a decision.
 
 ```yaml
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Discussion
 metadata:
   id: DISC-002

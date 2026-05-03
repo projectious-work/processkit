@@ -10,7 +10,7 @@ MCP server (Phase 3).
 ## Shape
 
 ```yaml
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Schema
 metadata:
   id: SCHEMA-<kind>
@@ -42,14 +42,12 @@ spec:
 | `discussion.yaml` | Discussion | DISC | yes |
 | `binding.yaml` | Binding | BIND | no |
 | `category.yaml` | Category | CAT | no |
-| `metric.yaml` | Metric | METRIC | no |
-| `schedule.yaml` | Schedule | SCHED | no |
 | `constraint.yaml` | Constraint | CONST | no |
 | `context.yaml` | Context | CTX | no |
-| `process.yaml` | Process | PROC | no |
-| `statemachine.yaml` | StateMachine | SM | no |
 | `artifact.yaml` | Artifact | ART | no |
 
 `CrossReference` is intentionally NOT a file primitive — it lives as
 frontmatter cross-references on other entities (see `binding-management`
-SKILL.md for the rule). All other primitives have a schema as of v0.5.0.
+SKILL.md for the rule). Model, Process, Schedule, and StateMachine are
+not first-class v2 primitive schemas in `src/`; StateMachine files under
+`context/state-machines/` are runtime definitions loaded by the library.

@@ -11,6 +11,69 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.25.2] — 2026-05-03
+
+v0.25.2 is a **patch release** that settles the v0.25 model-spec
+projection and release-deliverable hygiene. It keeps model descriptions
+as `Artifact(kind=model-spec)` entities, but aligns their IDs and
+filenames with the timestamped Artifact convention used elsewhere in
+processkit.
+
+### Added
+
+- **Added timestamped model-spec artifacts to the shipped deliverable.**
+  Model descriptions now ship under
+  `ART-YYYYMMDD_HHMM-ModelSpec-<provider>-<family>.md` in both
+  `context/artifacts/` and `src/context/artifacts/`.
+- **Added pk-doctor context-hygiene checks for model-spec naming.**
+  `pk-doctor` now flags non-timestamped model-spec artifact IDs/files
+  and model-assignment bindings that still target old `ART-model-*`
+  artifact IDs.
+- **Added `.gitignore.example` to the release deliverable.** The example
+  gitignore guidance now ships under `src/.gitignore.example` instead
+  of existing only in the repository root.
+
+### Changed
+
+- **Model-assignment bindings now target timestamped model-spec
+  Artifacts.** Shipped role/team/default model bindings now point at
+  `Artifact(kind=model-spec)` IDs instead of hidden JSON records or the
+  short-lived `ART-model-*` projection.
+- **The model-recommender generator emits the canonical timestamped
+  model-spec IDs.** Re-running `migrate_models.py` no longer recreates
+  non-timestamped model artifact filenames.
+- **The release boundary accepts only timestamped model-spec artifacts in
+  `src/context/artifacts/`.** The drift guard now rejects other artifact
+  shapes from the consumer deliverable.
+- **Applied/rejected migration history is archived out of the live
+  context.** The dogfood context keeps archive manifests while removing
+  migrated state from the active migration directory.
+
+### Fixed
+
+- **Fixed pk-doctor blind spots around artifact hygiene.** HTML sidecar
+  artifacts, suspicious `_0000` artifact timestamps, and legacy
+  model-spec artifact names are now surfaced by `pk-doctor`.
+- **Fixed resolver compatibility after the model-spec rename.** Current
+  bindings use timestamped artifact IDs, while legacy `MODEL-*` and
+  `ART-model-*` inputs remain accepted for derived projects during
+  migration.
+- **Fixed context-archiving manifest serialization for datetime values.**
+  Archive creation can now serialize generated manifests that include
+  datetime-like metadata.
+
+### Verification
+
+- `pk-doctor --no-log` passed with `0 ERROR / 0 WARN`.
+- `scripts/check-src-context-drift.sh --release-deliverable` passed.
+- `release_audit.py --tree=src-context` passed with `0 ERROR / 0 WARN`.
+- `20 passed` for model migration tests.
+- `29 passed` for resolver tests.
+- `uv run scripts/smoke-test-servers.py` passed across the MCP smoke
+  suite.
+
+---
+
 ## [v0.25.1] — 2026-05-03
 
 v0.25.1 is a **patch release** for the model-recommender after the

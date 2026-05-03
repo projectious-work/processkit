@@ -78,7 +78,27 @@ _EFFORT_INDEX = {e: i for i, e in enumerate(EFFORT_ORDER)}
 
 _SENIORITY_ORDER = ["junior", "specialist", "expert", "senior", "principal"]
 
+MODEL_SPEC_ID_PREFIX = "ART-20260503_1424-ModelSpec"
+
+
+def _artifact_id_for_model_slug(slug: str) -> str:
+    return f"{MODEL_SPEC_ID_PREFIX}-{slug}"
+
+
 _PROVIDER_EQUIVALENTS = {
+    (
+        _artifact_id_for_model_slug("anthropic-claude-haiku"),
+        "openai",
+    ): _artifact_id_for_model_slug("openai-o4-mini"),
+    (
+        _artifact_id_for_model_slug("anthropic-claude-sonnet"),
+        "openai",
+    ): _artifact_id_for_model_slug("openai-gpt-5"),
+    (
+        _artifact_id_for_model_slug("anthropic-claude-opus"),
+        "openai",
+    ): _artifact_id_for_model_slug("openai-gpt-5-pro"),
+    # Legacy aliases while derived projects migrate old MODEL-* bindings.
     ("MODEL-anthropic-claude-haiku", "openai"): "MODEL-openai-o4-mini",
     ("MODEL-anthropic-claude-sonnet", "openai"): "MODEL-openai-gpt-5",
     ("MODEL-anthropic-claude-opus", "openai"): "MODEL-openai-gpt-5-pro",
@@ -188,10 +208,49 @@ def _get_role(role_id: str) -> dict | None:
 
 def _get_model(model_id: str) -> dict | None:
     spec = _get_entity_spec(model_id)
+    canonical_id = _canonical_model_artifact_id(model_id)
+    if not spec and canonical_id != model_id:
+        spec = _get_entity_spec(canonical_id)
     if not spec:
         return None
-    spec["_id"] = model_id
+    if spec.get("kind") and spec.get("kind") != "model-spec":
+        return None
+    spec["_id"] = canonical_id
     return spec
+
+
+def _canonical_model_artifact_id(model_id: str) -> str:
+    if model_id.startswith("MODEL-"):
+        return _artifact_id_for_model_slug(model_id[len("MODEL-"):])
+    if model_id.startswith("ART-model-"):
+        return _artifact_id_for_model_slug(model_id[len("ART-model-"):])
+    return model_id
+
+
+def _artifact_id_for_legacy_model_id(model_id: str) -> str:
+    return _canonical_model_artifact_id(model_id)
+
+
+def _iter_model_specs() -> list[tuple[str, dict]]:
+    db = _index.open_db()
+    try:
+        rows = _index.query_entities(db, kind="Artifact", limit=2000)
+        legacy_rows = _index.query_entities(db, kind="Model", limit=2000)
+    finally:
+        db.close()
+
+    out: list[tuple[str, dict]] = []
+    for row in rows:
+        spec = _get_entity_spec(row["id"])
+        if spec and spec.get("kind") == "model-spec":
+            spec["_id"] = row["id"]
+            out.append((row["id"], spec))
+    for row in legacy_rows:
+        spec = _get_entity_spec(row["id"])
+        if spec:
+            spec["_id"] = row["id"]
+            out.append((row["id"], spec))
+    return out
 
 
 def _model_versions_sorted(model: dict) -> list[dict]:
@@ -296,12 +355,17 @@ def _binding_to_candidate(
     default_effort: str | None = None,
 ) -> ResolvedCandidate | tuple[None, str]:
     """Convert a model-assignment binding to a ResolvedCandidate, or (None, reason)."""
-    target = binding.get("target", "")
-    if not target.startswith("MODEL-"):
-        return None, f"binding target {target!r} is not a MODEL id"
+    target = str(binding.get("target", ""))
+    if not (target.startswith("ART-") or target.startswith("MODEL-")):
+        return None, f"binding target {target!r} is not a model-spec artifact id"
     model = _get_model(target)
     if model is None:
         return None, f"binding target {target!r} not found in index"
+    candidate_id = (
+        target
+        if target.startswith("MODEL-")
+        else _canonical_model_artifact_id(target)
+    )
 
     conds = binding.get("conditions") or {}
     pin = conds.get("version_pin")
@@ -325,7 +389,7 @@ def _binding_to_candidate(
         rationale_parts.extend(effort_notes)
 
     return ResolvedCandidate(
-        model_id=target,
+        model_id=candidate_id,
         version_id=ver or "",
         effort=eff,
         rank=int(conds.get("rank", 1) or 1),
@@ -339,7 +403,7 @@ def _provider_equivalent_binding(
     preferred_providers: list[str],
 ) -> dict | None:
     """Return a provider-preferred equivalent binding when one exists."""
-    target = binding.get("target")
+    target = str(binding.get("target") or "")
     if not target or not preferred_providers:
         return None
 
@@ -350,6 +414,10 @@ def _provider_equivalent_binding(
     for provider in preferred_providers:
         provider_key = provider.lower()
         explicit = _PROVIDER_EQUIVALENTS.get((target, provider_key))
+        if not explicit:
+            explicit = _PROVIDER_EQUIVALENTS.get(
+                (_canonical_model_artifact_id(target), provider_key)
+            )
         if explicit and _get_model(explicit):
             replacement = dict(binding)
             replacement["target"] = explicit
@@ -389,25 +457,19 @@ def _infer_provider_equivalent(source: dict, provider: str) -> str | None:
     """Pick the closest model from a preferred provider using tier + dimensions."""
     source_tier = source.get("equivalent_tier")
     source_dims = source.get("dimensions") or {}
-    db = _index.open_db()
-    try:
-        rows = _index.query_entities(db, kind="Model", limit=1000)
-    finally:
-        db.close()
-
     best: tuple[float, str] | None = None
-    for row in rows:
-        model = _get_model(row["id"])
-        if not model:
-            continue
+    for model_id, model in _iter_model_specs():
         if str(model.get("provider", "")).lower() != provider:
             continue
         dims = model.get("dimensions") or {}
         tier_penalty = 0 if model.get("equivalent_tier") == source_tier else 10
         distance = float(tier_penalty)
         for key in ("reasoning", "engineering", "speed", "breadth", "reliability"):
-            distance += abs(int(dims.get(key, 0) or 0) - int(source_dims.get(key, 0) or 0))
-        candidate = (distance, row["id"])
+            distance += abs(
+                int(dims.get(key, 0) or 0)
+                - int(source_dims.get(key, 0) or 0)
+            )
+        candidate = (distance, model_id)
         if best is None or candidate < best:
             best = candidate
     return best[1] if best else None

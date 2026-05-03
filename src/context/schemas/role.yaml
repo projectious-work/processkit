@@ -105,9 +105,12 @@ spec:
           Optional. If set, dispatches default to this seniority when none is specified. Otherwise the router defaults to 'senior'.
       default_model:
         type: string
-        pattern: ^MODEL-[a-z0-9-]+$
+        pattern: ^ART-[0-9]{8}_[0-9]{4}-ModelSpec-[a-z0-9-]+$
         description: |
-          Optional shim fallback (Layer 8 of binding resolution; DEC-20260422_0234-LoyalComet). Used only when no bindings match. A warning is emitted whenever the shim resolves the model.
+          Optional shim fallback (Layer 8 of binding resolution;
+          DEC-20260422_0234-LoyalComet). Target is an
+          Artifact(kind=model-spec). Used only when no bindings match. A
+          warning is emitted whenever the shim resolves the model.
       function_group:
         type: string
         enum:

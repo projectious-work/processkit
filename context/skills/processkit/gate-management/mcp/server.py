@@ -59,6 +59,51 @@ server = FastMCP("processkit-gate-management")
 
 _VALID_KINDS = {"manual", "automated", "hybrid"}
 _VALID_OUTCOMES = {"passed", "failed", "waived"}
+_TEMPLATES = {
+    "interrupt-fire": {
+        "kind": "automated",
+        "description": "Force a checkpoint when unread interrupt-class inbox items target the current WorkItem.",
+        "validator": (
+            "If query_bindings(target=current-workitem, "
+            "conditions.injection_mode=interrupt) returns unread items, "
+            "force checkpoint and yield before continuing."
+        ),
+        "blocking": True,
+        "evidence_required": False,
+    },
+    "provider-router-budget": {
+        "kind": "automated",
+        "description": "Block provider-router dispatch when active cost policy budget caps would be breached.",
+        "validator": (
+            "Before provider-router.dispatch, resolve budget-application "
+            "bindings and refuse or escalate when the active cost-policy "
+            "cap would be exceeded."
+        ),
+        "blocking": True,
+        "evidence_required": True,
+    },
+    "eval-calibration": {
+        "kind": "hybrid",
+        "description": "Require LLM-as-judge evals to show calibration against human labels before scaling.",
+        "validator": (
+            "An eval-spec using llm-as-judge is admissible only when a "
+            "recent eval.judge.calibrated LogEntry reports acceptable "
+            "agreement against human labels."
+        ),
+        "blocking": True,
+        "evidence_required": True,
+    },
+    "process-gate": {
+        "kind": "manual",
+        "description": "Bind a process-step WorkItem to a required validation checkpoint.",
+        "validator": (
+            "The process step may complete only when the bound Gate has a "
+            "passing evaluation event or an explicit waiver."
+        ),
+        "blocking": True,
+        "evidence_required": True,
+    },
+}
 
 
 def _now_iso() -> str:
@@ -171,6 +216,46 @@ def create_gate(
         actor=new_id,
     )
     return {"id": new_id, "path": str(target_path), "name": name}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def create_gate_template(
+    template: str,
+    name: str | None = None,
+    required_roles: list[str] | None = None,
+) -> dict:
+    """Instantiate a built-in v2 Gate template.
+
+    Templates: ``interrupt-fire``, ``provider-router-budget``,
+    ``eval-calibration``, and ``process-gate``. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool. 1% rule:
+    call route_task first; commit in the same turn — deferred writes
+    are dropped.
+    """
+    if template not in _TEMPLATES:
+        return {
+            "error": (
+                f"invalid template {template!r}; must be one of "
+                f"{sorted(_TEMPLATES)}"
+            )
+        }
+    spec = dict(_TEMPLATES[template])
+    gate_name = name or template
+    return create_gate(
+        name=gate_name,
+        description=spec["description"],
+        kind=spec["kind"],
+        validator=spec["validator"],
+        required_roles=required_roles,
+        blocking=spec["blocking"],
+        evidence_required=spec["evidence_required"],
+    )
 
 
 @server.tool(annotations=ToolAnnotations(

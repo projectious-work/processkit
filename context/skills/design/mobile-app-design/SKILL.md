@@ -4,7 +4,7 @@ description: |
   Mobile app UX — touch targets, navigation, platform conventions, accessibility. Use when designing mobile interfaces, reviewing mobile UX, adapting web designs for mobile, or reconciling iOS and Android conventions.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-mobile-app-design
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

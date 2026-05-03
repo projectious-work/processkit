@@ -3,6 +3,11 @@
 Artifact registration, retrieval, and update. Layer 2 — depends on
 `event-log` and `index-management`.
 
+This server documents its own tool contract only. In gateway deployments,
+the gateway must expose only the processkit servers present in the
+installed/merged MCP configuration; this file is not an aggregate tool
+manifest.
+
 ## Tools
 
 | Tool | Purpose |

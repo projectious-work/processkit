@@ -4,7 +4,7 @@ description: |
   Creating PowerPoint presentations programmatically with python-pptx — slides, layouts, text boxes, charts, tables, and images. Use when generating slide decks, briefings, reports, or presentations from data or templates.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-pptx-authoring
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

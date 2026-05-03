@@ -1,0 +1,1245 @@
+{
+  "archive_id": "ARCHIVE-20260503_164226-migration-applied",
+  "archive_path": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz",
+  "created_at": "2026-05-03T16:42:26+00:00",
+  "entities": [
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-20260503T113642\n\nFrom `v0.24.0` to `v0.25.1` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 39 new, 48 removed, 0 stale-removed (15 groups affected)\n\n## Counts\n\n- unchanged: 551\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 39\n- removed-upstream: 48\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### context/models\n\n**removed-upstream**\n\n- `context/models/MODEL-google-gemini-2-5-flash.md` \u2192 `context/models/MODEL-google-gemini-2-5-flash.md`\n- `context/models/MODEL-anthropic-claude-haiku.md` \u2192 `context/models/MODEL-anthropic-claude-haiku.md`\n- `context/models/MODEL-google-gemini-3-1-pro.md` \u2192 `context/models/MODEL-google-gemini-3-1-pro.md`\n- `context/models/MODEL-alibaba-qwen2-5-72b.md` \u2192 `context/models/MODEL-alibaba-qwen2-5-72b.md`\n- `context/models/MODEL-xai-grok-4.md` \u2192 `context/models/MODEL-xai-grok-4.md`\n- `context/models/MODEL-anthropic-claude-sonnet.md` \u2192 `context/models/MODEL-anthropic-claude-sonnet.md`\n- `context/models/MODEL-mistral-codestral.md` \u2192 `context/models/MODEL-mistral-codestral.md`\n- `context/models/MODEL",
+      "id": "MIG-20260503T113642",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260503T113642.md",
+      "metadata": {
+        "created": "2026-05-03T11:36:42+00:00",
+        "id": "MIG-20260503T113642",
+        "updated": "2026-05-03T11:46:21+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260503T113642.md",
+      "sha256": "212e965f16e58f7a3dba0d091adcb9e6012fdfbaa0fa175e306b20b02b4a492e",
+      "spec": {
+        "affected_groups": [
+          "AGENTS",
+          "context/models",
+          "lib",
+          "processes/INDEX",
+          "processes/PROC-bug-fix",
+          "processes/PROC-code-review",
+          "processes/PROC-feature-development",
+          "processes/PROC-release",
+          "schemas/metric",
+          "schemas/model",
+          "schemas/process",
+          "schemas/schedule",
+          "schemas/statemachine",
+          "skills/devops",
+          "skills/processkit"
+        ],
+        "applied_at": "2026-05-03T11:46:21+00:00",
+        "from_version": "v0.24.0",
+        "generated_at": "2026-05-03T11:36:42+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Reviewed pending processkit v0.24.0 -> v0.25.1 migration. Working tree already reflects the upstream v0.25.1 sync in aibox.lock/provenance and processkit context updates. Declared AGENTS.md conflict reviewed; no active git diff remains for AGENTS.md, so the local project AGENTS.md contract is retained. Migration accepted and closed.",
+            "timestamp": "2026-05-03T11:46:21+00:00"
+          }
+        ],
+        "source": "processkit",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "started_at": "2026-05-03T11:46:20+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 39 new, 48 removed, 0 stale-removed (15 groups affected)",
+        "to_version": "v0.25.1"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260503T113642.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260503T113642\n\nManaged `.aibox-home/` runtime changes from `0.22.0` to `0.23.2`.\n\n8 changed upstream, 0 conflicts, 4 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 17\n- changed-locally-only: 0\n- changed-upstream-only: 8\n- conflict: 0\n- new-upstream: 4\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-misc\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**new-upstream**\n\n- `.aibox-home/.local/bin/aibox-status` -> `.aibox-home/.local/bin/aibox-status`\n- `.aibox-home/.local/bin/aibox-status-toggle` -> `.aibox-home/.local/bin/aibox-status-toggle`\n\n### runtime-zellij\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/zellij/config.kdl` -> `.aibox-home/.config/zellij/config.kdl`\n- `.aibox-home/.config/zellij/layouts/dev.kdl` -> `.aibox-home/.config/zellij/layouts/dev.kdl`\n- `.aibox-home/.config/zellij/layouts/focus.kdl` -> `.aibox-home/.config/zellij/layouts/focus.kdl`\n- `.aibox-home/.config/zellij/layouts/cowork.kdl` -> `.aibox-home/.config/zellij/layouts/cowork.kdl`\n- `.aibox-home/.config/zellij/layouts/browse.kdl` -> `.aibox-home/.config/zellij/layouts/browse.kdl`\n- `.aibox-home/.c",
+      "id": "MIG-RUNTIME-20260503T113642",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260503T113642.md",
+      "metadata": {
+        "created": "2026-05-03T11:36:42+00:00",
+        "id": "MIG-RUNTIME-20260503T113642",
+        "updated": "2026-05-03T11:46:21+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260503T113642.md",
+      "sha256": "0d865870fd9a198472b00faaa50a566883b891a2f17d0e5b9fee6f8bf002ac52",
+      "spec": {
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-zellij"
+        ],
+        "applied_at": "2026-05-03T11:46:21+00:00",
+        "from_version": "0.22.0",
+        "generated_at": "2026-05-03T11:36:42+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Reviewed pending aibox runtime-home 0.22.0 -> 0.23.2 migration. No conflicts declared; runtime lock entries already reflect the new cheatsheet, zellij layout, and aibox-status files. Migration accepted and closed.",
+            "timestamp": "2026-05-03T11:46:21+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-03T11:46:21+00:00",
+        "state": "applied",
+        "summary": "8 changed upstream, 0 conflicts, 4 new, 0 removed (2 groups affected)",
+        "to_version": "0.23.2"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260503T113642.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260501T163943\n\nManaged `.aibox-home/` runtime changes from `0.21.2` to `0.22.0`.\n\n3 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 23\n- changed-locally-only: 1\n- changed-upstream-only: 3\n- conflict: 0\n- new-upstream: 1\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**new-upstream**\n\n- `.aibox-home/.local/bin/pdf-watch` -> `.aibox-home/.local/bin/pdf-watch`\n\n### runtime-yazi\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/yazi/keymap.toml` -> `.aibox-home/.config/yazi/keymap.toml`\n- `.aibox-home/.config/yazi/plugins/eps.yazi/init.lua` -> `.aibox-home/.config/yazi/plugins/eps.yazi/init.lua`\n",
+      "id": "MIG-RUNTIME-20260501T163943",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260501T163943.md",
+      "metadata": {
+        "created": "2026-05-01T16:39:43+00:00",
+        "id": "MIG-RUNTIME-20260501T163943",
+        "updated": "2026-05-01T17:41:46+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260501T163943.md",
+      "sha256": "2da400e9a9485d532570f19f984b0a27db4e337ecb6b8c5955072a0ed257f91e",
+      "spec": {
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-01T17:41:46+00:00",
+        "from_version": "0.21.2",
+        "generated_at": "2026-05-01T16:39:43+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Applied after user approval as part of split-track recovery: runtime files were already present from aibox 0.22.0 apply; this reconciles migration lifecycle state while preserving local .aibox-home/.claude.json.",
+            "timestamp": "2026-05-01T17:41:46+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-01T17:41:46+00:00",
+        "state": "applied",
+        "summary": "3 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected)",
+        "to_version": "0.22.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260501T163943.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-RUNTIME-20260425T125036\n\nManaged `.aibox-home/` runtime changes from `0.19.0` to `0.19.0`.\n\n0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 25\n- changed-locally-only: 2\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 0\n- removed-upstream: 0\n\n## Per-intermediate review\n\nEvery released version between `from_version` and `to_version` whose              template snapshot is present on disk is listed below, with the number              of files that changed between consecutive snapshots. Useful for              catching scaffolding changes that were introduced and later reverted              across the span of a multi-version upgrade.\n\n- `0.19.0` \u2192 `0.19.0`: 0 file(s) changed of 27\n\n## Changes by group\n\n### runtime-claude\n\n**changed-locally-only**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n",
+      "id": "MIG-RUNTIME-20260425T125036",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260425T125036.md",
+      "metadata": {
+        "created": "2026-04-25T12:50:36+00:00",
+        "id": "MIG-RUNTIME-20260425T125036",
+        "updated": "2026-04-25T13:06:48+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260425T125036.md",
+      "sha256": "e74ebc9caae1da6de4bd558fad046e97711d934ff28529800709b2f8a240a22d",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-misc"
+        ],
+        "applied_at": "2026-04-25T13:06:48+00:00",
+        "apply_mode": "one-shot",
+        "from_version": "0.19.0",
+        "generated_at": "2026-04-25T12:50:36+00:00",
+        "generated_by": "aibox sync",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "No file content changes \u2014 body shows 0 conflicts, 0 new, 0 removed. Acknowledges 2 changed-locally-only files (.aibox-home/.claude.json, keybindings.json) at runtime version 0.19.0 \u2192 0.19.0.",
+            "timestamp": "2026-04-25T13:06:48+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "0.19.0",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-04-25T13:06:48+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "0.19.0",
+        "to_version": "0.19.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260425T125036.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260425T124926\n\nFrom `v0.21.0` to `v0.21.0` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 0 conflicts, 564 new, 0 removed (52 groups affected)\n\n## Counts\n\n- unchanged: 0\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 564\n- removed-upstream: 0\n\n## Changes by group\n\n### (ungrouped)\n\n**new-upstream**\n\n- `INDEX.md` \u2192 `context/INDEX.md`\n\n### AGENTS\n\n**new-upstream**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### context/bindings\n\n**new-upstream**\n\n- `context/bindings/BIND-20260425_0956-SoundRaven-model-assignment.md` \u2192 `context/bindings/BIND-20260425_0956-SoundRaven-model-assignment.md`\n- `context/bindings/BIND-solutions-architect-junior-heb66a8.md` \u2192 `context/bindings/BIND-solutions-architect-junior-heb66a8.md`\n- `context/bindings/BIND-data-scientist-junior-he28d96.md` \u2192 `context/bindings/BIND-data-scientist-junior-he28d96.md`\n- `context/bindings/BIND-research-scientist-principal-hb4e3bb.md` \u2192 `context/bindings/BIND-research-scientist-principal-hb4e3bb.md`\n- `context/bindings/BIND-20260425_0955-ThriftyGlade-model-assignment.md` \u2192 `context/bindings/BIND-20260425_0955-ThriftyGlade-model-assignment.md`\n- `conte",
+      "id": "MIG-20260425T124926",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260425T124926.md",
+      "metadata": {
+        "created": "2026-04-25T12:49:26+00:00",
+        "id": "MIG-20260425T124926",
+        "updated": "2026-04-25T13:11:37+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260425T124926.md",
+      "sha256": "f239f2eceb0b81dbad771013e2605d6d186286d12ee144b034d285e2e6f0849d",
+      "spec": {
+        "affected_groups": [
+          "",
+          "AGENTS",
+          "context/bindings",
+          "context/models",
+          "context/roles",
+          "context/team",
+          "context/team-members/cora",
+          "context/team-members/cora/relations",
+          "context/team-members/thrifty-otter",
+          "lib",
+          "processes/INDEX",
+          "processes/PROC-bug-fix",
+          "processes/PROC-code-review",
+          "processes/PROC-feature-development",
+          "processes/PROC-release",
+          "schemas/INDEX",
+          "schemas/actor",
+          "schemas/artifact",
+          "schemas/binding",
+          "schemas/category",
+          "schemas/constraint",
+          "schemas/context",
+          "schemas/decisionrecord",
+          "schemas/discussion",
+          "schemas/gate",
+          "schemas/logentry",
+          "schemas/metric",
+          "schemas/migration",
+          "schemas/model",
+          "schemas/note",
+          "schemas/process",
+          "schemas/role",
+          "schemas/schedule",
+          "schemas/scope",
+          "schemas/statemachine",
+          "schemas/team-member",
+          "schemas/workitem",
+          "skills/INDEX.md",
+          "skills/data-ai",
+          "skills/design",
+          "skills/devops",
+          "skills/documents",
+          "skills/engineering",
+          "skills/processkit",
+          "skills/product",
+          "state-machines/INDEX",
+          "state-machines/decisionrecord",
+          "state-machines/discussion",
+          "state-machines/migration",
+          "state-machines/note",
+          "state-machines/scope",
+          "state-machines/workitem"
+        ],
+        "applied_at": "2026-04-25T13:11:37+00:00",
+        "apply_mode": "one-shot",
+        "from_version": "v0.21.0",
+        "generated_at": "2026-04-25T12:49:26+00:00",
+        "generated_by": "aibox sync",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Verified all 564 listed destination paths exist in the working tree at the time of apply \u2014 v0.21.0 changes were applied manually in this repo's `src/` and `context/` ahead of aibox sync. aibox sync (run after devcontainer rebuild against the new aibox release) generated this migration as the standard reconciliation record; no file copy was required. Apply records the acknowledgement.",
+            "timestamp": "2026-04-25T13:11:37+00:00"
+          }
+        ],
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.21.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "started_at": "2026-04-25T13:11:37+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 564 new, 0 removed (52 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.21.0",
+        "to_version": "v0.21.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260425T124926.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260423T070619\n\nFrom `v0.19.1` to `v0.19.1` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 0 conflicts, 540 new, 0 removed (52 groups affected)\n\n## Counts\n\n- unchanged: 0\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 540\n- removed-upstream: 0\n\n## Changes by group\n\n### (ungrouped)\n\n**new-upstream**\n\n- `INDEX.md` \u2192 `context/INDEX.md`\n\n### AGENTS\n\n**new-upstream**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### context/bindings\n\n**new-upstream**\n\n- `context/bindings/BIND-solutions-architect-junior-heb66a8.md` \u2192 `context/bindings/BIND-solutions-architect-junior-heb66a8.md`\n- `context/bindings/BIND-data-scientist-junior-he28d96.md` \u2192 `context/bindings/BIND-data-scientist-junior-he28d96.md`\n- `context/bindings/BIND-research-scientist-principal-hb4e3bb.md` \u2192 `context/bindings/BIND-research-scientist-principal-hb4e3bb.md`\n- `context/bindings/BIND-qa-engineer-junior-h796cc2.md` \u2192 `context/bindings/BIND-qa-engineer-junior-h796cc2.md`\n- `context/bindings/BIND-assistant-junior-hae1bfb.md` \u2192 `context/bindings/BIND-assistant-junior-hae1bfb.md`\n- `context/bindings/BIND-product-manager-senior-hf3f8e9.md` \u2192 `context/bindi",
+      "id": "MIG-20260423T070619",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260423T070619.md",
+      "metadata": {
+        "created": "2026-04-23T07:06:19+00:00",
+        "id": "MIG-20260423T070619",
+        "updated": "2026-04-23T08:28:55+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260423T070619.md",
+      "sha256": "5f2a587391dd9ffacc14440fb305a7579f7b82fd914933e4e0f2d87508c44985",
+      "spec": {
+        "affected_groups": [
+          "",
+          "AGENTS",
+          "context/bindings",
+          "context/models",
+          "context/roles",
+          "context/team",
+          "context/team-members/cora",
+          "context/team-members/cora/relations",
+          "context/team-members/thrifty-otter",
+          "lib",
+          "processes/INDEX",
+          "processes/PROC-bug-fix",
+          "processes/PROC-code-review",
+          "processes/PROC-feature-development",
+          "processes/PROC-release",
+          "schemas/INDEX",
+          "schemas/actor",
+          "schemas/artifact",
+          "schemas/binding",
+          "schemas/category",
+          "schemas/constraint",
+          "schemas/context",
+          "schemas/decisionrecord",
+          "schemas/discussion",
+          "schemas/gate",
+          "schemas/logentry",
+          "schemas/metric",
+          "schemas/migration",
+          "schemas/model",
+          "schemas/note",
+          "schemas/process",
+          "schemas/role",
+          "schemas/schedule",
+          "schemas/scope",
+          "schemas/statemachine",
+          "schemas/team-member",
+          "schemas/workitem",
+          "skills/INDEX.md",
+          "skills/data-ai",
+          "skills/design",
+          "skills/devops",
+          "skills/documents",
+          "skills/engineering",
+          "skills/processkit",
+          "skills/product",
+          "state-machines/INDEX",
+          "state-machines/decisionrecord",
+          "state-machines/discussion",
+          "state-machines/migration",
+          "state-machines/note",
+          "state-machines/scope",
+          "state-machines/workitem"
+        ],
+        "applied_at": "2026-04-23T08:28:55+00:00",
+        "apply_mode": "one-shot",
+        "from_version": "v0.19.1",
+        "generated_at": "2026-04-23T07:06:19+00:00",
+        "generated_by": "aibox sync",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "No-op migration: from/to version both v0.19.1, 0 upstream changes, 0 conflicts. 540 \"new\" flag is a sync artifact on a same-version diff. Accepting to clear pending queue.",
+            "timestamp": "2026-04-23T08:28:55+00:00"
+          }
+        ],
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.19.1",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "started_at": "2026-04-23T08:28:55+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 540 new, 0 removed (52 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.19.1",
+        "to_version": "v0.19.1"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260423T070619.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-RUNTIME-20260423T070617\n\nManaged `.aibox-home/` runtime changes from `0.18.7` to `0.18.7`.\n\n0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 25\n- changed-locally-only: 2\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 0\n- removed-upstream: 0\n\n## Per-intermediate review\n\nEvery released version between `from_version` and `to_version` whose              template snapshot is present on disk is listed below, with the number              of files that changed between consecutive snapshots. Useful for              catching scaffolding changes that were introduced and later reverted              across the span of a multi-version upgrade.\n\n- `0.18.7` \u2192 `0.18.7`: 0 file(s) changed of 27\n\n## Changes by group\n\n### runtime-claude\n\n**changed-locally-only**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n",
+      "id": "MIG-RUNTIME-20260423T070617",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260423T070617.md",
+      "metadata": {
+        "created": "2026-04-23T07:06:17+00:00",
+        "id": "MIG-RUNTIME-20260423T070617",
+        "updated": "2026-04-23T08:28:55+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260423T070617.md",
+      "sha256": "13549971ac10b17b1d6a6ea64d80473c3dd2c3d2787303eb8a2484bbcd51848e",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-misc"
+        ],
+        "applied_at": "2026-04-23T08:28:55+00:00",
+        "apply_mode": "one-shot",
+        "from_version": "0.18.7",
+        "generated_at": "2026-04-23T07:06:17+00:00",
+        "generated_by": "aibox sync",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "No-op runtime migration: from/to version both 0.18.7, 0 upstream changes, only expected local drift in keybindings.json and .claude.json.",
+            "timestamp": "2026-04-23T08:28:55+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "0.18.7",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-04-23T08:28:55+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "0.18.7",
+        "to_version": "0.18.7"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260423T070617.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260419T080804\n\nFrom `v0.18.2` to `v0.18.2` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)\n\n## Counts\n\n- unchanged: 372\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n",
+      "id": "MIG-20260419T080804",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260419T080804.md",
+      "metadata": {
+        "created": "2026-04-19T08:08:04+00:00",
+        "id": "MIG-20260419T080804",
+        "updated": "2026-04-20T18:49:44+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260419T080804.md",
+      "sha256": "08dd32c66e15dbe0fe9b5514c88bdf60013825b95c033c9f80b5b9ac2d03d81a",
+      "spec": {
+        "affected_groups": [
+          "AGENTS"
+        ],
+        "applied_at": "2026-04-20T18:49:44+00:00",
+        "apply_mode": "one-shot",
+        "from_version": "v0.18.2",
+        "generated_at": "2026-04-19T08:08:04+00:00",
+        "generated_by": "aibox sync",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "v0.18.2\u2192v0.18.2 no-op; AGENTS.md conflict already resolved by the preceding v0.18.1\u2192v0.18.2 migration.",
+            "timestamp": "2026-04-20T18:49:44+00:00"
+          }
+        ],
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.18.2",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "started_at": "2026-04-20T18:49:44+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.18.2",
+        "to_version": "v0.18.2"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260419T080804.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-RUNTIME-20260419T080804\n\nManaged `.aibox-home/` runtime changes from `0.18.7` to `0.18.7`.\n\n0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 25\n- changed-locally-only: 2\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 0\n- removed-upstream: 0\n\n## Per-intermediate review\n\nEvery released version between `from_version` and `to_version` whose              template snapshot is present on disk is listed below, with the number              of files that changed between consecutive snapshots. Useful for              catching scaffolding changes that were introduced and later reverted              across the span of a multi-version upgrade.\n\n- `0.18.7` \u2192 `0.18.7`: 0 file(s) changed of 27\n\n## Changes by group\n\n### runtime-claude\n\n**changed-locally-only**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n",
+      "id": "MIG-RUNTIME-20260419T080804",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260419T080804.md",
+      "metadata": {
+        "created": "2026-04-19T08:08:04+00:00",
+        "id": "MIG-RUNTIME-20260419T080804",
+        "updated": "2026-04-20T18:49:44+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260419T080804.md",
+      "sha256": "474ee050e6f2d52fa25064e42fc84173e2e42cdd183b94e162e7ff293babc07b",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-misc"
+        ],
+        "applied_at": "2026-04-20T18:49:44+00:00",
+        "apply_mode": "one-shot",
+        "from_version": "0.18.7",
+        "generated_at": "2026-04-19T08:08:04+00:00",
+        "generated_by": "aibox sync",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "0.18.7\u21920.18.7 runtime no-op; 2 local customizations in .aibox-home/ accepted as authoritative.",
+            "timestamp": "2026-04-20T18:49:44+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "0.18.7",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-04-20T18:49:44+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "0.18.7",
+        "to_version": "0.18.7"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260419T080804.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260419T080358\n\nFrom `v0.18.1` to `v0.18.2` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 18 conflicts, 0 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 355\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 18\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### skills/processkit\n\n**conflict**\n\n- `context/skills/processkit/session-handover/SKILL.md` \u2192 `context/skills/processkit/session-handover/SKILL.md`\n- `context/skills/processkit/binding-management/mcp/mcp-config.json` \u2192 `context/skills/processkit/binding-management/mcp/mcp-config.json`\n- `context/skills/processkit/index-management/mcp/mcp-config.json` \u2192 `context/skills/processkit/index-management/mcp/mcp-config.json`\n- `context/skills/processkit/event-log/mcp/mcp-config.json` \u2192 `context/skills/processkit/event-log/mcp/mcp-config.json`\n- `context/skills/processkit/scope-management/mcp/mcp-config.json` \u2192 `context/skills/processkit/scope-management/mcp/mcp-config.json`\n- `context/skills/processkit/workitem-management/mcp/mcp-config.json` \u2192 `context/skills/processkit/workitem-manage",
+      "id": "MIG-20260419T080358",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260419T080358.md",
+      "metadata": {
+        "created": "2026-04-19T08:03:58+00:00",
+        "id": "MIG-20260419T080358",
+        "updated": "2026-04-20T18:49:44+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260419T080358.md",
+      "sha256": "fc7c2c62829131536c4a566a81cb66925d53147ed8b9315972f5dff76d39eafa",
+      "spec": {
+        "affected_groups": [
+          "AGENTS",
+          "skills/processkit"
+        ],
+        "applied_at": "2026-04-20T18:49:44+00:00",
+        "apply_mode": "one-shot",
+        "from_version": "v0.18.1",
+        "generated_at": "2026-04-19T08:03:58+00:00",
+        "generated_by": "aibox sync",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Dogfood self-reconciliation: processkit is its own upstream. All 18 conflicts resolved to local-wins \u2014 the v0.18.2 content shipped in c54af68 IS the upstream reference.",
+            "timestamp": "2026-04-20T18:49:44+00:00"
+          }
+        ],
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.18.1",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "started_at": "2026-04-20T18:49:44+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 18 conflicts, 0 new, 0 removed (2 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.18.2",
+        "to_version": "v0.18.2"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260419T080358.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260418T172222\n\nFrom `v0.18.1` to `v0.18.1` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)\n\n## Counts\n\n- unchanged: 372\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n",
+      "id": "MIG-20260418T172222",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260418T172222.md",
+      "metadata": {
+        "created": "2026-04-18T17:22:22+00:00",
+        "id": "MIG-20260418T172222"
+      },
+      "original_path": "context/migrations/applied/MIG-20260418T172222.md",
+      "sha256": "1a4b6d62126174ec237b69c7d7244ddc3d1b17b17ff2384d5bf7865d6197b643",
+      "spec": {
+        "affected_groups": [
+          "AGENTS"
+        ],
+        "apply_mode": "one-shot",
+        "from_version": "v0.18.1",
+        "generated_at": "2026-04-18T17:22:22+00:00",
+        "generated_by": "aibox sync",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.18.1",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.18.1",
+        "to_version": "v0.18.1"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260418T172222.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260418T090604\n\nFrom `v0.17.0` to `v0.18.1` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 8 conflicts, 49 new, 23 removed (7 groups affected)\n\n## Counts\n\n- unchanged: 316\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 8\n- new-upstream: 49\n- removed-upstream: 23\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### schemas/actor\n\n**conflict**\n\n- `context/schemas/actor.yaml` \u2192 `context/schemas/actor.yaml`\n\n### schemas/role\n\n**conflict**\n\n- `context/schemas/role.yaml` \u2192 `context/schemas/role.yaml`\n\n### skills/INDEX.md\n\n**conflict**\n\n- `context/skills/INDEX.md` \u2192 `context/skills/INDEX.md`\n\n### skills/devops\n\n**new-upstream**\n\n- `context/skills/devops/release-semver/commands/pk-release.md` \u2192 `context/skills/devops/release-semver/commands/pk-release.md`\n- `context/skills/devops/release-semver/commands/pk-publish.md` \u2192 `context/skills/devops/release-semver/commands/pk-publish.md`\n\n**removed-upstream**\n\n- `context/skills/devops/release-semver/commands/release-semver-publish.md` \u2192 `context/skills/devops/release-semver/commands/release-semver-publish.md`\n- `context/skills/devops/release-semve",
+      "id": "MIG-20260418T090604",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260418T090604.md",
+      "metadata": {
+        "created": "2026-04-18T09:06:04+00:00",
+        "id": "MIG-20260418T090604"
+      },
+      "original_path": "context/migrations/applied/MIG-20260418T090604.md",
+      "sha256": "39be55ed1fe35c07a0a1c71449674ca7a776ead4cc776cc8bd6baa324a084fde",
+      "spec": {
+        "affected_groups": [
+          "AGENTS",
+          "schemas/actor",
+          "schemas/role",
+          "skills/INDEX.md",
+          "skills/devops",
+          "skills/processkit",
+          "skills/product"
+        ],
+        "apply_mode": "one-shot",
+        "from_version": "v0.17.0",
+        "generated_at": "2026-04-18T09:06:04+00:00",
+        "generated_by": "aibox sync",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.17.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 8 conflicts, 49 new, 23 removed (7 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.18.1",
+        "to_version": "v0.18.1"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260418T090604.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-RUNTIME-20260418T090604\n\nManaged `.aibox-home/` runtime changes from `0.18.3` to `0.18.5`.\n\n0 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 25\n- changed-locally-only: 1\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 1\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-claude\n\n**changed-locally-only**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-misc\n\n**new-upstream**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n",
+      "id": "MIG-RUNTIME-20260418T090604",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260418T090604.md",
+      "metadata": {
+        "created": "2026-04-18T09:06:04+00:00",
+        "id": "MIG-RUNTIME-20260418T090604"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260418T090604.md",
+      "sha256": "cb5802d168c91d6c42e8e95deca354c0fcb022e56bb67957239ad48be14f8808",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-misc"
+        ],
+        "apply_mode": "one-shot",
+        "from_version": "0.18.3",
+        "generated_at": "2026-04-18T09:06:04+00:00",
+        "generated_by": "aibox sync",
+        "source": "aibox-runtime-home",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "0.18.3",
+        "source_url": "aibox://runtime-home",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "0.18.5",
+        "to_version": "0.18.5"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260418T090604.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260417T142628\n\nFrom `v0.13.0` to `v0.17.0` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 11 conflicts, 11 new, 0 removed (3 groups affected)\n\n## Counts\n\n- unchanged: 325\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 11\n- new-upstream: 11\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### skills/INDEX.md\n\n**conflict**\n\n- `context/skills/INDEX.md` \u2192 `context/skills/INDEX.md`\n\n### skills/processkit\n\n**conflict**\n\n- `context/skills/processkit/task-router/mcp/server.py` \u2192 `context/skills/processkit/task-router/mcp/server.py`\n- `context/skills/processkit/event-log/mcp/server.py` \u2192 `context/skills/processkit/event-log/mcp/server.py`\n- `context/skills/processkit/artifact-management/mcp/server.py` \u2192 `context/skills/processkit/artifact-management/mcp/server.py`\n- `context/skills/processkit/workitem-management/mcp/server.py` \u2192 `context/skills/processkit/workitem-management/mcp/server.py`\n- `context/skills/processkit/decision-record/mcp/server.py` \u2192 `context/skills/processkit/decision-record/mcp/server.py`\n- `context/skills/processkit/skill-gate/SKILL.md` \u2192 `context/s",
+      "id": "MIG-20260417T142628",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260417T142628.md",
+      "metadata": {
+        "created": "2026-04-17T14:26:28+00:00",
+        "id": "MIG-20260417T142628"
+      },
+      "original_path": "context/migrations/applied/MIG-20260417T142628.md",
+      "sha256": "2832aefdb70617d09bf49db49a8940c52bf5353edb582f7bbb4dc44fa22541d7",
+      "spec": {
+        "affected_groups": [
+          "AGENTS",
+          "skills/INDEX.md",
+          "skills/processkit"
+        ],
+        "applied_at": "2026-04-17T17:30:00+00:00",
+        "applied_notes": "Verified via three-way comparison of live tree against\ncontext/templates/processkit/v0.17.0/. All 9 server.py files\nmatch the v0.17.0 template exactly. AGENTS.md + INDEX.md are\nintentional local customizations (v2 compliance contract,\nsession-start block, formatting). All 11 new-upstream files\n(skill-gate mcp/, scripts/, assets/) are present in the live\ntree. No code changes required \u2014 migration is documentary.\n",
+        "apply_mode": "one-shot",
+        "from_version": "v0.13.0",
+        "generated_at": "2026-04-17T14:26:28+00:00",
+        "generated_by": "aibox sync",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.13.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 11 conflicts, 11 new, 0 removed (3 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.17.0",
+        "to_version": "v0.17.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260417T142628.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-RUNTIME-20260417T142628\n\nManaged `.aibox-home/` runtime changes from `0.18.2` to `0.18.3`.\n\n1 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 23\n- changed-locally-only: 1\n- changed-upstream-only: 1\n- conflict: 0\n- new-upstream: 1\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-claude\n\n**changed-locally-only**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-yazi\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/yazi/keymap.toml` -> `.aibox-home/.config/yazi/keymap.toml`\n\n**new-upstream**\n\n- `.aibox-home/.config/yazi/plugins/toggle-pane.yazi/main.lua` -> `.aibox-home/.config/yazi/plugins/toggle-pane.yazi/main.lua`\n",
+      "id": "MIG-RUNTIME-20260417T142628",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260417T142628.md",
+      "metadata": {
+        "created": "2026-04-17T14:26:28+00:00",
+        "id": "MIG-RUNTIME-20260417T142628"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260417T142628.md",
+      "sha256": "948c23cb5d9d2d95d563919788dc4a3173bf4f71db1922e8bc79647c720767ce",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-04-17T17:30:00+00:00",
+        "applied_notes": "yazi/keymap.toml identical to 0.18.3 template.\nyazi/plugins/toggle-pane.yazi/main.lua present and identical.\n.claude/keybindings.json kept local (intentional override \u2014\nowner customized format to object-wrapped).\n",
+        "apply_mode": "one-shot",
+        "from_version": "0.18.2",
+        "generated_at": "2026-04-17T14:26:28+00:00",
+        "generated_by": "aibox sync",
+        "source": "aibox-runtime-home",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "0.18.2",
+        "source_url": "aibox://runtime-home",
+        "state": "applied",
+        "summary": "1 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "0.18.3",
+        "to_version": "0.18.3"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260417T142628.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260415T095000\n\nFrom `v0.15.0` to `v0.16.0` \u2014 Add `is_template`, `templated_from`\nto Actor schema.\n\n## Summary\n\nExtends the Actor schema with two optional fields to support the\nteam-creator's templating workflow. Templates are the 8 canonical\nseed Actors that define role bindings; clones are spawned per-task\nand back-reference their template.\n\n- `is_template` (boolean, default `false`): True for the canonical\n  seed Actor that defines a role binding; clones derive from it.\n  Enables index queries that separate \"the 8 seed team members\" from\n  \"clones spawned for a specific task.\"\n- `templated_from` (Actor-ref, default `null`): Back-reference from\n  a clone to its template Actor. Null for templates themselves and for\n  one-off non-template Actors.\n\n## Affected files\n\n### Schema changes\n\n- `context/schemas/actor.yaml` \u2014 Add two new optional properties to\n  Actor spec with descriptions, defaults, and validation notes.\n\n### Skill documentation\n\n- `context/skills/processkit/actor-profile/SKILL.md` \u2014 Update version\n  from 1.0.0 to 1.0.1, add new fields to field-list table, add short\n  explanatory section on template and clone validation.\n\n### Data migration\n\nExisting Act",
+      "id": "MIG-20260415T095000",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260415T095000.md",
+      "metadata": {
+        "created": "2026-04-15T09:50:00+00:00",
+        "id": "MIG-20260415T095000"
+      },
+      "original_path": "context/migrations/applied/MIG-20260415T095000.md",
+      "sha256": "6ed7acaf8b8a49a32c65248ea26c10d9d5d76f0daccf214d55127d224cbbee84",
+      "spec": {
+        "affected_groups": [
+          "schemas",
+          "skills/actor-profile",
+          "actors"
+        ],
+        "applied_at": "2026-04-15T10:15:00+00:00",
+        "applied_by": "ACTOR-jr-developer",
+        "apply_mode": "one-shot",
+        "from_version": "v0.15.0",
+        "generated_at": "2026-04-15T09:50:00+00:00",
+        "generated_by": "ACTOR-jr-developer",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.15.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "Add is_template, templated_from to Actor schema (v0.15.0 \u2192 v0.16.0)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.16.0",
+        "to_version": "v0.16.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260415T095000.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260415T085311\n\nFrom `v0.15.0` to `v0.16.0` \u2014 Add `primary_contact`, `clone_cap`,\n`cap_escalation` to Role schema.\n\n## Summary\n\nExtends the Role schema with three optional fields to support team\ncontact assignment and per-role parallelism control:\n\n- `primary_contact` (boolean, default `false`): True for the single\n  owner-facing contact role per team.\n- `clone_cap` (integer, default `5`): Per-role concurrency ceiling.\n  PM must be `1`.\n- `cap_escalation` (string, default `\"owner\"`): Who approves exceeding\n  `clone_cap` (literal `\"owner\"` or actor-ref like `ACTOR-<id>`).\n\n## Affected files\n\n### Schema changes\n\n- `context/schemas/role.yaml` \u2014 Add three new properties to Role spec\n  with descriptions, defaults, and validation notes.\n\n### Skill documentation\n\n- `context/skills/processkit/role-management/SKILL.md` \u2014 Update version\n  from 1.0.0 to 1.0.1, add new fields to field-list table, add\n  explanatory section on team contact and clone management, document\n  validation invariants.\n\n### Data migration\n\nExisting Role entities under `context/roles/` will be updated:\n\n- All roles receive `clone_cap: 5` and `cap_escalation: \"owner\"` as\n  defaults.\n- `ROLE-project-manage",
+      "id": "MIG-20260415T085311",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260415T085311.md",
+      "metadata": {
+        "created": "2026-04-15T08:53:11+00:00",
+        "id": "MIG-20260415T085311"
+      },
+      "original_path": "context/migrations/applied/MIG-20260415T085311.md",
+      "sha256": "f1b4ffb5f0e9c733a87b670f1027d4bae3ac8935c454c2fb1d18f2d8a083c5a6",
+      "spec": {
+        "affected_groups": [
+          "schemas",
+          "skills/role-management",
+          "roles"
+        ],
+        "applied_at": "2026-04-15T10:15:00+00:00",
+        "applied_by": "ACTOR-jr-developer",
+        "apply_mode": "one-shot",
+        "from_version": "v0.15.0",
+        "generated_at": "2026-04-15T08:53:11+00:00",
+        "generated_by": "ACTOR-jr-developer",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.15.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "Add primary_contact, clone_cap, cap_escalation to Role schema",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.16.0",
+        "to_version": "v0.16.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260415T085311.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260414T085054\n\nFrom `v0.13.0` to `v0.13.0` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 0 new, 0 removed (5 groups affected)\n\n## Counts\n\n- unchanged: 331\n- changed-locally-only: 4\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### processes/release\n\n**changed-locally-only**\n\n- `context/processes/release.md` \u2192 `context/processes/release.md`\n\n### skills/INDEX.md\n\n**changed-locally-only**\n\n- `context/skills/INDEX.md` \u2192 `context/skills/INDEX.md`\n\n### skills/devops\n\n**changed-locally-only**\n\n- `context/skills/devops/release-semver/SKILL.md` \u2192 `context/skills/devops/release-semver/SKILL.md`\n\n### skills/processkit\n\n**changed-locally-only**\n\n- `context/skills/processkit/skill-finder/SKILL.md` \u2192 `context/skills/processkit/skill-finder/SKILL.md`\n",
+      "id": "MIG-20260414T085054",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260414T085054.md",
+      "metadata": {
+        "created": "2026-04-14T08:50:54+00:00",
+        "id": "MIG-20260414T085054"
+      },
+      "original_path": "context/migrations/applied/MIG-20260414T085054.md",
+      "sha256": "f8c09298b2f2525eb9b7d2016d7d011de605fd07ed17c9678af838090caae43f",
+      "spec": {
+        "affected_groups": [
+          "AGENTS",
+          "processes/release",
+          "skills/INDEX.md",
+          "skills/devops",
+          "skills/processkit"
+        ],
+        "applied_at": "2026-04-14T00:00:00+00:00",
+        "applied_by": "ACTOR-pm-claude",
+        "apply_mode": "one-shot",
+        "from_version": "v0.13.0",
+        "generated_at": "2026-04-14T08:50:54+00:00",
+        "generated_by": "aibox sync",
+        "progress_notes": [
+          {
+            "actor": "ACTOR-pm-claude",
+            "date": "2026-04-14",
+            "note": "Reviewed briefing. No code changes required; conflict resolution follows prior precedent."
+          },
+          {
+            "actor": "ACTOR-pm-claude",
+            "date": "2026-04-14",
+            "note": "Transitioned pending \u2192 applied; INDEX.md updated."
+          }
+        ],
+        "resolution": "Same-version (v0.13.0 \u2192 v0.13.0) re-scan. AGENTS.md conflict: kept local customised file (identical pattern to MIG-20260411T204940 and four prior v0.13.0-era migrations). Four changed-locally-only files (context/processes/release.md, context/skills/INDEX.md, context/skills/devops/release-semver/SKILL.md, context/skills/processkit/skill-finder/SKILL.md) require no action \u2014 upstream is unchanged, local edits stand.\n",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.13.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 0 new, 0 removed (5 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.13.0",
+        "to_version": "v0.13.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260414T085054.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-RUNTIME-20260413T113638\n\nManaged `.aibox-home/` runtime changes from `0.18.1` to `0.18.2`.\n\n12 changed upstream, 0 conflicts, 2 new, 0 removed (4 groups affected)\n\n## Counts\n\n- unchanged: 11\n- changed-locally-only: 0\n- changed-upstream-only: 12\n- conflict: 0\n- new-upstream: 2\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-misc\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n### runtime-vim\n\n**changed-upstream-only**\n\n- `.aibox-home/.vim/vimrc` -> `.aibox-home/.vim/vimrc`\n\n### runtime-yazi\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/yazi/yazi.toml` -> `.aibox-home/.config/yazi/yazi.toml`\n- `.aibox-home/.config/yazi/init.lua` -> `.aibox-home/.config/yazi/init.lua`\n- `.aibox-home/.config/yazi/plugins/git.yazi/main.lua` -> `.aibox-home/.config/yazi/plugins/git.yazi/main.lua`\n\n**new-upstream**\n\n- `.aibox-home/.config/yazi/plugins/dir-preview.yazi/main.lua` -> `.aibox-home/.config/yazi/plugins/dir-preview.yazi/main.lua`\n- `.aibox-home/.config/yazi/plugins/status-git.yazi/main.lua` -> `.aibox-home/.config/yazi/plugins/status-git.yazi/main.lua`\n\n### runtime-zellij\n\n**changed-upstream-only**\n\n- `.aib",
+      "id": "MIG-RUNTIME-20260413T113638",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260413T113638.md",
+      "metadata": {
+        "created": "2026-04-13T11:36:38+00:00",
+        "id": "MIG-RUNTIME-20260413T113638"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260413T113638.md",
+      "sha256": "a0a9b1e9a914cd8eda8896a575ecf47c13b21bbaeaddb0de00297078d6f45e88",
+      "spec": {
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-vim",
+          "runtime-yazi",
+          "runtime-zellij"
+        ],
+        "applied_at": "2026-04-13T00:00:00+00:00",
+        "applied_by": "ACTOR-codex",
+        "apply_mode": "one-shot",
+        "from_version": "0.18.1",
+        "generated_at": "2026-04-13T11:36:38+00:00",
+        "generated_by": "aibox sync",
+        "resolution": "Accepted the runtime-home update from 0.18.1 to 0.18.2. The 0.18.2 snapshots are present under context/templates/aibox-home/0.18.2, and the live .aibox-home already includes the updated yazi and zellij files plus the two new plugins introduced by the upgrade.\n",
+        "source": "aibox-runtime-home",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "0.18.1",
+        "source_url": "aibox://runtime-home",
+        "state": "applied",
+        "summary": "12 changed upstream, 0 conflicts, 2 new, 0 removed (4 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "0.18.2",
+        "to_version": "0.18.2"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260413T113638.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-RUNTIME-20260413T112909\n\nManaged `.aibox-home/` runtime changes from `0.18.1` to `0.18.1`.\n\n0 changed upstream, 0 conflicts, 24 new, 0 removed (9 groups affected)\n\n## Counts\n\n- unchanged: 0\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 24\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-audio\n\n**new-upstream**\n\n- `.aibox-home/.asoundrc` -> `.aibox-home/.asoundrc`\n\n### runtime-claude\n\n**new-upstream**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-git\n\n**new-upstream**\n\n- `.aibox-home/.config/git/config` -> `.aibox-home/.config/git/config`\n\n### runtime-lazygit\n\n**new-upstream**\n\n- `.aibox-home/.config/lazygit/config.yml` -> `.aibox-home/.config/lazygit/config.yml`\n\n### runtime-misc\n\n**new-upstream**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n### runtime-starship\n\n**new-upstream**\n\n- `.aibox-home/.config/starship.toml` -> `.aibox-home/.config/starship.toml`\n\n### runtime-vim\n\n**new-upstream**\n\n- `.aibox-home/.vim/vimrc` -> `.aibox-home/.vim/vimrc`\n\n### runtime-yazi\n\n**new-upstream**\n\n- `.aibox-home/.config/yazi/yazi.toml` -> `.aibox-home/.",
+      "id": "MIG-RUNTIME-20260413T112909",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260413T112909.md",
+      "metadata": {
+        "created": "2026-04-13T11:29:09+00:00",
+        "id": "MIG-RUNTIME-20260413T112909"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260413T112909.md",
+      "sha256": "58527c17c84ea00c121bbb1ea562339cba5d5117c2ea79e4021d17db2c05b368",
+      "spec": {
+        "affected_groups": [
+          "runtime-audio",
+          "runtime-claude",
+          "runtime-git",
+          "runtime-lazygit",
+          "runtime-misc",
+          "runtime-starship",
+          "runtime-vim",
+          "runtime-yazi",
+          "runtime-zellij"
+        ],
+        "applied_at": "2026-04-13T00:00:00+00:00",
+        "applied_by": "ACTOR-codex",
+        "apply_mode": "one-shot",
+        "from_version": "0.18.1",
+        "generated_at": "2026-04-13T11:29:09+00:00",
+        "generated_by": "aibox sync",
+        "resolution": "Accepted the new runtime-home files for aibox 0.18.1. The matching snapshots are present under context/templates/aibox-home/0.18.1, and the live .aibox-home already contains the expected files with no local conflicts to preserve.\n",
+        "source": "aibox-runtime-home",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "0.18.1",
+        "source_url": "aibox://runtime-home",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 24 new, 0 removed (9 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "0.18.1",
+        "to_version": "0.18.1"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260413T112909.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260411T204940\n\nFrom `v0.13.0` to `v0.13.0` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)\n\n## Counts\n\n- unchanged: 335\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n",
+      "id": "MIG-20260411T204940",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260411T204940.md",
+      "metadata": {
+        "created": "2026-04-11T20:49:40+00:00",
+        "id": "MIG-20260411T204940"
+      },
+      "original_path": "context/migrations/applied/MIG-20260411T204940.md",
+      "sha256": "933e3cb3bbf2922920f8e4ed1405658e0d972acc7cf5b0926b3ef5db632eb0ca",
+      "spec": {
+        "affected_groups": [
+          "AGENTS"
+        ],
+        "applied_at": "2026-04-13T00:00:00+00:00",
+        "applied_by": "ACTOR-codex",
+        "apply_mode": "one-shot",
+        "from_version": "v0.13.0",
+        "generated_at": "2026-04-11T20:49:40+00:00",
+        "generated_by": "aibox sync",
+        "resolution": "Resolved the AGENTS.md conflict by keeping the local project-specific file, but rebuilding it onto the new scaffolded structure. The older filled content was recovered from the latest aibox backup and merged with the current installer-rendered fields and repo-specific rules.\n",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.13.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.13.0",
+        "to_version": "v0.13.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260411T204940.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260411T042618\n\nFrom `v0.11.1` to `v0.11.1` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)\n\n## Counts\n\n- unchanged: 323\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n",
+      "id": "MIG-20260411T042618",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260411T042618.md",
+      "metadata": {
+        "created": "2026-04-11T04:26:18+00:00",
+        "id": "MIG-20260411T042618"
+      },
+      "original_path": "context/migrations/applied/MIG-20260411T042618.md",
+      "sha256": "3dbe1b9358333f85ff24f6910524123e4cfe736368c9b3d837db92258f93e4d8",
+      "spec": {
+        "affected_groups": [
+          "AGENTS"
+        ],
+        "apply_mode": "one-shot",
+        "from_version": "v0.11.1",
+        "generated_at": "2026-04-11T04:26:18+00:00",
+        "generated_by": "aibox sync",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.11.1",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.11.1",
+        "to_version": "v0.11.1"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260411T042618.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260410T215118\n\nFrom `v0.10.0` to `v0.10.0` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)\n\n## Counts\n\n- unchanged: 323\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n",
+      "id": "MIG-20260410T215118",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260410T215118.md",
+      "metadata": {
+        "created": "2026-04-10T21:51:18+00:00",
+        "id": "MIG-20260410T215118"
+      },
+      "original_path": "context/migrations/applied/MIG-20260410T215118.md",
+      "sha256": "f6d4bef338425fd6613ae8c2af3f9f2534bce0813ca4fd703c825c7c40272225",
+      "spec": {
+        "affected_groups": [
+          "AGENTS"
+        ],
+        "apply_mode": "one-shot",
+        "from_version": "v0.10.0",
+        "generated_at": "2026-04-10T21:51:18+00:00",
+        "generated_by": "aibox sync",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.10.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.10.0",
+        "to_version": "v0.10.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260410T215118.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260410T123848\n\nFrom `v0.8.0` to `v0.8.0` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)\n\n## Counts\n\n- unchanged: 323\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### AGENTS\n\n**conflict**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n",
+      "id": "MIG-20260410T123848",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260410T123848.md",
+      "metadata": {
+        "created": "2026-04-10T12:38:48+00:00",
+        "id": "MIG-20260410T123848"
+      },
+      "original_path": "context/migrations/applied/MIG-20260410T123848.md",
+      "sha256": "fcdac261ba161e3317c59b3005750509852172db16faec85a33d83039df3cb5b",
+      "spec": {
+        "affected_groups": [
+          "AGENTS"
+        ],
+        "applied_at": "2026-04-10T00:00:00+00:00",
+        "applied_by": "ACTOR-claude",
+        "apply_mode": "one-shot",
+        "from_version": "v0.8.0",
+        "generated_at": "2026-04-10T12:38:48+00:00",
+        "generated_by": "aibox sync",
+        "resolution": "Conflict on AGENTS.md \u2014 kept local. Local file is the fully-customised project version; template is the generic v0.8.0 placeholder. All substantive additions in v0.8.0 vs v0.7.0 were already present in the local file. No other files affected.\n",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.8.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 0 new, 0 removed (1 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.8.0",
+        "to_version": "v0.8.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260410T123848.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260410T123638\n\nFrom `v0.7.0` to `v0.7.0` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 1 conflicts, 0 new, 0 removed (136 groups affected)\n\n## Counts\n\n- unchanged: 169\n- changed-locally-only: 153\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### lib\n\n**changed-locally-only**\n\n- `lib/processkit/config.py` \u2192 `context/skills/_lib/processkit/config.py`\n- `lib/processkit/index.py` \u2192 `context/skills/_lib/processkit/index.py`\n- `lib/processkit/paths.py` \u2192 `context/skills/_lib/processkit/paths.py`\n- `lib/processkit/__init__.py` \u2192 `context/skills/_lib/processkit/__init__.py`\n- `lib/processkit/entity.py` \u2192 `context/skills/_lib/processkit/entity.py`\n- `lib/processkit/ids.py` \u2192 `context/skills/_lib/processkit/ids.py`\n\n### primitives/schemas/actor\n\n**changed-locally-only**\n\n- `primitives/schemas/actor.yaml` \u2192 `context/schemas/actor.yaml`\n\n### primitives/schemas/artifact\n\n**changed-locally-only**\n\n- `primitives/schemas/artifact.yaml` \u2192 `context/schemas/artifact.yaml`\n\n### primitives/schemas/binding\n\n**changed-locally-only**\n\n- `primitives/schemas/binding.yaml` \u2192 `context/schemas/bind",
+      "id": "MIG-20260410T123638",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260410T123638.md",
+      "metadata": {
+        "created": "2026-04-10T12:36:38+00:00",
+        "id": "MIG-20260410T123638"
+      },
+      "original_path": "context/migrations/applied/MIG-20260410T123638.md",
+      "sha256": "28ad5e471aa171a5d6200dce77594e308a54b08c072bf07e8cef3ae60fe92178",
+      "spec": {
+        "affected_groups": [
+          "lib",
+          "primitives/schemas/actor",
+          "primitives/schemas/artifact",
+          "primitives/schemas/binding",
+          "primitives/schemas/constraint",
+          "primitives/schemas/decisionrecord",
+          "primitives/schemas/discussion",
+          "primitives/schemas/gate",
+          "primitives/schemas/metric",
+          "primitives/schemas/process",
+          "primitives/schemas/role",
+          "primitives/schemas/scope",
+          "primitives/schemas/workitem",
+          "processes/INDEX",
+          "processes/bug-fix",
+          "processes/code-review",
+          "processes/feature-development",
+          "scaffolding",
+          "skills/actor-profile",
+          "skills/agent-management",
+          "skills/ai-fundamentals",
+          "skills/alerting-oncall",
+          "skills/api-design",
+          "skills/auth-patterns",
+          "skills/binding-management",
+          "skills/board-of-advisors",
+          "skills/caching-strategies",
+          "skills/category-management",
+          "skills/ci-cd-setup",
+          "skills/code-generation",
+          "skills/code-review",
+          "skills/concurrency-patterns",
+          "skills/constraint-management",
+          "skills/container-orchestration",
+          "skills/context-grooming",
+          "skills/cross-reference-management",
+          "skills/data-pipeline",
+          "skills/data-quality",
+          "skills/data-science",
+          "skills/data-storytelling",
+          "skills/data-visualization",
+          "skills/database-migration",
+          "skills/database-modeling",
+          "skills/decision-record",
+          "skills/dependency-audit",
+          "skills/dependency-management",
+          "skills/devils-advocate",
+          "skills/discussion-management",
+          "skills/distributed-tracing",
+          "skills/dns-networking",
+          "skills/dockerfile-review",
+          "skills/docx-authoring",
+          "skills/domain-driven-design",
+          "skills/email-drafter",
+          "skills/embedding-vectordb",
+          "skills/error-handling",
+          "skills/estimation-planning",
+          "skills/event-driven-architecture",
+          "skills/event-log",
+          "skills/fastapi-patterns",
+          "skills/feature-engineering",
+          "skills/flutter-development",
+          "skills/frontend-design",
+          "skills/gate-management",
+          "skills/git-workflow",
+          "skills/go-conventions",
+          "skills/graphql-patterns",
+          "skills/grpc-protobuf",
+          "skills/id-management",
+          "skills/incident-response",
+          "skills/index-management",
+          "skills/integration-testing",
+          "skills/java-patterns",
+          "skills/kubernetes-basics",
+          "skills/latex-authoring",
+          "skills/legal-review",
+          "skills/linux-administration",
+          "skills/llm-evaluation",
+          "skills/load-testing",
+          "skills/logging-strategy",
+          "skills/logo-design",
+          "skills/metrics-management",
+          "skills/metrics-monitoring",
+          "skills/microservice-creation",
+          "skills/migration-management",
+          "skills/ml-pipeline",
+          "skills/mobile-app-design",
+          "skills/model-recommender",
+          "skills/morning-briefing",
+          "skills/nosql-patterns",
+          "skills/note-management",
+          "skills/onboarding-guide",
+          "skills/owner-profiling",
+          "skills/pandas-polars",
+          "skills/pdf-workflow",
+          "skills/performance-profiling",
+          "skills/pixijs-gamedev",
+          "skills/postmortem-writing",
+          "skills/pptx-authoring",
+          "skills/prd-writing",
+          "skills/process-management",
+          "skills/prompt-engineering",
+          "skills/python-best-practices",
+          "skills/rag-engineering",
+          "skills/reflex-python",
+          "skills/release-semver",
+          "skills/research-with-confidence",
+          "skills/role-management",
+          "skills/rust-conventions",
+          "skills/schedule-management",
+          "skills/scope-management",
+          "skills/secret-management",
+          "skills/secure-coding",
+          "skills/seo-optimization",
+          "skills/session-handover",
+          "skills/shell-scripting",
+          "skills/skill-builder",
+          "skills/skill-finder",
+          "skills/skill-reviewer",
+          "skills/software-architecture",
+          "skills/software-modularization",
+          "skills/sql-patterns",
+          "skills/sql-style-guide",
+          "skills/standup-context",
+          "skills/state-machine-management",
+          "skills/status-update-writer",
+          "skills/system-design",
+          "skills/tdd-workflow",
+          "skills/terraform-basics",
+          "skills/testing-strategy",
+          "skills/threat-modeling",
+          "skills/typescript-patterns",
+          "skills/user-research",
+          "skills/webhook-integration",
+          "skills/workitem-management",
+          "skills/xlsx-modeling"
+        ],
+        "applied_at": "2026-04-10T00:00:00+00:00",
+        "applied_by": "ACTOR-claude",
+        "apply_mode": "one-shot",
+        "from_version": "v0.7.0",
+        "generated_at": "2026-04-10T12:36:38+00:00",
+        "generated_by": "aibox sync",
+        "resolution": "Conflict on AGENTS.md \u2014 kept local. Local file is the fully-customised project version; template is the generic v0.7.0 placeholder. All v0.8.0 additions (processkit preferences table, commit-immediately norm, skill-catalog-first norm, contributing-upstream section) were already present in the local file. 153 changed-locally-only files: no action required (local edits, upstream unchanged).\n",
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v1",
+        "source_processkit_version": "v0.7.0",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 0 new, 0 removed (136 groups affected)",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.7.0",
+        "to_version": "v0.7.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260503_164226-migration-applied.tar.gz::context/migrations/applied/MIG-20260410T123638.md"
+    }
+  ],
+  "kind": "Migration",
+  "older_than_days": 0,
+  "sha256": "3e0815a751c96cdcf53525303e3a5cc47a76bf72f4fda98a330ddffd83440e0d",
+  "state": "applied"
+}

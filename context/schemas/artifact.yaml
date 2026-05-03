@@ -1,10 +1,10 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Schema
 metadata:
   id: SCHEMA-artifact
   target_kind: Artifact
-  version: "1.0.0"
+  version: "2.0.0-alpha.1"
   created: 2026-04-07T00:00:00Z
 spec:
   description: >
@@ -27,6 +27,41 @@ spec:
   id_prefix: ART
   state_machine: null
   default_directory: context/artifacts
+  known_kinds:
+    - document
+    - design
+    - dataset
+    - build
+    - slides
+    - video
+    - spec
+    - diagram
+    - url
+    - other
+    - diagnostic
+    - reference-dataset
+    - test-fixture
+    - tool-allowlist-policy
+    - egress-policy
+    - credential-scope
+    - memory-policy
+    - approval-policy
+    - trace-policy
+    - cost-policy
+    - agent-card
+    - provider-adapter-config
+    - agent-ids-rule
+    - workspace-manifest
+    - addon-spec
+    - container-image-spec
+    - provider-backend-spec
+    - image-provenance-policy
+    - schedule-rule
+    - process-definition
+    - model-spec
+    - metric-spec
+    - memory-index
+    - eval-spec
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
@@ -40,8 +75,42 @@ spec:
       kind:
         type: string
         description: >
-          Subtype: document, design, dataset, build, slides, video,
-          spec, diagram, url, other.
+          Closed v2 artifact subtype declared in spec.known_kinds.
+      unit:
+        type: string
+        description: >
+          Optional. Unit of measurement for metric-spec artifacts.
+      direction:
+        type: string
+        enum:
+          - higher-is-better
+          - lower-is-better
+          - target
+        description: >
+          Optional for metric-spec artifacts. Which direction is good.
+      measurement:
+        type: string
+        description: >
+          Optional for metric-spec artifacts. Prose recipe or query for
+          computing the metric value.
+      target:
+        description: >
+          Optional for metric-spec artifacts. Desired value or target
+          expression.
+      tolerance:
+        type: string
+        description: >
+          Optional for metric-spec artifacts. Acceptable deviation from
+          target.
+      cadence:
+        type: string
+        description: >
+          Optional for metric-spec artifacts. Measurement frequency.
+      active:
+        type: boolean
+        default: true
+        description: >
+          Optional for metric-spec artifacts. False means no longer tracked.
       location:
         type: string
         description: >
@@ -60,7 +129,7 @@ spec:
         type: string
         description: "Optional. Hash for integrity verification."
       owner:
-        type: string
+        type: [string, "null"]
         pattern: "^(ACTOR|TEAMMEMBER)-[a-zA-Z0-9_-]+$"
         description: "Actor or TeamMember responsible for the artifact."
       produced_by:

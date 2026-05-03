@@ -1,10 +1,10 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Schema
 metadata:
   id: SCHEMA-migration
   target_kind: Migration
-  version: "1.0.0"
+  version: "2.0.0-alpha.1"
   created: 2026-04-07T00:00:00Z
 spec:
   description: >
@@ -19,9 +19,18 @@ spec:
     sessions. The body of a Migration entity is the briefing — a structured
     summary of what changed upstream, which project files are affected, and
     a project-specific plan that the user has approved.
+
+    v2 requires explicit source and target API/processkit versions so
+    migrations match one exact upstream-source-version transition.
   id_prefix: MIG
   state_machine: migration
   default_directory: context/migrations
+  known_kinds:
+    - source-upgrade
+    - schema-extension
+    - data-fix
+    - runtime
+    - content
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
@@ -34,6 +43,12 @@ spec:
           Identifier of the upstream source: "aibox", "processkit",
           "processkit-acme", or any community package name. Should match the
           [project] field in PROVENANCE.toml of that source.
+      kind:
+        type: string
+        description: >
+          Optional closed v2 Migration subtype declared in
+          spec.known_kinds. Use schema-extension for Schema vocabulary
+          changes and data-fix for auditable repairs.
       source_url:
         type: string
         description: >
@@ -46,6 +61,22 @@ spec:
       to_version:
         type: string
         description: "Source version the project is migrating TO (semver tag)."
+      source_api_version:
+        type: string
+        description: "apiVersion expected before this migration may apply."
+      source_processkit_version:
+        type: string
+        description: "processkit version expected before this migration may apply."
+      target_api_version:
+        type: string
+        description: "apiVersion produced after successful migration."
+      target_processkit_version:
+        type: string
+        description: "processkit version produced after successful migration."
+      apply_mode:
+        type: string
+        enum: [one-shot, resumable, irreversible]
+        description: "Whether the migration can safely resume or reverse."
       state:
         type: string
         description: "Current state in the migration state machine."

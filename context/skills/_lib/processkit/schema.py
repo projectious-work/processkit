@@ -1,6 +1,6 @@
 """Load primitive schemas and validate entity ``spec`` blocks.
 
-Schemas live in ``src/primitives/schemas/<kind-lowercase>.yaml`` and are
+Schemas live in ``src/context/schemas/<kind-lowercase>.yaml`` and are
 themselves processkit entities (``kind: Schema``). Each schema's
 ``spec.spec_schema`` is a JSON Schema (draft 2020-12) for the target
 primitive's ``spec`` block.
@@ -11,6 +11,7 @@ validation in MCP servers. Validation uses the ``jsonschema`` library
 """
 from __future__ import annotations
 
+import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -66,16 +67,73 @@ def validate_spec(kind: str, spec: dict[str, Any]) -> list[str]:
         schema = load_schema(kind)
     except SchemaError:
         return []
+    normalized_spec = _json_compatible(spec)
     json_schema = schema.get("spec_schema")
     if not json_schema:
-        return []
+        errors: list[str] = []
+    else:
+        try:
+            import jsonschema
+        except ModuleNotFoundError:
+            errors = []
+        else:
+            validator = jsonschema.Draft202012Validator(json_schema)
+            iter_errors = validator.iter_errors(normalized_spec)
+            sorted_errors = sorted(iter_errors, key=lambda e: list(e.absolute_path))
+            errors = [_format_error(e) for e in sorted_errors]
+    errors.extend(_validate_known_vocabulary(kind, normalized_spec, schema))
+    return errors
+
+
+def _json_compatible(spec: dict[str, Any]) -> dict[str, Any]:
+    """Return ``spec`` as JSON-compatible data before JSON Schema checks."""
+    return json.loads(json.dumps(spec, default=str))
+
+
+def _validate_known_vocabulary(
+    kind: str,
+    spec: dict[str, Any],
+    schema_spec: dict[str, Any],
+) -> list[str]:
+    """Validate v2 closed subtype vocabulary declared on Schema specs."""
+    checks = (
+        ("Artifact", "kind", "known_kinds"),
+        ("Binding", "type", "known_types"),
+        ("LogEntry", "event_type", "known_event_types"),
+        ("Migration", "kind", "known_kinds"),
+        ("WorkItem", "type", "known_types"),
+    )
+    errors: list[str] = []
+    for target_kind, field, vocab_field in checks:
+        if kind != target_kind:
+            continue
+        allowed = schema_spec.get(vocab_field)
+        if not allowed:
+            continue
+        value = spec.get(field)
+        if value is None:
+            continue
+        if value not in set(allowed):
+            errors.append(
+                f"{field}: {value!r} is not declared in Schema.{vocab_field}"
+            )
+    return errors
+
+
+def known_values(
+    kind: str,
+    vocab_field: str,
+    schemas_dir: Path | None = None,
+) -> list[str]:
+    """Return a closed-vocabulary list declared on a Schema spec."""
     try:
-        import jsonschema
-    except ModuleNotFoundError:
+        schema_spec = load_schema(kind, schemas_dir)
+    except SchemaError:
         return []
-    validator = jsonschema.Draft202012Validator(json_schema)
-    errors = sorted(validator.iter_errors(spec), key=lambda e: list(e.absolute_path))
-    return [_format_error(e) for e in errors]
+    values = schema_spec.get(vocab_field) or []
+    if not isinstance(values, list):
+        return []
+    return [str(v) for v in values]
 
 
 def list_known_kinds(schemas_dir: Path | None = None) -> list[str]:

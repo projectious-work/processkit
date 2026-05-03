@@ -2,6 +2,11 @@
 
 Capture Notes and operate the v2 Hook inbox convention.
 
+This server documents its own tool contract only. In gateway deployments,
+the gateway must expose only the processkit servers present in the
+installed/merged MCP configuration; this file is not an aggregate tool
+manifest.
+
 ## Tools
 
 | Tool | Purpose |
@@ -10,9 +15,9 @@ Capture Notes and operate the v2 Hook inbox convention.
 | `create_note(title, body, type?, tags?, source?)` | Capture a Note entity |
 | `capture_inbox_item(title, body, injection_mode?, channel?, source?, target_workitem?, tags?)` | Capture a Hook-inbox fleeting Note |
 | `claim_inbox_item(id, actor?)` | Mark a captured inbox Note as claimed |
-| `complete_inbox_item(id, result?)` | Mark a claimed inbox Note as done |
-| `fail_inbox_item(id, reason)` | Mark a claimed inbox Note as failed |
-| `reload_schemas()` | Clear in-process schema + state-machine caches |
+| `complete_inbox_item(id, actor, result?)` | Mark a claimed inbox Note as completed |
+| `fail_inbox_item(id, actor, error)` | Mark a claimed inbox Note as failed |
+| `reload_schemas()` | Clear this server's in-process schema + state-machine caches |
 
 ## Running
 

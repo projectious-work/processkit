@@ -4,6 +4,7 @@
 # dependencies = [
 #   "pyyaml>=6.0",
 #   "jsonschema>=4.0",
+#   "sqlite-vec>=0.1.0",
 # ]
 # ///
 """pk-doctor — aggregator health check for a processkit repo (Phase 1).

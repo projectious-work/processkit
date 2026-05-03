@@ -1,20 +1,21 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Binding
 metadata:
   id: BIND-security-architect-junior-hf79510
-  created: 2026-04-22T00:00:00Z
+  created: 2026-04-22 00:00:00+00:00
 spec:
   type: model-assignment
   subject: ROLE-security-architect
   subject_kind: Role
-  target: MODEL-anthropic-claude-sonnet
-  target_kind: Model
+  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target_kind: Artifact
   conditions:
     seniority: junior
     rank: 1
     effort_floor: medium
     effort_ceiling: high
-    rationale: "Junior security architect — threat-model drafting; G:5 required"
-  description: "default-pack: Junior security architect — threat-model drafting; G:5 required"
+    rationale: Junior security architect — threat-model drafting; G:5 required
+  description: 'default-pack: Junior security architect — threat-model drafting; G:5
+    required'
 ---

@@ -7,7 +7,7 @@ description: |
   total. NO angle brackets allowed in this field.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-TODO-skill-name
     version: "1.0.0"
     created: TODO-YYYY-MM-DDTHH:MM:SSZ

@@ -8,7 +8,7 @@ None.
 
 None.
 
-## Applied (23)
+## Applied (25)
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
@@ -30,6 +30,8 @@ None.
 | 2026-04-25 | MIG-20260425T124926 — processkit v0.21.0 → v0.21.0 | 0 changed upstream, 0 conflicts, 564 new, 0 removed (52 groups affected) |
 | 2026-04-25 | MIG-RUNTIME-20260425T125036 — aibox-runtime-home 0.19.0 → 0.19.0 | 0 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected) |
 | 2026-05-01 | MIG-RUNTIME-20260501T163943 — aibox-runtime-home 0.21.2 → 0.22.0 | 3 changed upstream, 0 conflicts, 1 new, 0 removed (2 groups affected) |
+| 2026-05-03 | MIG-20260503T113642 — processkit v0.24.0 → v0.25.1 | 0 changed upstream, 1 conflicts, 39 new, 48 removed, 0 stale-removed (15 groups affected) |
+| 2026-05-03 | MIG-RUNTIME-20260503T113642 — aibox-runtime-home 0.22.0 → 0.23.2 | 8 changed upstream, 0 conflicts, 4 new, 0 removed (2 groups affected) |
 |  | MIG-20260410T215118 — processkit v0.10.0 → v0.10.0 | AGENTS.md conflict: local customised file retained. |
 |  | MIG-20260411T042618 — processkit v0.11.1 → v0.11.1 | AGENTS.md conflict: local customised file retained. |
 |  | MIG-20260418T090604 — processkit v0.17.0 → v0.18.1 | 0 changed upstream, 8 conflicts, 49 new, 23 removed (7 groups affected) |

@@ -4,7 +4,7 @@ description: |
   Create and maintain TeamMember entities — humans and named AI personas that participate in the project with persistent identity, personality, and tiered memory. Use when adding a new persistent team-member (human or named AI), managing the name pool, scaffolding memory trees, or exporting/importing a team-member bundle. Replaces the deprecated actor-profile skill (DEC-20260422_0233-SpryTulip).
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-team-manager
     version: "1.0.0"
     created: 2026-04-22T00:00:00Z

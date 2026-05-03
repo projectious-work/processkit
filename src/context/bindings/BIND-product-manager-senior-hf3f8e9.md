@@ -8,7 +8,8 @@ spec:
   type: model-assignment
   subject: ROLE-product-manager
   subject_kind: Role
-  target: MODEL-anthropic-claude-sonnet
+  target: ART-20260503_1424-ModelSpec-anthropic-claude-sonnet
+  target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1

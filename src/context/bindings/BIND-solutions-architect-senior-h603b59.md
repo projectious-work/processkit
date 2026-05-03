@@ -8,7 +8,8 @@ spec:
   type: model-assignment
   subject: ROLE-solutions-architect
   subject_kind: Role
-  target: MODEL-anthropic-claude-opus
+  target: ART-20260503_1424-ModelSpec-anthropic-claude-opus
+  target_kind: Artifact
   conditions:
     seniority: senior
     rank: 1

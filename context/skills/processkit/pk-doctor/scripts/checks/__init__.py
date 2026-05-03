@@ -24,6 +24,7 @@ from . import (
     preauth_applied,
     skill_dag,
     context_consumption,
+    context_hygiene,
 )
 
 # (name, module). Name is the --category= token and the key in the
@@ -45,6 +46,7 @@ REGISTRY = [
     ("preauth_applied", preauth_applied),
     ("skill_dag", skill_dag),
     ("context_consumption", context_consumption),
+    ("context_hygiene", context_hygiene),
 ]
 
 

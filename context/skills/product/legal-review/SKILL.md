@@ -4,7 +4,7 @@ description: |
   Structures a systematic legal and compliance review of contracts, policies, or technical decisions — identifying key clauses, risks, and questions for counsel. Use when asked to review a contract, check compliance implications, flag legal risks in a technical design, or prepare for a legal consultation. Always surfaces work for qualified counsel; never replaces legal advice.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-legal-review
     version: "1.0.0"
     created: 2026-04-08T00:00:00Z

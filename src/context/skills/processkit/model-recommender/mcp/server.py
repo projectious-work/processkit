@@ -11,7 +11,8 @@
 model-recommender MCP server
 
 Provides structured queries over the model roster and user config.
-Data lives in model_scores.json and user_config.json alongside this file.
+Canonical model descriptions live as Artifact(kind=model-spec) entities.
+model_scores.json is retained as a packaged projection/cache and fallback.
 """
 
 import json
@@ -27,13 +28,14 @@ HERE = Path(__file__).parent
 SCORES_FILE = HERE / "model_scores.json"
 CONFIG_FILE = HERE / "user_config.json"
 
-# Walk up to repo root to find legacy context/models/ entity cards.
+# Walk up to repo root to find context/artifacts/ model-spec cards.
 # The MCP lives at <repo>/context/skills/processkit/model-recommender/mcp/server.py
 # so HERE.parents[4] is the repo root:
 #   [0] model-recommender  [1] processkit  [2] skills
 #   [3] context            [4] <repo>
 REPO_ROOT = HERE.parents[4]
-MODELS_DIR = REPO_ROOT / "context" / "models"
+ARTIFACTS_DIR = REPO_ROOT / "context" / "artifacts"
+LEGACY_MODELS_DIR = REPO_ROOT / "context" / "models"
 
 # Expose scripts/ so we can import resolver.py
 _SCRIPTS_DIR = HERE.parent / "scripts"
@@ -82,10 +84,8 @@ def _parse_frontmatter(text: str) -> dict | None:
         return None
 
 
-def _entity_to_legacy(entity: dict) -> list[dict]:
-    """Convert a legacy Model entity card into one JSON-style dict per
-    version, so the existing server tools work unchanged.
-    """
+def _model_spec_to_legacy(entity: dict) -> list[dict]:
+    """Convert a model-spec entity into one JSON-style dict per version."""
     spec = entity.get("spec", {})
     provider_slug = spec.get("provider", "")
     family = spec.get("family", "")
@@ -165,15 +165,15 @@ def _entity_to_legacy(entity: dict) -> list[dict]:
 
 
 def _load_from_artifacts() -> dict | None:
-    """Load models from legacy `context/models/*.md` entity cards.
+    """Load models from Artifact(kind=model-spec) cards.
 
     Returns a dict in the same shape as model_scores.json (with "_meta"
     and "models") when the directory exists and has at least one
     parseable card; returns None otherwise.
     """
-    if not MODELS_DIR.is_dir():
+    if not ARTIFACTS_DIR.is_dir():
         return None
-    md_files = sorted(MODELS_DIR.glob("*.md"))
+    md_files = sorted(ARTIFACTS_DIR.glob("ART-*.md"))
     if not md_files:
         return None
     entities: list[dict] = []
@@ -182,9 +182,13 @@ def _load_from_artifacts() -> dict | None:
             entity = _parse_frontmatter(path.read_text())
         except Exception:
             continue
-        if not entity or entity.get("kind") != "Model":
+        if (
+            not entity
+            or entity.get("kind") != "Artifact"
+            or (entity.get("spec") or {}).get("kind") != "model-spec"
+        ):
             continue
-        entities.extend(_entity_to_legacy(entity))
+        entities.extend(_model_spec_to_legacy(entity))
     if not entities:
         return None
     # Preserve _meta block from JSON if present (pricing pages, status
@@ -198,16 +202,43 @@ def _load_from_artifacts() -> dict | None:
     return {"_meta": meta, "models": entities}
 
 
-def _load_scores() -> dict:
-    # v2 treats the roster as this skill's data, not a first-class
-    # processkit primitive. Prefer the packaged roster and keep the old
-    # Model-entity loader only as an install/back-compat fallback.
+def _load_from_legacy_models() -> dict | None:
+    """Back-compat fallback for pre-model-spec installs."""
+    if not LEGACY_MODELS_DIR.is_dir():
+        return None
+    md_files = sorted(LEGACY_MODELS_DIR.glob("*.md"))
+    if not md_files:
+        return None
+    entities: list[dict] = []
+    for path in md_files:
+        try:
+            entity = _parse_frontmatter(path.read_text())
+        except Exception:
+            continue
+        if not entity or entity.get("kind") != "Model":
+            continue
+        entities.extend(_model_spec_to_legacy(entity))
+    if not entities:
+        return None
+    meta: dict = {}
     if SCORES_FILE.exists():
-        with open(SCORES_FILE) as f:
-            return json.load(f)
+        try:
+            meta = json.loads(SCORES_FILE.read_text()).get("_meta", {})
+        except Exception:
+            meta = {}
+    return {"_meta": meta, "models": entities}
+
+
+def _load_scores() -> dict:
     from_artifacts = _load_from_artifacts()
     if from_artifacts is not None:
         return from_artifacts
+    if SCORES_FILE.exists():
+        with open(SCORES_FILE) as f:
+            return json.load(f)
+    from_legacy = _load_from_legacy_models()
+    if from_legacy is not None:
+        return from_legacy
     raise FileNotFoundError(f"model roster not found: {SCORES_FILE}")
 
 def _load_config() -> dict:

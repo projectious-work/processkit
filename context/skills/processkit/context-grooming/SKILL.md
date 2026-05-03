@@ -5,7 +5,7 @@ description: >
   summarize stale entries, and propose disabling unused skills.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-context-grooming
     version: "1.0.0"
     created: 2026-04-07T00:00:00Z
@@ -76,7 +76,7 @@ The report lives at `context/grooming-reports/<date>.md`. Sample shape:
 
 ```markdown
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Context
 metadata:
   id: GROOM-2026-04-07

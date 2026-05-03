@@ -4,7 +4,7 @@ description: |
   Infrastructure-as-code with Terraform/OpenTofu — resources, state, modules, plan/apply. Use when writing `.tf` files, managing cloud infrastructure with Terraform or OpenTofu, handling state and backends, or reviewing IaC code.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-terraform-basics
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

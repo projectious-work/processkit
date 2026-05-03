@@ -485,7 +485,7 @@ def test_check_dangling_ref_pass(server_mod, project_root: Path, assets_dir):
     roles_dir.mkdir(parents=True, exist_ok=True)
     (roles_dir / "ROLE-developer.md").write_text(
         "---\n"
-        "apiVersion: processkit.projectious.work/v1\n"
+        "apiVersion: processkit.projectious.work/v2\n"
         "kind: Role\n"
         "metadata:\n"
         "  id: ROLE-developer\n"

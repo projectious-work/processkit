@@ -4,11 +4,12 @@ kind: Artifact
 metadata:
   id: ART-20260415_1510-LandscapeSnapshot-ai-provider-comparison-april-2026
   created: '2026-04-15T15:10:00+00:00'
+  updated: '2026-05-03T16:40:55+00:00'
 spec:
   name: AI provider comparison — April 2026 (landscape snapshot)
   kind: reference-dataset
-  location: context/artifacts/ART-20260415_1510-LandscapeSnapshot-ai-provider-comparison-april-2026.html
-  format: html
+  location: context/artifacts/ART-20260415_1510-LandscapeSnapshot-ai-provider-comparison-april-2026.md
+  format: markdown
   version: 1.0.0
   tags:
   - landscape

@@ -57,6 +57,13 @@ MIGRATION_VERSION_FIELDS = {
     "apply_mode",
 }
 
+DEMOTED_SRC_SCHEMA_KINDS = {
+    "Model": "model.yaml",
+    "Process": "process.yaml",
+    "Schedule": "schedule.yaml",
+    "StateMachine": "statemachine.yaml",
+}
+
 
 def _load_frontmatter(path: Path) -> dict[str, Any] | None:
     try:
@@ -80,6 +87,10 @@ def _load_schema_vocab(repo_root: Path, kind: str, field: str) -> set[str]:
     if kind == "TeamMember":
         filename = "team-member"
     schema_path = repo_root / "context" / "schemas" / f"{filename}.yaml"
+    if not schema_path.is_file():
+        schema_path = (
+            repo_root / "src" / "context" / "schemas" / f"{filename}.yaml"
+        )
     data = _load_frontmatter(schema_path)
     spec = data.get("spec", {}) if data else {}
     values = spec.get(field) or []
@@ -100,13 +111,62 @@ def _is_v2(data: dict[str, Any]) -> bool:
     return str(data.get("apiVersion", "")).endswith("/v2")
 
 
+def _check_demoted_src_schemas(repo_root: Path) -> list[CheckResult]:
+    schemas_root = repo_root / "src" / "context" / "schemas"
+    if not schemas_root.is_dir():
+        return []
+
+    results: list[CheckResult] = []
+    index_text = ""
+    index_path = schemas_root / "INDEX.md"
+    try:
+        index_text = index_path.read_text(encoding="utf-8")
+    except OSError:
+        pass
+
+    for kind, filename in DEMOTED_SRC_SCHEMA_KINDS.items():
+        schema_path = schemas_root / filename
+        if schema_path.is_file():
+            rel = schema_path.relative_to(repo_root)
+            results.append(CheckResult(
+                severity="ERROR",
+                category="schema_vocabulary",
+                id="schema.demoted-kind-still-shipped",
+                message=(
+                    f"{rel}: {kind} must not remain in the shipped src/ "
+                    "entity vocabulary after v2 demotion"
+                ),
+                entity_ref=str(rel),
+            ))
+
+        if index_text and filename in index_text:
+            rel = index_path.relative_to(repo_root)
+            results.append(CheckResult(
+                severity="ERROR",
+                category="schema_vocabulary",
+                id="schema.demoted-kind-still-indexed",
+                message=(
+                    f"{rel}: {kind} still appears in the shipped src/ "
+                    "schema index after v2 demotion"
+                ),
+                entity_ref=str(rel),
+            ))
+
+    return results
+
+
 def run(ctx) -> list[CheckResult]:
     repo_root: Path = ctx["repo_root"]
     since_files: set[Path] | None = ctx.get("since_files")
     results: list[CheckResult] = []
     checked = 0
 
-    for kind, (kind_dir, vocab_field, spec_field, finding_id) in VOCAB_CHECKS.items():
+    results.extend(_check_demoted_src_schemas(repo_root))
+
+    for (
+        kind,
+        (kind_dir, vocab_field, spec_field, finding_id),
+    ) in VOCAB_CHECKS.items():
         allowed = _load_schema_vocab(repo_root, kind, vocab_field)
         if not allowed:
             results.append(CheckResult(

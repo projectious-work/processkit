@@ -5,12 +5,13 @@
 #   "pyyaml>=6.0",
 # ]
 # ///
-"""migrate_models.py — extract models from model_scores.json to first-class artifacts.
+"""migrate_models.py — extract model_scores.json into model-spec artifacts.
 
 Reads the monolithic `model_scores.json` registry and emits one
-`MODEL-<provider>-<family>.md` entity artifact per (provider, family),
-with versions nested under `spec.versions[]`. Writes both to
-`context/models/` and the mirrored `src/context/models/` tree.
+`ART-20260503_1424-ModelSpec-<provider>-<family>.md` Artifact per
+(provider, family), with versions nested under `spec.versions[]`.
+Writes both to `context/artifacts/` and the mirrored
+`src/context/artifacts/` tree.
 
 The script is idempotent: running it again produces identical output
 (modulo metadata.created timestamps, which are preserved if an
@@ -24,6 +25,8 @@ Usage:
 Exit 0 on success. Exit 1 on error.
 
 Provenance: generated as part of v0.19.0 Phase 3 — DEC-20260422_0234-LoyalComet.
+Updated by DEC-20260503_1424-ShinyBear to use Artifact(kind=model-spec)
+instead of a separate Model primitive.
 """
 from __future__ import annotations
 
@@ -39,21 +42,28 @@ import yaml
 
 # ── constants ──────────────────────────────────────────────────────────────
 
-DEFAULT_CREATED = "2026-04-22T00:00:00Z"
+MODEL_SPEC_CREATED = "2026-05-03T14:24:00Z"
+MODEL_SPEC_ID_PREFIX = "ART-20260503_1424-ModelSpec"
 
 PROVIDER_MAP = {
     "Anthropic": "anthropic",
+    "AWS": "aws",
     "OpenAI": "openai",
     "Google": "google",
     "Google / Open": "google",
     "xAI": "xai",
     "DeepSeek": "deepseek",
     "Meta": "meta",
+    "Meta / Open": "meta",
     "Mistral": "mistral",
     "MiniMax": "minimax",
     "Alibaba / Open": "alibaba",
+    "Alibaba": "alibaba",
     "Microsoft": "microsoft",
     "Cohere": "cohere",
+    "Moonshot AI": "moonshot",
+    "NVIDIA": "nvidia",
+    "Z.AI": "zai",
 }
 
 PROVIDER_STATUS_PAGES = {
@@ -68,6 +78,10 @@ PROVIDER_STATUS_PAGES = {
     "alibaba": "https://status.aliyun.com/",
     "microsoft": "https://azure.status.microsoft/",
     "cohere": "https://status.cohere.com/",
+    "aws": "https://health.aws.amazon.com/health/status",
+    "moonshot": "https://platform.moonshot.ai/",
+    "nvidia": "https://www.nvidia.com/en-us/ai-data-science/",
+    "zai": "https://www.z.ai/",
 }
 
 # Families where the small/mini/fast/haiku variant should cap effort at medium.
@@ -197,6 +211,11 @@ def efforts_for_family(family: str) -> list[str]:
     return ["none", "low", "medium", "high", "extra-high"]
 
 
+def model_spec_artifact_id(provider: str, family: str) -> str:
+    id_family = family.replace(".", "-")
+    return f"{MODEL_SPEC_ID_PREFIX}-{provider}-{id_family}"
+
+
 def modalities_for(entry: dict) -> list[str]:
     """Infer modalities from sub-dimension breadth scores."""
     sub_b = entry["dimensions"]["B"].get("sub", {})
@@ -283,7 +302,8 @@ def build_version(entry: dict, version_id: str) -> dict:
 
 
 def build_entity(provider: str, family: str, entries: list[dict]) -> dict:
-    """Build the Model entity dict for (provider, family) from its JSON entries."""
+    """Build the model-spec Artifact for (provider, family)."""
+    id_family = family.replace(".", "-")
     # Use the first entry for capability dimensions (they should be ~same
     # within a family; if they drift, the newest entry wins — entries come
     # sorted newest-first after grouping).
@@ -310,15 +330,20 @@ def build_entity(provider: str, family: str, entries: list[dict]) -> dict:
             modalities.append("computer-use")
 
     entity: dict[str, Any] = {
-        "apiVersion": "processkit.projectious.work/v1",
-        "kind": "Model",
+        "apiVersion": "processkit.projectious.work/v2",
+        "kind": "Artifact",
         "metadata": {
-            "id": f"MODEL-{provider}-{family}",
-            "created": DEFAULT_CREATED,
+            "id": model_spec_artifact_id(provider, family),
+            "created": MODEL_SPEC_CREATED,
         },
         "spec": {
+            "name": primary.get("name") or f"{provider} {family}",
+            "kind": "model-spec",
+            "format": "markdown",
             "provider": provider,
             "family": family,
+            "legacy_model_id": f"MODEL-{provider}-{id_family}",
+            "profile_ids": [entry["id"] for entry in entries],
             "versions": versions,
             "efforts_supported": efforts_for_family(family),
             "dimensions": dimensions,
@@ -393,7 +418,7 @@ def migrate(
     for (provider, family), fam_entries in sorted(grouped.items()):
         entity = build_entity(provider, family, fam_entries)
         md = render_markdown(entity)
-        rel = f"MODEL-{provider}-{family}.md"
+        rel = f"{entity['metadata']['id']}.md"
 
         tier = entity["spec"]["equivalent_tier"]
         tier_counts[tier] = tier_counts.get(tier, 0) + 1
@@ -446,9 +471,9 @@ def main(argv: list[str] | None = None) -> int:
         / "context/skills/processkit/model-recommender/mcp/model_scores.json"
     )
     ap.add_argument("--scores", type=Path, default=default_scores)
-    ap.add_argument("--out", type=Path, default=repo_root / "context/models")
+    ap.add_argument("--out", type=Path, default=repo_root / "context/artifacts")
     ap.add_argument(
-        "--src-out", type=Path, default=repo_root / "src/context/models"
+        "--src-out", type=Path, default=repo_root / "src/context/artifacts"
     )
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--verbose", action="store_true")

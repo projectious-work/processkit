@@ -5,7 +5,7 @@ description: >
   pipelines, evaluation metrics, and neural architectures.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-ai-fundamentals
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

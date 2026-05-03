@@ -1,10 +1,10 @@
 """Entity file model and I/O.
 
 A processkit entity is a Markdown file with YAML frontmatter following the
-shape defined in `src/primitives/FORMAT.md`:
+shape defined by the processkit v2 entity frontmatter contract:
 
     ---
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     kind: <Kind>
     metadata:
       id: <PREFIX>-<id>

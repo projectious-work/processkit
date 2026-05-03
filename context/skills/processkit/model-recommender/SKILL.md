@@ -154,9 +154,10 @@ Cost is a sub-dimension of Speed (S.cost_efficiency) in the spider chart but
 is also surfaced explicitly because raw per-token prices and derived value
 matter independently of speed.
 
-**Per-token pricing:** stored in `mcp/model_scores.json` under each model's
-`pricing` field. Use `get_pricing()` to view and sort. Self-hosted models
-(Llama) have null API pricing — infra cost applies instead.
+**Per-token pricing:** stored on each `Artifact(kind=model-spec)` under
+`spec.versions[].pricing` and normalized by the MCP server. Use
+`get_pricing()` to view and sort. Self-hosted models (Llama) have null
+API pricing — infra cost applies instead.
 
 **Value score:** `(R + E + L) / 3 / output_cost_per_1M × 10`. Higher is
 better. Surfaces models with frontier-class capability at low cost. DeepSeek
@@ -416,12 +417,14 @@ workflow that requires internet access.
 
 **Steps:**
 
-1. **Check validated date.** Read `_meta.validated` from `model_scores.json`.
-   If less than 3 months old, ask the user if they want to proceed anyway.
+1. **Check validated date.** Read the current roster metadata via the MCP
+   server or `_meta.validated` from the packaged `model_scores.json`
+   projection. If less than 3 months old, ask the user if they want to
+   proceed anyway.
 
 2. **Discover new models.** Web-search for "new LLM models [current year]" and
    "AI model releases [last 3 months]". For each new model found:
-   - Note it as a candidate addition (do NOT auto-write to model_scores.json)
+   - Note it as a candidate addition (do NOT auto-write a roster file)
    - Report it to the user with a one-line capability summary
    - Ask: "Do you want me to add [model] to the roster?"
    - Only add after explicit confirmation; adds are additive (never overwrite existing entries)
@@ -447,8 +450,11 @@ workflow that requires internet access.
    - Price updates (before/after)
    - New benchmark candidates
 
-7. **Apply only confirmed changes.** Update `model_scores.json` for approved
-   changes. Bump `_meta.validated` to the current quarter.
+7. **Apply only confirmed changes.** Update the relevant timestamped
+   `context/artifacts/ART-YYYYMMDD_HHMM-ModelSpec-*.md` model-spec
+   artifacts first. If the packaged `model_scores.json` projection is
+   kept for compatibility, refresh it from the artifacts and bump
+   `_meta.validated` to the current quarter.
 
 **Constraint:** refresh is additive. Never delete models from the roster
 during refresh merely because they are no longer top-ranked. If a provider
@@ -512,9 +518,9 @@ top-2 and cluster on those.
 
 The roster contains **61 models** across 16 providers, with lifecycle metadata
 that separates availability from ranking. Estimated or unverified models are
-marked `_estimated: true` or `lifecycle: "unverified"` in
-`mcp/model_scores.json` and should be validated via Workflow C before using in
-production routing.
+marked on the model-spec artifact and surfaced by the MCP projection as
+`_estimated: true` or `lifecycle: "unverified"`; validate them via
+Workflow C before production routing.
 
 **Live table:** `list_models()` — returns the roster filtered by your user config.  
 **Full table with context windows:** see `references/roster-quick-ref.md`.  
@@ -624,9 +630,12 @@ use `compare_models(model_ids, scope="R")` (or E/S/B/L/G).
 ### Complete model profiles
 
 Narrative descriptions, per-sub-dimension scores, and best-for/avoid-for
-lists for all twelve models are in `references/model-profiles.md`.
-Structured scores are in `mcp/model_scores.json` — the MCP server is the
-preferred interface for queries; the markdown file is the human-readable view.
+lists are in `references/model-profiles.md`. Structured model records are
+canonical in timestamped
+`context/artifacts/ART-YYYYMMDD_HHMM-ModelSpec-*.md` files as
+`Artifact(kind=model-spec)`; the MCP server is the preferred interface
+for queries and may retain `mcp/model_scores.json` as a packaged
+projection.
 
 ### Pricing and value analysis
 

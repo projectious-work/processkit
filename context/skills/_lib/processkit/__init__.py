@@ -18,9 +18,9 @@ The public modules are:
 See `src/lib/README.md` for the import strategy from MCP server scripts.
 """
 
-__version__ = "0.3.0"
+__version__ = "2.0.0-alpha.1"
 
-API_VERSION = "processkit.projectious.work/v1"
+API_VERSION = "processkit.projectious.work/v2"
 
 # Prefix registry — primitive kind → ID prefix
 KIND_PREFIXES = {
@@ -33,13 +33,9 @@ KIND_PREFIXES = {
     "Scope": "SCOPE",
     "Category": "CAT",
     "Gate": "GATE",
-    "Metric": "METRIC",
-    "Schedule": "SCHED",
     "Constraint": "CONST",
     "Context": "CTX",
     "Discussion": "DISC",
-    "Process": "PROC",
-    "StateMachine": "SM",
     "Artifact": "ART",
     "Migration": "MIG",
     "Note": "NOTE",
@@ -57,12 +53,8 @@ DEFAULT_DIRS = {
     "Scope": "scopes",
     "Category": "categories",
     "Gate": "gates",
-    "Metric": "metrics",
-    "Schedule": "schedules",
     "Constraint": "constraints",
     "Discussion": "discussions",
-    "Process": "processes",
-    "StateMachine": "state-machines",
     "Artifact": "artifacts",
     # Migration's "default" is a logical root; the actual file lives under
     # context/migrations/{pending,in-progress,applied}/ — the substate

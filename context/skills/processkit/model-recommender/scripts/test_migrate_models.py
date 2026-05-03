@@ -6,7 +6,7 @@
 #   "pytest>=8.0",
 # ]
 # ///
-"""Tests for migrate_models.py — v0.19.0 Phase 3 model extraction."""
+"""Tests for migrate_models.py — model-spec Artifact extraction."""
 from __future__ import annotations
 
 import importlib.util
@@ -182,10 +182,14 @@ def test_build_entity_groups_versions():
         "anthropic", "claude-opus",
         [SAMPLE_ENTRY_OPUS, SAMPLE_ENTRY_OPUS_OLD],
     )
-    assert entity["kind"] == "Model"
-    assert entity["metadata"]["id"] == "MODEL-anthropic-claude-opus"
+    assert entity["kind"] == "Artifact"
+    assert entity["metadata"]["id"] == (
+        "ART-20260503_1424-ModelSpec-anthropic-claude-opus"
+    )
+    assert entity["spec"]["kind"] == "model-spec"
     assert entity["spec"]["provider"] == "anthropic"
     assert entity["spec"]["family"] == "claude-opus"
+    assert entity["spec"]["legacy_model_id"] == "MODEL-anthropic-claude-opus"
     assert len(entity["spec"]["versions"]) == 2
     version_ids = {v["version_id"] for v in entity["spec"]["versions"]}
     assert version_ids == {"4.6", "4.5"}
@@ -251,8 +255,12 @@ def test_migrate_writes_files(tmp_migrate):
     summary = mm.migrate(scores, out, src_out)
     assert summary["json_models"] == 5
     assert summary["families_written"] == 4
-    assert (out / "MODEL-anthropic-claude-opus.md").exists()
-    assert (out / "MODEL-google-gemini-flash.md").exists()
+    assert (
+        out / "ART-20260503_1424-ModelSpec-anthropic-claude-opus.md"
+    ).exists()
+    assert (
+        out / "ART-20260503_1424-ModelSpec-google-gemini-flash.md"
+    ).exists()
 
 
 def test_migrate_dual_tree_mirror(tmp_migrate):
@@ -280,21 +288,25 @@ def test_migrate_preserves_existing_created_timestamp(tmp_migrate):
     scores, out, src_out = tmp_migrate
     out.mkdir(parents=True)
     # Seed an existing file with a custom timestamp.
-    (out / "MODEL-anthropic-claude-opus.md").write_text(
+    (out / "ART-20260503_1424-ModelSpec-anthropic-claude-opus.md").write_text(
         "---\n"
-        "apiVersion: processkit.projectious.work/v1\n"
-        "kind: Model\n"
+        "apiVersion: processkit.projectious.work/v2\n"
+        "kind: Artifact\n"
         "metadata:\n"
-        "  id: MODEL-anthropic-claude-opus\n"
+        "  id: ART-20260503_1424-ModelSpec-anthropic-claude-opus\n"
         "  created: '2025-01-01T00:00:00Z'\n"
         "spec:\n"
+        "  name: Claude Opus\n"
+        "  kind: model-spec\n"
         "  provider: anthropic\n"
         "  family: claude-opus\n"
         "  versions: []\n"
         "---\n"
     )
     mm.migrate(scores, out, src_out)
-    content = (out / "MODEL-anthropic-claude-opus.md").read_text()
+    content = (
+        out / "ART-20260503_1424-ModelSpec-anthropic-claude-opus.md"
+    ).read_text()
     assert "2025-01-01T00:00:00Z" in content
 
 
@@ -305,8 +317,10 @@ def test_migrate_output_parses_as_valid_yaml(tmp_migrate):
         parts = p.read_text().split("---")
         assert len(parts) >= 3, f"{p} missing YAML frontmatter delimiters"
         doc = yaml.safe_load(parts[1])
-        assert doc["apiVersion"] == "processkit.projectious.work/v1"
-        assert doc["kind"] == "Model"
+        assert doc["apiVersion"] == "processkit.projectious.work/v2"
+        assert doc["kind"] == "Artifact"
+        assert doc["spec"]["kind"] == "model-spec"
+        assert doc["spec"]["legacy_model_id"].startswith("MODEL-")
         assert doc["spec"]["provider"]
         assert doc["spec"]["family"]
         assert doc["spec"]["versions"]

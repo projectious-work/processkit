@@ -1,10 +1,10 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: Schema
 metadata:
   id: SCHEMA-binding
   target_kind: Binding
-  version: "1.2.0"
+  version: "2.0.0-alpha.1"
   created: 2026-04-07T00:00:00Z
   updated: 2026-04-22T00:00:00Z
 spec:
@@ -18,6 +18,16 @@ spec:
     v1.1.0 change (DEC-20260422_0234-LoyalComet): added conditional
     validation for type='model-assignment' bindings, enumerating the
     fields used by the 8-layer resolution precedence.
+
+    v2.0.0 model-spec change
+    (DEC-20260503_1424-ShinyBear,
+    DEC-20260503_1424-WiseBird): model-assignment bindings target
+    Artifact(kind=model-spec) entities. model-recommender JSON is a
+    projection/cache, not a canonical binding target.
+
+    v2.0.0 change: Binding type is a closed vocabulary declared in
+    spec.known_types. Forks extend the vocabulary through schema-extension
+    migrations rather than ad hoc values.
   id_prefix: BIND
   state_machine: null
   default_directory: context/bindings
@@ -30,6 +40,18 @@ spec:
     - schedule-scope
     - constraint-scope
     - category-assignment
+    - cross-project-link
+    - triage-classification
+    - portfolio-coordinates
+    - portfolio-scope-member
+    - provider-route
+    - ids-rule-applies-to
+    - agent-card-publication
+    - channel-binds-team
+    - budget-application
+    - credential-scope
+    - policy-application
+    - time-window
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
@@ -40,10 +62,7 @@ spec:
         type: string
         minLength: 1
         description: >
-          Freeform binding type. Conventions per project. Examples:
-          role-assignment, model-assignment, work-assignment,
-          process-gate, process-scope, schedule-scope,
-          constraint-scope, category-assignment.
+          Closed v2 binding type declared in spec.known_types.
       subject:
         type: string
         description: "ID of the entity on the from side of the relationship."
@@ -60,16 +79,16 @@ spec:
         type: string
         description: "Optional. The primitive kind of the target."
       scope:
-        type: string
+        type: [string, "null"]
         pattern: "^SCOPE-[a-zA-Z0-9_-]+$"
         description: "Optional. Scope ID within which this binding applies."
       valid_from:
-        type: string
+        type: [string, "null"]
         description: >
           Optional. When the binding starts being in effect. Date or
           ISO 8601 datetime.
       valid_until:
-        type: string
+        type: [string, "null"]
         description: "Optional. When the binding stops being in effect."
       conditions:
         type: object
@@ -88,8 +107,14 @@ spec:
           properties:
             target:
               type: string
-              pattern: "^MODEL-[a-z0-9-]+$"
-              description: "Target must be a MODEL ID."
+              pattern: "^ART-[0-9]{8}_[0-9]{4}-ModelSpec-[a-z0-9-]+$"
+              description: >
+                Target must be a timestamped Artifact(kind=model-spec)
+                entity.
+            target_kind:
+              const: Artifact
+              description: >
+                Model-assignment targets are model-spec Artifacts.
             conditions:
               type: object
               additionalProperties: true
@@ -135,3 +160,115 @@ spec:
                 rationale:
                   type: string
                   description: "One-line reason this binding exists."
+      - if:
+          properties:
+            type:
+              const: triage-classification
+          required: [type]
+        then:
+          properties:
+            subject:
+              type: string
+              pattern: "^NOTE-[a-zA-Z0-9_-]+$"
+            target:
+              type: string
+              pattern: "^BACK-[a-zA-Z0-9_-]+$"
+            conditions:
+              type: object
+              required: [injection_mode]
+              properties:
+                injection_mode:
+                  type: string
+                  enum: [interrupt, ambient, next-cycle]
+      - if:
+          properties:
+            type:
+              const: policy-application
+          required: [type]
+        then:
+          properties:
+            conditions:
+              type: object
+              properties:
+                enforcement_point:
+                  type: string
+                signing_required:
+                  type: boolean
+      - if:
+          properties:
+            type:
+              const: budget-application
+          required: [type]
+        then:
+          properties:
+            subject:
+              type: string
+              pattern: "^ART-[a-zA-Z0-9_-]+$"
+              description: "Subject must be a cost-policy Artifact."
+            conditions:
+              type: object
+              required: [enforcement_point]
+              properties:
+                enforcement_point:
+                  type: string
+                cap_usd:
+                  type: number
+                  minimum: 0
+                warning_threshold:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+      - if:
+          properties:
+            type:
+              const: provider-route
+          required: [type]
+        then:
+          properties:
+            conditions:
+              type: object
+              required: [provider, model, enforcement_point]
+              properties:
+                provider:
+                  type: string
+                  minLength: 1
+                model:
+                  type: string
+                  minLength: 1
+                version:
+                  type: string
+                effort:
+                  type: string
+                enforcement_point:
+                  type: string
+      - if:
+          properties:
+            type:
+              const: ids-rule-applies-to
+          required: [type]
+        then:
+          properties:
+            subject:
+              type: string
+              pattern: "^ART-[a-zA-Z0-9_-]+$"
+              description: "Subject must be an agent-ids-rule Artifact."
+            conditions:
+              type: object
+              properties:
+                enforcement_point:
+                  type: string
+                rule_checksum:
+                  type: string
+      - if:
+          properties:
+            type:
+              const: time-window
+          required: [type]
+        then:
+          properties:
+            conditions:
+              type: object
+              properties:
+                recurrence_rule:
+                  type: string
+                  pattern: "^ART-[a-zA-Z0-9_-]+$"

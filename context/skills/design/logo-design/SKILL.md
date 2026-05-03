@@ -4,7 +4,7 @@ description: |
   Creates SVG logos with scalable geometry, color theory, and variant generation. Use when designing logos, icons, or brand marks, generating favicons or social avatars, or reviewing a logo for scalability, color, or variant coverage.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-logo-design
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

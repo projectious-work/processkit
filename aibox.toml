@@ -77,6 +77,10 @@ codex = {}
 [addons.docs-docusaurus.tools]
 docusaurus = { version = "3.8" }
 
+[addons.git-ui.tools]
+gh = { enabled = true }
+lazygit = { enabled = false }
+
 # Node.js runtime with pnpm, yarn, or bun
 # node: 20 | 22 (default)
 # pnpm: 9 | 10 (default)

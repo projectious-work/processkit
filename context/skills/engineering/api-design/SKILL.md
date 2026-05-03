@@ -4,7 +4,7 @@ description: |
   REST API design — resource naming, HTTP methods, status codes, pagination, versioning, OpenAPI. Use when designing a new REST API, reviewing API contracts, writing OpenAPI/Swagger documentation, or choosing pagination, versioning, or error-format strategies.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-api-design
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

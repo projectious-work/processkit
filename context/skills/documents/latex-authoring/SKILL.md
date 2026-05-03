@@ -4,7 +4,7 @@ description: |
   LaTeX authoring with LuaLaTeX — document classes, math, TikZ, BibLaTeX. Use when writing or editing LaTeX documents, setting up preambles, typesetting math, building TikZ diagrams, or managing bibliographies.
 metadata:
   processkit:
-    apiVersion: processkit.projectious.work/v1
+    apiVersion: processkit.projectious.work/v2
     id: SKILL-latex-authoring
     version: "1.1.0"
     created: 2026-04-06T00:00:00Z

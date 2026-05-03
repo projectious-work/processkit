@@ -1,16 +1,16 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: WorkItem
 metadata:
   id: BACK-TODO
   created: TODO
   labels:
-    severity: TODO        # critical | high | medium | low
+    severity: TODO
 spec:
   title: TODO
   state: backlog
   type: bug
-  priority: TODO
+  priority: medium
   assignee: null
 ---
 

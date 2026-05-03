@@ -1,18 +1,21 @@
 # Team roster — v0.19.0
 
 This file is the narrative companion to the entities under
-`context/team-members/`, `context/roles/`, `context/models/`, and
-`context/bindings/`. Load it at session start whenever a task needs
-routing.
+`context/team-members/`, `context/roles/`, model-spec artifacts under
+`context/artifacts/`, and `context/bindings/`. Load it at session start
+whenever a task needs routing.
 
 **Governing decisions:**
 - `DEC-20260422_0233-SpryTulip` — TeamMember model + file-based tiered
   memory + A2A Agent Cards + team-manager skill (replaces actor-profile).
 - `DEC-20260422_0234-BraveFalcon` — 51-role curated catalog with
   pure-ordinal seniority ladder.
-- `DEC-20260422_0234-LoyalComet` — first-class Model artifacts,
-  T-shirt capacity tiers, named efforts, `model-assignment` bindings,
-  8-layer resolution precedence.
+- `DEC-20260422_0234-LoyalComet` — T-shirt capacity tiers, named
+  efforts, `model-assignment` bindings, 8-layer resolution precedence.
+- `DEC-20260503_1424-ShinyBear` — model descriptions are
+  `Artifact(kind=model-spec)` entities, not a separate Model primitive.
+- `DEC-20260503_1424-WiseBird` — bindings connect addressable
+  processkit entities; model-assignment targets model-spec artifacts.
 
 Earlier roster decisions
 (`DEC-20260414_0900-TeamRoster-permanent-ai-team-composition`,
@@ -29,13 +32,16 @@ The team is now a thin overlay on three primitives:
 2. **Seniority** — pure ordinal attribute, ladder
    `junior → specialist → expert → senior → principal`. Carried by
    TeamMembers (default) or per-dispatch.
-3. **Models** (`context/models/`) — 34 first-class Model artifacts,
-   one per `(provider, family)` with versions nested. Each model
-   declares an `equivalent_tier` in the T-shirt ladder
+3. **Model specs**
+   (`context/artifacts/ART-YYYYMMDD_HHMM-ModelSpec-*.md`) — model
+   descriptions as timestamped `Artifact(kind=model-spec)` entities,
+   one per
+   `(provider, family)` with versions nested. Each model spec declares
+   an `equivalent_tier` in the T-shirt ladder
    (`xs / s / m / l / xl / xxl`).
 4. **Bindings** (`context/bindings/`) — `model-assignment` bindings
-   wire `(role, seniority)` → `(model, effort)`. The default binding
-   pack ships 30 seeds at
+   wire `(role, seniority)` → `(model-spec artifact, effort)`. The
+   default binding pack ships seeds at
    `context/skills/processkit/model-recommender/default-bindings/MANIFEST.yaml`.
 
 Routing is a single MCP call: `model-recommender.resolve_model(role,
@@ -122,8 +128,8 @@ Provider-neutral T-shirt ladder, extensible in both directions:
 | `xl` | strong day-to-day flagship | `gpt-4o`, `o4-mini`, `codestral`, `qwen2-5-coder-32b` |
 | `xxl` | frontier / deep-reasoning | `claude-opus`, `claude-sonnet`, `gpt-5`, `gpt-5-pro`, `o3`, `gemini-2-5-pro`, `grok-4`, `deepseek-r`, `qwen3-235b` |
 
-Each Model's `equivalent_tier` is declared in its artifact and used by
-the resolver for abstract matching.
+Each model-spec artifact's `equivalent_tier` is used by the resolver for
+abstract matching.
 
 ## Effort levels
 
@@ -203,7 +209,8 @@ Per-project overrides for routing:
 binding-management.create_binding(
     type="model-assignment",
     subject="ROLE-product-manager",
-    target="MODEL-anthropic-claude-opus",
+    target="ART-20260503_1424-ModelSpec-anthropic-claude-opus",
+    target_kind="Artifact",
     conditions={
         "seniority": "senior",
         "rank": 1,
@@ -222,7 +229,8 @@ Lower-numbered ranks win; layer 5 (role+seniority) overrides layer 6
 When a new model version ships:
 
 1. `/pk-model-refresh` updates the catalog.
-2. Edit the Model artifact under `context/models/<provider>-<family>.md`
+2. Edit the timestamped model-spec artifact under
+   `context/artifacts/ART-YYYYMMDD_HHMM-ModelSpec-<provider>-<family>.md`
    to add a new `versions[]` entry; bump `equivalent_tier` if capacity
    shifted.
 3. If a new family unlocks rerankings in the default binding pack,

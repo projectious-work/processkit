@@ -1,7 +1,8 @@
 # Roster Quick Reference
 
-> Auto-generated view of `mcp/model_scores.json`. For live filtered output,
-> call `list_models()`. For full sub-dimension profiles, call `get_profile(id, scope="full")`.
+> Auto-generated view of the model-spec artifact roster. For live filtered
+> output, call `list_models()`. For full sub-dimension profiles, call
+> `get_profile(id, scope="full")`.
 > Estimated models (marked †) need Workflow C validation before production use.
 
 | Model | R | E | S | B | L | G | ctx K | $/1M out | Provider |
