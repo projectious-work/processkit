@@ -243,7 +243,14 @@ def pricing_dict(entry: dict) -> dict | None:
 
 
 def status_for(entry: dict) -> str:
-    """Map JSON entry to a version status. Estimated → preview, else ga."""
+    """Map JSON lifecycle/validation state to a version status."""
+    lifecycle = entry.get("lifecycle")
+    if lifecycle == "deprecated":
+        return "deprecated"
+    if lifecycle == "retired":
+        return "retired"
+    if lifecycle == "unverified":
+        return "preview"
     if entry.get("_estimated"):
         return "preview"
     return "ga"
@@ -268,6 +275,10 @@ def build_version(entry: dict, version_id: str) -> dict:
     gov_warn = entry.get("governance_warning")
     if gov_warn:
         v["governance_warning"] = gov_warn
+    for key in ("lifecycle", "deprecated_after", "retired_after",
+                "replacement_model", "source_urls"):
+        if entry.get(key):
+            v[key] = entry[key]
     return v
 
 
@@ -318,6 +329,10 @@ def build_entity(provider: str, family: str, entries: list[dict]) -> dict:
             ),
             "status_page_url": PROVIDER_STATUS_PAGES.get(provider, ""),
             "rationale": primary.get("tier", ""),
+            "lifecycle": primary.get("lifecycle", "active"),
+            "source_urls": primary.get("source_urls", []),
+            "model_classes": primary.get("model_classes", []),
+            "task_suitability": primary.get("task_suitability", {}),
         },
     }
     return entity

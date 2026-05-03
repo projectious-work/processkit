@@ -424,7 +424,46 @@ def _capability_ok(model: dict, hints: dict | None) -> tuple[bool, str]:
         return False, "model lacks 'tools' modality"
     if hints.get("requires_computer_use") and "computer-use" not in modalities:
         return False, "model lacks 'computer-use' modality"
+    task_classes: list[str] = []
+    if hints.get("task_class"):
+        task_classes.append(str(hints["task_class"]))
+    if hints.get("task_classes"):
+        task_classes.extend(str(x) for x in hints["task_classes"])
+    if task_classes:
+        suitability = model.get("task_suitability") or {}
+        explicit = [int(suitability[c]) for c in task_classes if c in suitability]
+        if not explicit:
+            if hints.get("require_task_suitability") is True:
+                return False, "model lacks requested task_suitability"
+        else:
+            minimum = int(hints.get("min_task_suitability") or 3)
+            if max(explicit) < minimum:
+                return False, (
+                    "model task_suitability below "
+                    f"{minimum} for {task_classes}"
+                )
     return True, ""
+
+
+def _candidate_task_suitability(
+    model: dict,
+    hints: dict | None,
+) -> int:
+    if not hints:
+        return 0
+    task_classes: list[str] = []
+    if hints.get("task_class"):
+        task_classes.append(str(hints["task_class"]))
+    if hints.get("task_classes"):
+        task_classes.extend(str(x) for x in hints["task_classes"])
+    suitability = model.get("task_suitability") or {}
+    scores: list[int] = []
+    for cls in task_classes:
+        try:
+            scores.append(int(suitability[cls]))
+        except Exception:
+            continue
+    return max(scores) if scores else 0
 
 
 # ---------------------------------------------------------------------------
@@ -436,11 +475,18 @@ def _tiebreak_key(
     cand: ResolvedCandidate,
     preferred_providers: list[str],
     expected_tokens: int | None,
+    task_hints: dict | None = None,
 ):
-    """Lower tuple wins. Composed of (layer, rank, provider-pref, cost, -recency, -reliability)."""
+    """Lower tuple wins.
+
+    Layer and rank remain the first ordering keys, preserving the binding
+    precedence ladder. Task suitability only reorders peers within the same
+    layer/rank/provider neighborhood.
+    """
     model = _get_model(cand.model_id) or {}
     provider = model.get("provider", "")
     prov_rank = preferred_providers.index(provider) if provider in preferred_providers else len(preferred_providers) + 1
+    task_fit = -_candidate_task_suitability(model, task_hints)
 
     # Cost: sum of input+output per 1M tokens for the selected version.
     cost = 999999.0
@@ -473,7 +519,7 @@ def _tiebreak_key(
     recency_key = (-year, -month, -day)
 
     # Use layer first so higher-precedence layers stay on top.
-    return (cand.source_layer, cand.rank, prov_rank, cost,
+    return (cand.source_layer, cand.rank, prov_rank, task_fit, cost,
             recency_key, reliability)
 
 
@@ -730,7 +776,11 @@ def resolve(
         })
 
     # -- Apply tie-breakers and sort ------------------------------------------
-    candidates.sort(key=lambda c: _tiebreak_key(c, preferred_providers, expected_tokens))
+    candidates.sort(
+        key=lambda c: _tiebreak_key(
+            c, preferred_providers, expected_tokens, task_hints
+        )
+    )
 
     # -- Layer 8: Shim fallback ----------------------------------------------
     if not candidates:

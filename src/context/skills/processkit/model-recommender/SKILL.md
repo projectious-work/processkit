@@ -201,6 +201,7 @@ filtered lists, or pricing analysis.
 | `check_availability()` | Live status before routing a plan |
 | `get_config()` / `set_config(...)` | Show or update user access list |
 | `get_model_for_class("fast")` | Resolve fast/standard/powerful to a concrete model |
+| `list_task_classes()` | Show fine-grained task classes for task-suitability routing |
 
 ---
 
@@ -265,10 +266,15 @@ tasks are missions, models are heroes.
 1. **Parse** the task list. Accept any format: markdown bullets, numbered
    list, WorkItems, or a free-form plan.
 
-2. **Score each task** against the six dimensions: which dimensions does
+2. **Classify each task** with a fine-grained task class when possible
+   (`architecture`, `code_review`, `summarization`, `rag`, `ocr`,
+   `low_latency_chat`, etc.). These classes are routing hints, not a
+   replacement for the six R/E/S/B/L/G dimensions.
+
+3. **Score each task** against the six dimensions: which dimensions does
    this task *require*? Use the Task Scoring Quick-Reference below.
 
-3. **Cluster** tasks by their dominant dimension profile. Tasks with the
+4. **Cluster** tasks by their dominant dimension profile. Tasks with the
    same top-2 dimensions belong in the same cluster. Typical clusters:
    - Deep-Think (R+E dominant) — complex architecture, novel algorithms
    - Production-Coder (E dominant) — routine implementation, bug fixes
@@ -276,11 +282,11 @@ tasks are missions, models are heroes.
    - Long-Context (B dominant) — large codebase sweeps, doc analysis
    - Privacy-First (G dominant) — PII, PHI, regulated data, secrets
 
-4. **Recommend** a model per cluster from the user's accessible models.
-   Call `query_models(R=..., E=..., G=..., apply_user_filter=True)` to
-   find the best available match. State the primary recommendation and one fallback.
+5. **Recommend** a model per cluster from the user's accessible models.
+   Call `query_models(R=..., E=..., G=..., task_class="...", apply_user_filter=True)`
+   to find the best available match. State the primary recommendation and one fallback.
 
-5. **Theoretical-best hint.** After recommending from the user's accessible
+6. **Theoretical-best hint.** After recommending from the user's accessible
    models, run the same query with `apply_user_filter=False`. If the
    theoretical-best model differs from the recommended one, show the hint:
 
@@ -294,7 +300,7 @@ tasks are missions, models are heroes.
    Omit the hint if the user's accessible model already matches the theoretical
    best, or if the gap is only 1 point on a non-dominant dimension.
 
-6. **Output** the routing table:
+7. **Output** the routing table:
 
 ```
 Task Routing Analysis
@@ -445,7 +451,46 @@ workflow that requires internet access.
    changes. Bump `_meta.validated` to the current quarter.
 
 **Constraint:** refresh is additive. Never delete models from the roster
-during refresh — that is a separate cleanup task for the user to do manually.
+during refresh merely because they are no longer top-ranked. If a provider
+still offers a model, keep it and update its `lifecycle`:
+
+- `active` — current normal routing candidate.
+- `legacy` — still offered; useful for price, compatibility, or a niche task.
+- `deprecated` — provider announced retirement or alias migration; include
+  `deprecated_after` / `replacement_model` when known.
+- `retired` — no longer callable; excluded from active routing unless
+  explicitly requested.
+- `unverified` — observed but not fully validated from primary sources.
+
+### Task Suitability Classes
+
+Task classes are a second routing layer on top of the six dimensions. They
+capture concrete work types so an older or cheaper model can remain preferred
+for suitable work while frontier models are reserved for tasks that justify
+their cost.
+
+Use `list_task_classes()` for the live catalogue. Current classes include:
+
+`architecture`, `algorithm_design`, `debugging`, `implementation`,
+`refactoring`, `code_review`, `test_generation`, `repo_navigation`,
+`agentic_workflow`, `tool_calling`, `structured_output`,
+`data_extraction`, `summarization`, `long_context_synthesis`, `rag`,
+`citation_answering`, `research_synthesis`, `math_reasoning`,
+`scientific_reasoning`, `legal_analysis`, `medical_admin`,
+`financial_analysis`, `translation`, `multilingual_chat`, `classification`,
+`sentiment_analysis`, `creative_writing`, `marketing_copy`, `data_analysis`,
+`sql_generation`, `spreadsheet_analysis`, `ocr`, `image_understanding`,
+`chart_understanding`, `diagram_reasoning`, `voice`, `audio_transcription`,
+`video_understanding`, `low_latency_chat`, `bulk_generation`,
+`privacy_sensitive`, `self_hosted_enterprise`.
+
+Examples:
+
+```python
+query_models(task_class="architecture", R=4, E=5, limit=3)
+query_models(task_class="summarization", min_task_suitability=4, S=4)
+query_models(task_class="privacy_sensitive", G=5, require_task_suitability=True)
+```
 
 ### Task Scoring Quick-Reference
 
@@ -465,8 +510,9 @@ top-2 and cluster on those.
 
 ### Model roster summary
 
-The roster contains **34 models** across 12 providers (25 validated, 9 estimated
-for post-Aug-2025 releases). Estimated models are marked `_estimated: true` in
+The roster contains **61 models** across 16 providers, with lifecycle metadata
+that separates availability from ranking. Estimated or unverified models are
+marked `_estimated: true` or `lifecycle: "unverified"` in
 `mcp/model_scores.json` and should be validated via Workflow C before using in
 production routing.
 
@@ -475,8 +521,8 @@ production routing.
 **Narrative profiles:** see `references/model-profiles.md`.
 
 **Providers covered:** Anthropic, OpenAI, Google (API + open weights),
-xAI (Grok), Meta (Llama), Alibaba/Qwen (open), Microsoft/Phi (open),
-MiniMax, Mistral (all tiers + Codestral + Deep Think), Cohere, DeepSeek.
+xAI (Grok), Meta/Llama, Alibaba/Qwen, Moonshot/Kimi, Z.AI/GLM,
+Microsoft/Phi, MiniMax, Mistral, Cohere, DeepSeek, AWS Nova, NVIDIA Nemotron.
 
 **⚠️ G:1 warning:** DeepSeek APIs, Alibaba Cloud API, and MiniMax API operate
 under Chinese jurisdiction. Never route sensitive, regulated, or personal data

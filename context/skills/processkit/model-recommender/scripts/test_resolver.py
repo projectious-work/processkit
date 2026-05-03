@@ -82,7 +82,8 @@ def _mk_model(id: str, provider: str, family: str, equivalent_tier: str,
               *, efforts: list[str] | None = None,
               modalities: list[str] | None = None,
               versions: list[dict] | None = None,
-              dims: dict[str, int] | None = None) -> dict:
+              dims: dict[str, int] | None = None,
+              task_suitability: dict[str, int] | None = None) -> dict:
     return {
         "provider": provider,
         "family": family,
@@ -97,6 +98,7 @@ def _mk_model(id: str, provider: str, family: str, equivalent_tier: str,
             "reasoning": 4, "engineering": 4, "speed": 3,
             "breadth": 4, "reliability": 4, "governance": 5,
         },
+        "task_suitability": task_suitability or {},
         "access_tier": "public",
         "equivalent_tier": equivalent_tier,
     }
@@ -134,7 +136,10 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                                         "computer-use"],
                             dims={"reasoning": 4, "engineering": 5,
                                   "speed": 3, "breadth": 4,
-                                  "reliability": 4, "governance": 5}))
+                                  "reliability": 4, "governance": 5},
+                            task_suitability={
+                                "architecture": 4, "summarization": 3,
+                            }))
     _write_entity(ctx / "models", "Model", "MODEL-anthropic-claude-opus",
                   _mk_model("MODEL-anthropic-claude-opus", "anthropic",
                             "claude-opus", "xxl",
@@ -148,7 +153,10 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                                                               "output": 75.0}}],
                             dims={"reasoning": 5, "engineering": 5,
                                   "speed": 2, "breadth": 4,
-                                  "reliability": 5, "governance": 5}))
+                                  "reliability": 5, "governance": 5},
+                            task_suitability={
+                                "architecture": 5, "summarization": 2,
+                            }))
     _write_entity(ctx / "models", "Model", "MODEL-anthropic-claude-haiku",
                   _mk_model("MODEL-anthropic-claude-haiku", "anthropic",
                             "claude-haiku", "m",
@@ -160,14 +168,20 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                                                               "output": 1.25}}],
                             dims={"reasoning": 3, "engineering": 3,
                                   "speed": 5, "breadth": 3,
-                                  "reliability": 4, "governance": 5}))
+                                  "reliability": 4, "governance": 5},
+                            task_suitability={
+                                "architecture": 2, "summarization": 5,
+                            }))
     _write_entity(ctx / "models", "Model", "MODEL-openai-gpt-5",
                   _mk_model("MODEL-openai-gpt-5", "openai", "gpt-5", "xxl",
                             efforts=["none", "low", "medium", "high"],
                             modalities=["text", "tools"],
                             dims={"reasoning": 5, "engineering": 4,
                                   "speed": 3, "breadth": 4,
-                                  "reliability": 4, "governance": 3}))
+                                  "reliability": 4, "governance": 3},
+                            task_suitability={
+                                "architecture": 5, "summarization": 3,
+                            }))
     _write_entity(ctx / "models", "Model", "MODEL-google-gemini-flash",
                   _mk_model("MODEL-google-gemini-flash", "google",
                             "gemini-flash", "m",
@@ -179,7 +193,10 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
                                                               "output": 0.30}}],
                             dims={"reasoning": 3, "engineering": 3,
                                   "speed": 5, "breadth": 4,
-                                  "reliability": 3, "governance": 2}))
+                                  "reliability": 3, "governance": 2},
+                            task_suitability={
+                                "architecture": 2, "summarization": 5,
+                            }))
 
     monkeypatch.chdir(tmp_path)
     # Force the index DB into tmp_path
@@ -625,6 +642,54 @@ def test_tiebreak_prefers_recent_version(project_root):
                  conditions={"rank": 1})
     cands = R.resolve("ROLE-software-engineer")
     assert cands[0].model_id == "MODEL-new"
+
+
+def test_tiebreak_prefers_task_suitability_among_peers(project_root):
+    _add_binding(project_root, "BIND-opus", "model-assignment",
+                 "ROLE-software-engineer", "MODEL-anthropic-claude-opus",
+                 conditions={"rank": 1})
+    _add_binding(project_root, "BIND-haiku", "model-assignment",
+                 "ROLE-software-engineer", "MODEL-anthropic-claude-haiku",
+                 conditions={"rank": 1})
+
+    cands = R.resolve(
+        "ROLE-software-engineer",
+        task_hints={"task_class": "summarization"},
+    )
+
+    assert cands[0].model_id == "MODEL-anthropic-claude-haiku"
+
+
+def test_task_suitability_required_rejects_missing(project_root):
+    _add_model(project_root, id="MODEL-no-task-map", provider="fake",
+               family="missing-task-map", equivalent_tier="l")
+    _add_binding(project_root, "BIND-missing", "model-assignment",
+                 "ROLE-software-engineer", "MODEL-no-task-map",
+                 conditions={"rank": 1})
+
+    with pytest.raises(R.NoViableModelError):
+        R.resolve(
+            "ROLE-software-engineer",
+            task_hints={
+                "task_class": "architecture",
+                "require_task_suitability": True,
+            },
+        )
+
+
+def test_task_suitability_missing_allowed_by_default(project_root):
+    _add_model(project_root, id="MODEL-no-task-map", provider="fake",
+               family="missing-task-map", equivalent_tier="l")
+    _add_binding(project_root, "BIND-missing", "model-assignment",
+                 "ROLE-software-engineer", "MODEL-no-task-map",
+                 conditions={"rank": 1})
+
+    cands = R.resolve(
+        "ROLE-software-engineer",
+        task_hints={"task_class": "architecture"},
+    )
+
+    assert cands[0].model_id == "MODEL-no-task-map"
 
 
 # ---------------------------------------------------------------------------

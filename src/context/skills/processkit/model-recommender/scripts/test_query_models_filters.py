@@ -35,6 +35,7 @@ def _make_model(
     jurisdiction: dict | None = None,
     latency_p50_ms: int | None = None,
     model_classes: list[str] | None = None,
+    task_suitability: dict | None = None,
 ) -> dict:
     """Build a single legacy-shape model entry for unit testing the filter."""
     return {
@@ -53,6 +54,7 @@ def _make_model(
         "_estimated": False,
         "best_for": [],
         "avoid_for": [],
+        "task_suitability": task_suitability or {},
         "data_privacy": data_privacy or {},
         "jurisdiction": jurisdiction or {},
         "latency_p50_ms": latency_p50_ms,
@@ -87,6 +89,7 @@ def fake_scores(monkeypatch):
                 "gdpr_eligible": True,
             },
             latency_p50_ms=600,
+            task_suitability={"code_review": 5, "summarization": 3},
         ),
         # OpenAI-shape: HIPAA-eligible but US-only, retention 30, opt-out.
         _make_model(
@@ -106,6 +109,7 @@ def fake_scores(monkeypatch):
                 "gdpr_eligible": False,
             },
             latency_p50_ms=400,
+            task_suitability={"code_review": 3, "summarization": 5},
         ),
         # CN-shape: not HIPAA-eligible, CN HQ, training opt-out, unknown retention.
         _make_model(
@@ -126,12 +130,25 @@ def fake_scores(monkeypatch):
                 "gdpr_eligible": False,
             },
             latency_p50_ms=300,
+            task_suitability={"code_review": 1, "summarization": 4},
         ),
         # Self-hosted-shape: missing data_privacy entirely (unknown posture).
         _make_model(mid="open-no-privacy"),
     ]
 
-    monkeypatch.setattr(server, "_load_scores", lambda: {"_meta": {}, "models": models})
+    meta = {
+        "task_suitability_classes": {
+            "code_review": {
+                "label": "Code review",
+                "profile": {"E": 5, "L": 5, "R": 4},
+            },
+            "summarization": {
+                "label": "Summarization",
+                "profile": {"B": 4, "L": 4, "S": 3},
+            },
+        }
+    }
+    monkeypatch.setattr(server, "_load_scores", lambda: {"_meta": meta, "models": models})
     monkeypatch.setattr(server, "_load_config", lambda: {})
     return server
 
@@ -324,3 +341,47 @@ def test_profile_block_includes_royalfern_fields(fake_scores):
     assert strict["data_privacy"]["phi_hipaa_eligible"] is True
     assert strict["jurisdiction"]["vendor_hq_country"] == "US"
     assert strict["latency_p50_ms"] == 600
+
+
+def test_query_models_task_class_filter(fake_scores):
+    server = fake_scores
+    out = server.query_models(
+        task_class="code_review",
+        min_task_suitability=4,
+        apply_user_filter=False,
+        limit=10,
+    )
+    assert _ids(out) == ["hipaa-us-strict"]
+
+
+def test_query_models_task_class_missing_is_allowed_by_default(fake_scores):
+    server = fake_scores
+    out = server.query_models(
+        task_class="code_review",
+        apply_user_filter=False,
+        limit=10,
+    )
+    assert "open-no-privacy" in _ids(out)
+
+
+def test_query_models_task_class_missing_can_be_required(fake_scores):
+    server = fake_scores
+    out = server.query_models(
+        task_class="code_review",
+        require_task_suitability=True,
+        apply_user_filter=False,
+        limit=10,
+    )
+    assert "open-no-privacy" not in _ids(out)
+
+
+def test_profile_block_includes_task_suitability_on_full_scope(fake_scores):
+    server = fake_scores
+    out = server.get_profile("hipaa-us-strict", scope="full")
+    assert out["task_suitability"]["code_review"] == 5
+
+
+def test_list_task_classes(fake_scores):
+    server = fake_scores
+    out = server.list_task_classes()
+    assert out["classes"]["code_review"]["label"] == "Code review"

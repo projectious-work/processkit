@@ -27,7 +27,7 @@ HERE = Path(__file__).parent
 SCORES_FILE = HERE / "model_scores.json"
 CONFIG_FILE = HERE / "user_config.json"
 
-# Walk up to repo root to find context/models/ (first-class Model artifacts).
+# Walk up to repo root to find legacy context/models/ entity cards.
 # The MCP lives at <repo>/context/skills/processkit/model-recommender/mcp/server.py
 # so HERE.parents[4] is the repo root:
 #   [0] model-recommender  [1] processkit  [2] skills
@@ -83,7 +83,7 @@ def _parse_frontmatter(text: str) -> dict | None:
 
 
 def _entity_to_legacy(entity: dict) -> list[dict]:
-    """Convert a Model entity artifact into one legacy JSON-style dict per
+    """Convert a legacy Model entity card into one JSON-style dict per
     version, so the existing server tools work unchanged.
     """
     spec = entity.get("spec", {})
@@ -132,7 +132,13 @@ def _entity_to_legacy(entity: dict) -> list[dict]:
             "name": f"{family} {vid}".strip(),
             "provider": provider_display,
             "tier": spec.get("rationale") or tier_label,
+            "lifecycle": ver.get("lifecycle") or spec.get("lifecycle") or "active",
+            "deprecated_after": ver.get("deprecated_after"),
+            "retired_after": ver.get("retired_after"),
+            "replacement_model": ver.get("replacement_model"),
+            "source_urls": ver.get("source_urls") or spec.get("source_urls") or [],
             "model_classes": spec.get("model_classes") or [],
+            "task_suitability": spec.get("task_suitability") or {},
             "architecture": spec.get("architecture") or {},
             "license": spec.get("license") or {},
             "deployment": spec.get("deployment") or {},
@@ -159,11 +165,11 @@ def _entity_to_legacy(entity: dict) -> list[dict]:
 
 
 def _load_from_artifacts() -> dict | None:
-    """Load models from `context/models/*.md` entity artifacts.
+    """Load models from legacy `context/models/*.md` entity cards.
 
     Returns a dict in the same shape as model_scores.json (with "_meta"
-    and "models") when the directory exists and has ≥1 parseable
-    artifact; returns None otherwise (caller falls back to JSON).
+    and "models") when the directory exists and has at least one
+    parseable card; returns None otherwise.
     """
     if not MODELS_DIR.is_dir():
         return None
@@ -193,13 +199,16 @@ def _load_from_artifacts() -> dict | None:
 
 
 def _load_scores() -> dict:
-    # Prefer first-class Model artifacts when available; fall back to
-    # the legacy monolithic registry for backward compatibility.
+    # v2 treats the roster as this skill's data, not a first-class
+    # processkit primitive. Prefer the packaged roster and keep the old
+    # Model-entity loader only as an install/back-compat fallback.
+    if SCORES_FILE.exists():
+        with open(SCORES_FILE) as f:
+            return json.load(f)
     from_artifacts = _load_from_artifacts()
     if from_artifacts is not None:
         return from_artifacts
-    with open(SCORES_FILE) as f:
-        return json.load(f)
+    raise FileNotFoundError(f"model roster not found: {SCORES_FILE}")
 
 def _load_config() -> dict:
     if CONFIG_FILE.exists():
@@ -256,6 +265,35 @@ def _apply_user_filter(models: list[dict], cfg: dict) -> list[dict]:
 def _price_for_sort(m: dict) -> float:
     price = (m.get("pricing") or {}).get("output_per_1m")
     return float(price) if price is not None else 0.0
+
+def _model_lifecycle(m: dict) -> str:
+    return str(m.get("lifecycle") or "active")
+
+def _is_routable_lifecycle(m: dict, *, include_retired: bool = False) -> bool:
+    lifecycle = _model_lifecycle(m)
+    if lifecycle == "retired" and not include_retired:
+        return False
+    if lifecycle == "unverified" and not m.get("_estimated"):
+        # Treat explicit unverified records like estimated records for
+        # routing: visible by default, removable through include_estimated.
+        m["_estimated"] = True
+    return True
+
+def _task_suitability_score(m: dict, task_class: str | None) -> int | None:
+    if not task_class:
+        return None
+    suitability = m.get("task_suitability") or {}
+    score = suitability.get(task_class)
+    if score is None:
+        return None
+    try:
+        return int(score)
+    except Exception:
+        return None
+
+def _task_class_meta(task_class: str, meta: dict) -> dict | None:
+    classes = meta.get("task_suitability_classes") or {}
+    return classes.get(task_class)
 
 def _model_class_score(model_class: str, m: dict) -> float:
     dims = m["dimensions"]
@@ -330,10 +368,16 @@ def _profile_block(m: dict, scope: str = "summary") -> dict:
         "name": m["name"],
         "provider": m["provider"],
         "tier": m["tier"],
+        "lifecycle": _model_lifecycle(m),
         "context_k": m["context_k"],
         "governance_warning": m.get("governance_warning"),
         "dimensions": top,
     }
+    for k in ("deprecated_after", "retired_after", "replacement_model"):
+        if m.get(k):
+            out[k] = m[k]
+    if m.get("source_urls"):
+        out["source_urls"] = m["source_urls"]
     # RoyalFern fields surface on every scope when present, so callers
     # can verify the fact a filter was acting on without a second call.
     for k in ("vendor_model_id", "knowledge_cutoff", "latency_p50_ms"):
@@ -358,6 +402,7 @@ def _profile_block(m: dict, scope: str = "summary") -> dict:
         out["sub_dimensions"] = {d: dims[d]["sub"] for d in dims}
         out["best_for"] = m.get("best_for", [])
         out["avoid_for"] = m.get("avoid_for", [])
+        out["task_suitability"] = m.get("task_suitability", {})
     elif scope in ("R", "E", "S", "B", "L", "G"):
         out["sub_dimensions"] = {scope: dims[scope]["sub"]}
     return out
@@ -392,6 +437,11 @@ def query_models(
     legal_regime_in: Optional[list[str]] = None,
     data_residency_in: Optional[list[str]] = None,
     max_latency_p50_ms: Optional[int] = None,
+    lifecycle: Optional[list[str]] = None,
+    include_retired: bool = False,
+    task_class: Optional[str] = None,
+    min_task_suitability: int = 0,
+    require_task_suitability: bool = False,
     apply_user_filter: bool = True,
     include_estimated: bool = True,
     limit: int = 5,
@@ -435,17 +485,35 @@ def query_models(
                                 must offer (any-match).
       max_latency_p50_ms      — integer ceiling on the vendor-published p50
                                 latency.
+      lifecycle               — optional list of lifecycle states to include
+                                (active, legacy, deprecated, retired,
+                                unverified). Retired models are excluded
+                                unless include_retired=True.
+      task_class              — optional fine-grained task class from
+                                list_task_classes(); when set, ranking uses
+                                per-model task_suitability first.
+      min_task_suitability    — minimum 1-5 suitability for task_class.
+      require_task_suitability
+                              — if True, reject models missing task_class data.
 
     Returns ranked list of matching model profiles (summary level).
     """
     data = _load_scores()
+    meta = data.get("_meta", {})
     cfg = _load_config() if apply_user_filter else {}
     mins = {"R": R, "E": E, "S": S, "B": B, "L": L, "G": G}
     sub_mins = {"R": sub_R or {}, "E": sub_E or {}, "B": sub_B or {}}
+    lifecycle_set = set(lifecycle or [])
+    if task_class and _task_class_meta(task_class, meta) is None:
+        return []
 
     candidates = []
     for m in data["models"]:
         dims = m["dimensions"]
+        if not _is_routable_lifecycle(m, include_retired=include_retired):
+            continue
+        if lifecycle_set and _model_lifecycle(m) not in lifecycle_set:
+            continue
         # Filter estimated models if requested
         if not include_estimated and m.get("_estimated"):
             continue
@@ -485,16 +553,48 @@ def query_models(
             max_latency_p50_ms=max_latency_p50_ms,
         ):
             continue
+        task_score = _task_suitability_score(m, task_class)
+        if task_class:
+            if task_score is None:
+                if require_task_suitability or min_task_suitability > 0:
+                    continue
+                task_score = 0
+            if min_task_suitability > 0 and task_score < min_task_suitability:
+                continue
         # Compute fit score: sum of (actual - required) for required dims
         fit = sum(dims[d]["score"] - mins[d] for d in mins if mins[d] > 0)
-        candidates.append((fit, m))
+        candidates.append((fit, task_score or 0, m))
 
-    candidates.sort(key=lambda x: -x[0])
-    models = [m for _, m in candidates[:limit]]
+    if task_class:
+        candidates.sort(key=lambda x: (-x[1], -x[0]))
+    else:
+        candidates.sort(key=lambda x: -x[0])
+    models = [m for _, _, m in candidates[:limit]]
     if apply_user_filter and cfg:
         models = _apply_user_filter(models, cfg)
 
     return [_profile_block(m, "summary") for m in models]
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def list_task_classes() -> dict:
+    """Return the fine-grained task suitability classes known to the roster.
+
+    These classes are optional routing hints layered on top of the stable
+    R/E/S/B/L/G dimensions. A model missing a class is unknown, not
+    automatically unsuitable; callers can set require_task_suitability=True
+    in query_models when they need explicit coverage.
+    """
+    meta = _load_scores().get("_meta", {})
+    return {
+        "classes": meta.get("task_suitability_classes") or {},
+        "scale": "1=minimal, 3=adequate, 5=excellent",
+    }
 
 
 def _passes_royalfern_filters(
@@ -632,6 +732,7 @@ def list_models(apply_user_filter: bool = True) -> list[dict]:
             "name": m["name"],
             "provider": m["provider"],
             "tier": m["tier"],
+            "lifecycle": _model_lifecycle(m),
             "context_k": m["context_k"],
             "scores": {d: m["dimensions"][d]["score"] for d in m["dimensions"]},
             "governance_warning": m.get("governance_warning"),
@@ -1063,7 +1164,9 @@ def resolve_model(
     scope:        ``SCOPE-<slug>`` (or project slug) for project-level bindings
     task_hints:   optional dict: ``{requires_vision, requires_tool_use,
                   requires_computer_use, max_cost_usd, max_latency_ms,
-                  model_pin, version_pin, effort, expected_tokens}``
+                  model_pin, version_pin, effort, expected_tokens,
+                  task_class, task_classes, min_task_suitability,
+                  require_task_suitability}``
     explain:      include a layer-by-layer trace in the response
     """
     r = _resolver_module()
