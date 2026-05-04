@@ -3,8 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import os
+import subprocess
+import sys
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from functools import partial
+from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 from urllib.parse import urlparse
 
@@ -28,6 +33,9 @@ class ProxyConfig:
     timeout: float = 30.0
     sse_read_timeout: float = 300.0
     terminate_on_close: bool = True
+    daemon_command: Sequence[str] | None = None
+    daemon_start_timeout: float = 30.0
+    daemon_log_path: Path | None = None
 
     @classmethod
     def from_values(
@@ -38,6 +46,9 @@ class ProxyConfig:
         timeout: float = 30.0,
         sse_read_timeout: float = 300.0,
         terminate_on_close: bool = True,
+        daemon_command: Sequence[str] | None = None,
+        daemon_start_timeout: float = 30.0,
+        daemon_log_path: str | Path | None = None,
     ) -> "ProxyConfig":
         merged = dict(DEFAULT_HEADERS)
         if headers:
@@ -48,6 +59,9 @@ class ProxyConfig:
             timeout=timeout,
             sse_read_timeout=sse_read_timeout,
             terminate_on_close=terminate_on_close,
+            daemon_command=tuple(daemon_command) if daemon_command else None,
+            daemon_start_timeout=daemon_start_timeout,
+            daemon_log_path=Path(daemon_log_path) if daemon_log_path else None,
         )
 
 
@@ -99,6 +113,93 @@ def parse_header_args(values: Sequence[str] | None) -> dict[str, str]:
             raise ProxyConfigError(f"invalid header name: {name!r}")
         headers[name] = value
     return headers
+
+
+def _local_http_binding(url: str) -> tuple[str, int, str] | None:
+    """Return local daemon host, port, path if the URL is locally owned."""
+
+    parsed = urlparse(validate_streamable_http_url(url))
+    if parsed.scheme != "http":
+        return None
+    if parsed.hostname not in {"127.0.0.1", "localhost", "::1"}:
+        return None
+    port = parsed.port or 80
+    return parsed.hostname, port, parsed.path or "/"
+
+
+async def _tcp_ready(host: str, port: int, *, timeout: float) -> bool:
+    """Return whether a TCP listener is available within ``timeout``."""
+
+    import anyio
+
+    deadline = anyio.current_time() + max(timeout, 0.0)
+    while True:
+        try:
+            stream = await anyio.connect_tcp(host, port)
+            await stream.aclose()
+            return True
+        except OSError:
+            if anyio.current_time() >= deadline:
+                return False
+            await anyio.sleep(0.1)
+
+
+def _spawn_daemon(
+    command: Sequence[str],
+    *,
+    log_path: Path | None = None,
+) -> subprocess.Popen[Any]:
+    """Start a gateway daemon without contaminating MCP stdio."""
+
+    target = log_path or Path("/tmp/processkit-gateway-daemon.log")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    log_file = target.open("ab")
+    try:
+        return subprocess.Popen(
+            list(command),
+            stdin=subprocess.DEVNULL,
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+            close_fds=True,
+            start_new_session=True,
+        )
+    except Exception:
+        log_file.close()
+        raise
+
+
+async def ensure_upstream_daemon(
+    config: ProxyConfig,
+) -> subprocess.Popen[Any] | None:
+    """Start the local daemon if this proxy owns startup for the URL."""
+
+    if not config.daemon_command:
+        return None
+
+    binding = _local_http_binding(config.url)
+    if binding is None:
+        return None
+
+    host, port, _path = binding
+    if await _tcp_ready(host, port, timeout=0.2):
+        return None
+
+    process = _spawn_daemon(
+        config.daemon_command,
+        log_path=config.daemon_log_path,
+    )
+    if await _tcp_ready(host, port, timeout=config.daemon_start_timeout):
+        return process
+
+    exit_code = process.poll()
+    message = f"gateway daemon did not become ready at {host}:{port}"
+    if exit_code is not None:
+        message += f"; daemon exited with code {exit_code}"
+    else:
+        process.terminate()
+    if config.daemon_log_path is not None:
+        message += f"; see {config.daemon_log_path}"
+    raise RuntimeError(message)
 
 
 def load_mcp_sdk() -> McpSdkBindings:
@@ -199,6 +300,13 @@ async def run_stdio_proxy(
     """Relay MCP session messages between stdio and streamable HTTP."""
 
     sdk = sdk or load_mcp_sdk()
+    daemon_process = await ensure_upstream_daemon(config)
+    if daemon_process is not None:
+        print(
+            f"processkit-gateway daemon started with pid "
+            f"{daemon_process.pid}",
+            file=sys.stderr,
+        )
 
     import anyio
 
@@ -247,6 +355,7 @@ async def async_main(
     sdk: McpSdkBindings | None = None,
     stdin: Any | None = None,
     stdout: Any | None = None,
+    daemon_command: Sequence[str] | None = None,
 ) -> int:
     """CLI-callable async entrypoint for the stdio proxy."""
 
@@ -257,6 +366,11 @@ async def async_main(
         timeout=args.timeout,
         sse_read_timeout=args.sse_read_timeout,
         terminate_on_close=not args.no_terminate_on_close,
+        daemon_command=daemon_command,
+        daemon_log_path=os.environ.get(
+            "PROCESSKIT_GATEWAY_DAEMON_LOG",
+            "/tmp/processkit-gateway-daemon.log",
+        ),
     )
     return await run_stdio_proxy(
         config,
@@ -266,12 +380,20 @@ async def async_main(
     )
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    daemon_command: Sequence[str] | None = None,
+) -> int:
     """Synchronous CLI wrapper for ``async_main``."""
 
     import anyio
 
-    return anyio.run(async_main, argv)
+    return anyio.run(partial(
+        async_main,
+        argv,
+        daemon_command=daemon_command,
+    ))
 
 
 __all__ = [
@@ -285,5 +407,6 @@ __all__ = [
     "main",
     "parse_header_args",
     "run_stdio_proxy",
+    "ensure_upstream_daemon",
     "validate_streamable_http_url",
 ]

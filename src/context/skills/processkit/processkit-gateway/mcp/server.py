@@ -17,6 +17,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 
 def _find_lib() -> Path:
@@ -137,6 +138,14 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     proxy.add_argument("--timeout", type=float, default=30.0)
     proxy.add_argument("--sse-read-timeout", type=float, default=300.0)
     proxy.add_argument("--no-terminate-on-close", action="store_true")
+    proxy.add_argument(
+        "--no-start-daemon",
+        action="store_true",
+        help=(
+            "Do not auto-start a local streamable-http daemon before "
+            "bridging stdio."
+        ),
+    )
     catalog = sub.add_parser("catalog")
     catalog.add_argument("--write", action="store_true")
     catalog.add_argument("--path")
@@ -166,7 +175,28 @@ def main(argv: list[str] | None = None) -> int:
         proxy_args.extend(["--sse-read-timeout", str(args.sse_read_timeout)])
         if args.no_terminate_on_close:
             proxy_args.append("--no-terminate-on-close")
-        return proxy_main(proxy_args)
+
+        daemon_command = None
+        parsed_url = urlparse(args.url)
+        if not args.no_start_daemon and parsed_url.hostname in {
+            "127.0.0.1",
+            "localhost",
+            "::1",
+        }:
+            daemon_command = [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "serve",
+                "--transport",
+                "streamable-http",
+                "--host",
+                parsed_url.hostname,
+                "--port",
+                str(parsed_url.port or 80),
+                "--path",
+                parsed_url.path or "/mcp",
+            ]
+        return proxy_main(proxy_args, daemon_command=daemon_command)
     if args.command == "catalog":
         target = Path(args.path) if args.path else None
         path = _REGISTRY.write_catalog(target)

@@ -158,8 +158,9 @@ def test_main_delegates_stdio_proxy(monkeypatch):
     proxy = __import__("processkit.gateway.proxy", fromlist=["main"])
     captured = {}
 
-    def fake_proxy_main(argv):
+    def fake_proxy_main(argv, *, daemon_command=None):
         captured["argv"] = argv
+        captured["daemon_command"] = daemon_command
         return 0
 
     monkeypatch.setattr(proxy, "main", fake_proxy_main)
@@ -184,6 +185,40 @@ def test_main_delegates_stdio_proxy(monkeypatch):
         "300.0",
         "--no-terminate-on-close",
     ]
+    assert captured["daemon_command"][1] == str(SERVER_PATH)
+    assert captured["daemon_command"][2:] == [
+        "serve",
+        "--transport",
+        "streamable-http",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8000",
+        "--path",
+        "/mcp",
+    ]
+
+
+def test_main_can_disable_stdio_proxy_daemon_autostart(monkeypatch):
+    gateway = _load_server()
+    proxy = __import__("processkit.gateway.proxy", fromlist=["main"])
+    captured = {}
+
+    def fake_proxy_main(argv, *, daemon_command=None):
+        captured["argv"] = argv
+        captured["daemon_command"] = daemon_command
+        return 0
+
+    monkeypatch.setattr(proxy, "main", fake_proxy_main)
+
+    assert gateway.main([
+        "stdio-proxy",
+        "--url",
+        "http://127.0.0.1:8000/mcp",
+        "--no-start-daemon",
+    ]) == 0
+
+    assert captured["daemon_command"] is None
 
 
 def test_main_writes_catalog(tmp_path, capsys):

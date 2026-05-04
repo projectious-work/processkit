@@ -47,7 +47,10 @@ The gateway also owns the long-lived daemon and proxy CLI shape:
 `serve --transport streamable-http` starts a local streamable HTTP MCP
 daemon. It binds to `127.0.0.1:8000/mcp` by default. `stdio-proxy` is a
 lightweight stdio bridge for harnesses that cannot connect to HTTP MCP
-servers directly. The proxy must not import source processkit MCP servers.
+servers directly. For localhost HTTP URLs, the proxy starts the matching
+daemon when the port is not already listening; pass `--no-start-daemon` when
+an external supervisor owns daemon lifecycle. The proxy must not import source
+processkit MCP servers.
 
 Set `PROCESSKIT_GATEWAY_IMPORT_MODE=lazy-catalog` or
 `PROCESSKIT_GATEWAY_LAZY=true` to use the catalog-backed lazy registration
@@ -79,6 +82,7 @@ configure a harness to launch the stdio command.
 - `serve --transport stdio`
 - `serve --transport streamable-http`
 - `stdio-proxy --url ...`
+- `stdio-proxy --url ... --no-start-daemon`
 - `catalog --write`
 
 ### Environment

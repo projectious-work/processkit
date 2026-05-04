@@ -179,3 +179,91 @@ def test_async_entrypoint_is_cli_callable(monkeypatch):
     assert captured["config"].url == "http://127.0.0.1:8765/mcp"
     assert captured["config"].headers["Authorization"] == "Bearer token"
     assert captured["config"].terminate_on_close is False
+
+
+def test_ensure_upstream_daemon_starts_missing_local_daemon(monkeypatch):
+    proxy = _load_proxy()
+    ready_checks = []
+    captured = {}
+
+    async def fake_tcp_ready(host, port, *, timeout):
+        ready_checks.append((host, port, timeout))
+        return len(ready_checks) > 1
+
+    class FakeProcess:
+        pid = 12345
+
+        def poll(self):
+            return None
+
+    def fake_spawn_daemon(command, *, log_path=None):
+        captured["command"] = command
+        captured["log_path"] = log_path
+        return FakeProcess()
+
+    monkeypatch.setattr(proxy, "_tcp_ready", fake_tcp_ready)
+    monkeypatch.setattr(proxy, "_spawn_daemon", fake_spawn_daemon)
+
+    config = proxy.ProxyConfig.from_values(
+        url="http://127.0.0.1:8765/mcp",
+        daemon_command=["python", "server.py", "serve"],
+        daemon_log_path="/tmp/processkit-gateway-daemon-test.log",
+    )
+
+    result = asyncio.run(proxy.ensure_upstream_daemon(config))
+
+    assert result.pid == 12345
+    assert captured["command"] == ("python", "server.py", "serve")
+    assert captured["log_path"].as_posix().endswith(
+        "processkit-gateway-daemon-test.log"
+    )
+    assert ready_checks[0][:2] == ("127.0.0.1", 8765)
+    assert ready_checks[1][:2] == ("127.0.0.1", 8765)
+
+
+def test_ensure_upstream_daemon_ignores_nonlocal_urls(monkeypatch):
+    proxy = _load_proxy()
+
+    def fail_spawn(*args, **kwargs):
+        raise AssertionError("non-local proxy URLs must not start daemons")
+
+    monkeypatch.setattr(proxy, "_spawn_daemon", fail_spawn)
+    config = proxy.ProxyConfig.from_values(
+        url="https://example.test/mcp",
+        daemon_command=["python", "server.py", "serve"],
+    )
+
+    assert asyncio.run(proxy.ensure_upstream_daemon(config)) is None
+
+
+def test_ensure_upstream_daemon_terminates_failed_start(monkeypatch):
+    proxy = _load_proxy()
+
+    async def fake_tcp_ready(host, port, *, timeout):
+        return False
+
+    class FakeProcess:
+        terminated = False
+
+        def poll(self):
+            return None
+
+        def terminate(self):
+            self.terminated = True
+
+    fake_process = FakeProcess()
+
+    def fake_spawn_daemon(command, *, log_path=None):
+        return fake_process
+
+    monkeypatch.setattr(proxy, "_tcp_ready", fake_tcp_ready)
+    monkeypatch.setattr(proxy, "_spawn_daemon", fake_spawn_daemon)
+    config = proxy.ProxyConfig.from_values(
+        url="http://127.0.0.1:8765/mcp",
+        daemon_command=["python", "server.py", "serve"],
+    )
+
+    with pytest.raises(RuntimeError, match="did not become ready"):
+        asyncio.run(proxy.ensure_upstream_daemon(config))
+
+    assert fake_process.terminated is True
