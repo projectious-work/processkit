@@ -63,13 +63,13 @@ project:
 
 ```sh
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.25.3/processkit-v0.25.3.tar.gz \
-  -o processkit-v0.25.3.tar.gz
-tar -xzf processkit-v0.25.3.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.25.4/processkit-v0.25.4.tar.gz \
+  -o processkit-v0.25.4.tar.gz
+tar -xzf processkit-v0.25.4.tar.gz
 
-cp -a processkit-v0.25.3/context ./context
-cp -a processkit-v0.25.3/.processkit ./.processkit
-cp processkit-v0.25.3/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.25.4/context ./context
+cp -a processkit-v0.25.4/.processkit ./.processkit
+cp processkit-v0.25.4/AGENTS.md ./AGENTS.md
 ```
 
 Then point your harness at the gateway MCP server. For stdio-based MCP:
@@ -139,7 +139,7 @@ processkit automatically for devcontainers:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.25.3"
+version = "v0.25.4"
 
 [context]
 packages = ["managed"]
@@ -160,10 +160,9 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 processkit is currently pre-1.0. Breaking changes can still land in
 minor releases, and release notes call them out explicitly.
 
-`v0.25.3` is the current patch release. It keeps the v0.25.0 gateway
-and v2 deliverable boundary, ships timestamped model-spec and
-model-profile artifacts, and makes role/team model routing portable
-across harnesses.
+`v0.25.4` is the current patch release. It keeps the v0.25.0 gateway
+and v2 deliverable boundary, fixes daemon-backed gateway proxy startup,
+and keeps role/team model routing portable across harnesses.
 
 ## Development
 

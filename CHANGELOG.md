@@ -11,6 +11,44 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.25.4] — 2026-05-04
+
+v0.25.4 is a **patch release** that fixes the gateway stdio proxy
+startup path used by daemon-first MCP clients. A stdio-only harness can
+now point at a localhost streamable HTTP gateway URL and let processkit
+start the matching daemon when no listener is present.
+
+### Changed
+
+- **Gateway stdio proxy now owns local daemon startup by default.**
+  `stdio-proxy --url http://127.0.0.1:PORT/mcp` starts the matching
+  `serve --transport streamable-http` daemon when the port is not already
+  listening.
+- **Added an explicit external-supervisor escape hatch.**
+  `stdio-proxy --no-start-daemon` keeps the previous behavior for
+  harnesses or service managers that already own daemon lifecycle.
+
+### Fixed
+
+- **Fixed MCP client startup timeouts for daemon-backed gateway configs.**
+  A generated config that invokes `processkit-gateway` through
+  `stdio-proxy` no longer fails solely because the HTTP daemon has not
+  already been launched.
+- **Fixed failed daemon auto-start cleanup.** If the spawned local daemon
+  never becomes ready, the proxy now terminates that child process before
+  reporting the startup failure.
+
+### Verification
+
+- `30 passed` for gateway proxy and CLI coverage in `src/context/`.
+- `30 passed` for gateway proxy and CLI coverage in `context/`.
+- `uv run scripts/smoke-test-servers.py` passed across the MCP smoke
+  suite.
+- `pk-doctor --category=mcp_gateway --no-log` passed with
+  `0 ERROR / 0 WARN` for both source and shipped paths.
+
+---
+
 ## [v0.25.3] — 2026-05-03
 
 v0.25.3 is a **patch release** that makes role and team-member model
