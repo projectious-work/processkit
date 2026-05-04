@@ -12,10 +12,12 @@ here map 1:1 to what the consumer sees after install:
 ```
 src/
 ├── AGENTS.md              → installed at <project>/AGENTS.md
+├── .gitignore.example     → installed recommended ignore template
 ├── context/
 │   ├── schemas/           → installed at <project>/context/schemas/
 │   ├── state-machines/    → installed at <project>/context/state-machines/
-│   ├── processes/         → installed at <project>/context/processes/
+│   ├── artifacts/         → installed model-spec and reference artifacts
+│   ├── bindings/          → installed default routing bindings
 │   └── skills/
 │       ├── _lib/          → installed at <project>/context/skills/_lib/
 │       │   └── processkit/   (the shared Python library used by MCP servers)
@@ -46,9 +48,10 @@ own context, its own docs). Do not mix the two.
 must work for a consumer who never installs aibox and who uses a
 non-Claude agent harness.
 
-**Rule 3 — the mirror invariant.** Every path under `src/context/` and
-`src/AGENTS.md` must be valid as a drop-in at the consumer's project root.
-Content under `src/.processkit/` is tooling-only and never installed.
+**Rule 3 — the mirror invariant.** Every path under `src/context/`,
+`src/AGENTS.md`, and `src/.gitignore.example` must be valid as a drop-in
+at the consumer's project root. Content under `src/.processkit/` is
+tooling-only and never installed.
 
 ## PROVENANCE.toml
 

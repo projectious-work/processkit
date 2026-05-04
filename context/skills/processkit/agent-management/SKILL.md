@@ -43,6 +43,10 @@ Rules of thumb:
 - If a subtask has no verifiable output, redefine it.
 - Prefer depth-first (finish one subtask fully) over breadth-first
   (start many in parallel).
+- Treat MCP-backed subagents as read-only unless the current harness has
+  proven stable MCP server startup and shutdown. If MCP servers crash,
+  hang, or fail to exit in subagent sessions, keep all MCP and filesystem
+  mutations in the primary session.
 
 ### Agent role definitions
 
@@ -133,6 +137,9 @@ Fallbacks:
 - Review finds fundamental issues → return to planner to re-scope
 - Context too large → split the task into smaller independent
   pieces
+- MCP server lifecycle unstable in subagents → stop delegating MCP work,
+  close or ignore the affected subagent, and continue implementation in
+  the primary session. Do not broaden permissions as a workaround.
 
 ### Progress tracking
 

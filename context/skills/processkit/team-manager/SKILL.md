@@ -75,19 +75,20 @@ subdirectories + optional `private/` (gitignored).
 This skill is not a CLI; it is reached entirely via MCP tools served
 by `mcp/server.py`. Tools cluster into six capability groups
 (lifecycle, session identity, name pool, memory scaffolding,
-export/import, consistency). Every write tool logs an `event-log` entry and updates
-the SQLite index automatically — callers do not log or reindex by
-hand. Read tools (`get_team_member`, `list_team_members`,
-`get_active_interlocutor`, `list_available_names`, `suggest_name`,
-`check_consistency`) are
-side-effect-free and safe to call from any agent context.
+export/import, consistency). Every write tool logs an `event-log`
+entry and updates the SQLite index automatically — callers do not log
+or reindex by hand. Read tools (`get_team_member`,
+`list_team_members`, `get_active_interlocutor`,
+`get_interlocutor_runtime_binding`, `list_available_names`,
+`suggest_name`, `check_consistency`) are side-effect-free and safe to
+call from any agent context.
 
 ### Capability groups
 
 | Group | Tools | Use when |
 |---|---|---|
 | Lifecycle | `create_team_member`, `get_team_member`, `list_team_members`, `update_team_member`, `deactivate_team_member`, `reactivate_team_member` | Adding, editing, retiring or restoring a persistent team-member entity |
-| Session identity | `get_active_interlocutor`, `set_active_interlocutor` | Showing which persistent TeamMember, if any, is the current harness interlocutor |
+| Session identity | `get_active_interlocutor`, `get_interlocutor_runtime_binding`, `set_active_interlocutor` | Showing which persistent TeamMember, if any, is the current harness interlocutor, plus the resolved runtime binding when available |
 | Name pool | `reserve_name`, `release_name`, `list_available_names`, `suggest_name` | Choosing or rotating an AI persona name; the pool is the canonical source of truth for AI-agent slugs |
 | Memory scaffolding | `init_memory_tree` | Creating the six tier subdirectories + frontmatter-validated headers under `context/team-members/<slug>/` |
 | Export / import | `export_team_member`, `export_claude_subagent`, `export_claude_subagents`, `import_team_member` | Moving a TeamMember between projects or generating provider-specific adapter files; tarball export redacts confidential/PII memory |
@@ -126,14 +127,25 @@ session-start UI. This is session identity, not lifecycle state:
 `TeamMember.spec.active` continues to mean whether a TeamMember is
 eligible to participate at all.
 
+Use `get_interlocutor_runtime_binding(observed_model?,
+observed_effort?)` when the caller can supply the harness's actual
+runtime. The tool returns the provider-neutral TeamMember identity, the
+model-recommender candidate after local provider gates, the negotiated
+harness mode, and an informational mismatch report. processkit cannot
+hot-swap an already running primary harness session; unsupported
+harnesses therefore fall back to identity-only behavior while still
+growing memory on the configured TeamMember.
+
 **Exporting Claude Code subagents.**
 `export_claude_subagent(slug)` writes one generated adapter to
 `.claude/agents/<slug>.md`; `export_claude_subagents()` exports all
 active non-human TeamMembers by default. The generated file uses
 Claude Code's Markdown + YAML frontmatter format, sets `model:
 inherit`, and omits `tools` so Claude Code inherits the main session's
-model and permissions. TeamMember remains the canonical,
-provider-neutral identity; `.claude/agents/*.md` is only an adapter.
+model and permissions. Pass `model_policy="resolved"` to emit a Claude
+model and effort only when processkit routing resolves to an Anthropic
+candidate. TeamMember remains the canonical, provider-neutral identity;
+`.claude/agents/*.md` is only an adapter.
 
 **Pre-release audit.** `check_all_consistency()` → triage findings by
 severity. Errors block release; warnings are advisory.

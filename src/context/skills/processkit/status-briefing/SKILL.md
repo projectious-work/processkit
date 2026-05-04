@@ -181,6 +181,11 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
   `team-manager.get_active_interlocutor` returns a TeamMember, show that
   identity explicitly. If it is not configured, say the session is an
   ephemeral harness agent rather than implying a named persona is speaking.
+- **Hiding model/runtime mismatch.** When available, call
+  `team-manager.get_interlocutor_runtime_binding` with the harness's
+  observed model and effort. Surface a mismatch as information, not a
+  failure: the configured TeamMember identity can still be correct even
+  when the harness cannot hot-swap to the resolved processkit model.
 - **Listing everything instead of prioritizing.** A briefing that reports all 12 open workitems is not a briefing — it's a dump. The value of a status briefing is triage: surface the 3 things that matter today, not an inventory of everything that exists. If in doubt about what to prioritize, ask — do not pad.
 - **Making the "state of play" section too optimistic.** Briefings written by the agent often smooth over problems to avoid delivering bad news. If the project is blocked, at risk, or behind, the state of play must say so clearly — not "making good progress with a few items to resolve." The user is about to spend their session on this; accurate state matters.
 - **Not including a one-liner.** The "one-liner to carry" section is the hardest to write and the most valuable. Skipping it produces a briefing that reports status without providing orientation. Every briefing must end with one sentence that captures the dominant constraint or priority for the session.

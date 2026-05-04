@@ -22,6 +22,8 @@ Lifecycle:
     get_team_member(id) -> {...} | {error}
     list_team_members(type?, active_only?, role?, limit?) -> [members]
     get_active_interlocutor(scope?) -> {configured, interlocutor?}
+    get_interlocutor_runtime_binding(scope?, observed_model?, observed_effort?,
+                                     task_hints?) -> {configured, binding?}
     set_active_interlocutor(id, scope?) -> {ok, interlocutor}
     update_team_member(id, **fields) -> {ok, id, updated}
     deactivate_team_member(id, left_at?) -> {ok, id, left_at}
@@ -38,9 +40,9 @@ Memory tree:
 
 Export/import:
     export_team_member(slug, output_path?) -> {path, redacted}
-    export_claude_subagent(slug, output_dir?, overwrite?) -> {path}
+    export_claude_subagent(slug, output_dir?, overwrite?, model_policy?) -> {path}
     export_claude_subagents(output_dir?, active_only?, include_humans?,
-                            overwrite?) -> {results}
+                            overwrite?, model_policy?) -> {results}
     import_team_member(tarball_path) -> {slug, path}
 
 Consistency:
@@ -50,6 +52,7 @@ Consistency:
 from __future__ import annotations
 
 import datetime as _dt
+import importlib.util
 import json
 import os
 import re
@@ -101,6 +104,9 @@ _UPDATABLE_FIELDS = {
 
 _SLUG_RE = __import__("re").compile(r"^[a-z][a-z0-9-]*$")
 _CLAUDE_AGENT_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+_MODEL_RESOLVER = None
+_MODEL_RESOLVER_ERROR: str | None = None
+_CLAUDE_MODEL_POLICIES = {"inherit", "resolved"}
 
 
 # ---------------------------------------------------------------------------
@@ -181,6 +187,36 @@ def _write_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def _load_model_resolver():
+    global _MODEL_RESOLVER, _MODEL_RESOLVER_ERROR
+    if _MODEL_RESOLVER is not None:
+        return _MODEL_RESOLVER
+    if _MODEL_RESOLVER_ERROR is not None:
+        return None
+
+    resolver_path = (
+        Path(__file__).resolve().parents[2]
+        / "model-recommender"
+        / "scripts"
+        / "resolver.py"
+    )
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "processkit_model_recommender_resolver",
+            resolver_path,
+        )
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"could not load import spec for {resolver_path}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules.setdefault("processkit_model_recommender_resolver", module)
+        spec.loader.exec_module(module)
+        _MODEL_RESOLVER = module
+        return module
+    except Exception as exc:
+        _MODEL_RESOLVER_ERROR = str(exc)
+        return None
+
+
 def _strip_frontmatter(text: str) -> str:
     if not text.startswith("---\n"):
         return text.strip()
@@ -192,6 +228,302 @@ def _strip_frontmatter(text: str) -> str:
 
 def _yaml_scalar(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
+
+
+def _normalize_runtime_name(value: str | None) -> str:
+    if not value:
+        return ""
+    return str(value).strip().lower().replace("_", "-")
+
+
+def _harness_binding_mode(harnesses: list[str]) -> dict:
+    normalized = [_normalize_runtime_name(h) for h in harnesses]
+    primary_agent = "claude" in normalized
+    launch_conformance = bool(
+        {"claude", "codex", "gemini", "aider", "continue", "cursor",
+         "opencode", "hermes"} & set(normalized)
+    )
+    if primary_agent:
+        mode = "primary-agent"
+        reason = "harness supports project subagent files with model metadata"
+    elif launch_conformance:
+        mode = "launch-conform"
+        reason = "harness can be launched or configured with a model externally"
+    else:
+        mode = "identity-only"
+        reason = "no supported primary-agent or launch-time model interface found"
+    return {
+        "mode": mode,
+        "primary_agent_supported": primary_agent,
+        "launch_conformance_supported": launch_conformance,
+        "subagent_mcp_supported": False,
+        "subagent_mcp_reason": (
+            "disabled until MCP server lifecycle is stable in subagent sessions"
+        ),
+        "reason": reason,
+    }
+
+
+def _candidate_summary(candidate) -> dict:
+    return {
+        "model_id": candidate.model_id,
+        "version_id": candidate.version_id,
+        "effort": candidate.effort,
+        "rank": candidate.rank,
+        "source_layer": candidate.source_layer,
+        "rationale": candidate.rationale,
+        "profile_id": candidate.profile_id,
+        "profile_rank": candidate.profile_rank,
+    }
+
+
+def _runtime_mismatch(
+    resolved: dict | None,
+    observed_model: str | None,
+    observed_effort: str | None,
+) -> dict:
+    if not observed_model and not observed_effort:
+        return {
+            "known": False,
+            "severity": "unknown",
+            "model": None,
+            "effort": None,
+            "message": "observed harness runtime was not supplied by caller",
+        }
+    if not resolved:
+        return {
+            "known": True,
+            "severity": "warn",
+            "model": None,
+            "effort": None,
+            "message": "no resolved processkit runtime is available for comparison",
+        }
+
+    resolved_model = _normalize_runtime_name(
+        resolved.get("vendor_model_id")
+        or resolved.get("profile_id")
+        or resolved.get("model_id")
+    )
+    observed_model_norm = _normalize_runtime_name(observed_model)
+    model_match = None
+    if observed_model_norm:
+        model_match = (
+            observed_model_norm == resolved_model
+            or observed_model_norm in resolved.get("aliases", [])
+        )
+
+    resolved_effort = _normalize_runtime_name(resolved.get("effort"))
+    observed_effort_norm = _normalize_runtime_name(observed_effort)
+    effort_match = None
+    if observed_effort_norm:
+        effort_match = observed_effort_norm == resolved_effort
+
+    has_mismatch = model_match is False or effort_match is False
+    return {
+        "known": True,
+        "severity": "warn" if has_mismatch else "info",
+        "model": model_match,
+        "effort": effort_match,
+        "message": (
+            "observed harness runtime differs from processkit binding"
+            if has_mismatch else
+            "observed harness runtime matches supplied processkit fields"
+        ),
+    }
+
+
+def _model_spec_from_id(model_id: str) -> dict | None:
+    try:
+        db = index.open_db()
+        try:
+            row = index.get_entity(db, model_id)
+        finally:
+            db.close()
+        if row and row.get("path"):
+            ent = entity.load(row["path"])
+            return ent.spec or {}
+    except Exception:
+        pass
+
+    root = paths.find_project_root()
+    path = root / "context" / "artifacts" / f"{model_id}.md"
+    if path.is_file():
+        try:
+            return entity.load(path).spec or {}
+        except Exception:
+            return None
+    return None
+
+
+def _version_summary(model: dict | None, version_id: str | None) -> dict:
+    if not model or not version_id:
+        return {}
+    for version in model.get("versions") or []:
+        if str(version.get("version_id")) == str(version_id):
+            return {
+                "version_id": version.get("version_id"),
+                "status": version.get("status"),
+                "lifecycle": version.get("lifecycle"),
+                "vendor_model_id": version.get("vendor_model_id"),
+            }
+    return {}
+
+
+def _model_aliases(
+    model: dict | None,
+    model_id: str,
+    version_id: str | None,
+) -> list[str]:
+    aliases = {_normalize_runtime_name(model_id)}
+    if model:
+        provider = _normalize_runtime_name(model.get("provider"))
+        family = _normalize_runtime_name(model.get("family"))
+        if provider and family:
+            aliases.add(f"{provider}-{family}")
+            aliases.add(f"model-{provider}-{family}")
+        if family:
+            aliases.add(family)
+            if version_id:
+                aliases.add(f"{family}-{version_id}")
+        for profile_id in model.get("profile_ids") or []:
+            aliases.add(_normalize_runtime_name(profile_id))
+        for version in model.get("versions") or []:
+            vendor_model_id = version.get("vendor_model_id")
+            if vendor_model_id:
+                aliases.add(_normalize_runtime_name(vendor_model_id))
+    return sorted(a for a in aliases if a)
+
+
+def _resolved_runtime_for(
+    ent: entity.Entity,
+    scope: str | None,
+    task_hints: dict | None,
+) -> tuple[dict | None, list[dict], str | None]:
+    resolver = _load_model_resolver()
+    if resolver is None:
+        return None, [], _MODEL_RESOLVER_ERROR or "model resolver unavailable"
+
+    spec = ent.spec or {}
+    role = spec.get("default_role")
+    if not role:
+        return None, [], "team-member has no default_role"
+    try:
+        candidates, trace = resolver.resolve(
+            role=role,
+            seniority=spec.get("default_seniority"),
+            team_member=ent.id,
+            scope=scope,
+            task_hints=task_hints or {},
+            explain=True,
+        )
+        if not candidates:
+            return None, trace, "model resolver returned no candidates"
+        candidate = candidates[0]
+        model = _model_spec_from_id(candidate.model_id)
+        version = _version_summary(model, candidate.version_id)
+        summary = _candidate_summary(candidate)
+        summary["provider"] = model.get("provider") if model else None
+        summary["family"] = model.get("family") if model else None
+        summary["version_status"] = version.get("status")
+        summary["version_lifecycle"] = version.get("lifecycle")
+        summary["vendor_model_id"] = version.get("vendor_model_id")
+        summary["aliases"] = _model_aliases(
+            model,
+            candidate.model_id,
+            candidate.version_id,
+        )
+        return summary, trace, None
+    except Exception as exc:
+        return None, [], str(exc)
+
+
+def _runtime_binding_for(
+    ent: entity.Entity,
+    scope: str | None,
+    observed_model: str | None,
+    observed_effort: str | None,
+    task_hints: dict | None,
+) -> dict:
+    resolver = _load_model_resolver()
+    if resolver is not None:
+        try:
+            runtime_context = resolver._runtime_context(task_hints or {})
+        except Exception as exc:
+            runtime_context = {"error": str(exc), "harnesses": []}
+    else:
+        runtime_context = {
+            "error": _MODEL_RESOLVER_ERROR or "model resolver unavailable",
+            "harnesses": [],
+        }
+
+    resolved, trace, error = _resolved_runtime_for(ent, scope, task_hints)
+    capabilities = _harness_binding_mode(runtime_context.get("harnesses") or [])
+    observed = {
+        "model": observed_model,
+        "effort": observed_effort,
+        "source": "caller" if observed_model or observed_effort else "unknown",
+    }
+    return {
+        "policy": "capability-negotiated",
+        "mode": capabilities["mode"],
+        "capabilities": capabilities,
+        "runtime_context": {
+            "harnesses": runtime_context.get("harnesses") or [],
+            "allowed_providers": runtime_context.get("allowed_providers") or [],
+            "preferred_providers": runtime_context.get("preferred_providers") or [],
+            "provider_source": runtime_context.get("provider_source"),
+            "error": runtime_context.get("error"),
+        },
+        "resolved": resolved,
+        "resolution_error": error,
+        "trace": trace,
+        "observed": observed,
+        "mismatch": _runtime_mismatch(resolved, observed_model, observed_effort),
+        "notes": [
+            "processkit cannot hot-swap the current primary harness session",
+            "identity-only fallback remains valid when runtime control is absent",
+        ],
+    }
+
+
+def _claude_frontmatter_model(
+    ent: entity.Entity,
+    model_policy: str,
+) -> tuple[list[str], dict | None]:
+    if model_policy not in _CLAUDE_MODEL_POLICIES:
+        return [], {
+            "error": f"model_policy must be one of {sorted(_CLAUDE_MODEL_POLICIES)}"
+        }
+    if model_policy == "inherit":
+        return ["model: inherit"], None
+
+    binding = _runtime_binding_for(
+        ent=ent,
+        scope=None,
+        observed_model=None,
+        observed_effort=None,
+        task_hints={"available_providers": ["anthropic"]},
+    )
+    resolved = binding.get("resolved")
+    if not resolved:
+        return [], {
+            "error": "could not resolve Claude model for TeamMember",
+            "details": binding.get("resolution_error"),
+        }
+    if _normalize_runtime_name(resolved.get("provider")) != "anthropic":
+        return [], {
+            "error": "resolved model is not an Anthropic Claude model",
+            "resolved": resolved,
+        }
+    family = _normalize_runtime_name(resolved.get("family"))
+    version = str(resolved.get("version_id") or "").strip()
+    if not family:
+        return [], {"error": "resolved Anthropic model has no family"}
+    model_name = f"{family}-{version}" if version else family
+    lines = [f"model: {model_name}"]
+    if resolved.get("effort"):
+        lines.append(f"effort: {resolved['effort']}")
+    return lines, {"binding": binding}
 
 
 def _claude_agent_prompt(root: Path, ent: entity.Entity) -> str:
@@ -226,7 +558,13 @@ def _claude_agent_prompt(root: Path, ent: entity.Entity) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _write_claude_agent(root: Path, ent: entity.Entity, dest_dir: Path, overwrite: bool) -> dict:
+def _write_claude_agent(
+    root: Path,
+    ent: entity.Entity,
+    dest_dir: Path,
+    overwrite: bool,
+    model_policy: str = "inherit",
+) -> dict:
     spec = ent.spec or {}
     slug = spec.get("slug") or ent.id.removeprefix("TEAMMEMBER-")
     if not _CLAUDE_AGENT_NAME_RE.match(slug):
@@ -239,6 +577,10 @@ def _write_claude_agent(root: Path, ent: entity.Entity, dest_dir: Path, overwrit
     if dest.exists() and not overwrite:
         return {"id": ent.id, "slug": slug, "path": str(dest), "skipped": "exists"}
 
+    model_lines, model_details = _claude_frontmatter_model(ent, model_policy)
+    if model_details and model_details.get("error"):
+        return {"id": ent.id, "slug": slug, **model_details}
+
     role = spec.get("default_role") or "ephemeral-role"
     seniority = spec.get("default_seniority") or "unspecified"
     description = (
@@ -249,14 +591,23 @@ def _write_claude_agent(root: Path, ent: entity.Entity, dest_dir: Path, overwrit
         "---",
         f"name: {slug}",
         f"description: {_yaml_scalar(description)}",
-        "model: inherit",
+        *model_lines,
         "---",
         "",
         _claude_agent_prompt(root, ent).rstrip(),
         "",
     ]
     dest.write_text("\n".join(body), encoding="utf-8")
-    return {"id": ent.id, "slug": slug, "path": str(dest), "written": True}
+    result = {
+        "id": ent.id,
+        "slug": slug,
+        "path": str(dest),
+        "written": True,
+        "model_policy": model_policy,
+    }
+    if model_details:
+        result.update(model_details)
+    return result
 
 
 def _claude_output_dir(root: Path, output_dir: str | None) -> Path | dict:
@@ -521,6 +872,50 @@ def get_active_interlocutor(scope: str | None = None) -> dict:
 
 
 @server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def get_interlocutor_runtime_binding(
+    scope: str | None = None,
+    observed_model: str | None = None,
+    observed_effort: str | None = None,
+    task_hints: dict | None = None,
+) -> dict:
+    """Return active interlocutor identity plus runtime binding status.
+
+    `observed_model` and `observed_effort` are caller-supplied facts from
+    the current harness. processkit cannot read or hot-swap the already
+    running primary model, so mismatch reporting is informational.
+    """
+    active = get_active_interlocutor(scope)
+    if active.get("error") or not active.get("configured"):
+        return active
+
+    root = paths.find_project_root()
+    member_id = (active.get("interlocutor") or {}).get("id")
+    ent = _load_tm(root, member_id or "")
+    if ent is None:
+        return {
+            "configured": True,
+            "scope": active.get("scope"),
+            "error": f"configured team-member {member_id!r} not found",
+        }
+
+    return {
+        **active,
+        "binding": _runtime_binding_for(
+            ent=ent,
+            scope=scope,
+            observed_model=observed_model,
+            observed_effort=observed_effort,
+            task_hints=task_hints,
+        ),
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
     readOnlyHint=False,
     destructiveHint=False,
     idempotentHint=True,
@@ -547,6 +942,8 @@ def set_active_interlocutor(id: str, scope: str | None = None) -> dict:
     data["scopes"][configured_scope] = {
         "team_member": ent.id,
         "updated_at": _now_iso(),
+        "binding_policy": "capability-negotiated",
+        "subagent_mcp_supported": False,
     }
     _write_json(identity_file, data)
 
@@ -816,13 +1213,15 @@ def export_claude_subagent(
     slug: str,
     output_dir: str | None = None,
     overwrite: bool = True,
+    model_policy: str = "inherit",
 ) -> dict:
     """Export one TeamMember as a Claude Code project subagent adapter.
 
     Writes `.claude/agents/<slug>.md` by default. The generated file uses
-    `model: inherit` and omits `tools`, so Claude Code inherits the main
-    session model and tool permissions instead of baking processkit routing
-    into a provider-specific adapter.
+    `model: inherit` by default and omits `tools`, so Claude Code inherits
+    the main session tool permissions. Set `model_policy="resolved"` to
+    emit a Claude model line from processkit routing when an Anthropic
+    candidate can be resolved.
     """
     root = paths.find_project_root()
     ent = _load_tm(root, slug)
@@ -831,7 +1230,7 @@ def export_claude_subagent(
     dest_dir = _claude_output_dir(root, output_dir)
     if isinstance(dest_dir, dict):
         return dest_dir
-    result = _write_claude_agent(root, ent, dest_dir, overwrite)
+    result = _write_claude_agent(root, ent, dest_dir, overwrite, model_policy)
     if result.get("written"):
         log.log_side_effect(
             "TeamMember", ent.id, "team_member.claude_subagent_exported",
@@ -853,6 +1252,7 @@ def export_claude_subagents(
     active_only: bool = True,
     include_humans: bool = False,
     overwrite: bool = True,
+    model_policy: str = "inherit",
 ) -> dict:
     """Export provider-neutral TeamMembers to Claude Code subagent files."""
     root = paths.find_project_root()
@@ -877,7 +1277,9 @@ def export_claude_subagents(
                 "error": "not found",
             })
             continue
-        results.append(_write_claude_agent(root, ent, dest_dir, overwrite))
+        results.append(
+            _write_claude_agent(root, ent, dest_dir, overwrite, model_policy)
+        )
 
     written = [r for r in results if r.get("written")]
     if written:

@@ -86,7 +86,9 @@ sub-agents (Read, search Bash, MCP `query_*` / `get_*` / `search_*` /
 new `mkdir`, MCP `create_*` / `transition_*` / `record_*` / `link_*`
 / `open_*` / `log_event`, `git` mutations). A sub-agent permission
 block is not a cue to broaden the allowlist — move the write back to
-main.
+main. If MCP servers crash, hang, or fail to exit under sub-agents,
+disable sub-agent MCP use for the session and implement from the main
+session until the gateway lifecycle is proven stable.
 
 ## Setup
 
@@ -127,8 +129,10 @@ Role and TeamMember defaults bind to provider-neutral
 gates. Model-spec filenames may encode provider/model names; model
 profiles, actors, roles, and team-member identities must not.
 If `team-manager.get_active_interlocutor` returns a configured
-TeamMember, show that identity at session start; otherwise state that
-the current speaker is an ephemeral harness agent.
+TeamMember, show that identity at session start. When available, also
+show `team-manager.get_interlocutor_runtime_binding` output: resolved
+model, observed harness model/effort, and any mismatch. Otherwise state
+that the current speaker is an ephemeral harness agent.
 
 Charters: `DEC-20260422_0233-SpryTulip` (team-member model + memory),
 `DEC-20260422_0234-BraveFalcon` (role catalog + seniority),

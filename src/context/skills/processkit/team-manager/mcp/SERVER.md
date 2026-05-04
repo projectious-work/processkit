@@ -22,6 +22,7 @@ Replaces the deprecated actor-profile server.
 | Tool | Purpose |
 |---|---|
 | `get_active_interlocutor(scope?)` | Return the configured TeamMember speaker for a harness session, if any. |
+| `get_interlocutor_runtime_binding(scope?, observed_model?, observed_effort?, task_hints?)` | Return the active interlocutor plus the resolved model binding, harness capability mode, and informational mismatch report. |
 | `set_active_interlocutor(id, scope?)` | Configure the TeamMember speaker for a scope by writing `context/team/session-identity.json`. |
 
 ### Name pool
@@ -44,8 +45,8 @@ Replaces the deprecated actor-profile server.
 | Tool | Purpose |
 |---|---|
 | `export_team_member(slug, output_path?)` | Build a tar.gz bundle with persona + card + entity + knowledge/ + skills/ + lessons/. Excludes journal/, relations/, private/. Redacts confidential/pii memory files. |
-| `export_claude_subagent(slug, output_dir?, overwrite?)` | Generate `.claude/agents/<slug>.md` for one TeamMember using Claude Code's subagent adapter format. |
-| `export_claude_subagents(output_dir?, active_only?, include_humans?, overwrite?)` | Generate Claude Code subagent adapters for active non-human TeamMembers by default. |
+| `export_claude_subagent(slug, output_dir?, overwrite?, model_policy?)` | Generate `.claude/agents/<slug>.md` for one TeamMember using Claude Code's subagent adapter format. `model_policy` defaults to `inherit`; `resolved` emits a Claude model only when routing resolves to Anthropic. |
+| `export_claude_subagents(output_dir?, active_only?, include_humans?, overwrite?, model_policy?)` | Generate Claude Code subagent adapters for active non-human TeamMembers by default. |
 | `import_team_member(tarball_path)` | Extract, validate entity + Agent Card, require signature field present (crypto verification deferred), copy into `context/team-members/<slug>/`. |
 
 ### Consistency
@@ -63,6 +64,12 @@ is `TEAMMEMBER-<slug>`.
 
 Session identity lives at `<project-root>/context/team/session-identity.json`.
 It is deliberately separate from TeamMember lifecycle state.
+
+Runtime binding is capability-negotiated. processkit reports the
+provider-neutral resolved candidate and harness capability mode, but it
+does not hot-swap an already running primary harness session. When the
+caller supplies `observed_model` or `observed_effort`, mismatches are
+returned as informational warnings for session-start display.
 
 ## Running
 

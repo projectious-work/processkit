@@ -379,6 +379,68 @@ def test_active_interlocutor_roundtrip(server_mod, project_root: Path):
     assert (project_root / "context" / "team" / "session-identity.json").is_file()
 
 
+def test_interlocutor_runtime_binding_reports_mismatch(
+    server_mod,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    server_mod.create_team_member(
+        name="Alice", type="ai-agent", slug="alice",
+        default_role="ROLE-product-manager",
+        default_seniority="senior",
+    )
+    server_mod.set_active_interlocutor("alice")
+
+    class Candidate:
+        model_id = "ART-20260503_1424-ModelSpec-openai-gpt-5"
+        version_id = "5"
+        effort = "medium"
+        rank = 1
+        source_layer = 2
+        rationale = "team-member preference"
+        profile_id = "ART-20260503_1832-ModelProfile-general-balanced"
+        profile_rank = 1
+
+    class Resolver:
+        @staticmethod
+        def _runtime_context(task_hints=None):
+            return {
+                "harnesses": ["codex"],
+                "allowed_providers": ["openai"],
+                "preferred_providers": ["openai"],
+                "provider_source": "aibox.toml ai.harnesses",
+            }
+
+        @staticmethod
+        def resolve(**kwargs):
+            return [Candidate()], [{"step": 2, "action": "team_member_preference"}]
+
+    monkeypatch.setattr(server_mod, "_load_model_resolver", lambda: Resolver)
+    monkeypatch.setattr(
+        server_mod,
+        "_model_spec_from_id",
+        lambda model_id: {
+            "provider": "openai",
+            "family": "gpt-5",
+            "profile_ids": ["gpt-5"],
+            "versions": [{"version_id": "5"}],
+        },
+    )
+
+    got = server_mod.get_interlocutor_runtime_binding(
+        observed_model="gpt-5.5",
+        observed_effort="high",
+    )
+
+    assert got["configured"] is True
+    assert got["binding"]["policy"] == "capability-negotiated"
+    assert got["binding"]["mode"] == "launch-conform"
+    assert got["binding"]["capabilities"]["subagent_mcp_supported"] is False
+    assert got["binding"]["resolved"]["model_id"].endswith("openai-gpt-5")
+    assert got["binding"]["mismatch"]["severity"] == "warn"
+    assert got["binding"]["mismatch"]["model"] is False
+    assert got["binding"]["mismatch"]["effort"] is False
+
+
 def test_active_interlocutor_rejects_inactive(server_mod):
     server_mod.create_team_member(name="Alice Chen", type="human", slug="alice-chen")
     server_mod.deactivate_team_member("alice-chen")
@@ -829,6 +891,62 @@ def test_export_claude_subagent_adapter(server_mod, project_root: Path):
     assert "tools:" not in text
     assert "TeamMember TEAMMEMBER-alice" in text
     assert "Pragmatic implementation specialist." in text
+
+
+def test_export_claude_subagent_resolved_model_policy(
+    server_mod,
+    project_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    server_mod.create_team_member(
+        name="Alice", type="ai-agent", slug="alice",
+        default_role="ROLE-software-engineer",
+        default_seniority="expert",
+    )
+
+    class Candidate:
+        model_id = "ART-20260503_1424-ModelSpec-anthropic-claude-sonnet"
+        version_id = "4.5"
+        effort = "high"
+        rank = 1
+        source_layer = 5
+        rationale = "role binding"
+        profile_id = None
+        profile_rank = 1
+
+    class Resolver:
+        @staticmethod
+        def _runtime_context(task_hints=None):
+            return {
+                "harnesses": ["claude"],
+                "allowed_providers": ["anthropic"],
+                "preferred_providers": ["anthropic"],
+                "provider_source": "task_hints.available_providers",
+            }
+
+        @staticmethod
+        def resolve(**kwargs):
+            return [Candidate()], []
+
+    monkeypatch.setattr(server_mod, "_load_model_resolver", lambda: Resolver)
+    monkeypatch.setattr(
+        server_mod,
+        "_model_spec_from_id",
+        lambda model_id: {
+            "provider": "anthropic",
+            "family": "claude-sonnet",
+            "profile_ids": ["claude-sonnet-4.5"],
+            "versions": [{"version_id": "4.5"}],
+        },
+    )
+
+    r = server_mod.export_claude_subagent("alice", model_policy="resolved")
+
+    assert r["written"] is True
+    assert r["model_policy"] == "resolved"
+    text = (project_root / ".claude" / "agents" / "alice.md").read_text()
+    assert "model: claude-sonnet-4.5\n" in text
+    assert "effort: high\n" in text
 
 
 def test_export_claude_subagents_skips_humans_by_default(server_mod, project_root: Path):

@@ -1,5 +1,8 @@
 {
   "hooks": {
+    "pre_tool_use": {
+      "command": "python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/check_route_task_called.py"
+    },
     "session_start": {
       "command": "python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py"
     },
