@@ -304,25 +304,28 @@ against the server's `list_tools()` response.
 ### `commands/`
 
 When a skill has workflows that benefit from direct user invocation (without
-relying on context-based auto-loading), ship slash-command adapter files in
-`commands/`. Each file corresponds to one entry in `metadata.processkit.commands`.
+relying on context-based auto-loading), ship command adapter files in
+`commands/`. Each file corresponds to one entry in `metadata.processkit.commands`
+and is the canonical source for harness command projections.
 
 **Frontmatter schema** (`metadata.processkit.commands` list):
 
 ```yaml
 commands:
-  - name: <skill-name>-<workflow>   # namespaced: skill-name prefix is mandatory
-    args: "arg-shape"               # provider-neutral argument hint (no angle brackets)
+  - name: pk-<workflow>             # processkit command namespace
+    args: "arg-shape"               # provider-neutral argument hint
     description: "One sentence: what this command does"
-  - name: <skill-name>-<workflow-2>
+  - name: pk-<workflow-2>
     args: ""                        # empty string if the command takes no arguments
     description: "..."
 ```
 
-The `name` field must be prefixed with the skill name (e.g. `model-recommender-profile`,
-not just `profile`) to avoid collision across skills.
+The `name` field must use the reserved `pk-` prefix for processkit-managed
+commands. The short namespace is intentional: users type `/pk-*` in
+slash-capable harnesses and phrases like "please pk-wrapup" in harnesses that
+do not support custom slash-command registration.
 
-**Adapter file format** (Claude Code-specific; other providers use their own format):
+**Canonical adapter file format**:
 
 ```markdown
 ---
@@ -341,11 +344,14 @@ Keep the body to one line — all logic lives in `SKILL.md`, not in the adapter.
 
 - SKILL.md declares the `commands:` list → any agent reading the skill at runtime
   knows the commands exist. This is the provider-neutral baseline.
-- The `commands/*.md` adapter files are read on demand when the agent (or user)
-  invokes the command — same Level 3 loading as `references/`.
-- For harness-level UI registration (tab-complete `/command` in Claude Code), copy
-  the adapter files to `.claude/commands/` in the project root. For standalone use
-  this is a manual step; the skill works without it.
+- The `commands/*.md` adapter files are the canonical command source.
+- For harness-level UI registration in Claude Code, project the adapter files to
+  `.claude/commands/` in the project root.
+- For harnesses without custom slash commands, project each command to a
+  `.agents/skills/<command>/SKILL.md` shim so natural-language requests such as
+  "please pk-doctor" trigger the same workflow.
+- `pk-doctor` checks the canonical command set against both projections when
+  those projection directories exist.
 
 SKILL.md should mention the available commands in its Overview section so agents
 learn about them even before a user triggers them.

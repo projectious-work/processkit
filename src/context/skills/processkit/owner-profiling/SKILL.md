@@ -113,9 +113,10 @@ This is the entry point for the broader context-efficiency story (see the
 
 ### Commands
 
-- `/owner-profiling-bootstrap owner-name` — run the initial profiling interview for a new project owner
-- `/owner-profiling-refine owner-name` — refine an existing owner profile from new observations
-- `/owner-profiling-observe owner-name observation` — record a behavioural observation about a project owner
+- `/pk-owner-bootstrap owner-name` — run the initial profiling interview
+  for a new project owner
+- `/pk-observe owner-name observation` — record a behavioural observation
+  about a project owner
 
 ## Gotchas
 

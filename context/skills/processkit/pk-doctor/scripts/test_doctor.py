@@ -930,6 +930,141 @@ check("14c: summary line present",
 # ---------------------------------------------------------------------------
 print("\n[15] context_consumption — checkpoint report labels local estimates")
 
+from checks.commands_consistency import run as _run_commands_consistency  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    skill_dir = root / "context" / "skills" / "processkit" / "demo-skill"
+    (skill_dir / "commands").mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            metadata:
+              processkit:
+                commands:
+                  - name: demo-run
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (skill_dir / "commands" / "demo-run.md").write_text(
+        "Use the demo skill.\n",
+        encoding="utf-8",
+    )
+
+    findings = _run_commands_consistency({"repo_root": root})
+    check(
+        "commands_consistency rejects unprefixed processkit commands",
+        any(f.id == "commands_consistency.unprefixed-processkit-command"
+            for f in findings),
+        "\n".join(f"{f.id}: {f.message}" for f in findings),
+    )
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    skill_dir = root / "context" / "skills" / "processkit" / "demo-skill"
+    (skill_dir / "commands").mkdir(parents=True)
+    (root / ".claude" / "commands").mkdir(parents=True)
+    (root / ".agents" / "skills" / "pk-demo").mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            metadata:
+              processkit:
+                commands:
+                  - name: pk-demo
+                    args: "thing"
+            ---
+            """),
+        encoding="utf-8",
+    )
+    command_text = textwrap.dedent("""\
+        ---
+        argument-hint: "thing"
+        allowed-tools: []
+        ---
+
+        Use the demo skill for $ARGUMENTS.
+        """)
+    (skill_dir / "commands" / "pk-demo.md").write_text(
+        command_text,
+        encoding="utf-8",
+    )
+    (root / ".claude" / "commands" / "pk-demo.md").write_text(
+        command_text,
+        encoding="utf-8",
+    )
+    (root / ".agents" / "skills" / "pk-demo" / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            name: pk-demo
+            description: "Use the demo skill for $ARGUMENTS."
+            ---
+
+            Use the demo skill for $ARGUMENTS.
+            """),
+        encoding="utf-8",
+    )
+
+    findings = _run_commands_consistency({"repo_root": root})
+    check(
+        "commands_consistency accepts matching command projections",
+        all(f.severity == "INFO" for f in findings),
+        "\n".join(f"{f.id}: {f.message}" for f in findings),
+    )
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    skill_dir = root / "context" / "skills" / "processkit" / "demo-skill"
+    (skill_dir / "commands").mkdir(parents=True)
+    (root / ".claude" / "commands").mkdir(parents=True)
+    (root / ".agents" / "skills" / "pk-extra").mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        textwrap.dedent("""\
+            ---
+            metadata:
+              processkit:
+                commands:
+                  - name: pk-demo
+                    args: "thing"
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (skill_dir / "commands" / "pk-demo.md").write_text(
+        textwrap.dedent("""\
+            ---
+            argument-hint: "other"
+            allowed-tools: []
+            ---
+
+            Use the demo skill.
+            """),
+        encoding="utf-8",
+    )
+    (root / ".claude" / "commands" / "pk-extra.md").write_text(
+        "orphan\n",
+        encoding="utf-8",
+    )
+    (root / ".agents" / "skills" / "pk-extra" / "SKILL.md").write_text(
+        "orphan\n",
+        encoding="utf-8",
+    )
+
+    findings = _run_commands_consistency({"repo_root": root})
+    ids = {f.id for f in findings}
+    check(
+        "commands_consistency detects projection and argument drift",
+        {
+            "commands_consistency.argument-hint-mismatch",
+            "commands_consistency.missing-claude-projection",
+            "commands_consistency.claude-only-command",
+            "commands_consistency.missing-agent-skill-projection",
+            "commands_consistency.agent-only-command",
+        }.issubset(ids),
+        "\n".join(f"{f.id}: {f.message}" for f in findings),
+    )
+
 from checks.context_consumption import (  # noqa: E402
     compare_checkpoints as _compare_context_checkpoints,
     write_checkpoint as _write_context_checkpoint,

@@ -124,7 +124,9 @@ When a decision is replaced by a later one:
 **Never delete or edit the old record.** Its existence is why we can trace
 the evolution of the decision.
 
-This skill also provides the `/decision-record-write` slash command for direct invocation — see `commands/decision-record-write.md`. This skill also provides the `/decision-record-query` slash command for direct invocation — see `commands/decision-record-query.md`.
+This skill also provides the `/pk-dec` and `/pk-dec-find` commands for
+direct invocation — see `commands/pk-dec.md` and
+`commands/pk-dec-find.md`.
 
 ## Gotchas
 

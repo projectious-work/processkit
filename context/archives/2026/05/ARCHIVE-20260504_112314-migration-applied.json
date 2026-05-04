@@ -1,0 +1,50 @@
+{
+  "archive_id": "ARCHIVE-20260504_112314-migration-applied",
+  "archive_path": "context/archives/2026/05/ARCHIVE-20260504_112314-migration-applied.tar.gz",
+  "created_at": "2026-05-04T11:23:14+00:00",
+  "entities": [
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260504T060107\n\nManaged `.aibox-home/` runtime changes from `0.23.2` to `0.23.3`.\n\n0 changed upstream, 11 conflicts, 1 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 17\n- changed-locally-only: 1\n- changed-upstream-only: 0\n- conflict: 11\n- new-upstream: 1\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**conflict**\n\n- `.aibox-home/.local/bin/aibox-status` -> `.aibox-home/.local/bin/aibox-status`\n- `.aibox-home/.local/bin/aibox-status-toggle` -> `.aibox-home/.local/bin/aibox-status-toggle`\n\n**new-upstream**\n\n- `.aibox-home/.local/bin/open-in-editor` -> `.aibox-home/.local/bin/open-in-editor`\n\n### runtime-zellij\n\n**conflict**\n\n- `.aibox-home/.config/zellij/config.kdl` -> `.aibox-home/.config/zellij/config.kdl`\n- `.aibox-home/.config/zellij/layouts/dev.kdl` -> `.aibox-home/.config/zellij/layouts/dev.kdl`\n- `.aibox-home/.config/zellij/layouts/focus.kdl` -> `.aibox-home/.config/zellij/layouts/focus.kdl`\n- `.aibox-home/.config/zellij/layouts/cowork.kdl` -> `.aibox-home/.config/zellij/layouts/cowork.kdl`\n- `.aibox-home/.config/zellij/",
+      "id": "MIG-RUNTIME-20260504T060107",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260504T060107.md",
+      "metadata": {
+        "created": "2026-05-04T06:01:07+00:00",
+        "id": "MIG-RUNTIME-20260504T060107",
+        "updated": "2026-05-04T08:57:04+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260504T060107.md",
+      "sha256": "b40a918aa03a7721f49473ca2c99e79809e78e127980fc12735d678996b17381",
+      "spec": {
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-zellij"
+        ],
+        "applied_at": "2026-05-04T08:57:04+00:00",
+        "from_version": "0.23.2",
+        "generated_at": "2026-05-04T06:01:07+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Resolved runtime-home 0.23.2 -> 0.23.3 conflicts by accepting the managed 0.23.5 runtime-home snapshot for upstream-owned Zellij config/layout files and managed helper scripts (aibox-status, aibox-status-toggle, open-in-editor). Left local-only home customizations untouched.",
+            "timestamp": "2026-05-04T08:57:04+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-04T08:57:03+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 11 conflicts, 1 new, 0 removed (2 groups affected)",
+        "to_version": "0.23.3"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260504_112314-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260504T060107.md"
+    }
+  ],
+  "kind": "Migration",
+  "older_than_days": 0,
+  "sha256": "95b3320d65542bf0d7ab9b8deb508e2142e5d23a04bed03bac0dae3dea378b15",
+  "state": "applied"
+}

@@ -1,5 +1,5 @@
 ---
-argument-hint: ""
+argument-hint: "owner-name"
 allowed-tools: []
 ---
 

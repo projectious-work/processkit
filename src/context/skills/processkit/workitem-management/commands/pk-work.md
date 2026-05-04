@@ -1,5 +1,5 @@
 ---
-argument-hint: ""
+argument-hint: "title [--type task|story|bug|epic] [--priority critical|high|medium|low]"
 allowed-tools: []
 ---
 

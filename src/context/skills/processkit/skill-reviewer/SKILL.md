@@ -146,6 +146,9 @@ Check for the four diagnoses:
   directory exists with one file per entry in the list.
 - If `commands/` exists but `metadata.processkit.commands` is absent
   or empty: flag as should-fix (orphaned adapter files).
+- If harness projection directories exist, `.claude/commands/` and
+  `.agents/skills/` contain exactly the same command names as the canonical
+  `commands/` files.
 
 #### 6. Description quality
 
@@ -231,11 +234,16 @@ Run this category only if `metadata.processkit.commands` is non-empty OR
   `commands/<name>.md` file. Missing file = must-fix.
 - Every `commands/<name>.md` file has a corresponding entry in
   `metadata.processkit.commands`. Orphan file = should-fix.
-- Each command name follows the `<skill-name>-<workflow>` convention
-  (skill-name prefix is mandatory). Unprefixed names = must-fix.
+- Each processkit command name starts with the reserved `pk-` prefix.
+  Unprefixed processkit commands = must-fix.
 - The `argument-hint` in each adapter file matches the `args` field in
   the corresponding `metadata.processkit.commands` entry. Mismatch =
   should-fix.
+- `.claude/commands/<name>.md` has the same `argument-hint` as the
+  canonical adapter. Mismatch = must-fix.
+- `.agents/skills/<name>/SKILL.md` exists for each canonical command when
+  the project ships `.agents/skills/`. Missing or extra command shims =
+  must-fix.
 - Each adapter file body is exactly one sentence invoking the skill
   and workflow. Multi-line bodies with workflow steps are should-fix —
   logic belongs in SKILL.md, not in the adapter.
@@ -376,9 +384,8 @@ A bulk pass for **Category 12 (behavioral completeness)** is useful
 after any behavioral norm is added to AGENTS.md — verify that the
 corresponding skill's Gotchas already encode the same rule.
 
-This skill also provides the `/skill-reviewer-audit` slash command for direct invocation — see `commands/skill-reviewer-audit.md`.
-
-This skill also provides the `/skill-reviewer-bulk-gotchas` slash command for direct invocation — see `commands/skill-reviewer-bulk-gotchas.md`.
+This skill also provides the `/pk-skill-audit` command for direct
+invocation — see `commands/pk-skill-audit.md`.
 
 ## Gotchas
 

@@ -1,5 +1,5 @@
 ---
-argument-hint: ""
+argument-hint: "skill-topic"
 allowed-tools: []
 ---
 

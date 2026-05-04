@@ -146,7 +146,8 @@ The agent should write a handover when it hears:
 - "end of session"
 - "write a session summary"
 
-This skill also provides the `/session-handover-write` slash command for direct invocation — see `commands/session-handover-write.md`.
+This skill also provides the `/pk-wrapup` command for direct invocation —
+see `commands/pk-wrapup.md`.
 
 ## Gotchas
 

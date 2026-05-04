@@ -273,7 +273,7 @@ def _write_note(project_root: Path, session_id: str, rows: list[dict], decision_
         "- If this was a real decision → call `record_decision` with a clear title.",
         "- If it was not a decision → discard this row.",
         "",
-        "> This note is auto-generated. Promote real decisions via `note-management-promote`",
+        "> This note is auto-generated. Promote real decisions via `pk-note-promote`",
         "> or by calling `record_decision` directly.",
     ]
 

@@ -4,7 +4,7 @@
 
 A project may supply a `context/team/role-archetypes.yaml` file to
 remap tier pins and clone caps for some or all of the 8 processkit
-role archetypes. `team-create` loads this file before archetype
+role archetypes. `pk-team-create` loads this file before archetype
 mapping (Step 4) and validates it eagerly — before model scoring —
 so violations fail fast.
 
@@ -50,7 +50,7 @@ Required only when a project needs to restructure the full set. The
 kit's `references/role-archetypes.md` is ignored entirely in
 `replace` mode.
 
-## Validation invariants (eager — checked at team-create startup)
+## Validation invariants (eager — checked at pk-team-create startup)
 
 The following are hard errors, checked before model scoring begins:
 
@@ -127,7 +127,7 @@ roles:
 
 ## Audit trail
 
-When `context/team/role-archetypes.yaml` is present, `team-create`
+When `context/team/role-archetypes.yaml` is present, `pk-team-create`
 records in the chartering DecisionRecord:
 
 ```yaml

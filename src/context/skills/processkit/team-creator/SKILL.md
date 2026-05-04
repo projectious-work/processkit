@@ -38,15 +38,15 @@ metadata:
       primitives: []
       mcp_tools: []
     commands:
-      - name: team-create
+      - name: pk-team-create
         args: "--subscription <provider>:<tier> --providers <list|any> --parallelism-cap <int> --governance-floor <0-5>"
         description: "Derive a full team from scratch: roles, actors, bindings, roster, and chartering DecisionRecord"
-      - name: team-review
+      - name: pk-team-review
         args: "[--landscape-artifact <ART-id>] [--threshold <float>]"
         description: "Read-only team health-check against the latest landscape snapshot"
-      - name: team-rebalance
+      - name: pk-team-rebalance
         args: "--roles <list|all> --confirm --reason <string>"
-        description: "Apply a team-review recommendation: targeted re-tiering of one or more roles"
+        description: "Apply a pk-team-review recommendation: targeted re-tiering of one or more roles"
 ---
 
 # Team Creator
@@ -65,10 +65,10 @@ existing skills — no new primitives or MCP tools are introduced.
 
 | Trigger | Command |
 |---|---|
-| New project or provider subscription | `team-create` |
-| Quarterly landscape shift | `team-review` → `team-rebalance` |
-| Provider outage, rapid rotation | `team-rebalance --roles all` |
-| Spot-check current assignments | `team-review` |
+| New project or provider subscription | `pk-team-create` |
+| Quarterly landscape shift | `pk-team-review` → `pk-team-rebalance` |
+| Provider outage, rapid rotation | `pk-team-rebalance --roles all` |
+| Spot-check current assignments | `pk-team-review` |
 
 ### Inputs (key parameters)
 
@@ -119,25 +119,25 @@ See `references/role-archetypes-override.md` for schema and invariants.
 
 ### Commands
 
-**`team-create`** runs the full derivation: queries models, applies
+**`pk-team-create`** runs the full derivation: queries models, applies
 the tiering formula, maps archetypes, writes 8 Role + 8 Actor + 8
 Binding entities, rewrites `context/team/roster.md`, and emits a
 chartering DecisionRecord that explicitly supersedes the prior team
 DecisionRecord. Use `--dry-run` to print the plan without writing.
 
-**`team-review`** is read-only. Re-scores current assignments against
+**`pk-team-review`** is read-only. Re-scores current assignments against
 the latest landscape snapshot, diffs tier scores against those stored
 in the governing DecisionRecord, and surfaces tier-shifts, unavailable
 models, and new outperformers. No entities are written.
 
-**`team-rebalance`** applies a review recommendation. Requires
+**`pk-team-rebalance`** applies a review recommendation. Requires
 `--confirm`. For `--roles all`, the full create logic re-runs and a
 new DecisionRecord is written. For named roles, the governing
 DecisionRecord's `progress_notes` are amended instead.
 
 ### Outputs
 
-| Output | `team-create` | `team-review` | `team-rebalance` |
+| Output | `pk-team-create` | `pk-team-review` | `pk-team-rebalance` |
 |---|---|---|---|
 | Role / Actor / Binding entities | YES ×8 | NO | scoped roles |
 | `context/team/roster.md` | YES | NO | YES (in-place) |
@@ -150,19 +150,19 @@ DecisionRecord's `progress_notes` are amended instead.
   pre-structured markdown artifact tagged `landscape-summary`, NOT
   raw HTML. If none exists, error: "No landscape-summary artifact
   found. Run the Haiku landscape-ingest task to produce
-  ART-*-LandscapeSnapshot before team-create." Do not parse HTML.
+  ART-*-LandscapeSnapshot before pk-team-create." Do not parse HTML.
 
-- **Entity deactivation sequence on re-create.** When `team-create`
+- **Entity deactivation sequence on re-create.** When `pk-team-create`
   is re-run: (a) resolve prior team from roster.md; (b) for each
   prior Binding call `binding-management.end_binding` with
-  `reason="superseded by team-create run <timestamp>"`; (c) for each
+  `reason="superseded by pk-team-create run <timestamp>"`; (c) for each
   prior Actor whose model is NOT in the new team call
   `actor-profile.deactivate_actor`; (d) for prior Actors whose model
   IS re-assigned to the same role REUSE the existing Actor — do not
   create a duplicate; (e) then create new Bindings.
 
 - **Formula weight persistence.** Weights live in the chartering
-  DecisionRecord's `spec.inputs_snapshot` block. `team-rebalance`
+  DecisionRecord's `spec.inputs_snapshot` block. `pk-team-rebalance`
   reads them via `decision-record.get_decision`. No skill-local
   config file for weights.
 
@@ -217,10 +217,10 @@ not replace them.
 
 | Layer | Trigger phrases | Routed action |
 |---|---|---|
-| Layer 1 — landscape | "use our own model list", "we have a custom provider set", "this project uses different models", "update the landscape for this project" | Create project-tagged landscape artifact (`landscape-summary-project` tag + `project_id`); pass `--landscape-artifact` to `team-create` |
-| Layer 2 — weights | "we value latency more", "cost matters more here", "prioritise governance", "adjust the scoring weights", "latency is critical for this project" | Write a `DEC-*-TeamWeights` record (tag: `team-weights-override`) via `decision-record-write`; re-run `team-create` to pick it up |
+| Layer 1 — landscape | "use our own model list", "we have a custom provider set", "this project uses different models", "update the landscape for this project" | Create project-tagged landscape artifact (`landscape-summary-project` tag + `project_id`); pass `--landscape-artifact` to `pk-team-create` |
+| Layer 2 — weights | "we value latency more", "cost matters more here", "prioritise governance", "adjust the scoring weights", "latency is critical for this project" | Write a `DEC-*-TeamWeights` record (tag: `team-weights-override`) via `decision-record-write`; re-run `pk-team-create` to pick it up |
 | Layer 3 — thresholds | "the tier cutoffs don't fit our model set", "too many models landing in medium", "adjust the heavy threshold", "nothing is reaching heavy tier" | Amend or create `DEC-*-TeamWeights` with a `tier_thresholds` block; validate against rules in `references/team-weights-decision-schema.md` |
-| Layer 4 — pins | "pin senior-architect to medium for this project", "we want all researchers on heavy", "remap role classes", "change the role tier assignments" | Create or update `context/team/role-archetypes.yaml`; re-run `team-create` (eager validation fires on startup) |
+| Layer 4 — pins | "pin senior-architect to medium for this project", "we want all researchers on heavy", "remap role classes", "change the role tier assignments" | Create or update `context/team/role-archetypes.yaml`; re-run `pk-team-create` (eager validation fires on startup) |
 
 Agents MUST consult skill-finder before routing any of these requests.
 The trigger phrases are designed to match natural-language owner requests
@@ -235,10 +235,10 @@ composed, 3 commands added, 0 new primitives or MCP tools.
 
 ## Full reference
 
-### CLI contract — `team-create`
+### CLI contract — `pk-team-create`
 
 ```
-team-create
+pk-team-create
   --subscription <provider>:<tier>     # e.g. anthropic:max-5x
   --providers <list|"any">             # comma-separated; "any" = all accessible
   --parallelism-cap <int>              # max clones per role, default 5
@@ -256,18 +256,18 @@ team-create
 Full step-by-step process (8 steps: resolve landscape → query models →
 score+classify → map archetypes → deactivate prior team → write
 entities → write roster → write chartering DecisionRecord) lives in
-`commands/team-create.md`. Read that file before changing the
+`commands/pk-team-create.md`. Read that file before changing the
 sequence; the order of (a) eager `role-archetypes.yaml` validation
 before mapping, (b) `binding-management.end_binding` before
 `actor-profile.deactivate_actor`, and (c) DecisionRecord written
 LAST so its ID can be embedded in roster.md is load-bearing.
 
-### CLI contract — `team-review`
+### CLI contract — `pk-team-review`
 
 ```
-team-review
+pk-team-review
   [--landscape-artifact <ART-id>]      # default: same 3-level resolution
-                                       # as team-create
+                                       # as pk-team-create
   [--threshold <float>]                # tier-shift sensitivity, default 0.05
 ```
 
@@ -277,10 +277,10 @@ the governing chartering DecisionRecord's
 `spec.inputs_snapshot.tier_scores` block, and prints a tier-shift
 table to stdout. No entities written; no DecisionRecord amended.
 
-### CLI contract — `team-rebalance`
+### CLI contract — `pk-team-rebalance`
 
 ```
-team-rebalance
+pk-team-rebalance
   --roles <list|"all">                 # comma-separated archetype names
   --confirm                            # required; no-op without it
   --reason <string>                    # free-text rationale; persisted
@@ -289,7 +289,7 @@ team-rebalance
   [--threshold-overrides <json>]
 ```
 
-For `--roles all`, full `team-create` logic re-runs and a new
+For `--roles all`, full `pk-team-create` logic re-runs and a new
 chartering DecisionRecord supersedes the current one. For named
 roles, only the affected Bindings/Actors are rotated and the
 governing DecisionRecord's `progress_notes` are amended with the
@@ -388,19 +388,19 @@ spec:
     archetype_overrides:      [{role, kit_default_pin, override_pin, rationale}]
 ```
 
-`team-rebalance` and `team-review` both read this block via
+`pk-team-rebalance` and `pk-team-review` both read this block via
 `decision-record.get_decision`. It is the single source of truth for a
 team's configuration — there is no skill-local config file for
 weights, thresholds, or pins. `inputs_snapshot.tier_scores` is what
-`team-review`'s diff is computed against.
+`pk-team-review`'s diff is computed against.
 
 ### Referenced source files
 
 | Path | Purpose |
 |---|---|
-| `commands/team-create.md` | Step-by-step command process (8 steps) |
-| `commands/team-review.md` | Read-only diff process |
-| `commands/team-rebalance.md` | Targeted rotation process |
+| `commands/pk-team-create.md` | Step-by-step command process (8 steps) |
+| `commands/pk-team-review.md` | Read-only diff process |
+| `commands/pk-team-rebalance.md` | Targeted rotation process |
 | `references/landscape-resolution.md` | 3-level landscape discovery rules |
 | `references/tiering-formula.md` | Normalisation, thresholds, worked example |
 | `references/role-archetypes.md` | Kit-default pins + responsibilities |
@@ -413,7 +413,7 @@ weights, thresholds, or pins. `inputs_snapshot.tier_scores` is what
   extend the override schema in `references/role-archetypes-override.md`
   (PM-immutability invariant must continue to apply), and add a row to
   the pin table above. The 8-archetype assumption is hard-coded in
-  `team-create` step 6 — bump it carefully.
+  `pk-team-create` step 6 — bump it carefully.
 - **New scoring dimension.** Extend the weight set (currently
   `{C, K, L, G}`); update `weights` schema in `inputs_snapshot`,
   the worked example in `references/tiering-formula.md`, and the

@@ -68,7 +68,8 @@ Grooming is a **review-then-act** workflow:
 **Nothing is moved silently. Nothing is deleted, ever** — the worst that
 can happen is "moved to `context/archive/`" which is reversible.
 
-This skill also provides the `/context-grooming-run` slash command for direct invocation — see `commands/context-grooming-run.md`.
+This skill also provides the `/pk-groom` command for direct invocation —
+see `commands/pk-groom.md`.
 
 ### The grooming report
 

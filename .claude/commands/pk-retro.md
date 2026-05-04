@@ -1,5 +1,5 @@
 ---
-argument-hint: "--release <version> [--since <ref>] [--until <ref>] [--auto-workitems] [--verbose] [--dry-run] [--notes-file <path>]"
+argument-hint: "--release <version> [--since <iso-or-ref>] [--until <iso-or-ref>] [--auto-workitems] [--verbose] [--dry-run] [--notes-file <path>]"
 allowed-tools: []
 ---
 

@@ -1,5 +1,5 @@
 ---
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 kind: DecisionRecord
 metadata:
   id: DEC-20260501_1803-ProudFjord-implement-remaining-smoothtiger-smoothriver-v2-gaps

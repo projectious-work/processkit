@@ -11,6 +11,49 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.25.6] — 2026-05-04
+
+v0.25.6 is a **patch release** that makes processkit command exposure
+provider-neutral and closes the remaining dogfood v2 backlog audit gap.
+Slash-capable harnesses continue to receive `pk-*` command projections,
+while non-slash harnesses receive matching natural-language skill
+adapters.
+
+### Added
+
+- **Added provider-neutral command projection for
+  `pk-explain-routing`.** The model-recommender command now has a
+  canonical command file, Claude slash projection, Codex skill shim, and
+  MCP metadata entry.
+
+### Changed
+
+- **Processkit command metadata now treats `pk-*` as mandatory.**
+  `pk-doctor` validates canonical command files, Claude projections,
+  Codex skill projections, argument hints, and projection-only command
+  drift across all processkit skills.
+- **Renamed team-creator commands into the reserved namespace.**
+  The former `team-create`, `team-rebalance`, and `team-review`
+  command files are now projected as `pk-team-create`,
+  `pk-team-rebalance`, and `pk-team-review`.
+- **Dogfood backlog entities were restamped to the v2 API contract.**
+  The live `context/` tree no longer carries legacy v1 backlog entities
+  that made full release-audit output noisy outside the shipped
+  `src/context/` boundary.
+
+### Verification
+
+- `pk-doctor` reported `0 ERROR / 0 WARN / 19 INFO`.
+- `pk-release-audit --tree=context` reported `0 ERROR`.
+- `pk-release-audit --tree=src-context` reported `0 ERROR / 0 WARN`.
+- `uv run scripts/smoke-test-servers.py` passed across the MCP smoke
+  suite.
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+  passed.
+- `npm --prefix docs-site run build` passed.
+
+---
+
 ## [v0.25.5] — 2026-05-04
 
 v0.25.5 is a **patch release** that makes active TeamMember

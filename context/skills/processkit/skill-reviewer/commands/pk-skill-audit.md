@@ -1,5 +1,5 @@
 ---
-argument-hint: ""
+argument-hint: "skill-name"
 allowed-tools: []
 ---
 

@@ -63,13 +63,13 @@ project:
 
 ```sh
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.25.5/processkit-v0.25.5.tar.gz \
-  -o processkit-v0.25.5.tar.gz
-tar -xzf processkit-v0.25.5.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.25.6/processkit-v0.25.6.tar.gz \
+  -o processkit-v0.25.6.tar.gz
+tar -xzf processkit-v0.25.6.tar.gz
 
-cp -a processkit-v0.25.5/context ./context
-cp -a processkit-v0.25.5/.processkit ./.processkit
-cp processkit-v0.25.5/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.25.6/context ./context
+cp -a processkit-v0.25.6/.processkit ./.processkit
+cp processkit-v0.25.6/AGENTS.md ./AGENTS.md
 ```
 
 Then point your harness at the gateway MCP server. For stdio-based MCP:

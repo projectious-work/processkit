@@ -137,7 +137,8 @@ Common queries the index MCP server will expose in Phase 3:
 
 Before Phase 3, query via filesystem glob + grep of `context/workitems/`.
 
-This skill also provides the `/workitem-management-create` slash command for direct invocation — see `commands/workitem-management-create.md`.
+This skill also provides the `/pk-work` command for direct invocation —
+see `commands/pk-work.md`.
 
 ## Gotchas
 

@@ -33,7 +33,7 @@ notes this as a shared-model arrangement.
 Permitted only when:
 1. No heavy-tier candidate passes the G-floor gate, AND
 2. The owner provides explicit written approval (supply as
-   `--override-reason "<text>"` argument to `team-create`).
+   `--override-reason "<text>"` argument to `pk-team-create`).
 
 The downgrade is recorded in the chartering DecisionRecord under
 `spec.override_exceptions`.
@@ -98,10 +98,10 @@ starting points; projects may extend them.
 
 ## Template vs clone
 
-The 8 seed Actors emitted by `team-create` are **templates**
+The 8 seed Actors emitted by `pk-team-create` are **templates**
 (`is_template: true`, `templated_from: null`). They represent the
 canonical team roster — one Actor per archetype. When
-`team-rebalance` spawns a new Actor to fill a role (replace or add),
+`pk-team-rebalance` spawns a new Actor to fill a role (replace or add),
 that spawned Actor is a **clone**: `is_template: false` and
 `templated_from: <seed-actor-id>` pointing at the template it
 derives from. This distinction lets the system separate "the 8

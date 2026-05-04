@@ -271,7 +271,7 @@ description is too vague — go back to Step 4.
 If the skill's `metadata.processkit.commands` list is non-empty, create one
 adapter file per command under `commands/`:
 
-**File:** `commands/<skill-name>-<workflow>.md`
+**File:** `commands/pk-<workflow>.md`
 
 ```markdown
 ---
@@ -284,6 +284,8 @@ Use the <skill-name> skill, Workflow X (name), for $ARGUMENTS.
 
 Rules:
 - File name must exactly match the `name` field in `commands:`.
+- Processkit-category slash commands must use the reserved `pk-`
+  prefix so every harness exposes a consistent command namespace.
 - Body is one sentence — no logic, no workflow steps. Everything lives in SKILL.md.
 - `allowed-tools` scoped as narrowly as possible. Use `[]` if no shell access is
   needed. Never use `Bash(*)` unless the command genuinely runs arbitrary shell.
@@ -293,15 +295,20 @@ Add a one-line mention of the command in SKILL.md's Overview so agents discover 
 when reading the skill, not only when the user types `/command-name`:
 
 ```markdown
-This skill also provides the `/model-recommender-profile` command for direct
-invocation — see `commands/model-recommender-profile.md`.
+This skill also provides the `/pk-model-profile` command for direct
+invocation — see `commands/pk-model-profile.md`.
 ```
 
-For harness UI registration (Claude Code tab-complete), copy the adapter files to
-`.claude/commands/` in the project root. This is optional and not required for the
-command to work at runtime.
+Project each command into the supported harness surfaces:
 
-This skill also provides the `/skill-builder-create` slash command for direct invocation — see `commands/skill-builder-create.md`.
+- Copy the canonical adapter to `.claude/commands/<name>.md` for Claude Code
+  slash-command registration.
+- Create `.agents/skills/<name>/SKILL.md` with matching name/description/body
+  for harnesses that trigger skills from natural-language requests instead of
+  custom slash commands.
+
+This skill also provides the `/pk-skill-new` command for direct
+invocation — see `commands/pk-skill-new.md`.
 
 ### Step 9 — Update skill-finder
 
@@ -372,10 +379,11 @@ items.
   obvious".** If you can't write 3 positive and 3 negative test cases,
   the description is not as obvious as you think. The exercise of
   writing the negatives is what surfaces over-triggering risks.
-- **Forgetting command file naming requires the skill-name prefix.**
-  Command files must be named `<skill-name>-<workflow>.md`, not just
+- **Forgetting processkit commands use the `pk-` namespace.**
+  Processkit command files must be named `pk-<workflow>.md`, not just
   `<workflow>.md`. Unprefixed names collide across skills once all
-  commands land in `.claude/commands/`. Always include the skill name.
+  commands land in `.claude/commands/`, and they do not trigger Codex
+  skill shims consistently.
 - **Writing logic into command adapter files.** The adapter's body is
   one sentence pointing at the skill and workflow. If you find yourself
   writing workflow steps in the adapter, move them to SKILL.md. The

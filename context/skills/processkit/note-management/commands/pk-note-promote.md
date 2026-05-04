@@ -1,5 +1,5 @@
 ---
-argument-hint: ""
+argument-hint: "note-id"
 allowed-tools: []
 ---
 

@@ -103,7 +103,9 @@ The agent should write a standup when it hears:
 - "daily update"
 - "end of day summary"
 
-This skill also provides the `/standup-context-write` slash command for direct invocation — see `commands/standup-context-write.md`.
+This skill also provides the `/pk-status` and `/pk-standup` commands for
+direct invocation — see `commands/pk-status.md` and
+`commands/pk-standup.md`.
 
 ## Gotchas
 

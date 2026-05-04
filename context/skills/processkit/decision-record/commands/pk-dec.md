@@ -1,5 +1,5 @@
 ---
-argument-hint: ""
+argument-hint: "decision-title"
 allowed-tools: []
 ---
 

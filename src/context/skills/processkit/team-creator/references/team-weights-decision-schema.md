@@ -3,7 +3,7 @@
 ## Purpose
 
 A `DEC-*-TeamWeights` DecisionRecord persists per-project formula
-weights and tier thresholds. `team-create` discovers it automatically
+weights and tier thresholds. `pk-team-create` discovers it automatically
 at startup and applies it when no CLI `--weight-overrides` or
 `--threshold-overrides` are supplied. The record is separate from the
 chartering team DecisionRecord — it governs **policy**, not a run.
@@ -103,11 +103,11 @@ The following combinations are hard errors (reject with a clear message):
 
 Valid range: `0.10 ≤ medium_min < heavy_min ≤ 0.95`.
 
-## team-rebalance interaction
+## pk-team-rebalance interaction
 
-On startup, `team-rebalance` runs the same tag-based DEC-*-TeamWeights
+On startup, `pk-team-rebalance` runs the same tag-based DEC-*-TeamWeights
 discovery query. **If the TeamWeights DEC is newer than the governing
-team DecisionRecord**, `team-rebalance` emits a warning and suggests
+team DecisionRecord**, `pk-team-rebalance` emits a warning and suggests
 `--roles all`:
 
 ```
@@ -115,10 +115,10 @@ WARNING: A newer DEC-*-TeamWeights record (created <date>) post-dates
 the governing team DecisionRecord (created <date>). Weight policy has
 changed. Stored weights from the governing DEC are being used for this
 targeted rebalance. To apply the updated weights across all roles, run:
-  team-rebalance --roles all --confirm --reason "<reason>"
+  pk-team-rebalance --roles all --confirm --reason "<reason>"
 ```
 
-`team-rebalance` does NOT silently apply the newer TeamWeights DEC to
+`pk-team-rebalance` does NOT silently apply the newer TeamWeights DEC to
 a targeted (`--roles <list>`) run. CLI `--weight-overrides` always
 wins regardless of DEC age.
 

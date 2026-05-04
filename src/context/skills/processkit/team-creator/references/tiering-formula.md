@@ -13,9 +13,9 @@
 
 Weights must sum to 1.00 ± 0.001. Owner may supply
 `--weight-overrides '{"C":0.5,"K":0.3,"L":0.1,"G":0.1}'` on
-`team-create`. The overrides are stored verbatim in the chartering
+`pk-team-create`. The overrides are stored verbatim in the chartering
 DecisionRecord's `inputs_snapshot.weights` and are reused by
-`team-rebalance` unless a new `--weight-overrides` is supplied.
+`pk-team-rebalance` unless a new `--weight-overrides` is supplied.
 
 ## Normalisation
 

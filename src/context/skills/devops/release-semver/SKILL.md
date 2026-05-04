@@ -119,7 +119,9 @@ The agent recommends a minor bump (because of the new feature),
 drafts changelog entries grouped Added/Fixed, updates version
 files, creates the bump commit, and tags it.
 
-This skill also provides the `/release-semver-prepare` slash command for direct invocation — see `commands/release-semver-prepare.md`. This skill also provides the `/release-semver-publish` slash command for direct invocation — see `commands/release-semver-publish.md`.
+This skill also provides the `/pk-release` and `/pk-publish` commands
+for direct invocation — see `commands/pk-release.md` and
+`commands/pk-publish.md`.
 
 ## Gotchas
 

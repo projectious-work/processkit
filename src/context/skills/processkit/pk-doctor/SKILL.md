@@ -19,7 +19,7 @@ metadata:
         purpose: (future) surface index errors alongside doctor findings in Phase 2.
     commands:
       - name: pk-doctor
-        args: "[--category=...] [--fix=... | --fix-all] [--since=<ref>] [--yes]"
+        args: "[--category=... | --fix=... | --fix-all | --since=<ref> | --yes]"
         description: "Run the health-check aggregator and print a single report."
 ---
 
@@ -76,11 +76,12 @@ writes exactly one `doctor.report` LogEntry via the event-log MCP.
    from the repo root. Exit 0 → one INFO "trees in sync". Exit 1 →
    one WARN per offending line reported by the script.
 5. **`commands_consistency`** — walks every
-   `context/skills/processkit/*/SKILL.md` and verifies that each entry
-   in `metadata.processkit.commands:` has a matching `commands/<name>.md`
-   file alongside the SKILL.md. ERROR per missing file; WARN for
-   stray `commands/*.md` files not declared in the metadata. Added
-   after v0.19.1 shipped pk-doctor without its own commands/ directory.
+   `context/skills/*/*/SKILL.md` and verifies that each entry in
+   `metadata.processkit.commands:` has a matching `commands/<name>.md`
+   file alongside the SKILL.md, uses the reserved `pk-` prefix, and has
+   matching `argument-hint` frontmatter. When `.claude/commands/` or
+   `.agents/skills/` exists, it also verifies those harness projections
+   exactly match the canonical command set.
 
 Additional checks added after Phase 1:
 
@@ -189,9 +190,10 @@ These were agreed with the owner during shape review:
 
 - **YAML-datetime vs JSON-Schema string coercion** failures surface as
   `WARN schema.datetime-coercion` (not ERROR). Parser-layer quirk.
-- **Slash command location** — `.claude/commands/pk-doctor.md` only.
-  Not mirrored to `src/.claude/commands/`. Downstream aibox ships its
-  own slash commands.
+- **Command projections** — canonical command adapters live under
+  `context/skills/**/commands/`; slash-capable harness projections live
+  under `.claude/commands/`; natural-language command shims live under
+  `.agents/skills/`. `src/context/` mirrors only the canonical source.
 - **Filename auto-rename** — WARN only in Phase 1. Phase 2 adds
   orchestrated rename + reindex.
 

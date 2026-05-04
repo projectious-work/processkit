@@ -105,7 +105,8 @@ Stop and check before asserting when:
 - The claim is in a domain where you know your training data may be outdated
 - The claim sounds exactly right without any caveats — that's often when it's wrong
 
-This skill also provides the `/research-with-confidence-investigate` slash command for direct invocation — see `commands/research-with-confidence-investigate.md`.
+This skill also provides the `/pk-research` command for direct
+invocation — see `commands/pk-research.md`.
 
 ### Structuring the output
 

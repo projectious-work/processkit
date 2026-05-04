@@ -2,7 +2,7 @@
 
 ## Three-level precedence
 
-When any `team-create`, `team-review`, or `team-rebalance` command
+When any `pk-team-create`, `pk-team-review`, or `pk-team-rebalance` command
 resolves the landscape snapshot, the following precedence applies:
 
 ```

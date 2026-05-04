@@ -12,7 +12,7 @@ metadata:
     layer: 2
     commands:
       - name: pk-note
-        args: "title"
+        args: "title or short description of the note"
         description: "Capture a new fleeting note with the given title"
       - name: pk-note-review
         args: ""
@@ -210,7 +210,10 @@ when the relationship is symmetric (e.g. two `supports` notes).
 | fleeting | WorkItem (task/chore) | The quick idea turns out to be actionable |
 | reference | Artifact | The source becomes a formal reference material |
 
-This skill also provides the `/note-management-capture` slash command for direct invocation — see `commands/note-management-capture.md`. This skill also provides the `/note-management-review` slash command for direct invocation — see `commands/note-management-review.md`. This skill also provides the `/note-management-promote` slash command for direct invocation — see `commands/note-management-promote.md`.
+This skill also provides the `/pk-note`, `/pk-note-review`, and
+`/pk-note-promote` commands for direct invocation — see
+`commands/pk-note.md`, `commands/pk-note-review.md`, and
+`commands/pk-note-promote.md`.
 
 ## Gotchas
 

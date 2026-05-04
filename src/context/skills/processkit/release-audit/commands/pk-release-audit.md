@@ -1,5 +1,5 @@
 ---
-argument-hint: "[--repo-root=<path>]"
+argument-hint: "[--repo-root=<path>] [--tree=context|src-context|both]"
 allowed-tools: []
 ---
 

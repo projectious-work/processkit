@@ -25,6 +25,7 @@ metadata:
         - get_config
         - set_config
         - get_model_for_class
+        - explain_routing
       assets: []
       processes: [model-profiling, task-routing, roster-refresh, setup-questionnaire]
     commands:
@@ -37,6 +38,9 @@ metadata:
       - name: pk-model-refresh
         args: ""
         description: "Run Workflow C to research and refresh the model roster from live benchmarks"
+      - name: pk-explain-routing
+        args: "<role-slug> [seniority] [scope]"
+        description: "Explain the model-routing trace for a role and optional seniority/scope"
 ---
 
 # Model Recommender
@@ -549,10 +553,10 @@ to these APIs. Self-hosting their open weights raises governance to G:3–4.
 
 ### Commands
 
-- `/model-recommender-profile model-id [scope]` — show the spider-chart capability profile for a model
-- `/model-recommender-route task-description` — route a task or task plan to the optimal AI model
-- `/model-recommender-setup` — run the guided questionnaire to configure model access and preferences
-- `/model-recommender-refresh` — run Workflow C to research and refresh the model roster from live benchmarks
+- `/pk-route task-description` — route a task or task plan to the optimal AI model
+- `/pk-model-setup` — run the guided questionnaire to configure model access and preferences
+- `/pk-model-refresh` — run Workflow C to research and refresh the model roster from live benchmarks
+- `/pk-explain-routing role [seniority] [scope]` — explain the role routing trace
 
 ## Gotchas
 
