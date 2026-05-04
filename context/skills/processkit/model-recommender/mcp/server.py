@@ -398,6 +398,107 @@ def _select_model_for_class(
         basis = "configured_model_unknown"
     return scored[0], basis, alternatives
 
+
+def _remaining_percent(capacity: dict) -> float | None:
+    for key in ("remaining_percent", "remaining_pct", "percent_remaining"):
+        if capacity.get(key) is not None:
+            try:
+                return max(0.0, min(100.0, float(capacity[key])))
+            except Exception:
+                return None
+    remaining = capacity.get("remaining")
+    limit = capacity.get("limit")
+    if remaining is None or not limit:
+        return None
+    try:
+        return max(0.0, min(100.0, (float(remaining) / float(limit)) * 100.0))
+    except Exception:
+        return None
+
+
+def _runtime_capacity_guidance(
+    runtime_capacity: Optional[dict],
+    *,
+    expected_tokens: int = 0,
+    requested_parallelism: int = 1,
+    task_risk: str = "normal",
+) -> dict:
+    """Translate observed quota/subscription capacity into planning hints."""
+    cap = runtime_capacity or {}
+    confidence = str(cap.get("confidence") or "unknown")
+    remaining_percent = _remaining_percent(cap)
+    status = "unknown"
+    warnings: list[str] = []
+    recommendations: list[str] = []
+    model_classes = ["fast", "standard", "powerful"]
+    effort_ceiling = None
+    max_parallelism = max(1, int(requested_parallelism or 1))
+
+    if remaining_percent is None:
+        warnings.append(
+            "runtime capacity is unknown; do not assume subscription quota is available"
+        )
+        recommendations.append(
+            "ask the harness or aibox for a fresh capacity observation before large parallel work"
+        )
+    elif remaining_percent < 5:
+        status = "critical"
+        effort_ceiling = "low"
+        max_parallelism = 1
+        model_classes = ["fast"]
+        warnings.append("remaining model capacity is critically low")
+        recommendations.append("defer non-urgent work until the reset window")
+    elif remaining_percent < 20:
+        status = "constrained"
+        effort_ceiling = "medium"
+        max_parallelism = 1
+        model_classes = ["fast", "standard"]
+        warnings.append("remaining model capacity is low")
+        recommendations.append("avoid deep-review or broad subagent fanout")
+    elif remaining_percent < 40:
+        status = "cautious"
+        effort_ceiling = "medium"
+        max_parallelism = min(max_parallelism, 2)
+        model_classes = ["fast", "standard"]
+        recommendations.append("reserve powerful models for blocking decisions")
+    else:
+        status = "ok"
+        recommendations.append("capacity is sufficient for normal routing")
+
+    if expected_tokens and remaining_percent is not None:
+        if expected_tokens > 150_000 and remaining_percent < 40:
+            warnings.append(
+                "expected task size is large relative to remaining capacity"
+            )
+        if expected_tokens > 400_000:
+            recommendations.append(
+                "split the task or compact context before model-intensive work"
+            )
+
+    if task_risk in {"high", "critical"} and status in {"critical", "constrained"}:
+        recommendations.append(
+            "prefer a smaller planning pass now and schedule high-risk execution after reset"
+        )
+
+    return {
+        "status": status,
+        "source": cap.get("source") or "caller",
+        "provider": cap.get("provider"),
+        "surface": cap.get("surface"),
+        "model_pool": cap.get("model_pool"),
+        "remaining_percent": remaining_percent,
+        "reset_at": cap.get("reset_at"),
+        "confidence": confidence,
+        "recommended": {
+            "model_classes": model_classes,
+            "effort_ceiling": effort_ceiling,
+            "max_parallelism": max_parallelism,
+        },
+        "warnings": warnings,
+        "recommendations": recommendations,
+    }
+
+
 def _profile_block(m: dict, scope: str = "summary") -> dict:
     dims = m["dimensions"]
     top = {d: {"score": dims[d]["score"], "label": _label(dims[d]["score"]), "bar": _bar(dims[d]["score"])} for d in dims}
@@ -1056,6 +1157,34 @@ def get_model_for_class(
 
 
 @server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def plan_runtime_capacity(
+    runtime_capacity: Optional[dict] = None,
+    expected_tokens: int = 0,
+    requested_parallelism: int = 1,
+    task_risk: str = "normal",
+) -> dict:
+    """Return model-planning guidance from observed subscription capacity.
+
+    ``runtime_capacity`` is provider-neutral caller-supplied data, for
+    example ``{provider, surface, model_pool, remaining_percent, reset_at,
+    confidence, source}``. processkit does not scrape harness-private
+    subscription state; aibox or the active harness should provide the
+    freshest observation it can.
+    """
+    return _runtime_capacity_guidance(
+        runtime_capacity,
+        expected_tokens=expected_tokens,
+        requested_parallelism=requested_parallelism,
+        task_risk=task_risk,
+    )
+
+
+@server.tool(annotations=ToolAnnotations(
     readOnlyHint=False,
     destructiveHint=True,
     idempotentHint=False,
@@ -1231,11 +1360,20 @@ def resolve_model(
 
     if explain:
         cands, trace = out
-        return {
+        result = {
             "candidates": [_candidate_to_dict(c) for c in cands],
             "trace": trace,
         }
-    return {"candidates": [_candidate_to_dict(c) for c in out]}
+    else:
+        result = {"candidates": [_candidate_to_dict(c) for c in out]}
+    if task_hints and task_hints.get("runtime_capacity") is not None:
+        result["capacity_guidance"] = _runtime_capacity_guidance(
+            task_hints.get("runtime_capacity"),
+            expected_tokens=int(task_hints.get("expected_tokens") or 0),
+            requested_parallelism=int(task_hints.get("parallelism") or 1),
+            task_risk=str(task_hints.get("task_risk") or "normal"),
+        )
+    return result
 
 
 @server.tool(annotations=ToolAnnotations(

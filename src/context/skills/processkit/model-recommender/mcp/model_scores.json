@@ -2892,6 +2892,147 @@
       }
     },
     {
+      "id": "gpt-5.3-codex-spark",
+      "name": "GPT-5.3-Codex-Spark",
+      "provider": "OpenAI",
+      "tier": "Ultra-fast Codex coding model",
+      "lifecycle": "active",
+      "context_k": 128,
+      "governance_warning": null,
+      "source_urls": [
+        "https://platform.openai.com/docs/models"
+      ],
+      "model_classes": [
+        "fast"
+      ],
+      "pricing": {
+        "input_per_1m": null,
+        "output_per_1m": null,
+        "currency": "USD",
+        "hosting": "codex-subscription",
+        "note": "Exposed by local Codex catalog as supported_in_api=false; API token pricing is not applicable."
+      },
+      "dimensions": {
+        "R": {
+          "score": 4,
+          "sub": {
+            "math_reasoning": 3,
+            "scientific_reasoning": 3,
+            "abstract_reasoning": 3,
+            "logical_chains": 4,
+            "debugging_chains": 4
+          }
+        },
+        "E": {
+          "score": 4,
+          "sub": {
+            "function_codegen": 4,
+            "repo_scale_tasks": 3,
+            "tool_use": 4,
+            "agentic_planning": 4,
+            "codebase_navigation": 4
+          }
+        },
+        "S": {
+          "score": 5,
+          "sub": {
+            "ttft": 5,
+            "throughput": 5,
+            "cost_efficiency": 5
+          }
+        },
+        "B": {
+          "score": 3,
+          "sub": {
+            "context_window": 3,
+            "long_doc_faithfulness": 2,
+            "vision": 1,
+            "audio": 1,
+            "video": 1,
+            "multilingual": 3,
+            "structured_output": 4
+          }
+        },
+        "L": {
+          "score": 4,
+          "sub": {
+            "instruction_following": 4,
+            "hallucination_resistance": 4,
+            "consistency": 4,
+            "safety": 4,
+            "format_adherence": 4
+          }
+        },
+        "G": {
+          "score": 2,
+          "sub": {
+            "data_retention_policy": 2,
+            "data_sovereignty": 1,
+            "self_hostable": 1,
+            "compliance_certs": 2,
+            "audit_logging": 2
+          }
+        }
+      },
+      "task_suitability": {
+        "architecture": 3,
+        "algorithm_design": 3,
+        "debugging": 4,
+        "implementation": 4,
+        "refactoring": 3,
+        "code_review": 3,
+        "test_generation": 5,
+        "repo_navigation": 4,
+        "agentic_workflow": 4,
+        "tool_calling": 4,
+        "structured_output": 4,
+        "data_extraction": 3,
+        "summarization": 3,
+        "long_context_synthesis": 2,
+        "rag": 3,
+        "citation_answering": 3,
+        "research_synthesis": 2,
+        "math_reasoning": 3,
+        "scientific_reasoning": 3,
+        "legal_analysis": 2,
+        "medical_admin": 2,
+        "financial_analysis": 2,
+        "translation": 3,
+        "multilingual_chat": 3,
+        "classification": 4,
+        "sentiment_analysis": 4,
+        "creative_writing": 3,
+        "marketing_copy": 3,
+        "data_analysis": 3,
+        "sql_generation": 4,
+        "spreadsheet_analysis": 3,
+        "ocr": 2,
+        "image_understanding": 2,
+        "chart_understanding": 2,
+        "diagram_reasoning": 3,
+        "voice": 1,
+        "audio_transcription": 1,
+        "video_understanding": 1,
+        "low_latency_chat": 5,
+        "bulk_generation": 5,
+        "privacy_sensitive": 2,
+        "self_hosted_enterprise": 1
+      },
+      "vendor_model_id": "gpt-5.3-codex-spark",
+      "supported_parameters": [
+        "reasoning_effort",
+        "tools"
+      ],
+      "token_accounting": {
+        "surface": "codex-subscription",
+        "supported_in_api": false
+      },
+      "rate_limits": {
+        "source": "codex-status",
+        "note": "Use interactive Codex /status or aibox-fed runtime_capacity observations for subscription limits."
+      }
+    },
+    {
       "id": "gpt-5.2-codex",
       "name": "GPT-5.2-Codex",
       "provider": "OpenAI",

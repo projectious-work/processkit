@@ -4,6 +4,7 @@
       "command": "uv",
       "args": [
         "run",
+        "--script",
         "context/skills/processkit/processkit-gateway/mcp/server.py"
       ],
       "env": {

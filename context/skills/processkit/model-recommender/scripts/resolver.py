@@ -90,7 +90,7 @@ _PROVIDER_EQUIVALENTS = {
     (
         _artifact_id_for_model_slug("anthropic-claude-haiku"),
         "openai",
-    ): _artifact_id_for_model_slug("openai-o4-mini"),
+    ): "ART-20260504_1425-ModelSpec-openai-gpt-5-3-codex-spark",
     (
         _artifact_id_for_model_slug("anthropic-claude-sonnet"),
         "openai",
@@ -100,7 +100,9 @@ _PROVIDER_EQUIVALENTS = {
         "openai",
     ): _artifact_id_for_model_slug("openai-gpt-5-pro"),
     # Legacy aliases while derived projects migrate old MODEL-* bindings.
-    ("MODEL-anthropic-claude-haiku", "openai"): "MODEL-openai-o4-mini",
+    ("MODEL-anthropic-claude-haiku", "openai"): (
+        "ART-20260504_1425-ModelSpec-openai-gpt-5-3-codex-spark"
+    ),
     ("MODEL-anthropic-claude-sonnet", "openai"): "MODEL-openai-gpt-5",
     ("MODEL-anthropic-claude-opus", "openai"): "MODEL-openai-gpt-5-pro",
 }

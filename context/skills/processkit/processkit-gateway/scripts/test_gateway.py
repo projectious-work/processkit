@@ -116,6 +116,7 @@ def test_gateway_config_registers_single_gateway_server():
     assert server_config["command"] == "uv"
     assert server_config["args"] == [
         "run",
+        "--script",
         "context/skills/processkit/processkit-gateway/mcp/server.py",
     ]
     assert server_config["env"]["PROCESSKIT_MCP_MODE"] == "gateway"

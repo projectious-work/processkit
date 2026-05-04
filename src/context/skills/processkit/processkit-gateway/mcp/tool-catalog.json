@@ -4349,7 +4349,88 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "\nFind models that meet minimum dimension scores, ranked by overall fit.\n\nmin_context_k: minimum context window in thousands of tokens (e.g. 200 for 200K).\n  Use this when the task requires a specific context window size.\nmax_price_per_1m_output: maximum acceptable output price in USD per 1M tokens.\n  Self-hosted models (null price) are always included regardless of this filter.\ninclude_estimated: if True (default), includes models with estimated/unvalidated\n  scores (marked _estimated in model_scores.json). Set False for production routing.\n\nTop-level requirements: pass minimum scores per dimension (1\u20135, 0 = no requirement).\nSub-dimension requirements: pass dicts like sub_R={\"math_reasoning\": 4} to filter on\nspecific sub-dimensions within Reasoning. Supported: sub_R, sub_E, sub_B.\napply_user_filter: if True (default), respects user_config.json access/preference settings.\nlimit: max results to return (default 5).\n\nRoyalFern governance / data-privacy filters \u2014 back the G dimension with\nauditable hard requirements pulled from each model entity's\n``data_privacy`` / ``jurisdiction`` blocks. A model that is missing the\nrelevant field is REJECTED (conservative default; absence \u2260 allowed):\n\n  phi_hipaa_eligible      \u2014 True = require vendor HIPAA BAA covers this model.\n  pii_eligible            \u2014 True = require vendor explicitly permits PII.\n  gdpr_eligible           \u2014 True = require GDPR-compliant processing.\n  training_on_customer_data\n                          \u2014 exact match against the enum\n                            ('never' | 'opt-in' | 'opt-out' | 'always').\n                            Use 'never' to hard-require no training on prompts.\n  data_retention_days_max \u2014 integer ceiling. Matches numeric retention\n                            \u2264 ceiling, plus the string literal 'zero'\n                            when ceiling \u2265 0. Rejects 'unknown'.\n  jurisdiction_country_in \u2014 list of ISO-3166-1 alpha-2 codes; vendor HQ\n                            must match one (e.g. [\"US\",\"CA\",\"FR\"]).\n  legal_regime_in         \u2014 list of regime slugs (EU-GDPR, US-HIPAA,\n                            CN-DSL, ...); model must declare \u22651 match.\n  data_residency_in       \u2014 list of residency region codes the vendor\n                            must offer (any-match).\n  max_latency_p50_ms      \u2014 integer ceiling on the vendor-published p50\n                            latency.\n\nReturns ranked list of matching model profiles (summary level).\n",
+      "description": "Return the fine-grained task suitability classes known to the roster.\n\nThese classes are optional routing hints layered on top of the stable\nR/E/S/B/L/G dimensions. A model missing a class is unknown, not\nautomatically unsuitable; callers can set require_task_suitability=True\nin query_models when they need explicit coverage.\n",
+      "name": "list_task_classes",
+      "output_schema": null,
+      "parameters": {
+        "properties": {},
+        "title": "list_task_classesArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/model-recommender/mcp/server.py",
+      "source_skill": "model-recommender",
+      "source_tool": "list_task_classes",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "model-recommender"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return model-planning guidance from observed subscription capacity.\n\n``runtime_capacity`` is provider-neutral caller-supplied data, for\nexample ``{provider, surface, model_pool, remaining_percent, reset_at,\nconfidence, source}``. processkit does not scrape harness-private\nsubscription state; aibox or the active harness should provide the\nfreshest observation it can.\n",
+      "name": "plan_runtime_capacity",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "expected_tokens": {
+            "default": 0,
+            "title": "Expected Tokens",
+            "type": "integer"
+          },
+          "requested_parallelism": {
+            "default": 1,
+            "title": "Requested Parallelism",
+            "type": "integer"
+          },
+          "runtime_capacity": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Runtime Capacity"
+          },
+          "task_risk": {
+            "default": "normal",
+            "title": "Task Risk",
+            "type": "string"
+          }
+        },
+        "title": "plan_runtime_capacityArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/model-recommender/mcp/server.py",
+      "source_skill": "model-recommender",
+      "source_tool": "plan_runtime_capacity",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "model-recommender"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "\nFind models that meet minimum dimension scores, ranked by overall fit.\n\nmin_context_k: minimum context window in thousands of tokens (e.g. 200 for 200K).\n  Use this when the task requires a specific context window size.\nmax_price_per_1m_output: maximum acceptable output price in USD per 1M tokens.\n  Self-hosted models (null price) are always included regardless of this filter.\ninclude_estimated: if True (default), includes models with estimated/unvalidated\n  scores (marked _estimated in model_scores.json). Set False for production routing.\n\nTop-level requirements: pass minimum scores per dimension (1\u20135, 0 = no requirement).\nSub-dimension requirements: pass dicts like sub_R={\"math_reasoning\": 4} to filter on\nspecific sub-dimensions within Reasoning. Supported: sub_R, sub_E, sub_B.\napply_user_filter: if True (default), respects user_config.json access/preference settings.\nlimit: max results to return (default 5).\n\nRoyalFern governance / data-privacy filters \u2014 back the G dimension with\nauditable hard requirements pulled from each model entity's\n``data_privacy`` / ``jurisdiction`` blocks. A model that is missing the\nrelevant field is REJECTED (conservative default; absence \u2260 allowed):\n\n  phi_hipaa_eligible      \u2014 True = require vendor HIPAA BAA covers this model.\n  pii_eligible            \u2014 True = require vendor explicitly permits PII.\n  gdpr_eligible           \u2014 True = require GDPR-compliant processing.\n  training_on_customer_data\n                          \u2014 exact match against the enum\n                            ('never' | 'opt-in' | 'opt-out' | 'always').\n                            Use 'never' to hard-require no training on prompts.\n  data_retention_days_max \u2014 integer ceiling. Matches numeric retention\n                            \u2264 ceiling, plus the string literal 'zero'\n                            when ceiling \u2265 0. Rejects 'unknown'.\n  jurisdiction_country_in \u2014 list of ISO-3166-1 alpha-2 codes; vendor HQ\n                            must match one (e.g. [\"US\",\"CA\",\"FR\"]).\n  legal_regime_in         \u2014 list of regime slugs (EU-GDPR, US-HIPAA,\n                            CN-DSL, ...); model must declare \u22651 match.\n  data_residency_in       \u2014 list of residency region codes the vendor\n                            must offer (any-match).\n  max_latency_p50_ms      \u2014 integer ceiling on the vendor-published p50\n                            latency.\n  lifecycle               \u2014 optional list of lifecycle states to include\n                            (active, legacy, deprecated, retired,\n                            unverified). Retired models are excluded\n                            unless include_retired=True.\n  task_class              \u2014 optional fine-grained task class from\n                            list_task_classes(); when set, ranking uses\n                            per-model task_suitability first.\n  min_task_suitability    \u2014 minimum 1-5 suitability for task_class.\n  require_task_suitability\n                          \u2014 if True, reject models missing task_class data.\n\nReturns ranked list of matching model profiles (summary level).\n",
       "name": "query_models",
       "output_schema": {
         "properties": {
@@ -4449,6 +4530,11 @@
             "title": "Include Estimated",
             "type": "boolean"
           },
+          "include_retired": {
+            "default": false,
+            "title": "Include Retired",
+            "type": "boolean"
+          },
           "jurisdiction_country_in": {
             "anyOf": [
               {
@@ -4478,6 +4564,21 @@
             ],
             "default": null,
             "title": "Legal Regime In"
+          },
+          "lifecycle": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Lifecycle"
           },
           "limit": {
             "default": 5,
@@ -4513,6 +4614,11 @@
             "title": "Min Context K",
             "type": "integer"
           },
+          "min_task_suitability": {
+            "default": 0,
+            "title": "Min Task Suitability",
+            "type": "integer"
+          },
           "phi_hipaa_eligible": {
             "anyOf": [
               {
@@ -4536,6 +4642,11 @@
             ],
             "default": null,
             "title": "Pii Eligible"
+          },
+          "require_task_suitability": {
+            "default": false,
+            "title": "Require Task Suitability",
+            "type": "boolean"
           },
           "sub_B": {
             "anyOf": [
@@ -4576,6 +4687,18 @@
             "default": null,
             "title": "Sub R"
           },
+          "task_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Task Class"
+          },
           "training_on_customer_data": {
             "anyOf": [
               {
@@ -4610,7 +4733,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Resolve the best-fit model(s) for a (role, seniority, \u2026) call site.\n\nRuns the 8-layer precedence ladder from DEC-20260422_0234-LoyalComet:\ntask-pin \u2192 team-member pref \u2192 project veto \u2192 capability filter \u2192\nrole+seniority \u2192 role default \u2192 project bias \u2192 shim fallback.\n\nParameters\n----------\nrole:         ``ROLE-<slug>`` identifier (required)\nseniority:    junior | specialist | expert | senior | principal\nteam_member:  ``TEAMMEMBER-<slug>`` override\nscope:        ``SCOPE-<slug>`` (or project slug) for project-level bindings\ntask_hints:   optional dict: ``{requires_vision, requires_tool_use,\n              requires_computer_use, max_cost_usd, max_latency_ms,\n              model_pin, version_pin, effort, expected_tokens}``\nexplain:      include a layer-by-layer trace in the response\n",
+      "description": "Resolve the best-fit model(s) for a (role, seniority, \u2026) call site.\n\nRuns the 8-layer precedence ladder from DEC-20260422_0234-LoyalComet:\ntask-pin \u2192 team-member pref \u2192 project veto \u2192 capability filter \u2192\nrole+seniority \u2192 role default \u2192 project bias \u2192 shim fallback.\n\nParameters\n----------\nrole:         ``ROLE-<slug>`` identifier (required)\nseniority:    junior | specialist | expert | senior | principal\nteam_member:  ``TEAMMEMBER-<slug>`` override\nscope:        ``SCOPE-<slug>`` (or project slug) for project-level bindings\ntask_hints:   optional dict: ``{requires_vision, requires_tool_use,\n              requires_computer_use, max_cost_usd, max_latency_ms,\n              model_pin, version_pin, effort, expected_tokens,\n              task_class, task_classes, min_task_suitability,\n              require_task_suitability}``\nexplain:      include a layer-by-layer trace in the response\n",
       "name": "resolve_model",
       "output_schema": null,
       "parameters": {
@@ -4698,7 +4821,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "\nUpdate user configuration. Only fields provided are changed; omitted fields keep current values.\n\navailable_models: list of model IDs the user has API access to. Empty list = all models.\n  Example: [\"claude-sonnet-4.6\", \"claude-haiku-4.5\", \"gpt-4o\"]\nblocked_models: model IDs to never recommend regardless of scores.\n  Example: [\"deepseek-v3\", \"deepseek-r1\"]\nrequire_governance_min: minimum G score for all recommendations (0\u20135).\n  Set to 5 to enforce full data sovereignty across all tasks.\nbudget_tier: \"any\" | \"low\" (prefer cost_efficiency >= 3) | \"medium\" | \"high\"\npreferred_providers: list of providers to prioritize in rankings.\n  Example: [\"Anthropic\", \"Mistral\"]\nmodel_classes: optional map from fast/standard/powerful to a model ID\n  or ordered list of model IDs. Example:\n  {\"fast\": \"claude-haiku-4.5\", \"standard\": \"claude-sonnet-4.6\"}\n\nReturns the updated configuration.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this\ntool. 1% rule: call route_task first; commit in the same turn \u2014\ndeferred writes are dropped.\n",
+      "description": "\nUpdate user configuration. Only fields provided are changed; omitted fields keep current values.\n\navailable_models: list of model IDs the user has API access to. Empty list = all models.\n  Example: [\"claude-sonnet-4.6\", \"claude-haiku-4.5\", \"gpt-4o\"]\nblocked_models: model IDs to never recommend regardless of scores.\n  Example: [\"deepseek-v3\", \"deepseek-r1\"]\nrequire_governance_min: minimum G score for all recommendations (0\u20135).\n  Set to 5 to enforce full data sovereignty across all tasks.\nbudget_tier: \"any\" | \"low\" (prefer cost_efficiency >= 3) | \"medium\" | \"high\"\npreferred_providers: list of providers to prioritize in rankings.\n  Example: [\"Anthropic\", \"Mistral\"]\navailable_providers: list of providers the active runtime can call.\n  Example: [\"OpenAI\"] for Codex, [\"Anthropic\"] for Claude Code.\nmodel_classes: optional map from fast/standard/powerful to a model ID\n  or ordered list of model IDs. Example:\n  {\"fast\": \"claude-haiku-4.5\", \"standard\": \"claude-sonnet-4.6\"}\n\nReturns the updated configuration.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this\ntool. 1% rule: call route_task first; commit in the same turn \u2014\ndeferred writes are dropped.\n",
       "name": "set_config",
       "output_schema": null,
       "parameters": {
@@ -4717,6 +4840,21 @@
             ],
             "default": null,
             "title": "Available Models"
+          },
+          "available_providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Available Providers"
           },
           "blocked_models": {
             "anyOf": [
@@ -6252,7 +6390,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Route a task to the matching processkit skill, process override,\nand MCP tool \u2014 in a single call, without an LLM.\n\nPrerequisite: call this tool at the start of any processkit domain\ntask \u2014 before calling create_*, transition_*, link_*, or record_*\ntools \u2014 to confirm the right skill and any project-specific process\noverride for this derived project.\n\nTwo-phase heuristic routing:\n  Phase 1 \u2014 keyword match to a domain group (eliminates ~90 %\n             of candidates; no LLM needed).\n  Phase 2 \u2014 token-overlap or local embedding-style scoring within the\n             matched group's tools.\n  Fallback \u2014 skill-finder trigger-phrase table for cross-domain\n             tasks not covered by any domain group.\n\nWhen ``confidence < 0.5`` (routing_basis == \"needs_llm_confirm\"),\nsurface ``candidate_tools`` to the user or an LLM for confirmation.\nIf ``allow_llm_escalation`` is true, the response includes the\nconfigured fast-model class hint, but this server does not make\nprovider network calls itself. The router never blocks \u2014 it always\nreturns its best guess. 1% rule: if there is a 1% chance a processkit\nskill covers this task, call route_task before acting.\n\nParameters\n----------\ntask_description :\n    What the agent or user wants to do, in natural language.\n    More specific phrasing \u2192 better match quality.\n\nReturns\n-------\nOn match:\n  skill                    \u2014 processkit skill name to load\n  skill_description_excerpt \u2014 first 150 chars of skill description\n  process_override         \u2014 path to project-specific process file\n                             (only present when one exists)\n  server                   \u2014 MCP server to connect to\n  tool                     \u2014 recommended tool name\n  tool_qualified           \u2014 \"{server}__{tool}\" collision-safe form\n  domain_group             \u2014 routing group (workitem, decision, \u2026)\n  confidence               \u2014 0.0\u20131.0 combined routing confidence\n  routing_basis            \u2014 keyword_match | skill_finder_trigger_table\n                             | needs_llm_confirm\n  candidate_tools[]        \u2014 top-3 scored tools with rationales\n\nOn no match:\n  error, hint\n",
+      "description": "Route a task to the matching processkit skill, process override,\nand MCP tool \u2014 in a single call, without an LLM.\n\nPrerequisite: call this tool at the start of any processkit domain\ntask \u2014 before calling create_*, transition_*, link_*, or record_*\ntools \u2014 to confirm the right skill and any project-specific process\noverride for this derived project.\n\nTwo-phase heuristic routing:\n  Phase 1 \u2014 keyword match to a domain group (eliminates ~90 %\n             of candidates; no LLM needed).\n  Phase 2 \u2014 token-overlap or local embedding-style scoring within the\n             matched group's tools.\n  Fallback \u2014 skill-finder trigger-phrase table for cross-domain\n             tasks not covered by any domain group.\n\nWhen ``confidence < 0.5`` (routing_basis == \"needs_llm_confirm\"),\nsurface ``candidate_tools`` to the user or an LLM for confirmation.\nIf ``allow_llm_escalation`` is true, the response includes the\nconfigured fast-model class hint, but this server does not make\nprovider network calls itself. The router never blocks \u2014 it always\nreturns its best guess. 1% rule: if there is a 1% chance a processkit\nskill covers this task, call route_task before acting.\n\nParameters\n----------\ntask_description :\n    What the agent or user wants to do, in natural language.\n    More specific phrasing \u2192 better match quality.\n\nReturns\n-------\nOn match:\n  skill                    \u2014 processkit skill name to load\n  skill_description_excerpt \u2014 first 150 chars of skill description\n  process_override         \u2014 legacy v1 path to a project-specific\n                             process file (only present when one exists)\n  process_override_status  \u2014 present with process_override; currently\n                             \"legacy-v1\"\n  server                   \u2014 MCP server to connect to\n  tool                     \u2014 recommended tool name\n  tool_qualified           \u2014 \"{server}__{tool}\" collision-safe form\n  domain_group             \u2014 routing group (workitem, decision, \u2026)\n  confidence               \u2014 0.0\u20131.0 combined routing confidence\n  routing_basis            \u2014 keyword_match | skill_finder_trigger_table\n                             | needs_llm_confirm\n  candidate_tools[]        \u2014 top-3 scored tools with rationales\n\nOn no match:\n  error, hint\n",
       "name": "route_task",
       "output_schema": null,
       "parameters": {
@@ -6261,6 +6399,21 @@
             "default": false,
             "title": "Allow Llm Escalation",
             "type": "boolean"
+          },
+          "intent_signals": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Intent Signals"
           },
           "scoring_mode": {
             "default": "auto",
@@ -6519,11 +6672,16 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Export one TeamMember as a Claude Code project subagent adapter.\n\nWrites `.claude/agents/<slug>.md` by default. The generated file uses\n`model: inherit` and omits `tools`, so Claude Code inherits the main\nsession model and tool permissions instead of baking processkit routing\ninto a provider-specific adapter.\n",
+      "description": "Export one TeamMember as a Claude Code project subagent adapter.\n\nWrites `.claude/agents/<slug>.md` by default. The generated file uses\n`model: inherit` by default and omits `tools`, so Claude Code inherits\nthe main session tool permissions. Set `model_policy=\"resolved\"` to\nemit a Claude model line from processkit routing when an Anthropic\ncandidate can be resolved.\n",
       "name": "export_claude_subagent",
       "output_schema": null,
       "parameters": {
         "properties": {
+          "model_policy": {
+            "default": "inherit",
+            "title": "Model Policy",
+            "type": "string"
+          },
           "output_dir": {
             "anyOf": [
               {
@@ -6584,6 +6742,11 @@
             "default": false,
             "title": "Include Humans",
             "type": "boolean"
+          },
+          "model_policy": {
+            "default": "inherit",
+            "title": "Model Policy",
+            "type": "string"
           },
           "output_dir": {
             "anyOf": [
@@ -6695,6 +6858,82 @@
       "source_server_path": "processkit/team-manager/mcp/server.py",
       "source_skill": "team-manager",
       "source_tool": "get_active_interlocutor",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return active interlocutor identity plus runtime binding status.\n\n`observed_model` and `observed_effort` are caller-supplied facts from\nthe current harness. processkit cannot read or hot-swap the already\nrunning primary model, so mismatch reporting is informational.\n",
+      "name": "get_interlocutor_runtime_binding",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "observed_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed Effort"
+          },
+          "observed_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed Model"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope"
+          },
+          "task_hints": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Task Hints"
+          }
+        },
+        "title": "get_interlocutor_runtime_bindingArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "get_interlocutor_runtime_binding",
       "title": null
     },
     {

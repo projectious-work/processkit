@@ -11,6 +11,53 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.25.7] — 2026-05-04
+
+v0.25.7 is a **patch release** that improves processkit routing,
+semantic index observability, and model planning for Codex-heavy agent
+workflows.
+
+### Added
+
+- **Added command-aware task routing.** `task-router.route_task` now
+  scores `pk-*` command projections as first-class candidates, accepts
+  optional `intent_signals`, returns command routes for high-signal
+  workflows such as `pk-release-audit`, and surfaces multi-route
+  candidates for compound requests.
+- **Added runtime-capacity planning guidance.** `model-recommender`
+  now exposes `plan_runtime_capacity(...)` and adds capacity guidance to
+  `resolve_model(...)` when callers provide subscription/quota
+  observations.
+- **Added GPT-5.3-Codex-Spark to model routing.** Spark is now modeled
+  as an OpenAI Codex subscription candidate and ranked in the `code-fast`
+  model profile for bounded low-latency agent work.
+
+### Changed
+
+- **sqlite-vec handling is now observable and non-destructive by
+  default.** The index reports sqlite-vec load diagnostics and vector row
+  counts, while preserving existing vector tables unless explicit repair
+  is requested.
+- **MCP configs for the gateway and index server now launch as PEP 723
+  scripts.** This makes their declared `sqlite-vec` dependency active in
+  the MCP runtime.
+- **Provider-equivalent fast Codex routing now prefers Spark over
+  `o4-mini` for Haiku-class OpenAI fallbacks.**
+
+### Verification
+
+- `uv run --with pyyaml --with pytest --with mcp pytest
+  context/skills/processkit/task-router/scripts/test_task_router.py -v`
+- `uv run --with pyyaml --with pytest --with mcp --with jsonschema pytest
+  context/skills/processkit/processkit-gateway/scripts/test_gateway.py -v`
+- `uv run --with pyyaml --with pytest pytest
+  context/skills/processkit/model-recommender/scripts/test_resolver.py -v`
+- `uv run scripts/smoke-test-servers.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --no-log`
+- `uv run --script context/skills/processkit/release-audit/scripts/release_audit.py --tree=both`
+
+---
+
 ## [v0.25.6] — 2026-05-04
 
 v0.25.6 is a **patch release** that makes processkit command exposure

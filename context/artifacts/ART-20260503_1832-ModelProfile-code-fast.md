@@ -28,14 +28,17 @@ spec:
     model_spec: ART-20260503_1424-ModelSpec-anthropic-claude-haiku
   - rank: 2
     provider: openai
-    model_spec: ART-20260503_1424-ModelSpec-openai-o4-mini
+    model_spec: ART-20260504_1425-ModelSpec-openai-gpt-5-3-codex-spark
   - rank: 3
+    provider: openai
+    model_spec: ART-20260503_1424-ModelSpec-openai-o4-mini
+  - rank: 4
     provider: google
     model_spec: ART-20260503_1424-ModelSpec-google-gemini-2-5-flash
-  - rank: 4
+  - rank: 5
     provider: alibaba
     model_spec: ART-20260503_1424-ModelSpec-alibaba-qwen2-5-coder-32b
-  - rank: 5
+  - rank: 6
     provider: mistral
     model_spec: ART-20260503_1424-ModelSpec-mistral-codestral
   produced_by: DEC-20260503_1829-LoyalComet

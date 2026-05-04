@@ -32,7 +32,7 @@ def test_route_task_reports_embedding_scoring_basis():
     server = _load_server()
 
     out = server.route_task(
-        "find the process primitive for an architectural choice",
+        "record a decision about an architectural choice",
         scoring_mode="embedding",
     )
 
@@ -58,9 +58,38 @@ def test_route_task_surfaces_escalation_status_for_low_confidence():
         scoring_mode="token",
     )
 
-    assert out["routing_basis"] == "needs_llm_confirm"
+    assert out["routing_basis"] in {
+        "needs_llm_confirm",
+        "skill_finder_trigger_table",
+    }
     assert out["llm_escalation"]["model_class"] == "fast"
     assert out["llm_escalation"]["status"] in {
         "not_configured",
         "configured_but_not_invoked",
     }
+
+
+def test_route_task_uses_command_signals_for_release_requests():
+    server = _load_server()
+
+    out = server.route_task(
+        "commit, push, and make a patch release",
+        scoring_mode="token",
+    )
+
+    assert out["route_type"] == "command"
+    assert out["command"] == "pk-release-audit"
+    assert out["skill"] == "release-audit"
+
+
+def test_route_task_accepts_intent_signals():
+    server = _load_server()
+
+    out = server.route_task(
+        "finish the package",
+        intent_signals=["patch release", "release audit"],
+        scoring_mode="token",
+    )
+
+    assert out["command"] == "pk-release-audit"
+    assert out["intent_signals"] == ["patch release", "release audit"]

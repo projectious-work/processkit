@@ -1,10 +1,10 @@
 {
-  "aggregate_sha256": "72e85491a9c4bc4f443335564947d55e079b2ac17861215d1f5ec036a2dc261b",
-  "generated_at": "2026-05-04T12:36:40Z",
+  "aggregate_sha256": "89a3c0248d933cc2b3022f45a61667dd48280727043b1f2405165a67c2cbd5d8",
+  "generated_at": "2026-05-04T14:31:55Z",
   "per_gateway": [
     {
       "path": "context/skills/processkit/processkit-gateway/mcp/mcp-config.json",
-      "sha256": "078814e0cfbe0e46988679d983435ba662dbc16e56e0b4ec720795a709ee3ba3"
+      "sha256": "57c759b1be4324bdd01784bf39319db30cc6924257b5b81cdc25f3f51bee2892"
     }
   ],
   "per_server_header": [
@@ -152,7 +152,7 @@
     },
     {
       "path": "context/skills/processkit/index-management/mcp/mcp-config.json",
-      "sha256": "2416a78970bb529a6465dcd82da312ffc3ce1d594e8b0e730dcc4cfdfbe24e5f"
+      "sha256": "11152bf63c3701a063b0fa387270cbe38823a2baaf29a7e217020d6bef53c042"
     },
     {
       "path": "context/skills/processkit/migration-management/mcp/mcp-config.json",
@@ -199,6 +199,6 @@
       "sha256": "a4ae7e26a980aeebed953f3cc2e761cde6dd8692fb033c81c9e3c8927e8b5898"
     }
   ],
-  "processkit_version": "v0.25.5",
+  "processkit_version": "v0.25.7",
   "version": 1
 }

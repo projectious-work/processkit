@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
 from pathlib import Path
 from typing import Any
 
@@ -329,6 +330,77 @@ def _sqlite_vec_available() -> bool:
         return False
 
 
+def _semantic_index_health(repo_root: Path) -> list[CheckResult]:
+    db_path = repo_root / "context" / ".cache" / "processkit" / "index.sqlite"
+    if not db_path.is_file():
+        return []
+    results: list[CheckResult] = []
+    try:
+        import sqlite_vec  # type: ignore
+
+        conn = sqlite3.connect(db_path)
+        try:
+            conn.enable_load_extension(True)
+            sqlite_vec.load(conn)
+            conn.enable_load_extension(False)
+            chunks = conn.execute(
+                "SELECT COUNT(*) FROM semantic_chunks"
+            ).fetchone()[0]
+            vec_table = conn.execute(
+                "SELECT 1 FROM sqlite_master "
+                "WHERE type = 'table' AND name = 'entity_vec'"
+            ).fetchone()
+            if chunks and vec_table is None:
+                results.append(CheckResult(
+                    severity="WARN",
+                    category="context_hygiene",
+                    id="semantic.vector-table-missing",
+                    message=(
+                        "semantic_chunks exist but sqlite-vec entity_vec "
+                        "table is missing"
+                    ),
+                    suggested_fix="run index-management.reindex after sqlite-vec is available in the MCP runtime",
+                ))
+                return results
+            if chunks and vec_table is not None:
+                vectors = conn.execute(
+                    "SELECT COUNT(*) FROM entity_vec"
+                ).fetchone()[0]
+                if vectors == 0:
+                    results.append(CheckResult(
+                        severity="WARN",
+                        category="context_hygiene",
+                        id="semantic.vector-rows-missing",
+                        message=(
+                            "semantic_chunks exist but entity_vec has no "
+                            "vector rows"
+                        ),
+                        suggested_fix="run index-management.reindex to rebuild vector rows",
+                    ))
+                elif vectors < chunks:
+                    results.append(CheckResult(
+                        severity="WARN",
+                        category="context_hygiene",
+                        id="semantic.vector-rows-partial",
+                        message=(
+                            f"entity_vec has {vectors} row(s) for {chunks} "
+                            "semantic chunk(s)"
+                        ),
+                        suggested_fix="run index-management.reindex to refresh vector rows",
+                    ))
+        finally:
+            conn.close()
+    except Exception as e:
+        results.append(CheckResult(
+            severity="WARN",
+            category="context_hygiene",
+            id="semantic.vector-health-unreadable",
+            message=f"could not inspect sqlite-vec index health: {e}",
+            suggested_fix="run pk-doctor with sqlite-vec available and reindex if needed",
+        ))
+    return results
+
+
 def run(ctx) -> list[CheckResult]:
     repo_root: Path = ctx["repo_root"]
     results: list[CheckResult] = []
@@ -441,6 +513,8 @@ def run(ctx) -> list[CheckResult]:
             ),
             suggested_fix="install sqlite-vec in the MCP runtime or fix aibox dependency provisioning",
         ))
+    else:
+        results.extend(_semantic_index_health(repo_root))
 
     if not results:
         results.append(CheckResult(

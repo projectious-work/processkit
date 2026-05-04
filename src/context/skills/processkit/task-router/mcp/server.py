@@ -344,6 +344,34 @@ DOMAIN_GROUPS: dict[str, dict] = {
     },
 }
 
+COMMAND_SIGNAL_OVERRIDES: dict[str, list[str]] = {
+    "pk-release-audit": [
+        "release audit", "pre-release", "pre release", "release validation",
+        "release checklist", "before release", "patch release",
+        "commit push release", "publish release", "make the release",
+    ],
+    "pk-release": [
+        "prepare release", "bump version", "update changelog",
+        "stamp provenance", "release notes",
+    ],
+    "pk-publish": [
+        "publish release", "github release", "push tag", "release assets",
+    ],
+    "pk-doctor": [
+        "doctor", "health check", "warnings", "resolve warning",
+        "processkit health",
+    ],
+    "pk-wrapup": [
+        "wrap up", "handover", "session handover", "end of session",
+    ],
+    "pk-route": [
+        "route task", "which model", "model routing", "task router",
+    ],
+}
+
+COMMAND_SIGNAL_THRESHOLD = 0.62
+LOW_CONFIDENCE_FALLBACK_THRESHOLD = 0.5
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -408,6 +436,141 @@ def _score_phrases(task: str, phrases: list[str], mode: str) -> tuple[float, str
     if embedding_score > token_score:
         return embedding_score, "embedding"
     return token_score, "token"
+
+
+def _frontmatter_and_body(path: Path) -> tuple[dict, str]:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except Exception:
+        return {}, ""
+    if not text.startswith("---"):
+        return {}, text
+    try:
+        end = text.index("---", 3)
+        import yaml
+        fm = yaml.safe_load(text[3:end])
+        body = text[end + 3:].strip()
+        return (fm if isinstance(fm, dict) else {}), body
+    except Exception:
+        return {}, text
+
+
+def _agent_command_skill(command: str, description: str) -> str:
+    match = re.search(r"Use the ([a-z0-9_-]+) skill", description)
+    if match:
+        return match.group(1)
+    return command
+
+
+def _load_command_specs() -> list[dict]:
+    root = _project_root()
+    specs: dict[str, dict] = {}
+    commands_root = root / "context" / "skills" / "processkit"
+    for path in sorted(commands_root.glob("*/commands/pk-*.md")):
+        command = path.stem
+        fm, body = _frontmatter_and_body(path)
+        skill = path.parents[1].name
+        specs[command] = {
+            "command": command,
+            "skill": skill,
+            "description": " ".join(body.split()),
+            "argument_hint": fm.get("argument-hint") or "",
+            "source": str(path.relative_to(root)),
+        }
+
+    agent_root = root / ".agents" / "skills"
+    for path in sorted(agent_root.glob("pk-*/SKILL.md")):
+        command = path.parent.name
+        if command in specs:
+            continue
+        fm, body = _frontmatter_and_body(path)
+        description = " ".join(
+            str(fm.get("description") or body or "").split()
+        )
+        specs[command] = {
+            "command": command,
+            "skill": _agent_command_skill(command, description),
+            "description": description,
+            "argument_hint": fm.get("argument-hint") or "",
+            "source": str(path.relative_to(root)),
+        }
+    return list(specs.values())
+
+
+def _command_phrases(spec: dict) -> list[str]:
+    command = spec["command"]
+    words = command.removeprefix("pk-").replace("-", " ")
+    phrases = [
+        command,
+        "/" + command,
+        words,
+        spec.get("description") or "",
+        spec.get("argument_hint") or "",
+    ]
+    phrases.extend(COMMAND_SIGNAL_OVERRIDES.get(command, []))
+    return [p for p in phrases if p]
+
+
+def _command_scores(
+    task: str,
+    scoring_mode: str,
+) -> list[tuple[float, dict, str, list[str]]]:
+    scored: list[tuple[float, dict, str, list[str]]] = []
+    for spec in _load_command_specs():
+        phrases = _command_phrases(spec)
+        score, basis = _score_phrases(task, phrases, scoring_mode)
+        if score <= 0:
+            continue
+        matched = [
+            phrase for phrase in phrases
+            if phrase.lower() in task.lower()
+        ][:5]
+        scored.append((score, spec, basis, matched))
+    scored.sort(key=lambda item: -item[0])
+    return scored
+
+
+def _command_route_result(
+    score: float,
+    spec: dict,
+    basis: str,
+    matched: list[str],
+    *,
+    candidates: list[tuple[float, dict, str, list[str]]] | None = None,
+) -> dict:
+    skill_name = spec["skill"]
+    result = {
+        "route_type": "command",
+        "command": spec["command"],
+        "skill": skill_name,
+        "skill_description_excerpt": _read_skill_description(skill_name),
+        "server": "processkit-skill-finder",
+        "tool": "find_skill",
+        "tool_qualified": "processkit-skill-finder__find_skill",
+        "domain_group": "command",
+        "confidence": round(score, 2),
+        "routing_basis": "command_signal",
+        "scoring_basis": {"command": basis},
+        "matched_signals": matched,
+        "source": spec.get("source"),
+    }
+    po = _find_process_override(skill_name)
+    if po:
+        result["process_override"] = po
+        result["process_override_status"] = "legacy-v1"
+    if candidates:
+        result["candidate_routes"] = [
+            {
+                "route_type": "command",
+                "command": cand["command"],
+                "skill": cand["skill"],
+                "confidence": round(sc, 2),
+                "scoring_basis": cand_basis,
+                "matched_signals": cand_matched,
+            }
+            for sc, cand, cand_basis, cand_matched in candidates[:5]
+        ]
+    return result
 
 
 def _cheap_model_hint() -> dict:
@@ -587,6 +750,7 @@ def route_task(
     task_description: str,
     allow_llm_escalation: bool = False,
     scoring_mode: str = "auto",
+    intent_signals: list[str] | None = None,
 ) -> dict:
     """Route a task to the matching processkit skill, process override,
     and MCP tool — in a single call, without an LLM.
@@ -644,13 +808,33 @@ def route_task(
         return {"error": "task_description must not be empty"}
     if scoring_mode not in ("auto", "token", "embedding"):
         return {"error": "scoring_mode must be auto, token, or embedding"}
+    signals = [str(s).strip() for s in (intent_signals or []) if str(s).strip()]
+    scored_task = " ".join([task, *signals])
+
+    command_candidates = _command_scores(scored_task, scoring_mode)
+    if (
+        command_candidates
+        and command_candidates[0][0] >= COMMAND_SIGNAL_THRESHOLD
+        and command_candidates[0][3]
+    ):
+        score, spec, basis, matched = command_candidates[0]
+        result = _command_route_result(
+            score,
+            spec,
+            basis,
+            matched,
+            candidates=command_candidates,
+        )
+        if signals:
+            result["intent_signals"] = signals
+        return result
 
     # ── Phase 1: domain group scoring ─────────────────────────────────────
-    group_scores = _phase1_groups(task, scoring_mode=scoring_mode)
+    group_scores = _phase1_groups(scored_task, scoring_mode=scoring_mode)
 
     if not group_scores or group_scores[0][0] < 0.3:
         # Fallback: skill-finder trigger table
-        fb = _skill_finder_fallback(task)
+        fb = _skill_finder_fallback(scored_task)
         if fb:
             po = _find_process_override(fb["skill"])
             result = dict(fb)
@@ -676,7 +860,7 @@ def route_task(
     skill_name: str = group["skill"]
 
     # ── Phase 2: tool scoring within group ────────────────────────────────
-    tool_scores = _phase2_tools(task, best_group, scoring_mode=scoring_mode)
+    tool_scores = _phase2_tools(scored_task, best_group, scoring_mode=scoring_mode)
 
     if tool_scores:
         best_tool_score, best_tool, best_rationale, tool_basis = tool_scores[0]
@@ -691,6 +875,56 @@ def route_task(
     routing_basis = (
         "keyword_match" if confidence >= 0.5 else "needs_llm_confirm"
     )
+
+    fallback = None
+    if confidence < LOW_CONFIDENCE_FALLBACK_THRESHOLD:
+        fallback = _skill_finder_fallback(scored_task)
+        if fallback and fallback.get("confidence", 0) >= confidence:
+            po = _find_process_override(fallback["skill"])
+            result = dict(fallback)
+            if po:
+                result["process_override"] = po
+                result["process_override_status"] = "legacy-v1"
+            result["also_consider_route"] = {
+                "route_type": "mcp_tool",
+                "skill": skill_name,
+                "server": server_name,
+                "tool": best_tool,
+                "tool_qualified": f"{server_name}__{best_tool}",
+                "domain_group": best_group,
+                "confidence": confidence,
+            }
+            if command_candidates:
+                result["candidate_routes"] = [
+                    {
+                        "route_type": "command",
+                        "command": cand["command"],
+                        "skill": cand["skill"],
+                        "confidence": round(sc, 2),
+                        "scoring_basis": cand_basis,
+                        "matched_signals": cand_matched,
+                    }
+                    for sc, cand, cand_basis, cand_matched
+                    in command_candidates[:5]
+                ]
+            if signals:
+                result["intent_signals"] = signals
+            if allow_llm_escalation and result.get("confidence", 0) < 0.5:
+                hint = _cheap_model_hint()
+                result["llm_escalation"] = {
+                    "status": (
+                        "configured_but_not_invoked"
+                        if hint["configured"] else "not_configured"
+                    ),
+                    "reason": (
+                        "task-router is a read-only stdio MCP server and "
+                        "does not make provider network calls; caller should "
+                        "confirm among candidate routes or invoke the "
+                        "configured fast model."
+                    ),
+                    **hint,
+                }
+            return result
 
     # ── Skill description excerpt ──────────────────────────────────────────
     skill_excerpt = _read_skill_description(skill_name)
@@ -735,6 +969,26 @@ def route_task(
         "scoring_basis": {"group": group_basis, "tool": tool_basis},
         "candidate_tools": candidates,
     }
+    if signals:
+        result["intent_signals"] = signals
+    if fallback:
+        result["also_consider_skill"] = {
+            "skill": fallback["skill"],
+            "confidence": fallback.get("confidence", 0),
+            "routing_basis": fallback.get("routing_basis"),
+        }
+    if command_candidates:
+        result["candidate_routes"] = [
+            {
+                "route_type": "command",
+                "command": cand["command"],
+                "skill": cand["skill"],
+                "confidence": round(sc, 2),
+                "scoring_basis": cand_basis,
+                "matched_signals": cand_matched,
+            }
+            for sc, cand, cand_basis, cand_matched in command_candidates[:5]
+        ]
 
     if process_override:
         result["process_override"] = process_override

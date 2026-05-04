@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import sqlite3
 import struct
 from dataclasses import dataclass
@@ -23,6 +24,12 @@ import re
 from . import entity as entity_mod
 from . import paths
 
+
+_SQLITE_VEC_STATUS: dict[str, Any] = {
+    "available": False,
+    "stage": "not-attempted",
+    "error": None,
+}
 
 SCHEMA_DDL = """
 CREATE TABLE IF NOT EXISTS entities (
@@ -114,7 +121,11 @@ def open_db(path: Path | None = None) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     vec_available = _load_sqlite_vec(conn)
-    if not vec_available:
+    if (
+        not vec_available
+        and os.environ.get("PROCESSKIT_INDEX_DROP_UNLOADABLE_VEC_TABLE", "").lower()
+        in {"1", "true", "yes", "on"}
+    ):
         _forget_unloadable_vec_table(conn)
     # WAL mode lets multiple MCP servers read while one writes without
     # hitting "database is locked". Persists across connections — only
@@ -132,11 +143,34 @@ def open_db(path: Path | None = None) -> sqlite3.Connection:
         # the index usable on stripped-down SQLite builds.
         pass
     if vec_available:
-        try:
-            conn.executescript(VEC_SCHEMA_DDL)
-        except sqlite3.OperationalError:
-            pass
+        _ensure_vec_schema(conn)
     return conn
+
+
+def _ensure_vec_schema(conn: sqlite3.Connection) -> None:
+    """Create the sqlite-vec table, repairing stale shadow tables once."""
+    global _SQLITE_VEC_STATUS
+    try:
+        conn.executescript(VEC_SCHEMA_DDL)
+        return
+    except sqlite3.OperationalError as e:
+        msg = str(e)
+        if "shadow table" not in msg and "already exists" not in msg:
+            _SQLITE_VEC_STATUS = {
+                "available": False,
+                "stage": "create-schema",
+                "error": f"{type(e).__name__}: {e}",
+            }
+            return
+    _forget_unloadable_vec_table(conn)
+    try:
+        conn.executescript(VEC_SCHEMA_DDL)
+    except sqlite3.OperationalError as e:
+        _SQLITE_VEC_STATUS = {
+            "available": False,
+            "stage": "create-schema",
+            "error": f"{type(e).__name__}: {e}",
+        }
 
 
 def _migrate_schema(db: sqlite3.Connection) -> None:
@@ -339,20 +373,46 @@ def _upsert_fts(
 
 def _load_sqlite_vec(db: sqlite3.Connection) -> bool:
     """Load sqlite-vec if the optional package is installed."""
+    global _SQLITE_VEC_STATUS
+    _SQLITE_VEC_STATUS = {
+        "available": False,
+        "stage": "import",
+        "error": None,
+    }
     try:
         import sqlite_vec  # type: ignore
-    except Exception:
+    except Exception as e:
+        _SQLITE_VEC_STATUS = {
+            "available": False,
+            "stage": "import",
+            "error": f"{type(e).__name__}: {e}",
+        }
         return False
     try:
+        _SQLITE_VEC_STATUS = {
+            "available": False,
+            "stage": "load-extension",
+            "error": None,
+        }
         db.enable_load_extension(True)
         sqlite_vec.load(db)
         db.enable_load_extension(False)
+        _SQLITE_VEC_STATUS = {
+            "available": True,
+            "stage": "loaded",
+            "error": None,
+        }
         return True
-    except Exception:
+    except Exception as e:
         try:
             db.enable_load_extension(False)
         except Exception:
             pass
+        _SQLITE_VEC_STATUS = {
+            "available": False,
+            "stage": "load-extension",
+            "error": f"{type(e).__name__}: {e}",
+        }
         return False
 
 
@@ -367,15 +427,15 @@ def _forget_unloadable_vec_table(db: sqlite3.Connection) -> None:
     remain available for FTS-only fallback.
     """
     try:
-        db.execute("DROP TABLE IF EXISTS entity_vec")
+        for name in _vec_table_names(db):
+            db.execute(f"DROP TABLE IF EXISTS {name}")
         return
     except sqlite3.OperationalError:
         pass
     try:
         db.execute("PRAGMA writable_schema=ON")
-        db.execute(
-            "DELETE FROM sqlite_master WHERE type = 'table' AND name = 'entity_vec'"
-        )
+        for name in _vec_table_names(db):
+            db.execute("DELETE FROM sqlite_master WHERE type = 'table' AND name = ?", (name,))
         db.execute("PRAGMA writable_schema=OFF")
         db.commit()
     except sqlite3.OperationalError:
@@ -383,6 +443,14 @@ def _forget_unloadable_vec_table(db: sqlite3.Connection) -> None:
             db.execute("PRAGMA writable_schema=OFF")
         except sqlite3.OperationalError:
             pass
+
+
+def _vec_table_names(db: sqlite3.Connection) -> list[str]:
+    rows = db.execute(
+        "SELECT name FROM sqlite_master "
+        "WHERE type = 'table' AND (name = 'entity_vec' OR name LIKE 'entity_vec_%')"
+    ).fetchall()
+    return [str(row["name"] if isinstance(row, sqlite3.Row) else row[0]) for row in rows]
 
 
 def _has_vec(db: sqlite3.Connection) -> bool:
@@ -396,6 +464,20 @@ def _has_vec(db: sqlite3.Connection) -> bool:
         return True
     except sqlite3.OperationalError:
         return False
+
+
+def sqlite_vec_status() -> dict[str, Any]:
+    """Return the last sqlite-vec load attempt status for this process."""
+    return dict(_SQLITE_VEC_STATUS)
+
+
+def _vector_row_count(db: sqlite3.Connection) -> int | None:
+    if not _has_vec(db):
+        return None
+    try:
+        return int(db.execute("SELECT COUNT(*) FROM entity_vec").fetchone()[0])
+    except sqlite3.OperationalError:
+        return None
 
 
 def _tokenize(text: str) -> list[str]:
@@ -708,9 +790,12 @@ def search_entities(
 def semantic_status(db: sqlite3.Connection) -> dict[str, Any]:
     """Return semantic-index capability and row counts."""
     chunks = db.execute("SELECT COUNT(*) FROM semantic_chunks").fetchone()[0]
+    vec_available = _has_vec(db)
     return {
         "chunks": chunks,
-        "sqlite_vec_available": _has_vec(db),
+        "sqlite_vec_available": vec_available,
+        "sqlite_vec_status": sqlite_vec_status(),
+        "vector_rows": _vector_row_count(db),
         "dimensions": VECTOR_DIMENSIONS,
         "embedding": "local-hashed-bag-of-words",
     }
