@@ -11,6 +11,49 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.25.5] — 2026-05-04
+
+v0.25.5 is a **patch release** that makes active TeamMember
+interlocutor sessions honest about the difference between processkit
+identity and the already-running harness model. It adds runtime binding
+reporting, conservative Claude adapter model emission, and explicit
+subagent MCP lifecycle guardrails.
+
+### Added
+
+- **Added active interlocutor runtime binding reporting.**
+  `team-manager.get_interlocutor_runtime_binding` returns the configured
+  TeamMember, the resolved model-recommender candidate after provider
+  gates, harness capability mode, observed runtime fields supplied by
+  the caller, and informational mismatch status.
+- **Added opt-in resolved Claude adapter model policy.**
+  `export_claude_subagent(..., model_policy="resolved")` emits a Claude
+  model and effort only when processkit routing resolves to an Anthropic
+  candidate; the default remains `model: inherit`.
+
+### Changed
+
+- **Session identity setup now records capability-negotiated binding
+  policy.** `set_active_interlocutor` keeps TeamMember identity and
+  memory growth stable while making runtime control an explicit harness
+  capability rather than an implicit promise.
+- **Status and agent-management guidance now surface model/runtime
+  mismatch and subagent MCP instability.** Session start should display
+  resolved runtime vs observed harness runtime when available, and MCP
+  writes stay in the primary session until subagent server lifecycle is
+  proven stable.
+
+### Verification
+
+- `56 passed` for team-manager coverage in `context/`.
+- `56 passed` for team-manager coverage in `src/context/`.
+- `uv run scripts/smoke-test-servers.py` passed across the MCP smoke
+  suite.
+- `pk-doctor --no-log` reported `0 ERROR`; the only warning was the
+  existing `archive.applied-migrations` advisory.
+
+---
+
 ## [v0.25.4] — 2026-05-04
 
 v0.25.4 is a **patch release** that fixes the gateway stdio proxy
