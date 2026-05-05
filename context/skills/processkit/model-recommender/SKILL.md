@@ -184,6 +184,7 @@ models score highest on value but are excluded for G-sensitive work.
 | DeepSeek V3 | $0.14 | $0.28 | ~50 | 1 |
 | Claude Haiku 4.5 | $0.25 | $1.25 | ~11 | 5 |
 | DeepSeek R1 | $0.55 | $2.19 | ~15 | 1 |
+| MiMo-7B-RL-0530 | self-hosted | self-hosted | — | 4 |
 | o4-mini | $1.10 | $4.40 | ~5 | 2 |
 | Mistral Large 3 | $2.00 | $6.00 | ~3 | 4 |
 | Claude Sonnet 4.6 | $3.00 | $15.00 | ~1.5 | 5 |
@@ -531,7 +532,7 @@ top-2 and cluster on those.
 
 ### Model roster summary
 
-The roster contains **61 models** across 16 providers, with lifecycle metadata
+The roster contains **62 models** across 17 providers, with lifecycle metadata
 that separates availability from ranking. Estimated or unverified models are
 marked on the model-spec artifact and surfaced by the MCP projection as
 `_estimated: true` or `lifecycle: "unverified"`; validate them via
@@ -543,11 +544,13 @@ Workflow C before production routing.
 
 **Providers covered:** Anthropic, OpenAI, Google (API + open weights),
 xAI (Grok), Meta/Llama, Alibaba/Qwen, Moonshot/Kimi, Z.AI/GLM,
-Microsoft/Phi, MiniMax, Mistral, Cohere, DeepSeek, AWS Nova, NVIDIA Nemotron.
+Microsoft/Phi, MiniMax, Mistral, Cohere, DeepSeek, AWS Nova,
+NVIDIA Nemotron, Xiaomi/MiMo.
 
-**⚠️ G:1 warning:** DeepSeek APIs, Alibaba Cloud API, and MiniMax API operate
-under Chinese jurisdiction. Never route sensitive, regulated, or personal data
-to these APIs. Self-hosting their open weights raises governance to G:3–4.
+**⚠️ G:1 warning:** DeepSeek APIs, Alibaba Cloud API, MiniMax API, and any
+unreviewed Xiaomi-hosted MiMo API operate under Chinese jurisdiction. Never
+route sensitive, regulated, or personal data to these APIs. Self-hosting their
+open weights raises governance to G:3–4.
 
 ---
 

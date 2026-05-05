@@ -11,6 +11,55 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.25.8] — 2026-05-05
+
+v0.25.8 is a **patch release** that adds Xiaomi MiMo to model routing
+and teaches processkit release diffs how to emit downstream cleanup
+hints for renamed or removed skills.
+
+### Added
+
+- **Added Xiaomi MiMo-7B-RL-0530 to the model roster.** The
+  model-recommender now ships a `model-spec` artifact, quick-reference
+  row, detailed profile, and MCP score projection for Xiaomi's
+  open-weight MiMo reasoning checkpoint.
+- **Added cleanup hints to `processkit-diff.sh`.** JSON and TOML output
+  now include `cleanup_hints` for removed upstream-managed skill files,
+  renamed skill directories, replacement paths, removed command names,
+  and generated command adapters that downstream installers should
+  remove.
+
+### Changed
+
+- **Migration reference docs now describe installer cleanup semantics.**
+  The migration reference documents how sync tools should interpret
+  `cleanup_hints`, including `remove_skill_directory` and
+  `replacement_path`.
+- **Dogfood runtime migration state is current.** The local pending
+  runtime-home migration was applied and the processkit index now reports
+  zero pending migrations.
+
+### Fixed
+
+- **Fixed `processkit-diff.sh` under non-GNU awk.** Provenance parsing no
+  longer depends on GNU awk's `match(..., array)` extension, so the diff
+  script works under `mawk`.
+- **Closed GitHub issue #16.** Removed and renamed skill cleanup metadata
+  is now machine-readable for downstream sync implementations.
+
+### Verification
+
+- `bash -n scripts/processkit-diff.sh`
+- `uv run --with pyyaml --with pytest --with mcp pytest
+  context/skills/processkit/model-recommender/scripts/test_query_models_filters.py
+  context/skills/processkit/model-recommender/scripts/test_resolver.py
+  context/skills/processkit/model-recommender/scripts/test_default_bindings_coverage.py`
+- `npm --prefix docs-site run build`
+- `uv run scripts/smoke-test-servers.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py`
+
+---
+
 ## [v0.25.7] — 2026-05-04
 
 v0.25.7 is a **patch release** that improves processkit routing,

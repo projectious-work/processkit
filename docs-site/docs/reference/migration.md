@@ -20,6 +20,13 @@ The script reads `src/PROVENANCE.toml` at each tag (a single file mapping
 every shipped file to the tag in which it last changed) and emits a
 structured diff: added, removed, changed, unchanged.
 
+For removed or renamed skills, the JSON and TOML formats also include
+`cleanup_hints`. Installers should treat these as explicit cleanup
+instructions for upstream-managed hot files: remove stale skill directories
+when `remove_skill_directory = true`, remove listed generated command
+adapters, and surface `replacement_path` as the canonical successor when
+the removal is a rename.
+
 Managed installers can consume this diff model. For example, when
 `aibox sync` notices a new pinned version, it:
 

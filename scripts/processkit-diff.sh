@@ -109,10 +109,20 @@ read_provenance_at_tag() {
         /^\[files\]/ { in_files = 1; next }
         /^\[/ { in_files = 0 }
         in_files && /^"/ {
-            # Match `"path" = "version"` lines
-            match($0, /^"([^"]+)"[[:space:]]*=[[:space:]]*"([^"]+)"/, arr)
-            if (arr[1] != "") {
-                printf "%s\t%s\n", arr[1], arr[2]
+            # Parse `"path" = "version"` lines without GNU awk-only
+            # match(..., array), so this script works under mawk too.
+            line = $0
+            sub(/^[[:space:]]*"/, "", line)
+            q = index(line, "\"")
+            if (q <= 1) next
+            path = substr(line, 1, q - 1)
+            rest = substr(line, q + 1)
+            sub(/^[[:space:]]*=[[:space:]]*"/, "", rest)
+            q = index(rest, "\"")
+            if (q <= 1) next
+            version = substr(rest, 1, q - 1)
+            if (path != "" && version != "") {
+                printf "%s\t%s\n", path, version
             }
         }
     '
@@ -159,6 +169,135 @@ DIFF_OUTPUT=$(awk -v from="$FROM_TAG" -v to="$TO_TAG" '
     }
 ' <(echo "$OLD_LIST") <(echo "$NEW_LIST"))
 
+cleanup_hints_py='
+from __future__ import annotations
+
+import json
+import sys
+
+diff_text = sys.argv[1]
+
+SKILL_RENAMES = {
+    "context/skills/processkit/morning-briefing":
+        "context/skills/processkit/status-briefing",
+    "context/skills/product/retrospective":
+        "context/skills/product/sprint-retrospective",
+}
+
+
+def parse_diff(text: str):
+    added, removed, changed = [], [], []
+    n_unchanged = 0
+    for line in text.splitlines():
+        parts = line.split("\t")
+        if parts[0] == "ADDED" and len(parts) == 3:
+            added.append({"path": parts[1], "version": parts[2]})
+        elif parts[0] == "REMOVED" and len(parts) == 3:
+            removed.append({"path": parts[1], "version": parts[2]})
+        elif parts[0] == "CHANGED" and len(parts) == 4:
+            changed.append({
+                "path": parts[1],
+                "from_version": parts[2],
+                "to_version": parts[3],
+            })
+        elif parts[0] == "UNCHANGED" and len(parts) == 2:
+            n_unchanged = int(parts[1])
+    return added, removed, changed, n_unchanged
+
+
+def skill_dir(path: str) -> str | None:
+    parts = path.split("/")
+    if len(parts) < 4 or parts[0:2] != ["context", "skills"]:
+        return None
+    return "/".join(parts[:4])
+
+
+def command_name(path: str) -> str | None:
+    parts = path.split("/")
+    if len(parts) == 6 and parts[4] == "commands" and path.endswith(".md"):
+        return parts[5][:-3]
+    return None
+
+
+def generated_adapters(command: str) -> list[str]:
+    return [
+        f".agents/skills/{command}/",
+        f".agents/skills/{command}.md",
+        f".claude/commands/{command}.md",
+        f".codex/commands/{command}.md",
+        f".cursor/rules/{command}.mdc",
+    ]
+
+
+def cleanup_hints(removed: list[dict]) -> list[dict]:
+    by_skill: dict[str, dict] = {}
+    for item in removed:
+        path = item["path"]
+        sdir = skill_dir(path)
+        if not sdir:
+            continue
+        entry = by_skill.setdefault(sdir, {
+            "path": sdir,
+            "classification": "removed-skill-files",
+            "replacement_path": None,
+            "remove_skill_directory": False,
+            "removed_files": [],
+            "removed_commands": [],
+            "generated_adapters": [],
+            "notes": "",
+        })
+        entry["removed_files"].append(path)
+        if path == f"{sdir}/SKILL.md":
+            entry["remove_skill_directory"] = True
+        cmd = command_name(path)
+        if cmd:
+            entry["removed_commands"].append(cmd)
+            entry["generated_adapters"].extend(generated_adapters(cmd))
+
+    hints = []
+    for sdir, entry in sorted(by_skill.items()):
+        replacement = SKILL_RENAMES.get(sdir)
+        if replacement:
+            entry["classification"] = "renamed-skill"
+            entry["replacement_path"] = replacement
+            entry["remove_skill_directory"] = True
+            entry["notes"] = (
+                "Remove the old hot skill directory and generated adapters; "
+                f"canonical replacement is {replacement}."
+            )
+        elif entry["remove_skill_directory"]:
+            entry["classification"] = "removed-skill"
+            entry["notes"] = (
+                "Remove the old hot skill directory and generated adapters "
+                "unless the downstream project intentionally forked it."
+            )
+        else:
+            entry["notes"] = (
+                "Remove the listed upstream-managed files and any generated "
+                "adapters for removed command names; keep the skill directory "
+                "when it still exists in the target template."
+            )
+        entry["removed_files"] = sorted(set(entry["removed_files"]))
+        entry["removed_commands"] = sorted(set(entry["removed_commands"]))
+        entry["generated_adapters"] = sorted(set(entry["generated_adapters"]))
+        hints.append(entry)
+    return hints
+
+
+added, removed, changed, n_unchanged = parse_diff(diff_text)
+print(json.dumps({
+    "added": added,
+    "removed": removed,
+    "changed": changed,
+    "n_unchanged": n_unchanged,
+    "cleanup_hints": cleanup_hints(removed),
+}, indent=2))
+'
+
+cleanup_json() {
+    python3 -c "$cleanup_hints_py" "$DIFF_OUTPUT"
+}
+
 # Emit in the requested format
 emit_text() {
     local n_added n_removed n_changed n_unchanged
@@ -188,6 +327,23 @@ EOF
     echo
     echo "Changed files:"
     echo "$DIFF_OUTPUT" | awk -F'\t' '$1=="CHANGED" && NF==4 {print "  M " $2 "  (" $3 " → " $4 ")"}' | sort
+
+    local cleanup
+    cleanup=$(cleanup_json)
+    if echo "$cleanup" | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin)["cleanup_hints"] else 1)' >/dev/null; then
+        echo
+        echo "Cleanup hints:"
+        echo "$cleanup" | python3 -c '
+import json, sys
+for item in json.load(sys.stdin)["cleanup_hints"]:
+    repl = item.get("replacement_path") or "none"
+    print("  - {} [{}] replacement: {}".format(
+        item["path"], item["classification"], repl
+    ))
+    for adapter in item.get("generated_adapters", []):
+        print("      remove generated adapter: {}".format(adapter))
+'
+    fi
 }
 
 emit_toml() {
@@ -217,15 +373,34 @@ EOF
     echo
     echo "[diff.changed]"
     echo "$DIFF_OUTPUT" | awk -F'\t' '$1=="CHANGED" && NF==4 {printf "\"%s\" = { from = \"%s\", to = \"%s\" }\n", $2, $3, $4}' | sort
+
+    cleanup_json | python3 -c '
+import json, sys
+for item in json.load(sys.stdin)["cleanup_hints"]:
+    print()
+    print("[[diff.cleanup_hints]]")
+    print(("path = {!r}").format(item["path"]).replace(chr(39), "\""))
+    print(("classification = {!r}").format(item["classification"]).replace(chr(39), "\""))
+    print(("remove_skill_directory = {}").format(str(item["remove_skill_directory"]).lower()))
+    if item.get("replacement_path"):
+        print(("replacement_path = {!r}").format(item["replacement_path"]).replace(chr(39), "\""))
+    print("removed_files = [" + ", ".join(repr(x).replace(chr(39), "\"") for x in item["removed_files"]) + "]")
+    print("removed_commands = [" + ", ".join(repr(x).replace(chr(39), "\"") for x in item["removed_commands"]) + "]")
+    print("generated_adapters = [" + ", ".join(repr(x).replace(chr(39), "\"") for x in item["generated_adapters"]) + "]")
+    print(("notes = {!r}").format(item["notes"]).replace(chr(39), "\""))
+'
 }
 
 emit_json() {
     # Compact JSON for tooling. Uses python -c (universally available) for safe escaping.
-    python3 - <<'PYEOF' "$DIFF_OUTPUT" "$FROM_TAG" "$TO_TAG"
+    local cleanup
+    cleanup=$(cleanup_json)
+    python3 - <<'PYEOF' "$DIFF_OUTPUT" "$FROM_TAG" "$TO_TAG" "$cleanup"
 import json, sys
 diff_text = sys.argv[1]
 from_tag = sys.argv[2]
 to_tag = sys.argv[3]
+cleanup_payload = json.loads(sys.argv[4])
 added = []
 removed = []
 changed = []
@@ -251,6 +426,7 @@ out = {
         "added": sorted(added, key=lambda x: x["path"]),
         "removed": sorted(removed, key=lambda x: x["path"]),
         "changed": sorted(changed, key=lambda x: x["path"]),
+        "cleanup_hints": cleanup_payload["cleanup_hints"],
     }
 }
 print(json.dumps(out, indent=2))

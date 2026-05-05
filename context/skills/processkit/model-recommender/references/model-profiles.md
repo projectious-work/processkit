@@ -412,6 +412,46 @@ non-sensitive work; always with explicit user acknowledgment of G:1 risk.
 
 ---
 
+## MiMo-7B-RL-0530
+
+**Provider:** Xiaomi / Open weights · **Tier:** Small reasoning ·
+**Context:** 48K tokens
+
+```
+  Reasoning    ▓▓▓▓▓▓▓▓░░  4/5  Strong
+  Engineering  ▓▓▓▓▓▓▓▓░░  4/5  Strong
+  Speed        ▓▓▓▓▓▓▓▓▓▓  5/5  Exceptional
+  Breadth      ▓▓▓▓░░░░░░  2/5  Limited
+  Reliability  ▓▓▓▓▓▓░░░░  3/5  Moderate
+  Governance   ▓▓▓▓▓▓▓▓░░  4/5  Strong
+```
+
+**Sub-dimension notes:**
+- Reasoning: Strong math and STEM results for a small model; Xiaomi reports
+  MiMo-7B-RL-0530 at 97.2 on MATH500, 80.1 on AIME 2024, 70.2 on AIME 2025,
+  and 60.6 on GPQA-Diamond.
+- Engineering: Good code-reasoning benchmark results for its size, with
+  reported LiveCodeBench v5 60.9 and v6 52.2; not a repo-scale frontier coder.
+- Speed: Small open-weight model with MTP/speculative-decoding support; strong
+  candidate for low-latency local inference when infrastructure is available.
+- Breadth: Text-only public checkpoint; no native vision, audio, or video.
+- Reliability: Instruction following is adequate but not frontier-grade.
+- Governance: MIT open weights can be self-hosted; hosted deployments need
+  separate jurisdiction and data-retention review.
+
+**Best for:** Local/open-weight math and code reasoning, low-latency small-model
+workflows, non-frontier coding assistance, STEM-heavy tasks where a self-hosted
+model is preferred.
+
+**Avoid for:** Broad multimodal tasks, regulated data through an unreviewed
+hosted endpoint, large-codebase autonomous coding, and workflows that require
+enterprise compliance controls.
+
+**Typical use in task routing:** Fast local reasoning/coding candidate when
+G:4 self-hosting and low latency matter more than frontier reliability.
+
+---
+
 ## Live data sources
 
 When profiles are >6 months old or a new model has released, consult:

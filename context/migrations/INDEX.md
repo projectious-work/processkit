@@ -12,7 +12,7 @@ None.
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
-| 2026-05-04 | MIG-RUNTIME-20260504T060107 — aibox-runtime-home 0.23.2 → 0.23.3 | 0 changed upstream, 11 conflicts, 1 new, 0 removed (2 groups affected) |
+| 2026-05-05 | MIG-RUNTIME-20260504T145520 — aibox-runtime-home 0.23.7 → 0.23.10 | 10 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected) |
 
 ## Rejected (0)
 

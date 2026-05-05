@@ -23,6 +23,7 @@
 | Qwen 2.5 72B | 4 | 4 | 4 | 3 | 3 | 4 | 128 | $1.20 | Alibaba / Open |
 | Qwen 2.5 Coder 32B | 3 | 5 | 4 | 3 | 3 | 4 | 128 | $0.60 | Alibaba / Open |
 | Phi-4 | 4 | 3 | 5 | 2 | 3 | 4 | 16 | $0.14 | Microsoft |
+| MiMo-7B-RL-0530 | 4 | 4 | 5 | 2 | 3 | 4 | 48 | self-hosted | Xiaomi / Open |
 | Gemma 3 27B | 3 | 3 | 4 | 4 | 3 | 4 | 128 | $0.45 | Google / Open |
 | Grok 3 | 5 | 4 | 3 | 4 | 4 | 2 | 128 | $15.00 | xAI |
 | Command R+ | 3 | 3 | 4 | 3 | 4 | 3 | 128 | $10.00 | Cohere |
