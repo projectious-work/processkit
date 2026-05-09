@@ -68,69 +68,74 @@ Same resolution logic as `pk-team-create` Step 1. If `--landscape` is
 not supplied, use the latest `landscape-summary` artifact. Warn if
 older than 90 days; do not block.
 
-### Step 3 — Re-score targeted roles
+### Step 3 — Resolve archetype names → catalog (role, seniority) and re-score
 
-For each role in `--roles`:
+`--roles` accepts archetype names (`developer`, `senior-architect`,
+...). Resolve each name through the archetype-catalog mapping
+(`assets/archetype-catalog-mapping.yaml`, layered with
+`context/team/archetype-catalog-mapping.yaml` if present) into the
+catalog `(ROLE-id, seniority)` pair. Operate on the matching
+`RoleSlot(s)` in the active chartering Scope.
 
-1. Query accessible models scoped to that role's pinned tier:
+For each archetype in `--roles`:
+
+1. Look up `(role, seniority)` via the mapping. Abort if the
+   archetype is not present and no project override defines it.
+2. Query accessible models scoped to that archetype's pinned tier:
    ```
    model-recommender.query_models(
      G_floor=<governance_floor>,
      apply_user_filter=true
    )
    ```
-2. Apply the tiering formula with stored (or override) weights.
-3. Select best-scoring candidate for this role's tier.
-4. If the best candidate is the same model as the current assignment:
-   report "no change needed" for this role; skip writes.
+3. Apply the tiering formula with stored (or override) weights.
+4. Select the best-scoring candidate for the tier.
+5. If the best candidate is the same model currently filling the
+   archetype's RoleSlot(s): report "no change needed"; skip writes.
 
-### Step 4 — End old Bindings
+### Step 4 — End old role-slot-fill Bindings
 
-For each role where a model change is needed:
+For each archetype where a model change is needed, list the
+matching RoleSlots in the active chartering Scope via
+`team-manager.list_role_slots(scope=<chartering-scope>, role=<ROLE-id>,
+state="filled")`, then for each filled slot end its current fill
+Binding:
 
 ```
 binding-management.end_binding(
-  id=<current-BIND-id>,
+  id=<current-role-slot-fill-BIND-id>,
   reason="superseded by pk-team-rebalance: <--reason> (<ISO-timestamp>)"
 )
 ```
 
-### Step 5 — Create or reuse Actor entities
+### Step 5 — Re-fill the existing RoleSlots
 
-For each role being reassigned:
-- If the incoming model ID matches an existing Actor entity in
-  `context/actors/` (active or inactive): reactivate it (set
-  `active: true` via `actor-profile.update_actor`). Do not create
-  a duplicate. The reactivated Actor retains its existing
-  `is_template` and `templated_from` values unchanged.
-- If no matching Actor exists, spawn a new clone Actor. The
-  original seed Actor for this role is the one with
-  `is_template: true` in `context/actors/`. Record its ID as
-  `<seed-actor-id>` and create:
-  ```
-  actor-profile.create_actor(
-    type="ai-agent",
-    name=<model-display-name>,
-    active=true,
-    is_template=false,
-    templated_from=<seed-actor-id>
-  )
-  ```
-  This marks the spawned Actor as a clone of the canonical
-  template, enabling index queries to separate seed team members
-  from rebalance-spawned instances.
-
-### Step 6 — Create new Bindings
+A targeted rebalance does NOT close-and-reopen the slot — capacity
+(slot count) hasn't changed; only the TeamMember and the model
+underneath it have. For each affected RoleSlot:
 
 ```
-binding-management.create_binding(
-  type="role-assignment",
-  subject=<ACTOR-id>,
-  target=<ROLE-id>,
+team-manager.fill_role_slot(
+  id=<SLOT-id>,
+  team_member_slug=<new-team-member-slug>,
+  rationale="rebalanced <ISO-timestamp>: <--reason> "
+            "(model: <new-model-id>, score: <score>)",
   valid_from=<today>,
-  description="<model-id> fills <role-name> — rebalanced <date>"
+  valid_until=<chartering Scope's ends_at, if any>
 )
 ```
+
+(If the new TeamMember does not yet exist in `context/team-members/`,
+provision it first via the team-member skill. Ephemeral
+`(role, seniority)` dispatches that have no persistent TeamMember
+re-attach to the slot's `default_model_profile` instead — no fill
+write is needed.)
+
+### Step 6 — _(folded into step 5)_
+
+v1 split this into "create new role-assignment Binding"; v2's
+`fill_role_slot` writes the `role-slot-fill` Binding inline, so a
+separate step is no longer required.
 
 ### Step 7 — Update roster.md in-place
 
@@ -166,10 +171,12 @@ rebalancing would touch every role anyway.
 
 ## State side-effects
 
-Ends N old Bindings. Creates (or reactivates) N Actors. Creates N new
-Bindings. Amends roster.md in-place. Appends to the governing
-DecisionRecord's `progress_notes`. Does NOT write a new DecisionRecord
-(unless `--roles all`).
+Ends N old `role-slot-fill` Bindings. Re-fills the affected RoleSlots
+(no slot create/close — capacity is unchanged) and writes N new
+`role-slot-fill` Bindings via `team-manager.fill_role_slot`. Amends
+roster.md in-place. Appends to the governing DecisionRecord's
+`progress_notes`. Does NOT write a new DecisionRecord (unless
+`--roles all`).
 
 ## Safety
 

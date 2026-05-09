@@ -3,15 +3,16 @@ name: team-creator
 description: |
   Compose a provider-neutral AI team by tiering accessible models on
   cost-efficiency, capability, latency, and governance, then mapping
-  the 8 processkit role archetypes onto those tiers. Use when
-  bootstrapping a new project team, rotating after a provider change,
-  or quarterly rebalancing. Triggers: "create my AI team",
-  "compose a team", "rebalance the team", "review the team".
+  the 8 processkit role archetypes onto catalog Roles + RoleSlots
+  inside a chartering Scope. Use when bootstrapping a new project
+  team, rotating after a provider change, or quarterly rebalancing.
+  Triggers: "create my AI team", "compose a team", "rebalance the
+  team", "review the team".
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
     id: SKILL-team-creator
-    version: "1.2.0"
+    version: "2.0.0"
     created: 2026-04-15T00:00:00Z
     category: processkit
     layer: 3
@@ -20,16 +21,15 @@ metadata:
         purpose: >
           Query, score, and filter accessible models via
           query_models, get_pricing, check_availability.
-      - skill: role-management
-        purpose: Create Role entities via create_role.
-      - skill: actor-profile
+      - skill: team-manager
         purpose: >
-          Create Actor entities (type: ai-agent) via create_actor;
-          deactivate replaced actors via deactivate_actor.
+          Open RoleSlot entities (create_role_slot) inside the
+          chartering Scope and fill them via fill_role_slot. Replaces
+          v1's archetype Role + Actor + role-assignment writes.
       - skill: binding-management
         purpose: >
-          Create role-assignment Bindings via create_binding;
-          end superseded Bindings via end_binding.
+          End superseded role-slot-fill Bindings via end_binding when
+          re-running the charter.
       - skill: decision-record
         purpose: >
           Write the chartering DecisionRecord; read stored
@@ -82,6 +82,24 @@ existing skills — no new primitives or MCP tools are introduced.
 | `--landscape-artifact <ART-id>` | no | 3-level discovery | Explicit > project-tag > kit default; see `references/landscape-resolution.md` |
 | `--landscape <ART-id>` | no | alias for `--landscape-artifact` | Kept for backwards compatibility |
 
+### Catalog-driven archetype mapping (v2)
+
+`team-creator` v2 selects existing `context/roles/ROLE-*` entries from
+the 51-role catalog rather than writing 8 archetype Role entities. The
+mapping ships in
+`assets/archetype-catalog-mapping.yaml`; projects may layer a delta
+override at `context/team/archetype-catalog-mapping.yaml`. Archetypes
+are not stored as Roles — they are keys in the mapping file. See
+`references/role-archetypes.md` and the kit-default mapping asset for
+the 8 archetype → catalog Role + seniority pairs.
+
+For every selected archetype, `pk-team-create` opens a **RoleSlot**
+under the chartering Scope via `team-manager.create_role_slot` (one slot
+per parallelism unit; `rank=1` is the primary). When a TeamMember is
+chosen to fill a slot, `team-manager.fill_role_slot` writes the
+`role-slot-fill` Binding. No archetype Role entities are written; v1
+`role-assignment` Bindings remain readable for one minor version.
+
 ### Tiering formula (summary)
 
 **Defaults rebalanced 2026-04-15 after the 2026-04-15 internal review (see ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff §7).** Capability weight raised from 0.40 to 0.60 to prevent tier inversion on same-provider candidate sets where cost and capability are anti-correlated.
@@ -120,26 +138,34 @@ See `references/role-archetypes-override.md` for schema and invariants.
 ### Commands
 
 **`pk-team-create`** runs the full derivation: queries models, applies
-the tiering formula, maps archetypes, writes 8 Role + 8 Actor + 8
-Binding entities, rewrites `context/team/roster.md`, and emits a
-chartering DecisionRecord that explicitly supersedes the prior team
-DecisionRecord. Use `--dry-run` to print the plan without writing.
+the tiering formula, maps archetypes, **opens one RoleSlot per
+parallelism unit** under the chartering Scope via
+`team-manager.create_role_slot`, rewrites `context/team/roster.md`,
+and emits a chartering DecisionRecord that explicitly supersedes the
+prior team DecisionRecord. Archetype Roles are NOT written — the
+catalog-mapping file is read instead. Use `--dry-run` to print the
+plan without writing.
 
 **`pk-team-review`** is read-only. Re-scores current assignments against
 the latest landscape snapshot, diffs tier scores against those stored
 in the governing DecisionRecord, and surfaces tier-shifts, unavailable
-models, and new outperformers. No entities are written.
+models, and new outperformers. Surfaces RoleSlots by their archetype
+name (resolved through the mapping file). No entities are written.
 
 **`pk-team-rebalance`** applies a review recommendation. Requires
 `--confirm`. For `--roles all`, the full create logic re-runs and a
-new DecisionRecord is written. For named roles, the governing
-DecisionRecord's `progress_notes` are amended instead.
+new DecisionRecord is written. For named roles, the operator names an
+archetype (`developer`, `senior-architect`, ...); the skill resolves
+to the (role, seniority) pair via the mapping and operates on the
+matching RoleSlot(s) in the active chartering Scope. The governing
+DecisionRecord's `progress_notes` are amended.
 
 ### Outputs
 
 | Output | `pk-team-create` | `pk-team-review` | `pk-team-rebalance` |
 |---|---|---|---|
-| Role / Actor / Binding entities | YES ×8 | NO | scoped roles |
+| RoleSlot entities (per parallelism unit) | YES | NO | scoped roles |
+| `role-slot-fill` Bindings | YES (one per filled slot) | NO | per rotated slot |
 | `context/team/roster.md` | YES | NO | YES (in-place) |
 | DecisionRecord | YES (new) | NO | amend notes |
 | Diff report | NO | YES (stdout) | NO |
@@ -154,12 +180,17 @@ DecisionRecord's `progress_notes` are amended instead.
 
 - **Entity deactivation sequence on re-create.** When `pk-team-create`
   is re-run: (a) resolve prior team from roster.md; (b) for each
-  prior Binding call `binding-management.end_binding` with
-  `reason="superseded by pk-team-create run <timestamp>"`; (c) for each
-  prior Actor whose model is NOT in the new team call
-  `actor-profile.deactivate_actor`; (d) for prior Actors whose model
-  IS re-assigned to the same role REUSE the existing Actor — do not
-  create a duplicate; (e) then create new Bindings.
+  prior `role-slot-fill` Binding call `binding-management.end_binding`
+  with `reason="superseded by pk-team-create run <timestamp>"`;
+  (c) close the prior RoleSlots via `team-manager.close_role_slot`
+  (the slot state machine forbids reopening — re-charters always
+  emit fresh SLOT-* IDs under the new Scope); (d) open new RoleSlots
+  via `team-manager.create_role_slot` and fill them with
+  `team-manager.fill_role_slot`. v1 `role-assignment` Bindings
+  observed during a re-charter remain readable but are not migrated
+  by `pk-team-create` — the Phase A apply script (see
+  `team-manager/scripts/apply_migration_2139.py`) handles that
+  one-shot back-fill.
 
 - **Formula weight persistence.** Weights live in the chartering
   DecisionRecord's `spec.inputs_snapshot` block. `pk-team-rebalance`
@@ -169,8 +200,12 @@ DecisionRecord's `progress_notes` are amended instead.
 - **Tier-collapse (< 3 tiers accessible).** Promote the two highest-
   scoring light models to medium. Never fail; degrade gracefully.
 
-- **PM clone cap.** Parallelism cap never applies to project-manager;
-  PM is always exactly 1 (per DEC-20260414_0900).
+- **PM is always rank=1, single slot.** Parallelism cap never applies
+  to project-manager; the project-manager archetype always opens
+  exactly one RoleSlot at `rank=1` (per DEC-20260414_0900). The
+  `primary_contact: true` annotation on the project-manager mapping
+  entry is retained as a convention marker — the actual semantics
+  are now expressed by `RoleSlot.rank=1`.
 
 - **Snapshot staleness.** Artifact older than 90 days → warn and
   proceed. Surface the artifact date in the DecisionRecord.
@@ -200,13 +235,16 @@ DecisionRecord's `progress_notes` are amended instead.
   Any run with overrides: query the single chartering team
   DecisionRecord to fully reconstruct the run's configuration.
 
-- **Canonical schema fields (processkit v0.16.0).** This skill
-  emits five fields introduced in v0.16.0: Role fields
-  `primary_contact` (bool), `clone_cap` (int),
-  `cap_escalation` (string); Actor fields `is_template` (bool),
-  `templated_from` (string, nullable). Seed Actors are always
-  `is_template: true`; rebalance-spawned clones are
-  `is_template: false` with `templated_from` pointing at the seed.
+- **v0.16.0 capacity fields are gone.** v1 emitted five fields on Role
+  / Actor entities (`primary_contact`, `clone_cap`, `cap_escalation`,
+  `is_template`, `templated_from`). v2 stores capacity as the count of
+  RoleSlots opened under a chartering Scope — there is no
+  `clone_cap` field. Re-tiering replaces the matching RoleSlot's
+  fill rather than spawning a clone Actor; the seed/clone distinction
+  is therefore obsolete. v0.19.0 removed the fields from the live
+  `role.yaml` and `team-member.yaml` schemas; older entity files that
+  still carry them are tolerated as historical residue but are not
+  produced by this skill.
 
 ## Agent-driven discovery
 
@@ -254,12 +292,14 @@ pk-team-create
 ```
 
 Full step-by-step process (8 steps: resolve landscape → query models →
-score+classify → map archetypes → deactivate prior team → write
-entities → write roster → write chartering DecisionRecord) lives in
-`commands/pk-team-create.md`. Read that file before changing the
-sequence; the order of (a) eager `role-archetypes.yaml` validation
-before mapping, (b) `binding-management.end_binding` before
-`actor-profile.deactivate_actor`, and (c) DecisionRecord written
+score+classify → load archetype-catalog mapping + map archetypes →
+end prior `role-slot-fill` Bindings + close prior RoleSlots → open
+new RoleSlots and fill them → write roster → write chartering
+DecisionRecord) lives in `commands/pk-team-create.md`. Read that file
+before changing the sequence; the order of (a) eager mapping-file
+validation before archetype mapping, (b)
+`binding-management.end_binding` before
+`team-manager.close_role_slot`, and (c) DecisionRecord written
 LAST so its ID can be embedded in roster.md is load-bearing.
 
 ### CLI contract — `pk-team-review`
@@ -291,20 +331,21 @@ pk-team-rebalance
 
 For `--roles all`, full `pk-team-create` logic re-runs and a new
 chartering DecisionRecord supersedes the current one. For named
-roles, only the affected Bindings/Actors are rotated and the
-governing DecisionRecord's `progress_notes` are amended with the
-`--reason` string and the new tier-score for each rotated role.
+archetypes, the matching RoleSlot's fill is rotated (end old
+`role-slot-fill` Binding; fill the slot with the new TeamMember via
+`team-manager.fill_role_slot`) and the governing DecisionRecord's
+`progress_notes` are amended with the `--reason` string and the new
+tier-score for each rotated archetype.
 
 ### Skill composition map
 
 | Phase | MCP / skill call | Source skill |
 |---|---|---|
 | Step 2 | `check_availability`, `query_models`, `get_pricing` | model-recommender |
-| Step 5 (a) | `end_binding` (per prior Binding) | binding-management |
-| Step 5 (b) | `deactivate_actor` (per non-reused prior Actor) | actor-profile |
-| Step 6 (Role) | `create_role` × 8 | role-management |
-| Step 6 (Actor) | `create_actor` × 8 (or reuse) | actor-profile |
-| Step 6 (Binding) | `create_binding` × 8 | binding-management |
+| Step 5 (a) | `end_binding` (per prior `role-slot-fill` Binding) | binding-management |
+| Step 5 (b) | `close_role_slot` (per prior RoleSlot in the rotating archetype) | team-manager |
+| Step 6 (RoleSlot) | `create_role_slot` (one per parallelism unit; rank 1..N) | team-manager |
+| Step 6 (Fill) | `fill_role_slot` (places a TeamMember into the open slot) | team-manager |
 | Step 8 | `record_decision` (chartering DEC) | decision-record |
 | Rebalance read | `get_decision` (governing DEC for stored weights) | decision-record |
 
@@ -349,24 +390,32 @@ Worked example and edge cases in `references/tiering-formula.md`.
 
 ### Role archetype pin table (kit defaults)
 
-| Archetype | Pin | `primary_contact` | `clone_cap` | `cap_escalation` | Override-when |
+| Archetype | Catalog Role | Seniority | Tier pin | Slots opened | Override-when |
 |---|---|---|---|---|---|
-| project-manager | heavy | true | 1 | owner | Never (immutable; PM clone cap is hard-coded 1) |
-| senior-architect | heavy | false | 5 | owner | Medium only if no heavy clears G-floor + owner approval |
-| senior-researcher | heavy | false | 5 | owner | Same as senior-architect |
-| junior-architect | medium | false | 5 | owner | Heavy if capability gap > 15pp on SWE-bench |
-| developer | medium | false | 5 | owner | Heavy if `--security-critical` flag set |
-| junior-researcher | medium | false | 5 | owner | No override |
-| junior-developer | light | false | 5 | owner | Medium if no light model accessible |
-| assistant | light | false | 5 | owner | No override; shares junior-developer model if no light available |
+| project-manager | ROLE-product-manager | senior | heavy | 1 (rank=1, primary contact) | Never (PM is immutable; always exactly one slot) |
+| senior-architect | ROLE-solutions-architect | senior | heavy | up to `--parallelism-cap` | Medium only if no heavy clears G-floor + owner approval |
+| senior-researcher | ROLE-research-scientist | senior | heavy | up to `--parallelism-cap` | Same as senior-architect |
+| junior-architect | ROLE-solutions-architect | specialist | medium | up to `--parallelism-cap` | Heavy if capability gap > 15pp on SWE-bench |
+| developer | ROLE-software-engineer | senior | medium | up to `--parallelism-cap` | Heavy if `--security-critical` flag set |
+| junior-researcher | ROLE-research-scientist | specialist | medium | up to `--parallelism-cap` | No override |
+| junior-developer | ROLE-software-engineer | junior | light | up to `--parallelism-cap` | Medium if no light model accessible |
+| assistant | ROLE-assistant | specialist | light | up to `--parallelism-cap` | No override; shares junior-developer model if no light available |
 
-Schema fields (`primary_contact`, `clone_cap`, `cap_escalation`,
-`is_template`, `templated_from`) were introduced in processkit
-v0.16.0 — older entity files predate them. See
-`references/role-archetypes.md` for the full responsibilities lists
-that flow into `create_role.responsibilities=[…]`.
+The `(role, seniority)` pairs above come from
+`assets/archetype-catalog-mapping.yaml` (the kit default) and may be
+overridden per-project at `context/team/archetype-catalog-mapping.yaml`.
+The "Slots opened" column is the v2 replacement for v1's `clone_cap`
+field — v0.19.0 removed `clone_cap`/`cap_escalation`/`primary_contact`
+from the Role schema and `is_template`/`templated_from` from the
+TeamMember schema; the count of RoleSlots under the chartering Scope
+is the canonical capacity record. See
+`references/role-archetypes.md` for the full responsibilities lists.
 
 ### chartering DecisionRecord — `inputs_snapshot` schema
+
+The DecisionRecord schema (`SCHEMA-decisionrecord` v1.0.0) declares
+`inputs_snapshot` with `additionalProperties: true`, so v2 augments
+the block with two catalog-mapping audit fields without a schema bump:
 
 ```yaml
 spec:
@@ -383,10 +432,23 @@ spec:
     landscape_artifact_source: explicit | project-tag | kit-default
     tier_scores:              {<model-id>: <float>, ...}
     weight_overrides_applied: <bool>
+    archetype_catalog_mapping_file: kit-default | project | cli   # v2
+    archetype_catalog_overrides:                                   # v2
+      - {archetype, field, kit_default, project_value}
     archetype_override_file:  present | absent
     archetype_override_semantics: delta | replace | null
     archetype_overrides:      [{role, kit_default_pin, override_pin, rationale}]
+    chartering_scope:         SCOPE-<id>     # v2 — required for RoleSlot writes
+    role_slots:                              # v2 — provenance back-pointer
+      - {archetype, slot_id, role, seniority, rank}
 ```
+
+`archetype_catalog_mapping_file` records which layer of the
+mapping-file precedence chain was applied
+(`cli` > `project` > `kit-default`).
+`archetype_catalog_overrides` lists each per-archetype-per-field
+delta when the project file modifies the kit default; an empty list
+means the kit default was used verbatim.
 
 `pk-team-rebalance` and `pk-team-review` both read this block via
 `decision-record.get_decision`. It is the single source of truth for a
@@ -409,11 +471,16 @@ weights, thresholds, or pins. `inputs_snapshot.tier_scores` is what
 
 ### Extension points
 
-- **New role archetype.** Add to `references/role-archetypes.md`,
-  extend the override schema in `references/role-archetypes-override.md`
-  (PM-immutability invariant must continue to apply), and add a row to
-  the pin table above. The 8-archetype assumption is hard-coded in
-  `pk-team-create` step 6 — bump it carefully.
+- **New role archetype.** Add an entry to
+  `assets/archetype-catalog-mapping.yaml` (or a project override at
+  `context/team/archetype-catalog-mapping.yaml`) keyed by archetype
+  name with `role: ROLE-<id>` + `seniority: <enum>`. Update
+  `references/role-archetypes.md` with the responsibilities one-liner
+  and add a row to the pin table above. The PM-immutability invariant
+  remains in force (`project-manager.role` must remain
+  `ROLE-product-manager` and the slot count must remain 1). v2
+  archetypes are mapping keys, not Role entities — no schema change
+  is required.
 - **New scoring dimension.** Extend the weight set (currently
   `{C, K, L, G}`); update `weights` schema in `inputs_snapshot`,
   the worked example in `references/tiering-formula.md`, and the
@@ -429,13 +496,16 @@ weights, thresholds, or pins. `inputs_snapshot.tier_scores` is what
   gracefully. Recorded in DEC `inputs_snapshot.notes`.
 - **Snapshot staleness > 90 days.** Warn and continue; surface the
   artifact date in the DecisionRecord rather than hiding it.
-- **PM clone-cap.** `--parallelism-cap` is silently overridden to 1
-  for `project-manager` regardless of CLI / archetype overrides
-  (DEC-20260414_0900). Layer-4 overrides cannot raise it.
-- **Reused Actor identification.** The seed Actor for an unchanged
-  role is identified by `is_template: true`, NOT by name or ID
-  prefix — this is the authoritative test (template clones drift but
-  the seed never does).
+- **PM single-slot rule.** `--parallelism-cap` is silently overridden
+  to 1 for `project-manager` regardless of CLI / archetype overrides
+  (DEC-20260414_0900). Layer-4 overrides cannot raise it; the
+  project-manager archetype always opens exactly one RoleSlot at
+  rank=1.
+- **Slot continuity across rebalances.** A targeted rebalance
+  (`pk-team-rebalance --roles <list>`) re-fills the existing RoleSlot
+  rather than closing and re-opening it; SLOT-* IDs are stable
+  across model rotations and only change on `--roles all`
+  (full re-charter).
 - **Empty preferred-providers tie-break.** Two models within 0.05
   TierScore and no preferred provider supplied: pick the higher raw
   Capability score, then alphabetical model-id as final tie-break.

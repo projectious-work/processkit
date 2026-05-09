@@ -81,26 +81,37 @@ or `major_outage`.
 
 ### Step 6 — Emit diff report
 
-Output format (stdout only — no files written):
+Output format (stdout only — no files written). Each row is keyed by
+**archetype name** (resolved through the
+`assets/archetype-catalog-mapping.yaml` mapping, layered with the
+project override) so the operator sees the same names accepted by
+`pk-team-rebalance --roles`. The underlying `(SLOT-id, ROLE-id,
+seniority)` tuple is shown in parentheses for traceability.
 
 ```
 === pk-team-review — <date> ===
 Baseline: DecisionRecord <DEC-id> (<pk-team-create date>)
+Chartering Scope: <SCOPE-id>
 Landscape: <artifact-id> (<artifact date>) [STALE: >90 days if applicable]
 Weights used: C=<C> K=<K> L=<K> G=<G>
 Threshold: <threshold>
+Mapping source: kit-default | project | cli   (overrides: <count>)
 
 TIER-DRIFT (score delta > threshold):
-  developer: <old-model-id> (baseline 0.62) → new score 0.44  ▼0.18
+  developer (SLOT-q2-2026-software-engineer-1, ROLE-software-engineer/senior):
+    <old-model-id> (baseline 0.62) → new score 0.44  ▼0.18
     → Best alternative: <new-model-id> (score 0.71, heavy)
-    → Recommendation: rebalance this role
+    → Recommendation: rebalance this archetype
 
 UNAVAILABLE:
-  junior-developer: <model-id> — status: major_outage
+  junior-developer (SLOT-q2-2026-software-engineer-2,
+                    ROLE-software-engineer/junior):
+    <model-id> — status: major_outage
     → Best fallback: <model-id> (score 0.38, light)
 
 NEW OUTPERFORMERS:
-  assistant: <new-model-id> (score 0.52) outperforms current
+  assistant (SLOT-q2-2026-assistant-1, ROLE-assistant/specialist):
+    <new-model-id> (score 0.52) outperforms current
     <model-id> (score 0.31) by 0.21 — within light tier, no tier-shift
 
 STABLE (no action needed):
@@ -108,8 +119,8 @@ STABLE (no action needed):
   junior-architect, junior-researcher
 
 SUMMARY:
-  2 roles recommended for rebalance
-  1 role urgently needs replacement (major_outage)
+  2 archetypes recommended for rebalance
+  1 archetype urgently needs replacement (major_outage)
   Run: pk-team-rebalance --roles developer,junior-developer --confirm \
        --reason "<reason>"
 =============================
