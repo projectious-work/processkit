@@ -1307,3 +1307,341 @@ def test_resolver_pre_step_seniority_override_from_team_member(
     pre = got["binding"]["roleslot_pre_step"]
     assert pre["slot"]["seniority"] == "expert"
     assert pre["applied_seniority"] == "expert"
+
+
+# ---------------------------------------------------------------------------
+# team-creator v2 — archetype-catalog mapping loader (SUB-2 / LuckyWren)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture()
+def team_creator_lib():
+    """Import the team-creator scripts module from the in-repo source path."""
+    repo_root = _find_repo_root()
+    tc_scripts = (
+        repo_root
+        / "context"
+        / "skills"
+        / "processkit"
+        / "team-creator"
+        / "scripts"
+    )
+    if str(tc_scripts) not in sys.path:
+        sys.path.insert(0, str(tc_scripts))
+    if "team_creator_lib" in sys.modules:
+        del sys.modules["team_creator_lib"]
+    import team_creator_lib  # noqa: F401
+    return team_creator_lib
+
+
+def test_archetype_catalog_mapping_kit_default_loads(team_creator_lib, tmp_path):
+    """The shipped kit-default mapping must validate and contain all 8 archetypes."""
+    mapping = team_creator_lib.load_archetype_catalog_mapping(tmp_path)
+    assert mapping.source == "kit-default"
+    assert mapping.semantics is None
+    assert mapping.overrides == []
+    assert set(mapping.archetypes) == set(team_creator_lib.ARCHETYPES)
+    pm = mapping.archetypes["project-manager"]
+    assert pm["role"] == "ROLE-product-manager"
+    assert pm["seniority"] == "senior"
+    assert pm.get("primary_contact") is True
+    # Two archetypes share the same catalog Role with different seniority.
+    sa = mapping.archetypes["senior-architect"]
+    ja = mapping.archetypes["junior-architect"]
+    assert sa["role"] == ja["role"] == "ROLE-solutions-architect"
+    assert sa["seniority"] == "senior"
+    assert ja["seniority"] == "specialist"
+
+
+def test_archetype_catalog_mapping_project_delta_layers_correctly(
+    team_creator_lib, tmp_path
+):
+    """Project override in delta mode replaces only the listed archetypes."""
+    (tmp_path / "context" / "team").mkdir(parents=True)
+    proj = tmp_path / "context" / "team" / "archetype-catalog-mapping.yaml"
+    proj.write_text(
+        "apiVersion: processkit.projectious.work/v2\n"
+        "kind: ArchetypeCatalogMapping\n"
+        "spec:\n"
+        "  archetypes:\n"
+        "    developer:\n"
+        "      role: ROLE-software-engineer\n"
+        "      seniority: principal\n",
+        encoding="utf-8",
+    )
+    mapping = team_creator_lib.load_archetype_catalog_mapping(tmp_path)
+    assert mapping.source == "project"
+    assert mapping.semantics == "delta"
+    # Override applies to the listed archetype:
+    assert mapping.archetypes["developer"]["seniority"] == "principal"
+    # Untouched archetypes inherit the kit default:
+    assert mapping.archetypes["project-manager"]["role"] == "ROLE-product-manager"
+    assert mapping.archetypes["assistant"]["role"] == "ROLE-assistant"
+    # The delta entry surfaces in `overrides` for the chartering DEC audit:
+    delta = [o for o in mapping.overrides
+             if o["archetype"] == "developer" and o["field"] == "seniority"]
+    assert len(delta) == 1
+    assert delta[0]["kit_default"] == "senior"
+    assert delta[0]["project_value"] == "principal"
+
+
+def test_archetype_catalog_mapping_replace_requires_all_archetypes(
+    team_creator_lib, tmp_path
+):
+    """A replace-mode override missing archetypes is a hard error."""
+    (tmp_path / "context" / "team").mkdir(parents=True)
+    proj = tmp_path / "context" / "team" / "archetype-catalog-mapping.yaml"
+    proj.write_text(
+        "override_semantics: replace\n"
+        "spec:\n"
+        "  archetypes:\n"
+        "    developer:\n"
+        "      role: ROLE-software-engineer\n"
+        "      seniority: senior\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError) as excinfo:
+        team_creator_lib.load_archetype_catalog_mapping(tmp_path)
+    assert "replace-mode override missing archetypes" in str(excinfo.value)
+
+
+def test_archetype_catalog_mapping_reverse_lookup(team_creator_lib, tmp_path):
+    """archetype_for_role_slot resolves (ROLE, seniority) -> archetype name."""
+    mapping = team_creator_lib.load_archetype_catalog_mapping(tmp_path)
+    assert team_creator_lib.archetype_for_role_slot(
+        "ROLE-software-engineer", "junior", mapping,
+    ) == "junior-developer"
+    assert team_creator_lib.archetype_for_role_slot(
+        "ROLE-software-engineer", "senior", mapping,
+    ) == "developer"
+    assert team_creator_lib.archetype_for_role_slot(
+        "ROLE-product-manager", "senior", mapping,
+    ) == "project-manager"
+    # No archetype for a fictional pair:
+    assert team_creator_lib.archetype_for_role_slot(
+        "ROLE-software-engineer", "principal", mapping,
+    ) is None
+
+
+# ---------------------------------------------------------------------------
+# Migration apply script — Phase A back-fill (idempotency + smoke test)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture()
+def apply_migration_2139_module():
+    here = Path(__file__).resolve().parent
+    if str(here) not in sys.path:
+        sys.path.insert(0, str(here))
+    # Force a fresh import so the module re-binds ``server`` against the
+    # active project_root fixture.
+    for name in ("apply_migration_2139",):
+        if name in sys.modules:
+            del sys.modules[name]
+    import apply_migration_2139  # noqa: F401
+    return apply_migration_2139
+
+
+def _seed_v1_archetype_role(project_root: Path, archetype: str, clone_cap: int = 1):
+    """Write a minimal v1 archetype-spawned Role file under context/roles/."""
+    roles_dir = project_root / "context" / "roles"
+    roles_dir.mkdir(parents=True, exist_ok=True)
+    rid = f"ROLE-{archetype}"
+    body = (
+        "---\n"
+        "apiVersion: processkit.projectious.work/v2\n"
+        "kind: Role\n"
+        "metadata:\n"
+        f"  id: {rid}\n"
+        "  created: 2026-04-01T00:00:00+00:00\n"
+        "spec:\n"
+        f"  name: {archetype}\n"
+        "  description: legacy v1 archetype-spawned role for back-fill test\n"
+        f"  clone_cap: {clone_cap}\n"
+        "---\n\n"
+        f"# {rid}\n"
+    )
+    (roles_dir / f"{rid}.md").write_text(body, encoding="utf-8")
+    return rid
+
+
+def _seed_chartering_scope(project_root: Path, scope_id: str = "SCOPE-q2-2026"):
+    """Write a minimal Scope file so apply_migration_2139's existence check passes."""
+    scopes_dir = project_root / "context" / "scopes"
+    scopes_dir.mkdir(parents=True, exist_ok=True)
+    body = (
+        "---\n"
+        "apiVersion: processkit.projectious.work/v2\n"
+        "kind: Scope\n"
+        "metadata:\n"
+        f"  id: {scope_id}\n"
+        "  created: 2026-04-01T00:00:00+00:00\n"
+        "spec:\n"
+        "  title: 2026-Q2 chartering scope (test)\n"
+        "  state: active\n"
+        "  description: test scope for SUB-2 apply-script smoke test\n"
+        "---\n\n"
+        f"# {scope_id}\n"
+    )
+    (scopes_dir / f"{scope_id}.md").write_text(body, encoding="utf-8")
+    return scope_id
+
+
+def _seed_v1_role_assignment_binding(
+    project_root: Path,
+    binding_id: str,
+    subject: str,
+    target: str,
+):
+    """Write a minimal v1 Binding(type=role-assignment) under context/bindings/."""
+    bind_dir = project_root / "context" / "bindings"
+    bind_dir.mkdir(parents=True, exist_ok=True)
+    body = (
+        "---\n"
+        "apiVersion: processkit.projectious.work/v2\n"
+        "kind: Binding\n"
+        "metadata:\n"
+        f"  id: {binding_id}\n"
+        "  created: 2026-04-01T00:00:00+00:00\n"
+        "spec:\n"
+        "  type: role-assignment\n"
+        f"  subject: {subject}\n"
+        f"  target: {target}\n"
+        "  subject_kind: TeamMember\n"
+        "  target_kind: Role\n"
+        "  valid_from: '2026-04-01'\n"
+        "---\n\n"
+        f"# {binding_id}\n"
+    )
+    (bind_dir / f"{binding_id}.md").write_text(body, encoding="utf-8")
+    return binding_id
+
+
+def test_apply_migration_2139_smoke_creates_slot_and_fill(
+    server_mod,                # noqa: ARG001 — establishes project_root + paths
+    project_root: Path,
+    apply_migration_2139_module,
+):
+    """1 archetype-spawned Role + 1 role-assignment Binding -> 1 SLOT + 1 fill."""
+    scope_id = _seed_chartering_scope(project_root)
+    _seed_v1_archetype_role(project_root, "developer", clone_cap=1)
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    _seed_v1_role_assignment_binding(
+        project_root,
+        binding_id="BIND-test-developer-alice",
+        subject="TEAMMEMBER-alice-chen",
+        target="ROLE-developer",
+    )
+
+    summary = apply_migration_2139_module.apply(
+        project_root, scope_id, dry_run=False,
+    )
+    assert "error" not in summary, summary
+    assert summary["slots_created"] == 1, summary
+    assert summary["fills_created"] == 1, summary
+    assert summary["slots_skipped"] == 0
+    assert summary["fills_skipped"] == 0
+
+    # The new SLOT exists under context/roleslots/
+    slot_id = "SLOT-q2-2026-developer-1"
+    slot_path = project_root / "context" / "roleslots" / f"{slot_id}.md"
+    assert slot_path.is_file(), f"expected {slot_path} to exist"
+
+    # The new role-slot-fill Binding exists under context/bindings/
+    bind_dir = project_root / "context" / "bindings"
+    fills = []
+    for path in bind_dir.glob("BIND-*.md"):
+        text = path.read_text(encoding="utf-8")
+        if "type: role-slot-fill" in text and slot_id in text:
+            fills.append(path)
+    assert len(fills) == 1, [p.name for p in bind_dir.glob('*.md')]
+
+
+def test_apply_migration_2139_is_idempotent(
+    server_mod,                # noqa: ARG001
+    project_root: Path,
+    apply_migration_2139_module,
+):
+    """Re-running apply produces no-ops (skips both slot create + fill)."""
+    scope_id = _seed_chartering_scope(project_root)
+    _seed_v1_archetype_role(project_root, "developer", clone_cap=1)
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    _seed_v1_role_assignment_binding(
+        project_root,
+        binding_id="BIND-test-developer-alice",
+        subject="TEAMMEMBER-alice-chen",
+        target="ROLE-developer",
+    )
+
+    first = apply_migration_2139_module.apply(project_root, scope_id)
+    second = apply_migration_2139_module.apply(project_root, scope_id)
+    assert "error" not in second, second
+    assert second["slots_created"] == 0
+    assert second["fills_created"] == 0
+    assert second["slots_skipped"] == first["slots_created"]
+    assert second["fills_skipped"] == first["fills_created"]
+
+
+def test_apply_migration_2139_v2_native_project_is_no_op(
+    server_mod,                # noqa: ARG001
+    project_root: Path,
+    apply_migration_2139_module,
+):
+    """A project with no v1 archetype Roles produces zero writes."""
+    scope_id = _seed_chartering_scope(project_root)
+    summary = apply_migration_2139_module.apply(project_root, scope_id)
+    assert "error" not in summary, summary
+    assert summary["slots_created"] == 0
+    assert summary["fills_created"] == 0
+    assert summary["slots_skipped"] == 0
+    assert summary["fills_skipped"] == 0
+
+
+def test_apply_migration_2139_dry_run_writes_nothing(
+    server_mod,                # noqa: ARG001
+    project_root: Path,
+    apply_migration_2139_module,
+):
+    """--dry-run reports the plan but writes no SLOT or fill Binding."""
+    scope_id = _seed_chartering_scope(project_root)
+    _seed_v1_archetype_role(project_root, "developer", clone_cap=2)
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    _seed_v1_role_assignment_binding(
+        project_root,
+        binding_id="BIND-test-developer-alice",
+        subject="TEAMMEMBER-alice-chen",
+        target="ROLE-developer",
+    )
+
+    summary = apply_migration_2139_module.apply(
+        project_root, scope_id, dry_run=True,
+    )
+    assert summary["dry_run"] is True
+    assert summary["slots_created"] == 2  # planned, not written
+    assert summary["fills_created"] == 1
+    # No actual files were written:
+    rs_dir = project_root / "context" / "roleslots"
+    assert not rs_dir.exists() or not list(rs_dir.glob("SLOT-*.md"))
+
+
+def test_apply_migration_2139_rejects_missing_scope(
+    server_mod,                # noqa: ARG001
+    project_root: Path,        # noqa: ARG001 — project_root activates path bootstrap
+    apply_migration_2139_module,
+):
+    """Apply errors when the chartering Scope does not exist."""
+    summary = apply_migration_2139_module.apply(
+        project_root, "SCOPE-does-not-exist",
+    )
+    assert "error" in summary
+    assert "not found" in summary["error"]
