@@ -96,6 +96,16 @@ server = FastMCP("processkit-team-manager")
 
 _VALID_TYPES = {"human", "ai-agent", "service"}
 _VALID_SENIORITY = {"junior", "specialist", "expert", "senior", "principal"}
+_VALID_SLOT_STATES = {"open", "filled", "closed"}
+_VALID_EFFORTS = {"low", "medium", "high", "extra-high", "max"}
+# Allowed RoleSlot state transitions (Phase A team-creator v2;
+# DEC-20260509_1906-CoolBadger). closed is terminal — reverse
+# transitions are rejected.
+_SLOT_TRANSITIONS = {
+    "open": {"filled", "closed"},
+    "filled": {"closed"},
+    "closed": set(),
+}
 _UPDATABLE_FIELDS = {
     "name", "email", "handle", "default_role", "default_seniority",
     "personality", "memory", "relationships", "exportable",
@@ -946,6 +956,21 @@ def get_interlocutor_runtime_binding(
     `observed_model` and `observed_effort` are caller-supplied facts from
     the current harness. processkit cannot read or hot-swap the already
     running primary model, so mismatch reporting is informational.
+
+    Phase A team-creator v2 — RoleSlot pre-step:
+        Before falling through to the existing 8-layer model-assignment
+        binding precedence, this tool checks whether the active
+        interlocutor's (default_role, default_seniority, scope) matches
+        a RoleSlot in state=filled. If it does, the slot's filled_by
+        TeamMember and (TeamMember.default_seniority || slot.seniority)
+        are surfaced in ``binding.roleslot_pre_step``. The existing
+        8-layer logic still runs unchanged underneath
+        (DEC-20260509_1906-CoolBadger Q1).
+
+        When no slot matches the triple, ``roleslot_pre_step`` is
+        absent and the response is identical to pre-RoleSlot
+        behaviour — the existing 8-layer resolver is fully
+        responsible. This keeps Phase A additive and reversible.
     """
     active = get_active_interlocutor(scope)
     if active.get("error") or not active.get("configured"):
@@ -961,15 +986,31 @@ def get_interlocutor_runtime_binding(
             "error": f"configured team-member {member_id!r} not found",
         }
 
+    # --- RoleSlot pre-step (Phase A) -----------------------------------
+    # Look for a filled slot keyed by the interlocutor's default
+    # (role, seniority) inside ``scope``. If found, the slot's
+    # filled_by TeamMember (or ``None`` for ephemeral dispatch) and the
+    # applied seniority join the response. The 8-layer resolver below
+    # remains the source of truth for the actual model selection.
+    pre_role = (ent.spec or {}).get("default_role")
+    pre_seniority = (ent.spec or {}).get("default_seniority")
+    pre_step = _roleslot_pre_step(
+        role=pre_role, seniority=pre_seniority, scope=scope,
+    )
+
+    binding = _runtime_binding_for(
+        ent=ent,
+        scope=scope,
+        observed_model=observed_model,
+        observed_effort=observed_effort,
+        task_hints=task_hints,
+    )
+    if pre_step is not None:
+        binding = {**binding, "roleslot_pre_step": pre_step}
+
     return {
         **active,
-        "binding": _runtime_binding_for(
-            ent=ent,
-            scope=scope,
-            observed_model=observed_model,
-            observed_effort=observed_effort,
-            task_hints=task_hints,
-        ),
+        "binding": binding,
     }
 
 
@@ -1142,6 +1183,622 @@ def reactivate_team_member(id: str) -> dict:
         actor=ent.id,
     )
     return {"ok": True, "id": ent.id}
+
+
+# ---------------------------------------------------------------------------
+# RoleSlot tools (Phase A — team-creator v2)
+# ---------------------------------------------------------------------------
+#
+# RoleSlot decouples capacity (how many parallel workers a role needs in
+# a charter) from identity (who a persistent persona is). Persistent
+# TeamMembers carry stable memory and personality; RoleSlots carry no
+# memory and exist only inside the lifetime of their chartering Scope.
+#
+# State machine: open → filled → closed. closed is terminal — reopening
+# means a fresh SLOT-id at the next charter (Scope).
+#
+# IDs are deterministic: SLOT-<scope-slug>-<role-slug>-<rank>.
+# scope-slug is the SCOPE-<id> tail, role-slug the ROLE-<id> tail, both
+# kebab-case. rank=1 is the primary; rank=2..N are parallel reservations.
+#
+# Resolver pre-step (get_interlocutor_runtime_binding) — Phase A:
+#   1. (role, seniority, scope) → query RoleSlot(state=filled, scope, role,
+#      seniority match)
+#   2. RoleSlot.filled_by → TeamMember
+#   3. TeamMember.default_seniority overrides RoleSlot.seniority for model
+#      resolution if set
+#   4. fall through to existing 8-layer model-assignment binding precedence
+#
+# The pre-step is additive — it inserts in front of the existing 8-layer
+# resolver without reshaping it (DEC-20260509_1906-CoolBadger Q1).
+
+
+def _slot_dir(root: Path) -> Path:
+    return paths.context_dir("RoleSlot", root)
+
+
+def _scope_slug(scope_id: str) -> str:
+    return scope_id[len("SCOPE-"):] if scope_id.startswith("SCOPE-") else scope_id
+
+
+def _role_slug(role_id: str) -> str:
+    return role_id[len("ROLE-"):] if role_id.startswith("ROLE-") else role_id
+
+
+def _slot_id(scope_id: str, role_id: str, rank: int) -> str:
+    return f"SLOT-{_scope_slug(scope_id)}-{_role_slug(role_id)}-{int(rank)}"
+
+
+def _slot_path(root: Path, slot_id: str) -> Path:
+    return _slot_dir(root) / f"{slot_id}.md"
+
+
+def _load_slot(root: Path, slot_id: str) -> entity.Entity | None:
+    p = _slot_path(root, slot_id)
+    if p.is_file():
+        return entity.load(p)
+    # Fallback: scan dir (defensive, in case sharding rules change)
+    base = _slot_dir(root)
+    if not base.is_dir():
+        return None
+    for f in base.rglob(f"{slot_id}.md"):
+        try:
+            return entity.load(f)
+        except Exception:
+            continue
+    return None
+
+
+def _slot_summary(ent: entity.Entity) -> dict:
+    spec = ent.spec or {}
+    return {
+        "id": ent.id,
+        "scope": spec.get("scope"),
+        "role": spec.get("role"),
+        "seniority": spec.get("seniority"),
+        "rank": spec.get("rank"),
+        "state": spec.get("state"),
+        "filled_by": spec.get("filled_by"),
+        "default_model_profile": spec.get("default_model_profile"),
+        "effort_floor": spec.get("effort_floor"),
+        "effort_ceiling": spec.get("effort_ceiling"),
+        "rationale": spec.get("rationale"),
+        "created": spec.get("created"),
+        "closed_at": spec.get("closed_at"),
+        "close_reason": spec.get("close_reason"),
+        "path": str(ent.path) if ent.path else None,
+    }
+
+
+def _create_role_slot_fill_binding(
+    root: Path,
+    slot_id: str,
+    team_member_id: str,
+    valid_from: str | None,
+    valid_until: str | None,
+    rationale: str | None,
+) -> dict:
+    """Create a Binding(type=role-slot-fill) inline.
+
+    Mirrors binding-management.create_binding's write path so the
+    team-manager server doesn't have to call out across MCP servers
+    during a fill_role_slot call. The Binding entity is written under
+    context/bindings/ exactly the same way binding-management would
+    write it.
+    """
+    from processkit import config as _config, ids as _ids  # noqa: WPS433
+
+    cfg = _config.load_config(root)
+    bind_dir = paths.context_dir("Binding", root)
+    bind_dir.mkdir(parents=True, exist_ok=True)
+
+    db = index.open_db()
+    try:
+        existing = index.existing_ids(db, "Binding")
+    finally:
+        db.close()
+
+    new_id = _ids.generate_id(
+        "Binding",
+        format=cfg.id_format,
+        word_style=cfg.id_word_style,
+        datetime_prefix=cfg.id_datetime_prefix,
+        slug_text="role-slot-fill",
+        existing=existing,
+    )
+    spec: dict = {
+        "type": "role-slot-fill",
+        "subject": team_member_id,
+        "target": slot_id,
+        "subject_kind": "TeamMember",
+        "target_kind": "RoleSlot",
+    }
+    if valid_from:
+        spec["valid_from"] = valid_from
+    if valid_until:
+        spec["valid_until"] = valid_until
+    if rationale:
+        spec["conditions"] = {"rationale": rationale}
+
+    errors = schema.validate_spec("Binding", spec)
+    if errors:
+        return {"error": "binding schema validation failed", "details": errors}
+
+    ent = entity.new("Binding", new_id, spec)
+    target_path = paths.entity_path("Binding", new_id, None, root)
+    ent.write(target_path)
+
+    try:
+        db = index.open_db()
+        try:
+            index.upsert_entity(db, ent)
+        finally:
+            db.close()
+    except Exception:
+        pass
+
+    log.log_side_effect(
+        "Binding", new_id, "binding.created",
+        f"Created Binding {new_id!r}: 'role-slot-fill' "
+        f"{team_member_id!r} → {slot_id!r}",
+        root=root,
+        actor=new_id,
+    )
+    return {"id": new_id, "path": str(target_path)}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def create_role_slot(
+    scope: str,
+    role: str,
+    seniority: str,
+    rank: int,
+    rationale: str,
+    default_model_profile: str | None = None,
+    effort_floor: str | None = None,
+    effort_ceiling: str | None = None,
+) -> dict:
+    """Open a new RoleSlot under a chartering Scope.
+
+    Parameters
+    ----------
+    scope:                  SCOPE-<id> the slot belongs to (mandatory)
+    role:                   ROLE-<id> from the catalog
+    seniority:              junior|specialist|expert|senior|principal
+    rank:                   1=primary, 2..N=parallel reservations
+    rationale:              one-line reason this slot exists
+    default_model_profile:  optional Layer 8 fallback for ephemeral
+                            dispatches that never fill the slot
+    effort_floor:           optional dispatch floor
+    effort_ceiling:         optional dispatch ceiling
+
+    Returns ``{id, path, state}`` on success.
+    """
+    if not scope or not scope.startswith("SCOPE-"):
+        return {"error": f"scope must be a SCOPE-* id; got {scope!r}"}
+    if not role or not role.startswith("ROLE-"):
+        return {"error": f"role must be a ROLE-* id; got {role!r}"}
+    if seniority not in _VALID_SENIORITY:
+        return {
+            "error": (
+                f"invalid seniority {seniority!r}; "
+                f"must be one of {sorted(_VALID_SENIORITY)}"
+            )
+        }
+    try:
+        rank_int = int(rank)
+    except (TypeError, ValueError):
+        return {"error": f"rank must be a positive integer; got {rank!r}"}
+    if rank_int < 1:
+        return {"error": f"rank must be >= 1; got {rank_int}"}
+    if effort_floor is not None and effort_floor not in _VALID_EFFORTS:
+        return {"error": f"invalid effort_floor {effort_floor!r}"}
+    if effort_ceiling is not None and effort_ceiling not in _VALID_EFFORTS:
+        return {"error": f"invalid effort_ceiling {effort_ceiling!r}"}
+    if not rationale or not str(rationale).strip():
+        return {"error": "rationale is required and must be non-empty"}
+
+    root = paths.find_project_root()
+    new_id = _slot_id(scope, role, rank_int)
+    slot_path = _slot_path(root, new_id)
+    if slot_path.is_file():
+        return {
+            "error": (
+                f"role-slot {new_id!r} already exists at {slot_path}; "
+                "pick a different rank or close the existing slot first"
+            )
+        }
+
+    spec: dict = {
+        "scope": scope,
+        "role": role,
+        "seniority": seniority,
+        "rank": rank_int,
+        "state": "open",
+        "filled_by": None,
+        "rationale": str(rationale).strip(),
+        "created": _now_iso(),
+    }
+    if default_model_profile:
+        spec["default_model_profile"] = default_model_profile
+    if effort_floor:
+        spec["effort_floor"] = effort_floor
+    if effort_ceiling:
+        spec["effort_ceiling"] = effort_ceiling
+
+    errors = schema.validate_spec("RoleSlot", spec)
+    if errors:
+        return {"error": "schema validation failed", "details": errors}
+
+    ent = entity.new("RoleSlot", new_id, spec)
+    slot_path.parent.mkdir(parents=True, exist_ok=True)
+    ent.write(slot_path)
+
+    try:
+        db = index.open_db()
+        try:
+            index.upsert_entity(db, ent)
+        finally:
+            db.close()
+    except Exception:
+        pass
+
+    log.log_side_effect(
+        "RoleSlot", new_id, "role_slot.created",
+        f"Opened RoleSlot {new_id!r} (scope={scope}, role={role}, "
+        f"seniority={seniority}, rank={rank_int})",
+        root=root,
+        actor=new_id,
+    )
+    return {"id": new_id, "path": str(slot_path), "state": "open"}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def get_role_slot(id: str) -> dict:
+    """Return the full RoleSlot entity by ID."""
+    if not id or not id.startswith("SLOT-"):
+        return {"error": f"id must be a SLOT-* id; got {id!r}"}
+    root = paths.find_project_root()
+    ent = _load_slot(root, id)
+    if ent is None:
+        return {"error": f"role-slot {id!r} not found"}
+    return _slot_summary(ent)
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def list_role_slots(
+    scope: str | None = None,
+    role: str | None = None,
+    state: str | None = None,
+    limit: int = 200,
+) -> list[dict]:
+    """List RoleSlots under context/roleslots/, optionally filtered.
+
+    Filters
+    -------
+    scope:  match SCOPE-<id> exactly
+    role:   match ROLE-<id> exactly
+    state:  open | filled | closed
+    """
+    if state is not None and state not in _VALID_SLOT_STATES:
+        return [{"error": f"invalid state filter {state!r}"}]
+    root = paths.find_project_root()
+    base = _slot_dir(root)
+    if not base.is_dir():
+        return []
+    out: list[dict] = []
+    for f in sorted(base.rglob("SLOT-*.md")):
+        try:
+            ent = entity.load(f)
+        except Exception:
+            continue
+        if ent.kind != "RoleSlot":
+            continue
+        spec = ent.spec or {}
+        if scope and spec.get("scope") != scope:
+            continue
+        if role and spec.get("role") != role:
+            continue
+        if state and spec.get("state") != state:
+            continue
+        out.append(_slot_summary(ent))
+        if len(out) >= limit:
+            break
+    return out
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def fill_role_slot(
+    id: str,
+    team_member_slug: str,
+    valid_from: str | None = None,
+    valid_until: str | None = None,
+    rationale: str | None = None,
+) -> dict:
+    """Place an active TeamMember into an open RoleSlot.
+
+    Sets ``state=filled``, ``filled_by=TEAMMEMBER-<slug>``, and creates
+    a parallel ``role-slot-fill`` Binding so time-bounded dispatch
+    queries continue to work through binding-management.
+
+    Returns
+    -------
+    On success: ``{ok: True, id, state, filled_by, binding_id, binding_path}``
+    On error:   ``{error, details?}``
+    """
+    if not id or not id.startswith("SLOT-"):
+        return {"error": f"id must be a SLOT-* id; got {id!r}"}
+    if not team_member_slug:
+        return {"error": "team_member_slug is required"}
+
+    root = paths.find_project_root()
+    ent = _load_slot(root, id)
+    if ent is None:
+        return {"error": f"role-slot {id!r} not found"}
+
+    current_state = (ent.spec or {}).get("state")
+    if current_state == "filled":
+        return {
+            "error": (
+                f"role-slot {id!r} is already filled by "
+                f"{ent.spec.get('filled_by')!r}; close it first if you "
+                "need to reassign"
+            )
+        }
+    if "filled" not in _SLOT_TRANSITIONS.get(current_state, set()):
+        return {
+            "error": (
+                f"invalid transition {current_state!r} → 'filled' for "
+                f"role-slot {id!r}; allowed from {current_state!r}: "
+                f"{sorted(_SLOT_TRANSITIONS.get(current_state, set()))}"
+            )
+        }
+
+    tm = _load_tm(root, team_member_slug)
+    if tm is None:
+        return {"error": f"team-member {team_member_slug!r} not found"}
+    if not tm.spec.get("active", True):
+        return {
+            "error": (
+                f"cannot fill role-slot with inactive TeamMember "
+                f"{tm.id!r}; reactivate or pick a different member"
+            )
+        }
+
+    ent.spec["state"] = "filled"
+    ent.spec["filled_by"] = tm.id
+    errors = schema.validate_spec("RoleSlot", ent.spec)
+    if errors:
+        return {"error": "schema validation failed", "details": errors}
+    ent.write()
+
+    try:
+        db = index.open_db()
+        try:
+            index.upsert_entity(db, ent)
+        finally:
+            db.close()
+    except Exception:
+        pass
+
+    binding_result = _create_role_slot_fill_binding(
+        root=root,
+        slot_id=ent.id,
+        team_member_id=tm.id,
+        valid_from=valid_from,
+        valid_until=valid_until,
+        rationale=rationale,
+    )
+    if "error" in binding_result:
+        # Roll back the slot transition so the data store stays consistent.
+        ent.spec["state"] = current_state or "open"
+        ent.spec["filled_by"] = None
+        ent.write()
+        return {
+            "error": "could not create role-slot-fill binding",
+            "details": binding_result,
+        }
+
+    log.log_side_effect(
+        "RoleSlot", ent.id, "role_slot.filled",
+        f"Filled RoleSlot {ent.id!r} with {tm.id!r}",
+        root=root,
+        actor=ent.id,
+    )
+    return {
+        "ok": True,
+        "id": ent.id,
+        "state": "filled",
+        "filled_by": tm.id,
+        "binding_id": binding_result["id"],
+        "binding_path": binding_result["path"],
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=True,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def close_role_slot(id: str, reason: str | None = None) -> dict:
+    """Close a RoleSlot. Terminal — re-opening requires a new SLOT-id.
+
+    ``open|filled → closed`` is always allowed; closing an already
+    ``closed`` slot is a no-op (idempotent).
+    """
+    if not id or not id.startswith("SLOT-"):
+        return {"error": f"id must be a SLOT-* id; got {id!r}"}
+    root = paths.find_project_root()
+    ent = _load_slot(root, id)
+    if ent is None:
+        return {"error": f"role-slot {id!r} not found"}
+
+    current_state = (ent.spec or {}).get("state")
+    if current_state == "closed":
+        # Idempotent close; report the existing terminal state.
+        return {
+            "ok": True,
+            "id": ent.id,
+            "state": "closed",
+            "already_closed": True,
+            "closed_at": ent.spec.get("closed_at"),
+        }
+    if "closed" not in _SLOT_TRANSITIONS.get(current_state, set()):
+        return {
+            "error": (
+                f"invalid transition {current_state!r} → 'closed' for "
+                f"role-slot {id!r}"
+            )
+        }
+
+    ent.spec["state"] = "closed"
+    ent.spec["closed_at"] = _now_iso()
+    if reason:
+        ent.spec["close_reason"] = str(reason).strip()
+    errors = schema.validate_spec("RoleSlot", ent.spec)
+    if errors:
+        return {"error": "schema validation failed", "details": errors}
+    ent.write()
+
+    try:
+        db = index.open_db()
+        try:
+            index.upsert_entity(db, ent)
+        finally:
+            db.close()
+    except Exception:
+        pass
+
+    log.log_side_effect(
+        "RoleSlot", ent.id, "role_slot.closed",
+        f"Closed RoleSlot {ent.id!r}"
+        + (f" — reason: {reason!r}" if reason else ""),
+        root=root,
+        actor=ent.id,
+    )
+    return {
+        "ok": True,
+        "id": ent.id,
+        "state": "closed",
+        "closed_at": ent.spec["closed_at"],
+        "close_reason": ent.spec.get("close_reason"),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Resolver helpers — RoleSlot pre-step (Phase A team-creator v2)
+# ---------------------------------------------------------------------------
+
+def _find_filled_slot(
+    root: Path,
+    role: str | None,
+    seniority: str | None,
+    scope: str | None,
+) -> entity.Entity | None:
+    """Return the first filled RoleSlot matching (role, seniority, scope).
+
+    Match rules:
+      - role and scope must equal exactly when supplied;
+      - seniority must equal when supplied;
+      - state must be 'filled';
+      - prefers rank=1 over higher ranks (sorted ascending).
+    """
+    base = _slot_dir(root)
+    if not base.is_dir():
+        return None
+    matches: list[tuple[int, entity.Entity]] = []
+    for f in base.rglob("SLOT-*.md"):
+        try:
+            ent = entity.load(f)
+        except Exception:
+            continue
+        if ent.kind != "RoleSlot":
+            continue
+        spec = ent.spec or {}
+        if spec.get("state") != "filled":
+            continue
+        if role and spec.get("role") != role:
+            continue
+        if seniority and spec.get("seniority") != seniority:
+            continue
+        if scope and spec.get("scope") != scope:
+            continue
+        try:
+            rank = int(spec.get("rank") or 999999)
+        except (TypeError, ValueError):
+            rank = 999999
+        matches.append((rank, ent))
+    if not matches:
+        return None
+    matches.sort(key=lambda pair: pair[0])
+    return matches[0][1]
+
+
+def _roleslot_pre_step(
+    role: str | None,
+    seniority: str | None,
+    scope: str | None,
+) -> dict | None:
+    """Phase A pre-step before the existing 8-layer resolver.
+
+    Returns ``None`` when no filled slot matches the (role, seniority,
+    scope) triple — the caller MUST then fall through to the existing
+    8-layer model-assignment binding precedence unchanged.
+
+    Returns a dict ``{slot, team_member, applied_seniority}`` when a
+    filled slot is found:
+      - slot:               full _slot_summary
+      - team_member:        TeamMember entity for the slot's filled_by
+                            (or None when the slot has filled_by=null,
+                            which is the ephemeral-dispatch case where
+                            the slot's default_model_profile becomes
+                            the Layer 8 fallback)
+      - applied_seniority:  TeamMember.default_seniority overrides the
+                            slot's seniority for model resolution if
+                            set; otherwise the slot's seniority.
+    """
+    if not role:
+        return None
+    root = paths.find_project_root()
+    slot = _find_filled_slot(root, role=role, seniority=seniority, scope=scope)
+    if slot is None:
+        return None
+    spec = slot.spec or {}
+    tm_id = spec.get("filled_by")
+    tm_ent = _load_tm(root, tm_id) if tm_id else None
+    applied_seniority = spec.get("seniority")
+    if tm_ent is not None:
+        tm_seniority = (tm_ent.spec or {}).get("default_seniority")
+        if tm_seniority:
+            applied_seniority = tm_seniority
+    return {
+        "slot": _slot_summary(slot),
+        "team_member": (
+            _team_member_summary(tm_ent) if tm_ent is not None else None
+        ),
+        "applied_seniority": applied_seniority,
+    }
 
 
 # ---------------------------------------------------------------------------
