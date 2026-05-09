@@ -56,6 +56,91 @@ from processkit import config, entity, ids, index, log, paths, schema, state_mac
 
 server = FastMCP("processkit-scope-management")
 
+
+# ---------------------------------------------------------------------------
+# Consultant auto-deactivation helper (team-creator v2 SUB-3)
+# ---------------------------------------------------------------------------
+
+def _deactivate_consultants_for_scope(root: Path, scope_id: str) -> list[dict]:
+    """Deactivate active consultants engaged_for scope_id.
+
+    Called when a Scope transitions to a terminal state. Only consultants
+    with auto_deactivate_on_scope_close=true (the default) are deactivated.
+
+    Returns a list of deactivation records; entries with skipped_reason
+    were not deactivated.
+    """
+    tm_root = paths.context_dir("TeamMember", root)
+    results: list[dict] = []
+    if not tm_root.is_dir():
+        return results
+
+    now_str = _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
+
+    for child in sorted(tm_root.iterdir()):
+        if not child.is_dir():
+            continue
+        p = child / "team-member.md"
+        if not p.is_file():
+            continue
+        try:
+            ent = entity.load(p)
+        except Exception:
+            continue
+        if ent.kind != "TeamMember":
+            continue
+        spec = ent.spec or {}
+        if spec.get("type") != "consultant":
+            continue
+        if spec.get("engaged_for") != scope_id:
+            continue
+        if not spec.get("active", True):
+            results.append({
+                "team_member_id": ent.id,
+                "slug": spec.get("slug"),
+                "skipped_reason": "already inactive",
+            })
+            continue
+        if not spec.get("auto_deactivate_on_scope_close", True):
+            results.append({
+                "team_member_id": ent.id,
+                "slug": spec.get("slug"),
+                "skipped_reason": "auto_deactivate_on_scope_close=false",
+            })
+            continue
+
+        # Deactivate.
+        ent.spec["active"] = False
+        ent.spec["left_at"] = now_str
+        ent.write()
+        try:
+            db = index.open_db()
+            try:
+                index.upsert_entity(db, ent)
+            finally:
+                db.close()
+        except Exception:
+            pass
+
+        log.log_side_effect(
+            "TeamMember", ent.id, "team_member.auto_deactivated",
+            (
+                f"Auto-deactivated consultant {ent.id!r} "
+                f"on Scope {scope_id!r} close"
+            ),
+            root=root,
+            actor=ent.id,
+            details={"closing_scope": scope_id},
+        )
+        results.append({
+            "team_member_id": ent.id,
+            "slug": spec.get("slug"),
+            "left_at": now_str,
+            "deactivated": True,
+        })
+
+    return results
+
 _VALID_KINDS = {"sprint", "milestone", "quarter", "project", "release", "other"}
 
 
@@ -239,6 +324,13 @@ def transition_scope(id: str, to_state: str) -> dict:
     already operating within a named processkit skill before using this
     tool. 1% rule: call route_task first; commit in the same turn —
     deferred writes are dropped.
+
+    Scope-close hook (team-creator v2 SUB-3):
+        When to_state is terminal (completed|cancelled), consultants whose
+        engaged_for matches this Scope and auto_deactivate_on_scope_close=true
+        are automatically deactivated. A team_member.auto_deactivated log
+        entry is emitted for each. The deactivation list is returned in
+        ``consultant_deactivations``.
     """
     root = paths.find_project_root()
     ent = _load_scope(root, id)
@@ -288,7 +380,15 @@ def transition_scope(id: str, to_state: str) -> dict:
             actor=id,
             details={"path": str(final_path)},
         )
-    return {
+
+    # --- Consultant auto-deactivation hook (SUB-3) -----------------------
+    # When the Scope reaches a terminal state, deactivate active consultants
+    # engaged for this Scope who have auto_deactivate_on_scope_close=true.
+    consultant_deactivations: list[dict] = []
+    if should_archive:
+        consultant_deactivations = _deactivate_consultants_for_scope(root, id)
+
+    result: dict = {
         "ok": True,
         "id": id,
         "from_state": from_state,
@@ -296,6 +396,9 @@ def transition_scope(id: str, to_state: str) -> dict:
         "path": str(final_path) if final_path else None,
         "archived": archived,
     }
+    if consultant_deactivations:
+        result["consultant_deactivations"] = consultant_deactivations
+    return result
 
 
 @server.tool(annotations=ToolAnnotations(

@@ -94,7 +94,7 @@ import export_import as _export_import  # noqa: E402
 
 server = FastMCP("processkit-team-manager")
 
-_VALID_TYPES = {"human", "ai-agent", "service"}
+_VALID_TYPES = {"human", "ai-agent", "service", "consultant"}
 _VALID_SENIORITY = {"junior", "specialist", "expert", "senior", "principal"}
 _VALID_SLOT_STATES = {"open", "filled", "closed"}
 _VALID_EFFORTS = {"low", "medium", "high", "extra-high", "max"}
@@ -125,6 +125,80 @@ _CLAUDE_MODEL_POLICIES = {"inherit", "resolved"}
 
 def _now_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
+
+
+def _now_utc() -> _dt.datetime:
+    """Return current UTC datetime (used for consultant window checks)."""
+    return _dt.datetime.now(_dt.timezone.utc)
+
+
+def _parse_iso_dt(value: str) -> _dt.datetime | None:
+    """Parse an ISO 8601 datetime string; return None on failure."""
+    if not value:
+        return None
+    try:
+        # Python 3.11+ handles Z suffix natively; for 3.10 compat strip it.
+        v = value.strip()
+        if v.endswith("Z"):
+            v = v[:-1] + "+00:00"
+        return _dt.datetime.fromisoformat(v)
+    except (ValueError, TypeError):
+        return None
+
+
+def _consultant_in_window(spec: dict, now: _dt.datetime | None = None) -> bool:
+    """Return True if the consultant's engagement window includes *now*.
+
+    For non-consultant types, always returns True so the caller's filter
+    expression ``type != consultant OR _consultant_in_window(spec)`` works
+    uniformly.
+    """
+    if spec.get("type") != "consultant":
+        return True
+    window = spec.get("engagement_window") or {}
+    starts_str = window.get("starts_at")
+    ends_str = window.get("ends_at")
+    if not starts_str or not ends_str:
+        # Malformed consultant — treat as outside window (conservative).
+        return False
+    now_dt = now if now is not None else _now_utc()
+    starts = _parse_iso_dt(starts_str)
+    ends = _parse_iso_dt(ends_str)
+    if starts is None or ends is None:
+        return False
+    # Make now_dt timezone-aware if window datetimes are aware, so comparison works.
+    if starts.tzinfo is not None and now_dt.tzinfo is None:
+        now_dt = now_dt.replace(tzinfo=_dt.timezone.utc)
+    return starts <= now_dt <= ends
+
+
+def _validate_consultant_fields(type: str, spec: dict) -> list[str]:
+    """Check consultant-specific conditional field rules.
+
+    Returns a list of error strings (empty = valid).
+
+    Rules:
+      - type=consultant: engaged_for required, engagement_window required.
+      - type!=consultant: engaged_for and engagement_window must be absent.
+    """
+    errors: list[str] = []
+    has_engaged_for = spec.get("engaged_for") not in (None, "")
+    has_window = spec.get("engagement_window") not in (None, {})
+    if type == "consultant":
+        if not has_engaged_for:
+            errors.append("engaged_for is required when type=consultant")
+        if not has_window:
+            errors.append("engagement_window is required when type=consultant")
+    else:
+        if has_engaged_for:
+            errors.append(
+                "engaged_for is only allowed when type=consultant"
+            )
+        if has_window:
+            errors.append(
+                "engagement_window is only allowed when type=consultant"
+            )
+    return errors
 
 
 def _tm_dir(root: Path, slug: str) -> Path:
@@ -711,13 +785,16 @@ def create_team_member(
     email: str | None = None,
     handle: str | None = None,
     joined_at: str | None = None,
+    engaged_for: str | None = None,
+    engagement_window: dict | None = None,
+    auto_deactivate_on_scope_close: bool = True,
 ) -> dict:
     """Create a new TeamMember entity.
 
     Parameters
     ----------
     name:               display name (e.g. "Atlas" or "Alice Chen")
-    type:               "human", "ai-agent", or "service"
+    type:               "human", "ai-agent", "service", or "consultant"
     slug:               canonical kebab-case slug; becomes TEAMMEMBER-<slug>
     default_role:       optional ROLE-<id>
     default_seniority:  optional enum (junior|specialist|expert|senior|principal)
@@ -725,6 +802,12 @@ def create_team_member(
     email:              optional; humans only
     handle:             optional; GitHub/Slack handle
     joined_at:          ISO datetime; defaults to now
+
+    Consultant-only fields (required when type=consultant; rejected otherwise):
+    engaged_for:                    SCOPE-<id> the consultant is engaged for
+    engagement_window:              {starts_at: <ISO>, ends_at: <ISO>}
+    auto_deactivate_on_scope_close: bool (default true); auto-deactivates on
+                                    Scope close unless set to false
 
     For type=ai-agent, slug must match a name in the name pool and will be
     auto-reserved on success.
@@ -735,6 +818,16 @@ def create_team_member(
         return {"error": f"invalid seniority {default_seniority!r}"}
     if not _SLUG_RE.match(slug):
         return {"error": f"invalid slug {slug!r}; must match ^[a-z][a-z0-9-]*$"}
+
+    # Validate consultant-specific conditional fields before hitting the DB.
+    pre_spec_check: dict = {"type": type}
+    if engaged_for is not None:
+        pre_spec_check["engaged_for"] = engaged_for
+    if engagement_window is not None:
+        pre_spec_check["engagement_window"] = engagement_window
+    cond_errors = _validate_consultant_fields(type, pre_spec_check)
+    if cond_errors:
+        return {"error": "consultant field validation failed", "details": cond_errors}
 
     root = paths.find_project_root()
     tm_path = _tm_entity_path(root, slug)
@@ -778,6 +871,12 @@ def create_team_member(
         spec["default_seniority"] = default_seniority
     if personality:
         spec["personality"] = dict(personality)
+    if type == "consultant":
+        if engaged_for:
+            spec["engaged_for"] = engaged_for
+        if engagement_window:
+            spec["engagement_window"] = dict(engagement_window)
+        spec["auto_deactivate_on_scope_close"] = auto_deactivate_on_scope_close
 
     errors = schema.validate_spec("TeamMember", spec)
     if errors:
@@ -849,11 +948,17 @@ def list_team_members(
     role: str | None = None,
     limit: int = 50,
 ) -> list[dict]:
-    """List TeamMembers with optional filters by type, active state, default_role."""
+    """List TeamMembers with optional filters by type, active state, default_role.
+
+    Consultant-window filter: when active_only=True, consultants whose
+    engagement_window does not include the current time are excluded from
+    results — they are non-resolvable but not deactivated (design §Gap 3).
+    """
     root = paths.find_project_root()
     tm_root = paths.context_dir("TeamMember", root)
     if not tm_root.is_dir():
         return []
+    now = _now_utc()
     out: list[dict] = []
     for child in sorted(tm_root.iterdir()):
         if not child.is_dir():
@@ -872,9 +977,13 @@ def list_team_members(
             continue
         if active_only and not spec.get("active", True):
             continue
+        # Consultant window filter: exclude out-of-window consultants from
+        # active-resolution paths (they remain in the DB, just non-surfaced).
+        if active_only and not _consultant_in_window(spec, now):
+            continue
         if role and spec.get("default_role") != role:
             continue
-        out.append({
+        entry: dict = {
             "id": ent.id,
             "type": spec.get("type"),
             "name": spec.get("name"),
@@ -883,7 +992,11 @@ def list_team_members(
             "default_seniority": spec.get("default_seniority"),
             "active": spec.get("active", True),
             "path": str(ent.path) if ent.path else None,
-        })
+        }
+        if spec.get("type") == "consultant":
+            entry["engaged_for"] = spec.get("engaged_for")
+            entry["engagement_window"] = spec.get("engagement_window")
+        out.append(entry)
         if len(out) >= limit:
             break
     return out
@@ -986,6 +1099,24 @@ def get_interlocutor_runtime_binding(
             "error": f"configured team-member {member_id!r} not found",
         }
 
+    # --- Consultant window guard ----------------------------------------
+    # A consultant outside their engagement_window is non-resolvable in
+    # active-binding paths. They remain in the DB and are not auto-deactivated
+    # here — Scope closure handles that separately (see transition_scope hook).
+    if (ent.spec or {}).get("type") == "consultant" and not _consultant_in_window(
+        ent.spec or {}
+    ):
+        return {
+            "configured": True,
+            "scope": active.get("scope"),
+            "error": (
+                f"consultant {member_id!r} is outside their engagement_window "
+                "and cannot be resolved; extend engagement_window.ends_at "
+                "via update_team_member or await a new window."
+            ),
+            "out_of_window": True,
+        }
+
     # --- RoleSlot pre-step (Phase A) -----------------------------------
     # Look for a filled slot keyed by the interlocutor's default
     # (role, seniority) inside ``scope``. If found, the slot's
@@ -1079,8 +1210,17 @@ def update_team_member(
     exportable: bool | None = None,
     export_policy: dict | None = None,
     active: bool | None = None,
+    engagement_window: dict | None = None,
+    engaged_for: str | None = None,
+    auto_deactivate_on_scope_close: bool | None = None,
 ) -> dict:
-    """Update fields on an existing TeamMember. Only supplied fields change."""
+    """Update fields on an existing TeamMember. Only supplied fields change.
+
+    Consultant-specific updatable fields:
+      engagement_window:              extend or narrow the {starts_at, ends_at} window
+      engaged_for:                    reassign to a different SCOPE-id
+      auto_deactivate_on_scope_close: toggle the auto-deactivate flag
+    """
     root = paths.find_project_root()
     ent = _load_tm(root, id)
     if ent is None:
@@ -1102,6 +1242,23 @@ def update_team_member(
         ent.spec[k] = v
         updated.append(k)
 
+    # Consultant-specific fields — validate cross-field constraint after update.
+    if engagement_window is not None:
+        ent.spec["engagement_window"] = dict(engagement_window)
+        updated.append("engagement_window")
+    if engaged_for is not None:
+        ent.spec["engaged_for"] = engaged_for
+        updated.append("engaged_for")
+    if auto_deactivate_on_scope_close is not None:
+        ent.spec["auto_deactivate_on_scope_close"] = auto_deactivate_on_scope_close
+        updated.append("auto_deactivate_on_scope_close")
+
+    if updated:
+        # Re-validate consultant conditional fields with the post-update spec.
+        cond_errors = _validate_consultant_fields(ent.spec.get("type", ""), ent.spec)
+        if cond_errors:
+            return {"error": "consultant field validation failed", "details": cond_errors}
+
     if not updated:
         return {"ok": True, "id": ent.id, "updated": []}
 
@@ -1118,6 +1275,12 @@ def update_team_member(
             db.close()
     except Exception:
         pass
+    log.log_side_effect(
+        "TeamMember", ent.id, "team_member.updated",
+        f"Updated TeamMember {ent.id!r}: fields {updated}",
+        root=root,
+        actor=ent.id,
+    )
     return {"ok": True, "id": ent.id, "updated": updated}
 
 
@@ -2063,6 +2226,179 @@ def check_all_consistency() -> dict:
     tm_root = paths.context_dir("TeamMember", root)
     assets = Path(__file__).resolve().parent.parent / "assets"
     return _consistency.check_all(root, tm_root, _pool_path(), assets)
+
+
+# ---------------------------------------------------------------------------
+# Consultant helpers — Scope-close hook + pk-team-review finding
+# ---------------------------------------------------------------------------
+
+def _auto_deactivate_consultants_for_scope(
+    root: Path,
+    scope_id: str,
+) -> list[dict]:
+    """Deactivate all active consultants engaged_for scope_id who have
+    auto_deactivate_on_scope_close=true.
+
+    Called from transition_scope (scope-management) when the Scope moves
+    to a terminal state (completed|cancelled|closed).
+
+    Returns a list of deactivation records:
+      [{team_member_id, slug, left_at, skipped_reason?}]
+    """
+    tm_root = paths.context_dir("TeamMember", root)
+    results: list[dict] = []
+    if not tm_root.is_dir():
+        return results
+
+    now_str = _now_iso()
+
+    for child in sorted(tm_root.iterdir()):
+        if not child.is_dir():
+            continue
+        p = child / "team-member.md"
+        if not p.is_file():
+            continue
+        try:
+            ent = entity.load(p)
+        except Exception:
+            continue
+        if ent.kind != "TeamMember":
+            continue
+        spec = ent.spec or {}
+        if spec.get("type") != "consultant":
+            continue
+        if spec.get("engaged_for") != scope_id:
+            continue
+        if not spec.get("active", True):
+            # Already inactive — skip.
+            results.append({
+                "team_member_id": ent.id,
+                "slug": spec.get("slug"),
+                "skipped_reason": "already inactive",
+            })
+            continue
+        if not spec.get("auto_deactivate_on_scope_close", True):
+            # Opt-out flag set — skip.
+            results.append({
+                "team_member_id": ent.id,
+                "slug": spec.get("slug"),
+                "skipped_reason": "auto_deactivate_on_scope_close=false",
+            })
+            continue
+
+        # Deactivate.
+        ent.spec["active"] = False
+        ent.spec["left_at"] = now_str
+        ent.write()
+        try:
+            db = index.open_db()
+            try:
+                index.upsert_entity(db, ent)
+            finally:
+                db.close()
+        except Exception:
+            pass
+
+        log.log_side_effect(
+            "TeamMember", ent.id, "team_member.auto_deactivated",
+            f"Auto-deactivated consultant {ent.id!r} on Scope {scope_id!r} close",
+            root=root,
+            actor=ent.id,
+            details={"closing_scope": scope_id},
+        )
+        results.append({
+            "team_member_id": ent.id,
+            "slug": spec.get("slug"),
+            "left_at": now_str,
+            "deactivated": True,
+        })
+
+    return results
+
+
+def _find_expired_active_consultants(root: Path) -> list[dict]:
+    """Return active consultants whose engagement_window.ends_at is in the past.
+
+    Used by pk-team-review to surface the team.consultant.expired_but_active
+    finding (severity: warning).
+    """
+    tm_root = paths.context_dir("TeamMember", root)
+    now = _now_utc()
+    findings: list[dict] = []
+    if not tm_root.is_dir():
+        return findings
+
+    for child in sorted(tm_root.iterdir()):
+        if not child.is_dir():
+            continue
+        p = child / "team-member.md"
+        if not p.is_file():
+            continue
+        try:
+            ent = entity.load(p)
+        except Exception:
+            continue
+        if ent.kind != "TeamMember":
+            continue
+        spec = ent.spec or {}
+        if spec.get("type") != "consultant":
+            continue
+        if not spec.get("active", True):
+            continue  # already inactive; not the expired-but-active case
+        window = spec.get("engagement_window") or {}
+        ends_str = window.get("ends_at")
+        if not ends_str:
+            continue
+        ends = _parse_iso_dt(ends_str)
+        if ends is None:
+            continue
+        if ends.tzinfo is not None and now.tzinfo is None:
+            now_cmp = now.replace(tzinfo=_dt.timezone.utc)
+        else:
+            now_cmp = now
+        if ends < now_cmp:
+            findings.append({
+                "code": "team.consultant.expired_but_active",
+                "severity": "warning",
+                "team_member_id": ent.id,
+                "slug": spec.get("slug"),
+                "name": spec.get("name"),
+                "engaged_for": spec.get("engaged_for"),
+                "engagement_window_ends_at": ends_str,
+                "action": (
+                    "deactivate or extend engagement_window via update_team_member"
+                ),
+            })
+    return findings
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def query_consultant_findings() -> dict:
+    """Return pk-team-review findings for consultant TeamMembers.
+
+    Emits finding code 'team.consultant.expired_but_active' (severity:
+    warning) for every active consultant whose engagement_window.ends_at
+    is in the past.
+
+    Output is suitable for inclusion in the pk-team-review diff report.
+    Invoke this from the pk-team-review workflow (Step 6, emit diff report).
+    """
+    root = paths.find_project_root()
+    findings = _find_expired_active_consultants(root)
+    return {
+        "findings": findings,
+        "count": len(findings),
+        "summary": (
+            f"{len(findings)} expired-but-active consultant(s) found"
+            if findings
+            else "no expired-but-active consultants"
+        ),
+    }
 
 
 if __name__ == "__main__":

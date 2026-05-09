@@ -79,6 +79,15 @@ model-recommender.check_availability()
 Flag any currently-assigned model whose availability is `degraded`
 or `major_outage`.
 
+### Step 5b — Check consultant engagement windows
+
+Call `team-manager.query_consultant_findings()`.
+
+This returns findings with code `team.consultant.expired_but_active`
+(severity: warning) for every active TeamMember where `type=consultant`
+AND `engagement_window.ends_at < now`. Include the findings in the diff
+report (see CONSULTANT WARNINGS section below). This step is read-only.
+
 ### Step 6 — Emit diff report
 
 Output format (stdout only — no files written). Each row is keyed by
@@ -114,6 +123,11 @@ NEW OUTPERFORMERS:
     <new-model-id> (score 0.52) outperforms current
     <model-id> (score 0.31) by 0.21 — within light tier, no tier-shift
 
+CONSULTANT WARNINGS [team.consultant.expired_but_active]:
+  <TEAMMEMBER-slug> (<name>, engaged_for: <SCOPE-id>):
+    engagement_window ended <ends_at> — still active
+    → deactivate or extend engagement_window via update_team_member
+
 STABLE (no action needed):
   project-manager, senior-architect, senior-researcher,
   junior-architect, junior-researcher
@@ -121,12 +135,15 @@ STABLE (no action needed):
 SUMMARY:
   2 archetypes recommended for rebalance
   1 archetype urgently needs replacement (major_outage)
+  1 consultant with expired engagement window (see CONSULTANT WARNINGS)
   Run: pk-team-rebalance --roles developer,junior-developer --confirm \
        --reason "<reason>"
 =============================
 ```
 
 Omit empty sections. Always emit the SUMMARY even if no issues found.
+Include a count of consultant warnings in the SUMMARY line even when
+no other issues are detected.
 
 ## State side-effects
 
