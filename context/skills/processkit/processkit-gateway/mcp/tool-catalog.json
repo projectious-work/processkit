@@ -3230,7 +3230,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Fetch a single entity by ID.\n\nAccepts a full ID, a prefix (missing slug), or a bare word-pair.\nReturns ``{\"error\": \"...\"}`` if not found or ambiguous.\n",
+      "description": "Fetch a single entity by ID.\n\nAccepts a full ID, a prefix (missing slug), or a bare word-pair.\nReturns ``{\"error\": \"...\"}`` if not found or ambiguous.\n\nAdds ``v1_penalty_applied`` and ``v1_successor_hint`` to the result\nwhen the entity is a v1 primitive (BACK-20260509_1318-WarmOak).\n",
       "name": "get_entity",
       "output_schema": null,
       "parameters": {
@@ -3361,7 +3361,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "List entities matching the filters.\n\nParameters\n----------\nkind: optional primitive kind (e.g. \"WorkItem\", \"DecisionRecord\").\nstate: optional state to filter by.\nlimit: maximum rows to return (default 50).\n",
+      "description": "List entities matching the filters.\n\nParameters\n----------\nkind: optional primitive kind (e.g. \"WorkItem\", \"DecisionRecord\").\nstate: optional state to filter by.\nlimit: maximum rows to return (default 50).\n\nEach result is annotated with ``v1_penalty_applied`` and\n``v1_successor_hint`` (BACK-20260509_1318-WarmOak). Results are\nordered by ``created DESC`` (no score), so the penalty is surfaced\nas annotation only \u2014 no re-ranking is applied.\n",
       "name": "query_entities",
       "output_schema": {
         "properties": {
@@ -3544,7 +3544,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Full-text search across entity IDs, titles, bodies, and specs.",
+      "description": "Full-text search across entity IDs, titles, bodies, and specs.\n\nApplies the v1-entity penalty (BACK-20260509_1318-WarmOak): results\nare FTS5-ranked, so we synthesise a per-rank score\n``1.0 / (1 + rank_index)`` and multiply it by ``_v1_penalty()`` for\nv1-superseded entries. Results are then re-sorted on the adjusted\nscore. Each row carries ``v1_penalty_applied``, ``v1_successor_hint``,\nand a ``v1_trace`` line analogous to the task-router trace surface.\n",
       "name": "search_entities",
       "output_schema": {
         "properties": {
@@ -6390,7 +6390,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Route a task to the matching processkit skill, process override,\nand MCP tool \u2014 in a single call, without an LLM.\n\nPrerequisite: call this tool at the start of any processkit domain\ntask \u2014 before calling create_*, transition_*, link_*, or record_*\ntools \u2014 to confirm the right skill and any project-specific process\noverride for this derived project.\n\nTwo-phase heuristic routing:\n  Phase 1 \u2014 keyword match to a domain group (eliminates ~90 %\n             of candidates; no LLM needed).\n  Phase 2 \u2014 token-overlap or local embedding-style scoring within the\n             matched group's tools.\n  Fallback \u2014 skill-finder trigger-phrase table for cross-domain\n             tasks not covered by any domain group.\n\nWhen ``confidence < 0.5`` (routing_basis == \"needs_llm_confirm\"),\nsurface ``candidate_tools`` to the user or an LLM for confirmation.\nIf ``allow_llm_escalation`` is true, the response includes the\nconfigured fast-model class hint, but this server does not make\nprovider network calls itself. The router never blocks \u2014 it always\nreturns its best guess. 1% rule: if there is a 1% chance a processkit\nskill covers this task, call route_task before acting.\n\nParameters\n----------\ntask_description :\n    What the agent or user wants to do, in natural language.\n    More specific phrasing \u2192 better match quality.\n\nReturns\n-------\nOn match:\n  skill                    \u2014 processkit skill name to load\n  skill_description_excerpt \u2014 first 150 chars of skill description\n  process_override         \u2014 legacy v1 path to a project-specific\n                             process file (only present when one exists)\n  process_override_status  \u2014 present with process_override; currently\n                             \"legacy-v1\"\n  server                   \u2014 MCP server to connect to\n  tool                     \u2014 recommended tool name\n  tool_qualified           \u2014 \"{server}__{tool}\" collision-safe form\n  domain_group             \u2014 routing group (workitem, decision, \u2026)\n  confidence               \u2014 0.0\u20131.0 combined routing confidence\n  routing_basis            \u2014 keyword_match | skill_finder_trigger_table\n                             | needs_llm_confirm\n  candidate_tools[]        \u2014 top-3 scored tools with rationales\n\nOn no match:\n  error, hint\n",
+      "description": "Route a task to the matching processkit skill, process override,\nand MCP tool \u2014 in a single call, without an LLM.\n\nPrerequisite: call this tool at the start of any processkit domain\ntask \u2014 before calling create_*, transition_*, link_*, or record_*\ntools \u2014 to confirm the right skill and any project-specific process\noverride for this derived project.\n\nTwo-phase heuristic routing:\n  Phase 1 \u2014 keyword match to a domain group (eliminates ~90 %\n             of candidates; no LLM needed).\n  Phase 2 \u2014 token-overlap or local embedding-style scoring within the\n             matched group's tools.\n  Fallback \u2014 skill-finder trigger-phrase table for cross-domain\n             tasks not covered by any domain group.\n\nWhen ``confidence < 0.5`` (routing_basis == \"needs_llm_confirm\"),\nsurface ``candidate_tools`` to the user or an LLM for confirmation.\nIf ``allow_llm_escalation`` is true, the response includes the\nconfigured fast-model class hint, but this server does not make\nprovider network calls itself. The router never blocks \u2014 it always\nreturns its best guess. 1% rule: if there is a 1% chance a processkit\nskill covers this task, call route_task before acting.\n\nParameters\n----------\ntask_description :\n    What the agent or user wants to do, in natural language.\n    More specific phrasing \u2192 better match quality.\n\nReturns\n-------\nOn match:\n  skill                    \u2014 processkit skill name to load\n  skill_description_excerpt \u2014 first 150 chars of skill description\n  process_override         \u2014 legacy v1 path to a project-specific\n                             process file (only present when one exists)\n  process_override_status  \u2014 present with process_override; currently\n                             \"legacy-v1\"\n  server                   \u2014 MCP server to connect to\n  tool                     \u2014 recommended tool name\n  tool_qualified           \u2014 \"{server}__{tool}\" collision-safe form\n  domain_group             \u2014 routing group (workitem, decision, \u2026)\n  confidence               \u2014 0.0\u20131.0 combined routing confidence\n  routing_basis            \u2014 keyword_match | skill_finder_trigger_table\n                             | needs_llm_confirm\n  candidate_tools[]        \u2014 top-3 scored tools with rationales\n  recommended_team_member_slug \u2014 slug of the highest-priority active\n                             TeamMember whose default_role matches\n                             the routed group's preferred role, or\n                             None when no binding resolves. Use this\n                             as the sub-agent's identity at dispatch\n                             (per the compliance contract sub-agent-\n                             dispatch clause).\n  recommended_model_class  \u2014 \"fast\" | \"deep\" | None. Hint for picking\n                             the cheapest concrete model in the class\n                             (Haiku < Sonnet < Opus) when dispatching\n                             a sub-agent. Currently a static per-\n                             group mapping; future revisions may\n                             derive this from skill metadata.\n\nOn no match:\n  error, hint\n",
       "name": "route_task",
       "output_schema": null,
       "parameters": {
@@ -6495,6 +6495,142 @@
       "source_server_path": "processkit/team-manager/mcp/server.py",
       "source_skill": "team-manager",
       "source_tool": "check_consistency",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Close a RoleSlot. Terminal \u2014 re-opening requires a new SLOT-id.\n\n``open|filled \u2192 closed`` is always allowed; closing an already\n``closed`` slot is a no-op (idempotent).\n",
+      "name": "close_role_slot",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "close_role_slotArguments",
+        "type": "object"
+      },
+      "permission_class": "destructive-write",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "close_role_slot",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Open a new RoleSlot under a chartering Scope.\n\nParameters\n----------\nscope:                  SCOPE-<id> the slot belongs to (mandatory)\nrole:                   ROLE-<id> from the catalog\nseniority:              junior|specialist|expert|senior|principal\nrank:                   1=primary, 2..N=parallel reservations\nrationale:              one-line reason this slot exists\ndefault_model_profile:  optional Layer 8 fallback for ephemeral\n                        dispatches that never fill the slot\neffort_floor:           optional dispatch floor\neffort_ceiling:         optional dispatch ceiling\n\nReturns ``{id, path, state}`` on success.\n",
+      "name": "create_role_slot",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "default_model_profile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Default Model Profile"
+          },
+          "effort_ceiling": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Effort Ceiling"
+          },
+          "effort_floor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Effort Floor"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "scope": {
+            "title": "Scope",
+            "type": "string"
+          },
+          "seniority": {
+            "title": "Seniority",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope",
+          "role",
+          "seniority",
+          "rank",
+          "rationale"
+        ],
+        "title": "create_role_slotArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "create_role_slot",
       "title": null
     },
     {
@@ -6824,6 +6960,81 @@
     {
       "annotations": {
         "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Place an active TeamMember into an open RoleSlot.\n\nSets ``state=filled``, ``filled_by=TEAMMEMBER-<slug>``, and creates\na parallel ``role-slot-fill`` Binding so time-bounded dispatch\nqueries continue to work through binding-management.\n\nReturns\n-------\nOn success: ``{ok: True, id, state, filled_by, binding_id, binding_path}``\nOn error:   ``{error, details?}``\n",
+      "name": "fill_role_slot",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rationale"
+          },
+          "team_member_slug": {
+            "title": "Team Member Slug",
+            "type": "string"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid Until"
+          }
+        },
+        "required": [
+          "id",
+          "team_member_slug"
+        ],
+        "title": "fill_role_slotArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "fill_role_slot",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
         "readOnlyHint": true
@@ -6872,7 +7083,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Return active interlocutor identity plus runtime binding status.\n\n`observed_model` and `observed_effort` are caller-supplied facts from\nthe current harness. processkit cannot read or hot-swap the already\nrunning primary model, so mismatch reporting is informational.\n",
+      "description": "Return active interlocutor identity plus runtime binding status.\n\n`observed_model` and `observed_effort` are caller-supplied facts from\nthe current harness. processkit cannot read or hot-swap the already\nrunning primary model, so mismatch reporting is informational.\n\nPhase A team-creator v2 \u2014 RoleSlot pre-step:\n    Before falling through to the existing 8-layer model-assignment\n    binding precedence, this tool checks whether the active\n    interlocutor's (default_role, default_seniority, scope) matches\n    a RoleSlot in state=filled. If it does, the slot's filled_by\n    TeamMember and (TeamMember.default_seniority || slot.seniority)\n    are surfaced in ``binding.roleslot_pre_step``. The existing\n    8-layer logic still runs unchanged underneath\n    (DEC-20260509_1906-CoolBadger Q1).\n\n    When no slot matches the triple, ``roleslot_pre_step`` is\n    absent and the response is identical to pre-RoleSlot\n    behaviour \u2014 the existing 8-layer resolver is fully\n    responsible. This keeps Phase A additive and reversible.\n",
       "name": "get_interlocutor_runtime_binding",
       "output_schema": null,
       "parameters": {
@@ -6934,6 +7145,40 @@
       "source_server_path": "processkit/team-manager/mcp/server.py",
       "source_skill": "team-manager",
       "source_tool": "get_interlocutor_runtime_binding",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return the full RoleSlot entity by ID.",
+      "name": "get_role_slot",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "get_role_slotArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "get_role_slot",
       "title": null
     },
     {
@@ -7090,6 +7335,90 @@
       "source_server_path": "processkit/team-manager/mcp/server.py",
       "source_skill": "team-manager",
       "source_tool": "list_available_names",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "List RoleSlots under context/roleslots/, optionally filtered.\n\nFilters\n-------\nscope:  match SCOPE-<id> exactly\nrole:   match ROLE-<id> exactly\nstate:  open | filled | closed\n",
+      "name": "list_role_slots",
+      "output_schema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_role_slotsOutput",
+        "type": "object"
+      },
+      "parameters": {
+        "properties": {
+          "limit": {
+            "default": 200,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Role"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "State"
+          }
+        },
+        "title": "list_role_slotsArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "list_role_slots",
       "title": null
     },
     {
