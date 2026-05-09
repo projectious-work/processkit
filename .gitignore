@@ -83,3 +83,6 @@ context/private/
 .continue/mcpServers/
 
 .claude/settings.local.json
+
+.agents/skills/
+.codex/hooks.json

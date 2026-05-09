@@ -373,12 +373,140 @@ COMMAND_SIGNAL_THRESHOLD = 0.62
 LOW_CONFIDENCE_FALLBACK_THRESHOLD = 0.5
 
 # ---------------------------------------------------------------------------
+# v1 → v2 successor table (BACK-20260509_1318-WarmOak / GH #21)
+# ---------------------------------------------------------------------------
+# Down-weight router candidates that point at v1 skills when a v2 successor
+# skill exists for the same primitive kind. The penalty is configurable
+# per-project via mcp/user_config.json (see _v1_penalty()); default 0.3.
+#
+# Keys are skill names whose SKILL.md frontmatter declares
+# `apiVersion: processkit.projectious.work/v1`. Values are the v2 successor
+# skill(s) the agent should consider instead.
+V1_SUCCESSOR_SKILLS: dict[str, list[str]] = {
+    "process-management": ["scope-management", "gate-management"],
+    "state-machine-management": ["scope-management", "gate-management"],
+}
+
+# Keys are DOMAIN_GROUPS group names whose tools target v1 primitive kinds
+# (e.g. the `actor` group surfaces create_actor for the v1 Actor entity).
+# Successors point at v2 skills.
+V1_SUCCESSOR_GROUPS: dict[str, list[str]] = {
+    "actor": ["team-manager"],
+}
+
+DEFAULT_V1_PENALTY = 0.3
+
+# ---------------------------------------------------------------------------
+# Sub-agent dispatch hints (BACK-20260509_1317-WildPanda P2)
+# ---------------------------------------------------------------------------
+# Maps domain group → preferred ROLE-<slug> for sub-agent identity.
+# Used by `_recommend_team_member()` to surface a TeamMember whose
+# `default_role` matches when no skill-level binding exists. Conservative:
+# only groups with a clear product/engineering/PM owner are mapped; the
+# rest fall through to None.
+GROUP_PREFERRED_ROLE: dict[str, str] = {
+    "workitem": "ROLE-product-manager",
+    "decision": "ROLE-product-manager",
+    "discussion": "ROLE-product-manager",
+    "scope": "ROLE-product-manager",
+    "retro": "ROLE-product-manager",
+}
+
+# Group → recommended model class. Routing surfaces this so callers
+# dispatching sub-agents can pick the cheapest model in the class
+# (Haiku < Sonnet < Opus). Defaults to "fast" for read-only / classifier
+# work; "deep" is reserved for cross-cutting reasoning. The class names
+# match the keys under model-recommender's user_config.json.
+GROUP_MODEL_CLASS: dict[str, str] = {
+    "workitem": "fast",
+    "decision": "deep",
+    "discussion": "deep",
+    "event": "fast",
+    "actor": "fast",
+    "scope": "fast",
+    "index": "fast",
+    "skill": "fast",
+    "gate": "fast",
+    "model": "fast",
+    "id": "fast",
+    "role": "fast",
+    "retro": "deep",
+    "binding": "fast",
+}
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
 def _project_root() -> Path:
     return paths.find_project_root()
+
+
+def _v1_penalty() -> float:
+    """Return the configured v1-entity score multiplier.
+
+    Reads ``v1_entity_penalty`` from
+    ``context/skills/processkit/task-router/mcp/user_config.json``.
+    Default ``DEFAULT_V1_PENALTY`` (0.3). Set to 1.0 to disable
+    (projects intentionally on v1 should disable).
+    """
+    cfg_path = (
+        _project_root()
+        / "context" / "skills" / "processkit"
+        / "task-router" / "mcp" / "user_config.json"
+    )
+    try:
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    except Exception:
+        return DEFAULT_V1_PENALTY
+    val = cfg.get("v1_entity_penalty")
+    try:
+        penalty = float(val)
+    except (TypeError, ValueError):
+        return DEFAULT_V1_PENALTY
+    if penalty < 0.0 or penalty > 1.0:
+        return DEFAULT_V1_PENALTY
+    return penalty
+
+
+def _skill_is_v1(skill_name: str) -> bool:
+    """True iff the skill's SKILL.md declares apiVersion ...v1."""
+    if skill_name in V1_SUCCESSOR_SKILLS:
+        return True
+    skills_root = _project_root() / "context" / "skills"
+    for cat_dir in skills_root.iterdir():
+        if not cat_dir.is_dir() or cat_dir.name.startswith("_"):
+            continue
+        skill_md = cat_dir / skill_name / "SKILL.md"
+        if not skill_md.exists():
+            continue
+        try:
+            text = skill_md.read_text(encoding="utf-8")
+        except Exception:
+            return False
+        # Cheap top-level apiVersion: line check (avoid yaml import here)
+        for line in text.splitlines():
+            s = line.strip()
+            if s.startswith("apiVersion:"):
+                return s.endswith("/v1")
+            if s == "---" and "apiVersion:" not in text[:512]:
+                return False
+        return False
+    return False
+
+
+def _v1_successors(*, skill: str | None = None, group: str | None = None) -> list[str]:
+    """Return v2 successor skill names for a v1 skill or v1 domain group."""
+    if skill and skill in V1_SUCCESSOR_SKILLS:
+        return list(V1_SUCCESSOR_SKILLS[skill])
+    if group and group in V1_SUCCESSOR_GROUPS:
+        return list(V1_SUCCESSOR_GROUPS[group])
+    if skill and _skill_is_v1(skill):
+        # Skill marked v1 but not in successor table: no concrete successor,
+        # still penalise so v2 candidates win when present.
+        return []
+    return []
 
 
 def _score_tokens(task: str, phrases: list[str]) -> float:
@@ -553,6 +681,12 @@ def _command_route_result(
         "scoring_basis": {"command": basis},
         "matched_signals": matched,
         "source": spec.get("source"),
+        "recommended_team_member_slug": _recommend_team_member(
+            _group_for_skill(skill_name)
+        ),
+        "recommended_model_class": _recommend_model_class(
+            _group_for_skill(skill_name)
+        ),
     }
     po = _find_process_override(skill_name)
     if po:
@@ -571,6 +705,93 @@ def _command_route_result(
             for sc, cand, cand_basis, cand_matched in candidates[:5]
         ]
     return result
+
+
+def _list_active_team_members() -> list[dict]:
+    """Cheap roster read: parse team-member.md frontmatter under
+    context/team-members/. Avoids importing the team-manager package
+    (this server stays a leaf-skill stdio MCP). Returns dicts with
+    slug, default_role, default_seniority, active.
+    """
+    tm_root = _project_root() / "context" / "team-members"
+    if not tm_root.is_dir():
+        return []
+    out: list[dict] = []
+    for child in sorted(tm_root.iterdir()):
+        if not child.is_dir():
+            continue
+        p = child / "team-member.md"
+        if not p.is_file():
+            continue
+        fm, _ = _frontmatter_and_body(p)
+        if not isinstance(fm, dict):
+            continue
+        spec = fm.get("spec") if isinstance(fm.get("spec"), dict) else {}
+        if not spec.get("active", True):
+            continue
+        out.append({
+            "slug": spec.get("slug") or child.name,
+            "default_role": spec.get("default_role"),
+            "default_seniority": spec.get("default_seniority"),
+            "type": spec.get("type"),
+        })
+    return out
+
+
+# Pure-ordinal seniority ranking (DEC-20260422_0234-BraveFalcon).
+_SENIORITY_RANK = {
+    "principal": 5,
+    "senior": 4,
+    "expert": 3,
+    "specialist": 2,
+    "junior": 1,
+}
+
+
+def _recommend_team_member(domain_group: str | None) -> str | None:
+    """Return the slug of the highest-priority active TeamMember whose
+    `default_role` matches the group's preferred role, or None.
+
+    Picks the highest seniority among matches; AI agents are preferred
+    over humans (humans typically only dispatch as ad-hoc owners).
+    """
+    if not domain_group:
+        return None
+    role = GROUP_PREFERRED_ROLE.get(domain_group)
+    if not role:
+        return None
+    candidates = [
+        tm for tm in _list_active_team_members()
+        if tm.get("default_role") == role
+    ]
+    if not candidates:
+        return None
+    candidates.sort(
+        key=lambda tm: (
+            tm.get("type") != "ai-agent",  # ai-agent first
+            -_SENIORITY_RANK.get(tm.get("default_seniority") or "", 0),
+        )
+    )
+    return candidates[0].get("slug")
+
+
+def _recommend_model_class(domain_group: str | None) -> str | None:
+    if not domain_group:
+        return None
+    return GROUP_MODEL_CLASS.get(domain_group)
+
+
+def _group_for_skill(skill_name: str | None) -> str | None:
+    """Reverse-lookup: skill name → first DOMAIN_GROUPS entry that owns
+    the skill. Used by the command-route path so commands surface the
+    same TeamMember/model-class hints as their underlying domain group.
+    """
+    if not skill_name:
+        return None
+    for name, g in DOMAIN_GROUPS.items():
+        if g.get("skill") == skill_name:
+            return name
+    return None
 
 
 def _cheap_model_hint() -> dict:
@@ -595,13 +816,34 @@ def _cheap_model_hint() -> dict:
     }
 
 
-def _phase1_groups(task: str, scoring_mode: str = "auto") -> list[tuple[float, str, str]]:
-    """Score all domain groups. Returns [(score, group_name, basis)]."""
+def _phase1_groups(
+    task: str,
+    scoring_mode: str = "auto",
+    trace: list[str] | None = None,
+) -> list[tuple[float, str, str]]:
+    """Score all domain groups. Returns [(score, group_name, basis)].
+
+    Applies the v1-entity penalty (BACK-20260509_1318-WarmOak): groups
+    whose tools target v1 primitive kinds with v2 successors get their
+    score multiplied by ``_v1_penalty()``. When ``trace`` is supplied,
+    appends a one-line note for each penalised group.
+    """
+    penalty = _v1_penalty()
     scored = []
     for name, g in DOMAIN_GROUPS.items():
         score, basis = _score_phrases(task, g["keywords"], scoring_mode)
-        if score > 0:
-            scored.append((score, name, basis))
+        if score <= 0:
+            continue
+        if name in V1_SUCCESSOR_GROUPS and penalty < 1.0:
+            successors = V1_SUCCESSOR_GROUPS[name]
+            adjusted = score * penalty
+            if trace is not None:
+                trace.append(
+                    f"matched group '{name}'; v1-entity penalty {penalty} "
+                    f"applied; consider v2 successors: {', '.join(successors)}"
+                )
+            score = adjusted
+        scored.append((score, name, basis))
     scored.sort(key=lambda x: -x[0])
     return scored
 
@@ -673,10 +915,15 @@ def _find_process_override(skill_name: str) -> str | None:
     return None
 
 
-def _skill_finder_fallback(task: str) -> dict | None:
+def _skill_finder_fallback(
+    task: str, trace: list[str] | None = None
+) -> dict | None:
     """
     Fallback: parse skill-finder trigger table when group score < 0.3.
     Returns a partial result dict or None.
+
+    Applies the v1-entity penalty (BACK-20260509_1318-WarmOak) to skills
+    whose SKILL.md declares apiVersion ...v1 with a known v2 successor.
     """
     finder_md = (
         _project_root()
@@ -716,11 +963,26 @@ def _skill_finder_fallback(task: str) -> dict | None:
         ] or [parts[0].strip('"')]
         rows.append((phrases, skill))
 
-    scored = [
-        (sc, sk)
-        for phrases, sk in rows
-        if (sc := _score_tokens(task, phrases)) > 0
-    ]
+    penalty = _v1_penalty()
+    scored: list[tuple[float, str]] = []
+    for phrases, sk in rows:
+        sc = _score_tokens(task, phrases)
+        if sc <= 0:
+            continue
+        if penalty < 1.0 and (sk in V1_SUCCESSOR_SKILLS or _skill_is_v1(sk)):
+            successors = _v1_successors(skill=sk)
+            adjusted = sc * penalty
+            if trace is not None:
+                hint = (
+                    f"; consider v2 successors: {', '.join(successors)}"
+                    if successors else ""
+                )
+                trace.append(
+                    f"matched skill '{sk}'; v1-entity penalty {penalty} "
+                    f"applied{hint}"
+                )
+            sc = adjusted
+        scored.append((sc, sk))
     if not scored:
         return None
     scored.sort(key=lambda x: -x[0])
@@ -799,6 +1061,19 @@ def route_task(
       routing_basis            — keyword_match | skill_finder_trigger_table
                                  | needs_llm_confirm
       candidate_tools[]        — top-3 scored tools with rationales
+      recommended_team_member_slug — slug of the highest-priority active
+                                 TeamMember whose default_role matches
+                                 the routed group's preferred role, or
+                                 None when no binding resolves. Use this
+                                 as the sub-agent's identity at dispatch
+                                 (per the compliance contract sub-agent-
+                                 dispatch clause).
+      recommended_model_class  — "fast" | "deep" | None. Hint for picking
+                                 the cheapest concrete model in the class
+                                 (Haiku < Sonnet < Opus) when dispatching
+                                 a sub-agent. Currently a static per-
+                                 group mapping; future revisions may
+                                 derive this from skill metadata.
 
     On no match:
       error, hint
@@ -810,6 +1085,7 @@ def route_task(
         return {"error": "scoring_mode must be auto, token, or embedding"}
     signals = [str(s).strip() for s in (intent_signals or []) if str(s).strip()]
     scored_task = " ".join([task, *signals])
+    trace: list[str] = []
 
     command_candidates = _command_scores(scored_task, scoring_mode)
     if (
@@ -830,11 +1106,13 @@ def route_task(
         return result
 
     # ── Phase 1: domain group scoring ─────────────────────────────────────
-    group_scores = _phase1_groups(scored_task, scoring_mode=scoring_mode)
+    group_scores = _phase1_groups(
+        scored_task, scoring_mode=scoring_mode, trace=trace
+    )
 
     if not group_scores or group_scores[0][0] < 0.3:
         # Fallback: skill-finder trigger table
-        fb = _skill_finder_fallback(scored_task)
+        fb = _skill_finder_fallback(scored_task, trace=trace)
         if fb:
             po = _find_process_override(fb["skill"])
             result = dict(fb)
@@ -845,6 +1123,15 @@ def route_task(
                 "No domain group matched; routed via skill-finder trigger "
                 "table. Load the skill SKILL.md before proceeding."
             )
+            inferred_group = _group_for_skill(fb.get("skill"))
+            result["recommended_team_member_slug"] = (
+                _recommend_team_member(inferred_group)
+            )
+            result["recommended_model_class"] = (
+                _recommend_model_class(inferred_group)
+            )
+            if trace:
+                result["trace"] = list(trace)
             return result
         return {
             "error": "no matching skill or tool found",
@@ -878,7 +1165,7 @@ def route_task(
 
     fallback = None
     if confidence < LOW_CONFIDENCE_FALLBACK_THRESHOLD:
-        fallback = _skill_finder_fallback(scored_task)
+        fallback = _skill_finder_fallback(scored_task, trace=trace)
         if fallback and fallback.get("confidence", 0) >= confidence:
             po = _find_process_override(fallback["skill"])
             result = dict(fallback)
@@ -894,6 +1181,12 @@ def route_task(
                 "domain_group": best_group,
                 "confidence": confidence,
             }
+            result["recommended_team_member_slug"] = (
+                _recommend_team_member(best_group)
+            )
+            result["recommended_model_class"] = (
+                _recommend_model_class(best_group)
+            )
             if command_candidates:
                 result["candidate_routes"] = [
                     {
@@ -924,6 +1217,8 @@ def route_task(
                     ),
                     **hint,
                 }
+            if trace:
+                result["trace"] = list(trace)
             return result
 
     # ── Skill description excerpt ──────────────────────────────────────────
@@ -968,6 +1263,8 @@ def route_task(
         "routing_basis": routing_basis,
         "scoring_basis": {"group": group_basis, "tool": tool_basis},
         "candidate_tools": candidates,
+        "recommended_team_member_slug": _recommend_team_member(best_group),
+        "recommended_model_class": _recommend_model_class(best_group),
     }
     if signals:
         result["intent_signals"] = signals
@@ -1012,6 +1309,9 @@ def route_task(
             ),
             **hint,
         }
+
+    if trace:
+        result["trace"] = list(trace)
 
     return result
 

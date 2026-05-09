@@ -44,7 +44,7 @@ spec:
   deciders: [<ACTOR-id>, ...]
   decided_at: <ISO-8601>
 
-  # ── OpenWeave extension fields ──────────────────────────────────────
+  # ── team-creator override extension fields ──────────────────────────
   applies_to: team-creator             # discriminator; must be this value
 
   weight_overrides:                    # OPTIONAL block; omit to keep defaults

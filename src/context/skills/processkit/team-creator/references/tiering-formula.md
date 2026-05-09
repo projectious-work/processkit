@@ -2,7 +2,7 @@
 
 ## Dimensions and default weights
 
-**Defaults rebalanced 2026-04-15 after Phase 3 dogfood (see ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff §7).** Capability weight raised from 0.40 to 0.60 to prevent tier inversion on same-provider candidate sets where cost and capability are anti-correlated.
+**Defaults rebalanced 2026-04-15 after the 2026-04-15 internal review (see ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff §7).** Capability weight raised from 0.40 to 0.60 to prevent tier inversion on same-provider candidate sets where cost and capability are anti-correlated.
 
 | Dim | Symbol | Source fields (from model-recommender) | Default weight |
 |---|---|---|---|

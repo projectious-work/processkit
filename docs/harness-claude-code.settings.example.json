@@ -1,0 +1,53 @@
+{
+  "_comment": [
+    "Example Claude Code settings recommended for processkit projects.",
+    "",
+    "This file is documentation, not active configuration — Claude Code",
+    "loads .claude/settings.json (project) and ~/.claude/settings.json",
+    "(user). Copy the keys below into the appropriate file by hand;",
+    "do not symlink or merge automatically: .claude/settings.json is",
+    "rewritten by the processkit installer on every release.",
+    "",
+    "Originally proposed location was .claude/settings.example.json, but",
+    "the harness sandbox blocks unattended writes under .claude/. Keeping",
+    "this file in docs/ makes it visible without touching live settings.",
+    "",
+    "See docs/harness-claude-code.md for rationale and rollout notes."
+  ],
+
+  "_skillOverrides_comment": [
+    "skillOverrides: tell Claude Code to load a one-line description for",
+    "these skills instead of the full SKILL.md. Saves ~2-4k tokens per",
+    "session for skills that are rarely invoked but verbose. The skill",
+    "is still discoverable via /pk-* commands and find_skill, and is",
+    "loaded in full when explicitly invoked."
+  ],
+  "skillOverrides": {
+    "skill-builder": {
+      "mode": "name-only",
+      "description": "Author a new processkit skill (interview + scaffolding)."
+    },
+    "skill-reviewer": {
+      "mode": "name-only",
+      "description": "Audit an existing processkit skill against the 5 Skill Killers."
+    },
+    "team-creator": {
+      "mode": "name-only",
+      "description": "Bootstrap or rebalance a provider-neutral AI team."
+    },
+    "agent-management": {
+      "mode": "name-only",
+      "description": "Multi-agent workflow orchestration: decomposition, handoffs, budgeting."
+    }
+  },
+
+  "_env_comment": [
+    "env: harness environment variables. ENABLE_TOOL_SEARCH=auto turns on",
+    "Claude Code's deferred-tool-search: tool schemas are hidden behind a",
+    "search until needed, saving substantial token budget on sessions",
+    "with many MCP servers (the processkit gateway alone exposes 130+)."
+  ],
+  "env": {
+    "ENABLE_TOOL_SEARCH": "auto"
+  }
+}
