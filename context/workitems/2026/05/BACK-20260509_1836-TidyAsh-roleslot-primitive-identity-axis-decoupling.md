@@ -14,9 +14,10 @@ metadata:
     model_class: deep
     owner_role: ROLE-software-engineer/senior
     blocked_until: open-questions-1-2-3
+  updated: '2026-05-09T21:27:36+00:00'
 spec:
   title: 'team-creator v2 SUB-1: RoleSlot primitive + identity-axis decoupling'
-  state: backlog
+  state: in-progress
   type: task
   priority: high
   description: 'Foundational sub-item of VastVale (gh#20). Add SCHEMA-roleslot v1.0.0
@@ -30,4 +31,9 @@ spec:
     BLOCKED until owner answers open questions 1, 2, 3 (RoleSlot ownership skill;
     v0.16.0 fields cleanup; personality/memory on consultants).'
   parent: BACK-20260509_1318-VastVale-team-creator-v2-5-design-gaps
+  started_at: '2026-05-09T21:27:36+00:00'
 ---
+
+## Transition note (2026-05-09T21:27:36+00:00)
+
+Wave 4 SUB-1 dispatch — TEAMMEMBER-finn (ROLE-software-engineer/senior) on Sonnet 4.5. Foundational RoleSlot primitive + identity-axis decoupling. Working on a fresh branch off main; PR #24 (the cluster work-down) is the immediate ancestor for context, but SUB-1 lands as a separate PR.
