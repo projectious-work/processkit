@@ -84,7 +84,7 @@ existing skills — no new primitives or MCP tools are introduced.
 
 ### Tiering formula (summary)
 
-**Defaults rebalanced 2026-04-15 after Phase 3 dogfood (see ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff §7).** Capability weight raised from 0.40 to 0.60 to prevent tier inversion on same-provider candidate sets where cost and capability are anti-correlated.
+**Defaults rebalanced 2026-04-15 after the 2026-04-15 internal review (see ART-20260415_1545-TeamWeaver-team-creator-dogfood-diff §7).** Capability weight raised from 0.40 to 0.60 to prevent tier inversion on same-provider candidate sets where cost and capability are anti-correlated.
 
 | Dim | Weight | Source |
 |---|---|---|
@@ -179,7 +179,7 @@ DecisionRecord's `progress_notes` are amended instead.
   name, or tier label anywhere in this skill. All identifiers flow
   in from `model-recommender`.
 
-- **Override audit trails (OpenWeave layers 1–4).** Each override
+- **Override audit trails (override layers 1–4).** Each override
   layer produces a distinct audit entry in the chartering team
   DecisionRecord's `inputs_snapshot`:
   - Layer 1 (landscape): `landscape_artifact_source` records
@@ -312,7 +312,7 @@ governing DecisionRecord's `progress_notes` are amended with the
 upstream skills above. This is what keeps `provides.primitives: []`
 and `provides.mcp_tools: []` in the frontmatter honest.
 
-### OpenWeave 4-layer override model (data sources)
+### 4-layer override model (data sources)
 
 | Layer | What | Where it lives | Audit field in chartering DEC |
 |---|---|---|---|
@@ -418,7 +418,7 @@ weights, thresholds, or pins. `inputs_snapshot.tier_scores` is what
   `{C, K, L, G}`); update `weights` schema in `inputs_snapshot`,
   the worked example in `references/tiering-formula.md`, and the
   validation rule that weights sum to 1.0 ± 0.001.
-- **New override layer.** Add a layer-N row to the OpenWeave table,
+- **New override layer.** Add a layer-N row to the team-creator override layers table,
   define an audit field in `inputs_snapshot`, and document the
   precedence rule (CLI > DEC > defaults) for the new layer.
 

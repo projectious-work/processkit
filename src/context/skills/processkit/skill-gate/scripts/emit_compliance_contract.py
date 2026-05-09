@@ -6,10 +6,27 @@ Hooks guide: https://code.claude.com/docs/en/hooks-guide
 
 Purpose
 -------
-Emit the canonical compliance contract (assets/compliance-contract.md)
-to stdout so it lands in the current turn's context.  Wire this script
-as a SessionStart AND UserPromptSubmit hook in your harness config.
-aibox handles the wiring; see scripts/README.md for the target shape.
+Emit the processkit compliance contract to stdout so it lands in the
+current turn's context.  Wire this script as a SessionStart AND
+UserPromptSubmit hook in your harness config.
+
+To keep the per-turn token tax low, this script emits two different
+payloads depending on the hook event:
+
+* **SessionStart** — emit the *full* compliance contract
+  (assets/compliance-contract.md) so the assistant has the complete
+  positive-actions and prohibitions catalogue available for the rest of
+  the session.
+* **UserPromptSubmit** — emit only the slim hook-payload block delimited
+  by ``<!-- BEGIN HOOK -->`` and ``<!-- END HOOK -->`` markers in the
+  same file. ~12 lines of reminders + a pointer to the full file.
+
+A single source-of-truth file keeps audits trivial: edit
+``compliance-contract.md`` and both payloads update together. See
+``docs/harness-claude-code.md`` for the rationale.
+
+aibox handles the harness wiring; see scripts/README.md for the target
+shape.
 
 Claude Code detection
 ---------------------
@@ -59,6 +76,25 @@ _CLAUDE_CODE_ENV_INDICATORS = (
     "ANTHROPIC_CLAUDE_CODE",
 )
 
+_HOOK_BEGIN_MARKER = "<!-- BEGIN HOOK -->"
+_HOOK_END_MARKER = "<!-- END HOOK -->"
+
+
+def _extract_hook_block(contract_text: str) -> str:
+    """
+    Return the slim hook payload bracketed by BEGIN HOOK / END HOOK
+    markers in the contract file.
+
+    If either marker is missing, fall back to the full contract — this
+    keeps the per-turn injection useful even on a partially-edited file.
+    """
+    begin = contract_text.find(_HOOK_BEGIN_MARKER)
+    end = contract_text.find(_HOOK_END_MARKER)
+    if begin == -1 or end == -1 or end <= begin:
+        return contract_text
+    block = contract_text[begin + len(_HOOK_BEGIN_MARKER):end]
+    return block.strip("\n") + "\n"
+
 
 def _is_claude_code() -> bool:
     """Return True when we believe we're running inside Claude Code 2.1+."""
@@ -105,6 +141,14 @@ def main() -> int:
         return 1
 
     contract_text = _CONTRACT_PATH.read_text(encoding="utf-8")
+    event_name = _hook_event_name()
+
+    # SessionStart: full contract (one-shot, sets up the session).
+    # UserPromptSubmit: slim hook block (runs every turn).
+    if event_name == "UserPromptSubmit":
+        payload = _extract_hook_block(contract_text)
+    else:
+        payload = contract_text
 
     if _is_claude_code():
         # Claude Code 2.1.0+ preferred form: JSON envelope.
@@ -114,8 +158,8 @@ def main() -> int:
         output = json.dumps(
             {
                 "hookSpecificOutput": {
-                    "hookEventName": _hook_event_name(),
-                    "additionalContext": contract_text,
+                    "hookEventName": event_name,
+                    "additionalContext": payload,
                 }
             },
             ensure_ascii=False,
@@ -123,7 +167,7 @@ def main() -> int:
         print(output)
     else:
         # Plain stdout — works for Claude Code (legacy) and Codex CLI.
-        print(contract_text, end="")
+        print(payload, end="")
 
     return 0
 

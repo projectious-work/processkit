@@ -526,6 +526,44 @@ def _claude_frontmatter_model(
     return lines, {"binding": binding}
 
 
+def _claude_binding_summary_lines(
+    ent: entity.Entity,
+    model_policy: str,
+    model_details: dict | None,
+) -> list[str]:
+    """
+    Render a short HTML-comment-safe binding summary for the auto-
+    generated sub-agent file's header. Lines are returned with a
+    leading "  " indent so they slot inside an existing ``<!-- ... -->``
+    comment block. Empty list if no useful binding info is available
+    (e.g. ``model_policy=='inherit'`` and no resolved binding).
+    """
+    if not model_details or not isinstance(model_details, dict):
+        return []
+    binding = model_details.get("binding") or {}
+    if not isinstance(binding, dict):
+        return []
+    resolved = binding.get("resolved") or {}
+    if not isinstance(resolved, dict):
+        return []
+    parts: list[str] = []
+    family = resolved.get("family")
+    version = resolved.get("version_id")
+    provider = resolved.get("provider")
+    effort = resolved.get("effort")
+    if family or version:
+        model_str = f"{family}-{version}" if family and version else (family or version)
+        parts.append(f"  Resolved model: {model_str}")
+    if provider:
+        parts.append(f"  Provider: {provider}")
+    if effort:
+        parts.append(f"  Effort: {effort}")
+    klass = binding.get("model_class") or resolved.get("model_class")
+    if klass:
+        parts.append(f"  Model class: {klass}")
+    return parts
+
+
 def _claude_agent_prompt(root: Path, ent: entity.Entity) -> str:
     spec = ent.spec or {}
     slug = spec.get("slug") or ent.id.removeprefix("TEAMMEMBER-")
@@ -587,12 +625,32 @@ def _write_claude_agent(
         f"Use {spec.get('name')} for processkit work matching "
         f"{role}/{seniority}; derived from TeamMember {ent.id}."
     )
+
+    # Self-describing header comment so a reader (human or sub-agent
+    # auditor) can verify this file against the live roster without
+    # needing to re-resolve the binding. Keeps DaringRaven rec 6: bake
+    # TeamMember identity into export_claude_subagent.
+    binding_lines = _claude_binding_summary_lines(ent, model_policy, model_details)
+    header_comment_lines = [
+        "<!--",
+        "  processkit Claude Code sub-agent adapter (auto-generated).",
+        f"  TeamMember:  {ent.id}",
+        f"  Slug:        {slug}",
+        f"  Role:        {role}",
+        f"  Seniority:   {seniority}",
+        f"  Model policy: {model_policy}",
+        *binding_lines,
+        "  Source of truth: context/team-members/<slug>/. Re-run",
+        "  team-manager.export_claude_subagent to refresh.",
+        "-->",
+    ]
     body = [
         "---",
         f"name: {slug}",
         f"description: {_yaml_scalar(description)}",
         *model_lines,
         "---",
+        *header_comment_lines,
         "",
         _claude_agent_prompt(root, ent).rstrip(),
         "",

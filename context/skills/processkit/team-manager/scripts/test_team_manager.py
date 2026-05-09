@@ -891,6 +891,14 @@ def test_export_claude_subagent_adapter(server_mod, project_root: Path):
     assert "tools:" not in text
     assert "TeamMember TEAMMEMBER-alice" in text
     assert "Pragmatic implementation specialist." in text
+    # DaringRaven rec 6: header comment bakes TeamMember identity into
+    # the exported adapter so the file is self-describing.
+    assert "<!--" in text
+    assert "TeamMember:  TEAMMEMBER-alice" in text
+    assert "Slug:        alice" in text
+    assert "Role:        ROLE-software-engineer" in text
+    assert "Seniority:   expert" in text
+    assert "Model policy: inherit" in text
 
 
 def test_export_claude_subagent_resolved_model_policy(
@@ -947,6 +955,12 @@ def test_export_claude_subagent_resolved_model_policy(
     text = (project_root / ".claude" / "agents" / "alice.md").read_text()
     assert "model: claude-sonnet-4.5\n" in text
     assert "effort: high\n" in text
+    # DaringRaven rec 6: header comment surfaces the resolved binding
+    # so the adapter file is auditable without re-resolving.
+    assert "Model policy: resolved" in text
+    assert "Resolved model: claude-sonnet-4.5" in text
+    assert "Provider: anthropic" in text
+    assert "Effort: high" in text
 
 
 def test_export_claude_subagents_skips_humans_by_default(server_mod, project_root: Path):

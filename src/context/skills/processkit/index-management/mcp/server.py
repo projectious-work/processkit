@@ -36,6 +36,7 @@ to ``context/skills/_lib/processkit/`` after the walk-up).
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -87,6 +88,129 @@ def _open() -> tuple[Path, "index.sqlite3.Connection"]:  # noqa: F821
     return root, db
 
 
+# ---------------------------------------------------------------------------
+# v1-entity penalty / annotation (BACK-20260509_1318-WarmOak / GH #21).
+#
+# Mirrors the per-kind successor table from
+# pk-doctor/scripts/checks/v1_entity_drift.py and shares the
+# ``v1_entity_penalty`` knob with task-router (single config primitive).
+# Entries with no v2 successor (WorkItem, DecisionRecord, ...) are flagged
+# with the ``v1.entity-still-v1`` finding id but receive no penalty.
+# ---------------------------------------------------------------------------
+
+_V1_ENTITY_SUCCESSORS: dict[str, str] = {
+    "Actor": "TeamMember",
+    "Process": "Scope + Gate",
+    "StateMachine": "lifecycle metadata on the owning entity",
+    "Model": "Artifact(kind=model-spec)",
+}
+
+_DEFAULT_V1_PENALTY = 0.3
+
+
+def _v1_penalty() -> float:
+    """Return the configured v1-entity score multiplier.
+
+    Reads ``v1_entity_penalty`` from task-router/mcp/user_config.json so
+    routing and entity-read surfaces stay aligned (single config knob).
+    Default 0.3.
+    """
+    cfg_path = (
+        paths.find_project_root()
+        / "context" / "skills" / "processkit"
+        / "task-router" / "mcp" / "user_config.json"
+    )
+    try:
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    except Exception:
+        return _DEFAULT_V1_PENALTY
+    val = cfg.get("v1_entity_penalty")
+    try:
+        penalty = float(val)
+    except (TypeError, ValueError):
+        return _DEFAULT_V1_PENALTY
+    if penalty < 0.0 or penalty > 1.0:
+        return _DEFAULT_V1_PENALTY
+    return penalty
+
+
+def _api_versions_for(
+    db: "index.sqlite3.Connection",  # noqa: F821
+    ids: list[str],
+) -> dict[str, str]:
+    """Bulk-fetch ``api_version`` for the given entity IDs."""
+    if not ids:
+        return {}
+    placeholders = ",".join(["?"] * len(ids))
+    rows = db.execute(
+        f"SELECT id, api_version FROM entities WHERE id IN ({placeholders})",
+        ids,
+    ).fetchall()
+    return {row["id"]: (row["api_version"] or "") for row in rows}
+
+
+def _is_v1(api_version: str) -> bool:
+    return bool(api_version) and api_version.endswith("/v1")
+
+
+def _v1_finding(kind: str | None) -> tuple[str, str | None]:
+    """Return (finding_id, successor_hint) for a v1 entity of ``kind``.
+
+    Mirrors the pk-doctor v1_entity_drift finding-id pattern:
+    ``v1.entity-superseded`` when a successor exists, ``v1.entity-still-v1``
+    otherwise.
+    """
+    successor = _V1_ENTITY_SUCCESSORS.get(kind or "")
+    if successor:
+        return "v1.entity-superseded", successor
+    return "v1.entity-still-v1", None
+
+
+def _annotate_row(
+    row: dict,
+    api_version: str,
+    *,
+    penalty: float,
+    apply_score: bool = False,
+    base_score: float | None = None,
+) -> dict:
+    """Add v1-penalty annotations to ``row`` in place; return ``row``.
+
+    Always sets ``v1_penalty_applied`` and ``v1_successor_hint``. When
+    ``apply_score`` is true and the row is a v1-superseded entity, also
+    multiplies ``base_score`` by the penalty into ``v1_adjusted_score``
+    and emits a ``v1_trace`` line in the task-router trace format.
+    """
+    row.setdefault("api_version", api_version)
+    if not _is_v1(api_version):
+        row["v1_penalty_applied"] = False
+        row["v1_successor_hint"] = None
+        if apply_score and base_score is not None:
+            row["v1_adjusted_score"] = base_score
+        return row
+
+    finding_id, successor = _v1_finding(row.get("kind"))
+    has_successor = successor is not None
+    row["v1_finding_id"] = finding_id
+    row["v1_successor_hint"] = successor
+    row["v1_penalty_applied"] = bool(has_successor and penalty < 1.0)
+
+    if apply_score and base_score is not None:
+        if has_successor and penalty < 1.0:
+            row["v1_adjusted_score"] = base_score * penalty
+        else:
+            row["v1_adjusted_score"] = base_score
+    if has_successor and penalty < 1.0:
+        trace = (
+            f"v1-entity penalty {penalty} applied to {row.get('id')}; "
+            f"consider v2 successor: {successor}"
+        )
+    else:
+        trace = f"v1-entity {row.get('id')} flagged: {finding_id}"
+    row["v1_trace"] = trace
+    return row
+
+
 @server.tool(annotations=ToolAnnotations(
     readOnlyHint=False,
     destructiveHint=False,
@@ -129,10 +253,28 @@ def query_entities(
     kind: optional primitive kind (e.g. "WorkItem", "DecisionRecord").
     state: optional state to filter by.
     limit: maximum rows to return (default 50).
+
+    Each result is annotated with ``v1_penalty_applied`` and
+    ``v1_successor_hint`` (BACK-20260509_1318-WarmOak). Results are
+    ordered by ``created DESC`` (no score), so the penalty is surfaced
+    as annotation only — no re-ranking is applied.
     """
     _, db = _open()
     try:
-        return index.query_entities(db, kind=kind, state=state, limit=limit)
+        rows = index.query_entities(db, kind=kind, state=state, limit=limit)
+        if not rows:
+            return rows
+        penalty = _v1_penalty()
+        api_map = _api_versions_for(db, [r["id"] for r in rows])
+        return [
+            _annotate_row(
+                row,
+                api_map.get(row["id"], ""),
+                penalty=penalty,
+                apply_score=False,
+            )
+            for row in rows
+        ]
     finally:
         db.close()
 
@@ -148,17 +290,26 @@ def get_entity(id: str) -> dict:
 
     Accepts a full ID, a prefix (missing slug), or a bare word-pair.
     Returns ``{"error": "..."}`` if not found or ambiguous.
+
+    Adds ``v1_penalty_applied`` and ``v1_successor_hint`` to the result
+    when the entity is a v1 primitive (BACK-20260509_1318-WarmOak).
     """
     _, db = _open()
     try:
         row, candidates = index.resolve_entity(db, id)
+        if candidates:
+            return {"error": f"ambiguous ID {id!r}; candidates: {candidates}"}
+        if row is None:
+            return {"error": f"entity not found: {id!r}"}
+        api_map = _api_versions_for(db, [row["id"]])
+        return _annotate_row(
+            row,
+            api_map.get(row["id"], ""),
+            penalty=_v1_penalty(),
+            apply_score=False,
+        )
     finally:
         db.close()
-    if candidates:
-        return {"error": f"ambiguous ID {id!r}; candidates: {candidates}"}
-    if row is None:
-        return {"error": f"entity not found: {id!r}"}
-    return row
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -168,10 +319,39 @@ def get_entity(id: str) -> dict:
     openWorldHint=False,
 ))
 def search_entities(text: str, limit: int = 50) -> list[dict]:
-    """Full-text search across entity IDs, titles, bodies, and specs."""
+    """Full-text search across entity IDs, titles, bodies, and specs.
+
+    Applies the v1-entity penalty (BACK-20260509_1318-WarmOak): results
+    are FTS5-ranked, so we synthesise a per-rank score
+    ``1.0 / (1 + rank_index)`` and multiply it by ``_v1_penalty()`` for
+    v1-superseded entries. Results are then re-sorted on the adjusted
+    score. Each row carries ``v1_penalty_applied``, ``v1_successor_hint``,
+    and a ``v1_trace`` line analogous to the task-router trace surface.
+    """
     _, db = _open()
     try:
-        return index.search_entities(db, text, limit=limit)
+        rows = index.search_entities(db, text, limit=limit)
+        if not rows:
+            return rows
+        penalty = _v1_penalty()
+        api_map = _api_versions_for(db, [r["id"] for r in rows])
+        annotated: list[dict] = []
+        for rank_index, row in enumerate(rows):
+            base_score = 1.0 / (1 + rank_index)
+            annotated.append(
+                _annotate_row(
+                    row,
+                    api_map.get(row["id"], ""),
+                    penalty=penalty,
+                    apply_score=True,
+                    base_score=base_score,
+                )
+            )
+        annotated.sort(
+            key=lambda r: r.get("v1_adjusted_score", 0.0),
+            reverse=True,
+        )
+        return annotated
     finally:
         db.close()
 

@@ -65,6 +65,63 @@ _SKILL_CATEGORIES = (
     "design",
 )
 
+# v1 → v2 successor table (BACK-20260509_1318-WarmOak / GH #21).
+# Mirrors task-router/mcp/server.py V1_SUCCESSOR_SKILLS.
+_V1_SUCCESSOR_SKILLS: dict[str, list[str]] = {
+    "process-management": ["scope-management", "gate-management"],
+    "state-machine-management": ["scope-management", "gate-management"],
+}
+
+_DEFAULT_V1_PENALTY = 0.3
+
+
+def _v1_penalty() -> float:
+    """Return the configured v1-entity score multiplier.
+
+    Reads ``v1_entity_penalty`` from the task-router user_config.json so
+    the two routing surfaces stay aligned. Default 0.3.
+    """
+    cfg_path = (
+        paths.find_project_root()
+        / "context" / "skills" / "processkit"
+        / "task-router" / "mcp" / "user_config.json"
+    )
+    try:
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    except Exception:
+        return _DEFAULT_V1_PENALTY
+    val = cfg.get("v1_entity_penalty")
+    try:
+        penalty = float(val)
+    except (TypeError, ValueError):
+        return _DEFAULT_V1_PENALTY
+    if penalty < 0.0 or penalty > 1.0:
+        return _DEFAULT_V1_PENALTY
+    return penalty
+
+
+def _skill_is_v1(skill_name: str) -> bool:
+    """True iff the skill's SKILL.md declares apiVersion ...v1."""
+    if skill_name in _V1_SUCCESSOR_SKILLS:
+        return True
+    skills_root = _skills_root()
+    for cat_dir in skills_root.iterdir():
+        if not cat_dir.is_dir() or cat_dir.name.startswith("_"):
+            continue
+        skill_md = cat_dir / skill_name / "SKILL.md"
+        if not skill_md.exists():
+            continue
+        try:
+            text = skill_md.read_text(encoding="utf-8")
+        except Exception:
+            return False
+        for line in text.splitlines():
+            s = line.strip()
+            if s.startswith("apiVersion:"):
+                return s.endswith("/v1")
+        return False
+    return False
+
 
 def _skills_root() -> Path:
     return paths.find_project_root() / "context" / "skills"
@@ -227,11 +284,27 @@ def find_skill(task_description: str) -> dict:
     if not table:
         return {"error": "could not parse trigger table from skill-finder"}
 
+    penalty = _v1_penalty()
+    trace: list[str] = []
     scored: list[tuple[float, str]] = []
     for phrases, skill_name in table:
         s = _score(task_description, phrases)
-        if s > 0:
-            scored.append((s, skill_name))
+        if s <= 0:
+            continue
+        if penalty < 1.0 and (
+            skill_name in _V1_SUCCESSOR_SKILLS or _skill_is_v1(skill_name)
+        ):
+            successors = _V1_SUCCESSOR_SKILLS.get(skill_name, [])
+            hint = (
+                f"; consider v2 successors: {', '.join(successors)}"
+                if successors else ""
+            )
+            trace.append(
+                f"matched skill '{skill_name}'; v1-entity penalty "
+                f"{penalty} applied{hint}"
+            )
+            s = s * penalty
+        scored.append((s, skill_name))
 
     scored.sort(key=lambda x: -x[0])
 
@@ -280,6 +353,9 @@ def find_skill(task_description: str) -> dict:
     # Surface close runners-up so the agent can sanity-check
     if len(scored) > 1 and scored[1][0] >= best_score * 0.8:
         result["also_consider"] = [s for _, s in scored[1:4]]
+
+    if trace:
+        result["trace"] = trace
 
     return result
 

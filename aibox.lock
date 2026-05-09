@@ -1,46 +1,71 @@
 [aibox]
-cli_version = "0.23.11"
-synced_at = "2026-05-04T14:55:20.146112+00:00"
+cli_version = "0.25.6"
+synced_at = "2026-05-05T16:57:31.709459+00:00"
 
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.25.7"
+version = "v0.25.8"
 src_path = "src"
-release_asset_sha256 = "cf3d479ae25c62eccc80753846685e0d9248cff2fe3eee82ea77f29cee5a5a23"
-installed_at = "2026-05-04T14:55:20.146112+00:00"
-processkit_install_hash = "13c541ef1b1cc969fc45f91de6576c73dd204803c16ae2577440678fd3bf2874"
+release_asset_sha256 = "0f204898bf1b669c784ff2ad6a3d8b8ea9eda7fc63835f9e7ba5ef2b5c341137"
+installed_at = "2026-05-05T16:57:31.709459+00:00"
+processkit_install_hash = "e39278ccbb81b05d7333b500246dc6100f7c086a99a9f444c6f38c6a5d86dd45"
+
+[addons]
+resolved_at = "2026-05-09T11:20:52Z"
+
+[addons.tools]
+
+[addons.previous_selection]
+docs-docusaurus = ["docusaurus"]
+git-ui = ["gh"]
+node = [
+    "node",
+    "pnpm",
+]
+python = [
+    "python",
+    "uv",
+]
 
 [runtime_home]
-generated_at = "2026-05-04T14:55:20.320400+00:00"
+generated_at = "2026-05-09T13:31:14.406189+00:00"
 
 [runtime_home.files]
 ".asoundrc" = "f34609b11d315cd613cb5333b561032baec860faf4a7eccb28b5567ae72019af"
-".config/cheatsheet.txt" = "599b0d9eafcf5107d6a8777edf9f79373230480dadf78a3a0d6a0a09ea6aba2e"
+".claude.json" = "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+".claude/keybindings.json" = "187a3f75b831cbec4b025eecd23f06e76a77f46d6f47e4e730ef341f0d1db21c"
+".config/cheatsheet.txt" = "aec9bb809a9a879da774584df37b7e88cab5c0935ceb3cf2088910b5f8ded924"
 ".config/git/config" = "512a00e2c81ab1b9b7b8dce0777043cbdb6cd0030f0cabd4b6d99b93efc0b833"
+".config/lnav/formats/aibox/aibox.json" = "10e1af791380119ecd6860f8d31becb183a26b01868d9b20b2e277177e17c660"
 ".config/starship.toml" = "c2e6feaab7ee0e08d9a40d5d9a6294ebfb4074f2f4b23945538547b973b33f79"
-".config/yazi/init.lua" = "8930cac032d31c2b5632f2bcbedc4fb6932eb5291396ddca741a756b63a8c72e"
-".config/yazi/keymap.toml" = "bb64fa6892df8a6b4ba99571926dfa0898691cc18089eac7d7518b92bd553882"
+".config/tmux/aibox-session.sh" = "fc5b6834ae31cf133c9de9232288aea3a4e10d027201f8f01ae329a7c54f17de"
+".config/tmux/layouts/ai.sh" = "fdac5567c2db2071f33f419b4a5cd1f39149d7d0d70495dc12cc87d83c90e791"
+".config/tmux/layouts/browse.sh" = "ef6e401aac215a440e4fdef9cc7137474f918a04beab3b8cdcdd0e594881dc39"
+".config/tmux/layouts/cowork-swap.sh" = "b26a1ae1b80c80d324785bb7ed98e1a067546b36a5113845b4d684d2ed081484"
+".config/tmux/layouts/cowork.sh" = "51d978fa6e997c0f424ec418f0b7cb7b77ec8b092bf2342f9dd7134eb03df7a3"
+".config/tmux/layouts/dev.sh" = "183fd5b3f81c21a8324f9928180050846467d839e767af39a8e2ce117c47faee"
+".config/tmux/layouts/focus.sh" = "0abf2800276a93ab17819ed15f054a4efbbb555f60aacb97d2e8cf43267a6abb"
+".config/tmux/tmux.conf" = "aa75fab61f37799bdf0048b49bfdfa6b4ffca03eb593ff3c5d3bc92dae3ef0fb"
+".config/yazi/init.lua" = "eae04462c0b3bcbb486ee59aa9c2c9e9595680a0626997c942e5abb2ae5a48d7"
+".config/yazi/keymap.toml" = "4b30c2dedd57dc1f08013401c3ccafec0dc5b811f1857f117e5fba7ec7def5f4"
 ".config/yazi/plugins/dir-preview.yazi/main.lua" = "69aa28981fd21c7e35fd97bc7d15a94d44eb234d40755027d086c6c1ec166dc1"
 ".config/yazi/plugins/eps.yazi/init.lua" = "edeaadeff1411fc9749eeae43c77754fd749db74790591ba75e9286ff36e94c5"
-".config/yazi/plugins/git.yazi/main.lua" = "a15bdc030cee94e1cdccb7894c98b96a40a360225c7c8383080f1770de0a3a29"
+".config/yazi/plugins/git.yazi/main.lua" = "855f6bdf0ee33f503f575c2d75795c98ab1a9893c655940caf333d8fc87dc477"
 ".config/yazi/plugins/git.yazi/types.lua" = "16c54022dd327c35f533534f0b6995d800965e96d76f2e610b8b2fca0e5b4549"
 ".config/yazi/plugins/status-git.yazi/main.lua" = "bedc0ba5bf4ea01605b1b7cb444ee3a09b0a4ba35ce99306d974d5977a4d32d2"
 ".config/yazi/plugins/svg.yazi/init.lua" = "ba5e7ebbb9870eda80d7be179010494cac3896b4b29fb8f1011809e217ecc278"
 ".config/yazi/plugins/toggle-pane.yazi/main.lua" = "86b2306f6c9d880f0a6f777bdefb451393eb6a0c88718be355ebe31495e59f1c"
-".config/yazi/theme.toml" = "4aa7fc2cb9cc5fae69a7fe4f71e6b08d931bce98c88b118841531c94240c1c18"
-".config/yazi/yazi.toml" = "055d833513af4ac24f0c71086294408705c2ef55d17a8cd750fdeab49ff97909"
-".config/zellij/config.kdl" = "3f7f601f6f31489df6091bcf505c1693f3a5c168dbf051f507ef915d5e8e0395"
-".config/zellij/layouts/ai.kdl" = "225c2adda0b8cb0a51644cc4149a8c7155cb9c3343017869ab5e681aac0daa50"
-".config/zellij/layouts/aibox-status-hidden.kdl" = "8028a375809becb9d58fd4afd1e1b51ef2c3c97e2de233c9fd9d81e733551b0f"
-".config/zellij/layouts/aibox-status-visible.kdl" = "8922582b90afb41e0f3330555241698243cbe812e7f4f1245d27c2b15c07e124"
-".config/zellij/layouts/browse.kdl" = "e6ae92b509a8de0ff67bddba8e90c02c3e544dd185ed87c7ef9ed68a6606fa7b"
-".config/zellij/layouts/cowork-swap.kdl" = "df33cfc521c1f9f0315cb15e4669b5621318cf06f523c85bfcc19b1885883a4f"
-".config/zellij/layouts/cowork.kdl" = "024ecb5155ff68fa57ebb30c077573adc55d28f4941a2e12a8563a95ff57833a"
-".config/zellij/layouts/dev.kdl" = "f5a7300ac8064c4246f505b12d07fa801d861844946c1bdb0c7781cef00ce430"
-".config/zellij/layouts/focus.kdl" = "3e68fdf93de03ecafefcb4ffbbc37681abd3b704a7f1f17ef59ba60a2d0816fb"
-".config/zellij/themes/dracula.kdl" = "f14bc0e1566f0d90a3e6795ceef573413108b672238d86e84744faa5423d7d34"
-".local/bin/aibox-status" = "2024c2403e47820f16ef1a80d683254aa4e9d4a32fd63aef41d69653c3ac9af0"
-".local/bin/aibox-status-toggle" = "3ed68b3529fc44df364e84249ca9bfac64b515b787daeb9f3c69887d6d097bf2"
-".local/bin/open-in-editor" = "e6534e3ebf69914e39c06185f1caf97ac4262fa2ee25c2c0d4dc70c354ac0324"
+".config/yazi/theme.toml" = "24b4c8574f203caaa6e24bcd897f47c1d860f7ff6215aab50ec0d178f9fbab88"
+".config/yazi/yazi.toml" = "cdd99053efcb0f66baa4001900ce8291baf02499ea05651dfc27d1715382aed4"
+".local/bin/aibox-preview" = "fa878a7f017ee574abcc72714373e0189465af0b7ebe38bfcc8036d5b7af2be2"
+".local/bin/aibox-status-toggle" = "026c6a1dc7f1bcf650aa0bd4f587adfb5de6744df66fc138bef9b435bad1049a"
+".local/bin/open-in-editor" = "ec4c0ecf1c4c01582c8b16a1bb2a06f364f3a9a9bab14976c5da17573b047145"
 ".local/bin/pdf-watch" = "b6becd1df4a32ff27f5c93e514e6d31e5743f9282f40ce7290b8432207d85934"
-".vim/vimrc" = "e1821140f7228bedcd147c6f75e23b8ad3de78854ad7896e99a4a812d1449799"
+".vim/vimrc" = "f76ccea125630644a38d0530f9479b7f8ab193b72f3f6f4cd7fc5f10d2ba9124"
+
+[harnesses]
+recorded_at = "2026-05-09T11:20:52Z"
+previous_selection = [
+    "claude",
+    "codex",
+]

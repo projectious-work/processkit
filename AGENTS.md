@@ -76,6 +76,28 @@ here. Run `pk-resume` before acting. Provider-specific files
   hatch; commit with a clear reference. LogEntries remain
   append-only for the normal write path.
 
+## Before sub-agent dispatch
+
+Call `route_task(task_description)` before any `Task` / `Agent` /
+sub-agent dispatch and read the new fields from the response:
+
+- `recommended_team_member_slug` — the active TeamMember whose
+  `default_role` matches the routed group's preferred role. Pass it as
+  the sub-agent's identity (Claude Code: `subagent_type` or model
+  param; other harnesses: their equivalent). When `None`, no
+  TeamMember binding resolves — fall back to an ephemeral
+  `(role, seniority)` dispatch.
+- `recommended_model_class` — `"fast"` or `"deep"`. Pick the cheapest
+  concrete model in the class (Haiku < Sonnet < Opus) before
+  dispatching; bare-model dispatch that ignores this hint inherits the
+  parent session's model and breaks the team-dispatch token-efficiency
+  strategy.
+
+This section is the long form of the sub-agent-dispatch clause in
+`context/skills/processkit/skill-gate/assets/compliance-contract.md`.
+The `pk-doctor` `team_member_exports` check warns when an active
+TeamMember has no Claude sub-agent export under `.claude/agents/`.
+
 ## Sub-agent delegation
 
 Harness `Agent`-tool sub-agents inherit the main session's permission

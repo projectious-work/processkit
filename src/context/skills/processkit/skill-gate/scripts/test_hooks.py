@@ -67,12 +67,17 @@ def check(name: str, condition: bool, detail: str = "") -> None:
 
 # ---------------------------------------------------------------------------
 # Test 1: emit_compliance_contract.py — plain stdout mode
+# Default event (no stdin) is UserPromptSubmit so the slim hook block is
+# emitted. We verify by content rather than contract marker.
 # ---------------------------------------------------------------------------
 print("\n[1] emit_compliance_contract.py — plain stdout")
 
 result = run(_EMIT_SCRIPT)
 check("exit 0", result.returncode == 0, f"got {result.returncode}")
-check("stdout contains contract marker", "pk-compliance v2" in result.stdout)
+check(
+    "stdout contains slim hook payload heading",
+    "processkit per-turn checklist" in result.stdout,
+)
 check("stderr empty", result.stderr.strip() == "", result.stderr.strip())
 
 # ---------------------------------------------------------------------------
@@ -95,9 +100,11 @@ try:
         hso.get("hookEventName") == "UserPromptSubmit",
         f"got {hso.get('hookEventName')!r}",
     )
+    # UserPromptSubmit emits the slim per-turn checklist (not the
+    # full pk-compliance contract — that ships at SessionStart).
     check(
-        "additionalContext contains contract",
-        "pk-compliance v2" in hso.get("additionalContext", ""),
+        "additionalContext contains slim payload heading",
+        "processkit per-turn checklist" in hso.get("additionalContext", ""),
     )
 except json.JSONDecodeError as exc:
     check("JSON envelope present", False, str(exc))
@@ -124,6 +131,60 @@ try:
     )
 except json.JSONDecodeError as exc:
     check("hookEventName echoes SessionStart", False, str(exc))
+
+# ---------------------------------------------------------------------------
+# Test 2c: UserPromptSubmit emits the slim hook payload (BEGIN/END HOOK
+# block only) — DaringRaven rec 4 / 5
+# ---------------------------------------------------------------------------
+print("\n[2c] emit_compliance_contract.py — UserPromptSubmit emits slim hook payload")
+
+result_ups = run(
+    _EMIT_SCRIPT,
+    stdin_text=json.dumps({"hook_event_name": "UserPromptSubmit"}),
+    env_override={"CLAUDE_CODE_ENTRYPOINT": "cli"},
+)
+try:
+    payload = json.loads(result_ups.stdout)
+    hso = payload.get("hookSpecificOutput", {})
+    additional = hso.get("additionalContext", "")
+    check("slim payload contains the per-turn checklist heading",
+          "processkit per-turn checklist" in additional)
+    check("slim payload references full contract path",
+          "compliance-contract.md" in additional)
+    check("slim payload omits 'Sub-agent dispatch' long-form section",
+          "## Sub-agent dispatch" not in additional)
+    check("slim payload omits 'Prohibitions' long-form section",
+          "## Prohibitions" not in additional)
+    line_count = len(additional.splitlines())
+    check(
+        f"slim payload is concise (<= 20 lines, got {line_count})",
+        line_count <= 20,
+    )
+except json.JSONDecodeError as exc:
+    check("UserPromptSubmit produces valid JSON envelope", False, str(exc))
+
+# ---------------------------------------------------------------------------
+# Test 2d: SessionStart still emits the FULL contract (so subagents have
+# the complete catalogue) — DaringRaven rec 4
+# ---------------------------------------------------------------------------
+print("\n[2d] emit_compliance_contract.py — SessionStart emits full contract")
+
+result_ss_full = run(
+    _EMIT_SCRIPT,
+    stdin_text=json.dumps({"hook_event_name": "SessionStart"}),
+    env_override={"CLAUDE_CODE_ENTRYPOINT": "cli"},
+)
+try:
+    payload = json.loads(result_ss_full.stdout)
+    additional = payload["hookSpecificOutput"]["additionalContext"]
+    check("full contract starts with the contract marker",
+          additional.startswith("<!-- pk-compliance v2 -->"))
+    check("full contract contains long-form 'Sub-agent dispatch'",
+          "## Sub-agent dispatch" in additional)
+    check("full contract contains long-form 'Prohibitions'",
+          "## Prohibitions" in additional)
+except (json.JSONDecodeError, KeyError) as exc:
+    check("SessionStart full payload parses", False, str(exc))
 
 # ---------------------------------------------------------------------------
 # Test 3: check_route_task_called.py — non-locked tool passes
