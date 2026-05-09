@@ -75,6 +75,12 @@ def project_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     role_schema = _find_repo_root() / "context" / "schemas" / "role.yaml"
     if role_schema.is_file():
         shutil.copy(role_schema, schemas_dir / "role.yaml")
+    # RoleSlot + Binding + Scope schemas — needed by the Phase A
+    # team-creator v2 RoleSlot tools (DEC-20260509_1906-CoolBadger).
+    for extra in ("roleslot.yaml", "binding.yaml", "scope.yaml"):
+        src_extra = _find_repo_root() / "context" / "schemas" / extra
+        if src_extra.is_file():
+            shutil.copy(src_extra, schemas_dir / extra)
 
     monkeypatch.chdir(tmp_path)
     # Force processkit.paths.find_project_root to discover AGENTS.md in tmp_path
@@ -1002,3 +1008,302 @@ def test_check_all_aggregate(server_mod, project_root: Path, assets_dir):
     assert report["summary"]["count"] == 2
     assert "alice-chen" in report["members"]
     assert "bob-lee" in report["members"]
+
+
+# ---------------------------------------------------------------------------
+# RoleSlot tools — Phase A team-creator v2
+# DEC-20260509_1906-CoolBadger / ART-20260509_1836-SmartPanda
+# ---------------------------------------------------------------------------
+
+def _open_slot(server_mod, **overrides):
+    """Helper: create a baseline RoleSlot for further tests to mutate."""
+    payload = dict(
+        scope="SCOPE-q2-2026",
+        role="ROLE-software-engineer",
+        seniority="senior",
+        rank=1,
+        rationale="primary backend implementer for q2",
+    )
+    payload.update(overrides)
+    return server_mod.create_role_slot(**payload)
+
+
+def test_role_slot_create_get_happy_path(server_mod, project_root: Path):
+    r = _open_slot(server_mod)
+    assert r.get("state") == "open", r
+    expected_id = "SLOT-q2-2026-software-engineer-1"
+    assert r["id"] == expected_id
+    assert Path(r["path"]).is_file()
+
+    got = server_mod.get_role_slot(expected_id)
+    assert got["id"] == expected_id
+    assert got["scope"] == "SCOPE-q2-2026"
+    assert got["role"] == "ROLE-software-engineer"
+    assert got["seniority"] == "senior"
+    assert got["rank"] == 1
+    assert got["state"] == "open"
+    assert got["filled_by"] is None
+    assert got["rationale"] == "primary backend implementer for q2"
+    assert got["created"]
+
+
+def test_role_slot_create_validates_inputs(server_mod, project_root: Path):
+    bad_scope = server_mod.create_role_slot(
+        scope="bad", role="ROLE-x", seniority="senior", rank=1, rationale="r",
+    )
+    assert "error" in bad_scope and "SCOPE" in bad_scope["error"]
+
+    bad_role = server_mod.create_role_slot(
+        scope="SCOPE-x", role="bad", seniority="senior", rank=1, rationale="r",
+    )
+    assert "error" in bad_role and "ROLE" in bad_role["error"]
+
+    bad_sen = server_mod.create_role_slot(
+        scope="SCOPE-x", role="ROLE-x", seniority="ninja", rank=1, rationale="r",
+    )
+    assert "error" in bad_sen and "seniority" in bad_sen["error"]
+
+    bad_rank = server_mod.create_role_slot(
+        scope="SCOPE-x", role="ROLE-x", seniority="senior", rank=0, rationale="r",
+    )
+    assert "error" in bad_rank and "rank" in bad_rank["error"]
+
+    bad_rationale = server_mod.create_role_slot(
+        scope="SCOPE-x", role="ROLE-x", seniority="senior", rank=1, rationale="",
+    )
+    assert "error" in bad_rationale and "rationale" in bad_rationale["error"]
+
+
+def test_role_slot_create_rejects_duplicate(server_mod, project_root: Path):
+    r1 = _open_slot(server_mod)
+    assert "error" not in r1, r1
+    r2 = _open_slot(server_mod)
+    assert "error" in r2 and "already exists" in r2["error"]
+
+
+def test_list_role_slots_filters(server_mod, project_root: Path):
+    _open_slot(server_mod)  # SLOT-q2-2026-software-engineer-1 (open, senior)
+    _open_slot(server_mod, rank=2, rationale="parallel slot")
+    _open_slot(
+        server_mod, role="ROLE-product-manager", seniority="senior",
+        rationale="single PM",
+    )
+
+    all_slots = server_mod.list_role_slots()
+    assert {s["id"] for s in all_slots} == {
+        "SLOT-q2-2026-software-engineer-1",
+        "SLOT-q2-2026-software-engineer-2",
+        "SLOT-q2-2026-product-manager-1",
+    }
+
+    by_role = server_mod.list_role_slots(role="ROLE-software-engineer")
+    assert len(by_role) == 2
+
+    by_state_open = server_mod.list_role_slots(state="open")
+    assert len(by_state_open) == 3
+
+    by_state_filled = server_mod.list_role_slots(state="filled")
+    assert by_state_filled == []
+
+
+def test_fill_role_slot_happy_path(server_mod, project_root: Path):
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    open_r = _open_slot(server_mod)
+    slot_id = open_r["id"]
+
+    fill_r = server_mod.fill_role_slot(
+        id=slot_id,
+        team_member_slug="alice-chen",
+        valid_from="2026-05-09",
+        valid_until="2026-08-01",
+        rationale="lead engineer for the q2 charter",
+    )
+    assert fill_r.get("ok") is True, fill_r
+    assert fill_r["state"] == "filled"
+    assert fill_r["filled_by"] == "TEAMMEMBER-alice-chen"
+    assert fill_r["binding_id"].startswith("BIND-")
+    assert Path(fill_r["binding_path"]).is_file()
+
+    # Slot file reflects filled state
+    got = server_mod.get_role_slot(slot_id)
+    assert got["state"] == "filled"
+    assert got["filled_by"] == "TEAMMEMBER-alice-chen"
+
+
+def test_fill_role_slot_rejects_inactive_team_member(server_mod, project_root: Path):
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    server_mod.deactivate_team_member("alice-chen")
+    r = _open_slot(server_mod)
+    fill = server_mod.fill_role_slot(id=r["id"], team_member_slug="alice-chen")
+    assert "error" in fill
+    assert "inactive" in fill["error"]
+
+
+def test_fill_role_slot_rejects_unknown_team_member(server_mod, project_root: Path):
+    r = _open_slot(server_mod)
+    fill = server_mod.fill_role_slot(id=r["id"], team_member_slug="nobody")
+    assert "error" in fill
+    assert "not found" in fill["error"]
+
+
+def test_close_role_slot_terminal(server_mod, project_root: Path):
+    r = _open_slot(server_mod)
+    close = server_mod.close_role_slot(r["id"], reason="charter closed early")
+    assert close.get("ok") is True
+    assert close["state"] == "closed"
+    assert close["closed_at"]
+    assert close["close_reason"] == "charter closed early"
+
+    # Idempotent close
+    close2 = server_mod.close_role_slot(r["id"])
+    assert close2.get("ok") is True
+    assert close2.get("already_closed") is True
+
+    # Reverse transition rejected
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    fill_after_close = server_mod.fill_role_slot(
+        id=r["id"], team_member_slug="alice-chen",
+    )
+    assert "error" in fill_after_close
+    assert "transition" in fill_after_close["error"]
+
+
+def test_fill_role_slot_rejects_double_fill(server_mod, project_root: Path):
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    server_mod.create_team_member(
+        name="Bob Lee", type="human", slug="bob-lee",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    r = _open_slot(server_mod)
+    server_mod.fill_role_slot(id=r["id"], team_member_slug="alice-chen")
+
+    second = server_mod.fill_role_slot(id=r["id"], team_member_slug="bob-lee")
+    assert "error" in second
+    assert "already filled" in second["error"]
+
+
+def test_resolver_pre_step_returns_filled_slot(
+    server_mod,
+    project_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    server_mod.set_active_interlocutor("alice-chen")
+    open_r = _open_slot(server_mod)
+    server_mod.fill_role_slot(id=open_r["id"], team_member_slug="alice-chen")
+
+    # Stub the model resolver so the existing 8-layer code path runs
+    # cleanly and we can inspect the pre-step on top.
+    class Resolver:
+        @staticmethod
+        def _runtime_context(task_hints=None):
+            return {"harnesses": [], "allowed_providers": []}
+
+        @staticmethod
+        def resolve(**kwargs):
+            return [], []
+
+    monkeypatch.setattr(server_mod, "_load_model_resolver", lambda: Resolver)
+    got = server_mod.get_interlocutor_runtime_binding(scope="SCOPE-q2-2026")
+
+    assert got["configured"] is True
+    pre = got["binding"].get("roleslot_pre_step")
+    assert pre is not None, got["binding"]
+    assert pre["slot"]["id"] == open_r["id"]
+    assert pre["slot"]["state"] == "filled"
+    assert pre["team_member"]["id"] == "TEAMMEMBER-alice-chen"
+    # TeamMember.default_seniority overrides slot.seniority for model
+    # resolution if set (design §"Resolver impact" step 3).
+    assert pre["applied_seniority"] == "senior"
+
+
+def test_resolver_pre_step_falls_through_when_no_slot(
+    server_mod,
+    project_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+    )
+    server_mod.set_active_interlocutor("alice-chen")
+
+    class Resolver:
+        @staticmethod
+        def _runtime_context(task_hints=None):
+            return {"harnesses": [], "allowed_providers": []}
+
+        @staticmethod
+        def resolve(**kwargs):
+            return [], []
+
+    monkeypatch.setattr(server_mod, "_load_model_resolver", lambda: Resolver)
+    got = server_mod.get_interlocutor_runtime_binding(scope="SCOPE-q2-2026")
+
+    # No slot exists for (ROLE-software-engineer, senior, SCOPE-q2-2026)
+    # so the pre-step is silent and the response is identical to
+    # pre-RoleSlot behaviour. Phase A is additive (Q2 deferred).
+    assert got["configured"] is True
+    assert "roleslot_pre_step" not in got["binding"]
+
+
+def test_resolver_pre_step_seniority_override_from_team_member(
+    server_mod,
+    project_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    # Slot opens at seniority=senior; TeamMember declares
+    # default_seniority=expert. Per design §"Resolver impact" step 3
+    # the TeamMember's default_seniority overrides the slot's seniority
+    # for model resolution.
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-software-engineer",
+        default_seniority="expert",
+    )
+    server_mod.set_active_interlocutor("alice-chen")
+    open_r = server_mod.create_role_slot(
+        scope="SCOPE-q2-2026",
+        role="ROLE-software-engineer",
+        seniority="expert",
+        rank=1,
+        rationale="expert backend implementer",
+    )
+    server_mod.fill_role_slot(id=open_r["id"], team_member_slug="alice-chen")
+
+    class Resolver:
+        @staticmethod
+        def _runtime_context(task_hints=None):
+            return {"harnesses": [], "allowed_providers": []}
+
+        @staticmethod
+        def resolve(**kwargs):
+            return [], []
+
+    monkeypatch.setattr(server_mod, "_load_model_resolver", lambda: Resolver)
+    got = server_mod.get_interlocutor_runtime_binding(scope="SCOPE-q2-2026")
+    pre = got["binding"]["roleslot_pre_step"]
+    assert pre["slot"]["seniority"] == "expert"
+    assert pre["applied_seniority"] == "expert"
