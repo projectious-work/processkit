@@ -878,6 +878,216 @@ def test_import_rejects_missing_signature(server_mod, project_root: Path, tmp_pa
         )
 
 
+# ---------------------------------------------------------------------------
+# SUB-3: Consultant type + engagement window resolver
+# ---------------------------------------------------------------------------
+
+_WINDOW_PAST = {
+    "starts_at": "2020-01-01T00:00:00+00:00",
+    "ends_at": "2020-01-02T00:00:00+00:00",
+}
+_WINDOW_FUTURE = {
+    "starts_at": "2099-01-01T00:00:00+00:00",
+    "ends_at": "2099-12-31T23:59:59+00:00",
+}
+_WINDOW_ACTIVE = {
+    "starts_at": "2020-01-01T00:00:00+00:00",
+    "ends_at": "2099-12-31T23:59:59+00:00",
+}
+
+
+# --- Schema conditional-field validation ---
+
+def test_consultant_requires_engaged_for(server_mod):
+    """Creating a consultant without engaged_for must be rejected."""
+    r = server_mod.create_team_member(
+        name="Con Sultant", type="consultant", slug="con-sultant",
+        default_role="ROLE-software-engineer",
+        engagement_window=_WINDOW_ACTIVE,
+        # engaged_for intentionally omitted
+    )
+    assert "error" in r, f"expected error, got: {r}"
+    joined = " ".join(str(v) for v in r.values()).lower()
+    assert "engaged_for" in joined, f"expected 'engaged_for' in error, got: {r}"
+
+
+def test_consultant_requires_engagement_window(server_mod):
+    """Creating a consultant without engagement_window must be rejected."""
+    r = server_mod.create_team_member(
+        name="Con Sultant", type="consultant", slug="con-sultant",
+        default_role="ROLE-software-engineer",
+        engaged_for="SCOPE-q2-2026",
+        # engagement_window intentionally omitted
+    )
+    assert "error" in r, f"expected error, got: {r}"
+    joined = " ".join(str(v) for v in r.values()).lower()
+    assert "engagement_window" in joined, f"expected 'engagement_window' in error, got: {r}"
+
+
+def test_non_consultant_rejects_engaged_for(server_mod):
+    """Creating a human/ai-agent/service with engaged_for must be rejected."""
+    r = server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        engaged_for="SCOPE-q2-2026",
+    )
+    assert "error" in r, f"expected error, got: {r}"
+    joined = " ".join(str(v) for v in r.values()).lower()
+    assert "engaged_for" in joined, f"expected 'engaged_for' in error, got: {r}"
+
+
+def test_consultant_created_successfully(server_mod):
+    """Creating a valid consultant with engaged_for + window should succeed."""
+    r = server_mod.create_team_member(
+        name="Con Sultant", type="consultant", slug="con-sultant",
+        default_role="ROLE-software-engineer",
+        default_seniority="senior",
+        engaged_for="SCOPE-q2-2026",
+        engagement_window=_WINDOW_ACTIVE,
+    )
+    assert "error" not in r, f"unexpected error: {r}"
+    assert r.get("id") == "TEAMMEMBER-con-sultant"
+
+
+# --- Resolver window filter in list_team_members ---
+
+def test_consultant_within_window_resolves(server_mod):
+    """Active consultant inside engagement_window appears in list_team_members."""
+    server_mod.create_team_member(
+        name="Con Sultant", type="consultant", slug="con-sultant",
+        default_role="ROLE-software-engineer",
+        engaged_for="SCOPE-q2-2026",
+        engagement_window=_WINDOW_ACTIVE,
+    )
+    members = server_mod.list_team_members()
+    ids = {m["id"] for m in members}
+    assert "TEAMMEMBER-con-sultant" in ids, "in-window consultant should appear in active list"
+
+
+def test_consultant_outside_window_not_resolved(server_mod):
+    """Active consultant outside engagement_window is excluded from list_team_members."""
+    server_mod.create_team_member(
+        name="Old Con", type="consultant", slug="old-con",
+        default_role="ROLE-software-engineer",
+        engaged_for="SCOPE-q2-2026",
+        engagement_window=_WINDOW_PAST,
+    )
+    members = server_mod.list_team_members()
+    ids = {m["id"] for m in members}
+    assert "TEAMMEMBER-old-con" not in ids, (
+        "out-of-window consultant must NOT appear in active list"
+    )
+    # But should still appear when active_only=False
+    all_members = server_mod.list_team_members(active_only=False)
+    all_ids = {m["id"] for m in all_members}
+    assert "TEAMMEMBER-old-con" in all_ids, (
+        "out-of-window consultant must still appear with active_only=False"
+    )
+
+
+def test_non_consultant_always_resolves(server_mod):
+    """Non-consultant TeamMember always appears regardless of any time fields."""
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        default_role="ROLE-developer",
+    )
+    members = server_mod.list_team_members()
+    ids = {m["id"] for m in members}
+    assert "TEAMMEMBER-alice-chen" in ids
+
+
+# --- Auto-deactivate on Scope close ---
+
+def _make_consultant(server_mod, slug, scope_id, auto_deactivate=True):
+    r = server_mod.create_team_member(
+        name=slug.replace("-", " ").title(),
+        type="consultant",
+        slug=slug,
+        default_role="ROLE-software-engineer",
+        engaged_for=scope_id,
+        engagement_window=_WINDOW_ACTIVE,
+        auto_deactivate_on_scope_close=auto_deactivate,
+    )
+    assert "error" not in r, f"create failed: {r}"
+    return r
+
+
+def test_auto_deactivate_on_scope_close(server_mod, project_root: Path):
+    """Consultant with auto_deactivate_on_scope_close=true is deactivated
+    when _auto_deactivate_consultants_for_scope is called."""
+    scope_id = "SCOPE-q2-2026"
+    _make_consultant(server_mod, "con-auto", scope_id, auto_deactivate=True)
+
+    # Call the internal helper directly (mirrors the scope-management hook).
+    from processkit import paths as _paths
+    root = _paths.find_project_root()
+    deactivations = server_mod._auto_deactivate_consultants_for_scope(root, scope_id)
+
+    deactivated_ids = {d["team_member_id"] for d in deactivations if d.get("deactivated")}
+    assert "TEAMMEMBER-con-auto" in deactivated_ids
+
+    # Entity should now be inactive.
+    got = server_mod.get_team_member("con-auto")
+    assert got["active"] is False, "consultant should be inactive after auto-deactivate"
+
+
+def test_auto_deactivate_opt_out_leaves_active(server_mod, project_root: Path):
+    """Consultant with auto_deactivate_on_scope_close=false is NOT deactivated
+    when the Scope closes."""
+    scope_id = "SCOPE-q2-2026"
+    _make_consultant(server_mod, "con-optout", scope_id, auto_deactivate=False)
+
+    from processkit import paths as _paths
+    root = _paths.find_project_root()
+    deactivations = server_mod._auto_deactivate_consultants_for_scope(root, scope_id)
+
+    skipped_ids = {d["team_member_id"] for d in deactivations if d.get("skipped_reason")}
+    assert "TEAMMEMBER-con-optout" in skipped_ids
+
+    # Entity should still be active.
+    got = server_mod.get_team_member("con-optout")
+    assert got["active"] is True, "opted-out consultant should remain active"
+
+
+# --- pk-team-review: expired-but-active finding ---
+
+def test_query_consultant_findings_surfaces_expired(server_mod):
+    """query_consultant_findings returns team.consultant.expired_but_active
+    for consultants whose window has ended but are still active."""
+    server_mod.create_team_member(
+        name="Expired Con", type="consultant", slug="expired-con",
+        default_role="ROLE-software-engineer",
+        engaged_for="SCOPE-q2-2026",
+        engagement_window=_WINDOW_PAST,
+    )
+    result = server_mod.query_consultant_findings()
+    assert result["count"] > 0
+    codes = {f["code"] for f in result["findings"]}
+    assert "team.consultant.expired_but_active" in codes
+    ids_in_findings = {f["team_member_id"] for f in result["findings"]}
+    assert "TEAMMEMBER-expired-con" in ids_in_findings
+    # Check action prompt is present.
+    for f in result["findings"]:
+        if f["team_member_id"] == "TEAMMEMBER-expired-con":
+            assert "update_team_member" in f["action"]
+
+
+def test_query_consultant_findings_clean_when_no_expired(server_mod):
+    """query_consultant_findings returns no findings when all active consultants
+    are within their window."""
+    server_mod.create_team_member(
+        name="Active Con", type="consultant", slug="active-con",
+        default_role="ROLE-software-engineer",
+        engaged_for="SCOPE-q2-2026",
+        engagement_window=_WINDOW_ACTIVE,
+    )
+    result = server_mod.query_consultant_findings()
+    expired_findings = [
+        f for f in result["findings"]
+        if f["team_member_id"] == "TEAMMEMBER-active-con"
+    ]
+    assert expired_findings == [], "in-window consultant must not appear in findings"
+
+
 def test_export_claude_subagent_adapter(server_mod, project_root: Path):
     server_mod.create_team_member(
         name="Alice", type="ai-agent", slug="alice",

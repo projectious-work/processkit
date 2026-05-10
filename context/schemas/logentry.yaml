@@ -84,6 +84,7 @@ spec:
     - team_member.active_interlocutor_set
     - team_member.claude_subagent_exported
     - team_member.claude_subagents_exported
+    - team_member.auto_deactivated
     - team_member.deactivated
     - team_member.exported
     - team_member.imported
