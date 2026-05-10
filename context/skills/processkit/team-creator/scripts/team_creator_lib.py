@@ -9,6 +9,14 @@ Public surface:
   - load_archetype_catalog_mapping(project_root)
   - resolve_archetype(name, mapping)            -> {role, seniority, ...}
   - mapping_source(...)                         -> "kit-default" | "project" | "cli"
+  - compute_slot_projection(slot, unit_cost_usd, scope_window,
+                            invocations_per_week, avg_tokens)
+                                                -> slot_projection dict
+  - build_budget_projection(slot_projections, scope_window,
+                            drift_threshold_pct, projection_method, notes)
+                                                -> budget_projection dict
+  - compute_budget_drift(budget_projection, actual_slot_costs)
+                                                -> drift dict
 
 The loader implements the layered precedence promised by SKILL.md:
 
@@ -21,9 +29,32 @@ by default; replace semantics only when the override file declares
 The kit default ships at
 ``context/skills/processkit/team-creator/assets/archetype-catalog-mapping.yaml``
 and contains the 8 archetypes listed in the SmartPanda design artifact §"Gap 1".
+
+Budget projection (Gap 5 — SUB-4 / BACK-20260509_1837-SwiftReef):
+  The ``compute_slot_projection`` and ``build_budget_projection`` helpers
+  implement the charter-time heuristic cost model described in the
+  SmartPanda design §"Gap 5 — Budget projection".  They are pure functions
+  so they can be tested without MCP server state.
+
+  Heuristic formula (per slot):
+      weeks = ceil(effective_window_days / 7)
+      projected_total_usd = (
+          unit_cost_usd                   # USD per token
+          × (avg_input + avg_output)      # avg tokens per invocation
+          × expected_invocations_per_week
+          × weeks
+      )
+
+  For consultant slots the effective window is the intersection of the
+  consultant's ``engagement_window`` and the chartering Scope window.
+  Pass the intersected window via ``scope_window`` — the caller is
+  responsible for the intersection (pk-team-create has the full scope +
+  consultant data at charter time).
 """
 from __future__ import annotations
 
+import datetime as _dt
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -289,3 +320,231 @@ def archetype_for_role_slot(
         if entry["role"] == role and entry["seniority"] == seniority:
             return name
     return None
+
+
+# ---------------------------------------------------------------------------
+# Budget projection helpers (Gap 5 — SUB-4 / BACK-20260509_1837-SwiftReef)
+# ---------------------------------------------------------------------------
+
+_VALID_PROJECTION_METHODS = {"heuristic", "model-recommender-quote", "manual"}
+
+
+def _parse_date(value: str) -> _dt.date:
+    """Parse an ISO date string (YYYY-MM-DD) into a date object."""
+    if isinstance(value, _dt.datetime):
+        return value.date()
+    if isinstance(value, _dt.date):
+        return value
+    return _dt.date.fromisoformat(str(value)[:10])
+
+
+def _window_weeks(starts_at: str, ends_at: str) -> float:
+    """Return the number of weeks (float) spanned by [starts_at, ends_at]."""
+    start = _parse_date(starts_at)
+    end = _parse_date(ends_at)
+    days = max(0, (end - start).days)
+    return math.ceil(days / 7) if days > 0 else 0.0
+
+
+def intersect_windows(
+    scope_starts: str,
+    scope_ends: str,
+    slot_starts: str | None,
+    slot_ends: str | None,
+) -> tuple[str, str] | None:
+    """Intersect a Scope window with an optional slot-specific window.
+
+    Returns (starts_at, ends_at) as ISO strings if the intersection is
+    non-empty, otherwise ``None``.  When ``slot_starts``/``slot_ends``
+    are both ``None`` the Scope window is returned unchanged.
+    """
+    scope_s = _parse_date(scope_starts)
+    scope_e = _parse_date(scope_ends)
+    if slot_starts is None and slot_ends is None:
+        return str(scope_s), str(scope_e)
+    slot_s = _parse_date(slot_starts) if slot_starts else scope_s
+    slot_e = _parse_date(slot_ends) if slot_ends else scope_e
+    eff_s = max(scope_s, slot_s)
+    eff_e = min(scope_e, slot_e)
+    if eff_e < eff_s:
+        return None  # no overlap
+    return str(eff_s), str(eff_e)
+
+
+def compute_slot_projection(
+    slot_id: str,
+    role: str,
+    seniority: str,
+    model_profile: str | None,
+    expected_invocations_per_week: int,
+    avg_tokens: dict[str, int],
+    unit_cost_usd: float,
+    effective_window: tuple[str, str],
+) -> dict[str, Any]:
+    """Compute a per-slot budget projection row.
+
+    Parameters
+    ----------
+    slot_id:                       SLOT-* id
+    role:                          ROLE-* id
+    seniority:                     enum string
+    model_profile:                 ART-*-ModelProfile-* or None
+    expected_invocations_per_week: int
+    avg_tokens:                    {"input": <int>, "output": <int>}
+    unit_cost_usd:                 price per token (USD) from get_pricing at charter time
+    effective_window:              (starts_at, ends_at) ISO date strings
+
+    Returns a slot_projections[] row as a plain dict.
+    """
+    avg_input = avg_tokens.get("input", 0)
+    avg_output = avg_tokens.get("output", 0)
+    weeks = _window_weeks(effective_window[0], effective_window[1])
+    projected_total_usd = (
+        unit_cost_usd
+        * (avg_input + avg_output)
+        * expected_invocations_per_week
+        * weeks
+    )
+    return {
+        "slot": slot_id,
+        "role": role,
+        "seniority": seniority,
+        "model_profile": model_profile,
+        "expected_invocations_per_week": expected_invocations_per_week,
+        "avg_tokens_per_invocation": {"input": avg_input, "output": avg_output},
+        "unit_cost_usd": unit_cost_usd,
+        "projected_total_usd": round(projected_total_usd, 6),
+        "effective_window": {
+            "starts_at": effective_window[0],
+            "ends_at": effective_window[1],
+        },
+    }
+
+
+def build_budget_projection(
+    slot_projections: list[dict[str, Any]],
+    scope_window: dict[str, str],
+    drift_threshold_pct: float = 20.0,
+    projection_method: str = "heuristic",
+    notes: str | None = None,
+) -> dict[str, Any]:
+    """Assemble the full budget_projection block for the chartering DecisionRecord.
+
+    Parameters
+    ----------
+    slot_projections:    list of dicts produced by compute_slot_projection()
+    scope_window:        {"starts_at": <ISO>, "ends_at": <ISO>}
+    drift_threshold_pct: alert threshold, default 20.0
+    projection_method:   "heuristic" | "model-recommender-quote" | "manual"
+    notes:               optional free-text
+
+    Returns the ``inputs_snapshot.budget_projection`` block.
+    """
+    if projection_method not in _VALID_PROJECTION_METHODS:
+        raise ValueError(
+            f"projection_method must be one of {sorted(_VALID_PROJECTION_METHODS)}; "
+            f"got {projection_method!r}"
+        )
+    projected_total = round(
+        sum(p.get("projected_total_usd", 0.0) for p in slot_projections), 6
+    )
+    block: dict[str, Any] = {
+        "currency": "USD",
+        "window": {
+            "starts_at": scope_window["starts_at"],
+            "ends_at": scope_window["ends_at"],
+        },
+        "projected_total": projected_total,
+        "projection_method": projection_method,
+        "slot_projections": slot_projections,
+        "drift_threshold_pct": drift_threshold_pct,
+    }
+    if notes:
+        block["notes"] = notes
+    return block
+
+
+def compute_budget_drift(
+    budget_projection: dict[str, Any],
+    actual_slot_costs: dict[str, float],
+) -> dict[str, Any]:
+    """Compute drift between projected and actual costs.
+
+    Parameters
+    ----------
+    budget_projection:  the ``inputs_snapshot.budget_projection`` block
+    actual_slot_costs:  mapping {slot_id -> actual_cost_usd}
+
+    Returns a drift report dict:
+    {
+        "projected_total": <float>,
+        "actual_total":    <float>,
+        "drift_pct":       <float>,       # (actual - projected) / projected * 100
+        "drift_direction": "over" | "under" | "on-track",
+        "threshold_exceeded": <bool>,
+        "threshold_pct":   <float>,
+        "per_slot": [
+            {slot, projected_total_usd, actual_cost_usd,
+             slot_drift_pct, direction}, ...
+        ],
+        "finding_code":   "team.budget.drift" | None,
+        "severity":       "warning" | "info" | None,
+    }
+    """
+    threshold = float(budget_projection.get("drift_threshold_pct", 20.0))
+    projected_total = float(budget_projection.get("projected_total", 0.0))
+    actual_total = sum(actual_slot_costs.values())
+
+    if projected_total <= 0:
+        drift_pct = 0.0
+    else:
+        drift_pct = (actual_total - projected_total) / projected_total * 100.0
+
+    threshold_exceeded = abs(drift_pct) > threshold
+
+    if drift_pct > 0:
+        drift_direction = "over"
+    elif drift_pct < 0:
+        drift_direction = "under"
+    else:
+        drift_direction = "on-track"
+
+    per_slot: list[dict[str, Any]] = []
+    for row in budget_projection.get("slot_projections", []):
+        slot_id = row["slot"]
+        proj = float(row.get("projected_total_usd", 0.0))
+        actual = float(actual_slot_costs.get(slot_id, 0.0))
+        if proj <= 0:
+            slot_drift_pct = 0.0
+        else:
+            slot_drift_pct = (actual - proj) / proj * 100.0
+        per_slot.append({
+            "slot": slot_id,
+            "projected_total_usd": proj,
+            "actual_cost_usd": actual,
+            "slot_drift_pct": round(slot_drift_pct, 2),
+            "direction": "over" if slot_drift_pct > 0 else ("under" if slot_drift_pct < 0 else "on-track"),
+        })
+
+    # finding code + severity
+    if threshold_exceeded:
+        finding_code: str | None = "team.budget.drift"
+        if drift_direction == "over":
+            severity: str | None = "warning"   # over-spend = actionable
+        else:
+            severity = "info"                   # under-spend = informational
+    else:
+        finding_code = None
+        severity = None
+
+    return {
+        "projected_total": projected_total,
+        "actual_total": round(actual_total, 6),
+        "drift_pct": round(drift_pct, 2),
+        "drift_direction": drift_direction,
+        "threshold_exceeded": threshold_exceeded,
+        "threshold_pct": threshold,
+        "per_slot": per_slot,
+        "finding_code": finding_code,
+        "severity": severity,
+    }

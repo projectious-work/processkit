@@ -2401,5 +2401,228 @@ def query_consultant_findings() -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# Budget-drift query tool (Gap 5 — SUB-4 / BACK-20260509_1837-SwiftReef)
+# ---------------------------------------------------------------------------
+
+def _load_budget_projection_from_dec(
+    root: Path, scope_id: str | None = None,
+) -> dict | None:
+    """Load the most-recent chartering DecisionRecord that contains a
+    budget_projection block, optionally filtered by scope_id.
+
+    Returns the budget_projection dict, or None if not found.
+    """
+    dec_dir = root / "context" / "decisions"
+    if not dec_dir.is_dir():
+        return None
+
+    # Walk all DecisionRecord files, newest first (by filename which encodes
+    # timestamp in the processkit ID convention).
+    candidates = sorted(
+        [p for p in dec_dir.rglob("DEC-*.md") if p.is_file()],
+        reverse=True,
+    )
+    for path in candidates:
+        try:
+            ent = entity.load(path)
+        except Exception:
+            continue
+        if ent.kind != "Decision":
+            continue
+        spec = ent.spec or {}
+        snapshot = spec.get("inputs_snapshot") or {}
+        bp = snapshot.get("budget_projection")
+        if not bp:
+            continue
+        if scope_id is not None:
+            chartering_scope = snapshot.get("chartering_scope")
+            if chartering_scope and chartering_scope != scope_id:
+                continue
+        return bp
+    return None
+
+
+def _gather_actual_slot_costs_from_event_log(
+    root: Path,
+    budget_projection: dict,
+) -> dict[str, float]:
+    """Sum actual invocation costs per slot from the event log.
+
+    This is a best-effort implementation: it scans the structured event
+    log under ``context/logs/`` for entries of kind ``invocation`` whose
+    ``scope`` or ``slot`` field matches a slot in the projection.  When
+    the event log lacks token-count details the cost for that event is 0.
+
+    The actual unit cost is the current ``unit_cost_usd`` from the
+    projection row (since we do not have a live get_pricing call path
+    available without the model-recommender MCP server).  This is
+    intentional: the drift formula captures volume changes against the
+    snapshotted price.  For price-drift detection the caller should pass
+    updated unit costs via ``actual_slot_costs`` directly.
+
+    Returns {slot_id -> total_actual_cost_usd}.
+    """
+    slot_ids = {row["slot"] for row in budget_projection.get("slot_projections", [])}
+    # Build a quick lookup: slot_id -> unit_cost_usd (snapshot)
+    unit_costs: dict[str, float] = {
+        row["slot"]: float(row.get("unit_cost_usd", 0.0))
+        for row in budget_projection.get("slot_projections", [])
+    }
+    actual: dict[str, float] = {sid: 0.0 for sid in slot_ids}
+
+    log_dir = root / "context" / "logs"
+    if not log_dir.is_dir():
+        return actual
+
+    for log_path in sorted(log_dir.rglob("*.jsonl")):
+        try:
+            for raw_line in log_path.read_text(encoding="utf-8").splitlines():
+                raw_line = raw_line.strip()
+                if not raw_line:
+                    continue
+                import json as _json  # noqa: WPS433
+                evt = _json.loads(raw_line)
+                event_slot = evt.get("slot") or evt.get("slot_id")
+                if event_slot not in slot_ids:
+                    continue
+                token_counts = evt.get("token_counts") or {}
+                total_tokens = (
+                    token_counts.get("input", 0) + token_counts.get("output", 0)
+                )
+                cost = total_tokens * unit_costs.get(event_slot, 0.0)
+                actual[event_slot] = actual.get(event_slot, 0.0) + cost
+        except Exception:
+            continue
+    return actual
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def query_budget_drift(
+    scope_id: str | None = None,
+    threshold_pct: float | None = None,
+    actual_slot_costs: dict | None = None,
+) -> dict:
+    """Compute budget drift between the chartering projection and actual spend.
+
+    Implements pk-team-review Step 5c (Gap 5 / SUB-4 SwiftReef).
+
+    Reads the most-recent chartering DecisionRecord that contains a
+    ``budget_projection`` block.  If no such block is found, returns an
+    informational result (no finding emitted — consistent with the design
+    that old charters without a projection block are silently skipped).
+
+    Parameters
+    ----------
+    scope_id:          optional SCOPE-* filter; if supplied only the DEC
+                       whose inputs_snapshot.chartering_scope matches is used
+    threshold_pct:     override the projection's drift_threshold_pct; useful
+                       for ad-hoc queries without re-chartering
+    actual_slot_costs: optional {slot_id -> actual_cost_usd} mapping; when
+                       supplied, bypasses the event-log scan and uses the
+                       caller-supplied costs (e.g. from an observability tool)
+
+    Returns
+    -------
+    {
+        "status": "ok" | "no_projection_on_file",
+        "summary": <str>,
+        "finding_code": "team.budget.drift" | None,
+        "severity": "warning" | "info" | None,
+        "drift_pct": <float> | None,
+        "drift_direction": "over" | "under" | "on-track" | None,
+        "threshold_exceeded": <bool> | None,
+        "threshold_pct": <float> | None,
+        "projected_total": <float> | None,
+        "actual_total": <float> | None,
+        "per_slot": [...] | None,
+    }
+    """
+    # Lazy import of team_creator_lib (lives in team-creator scripts tree).
+    # We locate it relative to this file's repo position.
+    import sys as _sys
+    _tc_scripts = (
+        Path(__file__).resolve()
+        .parent.parent.parent  # processkit/
+        / "team-creator" / "scripts"
+    )
+    if str(_tc_scripts) not in _sys.path and _tc_scripts.is_dir():
+        _sys.path.insert(0, str(_tc_scripts))
+    try:
+        import team_creator_lib as _tcl
+    except ImportError as exc:
+        return {
+            "status": "error",
+            "summary": f"team_creator_lib not importable: {exc}",
+        }
+
+    root = paths.find_project_root()
+    bp = _load_budget_projection_from_dec(root, scope_id)
+
+    if bp is None:
+        return {
+            "status": "no_projection_on_file",
+            "summary": "no budget projection on file — skipping drift check",
+            "finding_code": None,
+            "severity": None,
+            "drift_pct": None,
+            "drift_direction": None,
+            "threshold_exceeded": None,
+            "threshold_pct": None,
+            "projected_total": None,
+            "actual_total": None,
+            "per_slot": None,
+        }
+
+    # Override threshold if caller supplied one
+    if threshold_pct is not None:
+        import copy as _copy
+        bp = _copy.deepcopy(bp)
+        bp["drift_threshold_pct"] = float(threshold_pct)
+
+    # Gather actual costs (caller-supplied or event-log scan)
+    if actual_slot_costs is not None:
+        costs: dict[str, float] = {k: float(v) for k, v in actual_slot_costs.items()}
+    else:
+        costs = _gather_actual_slot_costs_from_event_log(root, bp)
+
+    drift = _tcl.compute_budget_drift(bp, costs)
+
+    if drift["threshold_exceeded"]:
+        direction_label = "over" if drift["drift_direction"] == "over" else "under"
+        summary = (
+            f"Budget {direction_label}-spend detected: "
+            f"{drift['drift_pct']:+.1f}% vs threshold ±{drift['threshold_pct']:.0f}%. "
+            f"Projected ${drift['projected_total']:.2f} | "
+            f"Actual ${drift['actual_total']:.2f}"
+        )
+    else:
+        summary = (
+            f"Budget on-track: {drift['drift_pct']:+.1f}% drift "
+            f"(threshold ±{drift['threshold_pct']:.0f}%). "
+            f"Projected ${drift['projected_total']:.2f} | "
+            f"Actual ${drift['actual_total']:.2f}"
+        )
+
+    return {
+        "status": "ok",
+        "summary": summary,
+        "finding_code": drift["finding_code"],
+        "severity": drift["severity"],
+        "drift_pct": drift["drift_pct"],
+        "drift_direction": drift["drift_direction"],
+        "threshold_exceeded": drift["threshold_exceeded"],
+        "threshold_pct": drift["threshold_pct"],
+        "projected_total": drift["projected_total"],
+        "actual_total": drift["actual_total"],
+        "per_slot": drift["per_slot"],
+    }
+
+
 if __name__ == "__main__":
     server.run(transport="stdio")
