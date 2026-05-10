@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "a2a/v0.3",
+  "name": "Finn",
+  "description": "AI software engineer for processkit (senior). Implements features, fixes bugs, refactors, and writes tests across processkit skills, MCP servers, and tooling.",
+  "role": "ROLE-software-engineer",
+  "seniority": "senior",
+  "skills": [
+    "python-engineering",
+    "test-driven-development",
+    "refactoring",
+    "code-review",
+    "mcp-server-development",
+    "schema-design"
+  ],
+  "modalities": [
+    "text",
+    "tools"
+  ],
+  "provider": "anthropic",
+  "contact": {},
+  "signature": {
+    "alg": "none",
+    "value": ""
+  }
+}

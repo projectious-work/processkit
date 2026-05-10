@@ -1,0 +1,366 @@
+{
+  "archive_id": "ARCHIVE-20260510_074047-migration-applied",
+  "archive_path": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz",
+  "created_at": "2026-05-10T07:40:47+00:00",
+  "entities": [
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-LOCK-20260509T112052\n\n`aibox.lock` schema extended in v0.25.6 to record the previously\napplied addon-tool and harness selection (DEC-20260508_1515-SilentAsh,\nBR-CLEANUP-ARCH item 1). This backfill captures the current selection\nas the baseline so the next `aibox apply` can compute a removal diff\nwhen a tool or harness is disabled.\n\nBackfilled previous_selection: 4 addon(s), 6 tool(s), 2 harness(es)\n\n## Backfilled addon selection\n\n- `docs-docusaurus`: docusaurus\n- `git-ui`: gh\n- `node`: node, pnpm\n- `python`: python, uv\n\n## Backfilled harness selection\n\n- claude, codex\n\n## Next action\n\nAcknowledge with the migration-management skill (`/pk-resume` will\nsurface it). No code change is required \u2014 the next `aibox apply`\nwill use this baseline automatically.\n",
+      "id": "MIG-LOCK-20260509T112052",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-LOCK-20260509T112052.md",
+      "metadata": {
+        "created": "2026-05-09T11:20:52+00:00",
+        "id": "MIG-LOCK-20260509T112052",
+        "updated": "2026-05-09T13:15:04+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-LOCK-20260509T112052.md",
+      "sha256": "9477bbac58d0efb68b36f13a40f0786ff914011b0ada1343fddcb1c742f87334",
+      "spec": {
+        "applied_at": "2026-05-09T13:15:04+00:00",
+        "generated_at": "2026-05-09T11:20:52+00:00",
+        "generated_by": "aibox apply",
+        "kind": "schema-extension",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Acknowledged: aibox.lock previous_selection backfilled (4 addons, 6 tools, 2 harnesses). No code change required.",
+            "timestamp": "2026-05-09T13:15:04+00:00"
+          }
+        ],
+        "source": "aibox-lock",
+        "source_url": "aibox://lock",
+        "started_at": "2026-05-09T13:15:04+00:00",
+        "state": "applied",
+        "summary": "Backfilled previous_selection: 4 addon(s), 6 tool(s), 2 harness(es)"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-LOCK-20260509T112052.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260509T112052\n\nManaged `.aibox-home/` runtime changes from `0.25.4` to `0.25.6`.\n\n0 changed upstream, 1 conflicts, 1 new, 0 removed (4 groups affected)\n\n## Counts\n\n- unchanged: 25\n- changed-locally-only: 4\n- changed-upstream-only: 0\n- conflict: 1\n- new-upstream: 1\n- removed-upstream: 0\n\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### runtime-claude\n\n**changed-locally-only**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n\n**conflict**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**new-upstream**\n\n- `.aibox-home/.config/lnav/formats/aibox/aibox.json` -> `.aibox-home/.config/lnav/formats/aibox/aibox.json`\n\n### runtime-vim\n\n**changed-locally-only**\n\n- `.aibox-home/.vim/vimrc` -> `.aibox-home/.vim/vimrc`\n\n### runtime-yazi\n\n**changed-locally-only**\n\n- `.aibox-home/.config/yazi/plugins/git.yazi/main.lua` -> `.aibox-home/.config/yazi/plugins/git.yazi/main.lua`\n",
+      "id": "MIG-RUNTIME-20260509T112052",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260509T112052.md",
+      "metadata": {
+        "created": "2026-05-09T11:20:52+00:00",
+        "id": "MIG-RUNTIME-20260509T112052",
+        "updated": "2026-05-09T13:15:03+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260509T112052.md",
+      "sha256": "beddab087856246501623c502f9694d7036499308accf440c6ce72864dcdda96",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-misc",
+          "runtime-vim",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-09T13:15:03+00:00",
+        "from_version": "0.25.4",
+        "generated_at": "2026-05-09T11:20:52+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Acknowledged. cheatsheet.txt conflict already resolved (upstream adopted in MIG-RUNTIME-20260507T191658 step). New lnav format installed.",
+            "timestamp": "2026-05-09T13:15:03+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-09T13:15:03+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 1 conflicts, 1 new, 0 removed (4 groups affected)",
+        "to_version": "0.25.6"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260509T112052.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260508T132832\n\nManaged `.aibox-home/` runtime changes from `0.25.2` to `0.25.4`.\n\n8 changed upstream, 1 conflicts, 2 new, 0 removed (5 groups affected)\n\n## Counts\n\n- unchanged: 17\n- changed-locally-only: 2\n- changed-upstream-only: 8\n- conflict: 1\n- new-upstream: 2\n- removed-upstream: 0\n\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### runtime-claude\n\n**new-upstream**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**new-upstream**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n\n### runtime-tmux\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/tmux/tmux.conf` -> `.aibox-home/.config/tmux/tmux.conf`\n- `.aibox-home/.config/tmux/layouts/dev.sh` -> `.aibox-home/.config/tmux/layouts/dev.sh`\n- `.aibox-home/.config/tmux/layouts/focus.sh` -> `.aibox-home/.config/tmux/layouts/focus.sh`\n- `.aibox-home/.config/tmux/layouts/cowork.sh` -> `.aibox-home/.config/tmux/layouts/cowork.sh`\n- `.aibox-home/.config/tmux/layouts/browse.sh` -> `.aibox-home/.config/tmux/layouts/browse.sh`\n- `.aibox-home/.",
+      "id": "MIG-RUNTIME-20260508T132832",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260508T132832.md",
+      "metadata": {
+        "created": "2026-05-08T13:28:32+00:00",
+        "id": "MIG-RUNTIME-20260508T132832",
+        "updated": "2026-05-09T13:15:01+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260508T132832.md",
+      "sha256": "86491f47eaa136660e8e0d2a38c9848fcecf4ffa871abf7d7e432011f5c927fb",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-misc",
+          "runtime-tmux",
+          "runtime-vim",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-09T13:15:01+00:00",
+        "from_version": "0.25.2",
+        "generated_at": "2026-05-08T13:28:32+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Acknowledged. vimrc conflict resolved by adopting upstream 0.25.6 (local was stale, missing terminal-escape suppression and mouse settings).",
+            "timestamp": "2026-05-09T13:15:01+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-09T13:15:01+00:00",
+        "state": "applied",
+        "summary": "8 changed upstream, 1 conflicts, 2 new, 0 removed (5 groups affected)",
+        "to_version": "0.25.4"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260508T132832.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260508T083035\n\nManaged `.aibox-home/` runtime changes from `0.25.1` to `0.25.2`.\n\n0 changed upstream, 7 conflicts, 0 new, 0 removed (4 groups affected)\n\n## Counts\n\n- unchanged: 16\n- changed-locally-only: 5\n- changed-upstream-only: 0\n- conflict: 7\n- new-upstream: 0\n- removed-upstream: 0\n\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n- `.aibox-home/.local/bin/aibox-preview` -> `.aibox-home/.local/bin/aibox-preview`\n\n### runtime-tmux\n\n**changed-locally-only**\n\n- `.aibox-home/.config/tmux/aibox-session.sh` -> `.aibox-home/.config/tmux/aibox-session.sh`\n\n**conflict**\n\n- `.aibox-home/.config/tmux/tmux.conf` -> `.aibox-home/.config/tmux/tmux.conf`\n- `.aibox-home/.config/tmux/layouts/dev.sh` -> `.aibox-home/.config/tmux/layouts/dev.sh`\n- `.aibox-home/.config/tmux/layouts/focus.sh` -> `.aibox-home/.config/tmux/layouts/focus.sh`\n- `.aibox-home/.config/tmux/layouts/cowork.sh` -> `.aibox-home/.config/tmux/layouts/cowork.sh`\n- `.aibox-home/.config/tmux/layouts/browse.sh` -> `.aibox-home/.config/tmux/layouts/browse.sh`\n- `.aibox-home/.config/tmu",
+      "id": "MIG-RUNTIME-20260508T083035",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260508T083035.md",
+      "metadata": {
+        "created": "2026-05-08T08:30:35+00:00",
+        "id": "MIG-RUNTIME-20260508T083035",
+        "updated": "2026-05-09T13:15:00+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260508T083035.md",
+      "sha256": "4f201ae93c0c82423b52377268a5ef32bdb3b29b52f6c0df9f6a7105c192a392",
+      "spec": {
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-tmux",
+          "runtime-vim",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-09T13:15:00+00:00",
+        "from_version": "0.25.1",
+        "generated_at": "2026-05-08T08:30:35+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Acknowledged. 7 tmux conflicts: local already matches upstream 0.25.6 (historical artifact from intermediate 0.25.2 version that briefly simplified these files). No file changes needed.",
+            "timestamp": "2026-05-09T13:15:00+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-09T13:15:00+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 7 conflicts, 0 new, 0 removed (4 groups affected)",
+        "to_version": "0.25.2"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260508T083035.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260507T191658\n\nManaged `.aibox-home/` runtime changes from `0.23.18` to `0.25.1`.\n\n2 changed upstream, 1 conflicts, 9 new, 0 removed (4 groups affected)\n\n## Counts\n\n- unchanged: 16\n- changed-locally-only: 0\n- changed-upstream-only: 2\n- conflict: 1\n- new-upstream: 9\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-misc\n\n**conflict**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**new-upstream**\n\n- `.aibox-home/.local/bin/aibox-preview` -> `.aibox-home/.local/bin/aibox-preview`\n\n### runtime-tmux\n\n**new-upstream**\n\n- `.aibox-home/.config/tmux/tmux.conf` -> `.aibox-home/.config/tmux/tmux.conf`\n- `.aibox-home/.config/tmux/layouts/dev.sh` -> `.aibox-home/.config/tmux/layouts/dev.sh`\n- `.aibox-home/.config/tmux/layouts/focus.sh` -> `.aibox-home/.config/tmux/layouts/focus.sh`\n- `.aibox-home/.config/tmux/layouts/cowork.sh` -> `.aibox-home/.config/tmux/layouts/cowork.sh`\n- `.aibox-home/.config/tmux/layouts/browse.sh` -> `.aibox-home/.config/tmux/layouts/browse.sh`\n- `.aibox-home/.config/tmux/layouts/ai.sh` -> `.aibox-home/.config/tmux/layouts/ai.sh`\n- `.aibox-home/.config/tmux/layouts/cowork-swap.sh` -> `.aibox-home/.config/",
+      "id": "MIG-RUNTIME-20260507T191658",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260507T191658.md",
+      "metadata": {
+        "created": "2026-05-07T19:16:58+00:00",
+        "id": "MIG-RUNTIME-20260507T191658",
+        "updated": "2026-05-09T13:14:56+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260507T191658.md",
+      "sha256": "2f85d9f07fa31b82b3a2f4e8f8bedf9b8b6cc07738beb73077a8952ebf1860be",
+      "spec": {
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-tmux",
+          "runtime-vim",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-09T13:14:56+00:00",
+        "from_version": "0.23.18",
+        "generated_at": "2026-05-07T19:16:58+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Acknowledged. cheatsheet.txt conflict resolved by adopting upstream (local was stale zellij-era content). 9 new tmux files installed.",
+            "timestamp": "2026-05-09T13:14:56+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-09T13:14:56+00:00",
+        "state": "applied",
+        "summary": "2 changed upstream, 1 conflicts, 9 new, 0 removed (4 groups affected)",
+        "to_version": "0.25.1"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260507T191658.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260506T021335\n\nManaged `.aibox-home/` runtime changes from `0.23.16` to `0.23.18`.\n\n2 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 27\n- changed-locally-only: 1\n- changed-upstream-only: 2\n- conflict: 0\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n### runtime-yazi\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/yazi/yazi.toml` -> `.aibox-home/.config/yazi/yazi.toml`\n- `.aibox-home/.config/yazi/theme.toml` -> `.aibox-home/.config/yazi/theme.toml`\n",
+      "id": "MIG-RUNTIME-20260506T021335",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260506T021335.md",
+      "metadata": {
+        "created": "2026-05-06T02:13:35+00:00",
+        "id": "MIG-RUNTIME-20260506T021335",
+        "updated": "2026-05-09T13:14:55+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260506T021335.md",
+      "sha256": "71a0a410c597d19028f7b6703528acc297ab8e4e99bd96ace67bdab9444b43b2",
+      "spec": {
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-09T13:14:55+00:00",
+        "from_version": "0.23.16",
+        "generated_at": "2026-05-06T02:13:35+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Acknowledged: 0 conflicts. yazi.toml/theme.toml updated by host aibox apply; cheatsheet.txt local-only delta acknowledged.",
+            "timestamp": "2026-05-09T13:14:55+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-09T13:14:55+00:00",
+        "state": "applied",
+        "summary": "2 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)",
+        "to_version": "0.23.18"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260506T021335.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-20260505T165732\n\nFrom `v0.25.7` to `v0.25.8` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 0 conflicts, 1 new, 0 removed, 0 stale-removed (2 groups affected)\n\n## Counts\n\n- unchanged: 654\n- changed-locally-only: 1\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 1\n- removed-upstream: 0\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### AGENTS\n\n**changed-locally-only**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### context/artifacts\n\n**new-upstream**\n\n- `context/artifacts/ART-20260505_1545-ModelSpec-xiaomi-mimo-7b.md` \u2192 `context/artifacts/ART-20260505_1545-ModelSpec-xiaomi-mimo-7b.md`\n",
+      "id": "MIG-20260505T165732",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260505T165732.md",
+      "metadata": {
+        "created": "2026-05-05T16:57:32+00:00",
+        "id": "MIG-20260505T165732",
+        "updated": "2026-05-09T13:15:07+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260505T165732.md",
+      "sha256": "1d1c96f08cdc9ad376f5afe8403f45ff3f33aa834a13ca0be4be17e0b92aa9cc",
+      "spec": {
+        "affected_groups": [
+          "AGENTS",
+          "context/artifacts"
+        ],
+        "applied_at": "2026-05-09T13:15:07+00:00",
+        "from_version": "v0.25.7",
+        "generated_at": "2026-05-05T16:57:32+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Acknowledged: processkit v0.25.7 \u2192 v0.25.8. AGENTS.md is locally customized (no upstream change in this range). New artifact ART-20260505_1545-ModelSpec-xiaomi-mimo-7b.md present.",
+            "timestamp": "2026-05-09T13:15:07+00:00"
+          }
+        ],
+        "source": "processkit",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "started_at": "2026-05-09T13:15:07+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 1 new, 0 removed, 0 stale-removed (2 groups affected)",
+        "to_version": "v0.25.8"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-20260505T165732.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260505T165731\n\nManaged `.aibox-home/` runtime changes from `0.23.11` to `0.23.12`.\n\n0 changed upstream, 0 conflicts, 2 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 29\n- changed-locally-only: 1\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 2\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-claude\n\n**new-upstream**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**new-upstream**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n",
+      "id": "MIG-RUNTIME-20260505T165731",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260505T165731.md",
+      "metadata": {
+        "created": "2026-05-05T16:57:31+00:00",
+        "id": "MIG-RUNTIME-20260505T165731",
+        "updated": "2026-05-09T13:14:53+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260505T165731.md",
+      "sha256": "a5594193cd520a4655d2725493c652f71a95e692eea506221233866b2e68dabf",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-misc"
+        ],
+        "applied_at": "2026-05-09T13:14:53+00:00",
+        "from_version": "0.23.11",
+        "generated_at": "2026-05-05T16:57:31+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Acknowledged: 0 conflicts. New keybindings.json and .claude.json installed by aibox apply on host.",
+            "timestamp": "2026-05-09T13:14:53+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-09T13:14:53+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 2 new, 0 removed (2 groups affected)",
+        "to_version": "0.23.12"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260505T165731.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260504T145520\n\nManaged `.aibox-home/` runtime changes from `0.23.7` to `0.23.10`.\n\n10 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 19\n- changed-locally-only: 1\n- changed-upstream-only: 10\n- conflict: 0\n- new-upstream: 0\n- removed-upstream: 0\n\n## Changes by group\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**changed-upstream-only**\n\n- `.aibox-home/.local/bin/open-in-editor` -> `.aibox-home/.local/bin/open-in-editor`\n- `.aibox-home/.local/bin/aibox-status` -> `.aibox-home/.local/bin/aibox-status`\n\n### runtime-zellij\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/zellij/layouts/dev.kdl` -> `.aibox-home/.config/zellij/layouts/dev.kdl`\n- `.aibox-home/.config/zellij/layouts/focus.kdl` -> `.aibox-home/.config/zellij/layouts/focus.kdl`\n- `.aibox-home/.config/zellij/layouts/cowork.kdl` -> `.aibox-home/.config/zellij/layouts/cowork.kdl`\n- `.aibox-home/.config/zellij/layouts/browse.kdl` -> `.aibox-home/.config/zellij/layouts/browse.kdl`\n- `.aibox-home/.config/zellij/layouts/ai.kdl` -> `.aibox-home/.config/zellij/layouts/ai.kdl`\n- `.aibo",
+      "id": "MIG-RUNTIME-20260504T145520",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260504T145520.md",
+      "metadata": {
+        "created": "2026-05-04T14:55:20+00:00",
+        "id": "MIG-RUNTIME-20260504T145520",
+        "updated": "2026-05-05T15:21:59+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260504T145520.md",
+      "sha256": "b41b05ef9cf5f0e50d72014c91440fdb5254546f1a17a113925a9e8060fad5a2",
+      "spec": {
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-zellij"
+        ],
+        "applied_at": "2026-05-05T15:21:59+00:00",
+        "from_version": "0.23.7",
+        "generated_at": "2026-05-04T14:55:20+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Applied at session start per user request to resolve all pending migrations.",
+            "timestamp": "2026-05-05T15:21:59+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-05T15:21:59+00:00",
+        "state": "applied",
+        "summary": "10 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected)",
+        "to_version": "0.23.10"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260504T145520.md"
+    }
+  ],
+  "kind": "Migration",
+  "older_than_days": 0,
+  "sha256": "6bdb85847eab17eb8dee8a9982c7ffc63d803e4f267e1879e7322b8b5124714c",
+  "state": "applied"
+}
