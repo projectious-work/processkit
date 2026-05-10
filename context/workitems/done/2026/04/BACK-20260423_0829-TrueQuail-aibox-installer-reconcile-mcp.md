@@ -4,11 +4,11 @@ kind: WorkItem
 metadata:
   id: BACK-20260423_0829-TrueQuail-aibox-installer-reconcile-mcp
   created: '2026-04-23T08:29:15+00:00'
-  updated: '2026-04-23T20:57:59+00:00'
+  updated: '2026-05-10T03:51:33+00:00'
 spec:
   title: 'aibox installer: reconcile .mcp.json on per-skill-config drift, not just
     version delta'
-  state: review
+  state: done
   type: task
   priority: high
   description: '**Problem.** The aibox installer regenerates `/workspace/.mcp.json`
@@ -30,6 +30,7 @@ spec:
     edit" fallback is no longer needed.\n- Traceability: see LOG-20260423_0818-ProudStone-session-handover
     (open thread #2).'
   started_at: '2026-04-23T20:50:13+00:00'
+  completed_at: '2026-05-10T03:51:33+00:00'
 ---
 
 ## Transition note (2026-04-23T20:50:13+00:00)
@@ -40,3 +41,8 @@ Scope split confirmed by owner (DEC-20260423_2049-VastLake). Processkit ships ma
 ## Transition note (2026-04-23T20:57:59+00:00)
 
 Processkit-side contributions shipped: (1) scripts/generate-mcp-manifest.py generator; (2) context/.processkit-mcp-manifest.json + src/ mirror; (3) pk-doctor mcp_config_drift check (both trees, registered) — runs clean INFO; (4) AGENTS.md MCP-config-manifest section. Drift guard green. Aibox-side reconcile tracked separately at projectious-work/aibox#54. Keeping this WI in review until aibox PR lands; on merge, transition to done.
+
+
+## Transition note (2026-05-10T03:51:33+00:00)
+
+Triage audit 2026-05-10: Shipped (superseded by gateway mode). Processkit-side (manifest + pk-doctor mcp_config_drift + AGENTS.md) shipped in v0.19.2 (commit 90c980f). Aibox-side reconcile tracked at projectious-work/aibox#54; the problem is now superseded — aibox v0.25.6 (cli_version in aibox.lock) adopted aggregate/gateway mode (aibox commit 2837ca5), replacing per-skill .mcp.json merging with a single processkit-gateway stdio-proxy entry. The drift-reconcile issue is architecturally obsolete. Closing as done.
