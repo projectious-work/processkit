@@ -16,6 +16,9 @@ pk-team-review
   [--landscape-artifact <ART-id>]  # explicit landscape override; skips discovery
   [--landscape <artifact-id>]      # alias for --landscape-artifact
   [--threshold <float>]            # flag if tier-score drifted > N pts, default 0.15
+  [--budget-scope <SCOPE-id>]      # filter budget drift query to a specific scope
+  [--budget-drift-threshold <float>]
+                                   # override the projection's drift_threshold_pct
 ```
 
 ## Process (sequential, read-only)
@@ -88,6 +91,37 @@ This returns findings with code `team.consultant.expired_but_active`
 AND `engagement_window.ends_at < now`. Include the findings in the diff
 report (see CONSULTANT WARNINGS section below). This step is read-only.
 
+### Step 5c — Check budget drift
+
+Call `team-manager.query_budget_drift(scope_id?, threshold_pct?)`.
+
+Where:
+- `scope_id` = `--budget-scope` flag value (or omitted to auto-detect
+  from the governing DecisionRecord's `chartering_scope`).
+- `threshold_pct` = `--budget-drift-threshold` flag value (or omitted to
+  use the projection's stored `drift_threshold_pct`, default 20).
+
+**Logic inside `query_budget_drift`:**
+
+1. Read the most-recent chartering DecisionRecord that contains a
+   `budget_projection` block in its `inputs_snapshot`.
+2. If no `budget_projection` block is found: return `status=no_projection_on_file`
+   and emit an informational note in the diff report:
+   > "no budget projection on file — drift check skipped"
+3. Query event-log for invocation events within the chartering Scope's window
+   bound to the projection's RoleSlots.  Sum actual cost
+   (token counts × unit_cost_usd from the projection snapshot).
+4. Compute `drift_pct = (actual - projected) / projected × 100`.
+5. If `|drift_pct| > drift_threshold_pct`:
+   - Over-spend: emit finding `team.budget.drift`, severity **warning**
+     (actionable — consider rebalance or scope reduction).
+   - Under-spend: emit finding `team.budget.drift`, severity **info**
+     (capacity planning signal — model may be cheaper than expected or
+     invocation volume is lower than chartered).
+6. Include per-slot drift table in the BUDGET DRIFT section below.
+
+This step is fully read-only.
+
 ### Step 6 — Emit diff report
 
 Output format (stdout only — no files written). Each row is keyed by
@@ -128,6 +162,23 @@ CONSULTANT WARNINGS [team.consultant.expired_but_active]:
     engagement_window ended <ends_at> — still active
     → deactivate or extend engagement_window via update_team_member
 
+BUDGET DRIFT [team.budget.drift | WARNING/INFO]:
+  Projected: $<projected_total>   Actual: $<actual_total>
+  Drift: <drift_pct>%  (threshold: ±<threshold_pct>%)
+  Direction: over-spend (WARNING — actionable) | under-spend (INFO)
+
+  Per-slot drift:
+    <SLOT-id> (<role>/<seniority>):
+      projected $<projected_total_usd>  actual $<actual_cost_usd>
+      drift <slot_drift_pct>% (<direction>)
+    ...
+
+  → over-spend: consider pk-team-rebalance or scope reduction
+  → under-spend: volume or price lower than chartered (no action required)
+
+  [If no budget_projection block in chartering DEC]:
+  BUDGET DRIFT: no budget projection on file — drift check skipped
+
 STABLE (no action needed):
   project-manager, senior-architect, senior-researcher,
   junior-architect, junior-researcher
@@ -136,6 +187,7 @@ SUMMARY:
   2 archetypes recommended for rebalance
   1 archetype urgently needs replacement (major_outage)
   1 consultant with expired engagement window (see CONSULTANT WARNINGS)
+  1 budget drift finding: over-spend +32% (see BUDGET DRIFT)
   Run: pk-team-rebalance --roles developer,junior-developer --confirm \
        --reason "<reason>"
 =============================

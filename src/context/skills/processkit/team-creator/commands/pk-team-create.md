@@ -32,6 +32,9 @@ pk-team-create
                                      # mapping (replace mode). Project override
                                      # at context/team/archetype-catalog-mapping.yaml
                                      # is auto-detected; this flag wins over both.
+  [--budget-drift-threshold <float>] # drift alert threshold %, default 20
+  [--projection-method <method>]     # heuristic | model-recommender-quote | manual
+                                     # default: heuristic
   [--dry-run]                        # print plan; write nothing
 ```
 
@@ -269,6 +272,42 @@ Write `context/team/roster.md` with:
 - Landscape artifact ID and date
 - DecisionRecord ID (written in step 8)
 
+### Step 7.5 — Compute budget projection
+
+After step 6 writes all RoleSlots and before writing the chartering
+DecisionRecord, iterate every created slot and compute a cost projection.
+
+For each RoleSlot:
+
+1. Call `model-recommender.get_pricing(<model_profile>)` to fetch the
+   live unit cost.  Snapshot the returned `price_per_token_usd` into
+   `unit_cost_usd` in the projection row.
+2. Determine the effective time window for the slot:
+   - If the slot is filled by a `type=consultant` TeamMember: intersect
+     the consultant's `engagement_window` with the chartering Scope's
+     `{starts_at, ends_at}`. Use the intersected window.
+   - Otherwise: use the chartering Scope's full window.
+3. Apply heuristic formula (when `--projection-method heuristic`):
+   ```
+   weeks = ceil(effective_window_days / 7)
+   projected_total_usd = unit_cost_usd
+                         × (avg_input_tokens + avg_output_tokens)
+                         × expected_invocations_per_week
+                         × weeks
+   ```
+   Defaults when not pinned by the landscape artifact:
+   - `expected_invocations_per_week`: 50
+   - `avg_tokens_per_invocation.input`: 8000
+   - `avg_tokens_per_invocation.output`: 2000
+
+4. Sum slot `projected_total_usd` values into `projected_total`.
+
+5. Build the `budget_projection` block (see shape in step 8 below).
+   Pass `drift_threshold_pct` from `--budget-drift-threshold` (default 20).
+
+Skip budget projection if the chartering Scope has no `starts_at`/`ends_at`
+dates; log a warning and set `budget_projection: null` in the snapshot.
+
 ### Step 8 — Write chartering DecisionRecord
 
 ```
@@ -301,7 +340,29 @@ decision-record-write(
     chartering_scope: <SCOPE-id>,
     role_slots: [
       {archetype, slot_id, role, seniority, rank}, ...
-    ]
+    ],
+    # Gap 5 — budget projection (additionalProperties=true; additive)
+    budget_projection: {
+      currency: USD,
+      window: {starts_at: <ISO>, ends_at: <ISO>},  # = chartering Scope window
+      projected_total: <float>,
+      projection_method: heuristic | model-recommender-quote | manual,
+      slot_projections: [
+        {
+          slot: SLOT-<id>,
+          role: ROLE-<id>,
+          seniority: <enum>,
+          model_profile: ART-*-ModelProfile-*,
+          expected_invocations_per_week: <int>,
+          avg_tokens_per_invocation: {input: <int>, output: <int>},
+          unit_cost_usd: <float>,          # snapshotted from get_pricing at charter time
+          projected_total_usd: <float>,
+          effective_window: {starts_at: <ISO>, ends_at: <ISO>},
+        }, ...
+      ],
+      drift_threshold_pct: 20,             # from --budget-drift-threshold, default 20
+      notes: <free-text or null>,
+    }
   }
 )
 ```
@@ -310,6 +371,12 @@ The `inputs_snapshot.weights` block is the canonical weight store
 that `pk-team-rebalance` will read on future runs. The
 `chartering_scope` and `role_slots` blocks are the v2 provenance
 back-pointer from the DEC to the RoleSlots opened in step 6.
+
+The `budget_projection` block is Gap 5 (SUB-4 / SwiftReef). It is
+additive (`additionalProperties: true` on the decision_record schema);
+old DecisionRecords without this block validate cleanly. The block is
+the source of truth that `pk-team-review` Step 5c reads for drift
+detection.
 
 ## Dry-run output format
 

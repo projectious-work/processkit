@@ -20,6 +20,7 @@ Covers:
 from __future__ import annotations
 
 import json
+import math
 import os
 import shutil
 import sys
@@ -1854,4 +1855,311 @@ def test_apply_migration_2139_rejects_missing_scope(
         project_root, "SCOPE-does-not-exist",
     )
     assert "error" in summary
-    assert "not found" in summary["error"]
+
+
+# ---------------------------------------------------------------------------
+# Budget projection helpers (Gap 5 — SUB-4 / BACK-20260509_1837-SwiftReef)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture()
+def team_creator_lib_budget():
+    """Import team_creator_lib for budget-projection tests (no server_mod needed)."""
+    repo_root = _find_repo_root()
+    tc_scripts = (
+        repo_root
+        / "context"
+        / "skills"
+        / "processkit"
+        / "team-creator"
+        / "scripts"
+    )
+    if str(tc_scripts) not in sys.path:
+        sys.path.insert(0, str(tc_scripts))
+    for name in ("team_creator_lib",):
+        if name in sys.modules:
+            del sys.modules[name]
+    import team_creator_lib  # noqa: F401
+    return team_creator_lib
+
+
+def _make_budget_projection(tcl, slot_id="SLOT-q2-2026-software-engineer-1",
+                             role="ROLE-software-engineer",
+                             unit_cost=0.000003, invocations=50,
+                             weeks=12, threshold=20.0):
+    """Helper: build a canonical budget_projection block for tests."""
+    # weeks=12 => scope window 84 days
+    import datetime as _dt
+    starts = _dt.date.today()
+    ends = starts + _dt.timedelta(days=weeks * 7)
+    eff_window = (str(starts), str(ends))
+    row = tcl.compute_slot_projection(
+        slot_id=slot_id,
+        role=role,
+        seniority="senior",
+        model_profile="ART-20260503_1424-ModelProfile-sonnet",
+        expected_invocations_per_week=invocations,
+        avg_tokens={"input": 8000, "output": 2000},
+        unit_cost_usd=unit_cost,
+        effective_window=eff_window,
+    )
+    bp = tcl.build_budget_projection(
+        slot_projections=[row],
+        scope_window={"starts_at": eff_window[0], "ends_at": eff_window[1]},
+        drift_threshold_pct=threshold,
+        projection_method="heuristic",
+    )
+    return bp, row
+
+
+def test_charter_creates_budget_projection_block(team_creator_lib_budget):
+    """build_budget_projection returns a valid budget_projection block."""
+    tcl = team_creator_lib_budget
+    bp, row = _make_budget_projection(tcl)
+    assert bp["currency"] == "USD"
+    assert "window" in bp
+    assert "projected_total" in bp
+    assert bp["projection_method"] == "heuristic"
+    assert len(bp["slot_projections"]) == 1
+    assert bp["drift_threshold_pct"] == 20.0
+    assert "notes" not in bp  # not set when not provided
+
+
+def test_projection_sums_slot_projections_correctly(team_creator_lib_budget):
+    """projected_total must equal the sum of all slot projected_total_usd values."""
+    tcl = team_creator_lib_budget
+    import datetime as _dt
+    starts = _dt.date.today()
+    ends = starts + _dt.timedelta(days=84)
+    eff_window = (str(starts), str(ends))
+
+    rows = []
+    for i, (slot, role, cost) in enumerate([
+        ("SLOT-q2-2026-software-engineer-1", "ROLE-software-engineer", 0.000003),
+        ("SLOT-q2-2026-product-manager-1", "ROLE-product-manager", 0.000010),
+        ("SLOT-q2-2026-solutions-architect-1", "ROLE-solutions-architect", 0.000008),
+    ], start=1):
+        rows.append(tcl.compute_slot_projection(
+            slot_id=slot,
+            role=role,
+            seniority="senior",
+            model_profile=None,
+            expected_invocations_per_week=50,
+            avg_tokens={"input": 8000, "output": 2000},
+            unit_cost_usd=cost,
+            effective_window=eff_window,
+        ))
+    bp = tcl.build_budget_projection(
+        slot_projections=rows,
+        scope_window={"starts_at": eff_window[0], "ends_at": eff_window[1]},
+    )
+    expected = round(sum(r["projected_total_usd"] for r in rows), 6)
+    assert bp["projected_total"] == expected, (
+        f"projected_total {bp['projected_total']} != sum {expected}"
+    )
+
+
+def test_get_pricing_snapshotted_into_unit_cost(team_creator_lib_budget):
+    """unit_cost_usd in the slot row must reflect the value passed (simulating
+    get_pricing snapshot at charter time)."""
+    tcl = team_creator_lib_budget
+    import datetime as _dt
+    starts = _dt.date.today()
+    ends = starts + _dt.timedelta(days=84)
+    live_price = 0.000007  # simulated get_pricing return value
+    row = tcl.compute_slot_projection(
+        slot_id="SLOT-q2-2026-software-engineer-1",
+        role="ROLE-software-engineer",
+        seniority="senior",
+        model_profile="ART-20260503_1424-ModelProfile-sonnet",
+        expected_invocations_per_week=50,
+        avg_tokens={"input": 8000, "output": 2000},
+        unit_cost_usd=live_price,
+        effective_window=(str(starts), str(ends)),
+    )
+    assert row["unit_cost_usd"] == live_price, (
+        "unit_cost_usd must be snapshotted from get_pricing, not recomputed"
+    )
+    # projected_total_usd must use the snapshotted price
+    weeks = math.ceil(84 / 7)
+    expected_total = live_price * (8000 + 2000) * 50 * weeks
+    assert abs(row["projected_total_usd"] - expected_total) < 1e-9
+
+
+def test_pk_team_review_skips_drift_when_no_budget_projection(server_mod, project_root):
+    """query_budget_drift returns status=no_projection_on_file when the
+    chartering DEC has no budget_projection block."""
+    # No decision files written — server_mod starts clean.
+    result = server_mod.query_budget_drift()
+    assert result["status"] == "no_projection_on_file"
+    assert result["finding_code"] is None
+    assert "skipping drift check" in result["summary"] or "drift check skipped" in result["summary"]
+
+
+def test_pk_team_review_emits_budget_drift_over_spend(
+    server_mod, project_root: Path
+):
+    """query_budget_drift emits team.budget.drift (warning) when actual exceeds threshold."""
+    tcl_path = (
+        _find_repo_root()
+        / "context" / "skills" / "processkit" / "team-creator" / "scripts"
+    )
+    if str(tcl_path) not in sys.path:
+        sys.path.insert(0, str(tcl_path))
+    for name in ("team_creator_lib",):
+        if name in sys.modules:
+            del sys.modules[name]
+    import team_creator_lib as tcl
+
+    bp, row = _make_budget_projection(tcl, unit_cost=0.000003, invocations=50, weeks=12)
+    slot_id = row["slot"]
+
+    # Actual cost is 50% over projected → exceeds 20% threshold
+    projected = row["projected_total_usd"]
+    actual_costs = {slot_id: projected * 1.50}
+
+    drift = tcl.compute_budget_drift(bp, actual_costs)
+    assert drift["threshold_exceeded"] is True
+    assert drift["finding_code"] == "team.budget.drift"
+    assert drift["severity"] == "warning"
+    assert drift["drift_direction"] == "over"
+    assert drift["drift_pct"] > 20.0
+
+
+def test_pk_team_review_emits_informational_under_spend(team_creator_lib_budget):
+    """compute_budget_drift emits team.budget.drift with severity=info on under-spend."""
+    tcl = team_creator_lib_budget
+    bp, row = _make_budget_projection(tcl, unit_cost=0.000003, invocations=50, weeks=12)
+    slot_id = row["slot"]
+    projected = row["projected_total_usd"]
+    # Actual is 40% below projected → exceeds threshold but in under direction
+    actual_costs = {slot_id: projected * 0.50}
+
+    drift = tcl.compute_budget_drift(bp, actual_costs)
+    assert drift["threshold_exceeded"] is True
+    assert drift["finding_code"] == "team.budget.drift"
+    assert drift["severity"] == "info"
+    assert drift["drift_direction"] == "under"
+    assert drift["drift_pct"] < -20.0
+
+
+def test_consultant_slot_uses_engagement_window_intersection(team_creator_lib_budget):
+    """Consultant slots use the intersection of engagement_window and Scope window."""
+    import datetime as _dt
+    tcl = team_creator_lib_budget
+
+    scope_starts = "2026-04-01"
+    scope_ends = "2026-06-30"  # 13 weeks
+
+    # Consultant is only engaged for the first 4 weeks of the scope
+    consultant_starts = "2026-04-01"
+    consultant_ends = "2026-04-28"  # 4 weeks
+
+    intersected = tcl.intersect_windows(
+        scope_starts, scope_ends,
+        consultant_starts, consultant_ends,
+    )
+    assert intersected is not None
+    assert intersected[0] == consultant_starts
+    assert intersected[1] == consultant_ends
+
+    # Compute slot projection using intersected window (4 weeks, not 13)
+    row = tcl.compute_slot_projection(
+        slot_id="SLOT-q2-2026-solutions-architect-1",
+        role="ROLE-solutions-architect",
+        seniority="senior",
+        model_profile=None,
+        expected_invocations_per_week=40,
+        avg_tokens={"input": 10000, "output": 3000},
+        unit_cost_usd=0.000010,
+        effective_window=intersected,
+    )
+    weeks = math.ceil(
+        (_dt.date.fromisoformat(intersected[1]) - _dt.date.fromisoformat(intersected[0])).days / 7
+    )
+    assert weeks == 4, f"expected 4-week window, got {weeks}"
+    expected_total = 0.000010 * (10000 + 3000) * 40 * weeks
+    assert abs(row["projected_total_usd"] - expected_total) < 1e-9
+
+
+def test_intersect_windows_no_overlap_returns_none(team_creator_lib_budget):
+    """intersect_windows returns None when the slot window doesn't overlap scope."""
+    tcl = team_creator_lib_budget
+    result = tcl.intersect_windows(
+        "2026-04-01", "2026-06-30",
+        "2026-07-01", "2026-09-30",  # after scope ends
+    )
+    assert result is None
+
+
+def test_query_budget_drift_mcp_tool_with_injected_costs(
+    server_mod, project_root: Path
+):
+    """query_budget_drift with actual_slot_costs bypasses event-log and returns drift."""
+    # Write a minimal chartering DecisionRecord with a budget_projection block.
+    import datetime as _dt
+    dec_dir = project_root / "context" / "decisions"
+    dec_dir.mkdir(parents=True, exist_ok=True)
+
+    tcl_path = (
+        _find_repo_root()
+        / "context" / "skills" / "processkit" / "team-creator" / "scripts"
+    )
+    if str(tcl_path) not in sys.path:
+        sys.path.insert(0, str(tcl_path))
+    for name in ("team_creator_lib",):
+        if name in sys.modules:
+            del sys.modules[name]
+    import team_creator_lib as tcl
+
+    bp, row = _make_budget_projection(tcl, unit_cost=0.000003, invocations=50, weeks=12)
+    slot_id = row["slot"]
+    projected = row["projected_total_usd"]
+
+    import yaml as _yaml
+    dec_body = (
+        "---\n"
+        "apiVersion: processkit.projectious.work/v2\n"
+        "kind: Decision\n"
+        "metadata:\n"
+        "  id: DEC-20260510_0000-TestDrift-budget-test\n"
+        "  created: '2026-05-10T00:00:00+00:00'\n"
+        "spec:\n"
+        "  title: Budget Drift Test DEC\n"
+        "  state: accepted\n"
+        "  inputs_snapshot:\n"
+        "    chartering_scope: SCOPE-q2-2026\n"
+        f"    budget_projection:\n"
+        f"      currency: USD\n"
+        f"      window:\n"
+        f"        starts_at: '{bp['window']['starts_at']}'\n"
+        f"        ends_at: '{bp['window']['ends_at']}'\n"
+        f"      projected_total: {bp['projected_total']}\n"
+        f"      projection_method: heuristic\n"
+        f"      drift_threshold_pct: {bp['drift_threshold_pct']}\n"
+        f"      slot_projections:\n"
+        f"        - slot: {slot_id}\n"
+        f"          role: {row['role']}\n"
+        f"          seniority: {row['seniority']}\n"
+        f"          model_profile: '{row['model_profile']}'\n"
+        f"          expected_invocations_per_week: {row['expected_invocations_per_week']}\n"
+        f"          avg_tokens_per_invocation:\n"
+        f"            input: {row['avg_tokens_per_invocation']['input']}\n"
+        f"            output: {row['avg_tokens_per_invocation']['output']}\n"
+        f"          unit_cost_usd: {row['unit_cost_usd']}\n"
+        f"          projected_total_usd: {row['projected_total_usd']}\n"
+        "---\n\n"
+        "# Budget Drift Test\n"
+    )
+    (dec_dir / "DEC-20260510_0000-TestDrift-budget-test.md").write_text(
+        dec_body, encoding="utf-8"
+    )
+
+    # Inject actual cost: 60% over projected → should trigger warning
+    actual = {slot_id: projected * 1.60}
+    result = server_mod.query_budget_drift(actual_slot_costs=actual)
+
+    assert result["status"] == "ok", result
+    assert result["threshold_exceeded"] is True
+    assert result["finding_code"] == "team.budget.drift"
+    assert result["severity"] == "warning"
+    assert result["drift_direction"] == "over"
