@@ -43,6 +43,26 @@
           }
         ],
         "matcher": "Write|Edit|MultiEdit|create_workitem|transition_workitem|record_decision|link_entities|open_discussion|create_artifact|log_event|create_note"
+      },
+      {
+        "_processkit_managed": true,
+        "hooks": [
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/check_entity_read.py",
+            "type": "command"
+          }
+        ],
+        "matcher": "Read"
+      },
+      {
+        "_processkit_managed": true,
+        "hooks": [
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/check_route_task_before_agent.py",
+            "type": "command"
+          }
+        ],
+        "matcher": "Agent|Task"
       }
     ],
     "SessionStart": [

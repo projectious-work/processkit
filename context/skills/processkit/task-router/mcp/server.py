@@ -57,6 +57,50 @@ from mcp.types import ToolAnnotations  # noqa: E402
 
 from processkit import paths  # noqa: E402
 
+import datetime as _dt  # noqa: E402
+
+# ---------------------------------------------------------------------------
+# Route-task marker writing (T2.2 — check_route_task_before_agent.py hook)
+# ---------------------------------------------------------------------------
+
+_ROUTE_MARKER_SUBDIR = Path("context") / ".state" / "skill-gate"
+
+
+def _write_route_task_marker(root: Path) -> None:
+    """Write a per-turn marker so the Agent-dispatch hook knows route_task ran.
+
+    File: context/.state/skill-gate/route-task-<pid>-<ts_ms>.routed
+    Content: JSON with ts (ISO UTC) so the hook can apply a time-window check.
+    Errors are silently swallowed — marker writing must not break routing.
+    """
+    try:
+        marker_dir = root / _ROUTE_MARKER_SUBDIR
+        marker_dir.mkdir(parents=True, exist_ok=True)
+        now = _dt.datetime.now(_dt.timezone.utc)
+        ts_ms = int(now.timestamp() * 1000)
+        sid = os.environ.get("PROCESSKIT_SESSION_ID", str(os.getpid()))
+        marker = marker_dir / f"route-task-{sid}-{ts_ms}.routed"
+        marker.write_text(
+            json.dumps({"ts": now.isoformat(), "session_id": sid}) + "\n",
+            encoding="utf-8",
+        )
+        # Prune old markers (> 5 min) to keep the dir tidy
+        cutoff = now - _dt.timedelta(minutes=5)
+        for old in marker_dir.glob("route-task-*.routed"):
+            if old == marker:
+                continue
+            try:
+                data = json.loads(old.read_text(encoding="utf-8"))
+                ts = _dt.datetime.fromisoformat(data["ts"])
+                if ts.tzinfo is None:
+                    ts = ts.replace(tzinfo=_dt.timezone.utc)
+                if ts < cutoff:
+                    old.unlink(missing_ok=True)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
 server = FastMCP("processkit-task-router")
 
 # ---------------------------------------------------------------------------
@@ -1126,6 +1170,10 @@ def route_task(
         )
         if signals:
             result["intent_signals"] = signals
+        try:
+            _write_route_task_marker(paths.find_project_root())
+        except Exception:
+            pass
         return result
 
     # ── Phase 1: domain group scoring ─────────────────────────────────────
@@ -1335,6 +1383,12 @@ def route_task(
 
     if trace:
         result["trace"] = list(trace)
+
+    # Write per-turn marker so check_route_task_before_agent.py hook passes.
+    try:
+        _write_route_task_marker(paths.find_project_root())
+    except Exception:
+        pass  # marker write failure must not break routing
 
     return result
 
