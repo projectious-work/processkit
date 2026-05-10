@@ -8,10 +8,10 @@ metadata:
     github_issue: 18
     area: compliance
     cluster: agent-dispatch
-  updated: '2026-05-09T14:04:05+00:00'
+  updated: '2026-05-10T03:46:05+00:00'
 spec:
   title: Rebalance compliance contract sentiment to positive imperatives (gh#18)
-  state: review
+  state: done
   type: task
   priority: high
   description: 'Triaged from GH #18. Current `compliance-contract.md` has 9 negative
@@ -24,6 +24,7 @@ spec:
     LLM pattern, not Claude-specific. Pairs with gh#17 (which positive imperatives
     to add) and gh#19 (Claude Code surface).'
   started_at: '2026-05-09T13:57:10+00:00'
+  completed_at: '2026-05-10T03:46:05+00:00'
 ---
 
 ## Transition note (2026-05-09T13:57:10+00:00)
@@ -34,3 +35,8 @@ Wave 3a dispatch — ephemeral ROLE-ai-research-scientist/senior on Opus 4.7 pic
 ## Transition note (2026-05-09T14:04:05+00:00)
 
 Contract rewrite landed. 50 lines (under 60 cap). 5 sections: On session start / Tool routing / Entity writes / Decisions / Prohibitions. 10 positive : 4 negative imperatives (skews more positive than 50/50; agent justified as matching the WorkItem's "name desired behaviors first" framing). All 10 original rules preserved. WildPanda P1 placeholder at line 12: `&lt;!-- TODO(WildPanda P1): sub-agent-dispatch clause --&gt;`. Both trees byte-identical. Note: per DaringRaven rec 4 decision, this 50-line full contract will become the canonical reference; the per-turn hook will inject a 3+1-line slim version against this same file (or a derived slim file) — implementation TBD in Wave 3c.
+
+
+## Transition note (2026-05-10T03:46:05+00:00)
+
+Shipped to main on 2026-05-09 via PR #24; closing per v0.26.0 release prep.

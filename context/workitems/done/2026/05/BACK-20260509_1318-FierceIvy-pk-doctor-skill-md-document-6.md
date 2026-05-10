@@ -8,10 +8,10 @@ metadata:
     github_issue: 23
     area: pk-doctor
     cluster: v1-drift
-  updated: '2026-05-09T13:49:38+00:00'
+  updated: '2026-05-10T03:46:02+00:00'
 spec:
   title: 'pk-doctor SKILL.md: document 6 missing check modules (gh#23)'
-  state: review
+  state: done
   type: task
   priority: medium
   description: 'Triaged from GH #23. SKILL.md documents Phase 1 (4) + post-Phase 1
@@ -26,6 +26,7 @@ spec:
     OR has `_unregistered.py` suffix.\n\nUnblocks gh#22 (need to know what existing
     checks already cover before adding `v1_entity_drift`).'
   started_at: '2026-05-09T13:46:35+00:00'
+  completed_at: '2026-05-10T03:46:02+00:00'
 ---
 
 ## Transition note (2026-05-09T13:46:35+00:00)
@@ -36,3 +37,8 @@ Wave 1 dispatch approved by owner; ephemeral ROLE-technical-writer/specialist on
 ## Transition note (2026-05-09T13:49:38+00:00)
 
 Docs landed in context/ and src/context/ mirror. Cora reviewed the diff and confirmed all 6 entries match the existing format and reference only IDs found in module docstrings. Holding in review for owner sign-off if desired.
+
+
+## Transition note (2026-05-10T03:46:02+00:00)
+
+Shipped to main on 2026-05-09 via PR #24; closing per v0.26.0 release prep.

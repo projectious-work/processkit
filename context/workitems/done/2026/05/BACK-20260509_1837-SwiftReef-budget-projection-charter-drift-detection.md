@@ -14,10 +14,10 @@ metadata:
     model_class: balanced
     owner_role: ROLE-software-engineer/senior
     depends_on: SUB-1,SUB-2
-  updated: '2026-05-10T02:34:37+00:00'
+  updated: '2026-05-10T03:46:09+00:00'
 spec:
   title: 'team-creator v2 SUB-4: budget projection + drift detection'
-  state: review
+  state: done
   type: task
   priority: medium
   description: 'Sub-item of VastVale (gh#20). Extend inputs_snapshot schema with budget_projection
@@ -34,6 +34,7 @@ spec:
     needs owner answer before charter step ships.'
   parent: BACK-20260509_1318-VastVale-team-creator-v2-5-design-gaps
   started_at: '2026-05-10T02:25:39+00:00'
+  completed_at: '2026-05-10T03:46:09+00:00'
 ---
 
 ## Transition note (2026-05-10T02:25:39+00:00)
@@ -44,3 +45,8 @@ Wave 4 SUB-4 dispatch — TEAMMEMBER-finn (ROLE-software-engineer/senior) on Son
 ## Transition note (2026-05-10T02:34:37+00:00)
 
 SUB-4 shipped on Sonnet 4.6 (explicit model). Final VastVale sub-WorkItem complete. inputs_snapshot.budget_projection block per design (+ effective_window per slot for consultant traceability, only deviation). pk-team-create gains Step 7.5 projection compute + --budget-drift-threshold/--projection-method flags. team_creator_lib helpers: intersect_windows, compute_slot_projection, build_budget_projection, compute_budget_drift. team-manager gets query_budget_drift MCP tool + event-log scan helpers. pk-team-review Step 5c + BUDGET DRIFT report section (warning on over-spend, info on under-spend, skip when no projection). Consultant slots use engagement_window ∩ Scope window for per-slot cost windows. 9 new tests; 97/97 team-manager tests pass on both trees. Open: actual cost recompute uses snapshotted unit_cost_usd (volume drift only) — live get_pricing is achievable via the actual_slot_costs injection parameter when the calling workflow pre-computes; cross-server team-manager->model-recommender call avoided as scope discipline.
+
+
+## Transition note (2026-05-10T03:46:09+00:00)
+
+Shipped to main on 2026-05-09 via PR #30; closing per v0.26.0 release prep.

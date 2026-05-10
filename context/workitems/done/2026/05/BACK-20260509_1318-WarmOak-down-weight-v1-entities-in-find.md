@@ -8,10 +8,10 @@ metadata:
     github_issue: 21
     area: task-router
     cluster: v1-drift
-  updated: '2026-05-09T14:09:28+00:00'
+  updated: '2026-05-10T03:46:04+00:00'
 spec:
   title: Down-weight v1 entities in find_skill / task-router (gh#21)
-  state: review
+  state: done
   type: task
   priority: high
   description: 'Triaged from GH #21. find_skill/task-router returns v1 `PROC-release`
@@ -24,6 +24,7 @@ spec:
     penalty configurable per-project (some projects intentionally on v1)\n\nLocalized
     change in router scoring. Pairs with gh#22 (pk-doctor v1_entity_drift).'
   started_at: '2026-05-09T13:48:38+00:00'
+  completed_at: '2026-05-10T03:46:04+00:00'
 ---
 
 ## Transition note (2026-05-09T13:48:38+00:00)
@@ -44,3 +45,8 @@ Re-opened per owner decision (DEC: WarmOak entity-level extension). TEAMMEMBER-f
 ## Transition note (2026-05-09T14:09:28+00:00)
 
 Extension landed. index-management/mcp/server.py: query_entities + get_entity annotation-only (no native score in those surfaces); search_entities gets multiplicative penalty + re-rank via synthesized base_score=1/(1+rank_index). Same `v1_entity_penalty` knob in task-router/mcp/user_config.json (no second config primitive). Both trees byte-identical. No tests (no test pattern exists in index-management). Open follow-up question: semantic_search_entities and hybrid_search_entities follow the same ranked-result shape and would benefit from the same penalty — flag for a separate WorkItem rather than scope-creep here. Now Wave 2 closes.
+
+
+## Transition note (2026-05-10T03:46:04+00:00)
+
+Shipped to main on 2026-05-09 via PR #24; closing per v0.26.0 release prep.

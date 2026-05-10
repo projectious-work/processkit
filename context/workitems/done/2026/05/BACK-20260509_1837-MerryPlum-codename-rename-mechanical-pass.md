@@ -13,10 +13,10 @@ metadata:
     effort: small
     model_class: fast
     owner_role: ROLE-technical-writer/specialist
-  updated: '2026-05-09T19:06:13+00:00'
+  updated: '2026-05-10T03:46:10+00:00'
 spec:
   title: 'team-creator v2 SUB-5: codename rename pass (mechanical)'
-  state: review
+  state: done
   type: chore
   priority: low
   description: 'Sub-item of VastVale (gh#20). Mechanical search-and-replace in context/skills/processkit/team-creator/SKILL.md
@@ -31,6 +31,7 @@ spec:
     §"Gap 2 — Codename rename".'
   parent: BACK-20260509_1318-VastVale-team-creator-v2-5-design-gaps
   started_at: '2026-05-09T18:40:30+00:00'
+  completed_at: '2026-05-10T03:46:10+00:00'
 ---
 
 ## Transition note (2026-05-09T18:40:30+00:00)
@@ -41,3 +42,8 @@ Wave 4 SUB-5 dispatch — ephemeral ROLE-technical-writer/specialist on Haiku 4.
 ## Transition note (2026-05-09T19:06:13+00:00)
 
 Wave 4 SUB-5 shipped on Haiku. 12 total replacements across 2 mirror trees: SKILL.md (4×2), references/tiering-formula.md (1×2), references/team-weights-decision-schema.md (1×2). All "OpenWeave" surfaces collapsed to plain phrasing; "TeamWeaver Phase 3 dogfood" → "the 2026-04-15 internal review". DEC IDs and ART-20260415_1545-TeamWeaver-* preserved (immutable refs). diff -r clean, no uncertainties flagged.
+
+
+## Transition note (2026-05-10T03:46:10+00:00)
+
+Shipped to main on 2026-05-09 via PR #24; closing per v0.26.0 release prep.

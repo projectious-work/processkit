@@ -14,10 +14,10 @@ metadata:
     model_class: balanced
     owner_role: ROLE-software-engineer/senior
     depends_on: SUB-1
-  updated: '2026-05-09T22:04:55+00:00'
+  updated: '2026-05-10T03:46:08+00:00'
 spec:
   title: 'team-creator v2 SUB-2: catalog-driven pk-team-create'
-  state: review
+  state: done
   type: task
   priority: medium
   description: 'Sub-item of VastVale (gh#20). Delete the 8-archetype Role write step
@@ -31,6 +31,7 @@ spec:
     final mapping.yaml ships.'
   parent: BACK-20260509_1318-VastVale-team-creator-v2-5-design-gaps
   started_at: '2026-05-09T21:46:11+00:00'
+  completed_at: '2026-05-10T03:46:08+00:00'
 ---
 
 ## Transition note (2026-05-09T21:46:11+00:00)
@@ -41,3 +42,8 @@ Wave 4 SUB-2 dispatch — TEAMMEMBER-finn (ROLE-software-engineer/senior) on Son
 ## Transition note (2026-05-09T22:04:55+00:00)
 
 SUB-2 shipped on Sonnet (likely Opus inheritance, see prior billing finding). pk-team-create cuts over to RoleSlots via SUB-1's create_role_slot/fill_role_slot MCP tools — no more archetype Roles. New archetype-catalog-mapping.yaml + team_creator_lib helper. 3 commands updated (pk-team-create, pk-team-rebalance, pk-team-review) + 2 references (role-archetypes, role-archetypes-override). v0.16.0 doc scrub clean (14 remaining hits are deliberate v1-history annotations). apply_migration_2139.py shipped (idempotent backfill; v2-native no-op verified). Gateway tool-catalog regenerated via the regen script: now 152 tools (+339/-5 from SUB-1's 5 new tools). 13 new tests, all 77 in test file pass. Trees mirrored clean. Open follow-ups: a doctor check could flag archetype Roles as superseded after full cutover; apply_migration_2139.py needs chartering_scope on CLI (deferrable to SUB-3/4 if migration entity gains that field).
+
+
+## Transition note (2026-05-10T03:46:08+00:00)
+
+Shipped to main on 2026-05-09 via PR #28; closing per v0.26.0 release prep.
