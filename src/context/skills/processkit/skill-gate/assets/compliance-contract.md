@@ -76,3 +76,34 @@
   mirror used as a diff baseline).
 - Do not hand-edit the generated harness MCP config — edit the
   per-skill `mcp-config.json` and let the installer re-merge.
+
+## Preferred MCP entry points by task type
+
+| Task type | Preferred MCP entry point |
+|-----------|--------------------------|
+| Read a single entity by ID | `get_entity(id=...)` or kind-specific `get_workitem` / `get_decision` / `get_team_member` |
+| Read an entity by filesystem path | `get_entity_by_path(path=...)` |
+| List entities across kinds | `list_entities(kind?, state?, limit?)` |
+| Search entities by text | `search_entities(text)` or `hybrid_search_entities(text)` |
+| Create / mutate an entity | `create_*` / `transition_*` / `record_*` / `open_*` tools (always route_task first) |
+| Run the aggregator health check | `run_pk_doctor(check?, fix?)` |
+| Run the pre-release validation sweep | `run_pk_release_audit(tree?)` |
+| Dispatch a sub-agent | `route_task(task_description=...)` first → then `Agent` or `Task` with recommended model |
+
+## Read is OK for non-entity files
+
+The Read tool is **blocked** on canonical entity files (paths matching
+`context/{workitems,decisions,artifacts,team-members,scopes,gates,actors,
+roles,bindings}/*.md`). A PreToolUse hook enforces this at runtime.
+
+Read is **allowed** (no hook block) for:
+- Skill source code under `context/skills/<skill>/` — scripts, SKILL.md,
+  configs, assets are all readable directly.
+- Schema definitions under `context/schemas/` (reading is fine; writes
+  require a Migration + DEC).
+- Log entries under `context/logs/` (append-only, safe to scan).
+- Applied migrations under `context/migrations/applied/`.
+- TeamMember sub-files: `persona.md`, `card.json`, and everything under
+  `knowledge/`, `journal/`, `skills/`, `relations/`, `lessons/`,
+  `private/`, `working/`.
+- Any file outside `context/` entirely (docs/, src/, README.md, etc.).

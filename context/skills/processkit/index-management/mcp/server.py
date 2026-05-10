@@ -18,6 +18,8 @@ Tools provided:
     reindex()                              -> stats
     query_entities(kind?, state?, limit?)  -> [entities]
     get_entity(id)                         -> entity | null
+    get_entity_by_path(path)               -> entity | {error}
+    list_entities(kind?, state?, limit?)   -> [entities]
     search_entities(text, limit?)          -> [entities]
     semantic_status()                      -> {capabilities}
     semantic_search_entities(text, limit?) -> [entities]
@@ -308,6 +310,121 @@ def get_entity(id: str) -> dict:
             penalty=_v1_penalty(),
             apply_score=False,
         )
+    finally:
+        db.close()
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def get_entity_by_path(path: str) -> dict:
+    """Fetch a single entity by its relative filesystem path.
+
+    Accepts a path relative to the project root, e.g.
+    ``context/workitems/2026/05/BACK-20260510_0751-TallFern-...md`` or an
+    absolute path.  Dispatches to ``get_entity`` under the hood after
+    deriving the entity ID from the index.
+
+    Handles terminal-state subdirectories (``done/``, ``applied/``,
+    ``rejected/``) transparently.
+
+    Returns the same shape as ``get_entity``, or ``{"error": "..."}`` if
+    the path cannot be resolved to an indexed entity.
+    """
+    root = paths.find_project_root()
+    p = Path(path)
+    if not p.is_absolute():
+        p = root / p
+    try:
+        p = p.resolve()
+    except Exception:
+        pass
+
+    # Query the DB by absolute path string
+    _, db = _open()
+    try:
+        # Try exact path match first
+        rows = db.execute(
+            "SELECT id FROM entities WHERE path = ?", (str(p),)
+        ).fetchall()
+        if not rows:
+            # Try matching the basename (ID without extension) as the entity ID
+            stem = p.stem
+            row2, candidates = index.resolve_entity(db, stem)
+            if candidates:
+                return {"error": f"ambiguous path {path!r}; candidates: {candidates}"}
+            if row2 is None:
+                return {"error": f"no entity found for path: {path!r}"}
+            entity_id = row2["id"]
+        elif len(rows) > 1:
+            return {"error": f"path {path!r} matched multiple entities"}
+        else:
+            entity_id = rows[0]["id"]
+
+        # Now fetch full entity with v1 annotations
+        row, candidates = index.resolve_entity(db, entity_id)
+        if candidates:
+            return {"error": f"ambiguous entity ID {entity_id!r}; candidates: {candidates}"}
+        if row is None:
+            return {"error": f"entity not found: {entity_id!r}"}
+        api_map = _api_versions_for(db, [row["id"]])
+        return _annotate_row(
+            row,
+            api_map.get(row["id"], ""),
+            penalty=_v1_penalty(),
+            apply_score=False,
+        )
+    finally:
+        db.close()
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def list_entities(
+    kind: str | None = None,
+    state: str | None = None,
+    limit: int = 50,
+) -> list[dict]:
+    """Unified entity listing across all kinds.
+
+    A convenience wrapper over ``query_entities`` that surfaces the same
+    v1-entity annotations and accepts the same filters.  Prefer this tool
+    over the per-kind ``list_*`` tools when you want a single call that
+    works across entity types without remembering per-kind tool names.
+
+    Parameters
+    ----------
+    kind: optional primitive kind (e.g. "WorkItem", "DecisionRecord",
+          "TeamMember", "Artifact", "Scope", "Gate", "Role", "Binding").
+    state: optional state filter (e.g. "open", "accepted", "in-progress").
+    limit: maximum rows to return (default 50).
+
+    Each result is annotated with ``v1_penalty_applied`` and
+    ``v1_successor_hint``. Results are ordered by ``created DESC``.
+    """
+    _, db = _open()
+    try:
+        rows = index.query_entities(db, kind=kind, state=state, limit=limit)
+        if not rows:
+            return rows
+        penalty = _v1_penalty()
+        api_map = _api_versions_for(db, [r["id"] for r in rows])
+        return [
+            _annotate_row(
+                row,
+                api_map.get(row["id"], ""),
+                penalty=penalty,
+                apply_score=False,
+            )
+            for row in rows
+        ]
     finally:
         db.close()
 

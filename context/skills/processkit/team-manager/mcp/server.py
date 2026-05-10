@@ -887,6 +887,14 @@ def create_team_member(
     ent = entity.new("TeamMember", new_id, spec)
     ent.write(tm_path)
 
+    # Auto-scaffold tier subdirs + card.json + persona.md (DEC-20260510_0758-FierceFern).
+    # Idempotent: init_tree skips existing files/dirs without error.
+    scaffolded: list[str] = []
+    try:
+        scaffolded = _memory_tree.init_tree(_tm_dir(root, slug), slug, ent)
+    except Exception:
+        pass  # scaffold failure is non-fatal; entity was already written
+
     try:
         db = index.open_db()
         try:
@@ -902,7 +910,14 @@ def create_team_member(
         root=root,
         actor=new_id,
     )
-    return {"id": new_id, "path": str(tm_path), "type": type, "name": name, "slug": slug}
+    return {
+        "id": new_id,
+        "path": str(tm_path),
+        "type": type,
+        "name": name,
+        "slug": slug,
+        "scaffolded": scaffolded,
+    }
 
 
 @server.tool(annotations=ToolAnnotations(

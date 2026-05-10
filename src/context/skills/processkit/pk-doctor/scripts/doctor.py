@@ -79,6 +79,8 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
                    help="(test helper) explicit repo root. Defaults to git rev-parse.")
     p.add_argument("--no-log", action="store_true",
                    help="(test helper) skip event-log emission.")
+    p.add_argument("--json", action="store_true",
+                   help="Emit structured JSON on stdout instead of the human-readable report.")
     return p.parse_args(argv)
 
 
@@ -288,16 +290,43 @@ def main(argv: list[str]) -> int:
 
     duration_ms = int((time.monotonic() - t0) * 1000)
 
-    # stdout report
-    report = _format_report(per_cat, fixes_applied, duration_ms, invocation)
-    sys.stdout.write(report)
+    # Build grand totals for both output modes
+    grand = {"ERROR": 0, "WARN": 0, "INFO": 0}
+    all_findings: list[dict] = []
+    for cat, res in per_cat.items():
+        t = tally(res)
+        for k, v in t.items():
+            grand[k] += v
+        for r in res:
+            all_findings.append(r.to_dict())
+
+    grand_err = grand["ERROR"]
+
+    if args.json:
+        # Structured JSON output for MCP consumers
+        payload = {
+            "findings": all_findings,
+            "totals": {
+                "error": grand["ERROR"],
+                "warn": grand["WARN"],
+                "info": grand["INFO"],
+            },
+            "exit_code": 1 if grand_err else 0,
+            "invocation": invocation,
+            "duration_ms": duration_ms,
+            "doctor_version": DOCTOR_VERSION,
+        }
+        sys.stdout.write(json.dumps(payload) + "\n")
+    else:
+        # Human-readable report (default)
+        report = _format_report(per_cat, fixes_applied, duration_ms, invocation)
+        sys.stdout.write(report)
 
     # logentry
     if not args.no_log:
         _emit_logentry(repo_root, invocation, per_cat, fixes_applied, duration_ms)
 
     # exit code
-    grand_err = sum(tally(r)["ERROR"] for r in per_cat.values())
     return 1 if grand_err else 0
 
 

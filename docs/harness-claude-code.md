@@ -137,6 +137,90 @@ The hook-script tests live in
 `python3 ...` — no extra deps). Tests `[2c]` and `[2d]` cover the
 slim/full split.
 
+## Common MCP calls + Claude Code shortcuts (v0.26.0)
+
+### Top-N gateway tools
+
+The `processkit-gateway` aggregator exposes all processkit MCP tools
+through a single server. The most frequently needed calls:
+
+| Goal | Tool | Notes |
+|------|------|-------|
+| Read entity by ID | `get_entity(id=...)` | Accepts prefix, word-pair, or full ID |
+| Read entity by path | `get_entity_by_path(path=...)` | Path relative to project root |
+| List entities | `list_entities(kind?, state?, limit?)` | All kinds; v1-penalty annotated |
+| Search entities | `search_entities(text)` / `hybrid_search_entities(text)` | FTS + semantic |
+| Create work item | `create_workitem(...)` | Route first via `route_task` |
+| Transition state | `transition_workitem(id, to_state)` | Enforces state machine |
+| Run health check | `run_pk_doctor(check?, fix?)` | Returns structured JSON |
+| Run release audit | `run_pk_release_audit(tree?)` | Returns structured JSON |
+| Route a task | `route_task(task_description=...)` | Required before write calls + Agent dispatch |
+
+### ToolSearch friction
+
+With `ENABLE_TOOL_SEARCH=auto`, tool schemas are deferred. You must call
+`ToolSearch(query="select:<tool_name>")` before invoking a deferred tool.
+Common selects:
+
+```
+ToolSearch(query="select:mcp__processkit-gateway__get_entity,mcp__processkit-gateway__route_task")
+ToolSearch(query="select:mcp__processkit-gateway__create_workitem,mcp__processkit-gateway__transition_workitem")
+```
+
+### Recommended `enabledMcpjsonServers`
+
+Only `processkit-gateway` needs to be in `enabledMcpjsonServers`. The
+gateway proxies all other processkit MCP servers without requiring each
+one to be individually listed.
+
+```json
+{ "enabledMcpjsonServers": ["processkit-gateway"] }
+```
+
+### Entity-read BLOCK behavior (v0.26.0)
+
+A new `check_entity_read.py` PreToolUse hook **blocks** `Read` on
+canonical entity paths:
+
+```
+context/{workitems,decisions,artifacts,team-members,scopes,
+          gates,actors,roles,bindings}/**/*.md
+```
+
+**Blocked** → use `get_entity(id='...')` or `get_entity_by_path(path='...')`.
+
+**Not blocked** (gray area): skill source code under
+`context/skills/<skill>/`, log entries, schemas, applied migrations,
+TeamMember sub-files (`persona.md`, `card.json`, `knowledge/`, etc.),
+and anything outside `context/`.
+
+If you see `BLOCKED: <path> is a canonical entity file`, the remediation
+is always one of:
+
+```python
+get_entity(id="<derived-id>")            # by ID
+get_entity_by_path(path="<rel-path>")    # by path
+list_entities(kind="WorkItem", state="open")  # browse
+search_entities(text="<keyword>")        # search
+```
+
+### Agent dispatch validation (v0.26.0)
+
+A new `check_route_task_before_agent.py` PreToolUse hook **blocks**
+`Agent` and `Task` dispatch without a prior `route_task` call in the
+same turn.
+
+Correct pattern:
+```python
+route = route_task(task_description="summarise the release notes")
+# read route["recommended_team_member_slug"] and route["recommended_model_class"]
+Agent(prompt="...", model="<recommended model>")
+```
+
+If the `context/.state/skill-gate/` directory does not exist (first run
+before any processkit MCP call), the hook **warns but does not block**
+(graceful degradation).
+
 ## Open items
 
 - `.claude/settings.example.json` was the natural home for the

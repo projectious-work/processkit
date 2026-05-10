@@ -850,21 +850,65 @@ def main(argv: Optional[list[str]] = None) -> int:
             "is the shipped release deliverable tree."
         ),
     )
+    p.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit structured JSON on stdout instead of the human-readable report.",
+    )
     args = p.parse_args(argv)
 
     repo_root = _resolve_repo_root(args.repo_root)
 
+    import json as _json
     reports: list[str] = []
     total_errors = 0
+    all_findings: list[dict] = []
+    per_tree_tallies: list[dict] = []
+
     for target in _targets_for_tree(repo_root, args.tree):
         per_check: dict[str, list[Finding]] = {}
         for check_name, check_fn in CHECKS:
             per_check[check_name] = check_fn(target)
 
-        reports.append(_format_report(per_check, repo_root, target.label))
+        if args.json:
+            tree_grand = {"ERROR": 0, "WARN": 0, "INFO": 0}
+            for check_name, findings in per_check.items():
+                t = tally(findings)
+                for k, v in t.items():
+                    tree_grand[k] += v
+                for f in findings:
+                    all_findings.append({
+                        "tree": target.label,
+                        "check": check_name,
+                        "severity": f.severity,
+                        "id": f.id,
+                        "message": f.message,
+                        "entity_ref": f.entity_ref,
+                    })
+            per_tree_tallies.append({"tree": target.label, "totals": tree_grand})
+        else:
+            reports.append(_format_report(per_check, repo_root, target.label))
+
         total_errors += sum(tally(findings)["ERROR"] for findings in per_check.values())
 
-    print("\n---\n".join(reports))
+    if args.json:
+        grand = {"error": 0, "warn": 0, "info": 0}
+        for entry in per_tree_tallies:
+            t = entry["totals"]
+            grand["error"] += t.get("ERROR", 0)
+            grand["warn"] += t.get("WARN", 0)
+            grand["info"] += t.get("INFO", 0)
+        payload = {
+            "findings": all_findings,
+            "totals": grand,
+            "exit_code": 1 if total_errors > 0 else 0,
+            "per_tree": per_tree_tallies,
+            "audit_version": AUDIT_VERSION,
+        }
+        print(_json.dumps(payload))
+    else:
+        print("\n---\n".join(reports))
+
     return 1 if total_errors > 0 else 0
 
 

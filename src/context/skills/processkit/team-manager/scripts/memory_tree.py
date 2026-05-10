@@ -22,7 +22,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-TIER_SUBDIRS = ("working", "journal", "knowledge", "skills", "relations", "lessons")
+TIER_SUBDIRS = ("journal", "knowledge", "skills", "relations", "lessons")
 _PRIVATE = "private"
 
 
@@ -72,14 +72,12 @@ def _display_name(entity_obj: Any | None, slug: str) -> str:
 
 def _persona_template(name: str, slug: str) -> str:
     return (
+        "---\n"
+        "kind: Persona\n"
+        "sensitivity: public\n"
+        "---\n\n"
         f"# {name}\n\n"
-        f"Team-member slug: `{slug}`.\n\n"
-        "## Identity\n\n"
-        "TODO — one-paragraph identity statement, voice, and communication style.\n\n"
-        "## Boundaries\n\n"
-        "TODO — explicit behavioral no-go areas.\n\n"
-        "## Declared expertise\n\n"
-        "TODO — depth areas.\n"
+        "TODO: write persona\n"
     )
 
 
@@ -87,10 +85,11 @@ def _card_template(entity_obj: Any | None, slug: str) -> str:
     card: dict[str, Any] = {
         "schemaVersion": "a2a/v0.3",
         "name": slug,
+        "description": "",
         "role": "ROLE-unassigned",
         "seniority": "specialist",
         "skills": [],
-        "modalities": ["text"],
+        "modalities": ["text", "tools"],
         "provider": "processkit",
         "contact": {},
         "signature": {"alg": "none", "value": ""},
