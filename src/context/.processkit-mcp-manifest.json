@@ -1,6 +1,6 @@
 {
   "aggregate_sha256": "89a3c0248d933cc2b3022f45a61667dd48280727043b1f2405165a67c2cbd5d8",
-  "generated_at": "2026-05-04T14:31:55Z",
+  "generated_at": "2026-05-10T08:16:20Z",
   "per_gateway": [
     {
       "path": "context/skills/processkit/processkit-gateway/mcp/mcp-config.json",
@@ -73,8 +73,16 @@
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
     },
     {
+      "path": "context/skills/processkit/pk-doctor/mcp/server.py",
+      "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
+    },
+    {
       "path": "context/skills/processkit/processkit-gateway/mcp/server.py",
       "sha256": "e67c7cb4eabea3c15f3c8681e42a4e65c47ebc3dd39a3f5cd6e426c21c284025"
+    },
+    {
+      "path": "context/skills/processkit/release-audit/mcp/server.py",
+      "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
     },
     {
       "path": "context/skills/processkit/role-management/mcp/server.py",
@@ -199,6 +207,6 @@
       "sha256": "a4ae7e26a980aeebed953f3cc2e761cde6dd8692fb033c81c9e3c8927e8b5898"
     }
   ],
-  "processkit_version": "v0.25.7",
+  "processkit_version": "v0.26.0",
   "version": 1
 }
