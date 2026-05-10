@@ -66,6 +66,11 @@ def _active_team_member_slugs(repo_root: Path) -> set[str]:
         spec = data.get("spec") if isinstance(data.get("spec"), dict) else {}
         if not spec.get("active", True):
             continue
+        # Mirror team-manager.export_claude_subagent: skip non-exportable
+        # TeamMembers (e.g. owner with type='human' carrying exportable=false).
+        # The export is impossible by design — flagging it as missing is noise.
+        if spec.get("exportable") is False:
+            continue
         slug = spec.get("slug") or child.name
         if isinstance(slug, str) and slug:
             out.add(slug)

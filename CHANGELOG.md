@@ -11,6 +11,107 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.0] — 2026-05-10
+
+v0.26.0 is a **minor release** that lands the GH-issue cluster
+(#17–#23, #31), the team-creator v2 epic (#20, decomposed into 5
+sub-WorkItems), and lazy-import support for the aggregate MCP gateway.
+
+### Added
+
+- **`RoleSlot` primitive** (PR #27). New first-class entity kind that
+  decouples the *role/seniority* axis from the *identity* axis. Adds
+  five MCP tools (`create_role_slot`, `get_role_slot`,
+  `list_role_slots`, `fill_role_slot`, `close_role_slot`) and a
+  resolver hook on `team-manager`.
+- **Catalog-driven `pk-team-create`** (PR #28). Charter now reads
+  `archetype-catalog-mapping.yaml` and writes RoleSlots instead of
+  archetype Roles + Actors + role-assignment Bindings (Phase A
+  cutover). Includes `apply_migration_2139.py` idempotent backfill
+  for existing projects.
+- **Consultant TeamMember type + engagement window** (PR #29).
+  `team-member.yaml` v1.1.0 → v1.2.0 adds `consultant` enum,
+  `engaged_for`, `engagement_window`, and
+  `auto_deactivate_on_scope_close`; `scope-management` auto-deactivates
+  consultants on Scope archive.
+- **Budget projection + drift detection in charter DECs** (PR #30).
+  Chartering `DecisionRecord` blocks include a budget projection;
+  `query_budget_drift` surfaces variance from snapshotted unit cost.
+- **`recommended_team_member_slug` and `recommended_model_class` on
+  `route_task`** (PR #24). PM-coordination domain groups resolved
+  initially; engineering-role coverage extended to all 14 domain
+  groups (branch `feat/wildpanda-p2-engineering-roles`).
+- **`v1_entity_penalty` re-rank in `find_skill` / task-router**
+  (PR #24). Default 0.3 multiplicative penalty down-weights v1
+  entities when a v2 successor exists. Applied to `query_entities`,
+  `get_entity`, `search_entities`, and now also
+  `semantic_search_entities` + `hybrid_search_entities` (branch
+  `feat/warmoak-semantic-hybrid-v1-penalty`).
+- **`v1_entity_drift` and `team_member_exports` checks in pk-doctor**
+  (PR #24). Surface stale v1 frontmatter outside append-only buckets,
+  and missing `.claude/agents/<slug>.md` exports for active members
+  (with `exportable=false` opt-out for human owners).
+- **Slim per-turn compliance hook + harness knobs documentation**
+  (PR #24). UserPromptSubmit emits a 14-line slim block; SessionStart
+  emits the full contract. New `docs/harness-claude-code.md`.
+- **Lazy-import mode for `aggregate-mcp`** (branch
+  `feat/gh31-aggregate-mcp-lazy`, gh#31). Opt-in via
+  `PROCESSKIT_MCP_LAZY=1` or `PROCESSKIT_MCP_MODE=lazy_catalog`;
+  defers per-skill module imports until first tool call. **1.58×
+  cold-start speedup** (median 422ms → 268ms). Reuses
+  `GatewayRegistry` infrastructure shipped via BACK-ThriftyWren.
+
+### Changed
+
+- **Compliance contract rewritten with positive-imperative balance**
+  (PR #24). `compliance-contract.md` now 50 lines, 6 sections,
+  10 positive : 4 negative imperatives. Includes a sub-agent-dispatch
+  clause (`route_task` before any `Agent`/`Task` call) and BEGIN/END
+  HOOK markers for slim hook injection.
+- **`pk-team-create` no longer writes archetype Roles, Actors, or
+  role-assignment Bindings** (PR #28). Behavioral cutover — derived
+  projects on v0.26.0+ should not see these entity kinds emitted at
+  charter time. Existing projects can backfill via Migration
+  `20260509_2139_0.25.8-to-0.26.0`.
+- **`pk-doctor` SKILL.md documents all 16 check modules** (PR #24).
+  Previously only 4 were documented; the other 12 (including the new
+  `v1_entity_drift` and `team_member_exports`) now appear with
+  severity, `--fix` paths, and exception notes.
+- **Migration schema relaxed**: `spec.required` reduced from
+  `[source, from_version, to_version, state]` to `[source, state]`.
+  `from_version`/`to_version` remain enforced for `source-upgrade`
+  migrations by `aibox sync` at generation time; the relaxation
+  unblocks validation of `schema-extension` migrations like
+  `aibox-lock` backfills which document an internal schema bump.
+- **`release-audit` exempts `migrations/applied/` and
+  `migrations/rejected/` from v1 apiVersion errors**, matching the
+  `v1_entity_drift` exception in pk-doctor. Rewriting historical
+  applied migrations would falsify the audit trail.
+- **`pk-doctor` `team_member_exports` check honors `exportable=false`**.
+  Human owners (and other non-exportable members) are no longer
+  flagged as missing a `.claude/agents/<slug>.md` export.
+- **`pk-doctor` `preauth_applied` check is gateway-mode aware**.
+  When `processkit-gateway` is the only enabled MCP server (per
+  `_processkit_managed_keys.enabled_servers`), per-skill servers are
+  proxied through the gateway and no longer reported as missing
+  from `enabledMcpjsonServers`.
+
+### Migrations
+
+- `20260509_2139_0.25.8-to-0.26.0.md` — Phase A additive cutover for
+  the team-creator v2 entity model. `apply_migration_2139.py`
+  idempotent backfill; rollback feasible.
+
+### Housekeeping
+
+- Archived 9 applied migrations into
+  `context/archives/2026/05/ARCHIVE-20260510_074047-migration-applied.tar.gz`
+  (8 runtime + 1 lock + 1 source-upgrade), per the
+  `context_hygiene` archive recommendation. Originals retained
+  inside the archive tarball with manifest + sha256.
+
+---
+
 ## [v0.25.8] — 2026-05-05
 
 v0.25.8 is a **patch release** that adds Xiaomi MiMo to model routing

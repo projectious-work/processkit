@@ -214,6 +214,19 @@ def run(ctx) -> list[CheckResult]:
             )
             live_servers = set(settings.get("enabledMcpjsonServers") or [])
 
+            # Gateway-mode awareness: when processkit-gateway is the enabled
+            # server and the project's _processkit_managed_keys explicitly
+            # marks gateway as the only enabled server, the per-skill servers
+            # are transparently proxied through the gateway. Flagging them
+            # as "missing from enabledMcpjsonServers" is incorrect — they
+            # never get individually enabled in gateway mode by design.
+            managed = settings.get("_processkit_managed_keys") or {}
+            managed_enabled = set(managed.get("enabled_servers") or [])
+            in_gateway_mode = (
+                "processkit-gateway" in live_servers
+                and managed_enabled == {"processkit-gateway"}
+            )
+
             missing_perms = sorted(spec_perms - live_perms)
             if missing_perms:
                 preview = ", ".join(missing_perms[:5])
@@ -232,6 +245,10 @@ def run(ctx) -> list[CheckResult]:
                 ))
 
             missing_servers = sorted(spec_servers - live_servers)
+            if missing_servers and in_gateway_mode:
+                # In gateway mode, per-skill servers are proxied through
+                # processkit-gateway and not individually enabled.
+                missing_servers = []
             if missing_servers:
                 preview = ", ".join(missing_servers[:5])
                 if len(missing_servers) > 5:

@@ -307,9 +307,16 @@ def run_entity_files(target_or_root: AuditTarget | Path) -> list[Finding]:
                 ))
                 continue
 
-            # apiVersion check
+            # apiVersion check — append-only buckets (migrations/applied,
+            # migrations/rejected) are historical records and exempt, matching
+            # pk-doctor's v1_entity_drift exception. Rewriting historical
+            # migration entries would falsify the audit trail.
             api_ver = data.get("apiVersion")
-            if api_ver != EXPECTED_API_VERSION:
+            in_terminal_migration_bucket = (
+                dir_name == "migrations"
+                and md_path.parent.name in ("applied", "rejected")
+            )
+            if api_ver != EXPECTED_API_VERSION and not in_terminal_migration_bucket:
                 findings.append(Finding(
                     severity="ERROR",
                     category="entity_files",
