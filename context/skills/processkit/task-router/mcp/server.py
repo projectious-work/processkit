@@ -397,19 +397,42 @@ V1_SUCCESSOR_GROUPS: dict[str, list[str]] = {
 DEFAULT_V1_PENALTY = 0.3
 
 # ---------------------------------------------------------------------------
-# Sub-agent dispatch hints (BACK-20260509_1317-WildPanda P2)
+# Sub-agent dispatch hints (BACK-20260509_1317-WildPanda P2;
+#                           BACK-20260510_0344-MerryFox P2 follow-up)
 # ---------------------------------------------------------------------------
 # Maps domain group → preferred ROLE-<slug> for sub-agent identity.
 # Used by `_recommend_team_member()` to surface a TeamMember whose
-# `default_role` matches when no skill-level binding exists. Conservative:
-# only groups with a clear product/engineering/PM owner are mapped; the
-# rest fall through to None.
+# `default_role` matches when no skill-level binding exists.
+#
+# PM groups (product-manager): workitem, decision, discussion, scope, retro
+# Engineering groups (software-engineer): all remaining 9 groups — these
+# are infrastructure/tooling primitives owned by the engineering function:
+#   event   — audit log (dev infra)
+#   actor   — identity/profile plumbing
+#   index   — full-text search & entity catalog
+#   skill   — skill catalog & routing tooling
+#   gate    — quality gates / TDD criteria
+#   model   — model registry & routing infrastructure
+#   id      — ID generation & validation
+#   role    — role catalog administration
+#   binding — actor-role-scope assignment management
 GROUP_PREFERRED_ROLE: dict[str, str] = {
+    # PM-coordination groups (unchanged from WildPanda P1)
     "workitem": "ROLE-product-manager",
     "decision": "ROLE-product-manager",
     "discussion": "ROLE-product-manager",
     "scope": "ROLE-product-manager",
     "retro": "ROLE-product-manager",
+    # Engineering-owned groups (WildPanda P2 — MerryFox)
+    "event": "ROLE-software-engineer",
+    "actor": "ROLE-software-engineer",
+    "index": "ROLE-software-engineer",
+    "skill": "ROLE-software-engineer",
+    "gate": "ROLE-software-engineer",
+    "model": "ROLE-software-engineer",
+    "id": "ROLE-software-engineer",
+    "role": "ROLE-software-engineer",
+    "binding": "ROLE-software-engineer",
 }
 
 # Group → recommended model class. Routing surfaces this so callers
