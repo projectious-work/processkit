@@ -3264,7 +3264,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Combine FTS5 and sqlite-vec semantic results with RRF.\n\nFalls back to FTS5-only search when sqlite-vec is unavailable.\n",
+      "description": "Combine FTS5 and sqlite-vec semantic results with RRF.\n\nFalls back to FTS5-only search when sqlite-vec is unavailable.\n\nApplies the v1-entity penalty (BACK-20260509_1318-WarmOak): the RRF\n``hybrid_score`` is used as the base score and multiplied by\n``_v1_penalty()`` for v1-superseded entities. Results are re-ranked\non the adjusted score. Each row carries ``v1_penalty_applied``,\n``v1_successor_hint``, and ``v1_trace``.\n",
       "name": "hybrid_search_entities",
       "output_schema": {
         "properties": {
@@ -3599,7 +3599,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Search entities semantically via sqlite-vec when available.\n\nReturns an empty list when sqlite-vec is not installed or cannot be\nloaded; use hybrid_search_entities for an FTS-backed fallback.\n",
+      "description": "Search entities semantically via sqlite-vec when available.\n\nReturns an empty list when sqlite-vec is not installed or cannot be\nloaded; use hybrid_search_entities for an FTS-backed fallback.\n\nApplies the v1-entity penalty (BACK-20260509_1318-WarmOak): the raw\ndistance from sqlite-vec is converted to a base score\n``1.0 / (1 + distance)`` and then multiplied by ``_v1_penalty()``\nfor v1-superseded entities. Results are re-ranked on the adjusted\nscore. Each row carries ``v1_penalty_applied``, ``v1_successor_hint``,\nand ``v1_trace``.\n",
       "name": "semantic_search_entities",
       "output_schema": {
         "properties": {
@@ -5936,7 +5936,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Transition a Scope to a new state per the scope state machine.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this\ntool. 1% rule: call route_task first; commit in the same turn \u2014\ndeferred writes are dropped.\n",
+      "description": "Transition a Scope to a new state per the scope state machine.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this\ntool. 1% rule: call route_task first; commit in the same turn \u2014\ndeferred writes are dropped.\n\nScope-close hook (team-creator v2 SUB-3):\n    When to_state is terminal (completed|cancelled), consultants whose\n    engaged_for matches this Scope and auto_deactivate_on_scope_close=true\n    are automatically deactivated. A team_member.auto_deactivated log\n    entry is emitted for each. The deactivation list is returned in\n    ``consultant_deactivations``.\n",
       "name": "transition_scope",
       "output_schema": null,
       "parameters": {
@@ -6645,11 +6645,16 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Create a new TeamMember entity.\n\nParameters\n----------\nname:               display name (e.g. \"Atlas\" or \"Alice Chen\")\ntype:               \"human\", \"ai-agent\", or \"service\"\nslug:               canonical kebab-case slug; becomes TEAMMEMBER-<slug>\ndefault_role:       optional ROLE-<id>\ndefault_seniority:  optional enum (junior|specialist|expert|senior|principal)\npersonality:        optional dict (communication_style, voice, ...)\nemail:              optional; humans only\nhandle:             optional; GitHub/Slack handle\njoined_at:          ISO datetime; defaults to now\n\nFor type=ai-agent, slug must match a name in the name pool and will be\nauto-reserved on success.\n",
+      "description": "Create a new TeamMember entity.\n\nParameters\n----------\nname:               display name (e.g. \"Atlas\" or \"Alice Chen\")\ntype:               \"human\", \"ai-agent\", \"service\", or \"consultant\"\nslug:               canonical kebab-case slug; becomes TEAMMEMBER-<slug>\ndefault_role:       optional ROLE-<id>\ndefault_seniority:  optional enum (junior|specialist|expert|senior|principal)\npersonality:        optional dict (communication_style, voice, ...)\nemail:              optional; humans only\nhandle:             optional; GitHub/Slack handle\njoined_at:          ISO datetime; defaults to now\n\nConsultant-only fields (required when type=consultant; rejected otherwise):\nengaged_for:                    SCOPE-<id> the consultant is engaged for\nengagement_window:              {starts_at: <ISO>, ends_at: <ISO>}\nauto_deactivate_on_scope_close: bool (default true); auto-deactivates on\n                                Scope close unless set to false\n\nFor type=ai-agent, slug must match a name in the name pool and will be\nauto-reserved on success.\n",
       "name": "create_team_member",
       "output_schema": null,
       "parameters": {
         "properties": {
+          "auto_deactivate_on_scope_close": {
+            "default": true,
+            "title": "Auto Deactivate On Scope Close",
+            "type": "boolean"
+          },
           "default_role": {
             "anyOf": [
               {
@@ -6685,6 +6690,31 @@
             ],
             "default": null,
             "title": "Email"
+          },
+          "engaged_for": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Engaged For"
+          },
+          "engagement_window": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Engagement Window"
           },
           "handle": {
             "anyOf": [
@@ -7433,7 +7463,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "List TeamMembers with optional filters by type, active state, default_role.",
+      "description": "List TeamMembers with optional filters by type, active state, default_role.\n\nConsultant-window filter: when active_only=True, consultants whose\nengagement_window does not include the current time are excluded from\nresults \u2014 they are non-resolvable but not deactivated (design \u00a7Gap 3).\n",
       "name": "list_team_members",
       "output_schema": {
         "properties": {
@@ -7496,6 +7526,96 @@
       "source_server_path": "processkit/team-manager/mcp/server.py",
       "source_skill": "team-manager",
       "source_tool": "list_team_members",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Compute budget drift between the chartering projection and actual spend.\n\nImplements pk-team-review Step 5c (Gap 5 / SUB-4 SwiftReef).\n\nReads the most-recent chartering DecisionRecord that contains a\n``budget_projection`` block.  If no such block is found, returns an\ninformational result (no finding emitted \u2014 consistent with the design\nthat old charters without a projection block are silently skipped).\n\nParameters\n----------\nscope_id:          optional SCOPE-* filter; if supplied only the DEC\n                   whose inputs_snapshot.chartering_scope matches is used\nthreshold_pct:     override the projection's drift_threshold_pct; useful\n                   for ad-hoc queries without re-chartering\nactual_slot_costs: optional {slot_id -> actual_cost_usd} mapping; when\n                   supplied, bypasses the event-log scan and uses the\n                   caller-supplied costs (e.g. from an observability tool)\n\nReturns\n-------\n{\n    \"status\": \"ok\" | \"no_projection_on_file\",\n    \"summary\": <str>,\n    \"finding_code\": \"team.budget.drift\" | None,\n    \"severity\": \"warning\" | \"info\" | None,\n    \"drift_pct\": <float> | None,\n    \"drift_direction\": \"over\" | \"under\" | \"on-track\" | None,\n    \"threshold_exceeded\": <bool> | None,\n    \"threshold_pct\": <float> | None,\n    \"projected_total\": <float> | None,\n    \"actual_total\": <float> | None,\n    \"per_slot\": [...] | None,\n}\n",
+      "name": "query_budget_drift",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "actual_slot_costs": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Actual Slot Costs"
+          },
+          "scope_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope Id"
+          },
+          "threshold_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Threshold Pct"
+          }
+        },
+        "title": "query_budget_driftArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "query_budget_drift",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return pk-team-review findings for consultant TeamMembers.\n\nEmits finding code 'team.consultant.expired_but_active' (severity:\nwarning) for every active consultant whose engagement_window.ends_at\nis in the past.\n\nOutput is suitable for inclusion in the pk-team-review diff report.\nInvoke this from the pk-team-review workflow (Step 6, emit diff report).\n",
+      "name": "query_consultant_findings",
+      "output_schema": null,
+      "parameters": {
+        "properties": {},
+        "title": "query_consultant_findingsArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "query_consultant_findings",
       "title": null
     },
     {
@@ -7702,7 +7822,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Update fields on an existing TeamMember. Only supplied fields change.",
+      "description": "Update fields on an existing TeamMember. Only supplied fields change.\n\nConsultant-specific updatable fields:\n  engagement_window:              extend or narrow the {starts_at, ends_at} window\n  engaged_for:                    reassign to a different SCOPE-id\n  auto_deactivate_on_scope_close: toggle the auto-deactivate flag\n",
       "name": "update_team_member",
       "output_schema": null,
       "parameters": {
@@ -7718,6 +7838,18 @@
             ],
             "default": null,
             "title": "Active"
+          },
+          "auto_deactivate_on_scope_close": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Auto Deactivate On Scope Close"
           },
           "default_role": {
             "anyOf": [
@@ -7754,6 +7886,31 @@
             ],
             "default": null,
             "title": "Email"
+          },
+          "engaged_for": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Engaged For"
+          },
+          "engagement_window": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Engagement Window"
           },
           "export_policy": {
             "anyOf": [

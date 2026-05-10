@@ -41,12 +41,25 @@ MCP processes. The aggregate server imports the same tool functions that
 the granular processkit servers expose, so the processkit write/read
 semantics stay in one code path.
 
-The current runtime is an eager-import aggregate: importing
-`aggregate-mcp/mcp/server.py` imports every processkit per-skill MCP
-server and registers the discovered tools immediately. This is useful
-for clients that spend memory and latency on many stdio processes, but
-it is not yet a lazy daemon or gateway process that loads a backing
-server only when one of its tools is called.
+The runtime supports two import modes:
+
+- `eager` (default): importing `aggregate-mcp/mcp/server.py` imports
+  every processkit per-skill MCP server and registers the discovered
+  tools immediately. Backward-compatible with earlier releases.
+- `lazy_catalog`: opt in with `PROCESSKIT_MCP_LAZY=1` (or
+  `PROCESSKIT_MCP_MODE=lazy_catalog`). The aggregate server loads the
+  shared `processkit-gateway/mcp/tool-catalog.json` manifest at
+  startup and announces the full tool surface from cached metadata.
+  The owning per-skill module is imported only when one of its tools
+  is first called. Override the catalog source with
+  `PROCESSKIT_MCP_CATALOG_PATH=/abs/path/to/tool-catalog.json` if
+  needed. If the catalog is missing the server falls back to eager
+  mode automatically.
+
+Cache invalidation is build-time: regenerate the catalog with
+`processkit-gateway catalog --write` (gateway server CLI) and commit
+the refreshed `tool-catalog.json`. Lazy mode does not regenerate at
+startup — that would defeat the cold-start win.
 
 ## Tool Names
 
@@ -63,8 +76,14 @@ server path, source tool name, serialized annotations, collision status,
 collision source list, and whether the aggregate name was deduplicated.
 The response also includes runtime metadata:
 
-- `runtime.import_mode: "eager"`
-- `runtime.lazy_daemon: false`
+- `runtime.import_mode`: one of `eager`, `gateway_registry`,
+  `lazy_catalog`
+- `runtime.lazy_daemon`: `true` only in `lazy_catalog` mode
+- `runtime.registry_backend`: e.g. `eager_import`,
+  `gateway_registry`, `gateway_lazy_catalog`
+- `runtime.canonical_gateway_available`: `true` when the shared
+  `processkit.gateway` library is importable
+- `runtime.catalog_path`: present only in `lazy_catalog` mode
 - `source_server_count`
 
 Collision status values are:
@@ -111,9 +130,15 @@ servers and increase startup work.
   registration.
 - Duplicate helper tools are namespaced only when needed. Callers should
   prefer the original unprefixed names for unique tools.
-- This is not yet a daemon gateway. The next runtime step is a long-lived
-  gateway process that exposes the same registry shape but defers backing
-  server import and heavier initialization until a tool is invoked.
+- `lazy_catalog` mode requires the cached catalog under
+  `processkit-gateway/mcp/tool-catalog.json`. If a skill's tools are
+  not in the catalog they will not be exposed by the lazy server until
+  the catalog is regenerated. Run `processkit-gateway catalog --write`
+  after adding or renaming any per-skill tool.
+- The full daemon gateway (long-lived process, streamable-http
+  transport) lives in the `processkit-gateway` skill. The aggregate
+  server is the lighter-weight stdio surface and now shares the same
+  catalog and registration internals.
 
 ## Full reference
 
