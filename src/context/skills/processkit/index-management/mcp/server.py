@@ -382,10 +382,39 @@ def semantic_search_entities(text: str, limit: int = 50) -> list[dict]:
 
     Returns an empty list when sqlite-vec is not installed or cannot be
     loaded; use hybrid_search_entities for an FTS-backed fallback.
+
+    Applies the v1-entity penalty (BACK-20260509_1318-WarmOak): the raw
+    distance from sqlite-vec is converted to a base score
+    ``1.0 / (1 + distance)`` and then multiplied by ``_v1_penalty()``
+    for v1-superseded entities. Results are re-ranked on the adjusted
+    score. Each row carries ``v1_penalty_applied``, ``v1_successor_hint``,
+    and ``v1_trace``.
     """
     _, db = _open()
     try:
-        return index.semantic_search_entities(db, text, limit=limit)
+        rows = index.semantic_search_entities(db, text, limit=limit)
+        if not rows:
+            return rows
+        penalty = _v1_penalty()
+        api_map = _api_versions_for(db, [r["id"] for r in rows])
+        annotated: list[dict] = []
+        for row in rows:
+            distance = row.get("distance") or 0.0
+            base_score = 1.0 / (1.0 + distance)
+            annotated.append(
+                _annotate_row(
+                    row,
+                    api_map.get(row["id"], ""),
+                    penalty=penalty,
+                    apply_score=True,
+                    base_score=base_score,
+                )
+            )
+        annotated.sort(
+            key=lambda r: r.get("v1_adjusted_score", 0.0),
+            reverse=True,
+        )
+        return annotated
     finally:
         db.close()
 
@@ -400,10 +429,37 @@ def hybrid_search_entities(text: str, limit: int = 50) -> list[dict]:
     """Combine FTS5 and sqlite-vec semantic results with RRF.
 
     Falls back to FTS5-only search when sqlite-vec is unavailable.
+
+    Applies the v1-entity penalty (BACK-20260509_1318-WarmOak): the RRF
+    ``hybrid_score`` is used as the base score and multiplied by
+    ``_v1_penalty()`` for v1-superseded entities. Results are re-ranked
+    on the adjusted score. Each row carries ``v1_penalty_applied``,
+    ``v1_successor_hint``, and ``v1_trace``.
     """
     _, db = _open()
     try:
-        return index.hybrid_search_entities(db, text, limit=limit)
+        rows = index.hybrid_search_entities(db, text, limit=limit)
+        if not rows:
+            return rows
+        penalty = _v1_penalty()
+        api_map = _api_versions_for(db, [r["id"] for r in rows])
+        annotated: list[dict] = []
+        for row in rows:
+            base_score = row.get("hybrid_score", 0.0)
+            annotated.append(
+                _annotate_row(
+                    row,
+                    api_map.get(row["id"], ""),
+                    penalty=penalty,
+                    apply_score=True,
+                    base_score=base_score,
+                )
+            )
+        annotated.sort(
+            key=lambda r: r.get("v1_adjusted_score", 0.0),
+            reverse=True,
+        )
+        return annotated
     finally:
         db.close()
 
