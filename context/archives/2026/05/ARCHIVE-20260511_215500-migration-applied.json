@@ -1,0 +1,175 @@
+{
+  "archive_id": "ARCHIVE-20260511_215500-migration-applied",
+  "archive_path": "context/archives/2026/05/ARCHIVE-20260511_215500-migration-applied.tar.gz",
+  "created_at": "2026-05-11T21:55:00+00:00",
+  "entities": [
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260511T213352\n\nManaged `.aibox-home/` runtime changes from `0.25.8` to `0.25.8`.\n\n0 changed upstream, 0 conflicts, 0 new, 2 removed (5 groups affected)\n\n## Counts\n\n- unchanged: 28\n- changed-locally-only: 4\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 0\n- removed-upstream: 2\n\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### runtime-claude\n\n**removed-upstream**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-git\n\n**changed-locally-only**\n\n- `.aibox-home/.config/git/config` -> `.aibox-home/.config/git/config`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**removed-upstream**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n\n### runtime-vim\n\n**changed-locally-only**\n\n- `.aibox-home/.vim/vimrc` -> `.aibox-home/.vim/vimrc`\n\n### runtime-yazi\n\n**changed-locally-only**\n\n- `.aibox-home/.config/yazi/plugins/git.yazi/main.lua` -> `.aibox-home/.config/yazi/plugins/git.yazi/main.lua`\n",
+      "id": "MIG-RUNTIME-20260511T213352",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260511T213352.md",
+      "metadata": {
+        "created": "2026-05-11T21:33:52+00:00",
+        "id": "MIG-RUNTIME-20260511T213352",
+        "updated": "2026-05-11T21:50:00+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260511T213352.md",
+      "sha256": "8bd44894528e33b449c5c22e27859954cb9f9c4a1a776596855ef7969ec20421",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-git",
+          "runtime-misc",
+          "runtime-vim",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-11T21:50:00+00:00",
+        "from_version": "0.25.8",
+        "generated_at": "2026-05-11T21:33:52+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Resolved during pk-resume follow-up. No upstream changes or conflicts remained; preserved local-only runtime files and retained local choices for removed-upstream runtime files.",
+            "timestamp": "2026-05-11T21:50:00+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-11T21:50:00+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 0 new, 2 removed (5 groups affected)",
+        "to_version": "0.25.8"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260511_215500-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260511T213352.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260511T212429\n\nManaged `.aibox-home/` runtime changes from `0.25.7` to `0.25.8`.\n\n1 changed upstream, 1 conflicts, 5 new, 2 removed (7 groups affected)\n\n## Counts\n\n- unchanged: 23\n- changed-locally-only: 4\n- changed-upstream-only: 1\n- conflict: 1\n- new-upstream: 5\n- removed-upstream: 2\n\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### runtime-claude\n\n**changed-locally-only**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-git\n\n**changed-locally-only**\n\n- `.aibox-home/.config/git/config` -> `.aibox-home/.config/git/config`\n\n### runtime-lazygit\n\n**new-upstream**\n\n- `.aibox-home/.config/lazygit/config.yml` -> `.aibox-home/.config/lazygit/config.yml`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**new-upstream**\n\n- `.aibox-home/.local/bin/aibox-copy` -> `.aibox-home/.local/bin/aibox-copy`\n- `.aibox-home/.local/bin/aibox-powerkit-render-list` -> `.aibox-home/.local/bin/aibox-powerkit-render-list`\n- `.aibox-home/.local/bin/aibox-powerkit-render-s",
+      "id": "MIG-RUNTIME-20260511T212429",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260511T212429.md",
+      "metadata": {
+        "created": "2026-05-11T21:24:29+00:00",
+        "id": "MIG-RUNTIME-20260511T212429",
+        "updated": "2026-05-11T21:49:58+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260511T212429.md",
+      "sha256": "c9442f1e59943334e3019e1327bbfab0789cf96b76540f8a767404d4838b43da",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-git",
+          "runtime-lazygit",
+          "runtime-misc",
+          "runtime-tmux",
+          "runtime-vim",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-11T21:49:58+00:00",
+        "from_version": "0.25.7",
+        "generated_at": "2026-05-11T21:24:29+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Resolved during pk-resume follow-up. Accepted new and changed-upstream runtime files as generated by aibox apply; preserved local customizations for changed-locally-only files and the vimrc conflict; retained local choices for removed-upstream runtime files.",
+            "timestamp": "2026-05-11T21:49:58+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-11T21:49:58+00:00",
+        "state": "applied",
+        "summary": "1 changed upstream, 1 conflicts, 5 new, 2 removed (7 groups affected)",
+        "to_version": "0.25.8"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260511_215500-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260511T212429.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260510T151433\n\nManaged `.aibox-home/` runtime changes from `0.25.6` to `0.25.7`.\n\n1 changed upstream, 6 conflicts, 0 new, 0 removed (6 groups affected)\n\n## Counts\n\n- unchanged: 20\n- changed-locally-only: 4\n- changed-upstream-only: 1\n- conflict: 6\n- new-upstream: 0\n- removed-upstream: 0\n\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### runtime-claude\n\n**changed-locally-only**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-git\n\n**changed-locally-only**\n\n- `.aibox-home/.config/git/config` -> `.aibox-home/.config/git/config`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n\n### runtime-tmux\n\n**conflict**\n\n- `.aibox-home/.config/tmux/layouts/dev.sh` -> `.aibox-home/.config/tmux/layouts/dev.sh`\n- `.aibox-home/.config/tmux/layouts/focus.sh` -> `.aibox-home/.config/tmux/layouts/focus.sh`\n- `.aibox-home/.config/tmux/layouts/cowork.sh` -> `.aibox-home/.config/tmux/layouts/cowork.sh`\n- `.aibox-home/.config/tmux/layouts/browse.sh` -> `.aibox-home/.config/tmux/layouts/browse.sh`\n- `.aibox-home/.config/tmux/layouts/ai.sh` -> `.aibox-home/.config/tmux/layouts/ai.",
+      "id": "MIG-RUNTIME-20260510T151433",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260510T151433.md",
+      "metadata": {
+        "created": "2026-05-10T15:14:33+00:00",
+        "id": "MIG-RUNTIME-20260510T151433",
+        "updated": "2026-05-11T21:49:52+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260510T151433.md",
+      "sha256": "a9034947dfdf74506349f65289bfd4cded08823d0437c81f13a1e7673e9465d9",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-git",
+          "runtime-misc",
+          "runtime-tmux",
+          "runtime-vim",
+          "runtime-yazi"
+        ],
+        "applied_at": "2026-05-11T21:49:52+00:00",
+        "from_version": "0.25.6",
+        "generated_at": "2026-05-10T15:14:33+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Resolved during pk-resume follow-up. Non-conflicting upstream runtime changes were accepted as generated by aibox apply; conflict-classified tmux layout files were preserved as local runtime customizations.",
+            "timestamp": "2026-05-11T21:49:52+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-11T21:49:52+00:00",
+        "state": "applied",
+        "summary": "1 changed upstream, 6 conflicts, 0 new, 0 removed (6 groups affected)",
+        "to_version": "0.25.7"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260511_215500-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260510T151433.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-DRIFT-20260510T151433\n\n## Drifted managed runtime files (Variant 3 \u2014 BR-CLEANUP-ARCH item 6)\n\nThe following managed `.aibox-home/` runtime files have been modified on the host and match **neither** the current canonical aibox generation **nor** any known archived template snapshot. They may represent intentional user customisations.\n\n`aibox apply` left these files **untouched**. Review each one and decide whether to preserve the local edit or restore the canonical generated content.\n\n## Per-file recommendations\n\n| file | reason-for-classification | recommendation |\n|------|--------------------------|----------------|\n| `.aibox-home/.config/git/config` | content matches neither current canonical nor any archived snapshot | review-manually |\n| `.aibox-home/.config/tmux/layouts/dev.sh` | content matches neither current canonical nor any archived snapshot | review-manually |\n| `.aibox-home/.config/tmux/layouts/focus.sh` | content matches neither current canonical nor any archived snapshot | review-manually |\n| `.aibox-home/.config/tmux/layouts/cowork.sh` | content matches neither current canonical nor any archived snapshot | review-manually |\n| `.aibox-home/.con",
+      "id": "MIG-RUNTIME-DRIFT-20260510T151433",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-DRIFT-20260510T151433.md",
+      "metadata": {
+        "created": "2026-05-10T15:14:33+00:00",
+        "id": "MIG-RUNTIME-DRIFT-20260510T151433",
+        "updated": "2026-05-11T21:49:55+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-DRIFT-20260510T151433.md",
+      "sha256": "f25a9643167e0b976b83c2f46cff137db2bf5cd9a6eefd599d742ba640ad5ded",
+      "spec": {
+        "applied_at": "2026-05-11T21:49:55+00:00",
+        "generated_at": "2026-05-10T15:14:33+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Resolved during pk-resume follow-up using preserve-as-is for all drifted managed runtime files. aibox apply had left these files untouched; local customizations are retained.",
+            "timestamp": "2026-05-11T21:49:55+00:00"
+          }
+        ],
+        "source": "aibox-runtime-drift",
+        "source_url": "aibox://runtime-drift",
+        "started_at": "2026-05-11T21:49:54+00:00",
+        "state": "applied",
+        "summary": "10 drifted managed runtime file(s) found at 0.25.7",
+        "to_version": "0.25.7",
+        "variant": 3
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260511_215500-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-DRIFT-20260510T151433.md"
+    }
+  ],
+  "kind": "Migration",
+  "older_than_days": 0,
+  "sha256": "0aa7858d6ca38732287f8f0fe0a0942072ca0b068fcd22ea43e7c72cf766ff61",
+  "state": "applied"
+}

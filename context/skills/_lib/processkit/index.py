@@ -25,6 +25,37 @@ from . import entity as entity_mod
 from . import paths
 
 
+DEFAULT_RESULT_LIMIT = 50
+MAX_ENTITY_RESULT_LIMIT = 500
+MAX_SEARCH_RESULT_LIMIT = 100
+MAX_EVENT_RESULT_LIMIT = 200
+MAX_UNFILTERED_EVENT_RESULT_LIMIT = 100
+MAX_ERROR_RESULT_LIMIT = 500
+EVENT_SUMMARY_PREVIEW_CHARS = 500
+
+
+def coerce_limit(
+    limit: int | str | None,
+    *,
+    default: int = DEFAULT_RESULT_LIMIT,
+    max_limit: int = MAX_ENTITY_RESULT_LIMIT,
+) -> int:
+    """Normalize caller-provided result limits for MCP-facing queries."""
+    try:
+        value = int(limit) if limit is not None else int(default)
+    except (TypeError, ValueError):
+        value = int(default)
+    if value < 1:
+        return 1
+    return min(value, int(max_limit))
+
+
+def _preview_text(value: Any, *, max_chars: int) -> Any:
+    if not isinstance(value, str) or len(value) <= max_chars:
+        return value
+    return value[: max_chars - 3].rstrip() + "..."
+
+
 _SQLITE_VEC_STATUS: dict[str, Any] = {
     "available": False,
     "stage": "not-attempted",
@@ -630,6 +661,7 @@ def query_entities(
     state: str | None = None,
     limit: int = 50,
 ) -> list[dict[str, Any]]:
+    limit = coerce_limit(limit, max_limit=MAX_ENTITY_RESULT_LIMIT)
     sql = (
         "SELECT id, kind, title, state, created, updated, path,"
         " storage_location FROM entities WHERE 1=1"
@@ -642,7 +674,7 @@ def query_entities(
         sql += " AND state = ?"
         params.append(state)
     sql += " ORDER BY created DESC LIMIT ?"
-    params.append(int(limit))
+    params.append(limit)
     return [dict(row) for row in db.execute(sql, params).fetchall()]
 
 
@@ -753,6 +785,7 @@ def search_entities(
     *,
     limit: int = 50,
 ) -> list[dict[str, Any]]:
+    limit = coerce_limit(limit, max_limit=MAX_SEARCH_RESULT_LIMIT)
     if _has_fts(db):
         try:
             rows = db.execute(
@@ -766,7 +799,7 @@ def search_entities(
                 ORDER BY rank
                 LIMIT ?
                 """,
-                (text, int(limit)),
+                (text, limit),
             ).fetchall()
             return [dict(r) for r in rows]
         except sqlite3.OperationalError:
@@ -782,7 +815,7 @@ def search_entities(
         WHERE id LIKE ? OR title LIKE ? OR body LIKE ? OR spec_json LIKE ?
         ORDER BY created DESC LIMIT ?
         """,
-        (like, like, like, like, int(limit)),
+        (like, like, like, like, limit),
     ).fetchall()
     return [dict(r) for r in rows]
 
@@ -810,6 +843,7 @@ def semantic_search_entities(
     """Search semantic chunks via sqlite-vec when available."""
     if not _has_vec(db):
         return []
+    limit = coerce_limit(limit, max_limit=MAX_SEARCH_RESULT_LIMIT)
     rows = db.execute(
         """
         SELECT
@@ -826,8 +860,8 @@ def semantic_search_entities(
         """,
         (
             _serialize_vector(_embed_text(text)),
-            max(int(limit) * 4, int(limit)),
-            int(limit),
+            max(limit * 4, limit),
+            limit,
         ),
     ).fetchall()
     return [dict(r) for r in rows]
@@ -840,10 +874,12 @@ def hybrid_search_entities(
     limit: int = 50,
 ) -> list[dict[str, Any]]:
     """Combine FTS5 and sqlite-vec results with reciprocal-rank fusion."""
-    keyword = search_entities(db, text, limit=max(int(limit) * 4, int(limit)))
-    semantic = semantic_search_entities(db, text, limit=max(int(limit) * 4, int(limit)))
+    limit = coerce_limit(limit, max_limit=MAX_SEARCH_RESULT_LIMIT)
+    expanded_limit = max(limit * 4, limit)
+    keyword = search_entities(db, text, limit=expanded_limit)
+    semantic = semantic_search_entities(db, text, limit=expanded_limit)
     if not semantic:
-        return keyword[: int(limit)]
+        return keyword[:limit]
 
     scores: dict[str, float] = {}
     rows: dict[str, dict[str, Any]] = {}
@@ -858,7 +894,7 @@ def hybrid_search_entities(
 
     ranked = sorted(scores, key=lambda entity_id: scores[entity_id], reverse=True)
     out = []
-    for entity_id in ranked[: int(limit)]:
+    for entity_id in ranked[:limit]:
         row = rows[entity_id]
         row["hybrid_score"] = scores[entity_id]
         out.append(row)
@@ -873,7 +909,15 @@ def query_events(
     actor: str | None = None,
     limit: int = 50,
 ) -> list[dict[str, Any]]:
-    sql = "SELECT id, timestamp, event_type, actor, subject, summary FROM events WHERE 1=1"
+    has_filter = bool(event_type or subject or actor)
+    max_limit = MAX_EVENT_RESULT_LIMIT
+    if not has_filter:
+        max_limit = MAX_UNFILTERED_EVENT_RESULT_LIMIT
+    limit = coerce_limit(limit, max_limit=max_limit)
+    sql = (
+        "SELECT id, timestamp, event_type, actor, subject, summary "
+        "FROM events WHERE 1=1"
+    )
     params: list[Any] = []
     if event_type:
         sql += " AND event_type = ?"
@@ -885,9 +929,26 @@ def query_events(
         sql += " AND actor = ?"
         params.append(actor)
     sql += " ORDER BY timestamp DESC LIMIT ?"
-    params.append(int(limit))
-    return [dict(row) for row in db.execute(sql, params).fetchall()]
+    params.append(limit)
+    out = [dict(row) for row in db.execute(sql, params).fetchall()]
+    for row in out:
+        row["summary"] = _preview_text(
+            row.get("summary"),
+            max_chars=EVENT_SUMMARY_PREVIEW_CHARS,
+        )
+    return out
 
 
-def list_errors(db: sqlite3.Connection) -> list[dict[str, Any]]:
-    return [dict(r) for r in db.execute("SELECT path, message FROM errors").fetchall()]
+def list_errors(
+    db: sqlite3.Connection,
+    *,
+    limit: int = 100,
+) -> list[dict[str, Any]]:
+    limit = coerce_limit(limit, default=100, max_limit=MAX_ERROR_RESULT_LIMIT)
+    return [
+        dict(r)
+        for r in db.execute(
+            "SELECT path, message FROM errors ORDER BY path LIMIT ?",
+            (limit,),
+        ).fetchall()
+    ]

@@ -8,19 +8,12 @@ None.
 
 None.
 
-## Applied (9)
+## Applied (1)
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
-| 2026-05-05 | MIG-RUNTIME-20260504T145520 — aibox-runtime-home 0.23.7 → 0.23.10 | 10 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected) |
-| 2026-05-09 | MIG-20260505T165732 — processkit v0.25.7 → v0.25.8 | 0 changed upstream, 0 conflicts, 1 new, 0 removed, 0 stale-removed (2 groups affected) |
-| 2026-05-09 | MIG-LOCK-20260509T112052 — aibox-lock  → | Backfilled previous_selection: 4 addon(s), 6 tool(s), 2 harness(es) |
-| 2026-05-09 | MIG-RUNTIME-20260505T165731 — aibox-runtime-home 0.23.11 → 0.23.12 | 0 changed upstream, 0 conflicts, 2 new, 0 removed (2 groups affected) |
-| 2026-05-09 | MIG-RUNTIME-20260506T021335 — aibox-runtime-home 0.23.16 → 0.23.18 | 2 changed upstream, 0 conflicts, 0 new, 0 removed (2 groups affected) |
-| 2026-05-09 | MIG-RUNTIME-20260507T191658 — aibox-runtime-home 0.23.18 → 0.25.1 | 2 changed upstream, 1 conflicts, 9 new, 0 removed (4 groups affected) |
-| 2026-05-09 | MIG-RUNTIME-20260508T083035 — aibox-runtime-home 0.25.1 → 0.25.2 | 0 changed upstream, 7 conflicts, 0 new, 0 removed (4 groups affected) |
-| 2026-05-09 | MIG-RUNTIME-20260508T132832 — aibox-runtime-home 0.25.2 → 0.25.4 | 8 changed upstream, 1 conflicts, 2 new, 0 removed (5 groups affected) |
-| 2026-05-09 | MIG-RUNTIME-20260509T112052 — aibox-runtime-home 0.25.4 → 0.25.6 | 0 changed upstream, 1 conflicts, 1 new, 0 removed (4 groups affected) |
+| 2026-05-11 | MIG-20260509T213904-roleslot-phase-a — processkit v0.25.8 → v0.26.0 | Phase A team-creator v2 — additive RoleSlot primitive + role-slot-fill binding type. Backfill RoleSlots from existing Role.clone_cap and parallel role-slot-fill Bindings from existing role-assignment Bindings. Both old and new resolution paths remain valid after apply.
+ |
 
 ## Rejected (0)
 

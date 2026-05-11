@@ -249,13 +249,13 @@ sort matches filesystem order.
 In Phase 3, the `index-management` MCP server reads all LogEntries into a
 SQLite `events` table and exposes:
 
-- `query_events(event_type?, actor?, subject?, since?, until?)`
-- `recent_events(limit)`
-- `events_for_entity(subject_id)`
-- `timeline(start, end, filters)`
+- `query_events(event_type?, subject?, actor?, limit?)`
+- `recent_events(limit?)`
 
-Until the MCP server exists, agents query by reading files directly — filesystem
-glob + grep is adequate for small projects.
+The query tools return bounded result windows. Broad unfiltered event
+queries are capped more tightly than filtered queries, and long summaries
+are returned as previews. Fetch the referenced LogEntry entity by ID when
+full details are needed.
 
 ### Relationship to deterministic logging
 

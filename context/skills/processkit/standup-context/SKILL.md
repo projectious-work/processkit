@@ -90,9 +90,21 @@ Before writing, query:
    previous session left as "next"
 3. Git log — `git log --oneline --since="24 hours ago"` for a mechanical
    account of commits since the last standup
+4. GitHub, when inside a git repository with a GitHub remote and an
+   authenticated `gh` CLI:
+
+   ```
+   gh issue list --state open --limit 20 \
+     --json number,title,labels,assignees,updatedAt,url
+   gh pr list --state open --limit 20 \
+     --json number,title,isDraft,reviewDecision,headRefName,updatedAt,url
+   ```
 
 Cross-check: if a WorkItem is marked `done` but no commit references it,
 note it — might be a missing commit or a premature state transition.
+If GitHub cannot be checked, note that briefly and continue. When it can
+be checked, include PRs waiting on review and issues that create blockers
+or immediate next work; do not dump every open item into the standup.
 
 ### Trigger phrases
 
@@ -125,6 +137,9 @@ direct invocation — see `commands/pk-status.md` and
 - **Writing a standup without querying WorkItem state.** Memory-based
   standups miss items and include outdated ones. Always check the actual
   WorkItem state before writing.
+- **Missing GitHub blockers.** In GitHub-backed repositories, PR review
+  state and open issues can be the real blocker even when local worktree
+  state looks clean. Check `gh` when available and cite issue/PR numbers.
 - **Writing a standup for a period longer than one session without flagging
   it.** If the last standup was three days ago, the "done" list is actually
   three days of work. Flag this in the summary line so the team knows the

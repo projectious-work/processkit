@@ -969,6 +969,7 @@ def list_team_members(
     engagement_window does not include the current time are excluded from
     results — they are non-resolvable but not deactivated (design §Gap 3).
     """
+    limit = index.coerce_limit(limit, max_limit=500)
     root = paths.find_project_root()
     tm_root = paths.context_dir("TeamMember", root)
     if not tm_root.is_dir():
@@ -1673,6 +1674,7 @@ def list_role_slots(
     role:   match ROLE-<id> exactly
     state:  open | filled | closed
     """
+    limit = index.coerce_limit(limit, default=200, max_limit=500)
     if state is not None and state not in _VALID_SLOT_STATES:
         return [{"error": f"invalid state filter {state!r}"}]
     root = paths.find_project_root()

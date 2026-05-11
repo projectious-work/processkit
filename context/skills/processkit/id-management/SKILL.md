@@ -160,8 +160,8 @@ Adding a new primitive kind requires adding its prefix there.
 
 ### Word generation
 
-Word-based IDs are produced from a small built-in dictionary of ~60
-adjectives and ~60 nouns (~3600 base combinations per kind). The
+Word-based IDs are produced from a built-in dictionary of 120 positive
+adjectives and 120 concrete nouns (14,400 base combinations per kind). The
 generator picks a random pair, checks for collision against the index,
 and retries up to 50 times. If exhausted, it appends a 4-hex suffix
 to guarantee uniqueness.

@@ -5,7 +5,7 @@ Covers BACK-20260510_0344-MightyWolf (follow-up of BACK-20260509_1318-WarmOak).
 Run with:
 
     uv run --with pyyaml --with pytest --with mcp \
-        pytest context/skills/processkit/index-management/scripts/test_index_management_v1_penalty.py -v
+        pytest src/context/skills/processkit/index-management/scripts/test_index_management_v1_penalty.py -v
 """
 from __future__ import annotations
 
@@ -14,9 +14,10 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-_REPO_ROOT = Path(__file__).resolve().parents[5]
+_REPO_ROOT = Path(__file__).resolve().parents[6]
 _SERVER_PATH = (
     _REPO_ROOT
+    / "src"
     / "context"
     / "skills"
     / "processkit"
@@ -171,6 +172,14 @@ class _FakeRow(dict):
         if isinstance(key, int):
             return list(self.values())[key]
         return super().__getitem__(key)
+
+
+def _patch_open(srv, fake_db: _FakeDB):
+    """Return a context manager that patches srv._open to return fake_db."""
+    from unittest.mock import patch as _patch, MagicMock
+
+    root_mock = MagicMock()
+    return _patch.object(srv, "_open", return_value=(root_mock, fake_db))
 
 
 # -- semantic_search_entities ------------------------------------------------

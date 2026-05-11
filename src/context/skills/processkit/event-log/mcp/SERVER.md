@@ -18,6 +18,9 @@ process-primitive skill.
   are recorded as new LogEntries with `event_type: logentry.corrected`.
 - Each call writes a Markdown file under `<root>/context/logs/` and
   upserts the row in the SQLite index in one shot.
+- Query tools return bounded windows; broad unfiltered event queries are
+  capped more tightly than filtered queries, and long summaries are
+  returned as previews.
 - IDs follow the project's `processkit.toml` `id_format` setting (word/uuid +
   optional slug). Default: word.
 

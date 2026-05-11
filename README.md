@@ -63,13 +63,13 @@ project:
 
 ```sh
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.25.7/processkit-v0.25.7.tar.gz \
-  -o processkit-v0.25.7.tar.gz
-tar -xzf processkit-v0.25.7.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.26.1/processkit-v0.26.1.tar.gz \
+  -o processkit-v0.26.1.tar.gz
+tar -xzf processkit-v0.26.1.tar.gz
 
-cp -a processkit-v0.25.7/context ./context
-cp -a processkit-v0.25.7/.processkit ./.processkit
-cp processkit-v0.25.7/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.26.1/context ./context
+cp -a processkit-v0.26.1/.processkit ./.processkit
+cp processkit-v0.26.1/AGENTS.md ./AGENTS.md
 ```
 
 Then point your harness at the gateway MCP server. For stdio-based MCP:
@@ -139,7 +139,7 @@ processkit automatically for devcontainers:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.25.7"
+version = "v0.26.1"
 
 [context]
 packages = ["managed"]
@@ -160,9 +160,10 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 processkit is currently pre-1.0. Breaking changes can still land in
 minor releases, and release notes call them out explicitly.
 
-`v0.25.7` is the current patch release. It keeps the v0.25.0 gateway
-and v2 deliverable boundary, adds command-aware routing, sqlite-vec
-diagnostics, runtime-capacity planning, and fast Codex Spark routing.
+`v0.26.1` is the current patch release. It keeps the v0.26.0 gateway
+and v2 deliverable boundary, adds direct pk-doctor gateway access,
+bounded MCP result windows, GitHub-aware status briefings, and local
+entity storage hygiene checks.
 
 ## Development
 

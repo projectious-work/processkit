@@ -27,23 +27,34 @@ from typing import Iterable
 
 from . import KIND_PREFIXES
 
-# A small but adequate word list. Combinations: 60 * 60 = 3600 base IDs per kind.
-# Append a hex suffix on collision.
+# Positive, concrete words for memorable two-word IDs.
+# Combinations: 120 * 120 = 14,400 base IDs per kind. Append a hex
+# suffix on collision.
 _ADJECTIVES = (
-    "amber bold brave bright calm clever cool curious daring deep eager fierce"
-    " gentle grand happy honest jolly keen kind lively loyal lucky merry mighty"
-    " neat noble plucky proud quick quiet rapid royal sharp shiny silent sleek"
-    " smart smooth snappy snowy soft solid sound spry steady stout strong sunny"
-    " sure swift tall thrifty tidy tough true vast warm wild wise"
+    "able active adept agile alert amber ample artful assured astute balanced"
+    " bold brave bright brisk buoyant calm capable cheerful clear clever cool"
+    " cordial crisp curious daring deft deep eager earnest fair faithful fast"
+    " fine firm fit fluent focused fresh friendly gentle gifted golden graceful"
+    " grand happy hardy helpful honest hopeful humble ideal jolly keen kind"
+    " lively loyal lucid lucky mellow merry mighty mindful neat nimble noble"
+    " open patient peaceful plucky polished prompt proud quick quiet radiant"
+    " rapid ready refined reliable resolute robust royal sharp shiny silent"
+    " skilled sleek smart smooth snappy snowy soft solid sound sparkling spry"
+    " stable steady stout strong sunny sure swift tall tender thrifty tidy"
+    " trusty tough true upbeat valiant vast vivid warm wild wise worthy zestful"
 ).split()
 
 _NOUNS = (
-    "ant arch ash badger bear beam bird bison brook butter cedar cliff clover"
-    " comet crane crow daisy dawn deer dew dove eagle ember falcon fern fern"
-    " field finch fjord fox frog garnet glade grove hare hawk heron hill ivy"
-    " jay lake lark leaf lily lynx maple meadow moss oak otter owl panda peak"
-    " pine plum quail rabbit raven reef river robin sage sea seal sky spruce"
-    " stone stream swan thorn tide tiger trout tulip vale willow wolf wren"
+    "anchor ant arch ash atlas beacon beam bird bison bloom blossom bridge"
+    " brook butter cedar charm cliff clover comet compass coral crane crow"
+    " daisy dawn deer dell dew dove eagle ember falcon fern field finch fjord"
+    " flame flute forge fox frog garden garnet glade grove harbor hare harvest"
+    " haven hawk hearth heron hill horizon ivy jay jewel kiln lake lantern lark"
+    " leaf lily lotus lynx maple meadow melody mesa moon moss oak oasis orchard"
+    " otter owl panda path peak pearl pine plum pond prairie quail quartz"
+    " rabbit raven reef river robin rose sage sail sea seal shell shore sky"
+    " spark spire spring spruce star stone stream summit sun swan tide tiger"
+    " tower trail trout tulip vale valley willow wolf wren"
 ).split()
 
 

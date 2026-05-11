@@ -1,6 +1,6 @@
 {
   "catalog_version": 1,
-  "source_server_count": 23,
+  "source_server_count": 25,
   "tools": [
     {
       "annotations": {
@@ -3264,6 +3264,40 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
+      "description": "Fetch a single entity by its relative filesystem path.\n\nAccepts a path relative to the project root, e.g.\n``context/workitems/2026/05/BACK-20260510_0751-TallFern-...md`` or an\nabsolute path.  Dispatches to ``get_entity`` under the hood after\nderiving the entity ID from the index.\n\nHandles terminal-state subdirectories (``done/``, ``applied/``,\n``rejected/``) transparently.\n\nReturns the same shape as ``get_entity``, or ``{\"error\": \"...\"}`` if\nthe path cannot be resolved to an indexed entity.\n",
+      "name": "get_entity_by_path",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "title": "get_entity_by_pathArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/index-management/mcp/server.py",
+      "source_skill": "index-management",
+      "source_tool": "get_entity_by_path",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "index-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
       "description": "Combine FTS5 and sqlite-vec semantic results with RRF.\n\nFalls back to FTS5-only search when sqlite-vec is unavailable.\n\nApplies the v1-entity penalty (BACK-20260509_1318-WarmOak): the RRF\n``hybrid_score`` is used as the base score and multiplied by\n``_v1_penalty()`` for v1-superseded entities. Results are re-ranked\non the adjusted score. Each row carries ``v1_penalty_applied``,\n``v1_successor_hint``, and ``v1_trace``.\n",
       "name": "hybrid_search_entities",
       "output_schema": {
@@ -3319,6 +3353,78 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
+      "description": "Unified entity listing across all kinds.\n\nA convenience wrapper over ``query_entities`` that surfaces the same\nv1-entity annotations and accepts the same filters.  Prefer this tool\nover the per-kind ``list_*`` tools when you want a single call that\nworks across entity types without remembering per-kind tool names.\n\nParameters\n----------\nkind: optional primitive kind (e.g. \"WorkItem\", \"DecisionRecord\",\n      \"TeamMember\", \"Artifact\", \"Scope\", \"Gate\", \"Role\", \"Binding\").\nstate: optional state filter (e.g. \"open\", \"accepted\", \"in-progress\").\nlimit: maximum rows to return (default 50).\n\nEach result is annotated with ``v1_penalty_applied`` and\n``v1_successor_hint``. Results are ordered by ``created DESC``.\n",
+      "name": "list_entities",
+      "output_schema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_entitiesOutput",
+        "type": "object"
+      },
+      "parameters": {
+        "properties": {
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Kind"
+          },
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "State"
+          }
+        },
+        "title": "list_entitiesArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/index-management/mcp/server.py",
+      "source_skill": "index-management",
+      "source_tool": "list_entities",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "index-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
       "description": "Return files that failed to parse during the last reindex.",
       "name": "list_errors",
       "output_schema": {
@@ -3339,7 +3445,13 @@
         "type": "object"
       },
       "parameters": {
-        "properties": {},
+        "properties": {
+          "limit": {
+            "default": 100,
+            "title": "Limit",
+            "type": "integer"
+          }
+        },
         "title": "list_errorsArguments",
         "type": "object"
       },
@@ -3786,7 +3898,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "List Migration entities grouped by state.\n\nWalks ``context/migrations/{pending,in-progress,applied}/`` directly\nrather than relying on the SQLite index \u2014 Migrations whose file is\nfreshly moved but not yet re-indexed still appear correctly.\n\nParameters\n----------\nstate:\n    Optional filter: ``pending``, ``in-progress``, ``applied``, or\n    ``rejected``. When omitted, returns all Migrations.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this\ntool. 1% rule: call route_task first; commit in the same turn \u2014\ndeferred writes are dropped.\n",
+      "description": "List Migration entities.\n\nWalks ``context/migrations/{pending,in-progress,applied}/`` directly\nrather than relying on the SQLite index \u2014 Migrations whose file is\nfreshly moved but not yet re-indexed still appear correctly.\n\nParameters\n----------\nstate:\n    Optional filter: ``pending``, ``in-progress``, ``applied``, or\n    ``rejected``. When omitted, returns only active Migrations\n    (``pending`` and ``in-progress``) to keep default status/resume\n    calls small. Request ``state=\"applied\"`` or ``state=\"rejected\"``\n    explicitly for historical migrations.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this\ntool. 1% rule: call route_task first; commit in the same turn \u2014\ndeferred writes are dropped.\n",
       "name": "list_migrations",
       "output_schema": {
         "properties": {
@@ -5318,6 +5430,96 @@
       "source_server_path": "processkit/note-management/mcp/server.py",
       "source_skill": "note-management",
       "source_tool": "reload_schemas",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "pk-doctor"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Run the pk-doctor aggregator health check and return structured JSON.\n\nInvokes ``pk-doctor/scripts/doctor.py --json`` as a subprocess and\nparses the output. The raw human-readable report is available by\nrunning the script directly without the ``--json`` flag.\n\nParameters\n----------\ncheck:\n    Comma-separated list of check categories to run (e.g.\n    ``\"entity_format,schema_compliance\"``). Defaults to all checks.\nfix:\n    Comma-separated list of categories to enable automatic fixes for.\n    Passed as ``--fix=<value>`` to the script.\n\nReturns\n-------\nA dict with:\n- ``findings``: list of finding dicts (each has severity, category,\n  id, message, suggested_fix).\n- ``totals``: ``{error: int, warn: int, info: int}``.\n- ``exit_code``: 0 (clean) or 1 (errors found).\n- ``invocation``: the reconstructed invocation string.\n- ``duration_ms``: wall-clock time in milliseconds.\n- ``doctor_version``: version string of the doctor script.\n",
+      "name": "run_pk_doctor",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "check": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Check"
+          },
+          "fix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fix"
+          }
+        },
+        "title": "run_pk_doctorArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/pk-doctor/mcp/server.py",
+      "source_skill": "pk-doctor",
+      "source_tool": "run_pk_doctor",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "release-audit"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Run the pre-release validation sweep and return structured JSON.\n\nInvokes ``release-audit/scripts/release_audit.py --json`` as a\nsubprocess and parses the output. The raw human-readable report is\navailable by running the script directly without the ``--json`` flag.\n\nParameters\n----------\ntree:\n    Which tree to audit: ``\"context\"`` (live dogfood, default),\n    ``\"src-context\"`` (shipped release deliverable), or ``\"both\"``.\n\nReturns\n-------\nA dict with:\n- ``findings``: list of finding dicts (each has tree, check,\n  severity, id, message, entity_ref).\n- ``totals``: ``{error: int, warn: int, info: int}``.\n- ``exit_code``: 0 (clean) or 1 (errors found).\n- ``per_tree``: per-tree tally breakdown.\n- ``audit_version``: version string of the audit script.\n",
+      "name": "run_pk_release_audit",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "tree": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Tree"
+          }
+        },
+        "title": "run_pk_release_auditArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/release-audit/mcp/server.py",
+      "source_skill": "release-audit",
+      "source_tool": "run_pk_release_audit",
       "title": null
     },
     {

@@ -12,6 +12,7 @@
 Tools:
 
     list_migrations(state?) -> [migrations]
+        (defaults to active migrations: pending + in-progress)
 
     get_migration(id) -> migration | {error}
 
@@ -638,7 +639,7 @@ def _apply_v2_entity_updates(ent: entity.Entity) -> bool:
     openWorldHint=False,
 ))
 def list_migrations(state: str | None = None) -> list[dict]:
-    """List Migration entities grouped by state.
+    """List Migration entities.
 
     Walks ``context/migrations/{pending,in-progress,applied}/`` directly
     rather than relying on the SQLite index — Migrations whose file is
@@ -648,7 +649,10 @@ def list_migrations(state: str | None = None) -> list[dict]:
     ----------
     state:
         Optional filter: ``pending``, ``in-progress``, ``applied``, or
-        ``rejected``. When omitted, returns all Migrations.
+        ``rejected``. When omitted, returns only active Migrations
+        (``pending`` and ``in-progress``) to keep default status/resume
+        calls small. Request ``state="applied"`` or ``state="rejected"``
+        explicitly for historical migrations.
 
     Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
@@ -662,9 +666,18 @@ def list_migrations(state: str | None = None) -> list[dict]:
     migrations_root = _migrations_root(root)
 
     out: list[dict] = []
+    # By default, only return active migrations. Historical applied and
+    # rejected migrations accumulate over the life of a project and can
+    # otherwise fill an agent context window from a casual empty call.
+    states_to_scan = (
+        ("pending", "in-progress")
+        if state is None
+        else (state,)
+    )
+
     # pending/, in-progress/ map 1:1 to state.
     for sub_state in ("pending", "in-progress"):
-        if state is not None and state != sub_state:
+        if sub_state not in states_to_scan:
             continue
         for p in _walk_dir(migrations_root / sub_state):
             try:
@@ -674,7 +687,7 @@ def list_migrations(state: str | None = None) -> list[dict]:
             out.append(_summarize(ent))
 
     # applied/ holds BOTH applied and rejected; filter by spec.state.
-    if state is None or state in ("applied", "rejected"):
+    if state in ("applied", "rejected"):
         for p in _walk_dir(migrations_root / "applied"):
             try:
                 ent = entity.load(p)

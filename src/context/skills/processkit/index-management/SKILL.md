@@ -47,8 +47,13 @@ every entity-creating skill.
 - **`semantic_search_entities(text, limit?)`** — sqlite-vec semantic search when available
 - **`hybrid_search_entities(text, limit?)`** — RRF over FTS5 + semantic results, with FTS-only fallback
 - **`query_events(event_type?, subject?, actor?, limit?)`** — query the event log
-- **`list_errors()`** — files that failed to parse during the last reindex
+- **`list_errors(limit?)`** — files that failed to parse during the last reindex
 - **`stats()`** — counts of entities/events/errors in the index
+
+List/search tools clamp caller-provided limits before querying the
+database. Broad unfiltered event queries are capped more tightly than
+filtered event queries, and long event summaries are returned as
+previews. Fetch a specific entity by ID when full detail is needed.
 
 ### When to use
 
@@ -141,8 +146,9 @@ large projects, an incremental update mode lands later (Phase 4+).
 ### Errors table
 
 Files that fail to parse get a row in the `errors` table instead of
-crashing the reindex. `list_errors()` returns all such rows so the agent
-can fix them. The errors table is cleared at the start of each reindex.
+crashing the reindex. `list_errors(limit?)` returns a bounded window so
+the agent can fix them in batches. The errors table is cleared at the
+start of each reindex.
 
 ### Tools that other servers call
 

@@ -19,6 +19,8 @@ metadata:
         purpose: Query in-progress and next-up WorkItems for the today's priorities section.
       - skill: migration-management
         purpose: Surface pending and in-progress migrations before normal work.
+      - skill: pk-doctor
+        purpose: Include current repository health in the session-start briefing.
     commands:
       - name: pk-resume
         args: ""
@@ -46,12 +48,37 @@ Pull from these sources in order, weighting by freshness:
 1. session.handover LogEntry  — most recent; weight by age (see below)
 2. Active interlocutor — current speaker via team-manager, if configured
 3. Migrations (pending + in-progress) — upgrade work via migration-management
-4. WorkItems (in_progress + blocked)  — current state via workitem-management
-5. session.standup LogEntries — last 1-3 entries since last handover
-6. git log --oneline -5       — recent commits
-7. DecisionRecords (proposed) — open decisions needing attention
-8. Any time-sensitive flags   — deadlines, blockers, scheduled events
+4. Repository health — `run_pk_doctor()` totals + top ERROR/WARN findings
+5. WorkItems (in_progress + blocked)  — current state via workitem-management
+6. session.standup LogEntries — last 1-3 entries since last handover
+7. git log --oneline -5       — recent commits
+8. GitHub collaboration state — open issues and PRs when available
+9. DecisionRecords (proposed) — open decisions needing attention
+10. Any time-sensitive flags  — deadlines, blockers, scheduled events
 ```
+
+For the repository-health source, call the direct `run_pk_doctor` MCP
+tool. Include only the totals and the highest-severity actionable
+findings in the briefing. If `run_pk_doctor` is not available while
+`pk-doctor` is enabled or routed, surface that as an MCP configuration
+defect; do not silently fall back to a local script path unless the user
+explicitly asks for an implementation-level workaround.
+
+For the GitHub collaboration source, first confirm the working directory
+is inside a git repository and has a GitHub remote. If `gh` is installed
+and authenticated, gather:
+
+```
+gh issue list --state open --limit 20 \
+  --json number,title,labels,assignees,updatedAt,url
+gh pr list --state open --limit 20 \
+  --json number,title,isDraft,reviewDecision,headRefName,updatedAt,url
+```
+
+Optionally add `gh pr status` when the user asks for review state or
+when PR ownership is important. If `gh` is unavailable, unauthenticated,
+or network access fails, include a short note that GitHub state could not
+be checked and continue from local/processkit state.
 
 **Handover staleness rule** — before using the most recent `session.handover`
 entry, check `details.session_date` and weight accordingly:
@@ -104,6 +131,15 @@ the user configuring anything.
 
 - [Blocker] — waiting on: [person/thing], impact: [what it blocks]
 - [Risk] — likelihood: [H/M/L], mitigation: [action]
+
+## Repository health
+
+- pk-doctor: [0 ERROR / 0 WARN / N INFO] — [top finding or "clean"]
+
+## GitHub
+
+- Issues: [count open; call out stale/high-priority issues]
+- Pull requests: [count open; call out draft/blocked/review-needed PRs]
 
 ## Upcoming deadlines
 
@@ -163,7 +199,8 @@ invocation — see `commands/pk-resume.md`.
 
 A status briefing that takes more than 3 minutes to read has failed.
 Length signals:
-- **Too long:** more than 2 items per section, or more than 5 sections
+- **Too long:** more than 2 items per section, or sections that do not
+  affect today's work
 - **Too short:** misses an active blocker or an imminent deadline
 - **Right length:** one readable screen, skimmable in 90 seconds
 
@@ -177,6 +214,14 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
   upgrade drift. Always query pending and in-progress migrations. If any are
   present, surface them before normal priorities and propose review via
   `migration-management`; do not silently apply them.
+- **Skipping repository health.** `pk-resume` should include the current
+  `pk-doctor` result. A clean doctor pass can be one line; ERROR/WARN
+  findings should be included in blockers/risks or repository health. If
+  the direct MCP tool is missing, report that as a configuration problem.
+- **Ignoring GitHub collaboration state.** In a git repository with a
+  GitHub remote, local worktree and processkit state are not enough.
+  Check open GitHub issues and PRs through `gh` when available, and call
+  out review-needed PRs, stale issues, and external blockers.
 - **Blurring persistent identity and ephemeral dispatch.** If
   `team-manager.get_active_interlocutor` returns a TeamMember, show that
   identity explicitly. If it is not configured, say the session is an

@@ -1347,6 +1347,151 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 17: entity storage policy doctor findings
+# ---------------------------------------------------------------------------
+print("\n[17] entity storage hygiene — legacy layout and policy signals")
+
+from checks.entity_storage_hygiene import (  # noqa: E402
+    run as _entity_storage_run,
+)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    ctx = root / "context"
+    for rel in (
+        "archive/actors-v1",
+        "models",
+        "migrations",
+        "workitems/2026/05",
+        "roles",
+        "team-members/thrifty-otter/private",
+    ):
+        (ctx / rel).mkdir(parents=True, exist_ok=True)
+    (ctx / ".DS_Store").write_text("host", encoding="utf-8")
+    (ctx / "models" / "MODEL-legacy.md").write_text(
+        "legacy\n",
+        encoding="utf-8",
+    )
+    (ctx / "migrations" /
+     "20260410_1523_0.17.6-to-0.17.9.md").write_text(
+        "# briefing\n",
+        encoding="utf-8",
+    )
+    (ctx / "workitems" /
+     "BACK-20260411_0000-ProudTiger-legacy.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: WorkItem
+            metadata:
+              id: BACK-20260411_0000-ProudTiger-legacy
+              created: 2026-04-11T00:00:00Z
+            spec:
+              title: Legacy root work
+              state: backlog
+              type: task
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (ctx / "workitems" / "2026" / "05" /
+     "BACK-20260511_1528-StoutStream-modern.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: WorkItem
+            metadata:
+              id: BACK-20260511_1528-StoutStream-modern
+              created: 2026-05-11T15:28:00Z
+            spec:
+              title: Modern sharded work
+              state: backlog
+              type: task
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (ctx / "workitems" /
+     "BACK-20260512_1200-BrightLake-new-root.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: WorkItem
+            metadata:
+              id: BACK-20260512_1200-BrightLake-new-root
+              created: 2026-05-12T12:00:00Z
+            spec:
+              title: New root work after sharding
+              state: backlog
+              type: task
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (ctx / "roles" /
+     "ROLE-20260414_1100-GentleFalcon-project-manager.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Role
+            metadata:
+              id: ROLE-20260414_1100-GentleFalcon-project-manager
+              created: 2026-04-14T11:00:00Z
+            spec:
+              name: Project Manager
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (ctx / "roles" / "ROLE-software-engineer-senior.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Role
+            metadata:
+              id: ROLE-software-engineer-senior
+              created: 2026-04-14T11:00:00Z
+            spec:
+              name: Software Engineer
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (ctx / "team-members" / "thrifty-otter" /
+     "team-member.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: TeamMember
+            metadata:
+              id: TEAMMEMBER-thrifty-otter
+              created: 2026-04-22T00:00:00Z
+            spec:
+              type: human
+              name: Owner
+              slug: thrifty-otter
+              active: true
+            ---
+            """),
+        encoding="utf-8",
+    )
+    storage_results = _entity_storage_run({"repo_root": root})
+    storage_ids = {r.id for r in storage_results}
+    for expected in {
+        "storage.host-artifact",
+        "storage.demoted-model-root",
+        "storage.legacy-archive-policy",
+        "storage.root-migration-briefings",
+        "storage.mixed-layout",
+        "storage.placeholder-timestamp",
+        "storage.filename-policy-mixed",
+        "storage.team-member-private-policy",
+        "storage.human-team-member-slug-policy",
+        "storage.policy-summary",
+    }:
+        check(f"17: emits {expected}", expected in storage_ids)
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()

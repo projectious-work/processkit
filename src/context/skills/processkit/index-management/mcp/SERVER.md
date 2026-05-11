@@ -22,8 +22,12 @@ manifest.
 | `semantic_search_entities(text, limit?)`                       | sqlite-vec semantic search when available        |
 | `hybrid_search_entities(text, limit?)`                         | RRF over FTS5 + semantic results, FTS fallback   |
 | `query_events(event_type?, subject?, actor?, limit?)`          | Query the LogEntry events table                  |
-| `list_errors()`                                                | Files that failed to parse during last reindex   |
+| `list_errors(limit?)`                                          | Files that failed to parse during last reindex   |
 | `stats()`                                                      | Count of entities/events/errors in the index     |
+
+List/search tools clamp caller-provided limits before querying the
+database. Unfiltered event queries are capped more tightly than filtered
+event queries, and long event summaries are returned as previews.
 
 ## Database
 

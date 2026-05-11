@@ -25,7 +25,7 @@ Tools provided:
     semantic_search_entities(text, limit?) -> [entities]
     hybrid_search_entities(text, limit?)   -> [entities]
     query_events(event_type?, subject?, actor?, limit?) -> [events]
-    list_errors()                          -> [{path, message}]
+    list_errors(limit?)                    -> [{path, message}]
     stats()                                -> counts
 
 Run from a processkit checkout (development) or installed by aibox into
@@ -613,11 +613,11 @@ def query_events(
     idempotentHint=True,
     openWorldHint=False,
 ))
-def list_errors() -> list[dict]:
+def list_errors(limit: int = 100) -> list[dict]:
     """Return files that failed to parse during the last reindex."""
     _, db = _open()
     try:
-        return index.list_errors(db)
+        return index.list_errors(db, limit=limit)
     finally:
         db.close()
 

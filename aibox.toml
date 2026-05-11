@@ -232,7 +232,7 @@ enabled = [
 
 # Documentation/docs-docusaurus — Docusaurus static docs site (React/MDX); requires node
 [addons.docs-docusaurus.tools]
-docusaurus = { version = "3.8" } # default on; options: {}, { enabled = true|false }, { version = "3.7.0" (default) or "latest" }
+docusaurus = { version = "3.8" } # default on; options: {}, { enabled = true|false }, { version = "3.7.0" | "3.8" | "3.9.2" | "3.10.1" (default) or "latest" }
 
 # Documentation/docs-hugo — Hugo static site generator (Go)
 # [addons.docs-hugo.tools]
@@ -284,7 +284,7 @@ pnpm = { version = "10" } # default on; options: {}, { enabled = true|false }, {
 # Languages/python — Python runtime with uv, poetry, or pdm
 [addons.python.tools]
 python = { version = "3.13" } # default on; options: {}, { enabled = true|false }, { version = "3.12" | "3.13" (default) | "3.14" or "latest" }
-uv = { version = "0.7" } # default on; options: {}, { enabled = true|false }, { version = "0.7" | "0.11.10" (default) or "latest" }
+uv = { version = "0.7" } # default on; options: {}, { enabled = true|false }, { version = "0.7" | "0.11.10" | "0.11.11" (default) or "latest" }
 # pip = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 # poetry = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "1.8" | "2.0" (default) or "latest" }
 # pdm = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "2.22" (default) or "latest" }
@@ -322,7 +322,7 @@ uv = { version = "0.7" } # default on; options: {}, { enabled = true|false }, { 
 
 # Tools/git-ui — GitHub CLI and lazygit interactive Git UI
 [addons.git-ui.tools]
-gh = { enabled = true } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+gh = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 lazygit = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/infrastructure — OpenTofu, Ansible, Packer
@@ -339,7 +339,7 @@ lazygit = { enabled = false } # default on; options: {}, { enabled = true|false 
 # k9s = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/preview-archive — Yazi image/PDF/SVG preview helpers plus archive preview/extraction tools
-# [addons.preview-archive.tools]
+[addons.preview-archive.tools]
 # chafa = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 # librsvg = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 # poppler = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
@@ -347,15 +347,13 @@ lazygit = { enabled = false } # default on; options: {}, { enabled = true|false 
 # mupdf = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 # entr = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 # p7zip = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# ouch = {} # default on; options: {}, { enabled = true|false }, { version = "0.7.1" (default) or "latest" }
 # resvg = {} # default on; options: {}, { enabled = true|false }, { version = "0.47.0" (default) or "latest" }
 
-# Tools/preview-enhanced — Rich Markdown rendering, ffmpeg, ImageMagick, and Ghostscript; requires preview-archive
-# [addons.preview-enhanced.tools]
-# ffmpeg = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# imagemagick = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# ghostscript = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# rich = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# Tools/preview-enhanced — Rich Markdown rendering, ffmpeg, and Ghostscript; requires preview-archive
+[addons.preview-enhanced.tools]
+# ffmpeg = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# ghostscript = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+rich = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/yazi-omp — oh-my-posh for the omp.yazi header prompt
 # [addons.yazi-omp.tools]
@@ -377,6 +375,7 @@ lazygit = { enabled = false } # default on; options: {}, { enabled = true|false 
 # Hermes                      hermes         any (multi-provider)
 #
 # Enable harnesses through their [ai.harness.<name>] table below.
+# `harness_order` controls tmux layout semantics: 1st, 2nd, 3rd harness.
 #
 # Model providers (optional): declare which API key/base URL env vars are available.
 # Provider     Config value   API key env         Base URL env
@@ -387,6 +386,8 @@ lazygit = { enabled = false } # default on; options: {}, { enabled = true|false 
 #
 # Alias used by some tools: OPENAI_API_BASE (OpenAI).
 [ai]
+
+harness_order = ["codex"]  # tmux: 1st, 2nd, 3rd harness placement order
 
 model_providers = [
 #     "anthropic", # env: ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL
@@ -400,7 +401,7 @@ model_providers = [
 
 [ai.harness.claude]
 enabled = true
-install = true
+install = false
 # version = "latest"
 
 [ai.harness.codex]
@@ -459,11 +460,11 @@ provider_mode = "pointer"  # options: pointer, full
 # allow_patterns = []
 # deny_patterns  = []
 
-# [ai.mcp.gateway] — processkit MCP topology. Options for mode: auto | granular | stdio | daemon-proxy
+# [ai.mcp.gateway] — processkit MCP topology. Options for mode: auto | daemon | stdio | separate
 [ai.mcp.gateway]
-mode = "auto"          # auto uses daemon-proxy when processkit-gateway is installed
+mode = "auto"          # auto uses daemon when processkit-gateway is installed
 lazy_catalog = false    # Use processkit's lazy catalog where supported
-host = "127.0.0.1"     # daemon-proxy is always localhost-only
+host = "127.0.0.1"     # daemon is always localhost-only
 port = 8765
 path = "/mcp"
 
@@ -501,14 +502,14 @@ schema_version = "1.0.0"      # Context schema version — updated automatically
 # rose-pine, material, solarized, github, ayu, night-owl, moonlight, plus dracula,
 # nord, and projectious. See docs for the full variant list.
 [customization]
-theme  = "dracula"
+theme  = "nord"
 # Global mode overlay. `auto` preserves the selected concrete theme.
 # Options: auto | light | dark
 mode   = "auto"
 # Starship prompt preset.
 # Options: default | plain | minimal | nerd-font | pastel | bracketed | arrow
-prompt = "arrow"
-# Default tmux layout. Options: dev | focus | cowork | cowork-swap | browse | ai
+prompt = "pastel"
+# Default tmux layout. Options: dev | focus | cowork | ai
 layout = "ai"
 
 # tmux runtime options. `layout` may override [customization].layout for tmux only.

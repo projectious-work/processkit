@@ -11,6 +11,68 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.1] - 2026-05-12
+
+v0.26.1 is a **patch release** focused on keeping status/reporting
+workflows small, making release health checks directly available through
+the gateway, and closing the local storage hygiene issues tracked in
+GitHub #39-#41.
+
+### Added
+
+- **Added bounded result windows for database-backed MCP queries.**
+  Entity, search, event, error, TeamMember, RoleSlot, and ID-listing
+  queries now clamp oversized limits; unfiltered event queries return a
+  smaller default window and truncate long summaries to avoid noisy,
+  token-heavy responses.
+- **Added active-only default migration listing.** `list_migrations()`
+  now returns pending and in-progress migrations by default; historical
+  applied/rejected migrations are available through explicit state
+  filters.
+- **Added `entity_storage_hygiene` to pk-doctor.** The new check audits
+  local context storage policy, unmanaged host artifacts, legacy roots,
+  lifecycle buckets, filename policy drift, placeholder timestamps, and
+  documented TeamMember privacy/local-state exceptions.
+- **Added the pk-doctor MCP config and gateway catalog exposure.**
+  `run_pk_doctor` is now surfaced as a direct read-only MCP tool, and
+  `run_pk_release_audit`, `list_entities`, and `get_entity_by_path`
+  are present in the generated gateway catalog.
+- **Expanded positive two-word ID naming pools.** The default adjective
+  and noun pools now provide 14,400 base combinations per kind before a
+  collision suffix is needed.
+
+### Changed
+
+- **`pk-resume`, standups, and status updates now check GitHub state.**
+  In GitHub-backed repositories they include open issues and PRs when
+  `gh` is available, and `pk-resume` includes pk-doctor totals as part
+  of the session-start health check.
+- **Team command adapters were refreshed from the current source
+  skills.** `.agents/skills` and `.claude/skills` now match the updated
+  team-creator command bodies.
+- **Local release workspace hygiene was tightened.** Old diagnostics and
+  root-level `.gitignore.example` scaffolding were removed from the
+  repository, and applied migration history was archived through the
+  context archive workflow.
+
+### Fixed
+
+- **Closed GitHub issues #39, #40, and #41.** pk-doctor now separates
+  local entity storage hygiene from template freshness and reports
+  actionable storage drift without flagging documented flat or
+  grandfathered layouts.
+- **Resolved pending local migrations.** The hidden root-level
+  `v0.25.8 -> v0.26.0` Migration was applied through MCP and then
+  archived with the rest of the applied migration history.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py`
+- `gh issue list --state open --limit 20 --json number,title,url`
+
+---
+
 ## [v0.26.0] — 2026-05-10
 
 v0.26.0 is a **minor release** that lands the GH-issue cluster

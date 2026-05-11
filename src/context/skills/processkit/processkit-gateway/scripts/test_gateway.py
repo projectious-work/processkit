@@ -54,6 +54,7 @@ def test_list_gateway_tools_reports_runtime_metadata():
     assert result["runtime"]["lazy_daemon"] is False
     assert result["runtime"]["transport"] == "stdio"
     assert "create_workitem" in gateway.server._tool_manager._tools
+    assert "run_pk_doctor" in gateway.server._tool_manager._tools
 
 
 def test_gateway_metadata_is_json_serializable():
@@ -86,6 +87,7 @@ def test_gateway_can_write_and_load_lazy_catalog(tmp_path):
     assert metadata["count"] == gateway.list_gateway_tools()["count"]
     assert metadata["runtime"]["import_mode"] == "lazy-catalog"
     assert "tool" not in metadata["tools"][0]
+    assert any(tool["name"] == "run_pk_doctor" for tool in metadata["tools"])
 
 
 def test_lazy_gateway_import_mode_registers_catalog_tools(tmp_path):

@@ -1,0 +1,131 @@
+{
+  "archive_id": "ARCHIVE-20260511_231721-migration-applied",
+  "archive_path": "context/archives/2026/05/ARCHIVE-20260511_231721-migration-applied.tar.gz",
+  "created_at": "2026-05-11T23:17:21+00:00",
+  "entities": [
+    {
+      "apiVersion": "processkit.projectious.work/v2",
+      "body_index": "# Migration MIG-20260509T213904-roleslot-phase-a\n\nPhase A team-creator v2 \u2014 RoleSlot primitive + identity-axis decoupling.\n\nCompanion to:\n- Architectural design: ART-20260509_1836-SmartPanda-team-creator-v2-design\n- Architectural decisions: DEC-20260509_1906-CoolBadger\n- Implementation WorkItem: BACK-20260509_1836-TidyAsh\n\n## What this migration adds\n\n1. **New entity kind: RoleSlot** (SCHEMA-roleslot v1.0.0). Scope-bounded\n   capacity reservation, registered in\n   `_lib/processkit/__init__.py`'s `KIND_PREFIXES` (`SLOT`) and\n   `DEFAULT_DIRS` (`roleslots`).\n2. **New binding type: `role-slot-fill`** (subject=TeamMember,\n   target=SLOT-*). Added to `binding.yaml` `known_types` with a\n   conditional schema branch.\n3. **Five new MCP tools on team-manager**: `create_role_slot`,\n   `get_role_slot`, `list_role_slots`, `fill_role_slot`,\n   `close_role_slot`.\n4. **Resolver pre-step** in `get_interlocutor_runtime_binding` that\n   surfaces a filled RoleSlot ahead of the existing 8-layer\n   model-assignment resolver. The 8 layers are unchanged\n   (DEC-20260509_1906-CoolBadger Q1).\n\n## Phase A backfill rules\n\nFor every Role in `context/roles/` with `clone_cap=N>0`, emit `N`\nRoleSlots:\n\n```\nSLOT-",
+      "id": "MIG-20260509T213904-roleslot-phase-a",
+      "kind": "Migration",
+      "labels": {
+        "cluster": "team-model-v2",
+        "design_artifact_ref": "ART-20260509_1836-SmartPanda-team-creator-v2-design",
+        "epic_sub": "SUB-1"
+      },
+      "member_path": "context/migrations/applied/MIG-20260509T213904-roleslot-phase-a.md",
+      "metadata": {
+        "created": "2026-05-09T21:39:04+00:00",
+        "id": "MIG-20260509T213904-roleslot-phase-a",
+        "labels": {
+          "cluster": "team-model-v2",
+          "design_artifact_ref": "ART-20260509_1836-SmartPanda-team-creator-v2-design",
+          "epic_sub": "SUB-1"
+        },
+        "updated": "2026-05-11T23:15:23+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260509T213904-roleslot-phase-a.md",
+      "sha256": "8c5dc2024c9c54d129cb87f32f1bfa744f64bad962cb55a10aca1891e0a834a0",
+      "spec": {
+        "affected_files": [
+          {
+            "classification": "new-upstream",
+            "group": "context/schemas",
+            "path": "src/context/schemas/roleslot.yaml"
+          },
+          {
+            "classification": "new-upstream",
+            "group": "context/schemas",
+            "path": "context/schemas/roleslot.yaml"
+          },
+          {
+            "classification": "changed-upstream-only",
+            "group": "context/schemas",
+            "path": "src/context/schemas/binding.yaml"
+          },
+          {
+            "classification": "changed-upstream-only",
+            "group": "context/schemas",
+            "path": "context/schemas/binding.yaml"
+          },
+          {
+            "classification": "changed-upstream-only",
+            "group": "context/skills/_lib/processkit",
+            "path": "src/context/skills/_lib/processkit/__init__.py"
+          },
+          {
+            "classification": "changed-upstream-only",
+            "group": "context/skills/_lib/processkit",
+            "path": "context/skills/_lib/processkit/__init__.py"
+          },
+          {
+            "classification": "changed-upstream-only",
+            "group": "context/skills/processkit/team-manager",
+            "path": "src/context/skills/processkit/team-manager/mcp/server.py"
+          },
+          {
+            "classification": "changed-upstream-only",
+            "group": "context/skills/processkit/team-manager",
+            "path": "context/skills/processkit/team-manager/mcp/server.py"
+          },
+          {
+            "classification": "changed-upstream-only",
+            "group": "context/skills/processkit/team-manager",
+            "path": "src/context/skills/processkit/team-manager/scripts/test_team_manager.py"
+          },
+          {
+            "classification": "changed-upstream-only",
+            "group": "context/skills/processkit/team-manager",
+            "path": "context/skills/processkit/team-manager/scripts/test_team_manager.py"
+          }
+        ],
+        "affected_groups": [
+          "context/schemas",
+          "context/skills/processkit/team-manager",
+          "context/skills/_lib/processkit",
+          "context/roleslots",
+          "context/bindings"
+        ],
+        "applied_at": "2026-05-11T23:15:23+00:00",
+        "apply_mode": "resumable",
+        "from_version": "v0.25.8",
+        "generated_at": "2026-05-09T21:39:04+00:00",
+        "generated_by": "TEAMMEMBER-finn (ROLE-software-engineer/senior)",
+        "kind": "schema-extension",
+        "plan": "Apply Phase A in three steps. (1) Land the schema + binding-type additions (already shipped by this branch). (2) For each Role in context/roles/ carrying clone_cap=N>0, emit N RoleSlots under the team's chartering Scope (parent = active project Scope), rank=1..N, state=open, default_model_profile copied through when present. (3) For each Binding(type=role-assignment) currently active, write a parallel Binding(type=role-slot-fill) with subject=TeamMember, target=SLOT-<scope>-<role>-1 (rank-1 by convention; multi-clone teams that were not yet differentiated all collapse onto rank-1 until pk-team-rebalance redistributes). v1 role-assignment Bindings remain readable for one minor version (deprecation window). Phase A must NOT delete v0.16.0 fields, must NOT remove the 8 archetype Roles, and must NOT modify pk-team-create. Both old and new resolution paths must work after apply (DEC-20260509_1906-CoolBadger Q2).\n",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Applied after pk-doctor entity_storage_hygiene exposed the root-level pending Migration outside the canonical state-bucket layout.",
+            "timestamp": "2026-05-11T23:15:23+00:00"
+          }
+        ],
+        "rollback": {
+          "feasibility": "full",
+          "risk_window": "Phase A only. Phase B (the destructive cutover that stops writing archetype Roles) ships in a later minor version. Phase C (resolver fold-in) ships after Phase B has been live for one minor version. This migration is fully reversible.\n",
+          "steps": [
+            "Delete every entity under context/roleslots/ written by this migration (filename matches SLOT-*-rank-* and frontmatter labels.migration == MIG-20260509T213904-roleslot-phase-a). The schema file roleslot.yaml stays \u2014 it is unreferenced once the slot files are gone.\n",
+            "Delete every Binding under context/bindings/ where spec.type == 'role-slot-fill' and labels.migration == MIG-20260509T213904-roleslot-phase-a. v1 role-assignment Bindings remain untouched.\n",
+            "Reverse-edit binding.yaml known_types to remove 'role-slot-fill'. Reverse-edit src/context/skills/_lib/processkit/__init__.py to remove the RoleSlot KIND_PREFIXES + DEFAULT_DIRS entries. Reverse-edit team-manager/mcp/server.py to remove the five RoleSlot tools and the resolver pre-step hook. Existing 8-layer resolver behaviour is restored bit-identical because the pre-step only adds a ``binding.roleslot_pre_step`` key \u2014 it never mutates the existing fields.\n",
+            "After rollback the project is at v0.25.8 \u2014 the same code path as before this migration, with no orphan entities.\n"
+          ]
+        },
+        "source": "processkit",
+        "source_api_version": "processkit.projectious.work/v2",
+        "source_processkit_version": "v0.25.8",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "started_at": "2026-05-11T23:15:23+00:00",
+        "state": "applied",
+        "summary": "Phase A team-creator v2 \u2014 additive RoleSlot primitive + role-slot-fill binding type. Backfill RoleSlots from existing Role.clone_cap and parallel role-slot-fill Bindings from existing role-assignment Bindings. Both old and new resolution paths remain valid after apply.\n",
+        "target_api_version": "processkit.projectious.work/v2",
+        "target_processkit_version": "v0.26.0",
+        "to_version": "v0.26.0"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260511_231721-migration-applied.tar.gz::context/migrations/applied/MIG-20260509T213904-roleslot-phase-a.md"
+    }
+  ],
+  "kind": "Migration",
+  "older_than_days": 0,
+  "sha256": "abbed57ead807889d7a9243a494183903836cf34331499f89fa10d3bad4729a0",
+  "state": "applied"
+}

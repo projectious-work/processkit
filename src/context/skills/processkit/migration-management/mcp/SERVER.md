@@ -13,7 +13,7 @@ manifest.
 
 | Tool                                   | Purpose                                                                                                  |
 |----------------------------------------|----------------------------------------------------------------------------------------------------------|
-| `list_migrations(state?)`              | List Migrations, optionally filtered by state. Walks the three state directories directly (no index dependency). |
+| `list_migrations(state?)`              | List active Migrations by default (`pending` + `in-progress`), or explicitly filter by `pending`, `in-progress`, `applied`, or `rejected`. Walks the state directories directly (no index dependency). |
 | `get_migration(id)`                    | Fetch one Migration with full spec + body. Accepts full ID, prefix, or bare word-pair.                   |
 | `start_migration(id)`                  | Transition `pending → in-progress`. Stamps `spec.started_at`, moves file, refreshes INDEX.md.            |
 | `apply_migration(id, notes?)`          | Transition `in-progress → applied` (or `pending → in-progress → applied` via implicit start). Appends `notes` to `spec.progress_notes` if given. |

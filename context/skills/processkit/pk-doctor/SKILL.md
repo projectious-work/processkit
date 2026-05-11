@@ -21,6 +21,9 @@ metadata:
       - name: pk-doctor
         args: "[--category=... | --fix=... | --fix-all | --since=<ref> | --yes]"
         description: "Run the health-check aggregator and print a single report."
+    provides:
+      mcp_tools:
+        - run_pk_doctor
 ---
 
 # pk-doctor
@@ -131,6 +134,14 @@ Additional checks added after Phase 1:
   not provider-billed usage.
 - **`v2_contracts`** — validates v2 API contract invariants across WorkItem, Binding, Artifact, and LogEntry entities. Catches process-instance definitions missing their definition reference, time-window bindings without a recurrence rule, orphaned cost-policy artifacts (not bound to a budget), policy supersession chains with breaks, uncalibrated eval-spec judges, and stale or missing agent-card projections. Emits ERROR for all contract violations; detect-only.
 - **`context_hygiene`** — validates artifact naming policies (model-spec and model-profile use timestamped `ART-YYYYMMDD_HHMM-*` scheme), model binding integrity (role/TeamMember defaults must target provider-neutral model-profile artifacts unless marked direct_model_pin), and cross-reference health. Also detects demoted schema kinds still present in src/, detects archive candidates, warns on mixed binding filename styles, and checks sqlite-vec semantic index health. Emits WARN / ERROR depending on severity; detect-only.
+- **`entity_storage_hygiene`** — validates local `context/`
+  storage policy separately from template freshness: unmanaged host
+  artifacts, demoted legacy roots such as `context/models/`,
+  root-level migration briefings, mixed root/sharded entity layouts,
+  mixed filename policies, placeholder `0000` timestamps, and
+  TeamMember private/slug policy explanations. Emits WARN for
+  actionable storage drift and INFO for documented
+  grandfathering/flat-by-policy layouts; detect-only.
 - **`schema_vocabulary`** — validates closed-vocabulary subtype fields across v2 entities by comparing frontmatter values against Schema-declared known-kinds/known-types (Artifact kind, Binding type, WorkItem type, LogEntry event_type, Migration kind). Also validates that Migration entities include required v2 version metadata fields. Emits ERROR for unknown vocabulary values or missing version fields; detect-only.
 - **`migration_integrity`** — flags malformed pending migrations that exhibit the "empty-baseline" defect (same-version migrations with content in affected_groups/affected_files despite no-op intent, or affected_groups populated but affected_files empty). Per BACK-20260425_1711-CleverRiver, both patterns are defect signatures. Emits WARN with suggested fix to reject via migration-management MCP and refile the upstream bug; detect-only.
 - **`mcp_gateway`** — reports processkit-gateway MCP config health and harness registration state. Validates gateway config presence/structure at `context/skills/processkit/processkit-gateway/mcp/mcp-config.json`, checks env vars and command launch target, detects mixed gateway+granular server registrations in `.mcp.json`, and warns on insecure daemon bindings. Emits INFO on healthy state, WARN on minor gaps (missing proxy --url, nonlocal daemon bind), ERROR on parsing failure; detect-only.
@@ -142,7 +153,8 @@ Additional checks added after Phase 1:
 - Hand-edit any file under `context/`. All writes route through the
   appropriate MCP tool (e.g. `apply_migration`).
 - Touch `context/templates/` (read-only diff baseline).
-- Touch `.mcp.json` (merged file; pk-doctor has no MCP server in Phase 1).
+- Touch `.mcp.json` (merged file; use the generated per-skill
+  `mcp/mcp-config.json` and gateway catalog instead).
 - Write to `context/logs/` directly — reports go through
   `mcp__processkit-event-log__log_event`.
 - Run fixes without an explicit `--fix=<category>` or `--fix-all` flag.

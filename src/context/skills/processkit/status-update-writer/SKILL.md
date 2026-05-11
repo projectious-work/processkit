@@ -42,10 +42,25 @@ context/HANDOVER.md     # most recent session summary
 # From git:
 git log --oneline -10   # recent commits
 git diff --stat HEAD~3  # what changed in the last few commits
+
+# From GitHub, when inside a git repository with a GitHub remote and
+# an authenticated gh CLI:
+gh issue list --state open --limit 20 \
+  --json number,title,labels,assignees,updatedAt,url
+gh pr list --state open --limit 20 \
+  --json number,title,isDraft,reviewDecision,headRefName,updatedAt,url
 ```
 
 If the update is for a non-processkit project, ask the user to
 provide recent output, commits, or notes.
+
+Treat GitHub as a best-effort collaboration source. If `gh` is missing,
+not authenticated, or blocked by network access, state that GitHub
+issues/PRs were not checked and continue from local/processkit state.
+When GitHub data is available, fold open issues and PRs into Done,
+In Progress, Blocked/At Risk, and Next Up rather than appending a long
+inventory. Call out review-needed PRs, stale issues, and external
+blockers by number.
 
 ### Choose the format for the audience
 
@@ -157,6 +172,9 @@ they need to make decisions or stay confident. Rules of thumb:
 Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
 - **Writing from memory instead of reading the actual project state.** A status update that contradicts the backlog or misses completed work is worse than no update. Always read `context/BACKLOG.md`, recent git log, or the last handover note before writing. Never synthesize from recall alone.
+- **Checking only local repository state.** In GitHub-backed repositories,
+  open issues and PRs are part of the live project state. Check them via
+  `gh` when available, and clearly note when they could not be checked.
 - **Reporting activity instead of outcomes.** "We held three meetings and reviewed the architecture" describes effort; "We finalized the data model and unblocked the API team" describes outcome. Status updates are for outcomes — what changed, what was delivered, what moved.
 - **Omitting blockers to avoid delivering bad news.** A status update without blockers implies everything is on track. Silently omitting a blocker delays the moment when it can be resolved. Report blockers with owner, impact, and what would unblock them — that's what stakeholders need to help.
 - **Using the same format for every audience.** An executive update with 40 bullets loses the reader; a 3-line async standup for a stakeholder brief leaves them confused about project health. Always ask "who will read this and what do they need to decide or know?" before choosing the format.

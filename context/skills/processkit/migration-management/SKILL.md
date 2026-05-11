@@ -296,6 +296,12 @@ migration-management is present in the installed/merged MCP
 configuration. The gateway must not infer or expose unrelated
 processkit servers from this skill's documentation.
 
+`list_migrations()` without arguments is intentionally an active-work
+view: it returns only `pending` and `in-progress` migrations. Historical
+`applied` and `rejected` migrations accumulate for the life of a project
+and must be requested explicitly with `state="applied"` or
+`state="rejected"` to avoid filling status/resume context.
+
 ### What this skill does NOT do (yet)
 
 - **Generate** migrations — that's `aibox sync`'s job.

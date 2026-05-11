@@ -189,17 +189,21 @@ def list_used_ids(kind: str | None = None, limit: int = 200) -> list[dict]:
     it reflects whatever was last upserted. Run ``reindex()`` first if
     you suspect the index is stale.
     """
+    limit = index.coerce_limit(limit, default=200, max_limit=500)
     db = index.open_db()
     try:
         if kind:
             rows = db.execute(
-                "SELECT id, kind FROM entities WHERE kind = ? ORDER BY id LIMIT ?",
-                (kind, int(limit)),
+                (
+                    "SELECT id, kind FROM entities "
+                    "WHERE kind = ? ORDER BY id LIMIT ?"
+                ),
+                (kind, limit),
             ).fetchall()
         else:
             rows = db.execute(
                 "SELECT id, kind FROM entities ORDER BY kind, id LIMIT ?",
-                (int(limit),),
+                (limit,),
             ).fetchall()
         return [dict(r) for r in rows]
     finally:
