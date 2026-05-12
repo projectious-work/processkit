@@ -11,6 +11,59 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.2] - 2026-05-12
+
+v0.26.2 is a **patch release** that fixes the remaining GitHub issue
+queue for migration listing, doctor actionability, and session-start
+maintenance prompts.
+
+### Added
+
+- **Added pk-doctor actionability metadata.** Each doctor finding now
+  includes `action_required`, `action_kind`, `default_agent_action`,
+  `requires_user_confirmation`, and `acceptable_resolution`, with
+  aggregate `action_totals` surfaced alongside severity totals. This
+  prevents actionable INFO findings from disappearing behind a clean
+  `0 WARN` gate. Closes [#43](https://github.com/projectious-work/processkit/issues/43).
+- **Added pk-resume action-queue guidance.** Status briefings now treat
+  severity and actionability as separate queues, require dispositions
+  for actionable doctor findings, and require explicit apply/reject/
+  inspect/defer decisions for pending or in-progress migrations. Closes
+  [#44](https://github.com/projectious-work/processkit/issues/44).
+- **Imported the expanded skill catalog from the current aibox sync.**
+  The dogfood tree now includes the generated data-ai, design, devops,
+  documents, engineering, and product skill families plus corresponding
+  command adapters.
+
+### Fixed
+
+- **Fixed lazy gateway serialization for empty structured list
+  results.** Catalog-backed gateway tools now preserve FastMCP
+  structured output and return a text fallback when the unstructured
+  content list would otherwise be empty. This keeps
+  `list_migrations(state="pending")` valid when no Migration entities
+  exist or when non-entity Markdown briefings sit in `pending/`. Closes
+  [#42](https://github.com/projectious-work/processkit/issues/42).
+- **Resolved and archived generated migration records.** The invalid
+  processkit/runtime migrations from the aibox sync were rejected with
+  integrity reasons, the runtime drift migration was applied by
+  preserving local edits, and all three terminal migration entities were
+  archived via context-archiving.
+
+### Verification
+
+- `python3 -m py_compile context/skills/_lib/processkit/gateway/lazy.py context/skills/_lib/processkit/gateway/registry.py src/context/skills/_lib/processkit/gateway/lazy.py src/context/skills/_lib/processkit/gateway/registry.py`
+- `uv run --with mcp --with pyyaml --with jsonschema --with httpx --with sqlite-vec --with pytest pytest context/skills/processkit/processkit-gateway/scripts/test_gateway.py context/skills/processkit/migration-management/scripts/test_migration_management.py -q`
+- `uv run --with mcp --with pyyaml --with jsonschema --with httpx --with sqlite-vec --with pytest pytest src/context/skills/processkit/processkit-gateway/scripts/test_gateway.py src/context/skills/processkit/migration-management/scripts/test_migration_management.py -q`
+- `python3 -m py_compile context/skills/processkit/pk-doctor/scripts/doctor.py context/skills/processkit/pk-doctor/scripts/checks/common.py context/skills/processkit/pk-doctor/mcp/server.py src/context/skills/processkit/pk-doctor/scripts/doctor.py src/context/skills/processkit/pk-doctor/scripts/checks/common.py src/context/skills/processkit/pk-doctor/mcp/server.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/test_pk_doctor_json.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run src/context/skills/processkit/pk-doctor/scripts/test_pk_doctor_json.py`
+- `uv run src/context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run scripts/smoke-test-servers.py`
+
+---
+
 ## [v0.26.1] - 2026-05-12
 
 v0.26.1 is a **patch release** focused on keeping status/reporting
