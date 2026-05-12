@@ -8,6 +8,7 @@ Run with:
 """
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import json
 import os
@@ -108,6 +109,46 @@ def test_lazy_gateway_import_mode_registers_catalog_tools(tmp_path):
     tool = lazy_server._tool_manager._tools["create_workitem"]
     assert tool.parameters["required"] == ["title"]
     assert tool.fn_metadata.arg_model.__name__ == "PassthroughArguments"
+
+
+def test_lazy_gateway_preserves_structured_list_results(tmp_path):
+    eager = _load_server()
+    catalog = tmp_path / "tool-catalog.json"
+    eager._REGISTRY.write_catalog(catalog)
+
+    lazy_registry = eager.GatewayRegistry(
+        self_skill="processkit-gateway",
+        exclude_skills={"aggregate-mcp"},
+        runtime=eager.RuntimeMetadata(import_mode="lazy-catalog"),
+        catalog_path=catalog,
+    )
+    lazy_server = eager.FastMCP("lazy-test")
+    eager.register_gateway_tools(lazy_server, lazy_registry)
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text("# Test repo\n", encoding="utf-8")
+    pending = repo / "context" / "migrations" / "pending"
+    pending.mkdir(parents=True)
+    (pending / "disabled-harness-state.md").write_text(
+        "# Disabled harness state\n\nHuman briefing only.\n",
+        encoding="utf-8",
+    )
+
+    old_cwd = Path.cwd()
+    try:
+        os.chdir(repo)
+        result = asyncio.run(
+            lazy_server._tool_manager._tools["list_migrations"].run(
+                {"state": "pending"},
+                convert_result=True,
+            )
+        )
+    finally:
+        os.chdir(old_cwd)
+
+    assert result.structuredContent == {"result": []}
+    assert result.content
 
 
 def test_gateway_config_registers_single_gateway_server():

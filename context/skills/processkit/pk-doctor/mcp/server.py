@@ -79,8 +79,10 @@ def run_pk_doctor(
     -------
     A dict with:
     - ``findings``: list of finding dicts (each has severity, category,
-      id, message, suggested_fix).
+      id, message, suggested_fix, and actionability fields).
     - ``totals``: ``{error: int, warn: int, info: int}``.
+    - ``action_totals``: counts for actionable findings, confirmation
+      requirements, tracking needs, and action kinds.
     - ``exit_code``: 0 (clean) or 1 (errors found).
     - ``invocation``: the reconstructed invocation string.
     - ``duration_ms``: wall-clock time in milliseconds.
@@ -106,6 +108,7 @@ def run_pk_doctor(
             "error": f"failed to invoke doctor.py: {exc}",
             "findings": [],
             "totals": {"error": 1, "warn": 0, "info": 0},
+            "action_totals": {"actionable": 1},
             "exit_code": 1,
         }
 
@@ -116,6 +119,7 @@ def run_pk_doctor(
             "stderr": result.stderr.strip(),
             "findings": [],
             "totals": {"error": 1, "warn": 0, "info": 0},
+            "action_totals": {"actionable": 1},
             "exit_code": result.returncode,
         }
 
@@ -128,6 +132,7 @@ def run_pk_doctor(
             "stderr": result.stderr.strip(),
             "findings": [],
             "totals": {"error": 1, "warn": 0, "info": 0},
+            "action_totals": {"actionable": 1},
             "exit_code": result.returncode,
         }
 

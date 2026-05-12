@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
+from mcp.types import CallToolResult, TextContent
 from mcp.server.fastmcp.tools.base import Tool
 from mcp.server.fastmcp.utilities.func_metadata import (
     ArgModelBase,
@@ -31,7 +33,31 @@ def make_lazy_tool(registry: Any, item: dict[str, Any]) -> Tool:
     name = item["name"]
 
     async def invoke(**arguments: Any) -> Any:
-        return await registry.call_tool(name, arguments)
+        result = await registry.call_tool(
+            name,
+            arguments,
+            convert_result=True,
+        )
+        if isinstance(result, CallToolResult):
+            return result
+        if (
+            isinstance(result, tuple)
+            and len(result) == 2
+            and isinstance(result[1], dict)
+        ):
+            content, structured = result
+            if not content:
+                content = [
+                    TextContent(
+                        type="text",
+                        text=json.dumps(structured, sort_keys=True),
+                    )
+                ]
+            return CallToolResult(
+                content=list(content),
+                structuredContent=structured,
+            )
+        return result
 
     base = Tool.from_function(
         invoke,

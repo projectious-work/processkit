@@ -1,0 +1,80 @@
+{
+  "archive_id": "ARCHIVE-20260512_053252-migration-rejected",
+  "archive_path": "context/archives/2026/05/ARCHIVE-20260512_053252-migration-rejected.tar.gz",
+  "created_at": "2026-05-12T05:32:52+00:00",
+  "entities": [
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-20260512T052703\n\nFrom `v0.26.0` to `v0.26.1` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 0 conflicts, 4 new, 0 removed, 0 stale-removed (2 groups affected)\n\n## Counts\n\n- unchanged: 671\n- changed-locally-only: 1\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 4\n- removed-upstream: 0\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### AGENTS\n\n**changed-locally-only**\n\n- `AGENTS.md` \u2192 `AGENTS.md`\n\n### skills/processkit\n\n**new-upstream**\n\n- `context/skills/processkit/index-management/scripts/test_db_result_limits.py` \u2192 `context/skills/processkit/index-management/scripts/test_db_result_limits.py`\n- `context/skills/processkit/migration-management/scripts/test_migration_management.py` \u2192 `context/skills/processkit/migration-management/scripts/test_migration_management.py`\n- `context/skills/processkit/pk-doctor/mcp/mcp-config.json` \u2192 `context/skills/processkit/pk-doctor/mcp/mcp-config.json`\n- `context/skills/processkit/pk-doctor/scripts/checks/entity_storage_hygiene.py` \u2192 `context/skills/processkit/pk-doctor/scripts/checks/entity_storage_hygiene.py`\n",
+      "id": "MIG-20260512T052703",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260512T052703.md",
+      "metadata": {
+        "created": "2026-05-12T05:27:03+00:00",
+        "id": "MIG-20260512T052703",
+        "updated": "2026-05-12T05:32:00+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260512T052703.md",
+      "sha256": "f289e7c8c34afffbf0c517a3d22231c03dc62f631f4745141583982ebacd1539",
+      "spec": {
+        "affected_groups": [
+          "AGENTS",
+          "skills/processkit"
+        ],
+        "from_version": "v0.26.0",
+        "generated_at": "2026-05-12T05:27:03+00:00",
+        "generated_by": "aibox apply",
+        "rejected_at": "2026-05-12T05:32:00+00:00",
+        "rejected_reason": "Rejected per pk-doctor migration_integrity.affected-files-empty warning: affected_groups/body rows exist but affected_files is empty, indicating the known migration post-processor defect. Regenerate before applying upstream changes.",
+        "source": "processkit",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "state": "rejected",
+        "summary": "0 changed upstream, 0 conflicts, 4 new, 0 removed, 0 stale-removed (2 groups affected)",
+        "to_version": "v0.26.1"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260512_053252-migration-rejected.tar.gz::context/migrations/applied/MIG-20260512T052703.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260512T052703\n\nManaged `.aibox-home/` runtime changes from `0.25.8` to `0.25.9`.\n\n2 changed upstream, 1 conflicts, 2 new, 1 removed (7 groups affected)\n\n## Counts\n\n- unchanged: 25\n- changed-locally-only: 3\n- changed-upstream-only: 2\n- conflict: 1\n- new-upstream: 2\n- removed-upstream: 1\n\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### runtime-claude\n\n**new-upstream**\n\n- `.aibox-home/.claude/keybindings.json` -> `.aibox-home/.claude/keybindings.json`\n\n### runtime-git\n\n**changed-locally-only**\n\n- `.aibox-home/.config/git/config` -> `.aibox-home/.config/git/config`\n\n### runtime-lazygit\n\n**removed-upstream**\n\n- `.aibox-home/.config/lazygit/config.yml` -> `.aibox-home/.config/lazygit/config.yml`\n\n### runtime-misc\n\n**changed-locally-only**\n\n- `.aibox-home/.config/cheatsheet.txt` -> `.aibox-home/.config/cheatsheet.txt`\n\n**new-upstream**\n\n- `.aibox-home/.claude.json` -> `.aibox-home/.claude.json`\n\n### runtime-starship\n\n**changed-upstream-only**\n\n- `.aibox-home/.config/starship.toml` -> `.aibox-home/.config/starship.toml`\n\n### runtime-vim\n\n**conflict**\n\n- `.aibox-home/.vim/vimrc` -> `.aibox-home/.vim/vimrc`\n\n### runtime-yazi\n\n**changed-locally-only**\n\n- `.aibo",
+      "id": "MIG-RUNTIME-20260512T052703",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260512T052703.md",
+      "metadata": {
+        "created": "2026-05-12T05:27:03+00:00",
+        "id": "MIG-RUNTIME-20260512T052703",
+        "updated": "2026-05-12T05:32:03+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260512T052703.md",
+      "sha256": "f0fc015a3afd13a404fd54f963ff6e113f8d0ec575eb3c862ea1012777d3f227",
+      "spec": {
+        "affected_groups": [
+          "runtime-claude",
+          "runtime-git",
+          "runtime-lazygit",
+          "runtime-misc",
+          "runtime-starship",
+          "runtime-vim",
+          "runtime-yazi"
+        ],
+        "from_version": "0.25.8",
+        "generated_at": "2026-05-12T05:27:03+00:00",
+        "generated_by": "aibox apply",
+        "rejected_at": "2026-05-12T05:32:03+00:00",
+        "rejected_reason": "Rejected per pk-doctor migration_integrity.affected-files-empty warning: affected_groups/body rows exist but affected_files is empty, including a runtime conflict, so this migration should be regenerated before applying.",
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "state": "rejected",
+        "summary": "2 changed upstream, 1 conflicts, 2 new, 1 removed (7 groups affected)",
+        "to_version": "0.25.9"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260512_053252-migration-rejected.tar.gz::context/migrations/applied/MIG-RUNTIME-20260512T052703.md"
+    }
+  ],
+  "kind": "Migration",
+  "older_than_days": 0,
+  "sha256": "e1c2f2ee12806f5389a8eac0574b170d21bd20b35a4aa187653b48d011259e4a",
+  "state": "rejected"
+}

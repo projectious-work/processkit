@@ -1477,6 +1477,7 @@ with tempfile.TemporaryDirectory() as tmp:
     )
     storage_results = _entity_storage_run({"repo_root": root})
     storage_ids = {r.id for r in storage_results}
+    storage_by_id = {r.id: r for r in storage_results}
     for expected in {
         "storage.host-artifact",
         "storage.demoted-model-root",
@@ -1490,6 +1491,12 @@ with tempfile.TemporaryDirectory() as tmp:
         "storage.policy-summary",
     }:
         check(f"17: emits {expected}", expected in storage_ids)
+    briefing = storage_by_id["storage.root-migration-briefings"].to_dict()
+    check("17: migration briefings remain actionable",
+          briefing["action_required"] is True)
+    check("17: migration briefings request archive action",
+          briefing["action_kind"] == "archive_needed",
+          json.dumps(briefing, indent=2))
 
 # ---------------------------------------------------------------------------
 # Summary

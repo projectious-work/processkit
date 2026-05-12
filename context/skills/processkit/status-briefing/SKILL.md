@@ -48,7 +48,8 @@ Pull from these sources in order, weighting by freshness:
 1. session.handover LogEntry  — most recent; weight by age (see below)
 2. Active interlocutor — current speaker via team-manager, if configured
 3. Migrations (pending + in-progress) — upgrade work via migration-management
-4. Repository health — `run_pk_doctor()` totals + top ERROR/WARN findings
+4. Repository health — `run_pk_doctor()` severity totals, action totals,
+   and top actionable findings
 5. WorkItems (in_progress + blocked)  — current state via workitem-management
 6. session.standup LogEntries — last 1-3 entries since last handover
 7. git log --oneline -5       — recent commits
@@ -58,11 +59,17 @@ Pull from these sources in order, weighting by freshness:
 ```
 
 For the repository-health source, call the direct `run_pk_doctor` MCP
-tool. Include only the totals and the highest-severity actionable
-findings in the briefing. If `run_pk_doctor` is not available while
-`pk-doctor` is enabled or routed, surface that as an MCP configuration
-defect; do not silently fall back to a local script path unless the user
-explicitly asks for an implementation-level workaround.
+tool. Consume both `totals` and `action_totals`; severity downgrade is
+not a valid resolution. A clean session start means there are no
+unresolved findings with `action_required: true`, or every actionable
+finding has an explicit disposition: fixed, migrated, archived, linked
+to a tracking item, deferred with a reason, or accepted as a policy
+exception. Include only severity totals, action totals, and the
+highest-priority actionable findings in the briefing. If
+`run_pk_doctor` is not available while `pk-doctor` is enabled or routed,
+surface that as an MCP configuration defect; do not silently fall back
+to a local script path unless the user explicitly asks for an
+implementation-level workaround.
 
 For the GitHub collaboration source, first confirm the working directory
 is inside a git repository and has a GitHub remote. If `gh` is installed
@@ -134,7 +141,8 @@ the user configuring anything.
 
 ## Repository health
 
-- pk-doctor: [0 ERROR / 0 WARN / N INFO] — [top finding or "clean"]
+- pk-doctor: [0 ERROR / 0 WARN / N INFO; A actionable / C need confirmation]
+  — [top actionable finding or "clean"]
 
 ## GitHub
 
@@ -212,12 +220,16 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 - **Reading only the handover note without checking WorkItem state.** The handover captures what was true at session end; WorkItem state shows what has been actively changed since. A briefing that contradicts current WorkItem state (e.g., listing an item as "next up" when it is now done) will erode trust immediately. Always cross-check both.
 - **Hiding pending migrations.** Session start is the safest point to catch
   upgrade drift. Always query pending and in-progress migrations. If any are
-  present, surface them before normal priorities and propose review via
-  `migration-management`; do not silently apply them.
+  present, surface them before normal priorities and require an explicit
+  disposition: apply, reject, inspect first, or defer with a durable reason
+  or tracking item. Propose review via `migration-management`; do not
+  silently apply them.
 - **Skipping repository health.** `pk-resume` should include the current
-  `pk-doctor` result. A clean doctor pass can be one line; ERROR/WARN
-  findings should be included in blockers/risks or repository health. If
-  the direct MCP tool is missing, report that as a configuration problem.
+  `pk-doctor` result. A clean doctor pass can be one line only when both
+  severity and action queues are clean. ERROR/WARN findings and
+  `action_required: true` INFO findings should be included in
+  blockers/risks or repository health. If the direct MCP tool is missing,
+  report that as a configuration problem.
 - **Ignoring GitHub collaboration state.** In a git repository with a
   GitHub remote, local worktree and processkit state are not enough.
   Check open GitHub issues and PRs through `gh` when available, and call

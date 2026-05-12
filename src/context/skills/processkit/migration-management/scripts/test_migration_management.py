@@ -79,6 +79,50 @@ def test_list_migrations_default_returns_only_active_states() -> None:
     assert rejected_ids == {"MIG-REJECTED"}
 
 
+def test_list_migrations_ignores_non_entity_briefings() -> None:
+    server = _load_server()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "AGENTS.md").write_text("# Test repo\n", encoding="utf-8")
+        pending = root / "context" / "migrations" / "pending"
+        pending.mkdir(parents=True, exist_ok=True)
+        (pending / "disabled-harness-state.md").write_text(
+            "# Disabled harness state\n\nHuman briefing only.\n",
+            encoding="utf-8",
+        )
+
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(root)
+            migrations = server.list_migrations(state="pending")
+        finally:
+            os.chdir(old_cwd)
+
+    assert migrations == []
+
+
+def test_list_migrations_empty_pending_returns_empty_list() -> None:
+    server = _load_server()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "AGENTS.md").write_text("# Test repo\n", encoding="utf-8")
+        (root / "context" / "migrations" / "pending").mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(root)
+            migrations = server.list_migrations(state="pending")
+        finally:
+            os.chdir(old_cwd)
+
+    assert migrations == []
+
+
 if __name__ == "__main__":
     test_list_migrations_default_returns_only_active_states()
+    test_list_migrations_ignores_non_entity_briefings()
+    test_list_migrations_empty_pending_returns_empty_list()
     print("All tests passed.")

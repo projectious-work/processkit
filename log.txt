@@ -1,0 +1,19 @@
+[2m---- session: 8300f7cd-5cd3-4b60-a5eb-16cf8471a44e started=2026-05-12T05:30:16Z ----[0m
+2026-05-12T05:30:16Z  [36mINFO [0m  [runtime] runtime.diagnostics.started  diagnostics sidecar started
+2026-05-12T05:30:16Z  [36mINFO [0m  [runtime] runtime.sample  sample 60s samples=13 mem_avg=4.7 MiB mem_max=5.0 MiB proc_avg=24 proc_max=39 threads_avg=1 threads_max=1 load_avg=2.28 load_max=2.83
+2026-05-12T05:30:21Z  [33;1mWARN [0m  [runtime] runtime.mcp.changed  mcp none -> dmn/1/1
+2026-05-12T05:30:31Z  [33;1mWARN [0m  [runtime] runtime.mcp.changed  mcp dmn/1/1 -> dmn/1/3
+2026-05-12T05:31:21Z  [36mINFO [0m  [runtime] runtime.sample  sample 60s samples=13 mem_avg=1.8 MiB mem_max=5.0 MiB proc_avg=37 proc_max=42 threads_avg=1 threads_max=1 load_avg=1.89 load_max=2.09
+2026-05-12T05:32:26Z  [36mINFO [0m  [runtime] runtime.sample  sample 60s samples=13 mem_avg=943.8 KiB mem_max=1.2 MiB proc_avg=32 proc_max=39 threads_avg=1 threads_max=1 load_avg=5.87 load_max=7.85
+2026-05-12T05:33:31Z  [36mINFO [0m  [runtime] runtime.sample  sample 60s samples=13 mem_avg=1.1 MiB mem_max=1.4 MiB proc_avg=29 proc_max=52 threads_avg=1 threads_max=1 load_avg=7.65 load_max=9.51
+2026-05-12T05:34:36Z  [36mINFO [0m  [runtime] runtime.sample  sample 60s samples=13 mem_avg=1.1 MiB mem_max=1.4 MiB proc_avg=27 proc_max=39 threads_avg=1 threads_max=1 load_avg=4.28 load_max=5.31
+2026-05-12T05:35:26Z  [33;1mWARN [0m  [runtime] runtime.mcp.changed  mcp dmn/1/3 -> stdio/1/4
+2026-05-12T05:35:31Z  [33;1mWARN [0m  [runtime] runtime.mcp.changed  mcp stdio/1/4 -> dmn/1/3
+2026-05-12T05:35:41Z  [36mINFO [0m  [runtime] runtime.sample  sample 60s samples=13 mem_avg=1.1 MiB mem_max=1.4 MiB proc_avg=17 proc_max=35 threads_avg=1 threads_max=1 load_avg=2.02 load_max=2.70
+2026-05-12T05:36:26Z  [33;1mWARN [0m  [runtime] runtime.mcp.changed  mcp dmn/1/3 -> stdio/1/4
+2026-05-12T05:36:31Z  [33;1mWARN [0m  [runtime] runtime.mcp.changed  mcp stdio/1/4 -> dmn/1/3
+2026-05-12T05:36:46Z  [36mINFO [0m  [runtime] runtime.sample  sample 60s samples=13 mem_avg=1009.5 KiB mem_max=1.3 MiB proc_avg=15 proc_max=24 threads_avg=1 threads_max=1 load_avg=1.29 load_max=1.63
+2026-05-12T05:37:51Z  [36mINFO [0m  [runtime] runtime.sample  sample 60s samples=13 mem_avg=1.1 MiB mem_max=1.5 MiB proc_avg=19 proc_max=34 threads_avg=1 threads_max=1 load_avg=1.42 load_max=1.74
+2026-05-12T05:38:26Z  [33;1mWARN [0m  [runtime] runtime.mcp.changed  mcp dmn/1/3 -> dmn/1/5
+2026-05-12T05:38:31Z  [33;1mWARN [0m  [runtime] runtime.mcp.changed  mcp dmn/1/5 -> dmn/1/3
+2

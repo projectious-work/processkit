@@ -52,7 +52,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
 from checks import REGISTRY, get as get_check, names as check_names  # noqa: E402
-from checks.common import CheckResult, tally  # noqa: E402
+from checks.common import CheckResult, action_tally, tally  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -147,20 +147,46 @@ def _format_report(
     lines.append(f"duration:   {duration_ms} ms")
     lines.append("")
     grand = {"ERROR": 0, "WARN": 0, "INFO": 0}
+    action_grand = {
+        "actionable": 0,
+        "needs_user_confirmation": 0,
+        "needs_tracking": 0,
+        "safe_fix": 0,
+        "migration_needed": 0,
+        "archive_needed": 0,
+        "policy_decision_needed": 0,
+        "external_dependency": 0,
+    }
     for cat, res in per_cat.items():
         t = tally(res)
+        at = action_tally(res)
         for k, v in t.items():
             grand[k] += v
+        for k, v in at.items():
+            action_grand[k] += v
         lines.append(f"## {cat} — {t['ERROR']} ERROR / {t['WARN']} WARN / {t['INFO']} INFO")
         for r in res:
+            rd = r.to_dict()
+            action_tail = ""
+            if rd["action_required"]:
+                action_tail = (
+                    f"  (action: {rd['action_kind']}; "
+                    f"default: {rd['default_agent_action']})"
+                )
             if r.severity == "INFO":
-                lines.append(f"  [i] {r.message}")
+                lines.append(f"  [i] {r.message}{action_tail}")
             else:
                 g = SEV_GLYPH[r.severity]
                 tail = f"  (fix: {r.suggested_fix})" if r.suggested_fix else ""
-                lines.append(f"  [{g}] {r.id} — {r.message}{tail}")
+                lines.append(f"  [{g}] {r.id} — {r.message}{tail}{action_tail}")
         lines.append("")
     lines.append(f"## totals — {grand['ERROR']} ERROR / {grand['WARN']} WARN / {grand['INFO']} INFO")
+    lines.append(
+        "## actions — "
+        f"{action_grand['actionable']} actionable / "
+        f"{action_grand['needs_user_confirmation']} need confirmation / "
+        f"{action_grand['needs_tracking']} need tracking"
+    )
     if fixes_applied:
         lines.append("")
         lines.append(f"## fixes ({len(fixes_applied)})")
@@ -188,16 +214,33 @@ def _emit_logentry(
     via mcp__processkit-event-log__log_event. Returns the payload.
     """
     grand = {"ERROR": 0, "WARN": 0, "INFO": 0}
+    actions = {
+        "actionable": 0,
+        "needs_user_confirmation": 0,
+        "needs_tracking": 0,
+        "safe_fix": 0,
+        "migration_needed": 0,
+        "archive_needed": 0,
+        "policy_decision_needed": 0,
+        "external_dependency": 0,
+    }
     top_findings: list[dict] = []
     per_cat_tally: dict[str, dict[str, int]] = {}
     for cat, res in per_cat.items():
         t = tally(res)
+        at = action_tally(res)
         per_cat_tally[cat] = t
         for k, v in t.items():
             grand[k] += v
+        for k, v in at.items():
+            actions[k] += v
         for r in res:
-            if r.severity != "INFO" and len(top_findings) < 20:
-                top_findings.append(r.to_dict())
+            rd = r.to_dict()
+            if (
+                (r.severity != "INFO" or rd["action_required"])
+                and len(top_findings) < 20
+            ):
+                top_findings.append(rd)
 
     payload = {
         "event_type": "doctor.report",
@@ -209,6 +252,7 @@ def _emit_logentry(
             "doctor_version": DOCTOR_VERSION,
             "invocation": invocation,
             "categories": per_cat_tally,
+            "action_totals": actions,
             "top_findings": top_findings,
             "fixes_applied": fixes_applied,
             "duration_ms": duration_ms,
@@ -292,11 +336,24 @@ def main(argv: list[str]) -> int:
 
     # Build grand totals for both output modes
     grand = {"ERROR": 0, "WARN": 0, "INFO": 0}
+    action_grand = {
+        "actionable": 0,
+        "needs_user_confirmation": 0,
+        "needs_tracking": 0,
+        "safe_fix": 0,
+        "migration_needed": 0,
+        "archive_needed": 0,
+        "policy_decision_needed": 0,
+        "external_dependency": 0,
+    }
     all_findings: list[dict] = []
     for cat, res in per_cat.items():
         t = tally(res)
+        at = action_tally(res)
         for k, v in t.items():
             grand[k] += v
+        for k, v in at.items():
+            action_grand[k] += v
         for r in res:
             all_findings.append(r.to_dict())
 
@@ -311,6 +368,7 @@ def main(argv: list[str]) -> int:
                 "warn": grand["WARN"],
                 "info": grand["INFO"],
             },
+            "action_totals": action_grand,
             "exit_code": 1 if grand_err else 0,
             "invocation": invocation,
             "duration_ms": duration_ms,

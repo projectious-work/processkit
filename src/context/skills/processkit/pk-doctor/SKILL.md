@@ -37,6 +37,14 @@ repo healthy?" in one command. The skill pattern is deliberately modelled
 on `npm doctor`, `brew doctor`, and `rustup doctor`: detect by default,
 fix only when explicitly asked, and keep the report skimmable.
 
+Severity and actionability are separate contracts. `ERROR`/`WARN`/`INFO`
+describe blocking severity; `action_required`, `action_kind`,
+`default_agent_action`, `requires_user_confirmation`, and
+`acceptable_resolution` tell agents what must happen next. A severity
+downgrade is not a resolution. Clean means no blocking findings and no
+unresolved actionable findings, or a durable disposition for every
+actionable finding.
+
 This skill is the Phase 1 landing. It ships four checks. Phase 2 and
 Phase 3 add more checks, lift the aggregator into an MCP server, and
 harden the `--fix` paths — each with their own WorkItem.
@@ -177,8 +185,28 @@ After the stdout human-readable summary, the skill emits a single
       "migrations": {"ERROR": 0, "WARN": 1, "INFO": 1},
       "drift": {"ERROR": 0, "WARN": 0, "INFO": 1}
     },
+    "action_totals": {
+      "actionable": 2,
+      "needs_user_confirmation": 1,
+      "needs_tracking": 0,
+      "safe_fix": 1,
+      "migration_needed": 1,
+      "archive_needed": 0,
+      "policy_decision_needed": 0,
+      "external_dependency": 0
+    },
     "top_findings": [
-      {"severity": "WARN", "id": "migration.stale-pending", "entity_ref": "MIG-...", "message": "..."}
+      {
+        "severity": "WARN",
+        "id": "migration.stale-pending",
+        "entity_ref": "MIG-...",
+        "message": "...",
+        "action_required": true,
+        "action_kind": "migration_needed",
+        "default_agent_action": "create_migration",
+        "requires_user_confirmation": true,
+        "acceptable_resolution": "migrated"
+      }
     ],
     "fixes_applied": [],
     "duration_ms": 2340
@@ -188,6 +216,8 @@ After the stdout human-readable summary, the skill emits a single
 
 `top_findings` caps at 20 to keep the log entry compact; the full
 stdout report remains authoritative for the details of a specific run.
+The structured JSON payload returned by `run_pk_doctor` includes the
+same `action_totals` and actionability fields on every finding.
 
 ### Interactive prompts
 

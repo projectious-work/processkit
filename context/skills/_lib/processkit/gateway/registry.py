@@ -119,7 +119,13 @@ class GatewayRegistry:
             ]
         return payload
 
-    async def call_tool(self, name: str, arguments: dict[str, Any]) -> Any:
+    async def call_tool(
+        self,
+        name: str,
+        arguments: dict[str, Any],
+        *,
+        convert_result: bool = False,
+    ) -> Any:
         """Call a lazily loaded backing tool by gateway registered name."""
         self.load()
         item = self._tool_index.get(name)
@@ -139,7 +145,7 @@ class GatewayRegistry:
                     f"{source_path}"
                 )
             item["tool"] = tool
-        return await tool.run(arguments)
+        return await tool.run(arguments, convert_result=convert_result)
 
 
 def register_gateway_tools(server: Any, registry: GatewayRegistry) -> None:

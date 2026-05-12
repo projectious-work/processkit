@@ -66,9 +66,14 @@ check("payload has 'findings' list", isinstance(payload.get("findings"), list),
       str(type(payload.get("findings"))))
 check("payload has 'totals' dict", isinstance(payload.get("totals"), dict),
       str(type(payload.get("totals"))))
+check("payload has 'action_totals' dict",
+      isinstance(payload.get("action_totals"), dict),
+      str(type(payload.get("action_totals"))))
 check("totals has 'error' key", "error" in payload.get("totals", {}))
 check("totals has 'warn' key", "warn" in payload.get("totals", {}))
 check("totals has 'info' key", "info" in payload.get("totals", {}))
+check("action_totals has 'actionable' key",
+      "actionable" in payload.get("action_totals", {}))
 check("payload has 'exit_code'", "exit_code" in payload)
 check("exit_code matches returncode", payload.get("exit_code") == result.returncode,
       f"payload={payload.get('exit_code')}, actual={result.returncode}")
@@ -94,6 +99,8 @@ result_text = run_doctor()
 check("exits 0 or 1", result_text.returncode in (0, 1))
 check("stdout contains '## totals'", "## totals" in result_text.stdout,
       result_text.stdout[:200])
+check("stdout contains '## actions'", "## actions" in result_text.stdout,
+      result_text.stdout[:200])
 
 # Should not be parseable as JSON in text mode
 try:
@@ -110,7 +117,17 @@ print("\n[4] findings items have expected structure")
 
 if payload.get("findings"):
     first = payload["findings"][0]
-    for key in ("severity", "category", "id", "message"):
+    for key in (
+        "severity",
+        "category",
+        "id",
+        "message",
+        "action_required",
+        "action_kind",
+        "default_agent_action",
+        "requires_user_confirmation",
+        "acceptable_resolution",
+    ):
         check(f"finding has '{key}'", key in first, str(first))
 else:
     # No findings is fine — just make sure the list is empty not missing

@@ -12,12 +12,14 @@ None.
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
-| 2026-05-11 | MIG-20260509T213904-roleslot-phase-a — processkit v0.25.8 → v0.26.0 | Phase A team-creator v2 — additive RoleSlot primitive + role-slot-fill binding type. Backfill RoleSlots from existing Role.clone_cap and parallel role-slot-fill Bindings from existing role-assignment Bindings. Both old and new resolution paths remain valid after apply.
- |
+| 2026-05-12 | MIG-RUNTIME-DRIFT-20260512T052703 — aibox-runtime-drift  → 0.25.9 | 4 drifted managed runtime file(s) found at 0.25.9 |
 
-## Rejected (0)
+## Rejected (2)
 
-None.
+| Date       | Migration                                | Reason |
+|------------|------------------------------------------|--------|
+| 2026-05-12 | MIG-20260512T052703 — processkit v0.26.0 → v0.26.1 | Rejected per pk-doctor migration_integrity.affected-files-empty warning: affected_groups/body rows exist but affected_f… |
+| 2026-05-12 | MIG-RUNTIME-20260512T052703 — aibox-runtime-home 0.25.8 → 0.25.9 | Rejected per pk-doctor migration_integrity.affected-files-empty warning: affected_groups/body rows exist but affected_f… |
 
 ## CLI Migrations
 
