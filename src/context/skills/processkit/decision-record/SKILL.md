@@ -110,7 +110,8 @@ Optional body: longer narrative, links to the discussion, related research.
    negative.
 6. Set `state: proposed` if still under discussion, `accepted` if finalized.
 7. Save to `context/decisions/`.
-8. Log `decision.proposed` or `decision.accepted`.
+8. Log `decision.created`; later state changes use
+   `decision.transitioned`.
 
 ### Superseding
 

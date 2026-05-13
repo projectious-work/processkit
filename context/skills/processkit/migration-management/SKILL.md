@@ -224,6 +224,22 @@ Frequently-used fields:
 | `plan` | string | the approved migration plan (markdown) |
 | `progress_notes` | list[object] | append-only progress log |
 
+### Data-fix migrations are required for legacy shapes
+
+Compatibility shims are temporary aids for discovering drift, not a
+terminal state. When pk-doctor reports legacy vocabulary, non-canonical
+IDs, filename-policy drift, wrong directory layouts, placeholder
+timestamps, or stale references, record a `kind: data-fix` Migration
+that names every affected file and the canonical target shape. Apply
+the migration through migration-management MCP tools so indexes,
+schemas, state-machine transitions, and event logs stay consistent.
+
+Do not resolve strict schema/storage drift by adding project-local
+`legacy_known_*` allowlists or by documenting a permanent policy
+exception. If a legacy value should become current vocabulary, ship an
+explicit schema migration that adds it to the authoritative
+`known_*` field before new entities use it.
+
 ### The five file classifications
 
 | Classification | Meaning |

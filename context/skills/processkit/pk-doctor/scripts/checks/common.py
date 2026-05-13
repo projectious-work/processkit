@@ -47,7 +47,6 @@ AcceptableResolution = Literal[
     "migrated",
     "archived",
     "linked_tracking_item",
-    "accepted_policy_exception",
 ]
 
 
@@ -154,7 +153,7 @@ class CheckResult:
         if kind == "archive_needed":
             return "archived"
         if kind == "policy_decision_needed":
-            return "accepted_policy_exception"
+            return "linked_tracking_item"
         if kind == "external_dependency":
             return "linked_tracking_item"
         return "fixed"

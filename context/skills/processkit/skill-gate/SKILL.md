@@ -91,6 +91,14 @@ files is governed by all ten:
 10. **Don't hand-edit merged MCP config.** Edit the per-skill
     `mcp-config.json` and let the installer re-merge.
 
+Compatibility shims in schemas, doctor checks, or harness adapters are
+temporary migration aids only. The accepted end state is canonical
+processkit data: declared schema vocabulary, canonical IDs and
+filenames, canonical directory layouts, and resolvable references.
+When a shim reveals drift, use the relevant processkit skill to create
+or apply a migration; do not treat grandfathering as a terminal
+resolution.
+
 ### The 1% rule
 
 Before any of the following actions, pause and apply the decision graph:

@@ -67,7 +67,9 @@ the *convention* is shared.
 1. Pick the field that best fits the relationship. Prefer specific over generic.
 2. Add the target ID(s) to that field in the subject's frontmatter.
 3. For bidirectional relationships (`blocks` ↔ `blocked_by`), update both sides.
-4. Log `workitem.linked` (or similar) with `details.relation` + `details.target`.
+4. Log a declared event type such as `workitem.note` with
+   `details.relation` + `details.target`; do not use undeclared
+   legacy aliases such as `workitem.linked`.
 
 ### Cross-reference vs Binding
 

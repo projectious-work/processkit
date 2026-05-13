@@ -110,7 +110,7 @@ spec:
         description: Optional. GitHub handle, Slack user, etc.
       default_role:
         type: string
-        pattern: ^ROLE-[a-zA-Z0-9_-]+$
+        pattern: ^ROLE-[a-z0-9-]+$
         description: |
           Default role for this team-member. Bindings of type 'role-assignment' may override at dispatch time.
       default_seniority:

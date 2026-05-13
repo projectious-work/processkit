@@ -11,6 +11,42 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.5] - 2026-05-13
+
+v0.26.5 is a **patch release** that restores strict schema and storage
+migration policy after the temporary v0.26.4 compatibility path.
+
+### Fixed
+
+- **Strict schema vocabulary enforcement.** pk-doctor no longer treats
+  `legacy_known_*` allowlists as accepted terminal vocabulary. Legacy
+  WorkItem types, LogEntry event types, and other closed-vocabulary
+  drift now require a data-fix Migration or an explicit schema
+  migration. Closes
+  [#47](https://github.com/projectious-work/processkit/issues/47).
+- **Canonical TeamMember role IDs.** `TeamMember.default_role` again
+  validates against canonical `ROLE-<kebab-slug>` IDs so migrated
+  timestamp/word-pair role IDs surface as migration work.
+- **Strict storage and actionability guidance.** pk-doctor now reports
+  mixed root/sharded layouts, placeholder IDs, mixed filename policies,
+  and Binding filename drift as migration work. It no longer reports
+  `accepted_policy_exception` as a terminal machine-readable
+  resolution.
+- **Updated processkit instructions.** Event-log, migration-management,
+  pk-doctor, skill-gate, decision-record, and cross-reference guidance
+  now point agents toward declared schema vocabulary and explicit
+  migrations rather than permanent grandfathering.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run src/context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run scripts/smoke-test-servers.py`
+- `uv run --script context/skills/processkit/release-audit/scripts/release_audit.py --tree=src-context`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+
+---
+
 ## [v0.26.4] - 2026-05-13
 
 v0.26.4 is a **patch release** that restores schema compatibility for

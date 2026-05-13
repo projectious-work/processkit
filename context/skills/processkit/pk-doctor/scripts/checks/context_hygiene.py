@@ -301,7 +301,10 @@ def _scan_model_bindings(
                     f"{root_name} mixes timestamped ({timestamped}) and "
                     f"deterministic ({deterministic}) Binding filenames"
                 ),
-                suggested_fix="normalize shipped/default bindings to one filename policy",
+                suggested_fix=(
+                    "create and apply a data-fix Migration that normalizes "
+                    "Binding filenames and updates references"
+                ),
             ))
     return results
 

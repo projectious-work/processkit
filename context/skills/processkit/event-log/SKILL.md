@@ -85,10 +85,11 @@ Optional body: human-readable narrative, context, links.
 
 ### Workflow
 
-1. Decide on `event_type`. Use dotted lowercase: `workitem.created`,
-   `decision.accepted`, `binding.ended`, `incident.started`. Conventions emerge
-   per project — write new types freely; the index MCP server (Phase 3) will
-   surface them.
+1. Decide on `event_type`. Use a dotted lowercase value from
+   `context/schemas/logentry.yaml` `spec.known_event_types`, such as
+   `workitem.created`, `decision.created`, `binding.ended`, or
+   `gate.passed`. Do not invent aliases in LogEntries; add new event
+   types through an explicit schema migration before using them.
 2. Fill in `actor` (who), `subject` + `subject_kind` (what it affected),
    `timestamp` (when the event occurred — distinct from `metadata.created`
    which is when the log file was written).
@@ -120,10 +121,11 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
   not noise. If you save the same file three times in a minute
   fixing typos, that's one logical edit, not three events. Log the
   logical operation, not the keystrokes.
-- **Using vague event_type values.** Use dotted lowercase
-  `<noun>.<verb-past>` (e.g., `workitem.transitioned`,
-  `decision.recorded`). Free-form strings like "stuff happened"
-  break event filtering and make the audit trail un-queryable.
+- **Using undeclared or vague event_type values.** Use only dotted
+  lowercase values declared in `Schema.known_event_types` (e.g.,
+  `workitem.transitioned`, `decision.created`). Free-form strings or
+  legacy aliases such as `release.shipped` break strict vocabulary
+  validation unless a schema migration introduced them.
 - **Putting structured data in the body instead of `details`.** The
   `details` field is the structured payload that downstream queries
   parse. Putting "transitioned from backlog to in-progress" in the
@@ -154,19 +156,16 @@ well-established:
 |---------------------------|--------------------------------------------------------------|
 | `workitem.created`        | New WorkItem file written                                    |
 | `workitem.transitioned`   | WorkItem state changed; include `from_state`/`to_state`      |
-| `workitem.assigned`       | WorkItem assignee changed                                    |
-| `workitem.linked`         | Cross-reference or parent/child relationship added           |
-| `workitem.completed`      | WorkItem reached a terminal state (done/cancelled)           |
-| `decision.proposed`       | New DecisionRecord in `proposed` state                       |
-| `decision.accepted`       | DecisionRecord transitioned to `accepted`                    |
+| `workitem.note`           | WorkItem note/comment added                                  |
+| `workitem.archive-moved`  | WorkItem moved to an archive/sharded location                |
+| `decision.created`        | New DecisionRecord written                                   |
+| `decision.transitioned`   | DecisionRecord state changed                                 |
 | `decision.superseded`     | DecisionRecord transitioned to `superseded`                  |
 | `binding.created`         | New Binding written                                          |
 | `binding.ended`           | Binding `valid_until` reached or Binding deleted             |
-| `process.step.started`    | A step in a declared process began                           |
-| `process.step.completed`  | A step in a declared process ended                           |
 | `gate.passed` / `gate.failed` | A gate validation result                                 |
-| `incident.started` / `incident.resolved` | Incident lifecycle                            |
-| `release.shipped`         | A release was published                                      |
+| `migration.applied`       | Migration reached applied state                              |
+| `release.published`       | A release was published                                      |
 | `logentry.corrected`      | Correction of an earlier LogEntry (referenced in details)    |
 | `session.handover`        | End-of-session handover written before container shutdown    |
 | `session.standup`         | Standup update recording what was done and what comes next   |

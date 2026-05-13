@@ -291,56 +291,29 @@ def _layout_checks(repo_root: Path) -> list[CheckResult]:
                 token for token in (_datetime_token(p, prefix) for p in nested_v2)
                 if token
             ]
-            all_root_predate_nested = (
-                root_tokens
-                and nested_tokens
-                and max(root_tokens) < min(nested_tokens)
-            )
-            shard_threshold = _workitem_shard_threshold(repo_root)
-            within_configured_threshold = (
-                dirname == "workitems"
-                and shard_threshold is not None
-                and len(root_v2) <= shard_threshold
-            )
-            if all_root_predate_nested or within_configured_threshold:
-                reason = "predate the sharded layout"
-                if within_configured_threshold:
-                    reason = (
-                        f"are below activate_above_count={shard_threshold}"
-                    )
-                results.append(CheckResult(
-                    severity="INFO",
-                    category="entity_storage_hygiene",
-                    id="storage.grandfathered-root-layout",
-                    message=(
-                        f"context/{dirname} has {len(root_v2)} root v2 "
-                        f"file(s) that {reason} and are treated as "
-                        "grandfathered"
+            results.append(CheckResult(
+                severity="WARN",
+                category="entity_storage_hygiene",
+                id="storage.mixed-layout",
+                message=(
+                    f"context/{dirname} mixes root v2 files "
+                    f"({len(root_v2)}) and nested v2 files "
+                    f"({len(nested_v2)}); canonical layout is "
+                    f"{_DATE_SHARDED_KINDS[dirname]}"
+                ),
+                suggested_fix=(
+                    "create and apply a data-fix Migration that moves "
+                    "active root files into the canonical sharded layout"
+                ),
+                extra={
+                    "sample": _sample(root_v2, repo_root),
+                    "root_token_max": max(root_tokens) if root_tokens else None,
+                    "nested_token_min": (
+                        min(nested_tokens) if nested_tokens else None
                     ),
-                    suggested_fix=(
-                        "archive or migrate grandfathered files during the "
-                        "next storage-layout migration"
-                    ),
-                    extra={"sample": _sample(root_v2, repo_root)},
-                ))
-            else:
-                results.append(CheckResult(
-                    severity="WARN",
-                    category="entity_storage_hygiene",
-                    id="storage.mixed-layout",
-                    message=(
-                        f"context/{dirname} mixes root v2 files "
-                        f"({len(root_v2)}) and nested v2 files "
-                        f"({len(nested_v2)}); canonical layout is "
-                        f"{_DATE_SHARDED_KINDS[dirname]}"
-                    ),
-                    suggested_fix=(
-                        "migrate active root files into the canonical "
-                        "sharded layout or explicitly archive/grandfather "
-                        "them"
-                    ),
-                    extra={"sample": _sample(root_v2, repo_root)},
-                ))
+                    "activate_above_count": _workitem_shard_threshold(repo_root),
+                },
+            ))
         elif dirname in _STATE_BUCKET_KINDS and root_v2:
             results.append(CheckResult(
                 severity="WARN",
@@ -393,7 +366,8 @@ def _layout_checks(repo_root: Path) -> list[CheckResult]:
                     "placeholder timestamp 0000"
                 ),
                 suggested_fix=(
-                    "migrate or explicitly grandfather placeholder IDs"
+                    "create and apply a data-fix Migration that rewrites "
+                    "placeholder IDs to canonical IDs and updates references"
                 ),
                 extra={
                     "sample": _sample(styles["placeholder_time"], repo_root),
@@ -410,8 +384,8 @@ def _layout_checks(repo_root: Path) -> list[CheckResult]:
                     f"filename policies ({len(styles['other'])})"
                 ),
                 suggested_fix=(
-                    "document grandfathering or migrate the older filename "
-                    "policy for this entity kind"
+                    "create and apply a data-fix Migration that normalizes "
+                    "filenames and references to the canonical policy"
                 ),
                 extra={"sample": _sample(styles["other"], repo_root)},
             ))

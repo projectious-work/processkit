@@ -7,7 +7,7 @@ metadata:
   id: LOG-TODO
   created: TODO
 spec:
-  event_type: TODO          # e.g. workitem.created, decision.accepted
+  event_type: TODO          # e.g. workitem.created, decision.created
   timestamp: TODO           # ISO 8601 UTC — when the event occurred
   actor: ACTOR-TODO         # who caused the event
   subject: TODO             # optional — entity ID the event concerns
