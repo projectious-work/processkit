@@ -1139,6 +1139,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "context" / "bindings").mkdir(parents=True)
     (root / "context" / "migrations" / "applied").mkdir(parents=True)
     (root / "context" / "workitems").mkdir(parents=True)
+    (root / "context" / "logs").mkdir(parents=True)
     (root / "context" / "skills" / "processkit" /
      "index-management" / "config").mkdir(parents=True)
 
@@ -1157,11 +1158,15 @@ with tempfile.TemporaryDirectory() as tmp:
         encoding="utf-8",
     )
     (root / "context" / "schemas" / "workitem.yaml").write_text(
-        "spec:\n  known_types: [task]\n",
+        "spec:\n  known_types: [task]\n  legacy_known_types: [feature]\n",
         encoding="utf-8",
     )
     (root / "context" / "schemas" / "logentry.yaml").write_text(
-        "spec:\n  known_event_types: [test.event]\n",
+        (
+            "spec:\n"
+            "  known_event_types: [test.event]\n"
+            "  legacy_known_event_types: [release.shipped]\n"
+        ),
         encoding="utf-8",
     )
     (root / "context" / "schemas" / "migration.yaml").write_text(
@@ -1223,6 +1228,38 @@ with tempfile.TemporaryDirectory() as tmp:
             """),
         encoding="utf-8",
     )
+    (root / "context" / "workitems" / "BACK-legacy-feature.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: WorkItem
+            metadata:
+              id: BACK-legacy-feature
+              created: 2026-04-30T00:00:00Z
+            spec:
+              title: Legacy feature work item
+              state: done
+              type: feature
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (root / "context" / "logs" / "LOG-legacy-release.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: LogEntry
+            metadata:
+              id: LOG-legacy-release
+              created: 2026-04-30T00:00:00Z
+            spec:
+              event_type: release.shipped
+              actor: system
+              timestamp: 2026-04-30T00:00:00Z
+            ---
+            """),
+        encoding="utf-8",
+    )
     vocab_results = _schema_vocab_run({"repo_root": root})
     check(
         "16a: unknown Artifact kind emits plan check ID",
@@ -1238,6 +1275,13 @@ with tempfile.TemporaryDirectory() as tmp:
         "16c: unknown Migration kind emits plan check ID",
         any(r.id == "schema.unknown-migration-kind-without-schema-entry"
             for r in vocab_results),
+    )
+    vocab_messages = "\n".join(r.message for r in vocab_results)
+    check(
+        "16c1: legacy schema vocabulary is accepted",
+        "feature" not in vocab_messages
+        and "release.shipped" not in vocab_messages,
+        vocab_messages,
     )
 
     (root / "src" / "context" / "schemas").mkdir(parents=True)

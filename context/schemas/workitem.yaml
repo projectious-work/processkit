@@ -27,6 +27,8 @@ spec:
     - process-step
     - sep-handoff
     - run
+  legacy_known_types:
+    - feature
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object

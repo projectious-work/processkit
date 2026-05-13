@@ -11,6 +11,39 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.4] - 2026-05-13
+
+v0.26.4 is a **patch release** that restores schema compatibility for
+existing aibox dogfood contexts after the v0.26.3 integration
+regression.
+
+### Fixed
+
+- **Accepted declared legacy schema vocabularies in pk-doctor.**
+  `schema_vocabulary` now treats `legacy_known_types`,
+  `legacy_known_kinds`, and `legacy_known_event_types` as valid
+  historical values, while keeping the current closed vocabulary checks
+  intact for unknown values.
+- **Grandfathered known historical WorkItem and LogEntry values.** The
+  shipped schemas now accept legacy `feature` WorkItems and historical
+  dogfood event types such as `release.shipped`,
+  `schema.migrated`, and `migration.verified`. Closes
+  [#46](https://github.com/projectious-work/processkit/issues/46).
+- **Relaxed `TeamMember.default_role` schema compatibility.** Migrated
+  role IDs with legacy datetime/word-pair shapes now validate against
+  the shipped TeamMember schema.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run src/context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run scripts/smoke-test-servers.py`
+- `uv run --script context/skills/processkit/release-audit/scripts/release_audit.py --tree=src-context`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py`
+
+---
+
 ## [v0.26.3] - 2026-05-13
 
 v0.26.3 is a **patch release** that adds provider-neutral runtime

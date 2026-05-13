@@ -97,6 +97,28 @@ def _load_schema_vocab(repo_root: Path, kind: str, field: str) -> set[str]:
     return {str(v) for v in values}
 
 
+def _legacy_vocab_field(field: str) -> str | None:
+    if field == "known_event_types":
+        return "legacy_known_event_types"
+    if field == "known_types":
+        return "legacy_known_types"
+    if field == "known_kinds":
+        return "legacy_known_kinds"
+    return None
+
+
+def _load_accepted_schema_vocab(
+    repo_root: Path,
+    kind: str,
+    field: str,
+) -> set[str]:
+    accepted = _load_schema_vocab(repo_root, kind, field)
+    legacy_field = _legacy_vocab_field(field)
+    if legacy_field:
+        accepted.update(_load_schema_vocab(repo_root, kind, legacy_field))
+    return accepted
+
+
 def _iter_kind_files(repo_root: Path, kind_dir: str) -> list[Path]:
     root = repo_root / "context" / kind_dir
     if not root.is_dir():
@@ -167,7 +189,7 @@ def run(ctx) -> list[CheckResult]:
         kind,
         (kind_dir, vocab_field, spec_field, finding_id),
     ) in VOCAB_CHECKS.items():
-        allowed = _load_schema_vocab(repo_root, kind, vocab_field)
+        allowed = _load_accepted_schema_vocab(repo_root, kind, vocab_field)
         if not allowed:
             results.append(CheckResult(
                 severity="WARN",

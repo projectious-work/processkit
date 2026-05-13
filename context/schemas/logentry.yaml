@@ -113,6 +113,24 @@ spec:
     - entity.renamed
     - test.event
     - test.fixture
+  legacy_known_event_types:
+    - constraint.violated
+    - decision.accepted
+    - decision.proposed
+    - implementation.pushed
+    - incident.resolved
+    - incident.started
+    - migration.verified
+    - phase.completed
+    - process.created
+    - process.step.completed
+    - process.step.started
+    - release.shipped
+    - schema.migrated
+    - skill.registration
+    - workitem.assigned
+    - workitem.completed
+    - workitem.linked
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
