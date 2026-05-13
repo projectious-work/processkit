@@ -11,6 +11,29 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.3] - 2026-05-13
+
+v0.26.3 is a **patch release** that adds provider-neutral runtime
+pruning support for aibox-managed projects.
+
+### Added
+
+- **Added the `runtime-prune` processkit skill and MCP server.** Agents
+  can now call `analyze_disk_usage`, `plan_prune`, and `apply_prune`
+  to inspect runtime cache/worktree/container cleanup scopes, produce a
+  dry-run plan, and delegate explicitly confirmed cleanup to
+  `aibox prune`. Closes
+  [#45](https://github.com/projectious-work/processkit/issues/45).
+
+### Verification
+
+- `uv run --with mcp --with pyyaml --with pytest pytest src/context/skills/processkit/runtime-prune/scripts src/context/skills/processkit/skill-finder/scripts -q`
+- `uv run --with mcp --with pyyaml --with jsonschema --with httpx --with sqlite-vec --with pytest pytest src/context/skills/processkit/processkit-gateway/scripts src/context/skills/processkit/aggregate-mcp/scripts -q`
+- `uv run scripts/smoke-test-servers.py`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+
+---
+
 ## [v0.26.2] - 2026-05-12
 
 v0.26.2 is a **patch release** that fixes the remaining GitHub issue

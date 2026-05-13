@@ -7,8 +7,8 @@
 [source]
 project = "processkit"
 upstream = "https://github.com/projectious-work/processkit.git"
-generated_at = "2026-05-12T10:00:04Z"
-generated_for_tag = "v0.26.2"
+generated_at = "2026-05-13T12:05:22Z"
+generated_for_tag = "v0.26.3"
 
 [files]
 "AGENTS.md" = "v0.25.3"
@@ -667,6 +667,11 @@ generated_for_tag = "v0.26.2"
 "context/skills/processkit/role-management/mcp/server.py" = "v0.25.0"
 "context/skills/processkit/role-management/scripts/.gitkeep" = "v0.10.0"
 "context/skills/processkit/role-management/SKILL.md" = "v0.25.0"
+"context/skills/processkit/runtime-prune/mcp/mcp-config.json" = "v0.26.3"
+"context/skills/processkit/runtime-prune/mcp/SERVER.md" = "v0.26.3"
+"context/skills/processkit/runtime-prune/mcp/server.py" = "v0.26.3"
+"context/skills/processkit/runtime-prune/scripts/test_runtime_prune.py" = "v0.26.3"
+"context/skills/processkit/runtime-prune/SKILL.md" = "v0.26.3"
 "context/skills/processkit/schedule-management/scripts/.gitkeep" = "v0.10.0"
 "context/skills/processkit/schedule-management/SKILL.md" = "v0.25.0"
 "context/skills/processkit/scope-management/assets/scope.yaml" = "v0.25.0"

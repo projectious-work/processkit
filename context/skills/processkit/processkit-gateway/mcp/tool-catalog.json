@@ -1,6 +1,6 @@
 {
   "catalog_version": 1,
-  "source_server_count": 25,
+  "source_server_count": 26,
   "tools": [
     {
       "annotations": {
@@ -5444,7 +5444,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Run the pk-doctor aggregator health check and return structured JSON.\n\nInvokes ``pk-doctor/scripts/doctor.py --json`` as a subprocess and\nparses the output. The raw human-readable report is available by\nrunning the script directly without the ``--json`` flag.\n\nParameters\n----------\ncheck:\n    Comma-separated list of check categories to run (e.g.\n    ``\"entity_format,schema_compliance\"``). Defaults to all checks.\nfix:\n    Comma-separated list of categories to enable automatic fixes for.\n    Passed as ``--fix=<value>`` to the script.\n\nReturns\n-------\nA dict with:\n- ``findings``: list of finding dicts (each has severity, category,\n  id, message, suggested_fix).\n- ``totals``: ``{error: int, warn: int, info: int}``.\n- ``exit_code``: 0 (clean) or 1 (errors found).\n- ``invocation``: the reconstructed invocation string.\n- ``duration_ms``: wall-clock time in milliseconds.\n- ``doctor_version``: version string of the doctor script.\n",
+      "description": "Run the pk-doctor aggregator health check and return structured JSON.\n\nInvokes ``pk-doctor/scripts/doctor.py --json`` as a subprocess and\nparses the output. The raw human-readable report is available by\nrunning the script directly without the ``--json`` flag.\n\nParameters\n----------\ncheck:\n    Comma-separated list of check categories to run (e.g.\n    ``\"entity_format,schema_compliance\"``). Defaults to all checks.\nfix:\n    Comma-separated list of categories to enable automatic fixes for.\n    Passed as ``--fix=<value>`` to the script.\n\nReturns\n-------\nA dict with:\n- ``findings``: list of finding dicts (each has severity, category,\n  id, message, suggested_fix, and actionability fields).\n- ``totals``: ``{error: int, warn: int, info: int}``.\n- ``action_totals``: counts for actionable findings, confirmation\n  requirements, tracking needs, and action kinds.\n- ``exit_code``: 0 (clean) or 1 (errors found).\n- ``invocation``: the reconstructed invocation string.\n- ``duration_ms``: wall-clock time in milliseconds.\n- ``doctor_version``: version string of the doctor script.\n",
       "name": "run_pk_doctor",
       "output_schema": null,
       "parameters": {
@@ -5916,6 +5916,189 @@
       "source_server_path": "processkit/role-management/mcp/server.py",
       "source_skill": "role-management",
       "source_tool": "update_role",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "runtime-prune"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return structured disk usage and risk data for prune scopes.",
+      "name": "analyze_disk_usage",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scopes"
+          }
+        },
+        "title": "analyze_disk_usageArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/runtime-prune/mcp/server.py",
+      "source_skill": "runtime-prune",
+      "source_tool": "analyze_disk_usage",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "runtime-prune"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Invoke aibox prune for explicitly confirmed scopes.",
+      "name": "apply_prune",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "confirmation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmation"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scopes"
+          }
+        },
+        "title": "apply_pruneArguments",
+        "type": "object"
+      },
+      "permission_class": "destructive-write",
+      "source_server_path": "processkit/runtime-prune/mcp/server.py",
+      "source_skill": "runtime-prune",
+      "source_tool": "apply_prune",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "runtime-prune"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return a dry-run prune plan without applying cleanup.",
+      "name": "plan_prune",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scopes"
+          }
+        },
+        "title": "plan_pruneArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/runtime-prune/mcp/server.py",
+      "source_skill": "runtime-prune",
+      "source_tool": "plan_prune",
       "title": null
     },
     {
