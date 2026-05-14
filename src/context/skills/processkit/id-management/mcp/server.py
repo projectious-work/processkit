@@ -21,6 +21,7 @@ Tools:
     generate_id(kind, slug_text?)         -> {id, kind}
     validate_id(id)                       -> {valid, kind?, prefix?, body?, reason?}
     list_used_ids(kind?, limit?)          -> [{id, kind}]
+    vocabulary_status(kind?, intent_text?) -> {palettes, capacity, ...}
     format_info()                         -> {format, word_style, datetime_prefix,
                                               slug, prefixes}
 """
@@ -59,11 +60,13 @@ server = FastMCP("processkit-id-management")
 _PREFIX_TO_KIND = {prefix: kind for kind, prefix in KIND_PREFIXES.items()}
 
 # Body patterns
-# Old kebab format:  adj-noun[-slug...]
-_KEBAB_BODY = re.compile(r"^[a-z]+-[a-z]+(?:-[a-z0-9]+)*$")
+# Old/new kebab format:  adj-noun[-slug...] or adj-adj-noun[-slug...]
+_KEBAB_BODY = re.compile(r"^[a-z]+-[a-z]+(?:-[a-z]+)?(?:-[a-z0-9]+)*$")
 # New camel format:  [YYYYMMDD_HHMM-]CamelCase[-slug...]
 _CAMEL_BODY = re.compile(
-    r"^(?:(\d{8}_\d{4})-)?([A-Z][a-z]+[A-Z][a-z]+)(?:-([a-z0-9][a-z0-9-]*))?$"
+    r"^(?:(\d{8}_\d{4})-)?"
+    r"([A-Za-z][a-z]+(?:[A-Z][a-z]+){1,2})"
+    r"(?:-([a-z0-9][a-z0-9-]*))?$"
 )
 # UUID format
 _UUID_BODY = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}(?:-[0-9a-f]{4})?(?:-[a-z0-9]+)*$")
@@ -75,7 +78,12 @@ _UUID_BODY = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}(?:-[0-9a-f]{4})?(?:-[a-z0-9]+
     idempotentHint=False,
     openWorldHint=False,
 ))
-def generate_id(kind: str, slug_text: str | None = None) -> dict:
+def generate_id(
+    kind: str,
+    slug_text: str | None = None,
+    allocation_mode: str = "pair",
+    intent_text: str | None = None,
+) -> dict:
     """Generate a fresh, collision-free ID for the given primitive kind.
 
     Reads ``word_style``, ``datetime_prefix``, ``format``, and ``slug``
@@ -83,14 +91,29 @@ def generate_id(kind: str, slug_text: str | None = None) -> dict:
     existing IDs of the same kind to avoid collisions.
     """
     if kind not in KIND_PREFIXES:
-        return {"error": f"unknown kind {kind!r}; valid: {sorted(KIND_PREFIXES.keys())}"}
+        return {
+            "error": (
+                f"unknown kind {kind!r}; "
+                f"valid: {sorted(KIND_PREFIXES.keys())}"
+            )
+        }
 
     cfg = config.load_config()
     db = index.open_db()
     try:
         existing = index.existing_ids(db, kind)
+        all_existing = [
+            r["id"] for r in db.execute("SELECT id FROM entities").fetchall()
+        ]
     finally:
         db.close()
+    reserved_tokens: list[str] = []
+    if allocation_mode != "pair" or intent_text:
+        reserved_tokens = [
+            token
+            for token in (ids.lexical_token_from_id(x) for x in all_existing)
+            if token
+        ]
 
     new_id = ids.generate_id(
         kind,
@@ -99,6 +122,9 @@ def generate_id(kind: str, slug_text: str | None = None) -> dict:
         datetime_prefix=cfg.id_datetime_prefix,
         slug_text=slug_text if cfg.id_slug else None,
         existing=existing,
+        allocation_mode=allocation_mode,
+        intent_text=intent_text or slug_text,
+        reserved_lexical_tokens=reserved_tokens,
     )
     return {"id": new_id, "kind": kind}
 
@@ -137,13 +163,15 @@ def validate_id(id: str) -> dict:
             "format_guess": "word",
             "word_style": "camel",
             "datetime_part": dt_part,
+            "lexical_token": word_pair,
             "slug": slug,
             "has_slug": slug is not None,
         }
 
     # Try old kebab format
     if _KEBAB_BODY.match(body):
-        has_slug = body.count("-") > 1
+        lexical_token = ids.lexical_token_from_id(id)
+        has_slug = bool(lexical_token and body != lexical_token)
         return {
             "valid": True,
             "kind": kind,
@@ -152,6 +180,7 @@ def validate_id(id: str) -> dict:
             "format_guess": "word",
             "word_style": "kebab",
             "datetime_part": None,
+            "lexical_token": lexical_token,
             "has_slug": has_slug,
         }
 
@@ -216,6 +245,40 @@ def list_used_ids(kind: str | None = None, limit: int = 200) -> list[dict]:
     idempotentHint=True,
     openWorldHint=False,
 ))
+def vocabulary_status(
+    kind: str | None = None,
+    intent_text: str | None = None,
+    allocation_mode: str = "pair",
+) -> dict:
+    """Return vocabulary palette and lexical-token capacity details."""
+    db = index.open_db()
+    try:
+        rows = db.execute("SELECT id FROM entities ORDER BY id").fetchall()
+    finally:
+        db.close()
+    existing = [r["id"] for r in rows]
+    tags = ids.palette_for_kind(kind or "", intent_text)
+    report = ids.vocabulary_capacity_report(
+        palette_tags=tags,
+        allocation_mode=allocation_mode,
+        existing=existing,
+    )
+    return {
+        "kind": kind,
+        "intent_text": intent_text,
+        "palette_tags": list(tags),
+        "capacity": report,
+        "ambiguous_lexical_tokens": ids.lexical_ambiguities(existing),
+        "available_tags": ids.vocabulary_tags(),
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
 def format_info() -> dict:
     """Return the project's ID configuration and the prefix registry."""
     cfg = config.load_config()
@@ -224,6 +287,7 @@ def format_info() -> dict:
         "word_style": cfg.id_word_style,
         "datetime_prefix": cfg.id_datetime_prefix,
         "slug": cfg.id_slug,
+        "allocation_modes": ["pair", "double_adjective", "counted"],
         "example": (
             "BACK-20260409_1449-BoldVale-fts5-search"
             if cfg.id_datetime_prefix and cfg.id_word_style == "camel"
