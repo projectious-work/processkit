@@ -1574,6 +1574,108 @@ with tempfile.TemporaryDirectory() as tmp:
         )
 
 # ---------------------------------------------------------------------------
+# Test 18: agents_md_hygiene — managed blocks, references, stale guidance
+# ---------------------------------------------------------------------------
+print("\n[18] agents_md_hygiene — AGENTS.md reconciliation briefing")
+
+from checks.agents_md_hygiene import run as _agents_md_hygiene_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "AGENTS.md").write_text(
+        textwrap.dedent("""\
+            # AGENTS.md
+
+            <!-- pk-compliance-contract v2 BEGIN -->
+            Call `record_decision` after accepted recommendations.
+            <!-- pk-compliance-contract v2 END -->
+
+            ## Team
+
+            | Role | Model tier |
+            |------|------------|
+            | engineer | Sonnet |
+
+            Legacy Template Actors live in context/actors/.
+            Old process customizations live under spec.x_aibox.
+
+            <!-- pk-commands BEGIN -->
+            <!--
+            build: "make build"
+            test: "make test"
+            -->
+            <!-- pk-commands END -->
+            """),
+        encoding="utf-8",
+    )
+    (root / "CLAUDE.md").write_text(
+        "Duplicated policy surface that never mentions the canonical file.\n",
+        encoding="utf-8",
+    )
+    results = _agents_md_hygiene_run({"repo_root": root})
+    ids = {r.id for r in results}
+    for expected in {
+        "agents_md_hygiene.managed-block-missing",
+        "agents_md_hygiene.references-missing",
+        "agents_md_hygiene.semantic-cleanup",
+        "agents_md_hygiene.commands-schema",
+        "agents_md_hygiene.provider-pointer-not-thin",
+    }:
+        check(f"18: emits {expected}", expected in ids, [r.to_dict() for r in results])
+    actionable = [r.to_dict() for r in results if r.id.endswith("references-missing")]
+    check(
+        "18: reconciliation finding carries project-agent briefing",
+        actionable
+        and actionable[0]["action_required"] is True
+        and "briefing" in actionable[0].get("extra", {}),
+        json.dumps(actionable, indent=2),
+    )
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    agents_text = textwrap.dedent("""\
+        # AGENTS.md
+
+        <!-- pk-managed:pk-compliance-contract-v2 BEGIN -->
+        <!-- pk-compliance-contract v2 BEGIN -->
+        Run `pk-resume` on session start.
+        Call `find_skill` and `route_task` before processkit work.
+        Use index-management and MCP tools for entity IO.
+        Do not edit context/templates/.
+        Call `record_decision` or `skip_decision_record`.
+        Use migration-management for context/migrations/pending.
+        Preserve recommended_team_member_slug and recommended_model_class.
+        TeamMember defaults bind to model-profile and model-spec artifacts.
+        Re-merge .mcp.json from .processkit-mcp-manifest.json and
+        mcp-config.json changes.
+        Keep CLAUDE.md, CODEX.md, .cursor/rules as pointers to AGENTS.md.
+        <!-- pk-compliance-contract v2 END -->
+        <!-- pk-managed:pk-compliance-contract-v2 END -->
+
+        <!-- pk-managed:pk-commands BEGIN -->
+        <!-- pk-commands BEGIN -->
+        <!--
+        build: "make build"
+        test: "make test"
+        lint: ""
+        fmt: ""
+        typecheck: ""
+        -->
+        <!-- pk-commands END -->
+        <!-- pk-managed:pk-commands END -->
+        """)
+    (root / "AGENTS.md").write_text(agents_text, encoding="utf-8")
+    (root / "src").mkdir()
+    (root / "src" / "AGENTS.md").write_text(agents_text, encoding="utf-8")
+    (root / "CLAUDE.md").write_text("See AGENTS.md.\n", encoding="utf-8")
+    clean_results = _agents_md_hygiene_run({"repo_root": root})
+    check(
+        "18: clean AGENTS.md emits clean INFO",
+        [r.id for r in clean_results] == ["agents_md_hygiene.clean"],
+        [r.to_dict() for r in clean_results],
+    )
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()

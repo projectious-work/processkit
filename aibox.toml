@@ -22,7 +22,7 @@ hostname = "processkit"         # Hostname visible inside the container
 user     = "aibox"              # User inside the container (controls mount paths)
 
 [container.image]
-release_version = "latest"       # Target aibox image/CLI version. Use "latest" to resolve newest on apply.
+release_version = "latest"       # Target base image version. Use "latest" to resolve newest published image on apply.
 base            = "debian"          # Published base image flavor. Options: debian
 
 [container.paths]
@@ -183,6 +183,7 @@ enabled = [
     # "reflex-python", # engineering; Reflex Python web framework for full-stack apps in pure Python — components, state, routing, and deployment. …
     # "release-semver", # devops; Semantic versioning releases — version bumps, changelogs, tags, publishing. Use when preparing a new release:…
     # "research-with-confidence", # product; Investigates a question systematically before answering — verifying claims through sources, distinguishing kn…
+    # "runtime-prune", # processkit; Inspect, plan, and invoke safe cleanup for aibox-managed runtime state without binding the workflow to a spec…
     # "rust-conventions", # engineering; Rust conventions — error handling with anyhow/thiserror, module layout, clippy. Use when writing or reviewing…
     # "secret-management", # engineering; Handle secrets safely — env vars, .env files, vaults, rotation. Use when dealing with API keys, passwords, to…
     # "secure-coding", # engineering; Secure coding practices grounded in the OWASP Top 10. Use when reviewing code for security issues, implementi…
@@ -232,132 +233,128 @@ enabled = [
 
 # Documentation/docs-docusaurus — Docusaurus static docs site (React/MDX); requires node
 [addons.docs-docusaurus.tools]
-docusaurus = { version = "3.8" } # default on; options: {}, { enabled = true|false }, { version = "3.7.0" | "3.8" | "3.9.2" | "3.10.1" (default) or "latest" }
+docusaurus = { version = "3.8" } # React and MDX documentation site generator; default on; options: {}, { enabled = true|false }, { version = "3.7.0" | "3.8" | "3.9.2" | "3.10.1" (default) or "latest" }
 
 # Documentation/docs-hugo — Hugo static site generator (Go)
 # [addons.docs-hugo.tools]
-# hugo = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# hugo = {} # Fast Go-based static site generator; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Documentation/docs-mdbook — mdBook – Rust-powered book builder
 # [addons.docs-mdbook.tools]
-# mdbook = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# mdbook = {} # Rust-powered book and documentation builder; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Documentation/docs-mkdocs — MkDocs – Python Markdown docs site; requires python
 # [addons.docs-mkdocs.tools]
-# mkdocs = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# mkdocs = {} # Python Markdown documentation site generator; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Documentation/docs-starlight — Starlight – Astro-based docs site; requires node
 # [addons.docs-starlight.tools]
-# starlight = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# starlight = {} # Astro-based documentation site framework; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Documentation/docs-zensical — Zensical – Python docs site; requires python
 # [addons.docs-zensical.tools]
-# zensical = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# zensical = {} # Python documentation site generator; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # ---- Languages ------------------------------------------------------------
 
 # Languages/go — Go programming language toolchain
 # [addons.go.tools]
-# go = {} # default on; options: {}, { enabled = true|false }, { version = "1.25" | "1.26" (default) or "latest" }
+# go = {} # Go compiler, tooling, and module workflow; default on; options: {}, { enabled = true|false }, { version = "1.25" | "1.26" (default) or "latest" }
 
 # Languages/latex — TeX Live LaTeX typesetting system
 # [addons.latex.tools]
-# texlive-core = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-recommended = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-fonts = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-biber = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-code = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-diagrams = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-math = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-music = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-chemistry = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# texlive-linguistics = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# svg-inkscape = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-core = {} # Core LaTeX engines and basic TeX Live packages; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-recommended = {} # Commonly used LaTeX packages and utilities; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-fonts = {} # Extra fonts for LaTeX documents; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-biber = {} # BibLaTeX bibliography backend; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-code = {} # LaTeX packages for code listings and syntax highlighting; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-diagrams = {} # LaTeX packages for diagrams, pictures, and graphics; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-math = {} # LaTeX packages for math-heavy documents; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-music = { enabled = true } # LaTeX packages for music notation; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-chemistry = { enabled = true } # LaTeX packages for chemistry notation and diagrams; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# texlive-linguistics = { enabled = true } # LaTeX packages for linguistics examples and notation; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# svg-inkscape = {} # Inkscape support for SVG inclusion in LaTeX builds; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Languages/node — Node.js runtime with pnpm, yarn, or bun
 [addons.node.tools]
-node = { version = "22" } # default on; options: {}, { enabled = true|false }, { version = "20" | "22" (default) or "latest" }
-pnpm = { version = "10" } # default on; options: {}, { enabled = true|false }, { version = "9" | "10" (default) or "latest" }
-# yarn = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "4" (default) or "latest" }
-# bun = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "1.2" (default) or "latest" }
+node = { version = "22" } # Node.js JavaScript and TypeScript runtime; default on; options: {}, { enabled = true|false }, { version = "20" | "22" (default) or "latest" }
+pnpm = { version = "10" } # Fast disk-efficient Node package manager; default on; options: {}, { enabled = true|false }, { version = "9" | "10" (default) or "latest" }
+# yarn = { enabled = true } # Yarn Node package manager; default off; options: {}, { enabled = true|false }, { version = "4" (default) or "latest" }
+# bun = { enabled = true } # Bun JavaScript runtime, package manager, and test runner; default off; options: {}, { enabled = true|false }, { version = "1.2" (default) or "latest" }
 
 # Languages/python — Python runtime with uv, poetry, or pdm
 [addons.python.tools]
-python = { version = "3.13" } # default on; options: {}, { enabled = true|false }, { version = "3.12" | "3.13" (default) | "3.14" or "latest" }
-uv = { version = "0.7" } # default on; options: {}, { enabled = true|false }, { version = "0.7" | "0.11.10" | "0.11.11" (default) or "latest" }
-# pip = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# poetry = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "1.8" | "2.0" (default) or "latest" }
-# pdm = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "2.22" (default) or "latest" }
+python = { version = "3.13" } # Python interpreter runtime for applications and scripts; default on; options: {}, { enabled = true|false }, { version = "3.12" | "3.13" (default) | "3.14" or "latest" }
+uv = { version = "0.7" } # Fast Python package manager and virtual environment tool; default on; options: {}, { enabled = true|false }, { version = "0.7" | "0.11.10" | "0.11.11" (default) or "latest" }
+# pip = { enabled = true } # Python package installer for pip-based projects; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# poetry = { enabled = true } # Python dependency and packaging workflow manager; default off; options: {}, { enabled = true|false }, { version = "1.8" | "2.0" (default) or "latest" }
+# pdm = { enabled = true } # Python project and dependency manager using PEP standards; default off; options: {}, { enabled = true|false }, { version = "2.22" (default) or "latest" }
 
 # Languages/rust — Rust toolchain via rustup
 # [addons.rust.tools]
-# rustc = {} # default on; options: {}, { enabled = true|false }, { version = "1.90" | "1.91" | "1.92" | "1.93" | "1.94" (default) or "latest" }
-# clippy = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# rustfmt = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# cargo-audit = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# x86_64-cross = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# rustc = {} # Rust compiler toolchain installed via rustup; default on; options: {}, { enabled = true|false }, { version = "1.90" | "1.91" | "1.92" | "1.93" | "1.94" (default) or "latest" }
+# clippy = {} # Rust linter for catching common mistakes and style issues; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# rustfmt = {} # Rust code formatter; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# cargo-audit = {} # Rust dependency vulnerability scanner; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# x86_64-cross = {} # Cross-compilation target support for x86_64 Linux; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Languages/typst — Typst – modern typesetting system
 # [addons.typst.tools]
-# typst = {} # default on; options: {}, { enabled = true|false }, { version = "0.13.1" | "0.14.2" (default) or "latest" }
+# typst = {} # Typst compiler for modern document typesetting; default on; options: {}, { enabled = true|false }, { version = "0.13.1" | "0.14.2" (default) or "latest" }
 
 # ---- Tools ------------------------------------------------------------
 
 # Tools/cloud-aws — AWS CLI v2
 # [addons.cloud-aws.tools]
-# aws-cli = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# aws-cli = {} # AWS command-line client for cloud resources; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/cloud-azure — Azure CLI
 # [addons.cloud-azure.tools]
-# azure-cli = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# azure-cli = {} # Azure command-line client for cloud resources; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/cloud-gcp — Google Cloud SDK (gcloud)
 # [addons.cloud-gcp.tools]
-# gcloud-cli = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# gcloud-cli = {} # Google Cloud command-line client and SDK; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/data-preview — SQLite and tabular data preview tools for Yazi
 # [addons.data-preview.tools]
-# sqlite3 = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# csvkit = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# sqlite3 = {} # SQLite shell used to preview database schemas and tables; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# csvkit = {} # CSV and TSV inspection utilities for tabular previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/git-ui — GitHub CLI and lazygit interactive Git UI
 [addons.git-ui.tools]
-gh = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-lazygit = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+gh = {} # GitHub CLI for issues, PRs, releases, and auth; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+lazygit = { enabled = false } # Interactive terminal UI for Git status, commits, and branches; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/infrastructure — OpenTofu, Ansible, Packer
 # [addons.infrastructure.tools]
-# opentofu = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# ansible = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# packer = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# opentofu = {} # Open-source Terraform-compatible infrastructure as code CLI; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# ansible = {} # Configuration management and automation engine; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# packer = {} # Machine image build automation tool; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/kubernetes — kubectl, Helm, Kustomize, k9s
 # [addons.kubernetes.tools]
-# kubectl = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# helm = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# kustomize = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# k9s = { enabled = true } # default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# kubectl = {} # Kubernetes command-line client; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# helm = {} # Kubernetes package manager for charts; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# kustomize = {} # Kubernetes manifest overlay and patching tool; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# k9s = { enabled = true } # Interactive terminal UI for Kubernetes clusters; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/preview-archive — Yazi image/PDF/SVG preview helpers plus archive preview/extraction tools
 [addons.preview-archive.tools]
-# chafa = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# librsvg = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# poppler = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# timg = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# mupdf = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# entr = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# p7zip = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# resvg = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "0.47.0" (default) or "latest" }
+# chafa = { enabled = false } # Terminal image renderer used by Yazi image and SVG previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# librsvg = { enabled = false } # SVG conversion fallback via rsvg-convert; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# poppler = { enabled = false } # PDF text and image utilities for preview extraction; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# timg = { enabled = false } # Terminal image and PDF thumbnail viewer; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# mupdf = { enabled = false } # Lightweight PDF utilities for document previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# entr = { enabled = false } # File watcher used by live preview helpers; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# p7zip = { enabled = false } # Archive listing and extraction support for previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# resvg = { enabled = false } # High-quality SVG rasterizer for Yazi previews; default on; options: {}, { enabled = true|false }, { version = "0.47.0" (default) or "latest" }
 
 # Tools/preview-enhanced — Rich Markdown rendering, ffmpeg, and Ghostscript; requires preview-archive
 [addons.preview-enhanced.tools]
-# ffmpeg = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# ghostscript = { enabled = false } # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-rich = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-
-# Tools/yazi-omp — oh-my-posh for the omp.yazi header prompt
-# [addons.yazi-omp.tools]
-# oh-my-posh = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# ffmpeg = { enabled = false } # Video and audio metadata plus thumbnail support for previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# ghostscript = { enabled = false } # PostScript and EPS rendering support for document previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+rich = {} # Markdown, JSON, RST, and notebook terminal rendering for Yazi previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # =============================================================================
 # [ai] — AI agent harnesses and model providers
@@ -374,8 +371,8 @@ rich = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.
 # OpenCode                    opencode       any (multi-provider)
 # Hermes                      hermes         any (multi-provider)
 #
-# Enable harnesses through their [ai.harness.<name>] table below.
-# `harness_order` controls tmux layout semantics: 1st, 2nd, 3rd harness.
+# Harnesses are configured by the ordered `harnesses` list below.
+# The list order is the tmux/layout order: 1st, 2nd, 3rd harness.
 #
 # Model providers (optional): declare which API key/base URL env vars are available.
 # Provider     Config value   API key env         Base URL env
@@ -387,8 +384,6 @@ rich = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.
 # Alias used by some tools: OPENAI_API_BASE (OpenAI).
 [ai]
 
-harness_order = ["codex", "claude"]  # tmux: 1st, 2nd, 3rd harness placement order
-
 model_providers = [
 #     "anthropic", # env: ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL
 #     "openai", # env: OPENAI_API_KEY, OPENAI_BASE_URL
@@ -396,53 +391,25 @@ model_providers = [
 #     "mistral", # env: MISTRAL_API_KEY, MISTRAL_BASE_URL
 ]
 
-# Per-harness install controls. `enabled` participates in generated
-# agent/MCP config; `install` selects the in-container CLI recipe.
-
-[ai.harness.claude]
-enabled = true
-install = false
-# version = "latest"
-
-[ai.harness.codex]
-enabled = true
-install = true
-# version = "latest"
-
-# [ai.harness.gemini]
-# enabled = true
-# install = true
-# version = "latest"
-
-# [ai.harness.aider]
-# enabled = true
-# install = true
-# version = "latest"
-
-# [ai.harness.continue]
-# enabled = true
-# install = true
-# version = "latest"
-
-# [ai.harness.cursor]
-# enabled = true
-# install = false
-# version = "latest"
-
-# [ai.harness.copilot]
-# enabled = true
-# install = true
-# version = "latest"
-
-# [ai.harness.opencode]
-# enabled = true
-# install = true
-# version = "latest"
-
-# [ai.harness.hermes]
-# enabled = true
-# install = true
-# version = "latest"
+# Ordered harness list. Supported harness values:
+# claude, codex, gemini, aider, continue, cursor, copilot, opencode, hermes.
+# Each one-line entry is directly uncommentable; list order is tmux/layout order.
+# `enable = true` includes the harness in generated agent/MCP/runtime config.
+# `install = true` installs the matching in-container CLI recipe when one exists.
+# Defaults for both are false when omitted. Cursor has no container CLI, so
+# keep `install = false` for cursor even when `enable = true`.
+# `version` optionally pins the CLI recipe; omit it to use the addon default.
+harnesses = [
+#   { harness = "claude", enable = true, install = true },
+    { harness = "codex", enable = true, install = true },
+#   { harness = "gemini", enable = true, install = true },
+#   { harness = "aider", enable = true, install = true },
+#   { harness = "continue", enable = true, install = true },
+#   { harness = "cursor", enable = true, install = false },
+#   { harness = "copilot", enable = true, install = true },
+#   { harness = "opencode", enable = true, install = true },
+#   { harness = "hermes", enable = true, install = true },
+]
 
 [ai.agents]
 canonical     = "AGENTS.md"
@@ -463,7 +430,7 @@ provider_mode = "pointer"  # options: pointer, full
 # [ai.mcp.gateway] — processkit MCP topology. Options for mode: auto | daemon | stdio | separate
 [ai.mcp.gateway]
 mode = "auto"          # auto uses daemon when processkit-gateway is installed
-lazy_catalog = false    # Use processkit's lazy catalog where supported
+lazy_catalog = true    # Use processkit's lazy catalog where supported
 host = "127.0.0.1"     # daemon is always localhost-only
 port = 8765
 path = "/mcp"
@@ -498,24 +465,54 @@ schema_version = "1.0.0"      # Context schema version — updated automatically
 # [customization] — color theme, shell prompt, and tmux layout
 # =============================================================================
 # Theme is applied consistently across tmux, Vim, Yazi, lazygit, and bat.
-# Options include tmux-powerkit families: gruvbox, catppuccin, tokyo-night,
-# rose-pine, material, solarized, github, ayu, night-owl, moonlight, plus dracula,
-# nord, and projectious. See docs for the full variant list.
+# tmux-powerkit popular themes and variants supported by aibox:
+# - tokyo-night, tokyo-night-storm, tokyo-night-day
+# - catppuccin-mocha, catppuccin-macchiato, catppuccin-frappe, catppuccin-latte
+# - dracula, nord, gruvbox-dark, gruvbox-light
+# - rose-pine, rose-pine-moon, rose-pine-dawn
+# - material, material-ocean, material-palenight, material-lighter
+# - solarized-dark, solarized-light, github-dark, github-light
+# - ayu-dark, ayu-mirage, ayu-light, night-owl, night-owl-light, moonlight
+# - projectious (aibox extension)
 [customization]
 theme  = "nord"
-# Global mode overlay. `auto` preserves the selected concrete theme.
+# Global mode overlay. `auto` follows the host OS appearance when detectable.
+# Paired families follow light/dark variants; genuinely dark-only themes
+# (dracula, nord, moonlight, projectious) keep their selected concrete theme.
 # Options: auto | light | dark
 mode   = "auto"
 # Starship prompt preset.
-# Options: default | plain | minimal | nerd-font | pastel | bracketed | arrow
-prompt = "pastel"
+# Options: default | plain | minimal | nerd-font | pastel | pastel-powerline | bracketed | arrow
+# ASCII sketches:
+#   default          ~/repo main +2  py3.13  2s
+#                    >
+#   plain            ~/repo main +2
+#                    >
+#   minimal          ~/repo main
+#                    >
+#   nerd-font        [os] ~/repo main +2 py rs js go 2s
+#                    >
+#   pastel           ( ~/repo )>( main +2 )>( py rs js go ) 2s >
+#   pastel-powerline ( ~/repo )>( main +2 )>( py rs js go ) 2s >
+#   bracketed        ~/repo [main] [+2] [py3.13]
+#                    >
+#   arrow            > ~/repo > main +2 > 2s
+#                    >
+prompt = "pastel-powerline"
 # Default tmux layout. Options: dev | focus | cowork | ai
+# Layout sketches, one screen each:
+# +---- ai ----+  +--- dev ----+  +-- focus --+  +-- cowork -+
+# |files|ai1  |  |files|shell|  |  files     |  |files|shell|
+# |     |     |  |-----|     |  +-----------+  |     |     |
+# |     |     |  |ai1  |     |  ai1 ai2 ... |  +-----------+
+# +-----------+  +-----------+  +-----------+  ai1 ai2 ...
+# Extra windows: ai holds additional harnesses; lazygit and shell open when enabled.
 layout = "ai"
 
 # tmux runtime options. `layout` may override [customization].layout for tmux only.
 [customization.tmux]
 prefix = "C-g"
-session_name = "aibox"
+session_name = "processkit"
 
 # tmux status presentation.
 # - extended: full aibox themed status (legacy alias: powerline)
@@ -526,12 +523,212 @@ mode = "extended"  # extended | plain | disabled (legacy: powerline -> extended)
 
 [customization.tmux.status.layout]
 # Row lists are ordered. Removing a name disables that status element.
-# line1-left supports tmux-native entries: session, windows.
-# Other rows use PowerKit plugin IDs.
+# Allowed line1-left entries:
+# - session: current tmux session name and prefix/copy-mode state
+# - windows: tmux window list
+#
+# Allowed line1-right / line2-left / line2-right entries:
+# - aibox_log: aibox log health counts
+# - aibox_oom: cgroup OOM kill counters
+# - aibox_proc: live process count versus configured process warning limit
+# - aibox_ai: detected AI-agent/runtime process count
+# - aibox_mcp: processkit/MCP daemon and server process status
+# - aibox_mig: pending processkit migration count
+# - weather: weather segment from tmux-powerkit
+# - uptime: container uptime
+# - datetime: local date/time
+# - git: current repository branch/status
+# - github: GitHub/repository integration status
+# - kubernetes: Kubernetes context/status
+# - terraform: Terraform/OpenTofu workspace/status
+# - cloud: local cloud CLI/context status
+# - cloudstatus: networked public provider status checks; opt-in, not enabled by default
+# - hostname: container hostname
+# - externalip: detected external IP
+# - ssh: SSH agent/key status
+# - netspeed: network throughput
+# - ping: network latency
+# - cpu: CPU usage
+# - loadavg: system load average
+# - memory: memory usage
+# - swap: swap usage
+# - disk: disk usage
+# - gpu: GPU status when available
+# - modelstatus_<provider>: per-provider AI status segment; enabled through [customization.tmux.status.model-providers]
 line1-left = ["session", "windows"]
 line1-right = ["aibox_log", "aibox_oom", "aibox_proc", "aibox_ai", "aibox_mcp", "aibox_mig", "weather", "uptime", "datetime"]
-line2-left = ["git", "github", "kubernetes", "terraform", "cloud", "cloudstatus"]
+line2-left = ["git", "github", "modelstatus_openai", "modelstatus_anthropic", "kubernetes", "terraform"]
 line2-right = ["hostname", "externalip", "ssh", "netspeed", "ping", "cpu", "loadavg", "memory", "swap", "disk", "gpu"]
+
+[customization.tmux.status.labels]
+# Visible headers/icons for status segments. Layout controls which segments appear;
+# this section controls how those segments are labeled once rendered.
+# Values may be plain ASCII labels or symbols. ASCII is safest across terminals;
+# Nerd Font / Powerline symbols are compact but require the user's terminal font.
+# Practical symbol candidates from Nerd Fonts. Keep icons distinct across
+# configured PowerKit segments so adjacent status cells remain scannable.
+# aibox-log: aibox log info/warn/error counter header.
+# aibox-oom: cgroup OOM event/kill counter header.
+# aibox-proc: process/thread count header.
+# aibox-ai: active AI-agent process count header.
+# aibox-mcp: processkit/MCP topology header.
+# aibox-mig: pending processkit migration count header.
+# kubernetes: Kubernetes segment icon/header.
+# cloud/cloud-aws/cloud-gcp/cloud-azure/cloud-multi: local cloud context icons.
+# uptime: container uptime icon/header.
+# netspeed/netspeed-download/netspeed-upload: network throughput icons.
+aibox-log = "󱖫"
+aibox-oom = "󰍛󰚌"
+aibox-proc = "󰊚"
+aibox-ai = "󱙺"
+aibox-mcp = "󰌹"
+aibox-mig = "󰚰"
+kubernetes = "󱃾"
+cloud = "󰅣"
+cloud-aws = "󰸏"
+cloud-gcp = "󰬠"
+cloud-azure = "󰠅"
+cloud-multi = "󰅤"
+uptime = ""
+netspeed = ""
+netspeed-download = "󰇚"
+netspeed-upload = "󰕒"
+
+[customization.tmux.status.refresh]
+# Refresh/caching controls for extended tmux status.
+# interval-seconds: tmux redraw cadence. Higher values reduce shell process churn.
+# aibox-metrics-cache-ttl-seconds: LOG/OOM/PROC/AI/MCP/MIG cache TTL.
+#   These metrics are useful but not worth refreshing every redraw; a 30s TTL
+#   still surfaces runtime problems quickly while avoiding repeated aibox-status calls.
+# netspeed-cache-ttl-seconds: network throughput cache TTL. Keep near the redraw
+#   cadence if you want live-ish rates; increase for quieter laptops.
+# kubernetes-cache-ttl-seconds: local kubeconfig context cache TTL; this should
+#   not poll live clusters and does not need second-level freshness.
+# cloud-cache-ttl-seconds: local cloud CLI/context cache TTL; this avoids auth/network probes.
+interval-seconds = 10
+aibox-metrics-cache-ttl-seconds = 30
+netspeed-cache-ttl-seconds = 10
+kubernetes-cache-ttl-seconds = 120
+cloud-cache-ttl-seconds = 120
+
+[customization.tmux.status.model-providers]
+# Optional networked model-provider health segments for the extended tmux status line.
+# Each configured provider becomes one PowerKit segment when enabled, for example OAI ✓ or ANT 󰚌.
+# enabled: false avoids background status-page calls by default; set true to render configured providers.
+# cache-ttl-seconds: minimum time between provider status requests per provider.
+# timeout-seconds: per-request HTTP timeout so status rendering cannot hang tmux.
+# show-ok: true shows healthy providers with ✓; false hides healthy providers and only shows degraded/unknown/outage.
+enabled = false
+cache-ttl-seconds = 300
+timeout-seconds = 3
+show-ok = true
+# Provider entries:
+# - provider: stable key from the model roster (openai, anthropic, google, mistral, deepseek, cohere, xai, alibaba, aws, meta, microsoft, minimax, moonshot, nvidia, xiaomi, zai)
+# - label: short category header shown in the status segment; use text or a symbol that your font supports
+# - checks: any of overall, models, harness; worst status wins (outage > degraded > unknown > ok)
+# - status-url: JSON status endpoint; Statuspage summary APIs are supported, Google uses incidents.json
+# - overall-components/model-components/harness-components: optional component-name filters for providers with componentized status APIs
+#   Symbols: ✓ ok, 󰀦 degraded, 󰚌 outage, ? unknown.
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "openai"
+label = "OAI"
+checks = ["overall", "models", "harness"]
+status-url = "https://status.openai.com/api/v2/summary.json"
+model-components = ["Responses", "Chat Completions", "Embeddings", "Realtime", "Images"]
+harness-components = ["CLI", "Codex API", "Codex Web"]
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "anthropic"
+label = "ANT"
+checks = ["overall", "models", "harness"]
+status-url = "https://status.claude.com/api/v2/summary.json"
+model-components = ["Claude API"]
+harness-components = ["Claude Code"]
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "google"
+label = "GOOG"
+checks = ["overall", "models"]
+status-url = "https://status.cloud.google.com/incidents.json"
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "mistral"
+label = "MST"
+checks = ["overall", "models"]
+status-url = "https://status.mistral.ai/api/v2/summary.json"
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "deepseek"
+label = "DS"
+checks = ["overall", "models"]
+status-url = "https://status.deepseek.com/api/v2/summary.json"
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "cohere"
+label = "COH"
+checks = ["overall", "models"]
+status-url = "https://status.cohere.com/api/v2/summary.json"
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "xai"
+label = "XAI"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "alibaba"
+label = "QWN"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "aws"
+label = "AWS"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "meta"
+label = "META"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "microsoft"
+label = "MS"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "minimax"
+label = "MM"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "moonshot"
+label = "KIMI"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "nvidia"
+label = "NV"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "xiaomi"
+label = "MI"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
+
+[[customization.tmux.status.model-providers.providers]]
+provider = "zai"
+label = "ZAI"
+checks = ["overall", "models"]
+# status-url intentionally omitted: no stable public JSON status API is configured yet
 
 # =============================================================================
 # [security] — explicit consent for security-sensitive runtime options

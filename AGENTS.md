@@ -1,5 +1,6 @@
 # AGENTS.md
 
+<!-- pk-managed:pk-compliance-contract-v2 BEGIN -->
 <!-- pk-compliance-contract v2 BEGIN -->
 <!-- pk-compliance v2 -->
 
@@ -111,6 +112,7 @@ Read is **allowed** (no hook block) for:
   `private/`, `working/`.
 - Any file outside `context/` entirely (docs/, src/, README.md, etc.).
 <!-- pk-compliance-contract v2 END -->
+<!-- pk-managed:pk-compliance-contract-v2 END -->
 
 ## About & session start
 
@@ -191,6 +193,7 @@ npm --prefix docs-site install && npm --prefix docs-site run build
 uv run scripts/smoke-test-servers.py
 ```
 
+<!-- pk-managed:pk-commands BEGIN -->
 <!-- pk-commands BEGIN -->
 <!--
 build: "npm --prefix docs-site run build"
@@ -200,6 +203,7 @@ fmt: ""
 typecheck: ""
 -->
 <!-- pk-commands END -->
+<!-- pk-managed:pk-commands END -->
 
 ## Code style & PRs
 

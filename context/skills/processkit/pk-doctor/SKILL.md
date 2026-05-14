@@ -155,6 +155,18 @@ Additional checks added after Phase 1:
 - **`mcp_gateway`** — reports processkit-gateway MCP config health and harness registration state. Validates gateway config presence/structure at `context/skills/processkit/processkit-gateway/mcp/mcp-config.json`, checks env vars and command launch target, detects mixed gateway+granular server registrations in `.mcp.json`, and warns on insecure daemon bindings. Emits INFO on healthy state, WARN on minor gaps (missing proxy --url, nonlocal daemon bind), ERROR on parsing failure; detect-only.
 - **`skill_dag`** — builds the skill-dependency directed-acyclic-graph (DAG) from `metadata.processkit.uses[*].skill` entries in every `context/skills/**/SKILL.md` and validates references exist, graph is acyclic, and layer constraints are honored (skill layer N only uses skills with layer ≤ N). Emits ERROR for missing references, cycles (with full path), or layer violations; detect-only.
 - **`v1_entity_drift`** — walks every registered v2 entity directory under `context/` and surfaces files whose frontmatter still declares `apiVersion: …/v1`. Emits WARN per file with a hardcoded successor table (Actor→TeamMember, Process→Scope+Gate, StateMachine→lifecycle metadata, Model→Artifact(model-spec)); v1 files in append-only buckets (`context/logs/`, `context/migrations/applied/`) are downgraded to a single INFO since they are intentionally historical. Under `--fix=v1_entity_drift` (or `--fix-all`) the check interactively records `apply_migration` intents when a pending v1->v2 Migration already covers the target, otherwise records `propose_migration` intents — it never auto-creates migrations or hand-edits files. Per BACK-20260509_1318-KindSpruce.
+- **`agents_md_hygiene`** — validates the derived-project startup
+  policy surface. Checks root `AGENTS.md` for `pk-managed:*` blocks
+  (`pk-compliance-contract-v2`, `pk-commands`), compares managed block
+  content against `src/AGENTS.md` or the latest template when available,
+  verifies processkit references for session start, skill routing,
+  entity IO, migrations, decision capture, sub-agent dispatch,
+  TeamMember/model binding, MCP topology, provider pointer files, and
+  command blocks, and flags stale guidance such as legacy actor roots,
+  `spec.x_aibox`, model-tier role tables, or duplicated provider-specific
+  policy. WARN findings include a `briefing` payload for a project agent
+  to reconcile the file after processkit upgrades. Detect-only; managed
+  block replacement and local policy merges remain user-reviewed.
 
 ### What doctor will NEVER do
 

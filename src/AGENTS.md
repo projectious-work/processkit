@@ -1,44 +1,118 @@
 # AGENTS.md
 
+<!-- pk-managed:pk-compliance-contract-v2 BEGIN -->
 <!-- pk-compliance-contract v2 BEGIN -->
 <!-- pk-compliance v2 -->
 
 ## processkit Compliance Contract
 
-Call `route_task(task_description)` before any `create_*`,
-`transition_*`, `link_*`, `record_*`, or `open_*` tool call.
+<!-- BEGIN HOOK -->
 
-If there is even a 1% chance a processkit skill applies to the current
-task, consult `skill-finder` (or call `find_skill`) before acting.
+### processkit per-turn checklist
 
-When you decide to create a WorkItem, DecisionRecord, Note, or Artifact,
-call the tool in the same turn — deferred entity creation is lost.
+- On session start, call `acknowledge_contract(version="v2")` once
+  before any write-side processkit tool call.
+- Before any sub-agent / `Task` dispatch or write-side MCP call
+  (`create_*`, `transition_*`, `link_*`, `record_*`, `open_*`),
+  call `route_task(task_description)` and use its recommendations.
+- On any domain-relevant request, consult `skill-finder` (or call
+  `find_skill(task_description)`) before acting.
+- Do not hand-edit files under `context/` — use MCP tools.
+- Do not browse `context/` with `ls` or `grep` — use `index-management`.
+- Do not edit `context/templates/` (read-only upstream mirror).
+- Full positive actions and prohibitions: see
+  `context/skills/processkit/skill-gate/assets/compliance-contract.md`.
 
-Write entities through MCP tools, not by hand-editing files under
-`context/` — hand edits bypass schema validation, state-machine
-enforcement, and the event-log auto-entry.
+<!-- END HOOK -->
 
-Read entities through `index-management` (`query_entities`,
-`get_entity`, `search_entities`) — do not use `ls`, `grep`, or raw
-filesystem walks under `context/`.
+## On session start
 
-Log an event after any state change that an MCP write did not already
-produce automatically.
+- Call `acknowledge_contract(version="v2")` once before any write-side
+  processkit tool call. This unblocks the skill-gate for the session.
+- Treat each new domain-relevant request as a routing checkpoint (see
+  *Tool routing*).
 
-After a cross-cutting recommendation is accepted, call `record_decision`
-in the same turn.
+## Sub-agent dispatch
 
-When the last five user messages contain explicit decision language
-(approved / decided / ship it / let's go / ok / yes / confirmed),
-either call `record_decision` in the same turn or call
-`skip_decision_record(reason=...)` to acknowledge the skip.
+- Call `route_task(task_description)` before any sub-agent / `Task` /
+  `Agent` dispatch; read `recommended_team_member_slug` and
+  `recommended_model_class` from the response.
+- Pass the recommended TeamMember slug as the sub-agent's identity where
+  the harness supports it, and pick the cheapest model in the recommended
+  class (Haiku < Sonnet < Opus).
+- Bare-model sub-agent dispatch without a prior `route_task` call is a
+  compliance miss.
 
-Do not edit any file under `context/templates/` — it is a read-only
-upstream mirror used as a diff baseline.
+## Tool routing
 
-Do not hand-edit the generated harness MCP config — edit the per-skill
-`mcp-config.json` and let the installer re-merge.
+- Consult `skill-finder` (or call `find_skill(task_description)`) before
+  acting whenever there is even a 1% chance a processkit skill applies.
+- Call `route_task(task_description)` before any `create_*`,
+  `transition_*`, `link_*`, `record_*`, or `open_*` tool call.
+- Read entities through `index-management` (`query_entities`,
+  `get_entity`, `search_entities`) when looking up entity content.
+
+## Entity writes
+
+- Write entities through MCP tools so schema validation, state-machine
+  enforcement, and event-log auto-entry all run.
+- Create the WorkItem, DecisionRecord, Note, or Artifact in the same
+  turn you decide on it — deferred entity creation is lost.
+- Log an event after any state change that an MCP write did not already
+  produce automatically.
+
+## Decisions
+
+- Call `record_decision` in the same turn a cross-cutting recommendation
+  is accepted.
+- When the last five user messages contain explicit decision language
+  (approved / decided / ship it / let's go / ok / yes / confirmed),
+  either call `record_decision` in the same turn or call
+  `skip_decision_record(reason=...)` to acknowledge the skip.
+
+## Prohibitions
+
+- Do not hand-edit files under `context/` to create or mutate entities
+  (use MCP tools).
+- Do not browse `context/` with `ls`, `grep`, or raw filesystem walks
+  (use `index-management`).
+- Do not edit any file under `context/templates/` (read-only upstream
+  mirror used as a diff baseline).
+- Do not hand-edit the generated harness MCP config — edit the
+  per-skill `mcp-config.json` and let the installer re-merge.
+
+## Preferred MCP entry points by task type
+
+| Task type | Preferred MCP entry point |
+|-----------|--------------------------|
+| Read a single entity by ID | `get_entity(id=...)` or kind-specific `get_workitem` / `get_decision` / `get_team_member` |
+| Read an entity by filesystem path | `get_entity_by_path(path=...)` |
+| List entities across kinds | `list_entities(kind?, state?, limit?)` |
+| Search entities by text | `search_entities(text)` or `hybrid_search_entities(text)` |
+| Create / mutate an entity | `create_*` / `transition_*` / `record_*` / `open_*` tools (always route_task first) |
+| Run the aggregator health check | `run_pk_doctor(check?, fix?)` |
+| Run the pre-release validation sweep | `run_pk_release_audit(tree?)` |
+| Dispatch a sub-agent | `route_task(task_description=...)` first → then `Agent` or `Task` with recommended model |
+
+## Read is OK for non-entity files
+
+The Read tool is **blocked** on canonical entity files (paths matching
+`context/{workitems,decisions,artifacts,team-members,scopes,gates,actors,
+roles,bindings}/*.md`). A PreToolUse hook enforces this at runtime.
+
+Read is **allowed** (no hook block) for:
+- Skill source code under `context/skills/<skill>/` — scripts, SKILL.md,
+  configs, assets are all readable directly.
+- Schema definitions under `context/schemas/` (reading is fine; writes
+  require a Migration + DEC).
+- Log entries under `context/logs/` (append-only, safe to scan).
+- Applied migrations under `context/migrations/applied/`.
+- TeamMember sub-files: `persona.md`, `card.json`, and everything under
+  `knowledge/`, `journal/`, `skills/`, `relations/`, `lessons/`,
+  `private/`, `working/`.
+- Any file outside `context/` entirely (docs/, src/, README.md, etc.).
 <!-- pk-compliance-contract v2 END -->
+<!-- pk-managed:pk-compliance-contract-v2 END -->
 
 ## About & session start
 
@@ -76,6 +150,28 @@ here. Run `pk-resume` before acting. Provider-specific files
   hatch; commit with a clear reference. LogEntries remain
   append-only for the normal write path.
 
+## Before sub-agent dispatch
+
+Call `route_task(task_description)` before any `Task` / `Agent` /
+sub-agent dispatch and read the new fields from the response:
+
+- `recommended_team_member_slug` — the active TeamMember whose
+  `default_role` matches the routed group's preferred role. Pass it as
+  the sub-agent's identity (Claude Code: `subagent_type` or model
+  param; other harnesses: their equivalent). When `None`, no
+  TeamMember binding resolves — fall back to an ephemeral
+  `(role, seniority)` dispatch.
+- `recommended_model_class` — `"fast"` or `"deep"`. Pick the cheapest
+  concrete model in the class (Haiku < Sonnet < Opus) before
+  dispatching; bare-model dispatch that ignores this hint inherits the
+  parent session's model and breaks the team-dispatch token-efficiency
+  strategy.
+
+This section is the long form of the sub-agent-dispatch clause in
+`context/skills/processkit/skill-gate/assets/compliance-contract.md`.
+The `pk-doctor` `team_member_exports` check warns when an active
+TeamMember has no Claude sub-agent export under `.claude/agents/`.
+
 ## Sub-agent delegation
 
 Harness `Agent`-tool sub-agents inherit the main session's permission
@@ -86,7 +182,9 @@ sub-agents (Read, search Bash, MCP `query_*` / `get_*` / `search_*` /
 new `mkdir`, MCP `create_*` / `transition_*` / `record_*` / `link_*`
 / `open_*` / `log_event`, `git` mutations). A sub-agent permission
 block is not a cue to broaden the allowlist — move the write back to
-main.
+main. If MCP servers crash, hang, or fail to exit under sub-agents,
+disable sub-agent MCP use for the session and implement from the main
+session until the gateway lifecycle is proven stable.
 
 ## Setup
 
@@ -95,6 +193,7 @@ npm --prefix docs-site install && npm --prefix docs-site run build
 uv run scripts/smoke-test-servers.py
 ```
 
+<!-- pk-managed:pk-commands BEGIN -->
 <!-- pk-commands BEGIN -->
 <!--
 build: "npm --prefix docs-site run build"
@@ -104,6 +203,7 @@ fmt: ""
 typecheck: ""
 -->
 <!-- pk-commands END -->
+<!-- pk-managed:pk-commands END -->
 
 ## Code style & PRs
 
@@ -127,8 +227,10 @@ Role and TeamMember defaults bind to provider-neutral
 gates. Model-spec filenames may encode provider/model names; model
 profiles, actors, roles, and team-member identities must not.
 If `team-manager.get_active_interlocutor` returns a configured
-TeamMember, show that identity at session start; otherwise state that
-the current speaker is an ephemeral harness agent.
+TeamMember, show that identity at session start. When available, also
+show `team-manager.get_interlocutor_runtime_binding` output: resolved
+model, observed harness model/effort, and any mismatch. Otherwise state
+that the current speaker is an ephemeral harness agent.
 
 Charters: `DEC-20260422_0233-SpryTulip` (team-member model + memory),
 `DEC-20260422_0234-BraveFalcon` (role catalog + seniority),

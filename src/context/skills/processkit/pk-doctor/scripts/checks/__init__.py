@@ -28,6 +28,7 @@ from . import (
     skill_dag,
     context_consumption,
     context_hygiene,
+    agents_md_hygiene,
 )
 
 # (name, module). Name is the --category= token and the key in the
@@ -53,6 +54,7 @@ REGISTRY = [
     ("skill_dag", skill_dag),
     ("context_consumption", context_consumption),
     ("context_hygiene", context_hygiene),
+    ("agents_md_hygiene", agents_md_hygiene),
 ]
 
 
