@@ -309,11 +309,26 @@ def _scan_model_bindings(
     return results
 
 
-def _archive_candidate_count(root: Path, pattern: str) -> int:
+def _archive_candidate_count(
+    root: Path,
+    pattern: str,
+    *,
+    state: str | None = None,
+) -> int:
     base = root
     if not base.is_dir():
         return 0
-    return sum(1 for p in base.rglob(pattern) if p.is_file())
+    count = 0
+    for path in base.rglob(pattern):
+        if not path.is_file():
+            continue
+        if state is not None:
+            fm = _load_frontmatter(path) or {}
+            spec = fm.get("spec") if isinstance(fm.get("spec"), dict) else {}
+            if spec.get("state") != state:
+                continue
+        count += 1
+    return count
 
 
 def _sqlite_vec_available() -> bool:
@@ -494,7 +509,9 @@ def run(ctx) -> list[CheckResult]:
         ))
 
     applied_migrations = _archive_candidate_count(
-        repo_root / "context" / "migrations" / "applied", "*.md"
+        repo_root / "context" / "migrations" / "applied",
+        "*.md",
+        state="applied",
     )
     if applied_migrations:
         results.append(CheckResult(

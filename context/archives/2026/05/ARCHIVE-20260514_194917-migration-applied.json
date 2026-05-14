@@ -1,0 +1,137 @@
+{
+  "archive_id": "ARCHIVE-20260514_194917-migration-applied",
+  "archive_path": "context/archives/2026/05/ARCHIVE-20260514_194917-migration-applied.tar.gz",
+  "created_at": "2026-05-14T19:49:17+00:00",
+  "entities": [
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-20260514T193936\n\nFrom `v0.26.5` to `v0.26.9` (source: `https://github.com/projectious-work/processkit.git`).\n\n0 changed upstream, 0 conflicts, 4 new, 0 removed, 0 stale-removed (2 groups affected)\n\n## Counts\n\n- unchanged: 681\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 4\n- removed-upstream: 0\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### lib\n\n**new-upstream**\n\n- `context/skills/_lib/processkit/test_ids.py` \u2192 `context/skills/_lib/processkit/test_ids.py`\n\n### skills/processkit\n\n**new-upstream**\n\n- `context/skills/processkit/pk-doctor/scripts/checks/id_vocabulary.py` \u2192 `context/skills/processkit/pk-doctor/scripts/checks/id_vocabulary.py`\n- `context/skills/processkit/pk-doctor/scripts/checks/agents_md_hygiene.py` \u2192 `context/skills/processkit/pk-doctor/scripts/checks/agents_md_hygiene.py`\n- `context/skills/processkit/pk-doctor/scripts/test_id_vocabulary.py` \u2192 `context/skills/processkit/pk-doctor/scripts/test_id_vocabulary.py`\n",
+      "id": "MIG-20260514T193936",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-20260514T193936.md",
+      "metadata": {
+        "created": "2026-05-14T19:39:36+00:00",
+        "id": "MIG-20260514T193936",
+        "updated": "2026-05-14T19:46:32+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-20260514T193936.md",
+      "sha256": "e31c1a6fd4e73610807b7afe8478b37fa481c2317ccd3632f3d9805600319e4c",
+      "spec": {
+        "affected_files": [
+          {
+            "classification": "new-upstream",
+            "path": "context/skills/_lib/processkit/test_ids.py"
+          },
+          {
+            "classification": "new-upstream",
+            "path": "context/skills/processkit/pk-doctor/scripts/checks/agents_md_hygiene.py"
+          },
+          {
+            "classification": "new-upstream",
+            "path": "context/skills/processkit/pk-doctor/scripts/checks/id_vocabulary.py"
+          },
+          {
+            "classification": "new-upstream",
+            "path": "context/skills/processkit/pk-doctor/scripts/test_id_vocabulary.py"
+          }
+        ],
+        "affected_groups": [
+          "lib",
+          "skills/processkit"
+        ],
+        "applied_at": "2026-05-14T19:46:32+00:00",
+        "from_version": "v0.26.5",
+        "generated_at": "2026-05-14T19:39:36+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Applied additive processkit v0.26.5 to v0.26.9 sync output already present in the workspace; no conflicts listed.",
+            "timestamp": "2026-05-14T19:46:32+00:00"
+          }
+        ],
+        "source": "processkit",
+        "source_url": "https://github.com/projectious-work/processkit.git",
+        "started_at": "2026-05-14T19:46:32+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 4 new, 0 removed, 0 stale-removed (2 groups affected)",
+        "to_version": "v0.26.9"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260514_194917-migration-applied.tar.gz::context/migrations/applied/MIG-20260514T193936.md"
+    },
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "body_index": "# Migration MIG-RUNTIME-20260514T193936\n\nManaged `.aibox-home/` runtime changes from `0.25.14` to `0.26.3`.\n\n0 changed upstream, 0 conflicts, 7 new, 0 removed (2 groups affected)\n\n## Counts\n\n- unchanged: 33\n- changed-locally-only: 0\n- changed-upstream-only: 0\n- conflict: 0\n- new-upstream: 7\n- removed-upstream: 0\n\n- removed-upstream-stale: 0\n\n## Changes by group\n\n### runtime-misc\n\n**new-upstream**\n\n- `.aibox-home/.vim/colors/aibox.vim` -> `.aibox-home/.vim/colors/aibox.vim`\n- `.aibox-home/.config/aibox/theme-env.sh` -> `.aibox-home/.config/aibox/theme-env.sh`\n- `.aibox-home/.config/lnav/config.json` -> `.aibox-home/.config/lnav/config.json`\n- `.aibox-home/.local/bin/aibox-tmux-switch-layout` -> `.aibox-home/.local/bin/aibox-tmux-switch-layout`\n- `.aibox-home/.local/bin/aibox-tmux-confirm-and-switch` -> `.aibox-home/.local/bin/aibox-tmux-confirm-and-switch`\n- `.aibox-home/.local/bin/aibox-tmux-refresh-theme` -> `.aibox-home/.local/bin/aibox-tmux-refresh-theme`\n\n### runtime-tmux\n\n**new-upstream**\n\n- `.aibox-home/.config/tmux/aibox-powerkit-theme.sh` -> `.aibox-home/.config/tmux/aibox-powerkit-theme.sh`\n",
+      "id": "MIG-RUNTIME-20260514T193936",
+      "kind": "Migration",
+      "labels": {},
+      "member_path": "context/migrations/applied/MIG-RUNTIME-20260514T193936.md",
+      "metadata": {
+        "created": "2026-05-14T19:39:36+00:00",
+        "id": "MIG-RUNTIME-20260514T193936",
+        "updated": "2026-05-14T19:46:33+00:00"
+      },
+      "original_path": "context/migrations/applied/MIG-RUNTIME-20260514T193936.md",
+      "sha256": "8921ce6c2e3fd9e3e2277424fc5fe3d156b69c371b6bf79ff7b33a573a9cd60d",
+      "spec": {
+        "affected_files": [
+          {
+            "classification": "new-upstream",
+            "path": ".config/aibox/theme-env.sh"
+          },
+          {
+            "classification": "new-upstream",
+            "path": ".config/lnav/config.json"
+          },
+          {
+            "classification": "new-upstream",
+            "path": ".config/tmux/aibox-powerkit-theme.sh"
+          },
+          {
+            "classification": "new-upstream",
+            "path": ".local/bin/aibox-tmux-confirm-and-switch"
+          },
+          {
+            "classification": "new-upstream",
+            "path": ".local/bin/aibox-tmux-refresh-theme"
+          },
+          {
+            "classification": "new-upstream",
+            "path": ".local/bin/aibox-tmux-switch-layout"
+          },
+          {
+            "classification": "new-upstream",
+            "path": ".vim/colors/aibox.vim"
+          }
+        ],
+        "affected_groups": [
+          "runtime-misc",
+          "runtime-tmux"
+        ],
+        "applied_at": "2026-05-14T19:46:33+00:00",
+        "from_version": "0.25.14",
+        "generated_at": "2026-05-14T19:39:36+00:00",
+        "generated_by": "aibox apply",
+        "progress_notes": [
+          {
+            "actor": "mcp",
+            "note": "Applied additive aibox runtime-home v0.25.14 to v0.26.3 sync output already present in the workspace; no conflicts listed.",
+            "timestamp": "2026-05-14T19:46:33+00:00"
+          }
+        ],
+        "source": "aibox-runtime-home",
+        "source_url": "aibox://runtime-home",
+        "started_at": "2026-05-14T19:46:32+00:00",
+        "state": "applied",
+        "summary": "0 changed upstream, 0 conflicts, 7 new, 0 removed (2 groups affected)",
+        "to_version": "0.26.3"
+      },
+      "storage_location": "context/archives/2026/05/ARCHIVE-20260514_194917-migration-applied.tar.gz::context/migrations/applied/MIG-RUNTIME-20260514T193936.md"
+    }
+  ],
+  "kind": "Migration",
+  "older_than_days": 0,
+  "sha256": "51b115cd5e3847f81f1a268e989c293ced503336f01644479872eb2f521ce90d",
+  "state": "applied"
+}

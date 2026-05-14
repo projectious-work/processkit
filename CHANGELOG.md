@@ -11,6 +11,37 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.10] - 2026-05-14
+
+v0.26.10 is a **patch release** that clears false-actionable
+pk-doctor findings after the v0.26.9 preauth fix and hardens ID token
+reservation.
+
+### Fixed
+
+- **Downgraded historical lexical-token collisions to non-actionable
+  info.** Existing timestamp/word-pair shorthand collisions now report
+  as historical context instead of open migration work, while new ID
+  generation continues to avoid reusing reserved lexical tokens. Closes
+  [#51](https://github.com/projectious-work/processkit/issues/51).
+- **Reserved lexical tokens across all ID generation paths.**
+  `id-management.generate_id()` and the shared processkit ID helper now
+  reserve every lexical token already present in the target kind, so
+  pair, intent, and generic ID generation all avoid ambiguous reuse.
+- **Stopped rejected migrations from keeping archive hygiene
+  actionable.** The pk-doctor applied-migration archive check now counts
+  only `state = applied` migration records, so rejected records can stay
+  available as explicit policy dispositions.
+
+### Verification
+
+- `pk-doctor`: 0 errors, 0 warnings, 0 actionable infos
+- `pk-release-audit --tree=both`
+- `uv run scripts/smoke-test-servers.py`
+- Focused pytest coverage for ID vocabulary and ID generation
+
+---
+
 ## [v0.26.9] - 2026-05-14
 
 v0.26.9 is a **patch release** that fixes the runtime-prune MCP

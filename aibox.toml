@@ -400,8 +400,8 @@ model_providers = [
 # keep `install = false` for cursor even when `enable = true`.
 # `version` optionally pins the CLI recipe; omit it to use the addon default.
 harnesses = [
-#   { harness = "claude", enable = true, install = true },
     { harness = "codex", enable = true, install = true },
+#   { harness = "claude", enable = true, install = true },
 #   { harness = "gemini", enable = true, install = true },
 #   { harness = "aider", enable = true, install = true },
 #   { harness = "continue", enable = true, install = true },
@@ -482,7 +482,7 @@ theme  = "nord"
 # Options: auto | light | dark
 mode   = "auto"
 # Starship prompt preset.
-# Options: default | plain | minimal | nerd-font | pastel | pastel-powerline | bracketed | arrow
+# Options: default | plain | minimal | nerd-font | pastel | powerline-pastel | bracketed | arrow
 # ASCII sketches:
 #   default          ~/repo main +2  py3.13  2s
 #                    >
@@ -493,12 +493,12 @@ mode   = "auto"
 #   nerd-font        [os] ~/repo main +2 py rs js go 2s
 #                    >
 #   pastel           ( ~/repo )>( main +2 )>( py rs js go ) 2s >
-#   pastel-powerline ( ~/repo )>( main +2 )>( py rs js go ) 2s >
+#   powerline-pastel ( ~/repo )>( main +2 )>( py rs js go ) 2s >
 #   bracketed        ~/repo [main] [+2] [py3.13]
 #                    >
 #   arrow            > ~/repo > main +2 > 2s
 #                    >
-prompt = "pastel-powerline"
+prompt = "powerline-pastel"
 # Default tmux layout. Options: dev | focus | cowork | ai
 # Layout sketches, one screen each:
 # +---- ai ----+  +--- dev ----+  +-- focus --+  +-- cowork -+
@@ -594,6 +594,14 @@ netspeed = ""
 netspeed-download = "󰇚"
 netspeed-upload = "󰕒"
 
+[customization.tmux.status.separators]
+# PowerKit separator style. Options: normal | rounded | slant | slantup | trapezoid | flame | pixel | honeycomb | none
+style = "rounded"
+# Edge separators may use a different style at status boundaries.
+edge-style = "rounded"
+# Spacing between elements. Options: false | true | both | windows | plugins
+elements-spacing = "both"
+
 [customization.tmux.status.refresh]
 # Refresh/caching controls for extended tmux status.
 # interval-seconds: tmux redraw cadence. Higher values reduce shell process churn.
@@ -621,7 +629,7 @@ cloud-cache-ttl-seconds = 120
 enabled = false
 cache-ttl-seconds = 300
 timeout-seconds = 3
-show-ok = true
+show-ok = false
 # Provider entries:
 # - provider: stable key from the model roster (openai, anthropic, google, mistral, deepseek, cohere, xai, alibaba, aws, meta, microsoft, minimax, moonshot, nvidia, xiaomi, zai)
 # - label: short category header shown in the status segment; use text or a symbol that your font supports

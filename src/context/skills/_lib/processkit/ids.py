@@ -468,10 +468,9 @@ def generate_id(
     existing = tuple(existing)
     used = {_strip_prefix(x, prefix) for x in existing}
     reserved_tokens = set(reserved_lexical_tokens)
-    if reserved_tokens:
-        reserved_tokens.update(
-            t for t in (lexical_token_from_id(x) for x in existing) if t
-        )
+    reserved_tokens.update(
+        t for t in (lexical_token_from_id(x) for x in existing) if t
+    )
     tags = tuple(
         palette_tags
         or (palette_for_kind(kind, intent_text) if intent_text else ())

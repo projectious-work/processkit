@@ -40,10 +40,16 @@ creates a new entity calls into this one to allocate a unique ID.
 
 ### What it provides
 
-- **`generate_id(kind, slug_text?)`** — produce a fresh, collision-free ID for the given kind
-- **`validate_id(id)`** — check if a string is a syntactically valid processkit ID and parse out its kind/body
-- **`list_used_ids(kind?, limit?)`** — return IDs already in use (useful for diagnostics or bulk operations)
-- **`format_info()`** — return the project's ID configuration so the agent can reason about it
+- **`generate_id(kind, slug_text?)`** — produce a fresh,
+  collision-free ID for the given kind.
+- **`validate_id(id)`** — check if a string is a syntactically valid
+  processkit ID and parse out its kind/body.
+- **`list_used_ids(kind?, limit?)`** — return IDs already in use
+  (useful for diagnostics or bulk operations).
+- **`vocabulary_status(kind?, intent_text?, allocation_mode?)`** —
+  inspect palette capacity and shorthand ambiguity.
+- **`format_info()`** — return the project's ID configuration so the
+  agent can reason about it.
 
 ### ID anatomy
 
@@ -161,14 +167,37 @@ Adding a new primitive kind requires adding its prefix there.
 ### Word generation
 
 Word-based IDs are produced from a built-in dictionary of 120 positive
-adjectives and 120 concrete nouns (14,400 base combinations per kind). The
-generator picks a random pair, checks for collision against the index,
-and retries up to 50 times. If exhausted, it appends a 4-hex suffix
-to guarantee uniqueness.
+adjectives and 120 concrete nouns (14,400 historical base combinations).
+The default generator path preserves that legacy pool unless callers opt
+into tagged palettes or high-volume modes.
 
-The dictionary lives in `src/lib/processkit/ids.py` — replace it if you
-want a different vibe (e.g. mythological creatures, geological terms,
-project-themed words). Custom dictionaries are on the backlog.
+The accepted vocabulary architecture is:
+
+- **Tagged noun palettes** — broad categories such as landform, stone,
+  space, metal/material, wood/tree, cloud/weather, nautical, water,
+  navigation, architecture, light/fire, craft/tool, flora, and fauna.
+- **`pair` mode** — `AdjNoun`, the normal-volume default.
+- **`double_adjective` mode** — `AdjAdjNoun`, the preferred high-volume
+  extension because it multiplies capacity without pluralization.
+- **`counted` mode** — `SevenAdjPluralNouns`, an optional fallback for
+  very high-volume or extra-distinct shorthand.
+
+Category assignment is a hint, not mutable workflow state. For example,
+WorkItems can lean toward landform/stone/water/navigation palettes, and
+speculative items can add space/cloud hints, but backlog/done state must
+not be encoded in the immutable ID.
+
+Palette selection is RAG-assisted in architecture: kind, stable subtype,
+title, labels, and slug summary form an ID intent document. processkit
+uses deterministic lexical scoring today and is designed to reuse the
+existing index-management sqlite/sqlite-vec database for richer semantic
+palette ranking later. Embeddings rank candidates; the allocator still
+enforces hard constraints such as lexical-token uniqueness, blocked
+process words, and capacity thresholds.
+
+The dictionary and helper functions live in `src/lib/processkit/ids.py`.
+Projects can inspect readiness with `vocabulary_status()` and pk-doctor's
+`id_vocabulary` check.
 
 ### Slug generation
 

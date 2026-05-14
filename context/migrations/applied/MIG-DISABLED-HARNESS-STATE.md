@@ -3,7 +3,8 @@ apiVersion: processkit.projectious.work/v2
 kind: Migration
 metadata:
   id: MIG-DISABLED-HARNESS-STATE
-  created: 2026-05-13T18:27:28.805218+00:00
+  created: 2026-05-13 18:27:28.805218+00:00
+  updated: '2026-05-14T19:46:33+00:00'
 spec:
   source: aibox
   source_api_version: processkit.projectious.work/v1
@@ -11,11 +12,15 @@ spec:
   target_api_version: processkit.projectious.work/v2
   target_processkit_version: 0.25.14
   kind: runtime
-  state: pending
+  state: rejected
   apply_mode: one-shot
   generated_by: aibox apply
-  generated_at: 2026-05-13T18:27:28.805218+00:00
+  generated_at: 2026-05-13 18:27:28.805218+00:00
   summary: Disabled AI-harness state cleanup requires owner review
+  rejected_reason: 'Resolved by policy disposition: do not purge disabled Claude harness
+    state automatically. aibox.toml does not set purge_disabled_harness_state=true,
+    and the migration itself requires owner review before host-state deletion.'
+  rejected_at: '2026-05-14T19:46:33+00:00'
 ---
 
 # Migration: disabled AI-harness state cleanup

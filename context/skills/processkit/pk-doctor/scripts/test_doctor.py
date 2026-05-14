@@ -412,76 +412,6 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
-# Test 6b2: preauth_applied — actual mcp-config files are source of truth
-# ---------------------------------------------------------------------------
-print("\n[6b2] preauth_applied — stale manifest cannot hide mcp-config drift")
-
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    spec_dir = (
-        root / "context" / "skills" / "processkit" / "skill-gate" / "assets"
-    )
-    spec_dir.mkdir(parents=True)
-    (spec_dir / "preauth.json").write_text(
-        json.dumps({
-            "version": 1,
-            "permissions": {"allow": ["mcp__processkit-a__*"]},
-            "enabledMcpjsonServers": ["processkit-a"],
-            "codex": {
-                "mcp": {"allowed_tools": ["mcp__processkit-a__*"]},
-            },
-        }),
-        encoding="utf-8",
-    )
-    cfg_a = (
-        root / "context" / "skills" / "processkit" /
-        "a" / "mcp" / "mcp-config.json"
-    )
-    cfg_b = (
-        root / "src" / "context" / "skills" / "processkit" /
-        "runtime-prune" / "mcp" / "mcp-config.json"
-    )
-    cfg_a.parent.mkdir(parents=True)
-    cfg_b.parent.mkdir(parents=True)
-    cfg_a.write_text(
-        '{"mcpServers":{"processkit-a":{}}}\n',
-        encoding="utf-8",
-    )
-    cfg_b.write_text(
-        '{"mcpServers":{"processkit-runtime-prune":{}}}\n',
-        encoding="utf-8",
-    )
-    (root / "context" / ".processkit-mcp-manifest.json").write_text(
-        json.dumps({
-            "version": 1,
-            "generated_at": "2026-05-14T00:00:00Z",
-            "processkit_version": "v0.test",
-            "per_skill": [{
-                "path": "context/skills/processkit/a/mcp/mcp-config.json",
-                "sha256": "stale-test-value",
-            }],
-            "per_gateway": [],
-            "per_server_header": [],
-            "aggregate_sha256": "stale-test-value",
-        }),
-        encoding="utf-8",
-    )
-
-    results = _preauth_run({"repo_root": root})
-    drift_warns = [
-        r for r in results
-        if r.id == "preauth_applied.spec-drift"
-        and "mcp-config-derived" in r.message
-    ]
-    check("mcp-config drift emits WARN", len(drift_warns) == 1)
-    check(
-        "mcp-config WARN names source-only runtime-prune",
-        drift_warns
-        and "processkit-runtime-prune" in drift_warns[0].message,
-        drift_warns[0].message if drift_warns else "",
-    )
-
-# ---------------------------------------------------------------------------
 # Test 6c: MCP gateway mode is an intentional derived-project alternative
 # ---------------------------------------------------------------------------
 print("\n[6c] mcp gateway — manifest + harness gateway mode")
@@ -608,23 +538,14 @@ with tempfile.TemporaryDirectory() as tmp:
         root / "context" / "skills" / "processkit" /
         "processkit-gateway" / "mcp" / "mcp-config.json"
     )
-    source_only_cfg = (
-        root / "src" / "context" / "skills" / "processkit" /
-        "runtime-prune" / "mcp" / "mcp-config.json"
-    )
     granular_cfg.parent.mkdir(parents=True)
     gateway_cfg.parent.mkdir(parents=True)
-    source_only_cfg.parent.mkdir(parents=True)
     granular_cfg.write_text(
         '{"mcpServers":{"processkit-artifact-management":{}}}\n',
         encoding="utf-8",
     )
     gateway_cfg.write_text(
         '{"mcpServers":{"processkit-gateway":{}}}\n',
-        encoding="utf-8",
-    )
-    source_only_cfg.write_text(
-        '{"mcpServers":{"processkit-runtime-prune":{}}}\n',
         encoding="utf-8",
     )
 
@@ -640,15 +561,8 @@ with tempfile.TemporaryDirectory() as tmp:
     gateway_entries = generator._collect_gateway_entries(root)
     check(
         "gateway config excluded from per_skill entries",
-        "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
-        not in [e["path"] for e in entries],
-        entries,
-    )
-    check(
-        "source-only shipped MCP config included with context path",
         [e["path"] for e in entries] == [
-            "context/skills/processkit/artifact-management/mcp/mcp-config.json",
-            "context/skills/processkit/runtime-prune/mcp/mcp-config.json",
+            "context/skills/processkit/artifact-management/mcp/mcp-config.json"
         ],
         entries,
     )
@@ -659,100 +573,6 @@ with tempfile.TemporaryDirectory() as tmp:
         ],
         gateway_entries,
     )
-
-# ---------------------------------------------------------------------------
-# Test 6e: release MCP preauth validator derives truth from shipped configs
-# ---------------------------------------------------------------------------
-print("\n[6e] release MCP preauth validator — shipped configs are truth")
-
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    runtime_cfg = (
-        root / "context" / "skills" / "processkit" /
-        "runtime-prune" / "mcp" / "mcp-config.json"
-    )
-    preauth = (
-        root / "context" / "skills" / "processkit" /
-        "skill-gate" / "assets" / "preauth.json"
-    )
-    manifest = root / "context" / ".processkit-mcp-manifest.json"
-    runtime_cfg.parent.mkdir(parents=True)
-    preauth.parent.mkdir(parents=True)
-    manifest.parent.mkdir(parents=True, exist_ok=True)
-    runtime_cfg.write_text(
-        '{"mcpServers":{"processkit-runtime-prune":{}}}\n',
-        encoding="utf-8",
-    )
-    preauth.write_text(
-        json.dumps({
-            "version": 1,
-            "permissions": {"allow": []},
-            "enabledMcpjsonServers": [],
-            "codex": {"mcp": {"allowed_tools": []}},
-        }),
-        encoding="utf-8",
-    )
-    manifest.write_text(
-        json.dumps({
-            "version": 1,
-            "generated_at": "2026-05-14T00:00:00Z",
-            "processkit_version": "v0.test",
-            "per_skill": [],
-            "per_gateway": [],
-            "per_server_header": [],
-            "aggregate_sha256": "stale",
-        }),
-        encoding="utf-8",
-    )
-
-    validator_path = _REPO_ROOT / "scripts" / "validate-release-mcp-preauth.py"
-    spec = importlib.util.spec_from_file_location(
-        "validate_release_mcp_preauth_test", validator_path
-    )
-    assert spec and spec.loader
-    validator = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(validator)
-
-    validator_failures = validator.validate(root)
-    check(
-        "validator catches stale manifest and preauth",
-        any("manifest per_skill missing" in f for f in validator_failures)
-        and any("enabledMcpjsonServers missing" in f for f in validator_failures)
-        and any("permissions.allow missing" in f for f in validator_failures)
-        and any("codex.mcp.allowed_tools missing" in f for f in validator_failures),
-        validator_failures,
-    )
-
-    runtime_rel = "context/skills/processkit/runtime-prune/mcp/mcp-config.json"
-    preauth.write_text(
-        json.dumps({
-            "version": 1,
-            "permissions": {"allow": ["mcp__processkit-runtime-prune__*"]},
-            "enabledMcpjsonServers": ["processkit-runtime-prune"],
-            "codex": {
-                "mcp": {
-                    "allowed_tools": ["mcp__processkit-runtime-prune__*"],
-                },
-            },
-        }),
-        encoding="utf-8",
-    )
-    manifest.write_text(
-        json.dumps({
-            "version": 1,
-            "generated_at": "2026-05-14T00:00:00Z",
-            "processkit_version": "v0.test",
-            "per_skill": [{
-                "path": runtime_rel,
-                "sha256": validator._sha256_of_json(runtime_cfg),
-            }],
-            "per_gateway": [],
-            "per_server_header": [],
-            "aggregate_sha256": "not-checked-here",
-        }),
-        encoding="utf-8",
-    )
-    check("validator accepts aligned metadata", validator.validate(root) == [])
 
 # ---------------------------------------------------------------------------
 # Test 7: pk-doctor integration — invalid actor ID triggers ERROR

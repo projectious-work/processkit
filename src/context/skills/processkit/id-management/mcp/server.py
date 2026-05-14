@@ -107,13 +107,11 @@ def generate_id(
         ]
     finally:
         db.close()
-    reserved_tokens: list[str] = []
-    if allocation_mode != "pair" or intent_text:
-        reserved_tokens = [
-            token
-            for token in (ids.lexical_token_from_id(x) for x in all_existing)
-            if token
-        ]
+    reserved_tokens = [
+        token
+        for token in (ids.lexical_token_from_id(x) for x in all_existing)
+        if token
+    ]
 
     new_id = ids.generate_id(
         kind,
