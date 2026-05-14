@@ -242,6 +242,13 @@ if [[ "$MODE" == "release-deliverable" ]]; then
         failures+=("missing MCP manifest: src/context/.processkit-mcp-manifest.json")
     fi
 
+    if ! "$REPO_ROOT/scripts/validate-release-mcp-preauth.py" "$REPO_ROOT/src"; then
+        failures+=(
+            "MCP manifest/preauth release contract failed for src/context; "
+            "derive expected servers from shipped mcp-config.json files"
+        )
+    fi
+
     if command -v rg >/dev/null 2>&1; then
         if rg -n '(^kind:\s*(Model|Process|Metric|Schedule)\s*$|target_kind:\s*(Model|Process|Metric|Schedule)\s*$)' "$SRC" >/dev/null 2>&1; then
             failures+=(

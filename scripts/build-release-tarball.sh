@@ -135,6 +135,20 @@ echo "tarballing → $TARBALL" >&2
         -czf "$TARBALL" \
         "processkit-$VERSION")
 
+echo "running release artifact guard: tarball MCP preauth contract" >&2
+ARTIFACT_CHECK_PARENT="$(mktemp -d)"
+cleanup_artifact_check() {
+    rm -rf "$ARTIFACT_CHECK_PARENT"
+}
+trap 'cleanup_artifact_check; cleanup' EXIT
+tar -xzf "$TARBALL" -C "$ARTIFACT_CHECK_PARENT"
+if ! "$REPO_ROOT/scripts/validate-release-mcp-preauth.py" \
+        "$ARTIFACT_CHECK_PARENT/processkit-$VERSION"; then
+    echo "" >&2
+    echo "error: release artifact guard failed — tarball MCP metadata is stale." >&2
+    exit 1
+fi
+
 # Compute and write the sibling checksum file.
 # Format matches `sha256sum`'s output: `<hash>  <filename>`.
 echo "computing sha256 → $CHECKSUM" >&2
