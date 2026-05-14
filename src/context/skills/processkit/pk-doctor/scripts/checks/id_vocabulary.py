@@ -12,6 +12,7 @@ from .common import CheckResult
 CATEGORY = "id_vocabulary"
 NORMAL_PAIR_TARGET = 50_000
 HIGH_VOLUME_TARGET = 250_000
+CONFIGURED_KIND_MODE = "double_adjective"
 
 
 def _add_processkit_lib_to_path(repo_root: Path) -> None:
@@ -21,12 +22,12 @@ def _add_processkit_lib_to_path(repo_root: Path) -> None:
         repo_root / "src" / "lib",
         repo_root / "_lib",
     ):
-        if (
-            (candidate / "processkit" / "__init__.py").is_file()
-            and str(candidate) not in sys.path
-        ):
+        if not (candidate / "processkit" / "__init__.py").is_file():
+            continue
+        if str(candidate) not in sys.path:
             sys.path.insert(0, str(candidate))
             return
+        return
 
 
 def _sqlite_vec_available() -> bool:
@@ -58,6 +59,20 @@ def _indexed_ids(repo_root: Path) -> list[str]:
         conn.close()
 
 
+def _configured_palette_kinds(ids_module) -> tuple[str, ...]:
+    if hasattr(ids_module, "configured_palette_kinds"):
+        return tuple(ids_module.configured_palette_kinds())
+    palettes = getattr(ids_module, "_KIND_PALETTES", {})
+    return tuple(sorted(palettes))
+
+
+def _palette_for_kind(ids_module, kind: str) -> tuple[str, ...]:
+    if hasattr(ids_module, "palette_for_kind"):
+        return tuple(ids_module.palette_for_kind(kind))
+    palettes = getattr(ids_module, "_KIND_PALETTES", {})
+    return tuple(palettes.get(kind, ()))
+
+
 def run(ctx) -> list[CheckResult]:
     repo_root: Path = ctx["repo_root"]
     _add_processkit_lib_to_path(repo_root)
@@ -78,33 +93,66 @@ def run(ctx) -> list[CheckResult]:
     existing = _indexed_ids(repo_root)
     results: list[CheckResult] = []
 
-    default_report = ids.vocabulary_capacity_report(existing=existing)
-    default_capacity = int(default_report["capacity"])
-    if default_capacity < NORMAL_PAIR_TARGET:
+    kind_reports = []
+    for kind in _configured_palette_kinds(ids):
+        tags = _palette_for_kind(ids, kind)
+        report = ids.vocabulary_capacity_report(
+            palette_tags=tags,
+            allocation_mode=CONFIGURED_KIND_MODE,
+            existing=existing,
+        )
+        kind_reports.append({
+            "kind": kind,
+            "palette_tags": list(tags),
+            "capacity": int(report["capacity"]),
+            "report": report,
+        })
+
+    low_kind_reports = [
+        item for item in kind_reports
+        if int(item["capacity"]) < NORMAL_PAIR_TARGET
+    ]
+    min_kind_capacity = min(
+        (int(item["capacity"]) for item in kind_reports),
+        default=0,
+    )
+    if low_kind_reports:
         results.append(CheckResult(
             severity="WARN",
             category=CATEGORY,
-            id="id-vocabulary.default-pair-capacity-low",
+            id="id-vocabulary.configured-kind-capacity-low",
             message=(
-                f"default two-word vocabulary has {default_capacity} pair(s); "
-                f"target for durable human shorthand is {NORMAL_PAIR_TARGET}+"
+                f"{len(low_kind_reports)} configured kind palette(s) are below "
+                f"the {NORMAL_PAIR_TARGET}+ durable shorthand target"
             ),
             suggested_fix=(
-                "enable tagged palettes and use double_adjective mode for "
-                "high-volume entity kinds"
+                "add more tagged nouns or adjectives for the listed kind "
+                "palette(s), or assign a broader palette"
             ),
-            extra=default_report,
+            extra={
+                "allocation_mode": CONFIGURED_KIND_MODE,
+                "target": NORMAL_PAIR_TARGET,
+                "low_kinds": low_kind_reports,
+                "configured_kinds": kind_reports,
+            },
         ))
     else:
         results.append(CheckResult(
             severity="INFO",
             category=CATEGORY,
-            id="id-vocabulary.default-pair-capacity-ok",
-            message=f"default two-word vocabulary has {default_capacity} pair(s)",
-            extra=default_report,
+            id="id-vocabulary.configured-kind-capacity-ok",
+            message=(
+                "configured kind palettes meet durable shorthand target "
+                f"(minimum {min_kind_capacity} combinations)"
+            ),
+            extra={
+                "allocation_mode": CONFIGURED_KIND_MODE,
+                "target": NORMAL_PAIR_TARGET,
+                "configured_kinds": kind_reports,
+            },
         ))
 
-    workitem_tags = ids.palette_for_kind("WorkItem")
+    workitem_tags = _palette_for_kind(ids, "WorkItem")
     workitem_double = ids.vocabulary_capacity_report(
         palette_tags=workitem_tags,
         allocation_mode="double_adjective",

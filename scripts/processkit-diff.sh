@@ -3,7 +3,8 @@
 # processkit-diff.sh — generic diff between two processkit versions.
 #
 # Compares two tagged versions of processkit (or any fork) and prints a
-# structured diff describing what changed: files added, removed, modified.
+# structured diff describing what changed: files added, removed, modified,
+# plus a normalized affected_files list for Migration frontmatter.
 # This is the consumer-facing entry point used by tools like aibox sync to
 # generate Migration briefings.
 #
@@ -37,7 +38,8 @@
 #        - changed:  in both, but with a different version stamp
 #                    (the version stamp changes when the file's content changed)
 #        - unchanged: in both, same version stamp
-#   4. Emit the diff in the requested format
+#   4. Emit the diff in the requested format, including machine-readable
+#      affected_files rows with Migration classifications
 #
 # This script is intentionally generic — it knows nothing about which fork
 # you're running. The same script works for upstream processkit, ACME's
@@ -284,12 +286,41 @@ def cleanup_hints(removed: list[dict]) -> list[dict]:
     return hints
 
 
+def affected_files(
+    added: list[dict],
+    removed: list[dict],
+    changed: list[dict],
+) -> list[dict]:
+    rows: list[dict] = []
+    for item in added:
+        rows.append({
+            "path": item["path"],
+            "classification": "new-upstream",
+            "to_version": item["version"],
+        })
+    for item in changed:
+        rows.append({
+            "path": item["path"],
+            "classification": "changed-upstream-only",
+            "from_version": item["from_version"],
+            "to_version": item["to_version"],
+        })
+    for item in removed:
+        rows.append({
+            "path": item["path"],
+            "classification": "removed-upstream",
+            "from_version": item["version"],
+        })
+    return sorted(rows, key=lambda item: item["path"])
+
+
 added, removed, changed, n_unchanged = parse_diff(diff_text)
 print(json.dumps({
     "added": added,
     "removed": removed,
     "changed": changed,
     "n_unchanged": n_unchanged,
+    "affected_files": affected_files(added, removed, changed),
     "cleanup_hints": cleanup_hints(removed),
 }, indent=2))
 '
@@ -376,7 +407,17 @@ EOF
 
     cleanup_json | python3 -c '
 import json, sys
-for item in json.load(sys.stdin)["cleanup_hints"]:
+payload = json.load(sys.stdin)
+for item in payload["affected_files"]:
+    print()
+    print("[[diff.affected_files]]")
+    print(("path = {!r}").format(item["path"]).replace(chr(39), "\""))
+    print(("classification = {!r}").format(item["classification"]).replace(chr(39), "\""))
+    if item.get("from_version"):
+        print(("from_version = {!r}").format(item["from_version"]).replace(chr(39), "\""))
+    if item.get("to_version"):
+        print(("to_version = {!r}").format(item["to_version"]).replace(chr(39), "\""))
+for item in payload["cleanup_hints"]:
     print()
     print("[[diff.cleanup_hints]]")
     print(("path = {!r}").format(item["path"]).replace(chr(39), "\""))
@@ -426,6 +467,7 @@ out = {
         "added": sorted(added, key=lambda x: x["path"]),
         "removed": sorted(removed, key=lambda x: x["path"]),
         "changed": sorted(changed, key=lambda x: x["path"]),
+        "affected_files": cleanup_payload["affected_files"],
         "cleanup_hints": cleanup_payload["cleanup_hints"],
     }
 }

@@ -255,6 +255,11 @@ def palette_for_kind(kind: str, intent_text: str | None = None) -> tuple[str, ..
     return tuple(tags)
 
 
+def configured_palette_kinds() -> tuple[str, ...]:
+    """Return entity kinds with explicit vocabulary palette configuration."""
+    return tuple(sorted(_KIND_PALETTES))
+
+
 def rank_palette_tags(intent_text: str) -> list[tuple[str, int]]:
     """Rank palette tags with a deterministic local lexical score.
 

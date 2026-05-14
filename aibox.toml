@@ -556,8 +556,8 @@ mode = "extended"  # extended | plain | disabled (legacy: powerline -> extended)
 # - gpu: GPU status when available
 # - modelstatus_<provider>: per-provider AI status segment; enabled through [customization.tmux.status.model-providers]
 line1-left = ["session", "windows"]
-line1-right = ["aibox_log", "aibox_oom", "aibox_proc", "aibox_ai", "aibox_mcp", "aibox_mig", "weather", "uptime", "datetime"]
-line2-left = ["git", "github", "modelstatus_openai", "modelstatus_anthropic", "kubernetes", "terraform"]
+line1-right = ["modelstatus_openai", "modelstatus_anthropic", "aibox_log", "aibox_oom", "aibox_proc", "aibox_ai", "aibox_mcp", "aibox_mig", "weather", "uptime", "datetime"]
+line2-left = ["git", "github", "kubernetes", "terraform"]
 line2-right = ["hostname", "externalip", "ssh", "netspeed", "ping", "cpu", "loadavg", "memory", "swap", "disk", "gpu"]
 
 [customization.tmux.status.labels]

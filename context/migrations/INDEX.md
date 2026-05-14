@@ -12,14 +12,16 @@ None.
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
-| 2026-05-12 | MIG-RUNTIME-DRIFT-20260512T052703 — aibox-runtime-drift  → 0.25.9 | 4 drifted managed runtime file(s) found at 0.25.9 |
+| 2026-05-13 | MIG-RUNTIME-DRIFT-20260512T113641 — aibox-runtime-drift  → 0.25.10 | 8 drifted managed runtime file(s) found at 0.25.10 |
 
-## Rejected (2)
+## Rejected (4)
 
 | Date       | Migration                                | Reason |
 |------------|------------------------------------------|--------|
-| 2026-05-12 | MIG-20260512T052703 — processkit v0.26.0 → v0.26.1 | Rejected per pk-doctor migration_integrity.affected-files-empty warning: affected_groups/body rows exist but affected_f… |
-| 2026-05-12 | MIG-RUNTIME-20260512T052703 — aibox-runtime-home 0.25.8 → 0.25.9 | Rejected per pk-doctor migration_integrity.affected-files-empty warning: affected_groups/body rows exist but affected_f… |
+| 2026-05-13 | MIG-20260513T152530 — processkit v0.26.2 → v0.26.5 | Rejected per pk-doctor migration_integrity finding: affected_groups/body rows exist but affected_files is empty, so thi… |
+| 2026-05-13 | MIG-DISABLED-HARNESS-STATE — aibox  → | Resolved without purging disabled harness host state. The user asked to clear pending migrations, but this migration wo… |
+| 2026-05-13 | MIG-RUNTIME-20260513T152530 — aibox-runtime-home 0.25.13 → 0.25.13 | Rejected per pk-doctor migration_integrity findings: same-version runtime migration has affected_groups/body rows but a… |
+| 2026-05-13 | MIG-RUNTIME-20260513T180157 — aibox-runtime-home 0.25.13 → 0.25.14 | Rejected per pk-doctor migration_integrity finding: affected_groups/body rows exist but affected_files is empty, so the… |
 
 ## CLI Migrations
 

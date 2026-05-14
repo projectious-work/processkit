@@ -66,3 +66,10 @@ def test_capacity_report_and_ambiguity_detection():
             "DEC-20260409_1450-CleanRapidRiver-two",
         ]
     }
+
+
+def test_configured_palette_kinds_are_public_and_stable():
+    assert "WorkItem" in ids.configured_palette_kinds()
+    assert ids.configured_palette_kinds() == tuple(
+        sorted(ids.configured_palette_kinds())
+    )

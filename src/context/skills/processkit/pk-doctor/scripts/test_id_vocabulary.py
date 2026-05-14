@@ -17,7 +17,7 @@ def test_id_vocabulary_reports_capacity_and_ambiguity(monkeypatch):
     results = id_vocabulary.run({"repo_root": Path.cwd()})
     ids = {result.id for result in results}
 
-    assert "id-vocabulary.default-pair-capacity-low" in ids
+    assert "id-vocabulary.configured-kind-capacity-ok" in ids
     assert "id-vocabulary.high-volume-capacity-ok" in ids
     assert "id-vocabulary.lexical-token-ambiguous" in ids
     assert "id-vocabulary.semantic-index-ready" in ids
