@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -64,7 +65,19 @@ def _sha256_of_file(path: Path) -> str:
     return hashlib.sha256(_canonical_json(data).encode("utf-8")).hexdigest()
 
 
+def _context_rel(path: Path, repo_root: Path) -> str:
+    """Return the release-time context-relative path for a source file."""
+    rel = path.relative_to(repo_root)
+    parts = rel.parts
+    if len(parts) >= 2 and parts[0] == "src" and parts[1] == "context":
+        return Path("context", *parts[2:]).as_posix()
+    return rel.as_posix()
+
+
 def _processkit_version(repo_root: Path) -> str:
+    override = os.environ.get("PROCESSKIT_VERSION", "").strip()
+    if override:
+        return override
     # aibox.lock is the de-facto version pin for both dogfood and consumer
     # trees; parse the [processkit] version = "vX.Y.Z" line without
     # pulling in tomllib (keeps the script dependency-free).
@@ -95,27 +108,33 @@ def _processkit_version(repo_root: Path) -> str:
 
 
 def _collect_entries(repo_root: Path) -> list[dict]:
-    skills_root = repo_root / "context" / "skills"
+    skills_roots = [
+        repo_root / "context" / "skills",
+        repo_root / "src" / "context" / "skills",
+    ]
     entries: list[dict] = []
     seen: set[str] = set()
-    # Current layout: context/skills/<category>/<slug>/mcp/mcp-config.json
-    for cfg in sorted(skills_root.glob("*/*/mcp/mcp-config.json")):
-        rel = cfg.relative_to(repo_root).as_posix()
-        if rel == GATEWAY_CONFIG_REL.as_posix():
+    for skills_root in skills_roots:
+        if not skills_root.is_dir():
             continue
-        if rel in seen:
-            continue
-        seen.add(rel)
-        entries.append({"path": rel, "sha256": _sha256_of_file(cfg)})
-    # Fallback flat layout: context/skills/<slug>/mcp/mcp-config.json
-    for cfg in sorted(skills_root.glob("*/mcp/mcp-config.json")):
-        rel = cfg.relative_to(repo_root).as_posix()
-        if rel == GATEWAY_CONFIG_REL.as_posix():
-            continue
-        if rel in seen:
-            continue
-        seen.add(rel)
-        entries.append({"path": rel, "sha256": _sha256_of_file(cfg)})
+        # Current layout: context/skills/<category>/<slug>/mcp/mcp-config.json
+        for cfg in sorted(skills_root.glob("*/*/mcp/mcp-config.json")):
+            rel = _context_rel(cfg, repo_root)
+            if rel == GATEWAY_CONFIG_REL.as_posix():
+                continue
+            if rel in seen:
+                continue
+            seen.add(rel)
+            entries.append({"path": rel, "sha256": _sha256_of_file(cfg)})
+        # Fallback flat layout: context/skills/<slug>/mcp/mcp-config.json
+        for cfg in sorted(skills_root.glob("*/mcp/mcp-config.json")):
+            rel = _context_rel(cfg, repo_root)
+            if rel == GATEWAY_CONFIG_REL.as_posix():
+                continue
+            if rel in seen:
+                continue
+            seen.add(rel)
+            entries.append({"path": rel, "sha256": _sha256_of_file(cfg)})
     entries.sort(key=lambda e: e["path"])
     return entries
 
@@ -167,21 +186,27 @@ def _collect_server_headers(repo_root: Path) -> list[dict]:
     regeneration — signal that the harness needs a restart and the
     manifest needs regenerating.
     """
-    skills_root = repo_root / "context" / "skills"
+    skills_roots = [
+        repo_root / "context" / "skills",
+        repo_root / "src" / "context" / "skills",
+    ]
     entries: list[dict] = []
     seen: set[str] = set()
-    for server in sorted(skills_root.glob("*/*/mcp/server.py")):
-        rel = server.relative_to(repo_root).as_posix()
-        if rel in seen:
+    for skills_root in skills_roots:
+        if not skills_root.is_dir():
             continue
-        seen.add(rel)
-        header = _extract_pep723_header(server)
-        if header is None:
-            continue
-        entries.append({
-            "path": rel,
-            "sha256": hashlib.sha256(header.encode("utf-8")).hexdigest(),
-        })
+        for server in sorted(skills_root.glob("*/*/mcp/server.py")):
+            rel = _context_rel(server, repo_root)
+            if rel in seen:
+                continue
+            seen.add(rel)
+            header = _extract_pep723_header(server)
+            if header is None:
+                continue
+            entries.append({
+                "path": rel,
+                "sha256": hashlib.sha256(header.encode("utf-8")).hexdigest(),
+            })
     entries.sort(key=lambda e: e["path"])
     return entries
 

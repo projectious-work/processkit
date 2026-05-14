@@ -74,7 +74,7 @@ mkdir -p "$STAGING_DIR"
 # mcp-config changes that don't bump the processkit version).  See
 # DEC-20260423_2049-VastLake and projectious-work/aibox#54.
 echo "regenerating MCP-config manifest" >&2
-if ! uv run "$REPO_ROOT/scripts/generate-mcp-manifest.py"; then
+if ! PROCESSKIT_VERSION="$VERSION" uv run "$REPO_ROOT/scripts/generate-mcp-manifest.py"; then
     echo "error: generate-mcp-manifest.py failed" >&2
     exit 1
 fi

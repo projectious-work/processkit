@@ -11,6 +11,37 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.9] - 2026-05-14
+
+v0.26.9 is a **patch release** that fixes the runtime-prune MCP
+preauthorization metadata shipped to downstream projects.
+
+### Fixed
+
+- **Added runtime-prune to shipped preauth metadata.** The release
+  `src/context` preauth spec now includes
+  `processkit-runtime-prune` in Claude server preauthorization and both
+  Claude/Codex MCP permission patterns. Closes
+  [#50](https://github.com/projectious-work/processkit/issues/50).
+- **Included source-only shipped MCP configs in the release manifest.**
+  `scripts/generate-mcp-manifest.py` now scans both dogfood `context`
+  and shipped `src/context` skill trees, while keeping manifest paths in
+  consumer-facing `context/...` form.
+- **Stamped the MCP manifest with the release version.**
+  `scripts/build-release-tarball.sh` passes the target release tag into
+  the manifest generator so packaged manifests do not inherit a stale
+  dogfood `aibox.lock` version.
+
+### Verification
+
+- `scripts/check-src-context-drift.sh --release-deliverable`
+- `uv run scripts/generate-mcp-manifest.py`
+- `uv run scripts/smoke-test-servers.py`
+- `npm --prefix docs-site run build`
+- `pk-release-audit` on `src-context`
+
+---
+
 ## [v0.26.5] - 2026-05-13
 
 v0.26.5 is a **patch release** that restores strict schema and storage
