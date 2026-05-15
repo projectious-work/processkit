@@ -45,7 +45,7 @@ downgrade is not a resolution. Clean means no blocking findings and no
 unresolved actionable findings, or a durable disposition for every
 actionable finding.
 
-This skill is the Phase 1 landing. It ships four checks. Phase 2 and
+This skill is the Phase 1 landing. It started with four checks. Phase 2 and
 Phase 3 add more checks, lift the aggregator into an MCP server, and
 harden the `--fix` paths — each with their own WorkItem.
 
@@ -142,6 +142,15 @@ Additional checks added after Phase 1:
   not provider-billed usage.
 - **`v2_contracts`** — validates v2 API contract invariants across WorkItem, Binding, Artifact, and LogEntry entities. Catches process-instance definitions missing their definition reference, time-window bindings without a recurrence rule, orphaned cost-policy artifacts (not bound to a budget), policy supersession chains with breaks, uncalibrated eval-spec judges, and stale or missing agent-card projections. Emits ERROR for all contract violations; detect-only.
 - **`context_hygiene`** — validates artifact naming policies (model-spec and model-profile use timestamped `ART-YYYYMMDD_HHMM-*` scheme), model binding integrity (role/TeamMember defaults must target provider-neutral model-profile artifacts unless marked direct_model_pin), and cross-reference health. Also detects demoted schema kinds still present in src/, detects archive candidates, warns on mixed binding filename styles, and checks sqlite-vec semantic index health. Emits WARN / ERROR depending on severity; detect-only.
+- **`runtime_health`** — owns in-container runtime probes that host-side
+  aibox doctor cannot verify directly. Checks lnav availability for the
+  Prefix L structured log viewer, sqlite-vec import/load health in the
+  pk-doctor/MCP runtime, Codex bubblewrap sandbox smoke status when
+  Codex is enabled, PID 1 sleep-infinity hygiene, cgroup memory/pid/OOM
+  pressure, processkit Python MCP process counts, PowerKit image/plugin
+  tree, status plugin scripts, local render helpers, and runtime-home
+  write probes. Emits WARN only for container-local actionable failures;
+  host-only runs emit a skip INFO.
 - **`entity_storage_hygiene`** — validates local `context/`
   storage policy separately from template freshness: unmanaged host
   artifacts, demoted legacy roots such as `context/models/`,

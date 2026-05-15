@@ -1855,6 +1855,48 @@ with tempfile.TemporaryDirectory() as tmp:
         [r.to_dict() for r in clean_results],
     )
 
+print("\n[19] runtime_health — container-local probe helpers")
+
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+from checks import runtime_health
+
+check(
+    "19: detects enabled Codex harness from aibox.toml",
+    runtime_health._codex_enabled_from_text(
+        '[ai]\nharnesses = [\n  { harness = "codex", enable = true },\n]\n'
+    )
+    if hasattr(runtime_health, "_codex_enabled_from_text")
+    else runtime_health._codex_enabled,
+)
+check(
+    "19: parses sleep-infinity PID1 command",
+    runtime_health._is_sleep_infinity("sleep infinity") is True,
+    "sleep-infinity command should be flagged",
+)
+check(
+    "19: ignores non-sleep PID1 command",
+    runtime_health._is_sleep_infinity("docker-init -- /bin/bash") is False,
+    "docker-init should not be flagged",
+)
+check(
+    "19: parses cgroup memory event counters",
+    runtime_health._parse_key_value_ints("low 0\noom_kill 2\n").get("oom_kill") == 2,
+    "oom_kill counter should parse",
+)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    target = root / ".aibox-home" / ".cache"
+    result = runtime_health._write_probe(target)
+    check(
+        "19: runtime-home write probe creates and removes probe file",
+        result.severity == "INFO"
+        and result.id == "runtime-home.write-ok"
+        and not list(target.glob(".pk-doctor-write-*")),
+        json.dumps(result.to_dict(), indent=2),
+    )
+
 # ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------

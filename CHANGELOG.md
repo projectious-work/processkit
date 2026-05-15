@@ -7,7 +7,14 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-_No unreleased changes yet._
+### Added
+
+- Added a `runtime_health` pk-doctor category for container-local aibox
+  runtime probes: lnav availability, sqlite-vec import/load health,
+  Codex bubblewrap/user-namespace smoke checks, PID 1 hygiene, cgroup
+  and process pressure, PowerKit image/status-plugin files, and
+  runtime-home write probes. Closes
+  [#54](https://github.com/projectious-work/processkit/issues/54).
 
 ---
 

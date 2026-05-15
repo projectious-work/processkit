@@ -28,6 +28,7 @@ from . import (
     skill_dag,
     context_consumption,
     context_hygiene,
+    runtime_health,
     id_vocabulary,
     agents_md_hygiene,
 )
@@ -55,6 +56,7 @@ REGISTRY = [
     ("skill_dag", skill_dag),
     ("context_consumption", context_consumption),
     ("context_hygiene", context_hygiene),
+    ("runtime_health", runtime_health),
     ("id_vocabulary", id_vocabulary),
     ("agents_md_hygiene", agents_md_hygiene),
 ]
