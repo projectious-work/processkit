@@ -16,6 +16,16 @@ Versions follow [Semantic Versioning](https://semver.org/).
   runtime-home write probes. Closes
   [#54](https://github.com/projectious-work/processkit/issues/54).
 
+### Changed
+
+- Made `/pk-doctor` remediation-first in the skill and command guidance:
+  agents now resolve ERROR, WARN, and actionable INFO findings by
+  default, while info-only/dry-run/report-only modes require an explicit
+  user request.
+- Made `/pk-resume` resolve active pending/in-progress migrations before
+  writing the briefing by default, with confirmation reserved for
+  destructive, ambiguous, policy-sensitive, or conflicting migrations.
+
 ---
 
 ## [v0.26.11] - 2026-05-15
