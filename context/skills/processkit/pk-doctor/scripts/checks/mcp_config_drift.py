@@ -248,10 +248,14 @@ def run(ctx) -> list[CheckResult]:
                 id="mcp_config_drift.harness-stale",
                 message=(
                     f"{len(missing)} processkit server(s) missing from "
-                    f".mcp.json ({preview}); run `aibox sync` (or "
-                    f"`aibox sync --force`) to re-merge .mcp.json."
+                    f".mcp.json ({preview}); host action: ask the owner "
+                    f"to re-run the project installer/sync tool outside "
+                    f"the container to re-merge .mcp.json."
                 ),
-                suggested_fix="aibox sync",
+                suggested_fix=(
+                    "host action: re-run the project installer/sync tool "
+                    "outside the container"
+                ),
             )]
 
     return [CheckResult(

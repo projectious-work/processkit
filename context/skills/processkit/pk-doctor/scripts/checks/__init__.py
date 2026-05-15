@@ -29,6 +29,7 @@ from . import (
     context_consumption,
     context_hygiene,
     runtime_health,
+    doctor_boundary,
     id_vocabulary,
     agents_md_hygiene,
 )
@@ -57,6 +58,7 @@ REGISTRY = [
     ("context_consumption", context_consumption),
     ("context_hygiene", context_hygiene),
     ("runtime_health", runtime_health),
+    ("doctor_boundary", doctor_boundary),
     ("id_vocabulary", id_vocabulary),
     ("agents_md_hygiene", agents_md_hygiene),
 ]

@@ -531,7 +531,10 @@ def run(ctx) -> list[CheckResult]:
                 "sqlite-vec is not importable/loadable; semantic_search_entities "
                 "will return no vector results and hybrid search falls back to FTS"
             ),
-            suggested_fix="install sqlite-vec in the MCP runtime or fix aibox dependency provisioning",
+            suggested_fix=(
+                "install sqlite-vec in the MCP runtime or repair host "
+                "dependency provisioning"
+            ),
         ))
     else:
         results.extend(_semantic_index_health(repo_root))

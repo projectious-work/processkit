@@ -179,8 +179,8 @@ For the full catalog, read `skills/INDEX.md`.
 - `standup-context` — write a standup update (done / doing / next / blockers)
 - `status-briefing` — generate a session-start orientation from project state
 - `context-grooming` — periodically prune and compact the project context
-- `runtime-prune` — inspect and invoke safe cleanup for aibox-managed
-  runtime state
+- `runtime-prune` — inspect and invoke safe cleanup for
+  runtime-manager-owned state
 - `release-semver` — plan and execute a semver release
 - `retrospective` — post-release blameless retrospective (4 signals, dual-emit Artifact+LogEntry)
 

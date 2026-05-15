@@ -1,8 +1,9 @@
 """Container-local runtime health probes for pk-doctor.
 
-These checks intentionally live in processkit rather than host-side aibox
-doctor because they inspect binaries, mounted runtime-home paths, cgroups,
-and process state from inside the running development container.
+These checks intentionally live in processkit rather than host-side
+installer diagnostics because they inspect binaries, mounted runtime-home
+paths, cgroups, and process state from inside the running development
+container.
 """
 
 from __future__ import annotations
@@ -275,7 +276,10 @@ def _write_probe(path: Path) -> CheckResult:
             category=CATEGORY,
             id="runtime-home.write-failed",
             message=f"{path} is not writable: {type(exc).__name__}: {exc}",
-            suggested_fix="repair the runtime-home mount or regenerate aibox config",
+            suggested_fix=(
+                "repair the runtime-home mount or ask the owner to "
+                "regenerate host runtime configuration outside the container"
+            ),
         )
 
 

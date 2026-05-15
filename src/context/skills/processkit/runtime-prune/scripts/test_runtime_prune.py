@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import importlib.util
-import os
 from pathlib import Path
 
 
@@ -59,11 +58,9 @@ def test_analyze_disk_usage_counts_only_selected_cache_paths(tmp_path):
 
 def test_plan_prune_requires_exact_confirmation_and_reports_no_aibox(
     tmp_path,
-    monkeypatch,
 ):
     root = tmp_path / "repo"
     root.mkdir()
-    monkeypatch.setenv("PATH", "")
 
     server = _load_server()
     plan = server.plan_prune(
@@ -74,12 +71,12 @@ def test_plan_prune_requires_exact_confirmation_and_reports_no_aibox(
     assert plan["required_confirmation"] == (
         "apply-prune:runtime-home,containers"
     )
-    assert plan["aibox_prune_available"] is False
     by_scope = {action["scope"]: action for action in plan["actions"]}
     assert by_scope["runtime-home"]["apply_supported"] is True
     assert by_scope["runtime-home"]["apply_owner"] == "processkit"
     assert by_scope["containers"]["apply_supported"] is False
-    assert by_scope["containers"]["apply_owner"] == "aibox prune"
+    assert by_scope["containers"]["apply_owner"] == "host runtime manager"
+    assert by_scope["containers"]["apply_command"] is None
 
     denied = server.apply_prune(
         project_root=str(root),
@@ -98,9 +95,8 @@ def test_plan_prune_requires_exact_confirmation_and_reports_no_aibox(
     by_result = {item["scope"]: item for item in unavailable["results"]}
     assert by_result["runtime-home"]["unsupported"] is False
     assert by_result["containers"]["unsupported"] is True
-    assert by_result["containers"]["reason"] == (
-        "aibox prune is not available on PATH"
-    )
+    assert by_result["containers"]["owner"] == "host runtime manager"
+    assert "outside the container" in by_result["containers"]["reason"]
 
 
 def test_apply_prune_removes_low_risk_allowlist_without_aibox(
@@ -137,22 +133,9 @@ def test_apply_prune_removes_low_risk_allowlist_without_aibox(
     assert deps.exists()
 
 
-def test_apply_prune_delegates_high_risk_scopes_to_aibox(tmp_path, monkeypatch):
+def test_apply_prune_returns_host_action_for_high_risk_scopes(tmp_path):
     root = tmp_path / "repo"
     root.mkdir()
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    log = tmp_path / "aibox-argv.txt"
-    fake = bin_dir / "aibox"
-    fake.write_text(
-        "#!/usr/bin/env sh\n"
-        "printf '%s\\n' \"$@\" > \"$AIBOX_PRUNE_LOG\"\n"
-        "printf '{\"ok\":true}\\n'\n",
-        encoding="utf-8",
-    )
-    fake.chmod(0o755)
-    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
-    monkeypatch.setenv("AIBOX_PRUNE_LOG", str(log))
 
     server = _load_server()
     out = server.apply_prune(
@@ -161,12 +144,9 @@ def test_apply_prune_delegates_high_risk_scopes_to_aibox(tmp_path, monkeypatch):
         confirmation="apply-prune:containers",
     )
 
-    assert out["applied"] is True
+    assert out["applied"] is False
     result = out["results"][0]
-    assert result["exit_code"] == 0
-    assert result["command"] == ["aibox", "prune", "containers", "--yes"]
-    assert log.read_text(encoding="utf-8").splitlines() == [
-        "prune",
-        "containers",
-        "--yes",
-    ]
+    assert result["owner"] == "host runtime manager"
+    assert result["unsupported"] is True
+    assert result["applied"] is False
+    assert "outside the container" in result["reason"]

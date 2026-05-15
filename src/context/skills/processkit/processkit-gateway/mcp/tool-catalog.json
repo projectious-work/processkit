@@ -4560,7 +4560,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Return model-planning guidance from observed subscription capacity.\n\n``runtime_capacity`` is provider-neutral caller-supplied data, for\nexample ``{provider, surface, model_pool, remaining_percent, reset_at,\nconfidence, source}``. processkit does not scrape harness-private\nsubscription state; aibox or the active harness should provide the\nfreshest observation it can.\n",
+      "description": "Return model-planning guidance from observed subscription capacity.\n\n``runtime_capacity`` is provider-neutral caller-supplied data, for\nexample ``{provider, surface, model_pool, remaining_percent, reset_at,\nconfidence, source}``. processkit does not scrape harness-private\nsubscription state; the active harness or runtime manager should\nprovide the freshest observation it can.\n",
       "name": "plan_runtime_capacity",
       "output_schema": null,
       "parameters": {
@@ -5517,7 +5517,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Run the pk-doctor aggregator health check and return structured JSON.\n\nInvokes ``pk-doctor/scripts/doctor.py --json`` as a subprocess and\nparses the output. The raw human-readable report is available by\nrunning the script directly without the ``--json`` flag.\n\nParameters\n----------\ncheck:\n    Comma-separated list of check categories to run (e.g.\n    ``\"entity_format,schema_compliance\"``). Defaults to all checks.\nfix:\n    Comma-separated list of categories to enable automatic fixes for.\n    Passed as ``--fix=<value>`` to the script.\n\nReturns\n-------\nA dict with:\n- ``findings``: list of finding dicts (each has severity, category,\n  id, message, suggested_fix, and actionability fields).\n- ``totals``: ``{error: int, warn: int, info: int}``.\n- ``action_totals``: counts for actionable findings, confirmation\n  requirements, tracking needs, and action kinds.\n- ``exit_code``: 0 (clean) or 1 (errors found).\n- ``invocation``: the reconstructed invocation string.\n- ``duration_ms``: wall-clock time in milliseconds.\n- ``doctor_version``: version string of the doctor script.\n",
+      "description": "Run the pk-doctor aggregator health check and return structured JSON.\n\nInvokes ``pk-doctor/scripts/doctor.py --json`` as a subprocess and\nparses the output. The raw human-readable report is available by\nrunning the script directly without the ``--json`` flag.\nThis is the in-container processkit health surface for derived\nprojects; host-side installer diagnostics are outside this tool's\nscope.\n\nParameters\n----------\ncheck:\n    Comma-separated list of check categories to run (e.g.\n    ``\"entity_format,schema_compliance\"``). Defaults to all checks.\nfix:\n    Comma-separated list of categories to enable automatic fixes for.\n    Passed as ``--fix=<value>`` to the script.\n\nReturns\n-------\nA dict with:\n- ``findings``: list of finding dicts (each has severity, category,\n  id, message, suggested_fix, and actionability fields).\n- ``totals``: ``{error: int, warn: int, info: int}``.\n- ``action_totals``: counts for actionable findings, confirmation\n  requirements, tracking needs, and action kinds.\n- ``exit_code``: 0 (clean) or 1 (errors found).\n- ``invocation``: the reconstructed invocation string.\n- ``duration_ms``: wall-clock time in milliseconds.\n- ``doctor_version``: version string of the doctor script.\n",
       "name": "run_pk_doctor",
       "output_schema": null,
       "parameters": {
@@ -6654,7 +6654,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Apply confirmed cleanup for processkit-owned or delegated scopes.",
+      "description": "Apply confirmed cleanup for processkit-owned scopes.",
       "name": "apply_prune",
       "output_schema": null,
       "parameters": {

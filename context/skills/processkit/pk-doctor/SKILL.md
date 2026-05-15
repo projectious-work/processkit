@@ -39,6 +39,21 @@ pattern is deliberately modelled on `npm doctor`, `brew doctor`, and
 findings by default and stop at report-only mode only when the user
 explicitly asks for info-only/dry-run output.
 
+### Container/host boundary
+
+`/pk-doctor`, `run_pk_doctor`, and `doctor.py` are the derived-project
+health surfaces for the running development container. In aibox-derived
+projects, agents must use these processkit surfaces from inside the
+container for processkit repository, MCP, migration, context, and
+runtime-health checks.
+
+Host-side installer diagnostics belong to the owner/operator outside the
+container. pk-doctor skill text, command text, MCP descriptions, and
+findings must not direct an in-container agent to run host-side
+orchestrator health checks. When a finding requires host installer repair
+such as sync or rebuild, phrase it as an explicit host action for the
+owner and keep the processkit-side fix generic.
+
 Severity and actionability are separate contracts. `ERROR`/`WARN`/`INFO`
 describe blocking severity; `action_required`, `action_kind`,
 `default_agent_action`, `requires_user_confirmation`, and
@@ -139,12 +154,12 @@ Additional checks added after Phase 1:
   or stale aggregate surfaces as WARN (run the generator). In a
   derived-project context (`aibox.lock` + `.mcp.json` both present at
   the repo root), any processkit server missing from `.mcp.json`'s
-  `mcpServers` map surfaces as ERROR with a "run `aibox sync` to
-  re-merge" hint. Exists because `aibox sync` currently gates
-  `.mcp.json` re-merge on processkit version delta only, so per-skill
-  MCP-config edits within a release cycle never reach derived projects
-  until the next version bump — see DEC-20260423_2049-VastLake and
-  projectious-work/aibox#54.
+  `mcpServers` map surfaces as ERROR with an explicit host-action hint
+  asking the owner to re-run the project installer/sync tool outside the
+  container. Exists because some host installers gate `.mcp.json`
+  re-merge on processkit version delta only, so per-skill MCP-config
+  edits within a release cycle may not reach derived projects until the
+  next version bump — see DEC-20260423_2049-VastLake.
 - **`server_header_drift`** — walks every `context/skills/processkit/*/mcp/server.py`,
   hashes its PEP 723 inline metadata block (`# /// script` ... `# ///`),
   and compares against the manifest's `per_server_header` baseline. WARN
@@ -177,14 +192,14 @@ Additional checks added after Phase 1:
 - **`v2_contracts`** — validates v2 API contract invariants across WorkItem, Binding, Artifact, and LogEntry entities. Catches process-instance definitions missing their definition reference, time-window bindings without a recurrence rule, orphaned cost-policy artifacts (not bound to a budget), policy supersession chains with breaks, uncalibrated eval-spec judges, and stale or missing agent-card projections. Emits ERROR for all contract violations; detect-only.
 - **`context_hygiene`** — validates artifact naming policies (model-spec and model-profile use timestamped `ART-YYYYMMDD_HHMM-*` scheme), model binding integrity (role/TeamMember defaults must target provider-neutral model-profile artifacts unless marked direct_model_pin), and cross-reference health. Also detects demoted schema kinds still present in src/, detects archive candidates, warns on mixed binding filename styles, and checks sqlite-vec semantic index health. Emits WARN / ERROR depending on severity; detect-only.
 - **`runtime_health`** — owns in-container runtime probes that host-side
-  aibox doctor cannot verify directly. Checks lnav availability for the
-  Prefix L structured log viewer, sqlite-vec import/load health in the
-  pk-doctor/MCP runtime, Codex bubblewrap sandbox smoke status when
-  Codex is enabled, PID 1 sleep-infinity hygiene, cgroup memory/pid/OOM
-  pressure, processkit Python MCP process counts, PowerKit image/plugin
-  tree, status plugin scripts, local render helpers, and runtime-home
-  write probes. Emits WARN only for container-local actionable failures;
-  host-only runs emit a skip INFO.
+  installer diagnostics cannot verify directly. Checks lnav availability
+  for the Prefix L structured log viewer, sqlite-vec import/load health
+  in the pk-doctor/MCP runtime, Codex bubblewrap sandbox smoke status
+  when Codex is enabled, PID 1 sleep-infinity hygiene, cgroup
+  memory/pid/OOM pressure, processkit Python MCP process counts,
+  PowerKit image/plugin tree, status plugin scripts, local render
+  helpers, and runtime-home write probes. Emits WARN only for
+  container-local actionable failures; host-only runs emit a skip INFO.
 - **`entity_storage_hygiene`** — validates local `context/`
   storage policy separately from template freshness: unmanaged host
   artifacts, demoted legacy roots such as `context/models/`,

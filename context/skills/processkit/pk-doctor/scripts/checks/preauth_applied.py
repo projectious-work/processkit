@@ -319,7 +319,10 @@ def run(ctx) -> list[CheckResult]:
                         f"not in .claude/settings.json permissions.allow "
                         f"({preview}); merge gated by aibox#55"
                     ),
-                    suggested_fix="aibox sync (once aibox#55 ships)",
+                    suggested_fix=(
+                        "host action: re-run the project installer/sync "
+                        "tool outside the container"
+                    ),
                 ))
 
             missing_servers = sorted(spec_servers - live_servers)
@@ -340,7 +343,10 @@ def run(ctx) -> list[CheckResult]:
                         f".claude/settings.json enabledMcpjsonServers "
                         f"({preview}); merge gated by aibox#55"
                     ),
-                    suggested_fix="aibox sync (once aibox#55 ships)",
+                    suggested_fix=(
+                        "host action: re-run the project installer/sync "
+                        "tool outside the container"
+                    ),
                 ))
             if not missing_perms and not missing_servers:
                 results.append(CheckResult(
@@ -397,7 +403,10 @@ def run(ctx) -> list[CheckResult]:
                         f"not in .codex/config.toml [mcp].allowed_tools "
                         f"({preview}); merge gated by aibox#55"
                     ),
-                    suggested_fix="aibox sync (once aibox#55 ships)",
+                    suggested_fix=(
+                        "host action: re-run the project installer/sync "
+                        "tool outside the container"
+                    ),
                 ))
             else:
                 results.append(CheckResult(
