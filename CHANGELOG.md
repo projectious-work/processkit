@@ -9,6 +9,37 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.26.13] - 2026-05-15
+
+v0.26.13 is a **patch release** that hardens recent fixes with
+regression coverage and keeps processkit guidance separated from
+aibox host orchestration.
+
+### Fixed
+
+- Kept aibox host orchestration out of processkit skills, commands, and
+  MCP output so derived projects receive pk-doctor guidance inside the
+  container without being told to run `aibox doctor`.
+
+### Tests
+
+- Added pk-doctor regression coverage for `v1_entity_drift`,
+  `runtime_health`, and historical `id_vocabulary` actionability.
+- Added a `processkit-diff.sh` regression test for migration
+  `affected_files` entries with new, changed, and removed upstream
+  files. Covers
+  [#48](https://github.com/projectious-work/processkit/issues/48).
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run src/context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run --with pytest pytest scripts/test_processkit_diff.py -q`
+- `bash -n scripts/processkit-diff.sh`
+- `git diff --check`
+
+---
+
 ## [v0.26.12] - 2026-05-15
 
 v0.26.12 is a **patch release** that adds guarded repository
