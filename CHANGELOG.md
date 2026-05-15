@@ -7,6 +7,14 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [v0.26.12] - 2026-05-15
+
+v0.26.12 is a **patch release** that adds guarded repository
+reconciliation as a first-class processkit skill and exposes it through
+direct MCP plus gateway mode.
+
 ### Added
 
 - Added `repo-management` with `/pk-repo-reconcile` and a
