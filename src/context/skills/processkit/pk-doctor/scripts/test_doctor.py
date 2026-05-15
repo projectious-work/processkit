@@ -28,6 +28,7 @@ from __future__ import annotations
 import json
 import importlib.util
 import os
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -753,6 +754,60 @@ with tempfile.TemporaryDirectory() as tmp:
         encoding="utf-8",
     )
     check("validator accepts aligned metadata", validator.validate(root) == [])
+
+# ---------------------------------------------------------------------------
+# Test 6f: v1_entity_drift — superseded v1 entities are surfaced
+# ---------------------------------------------------------------------------
+print("\n[6f] v1_entity_drift — superseded v1 entities are surfaced")
+
+from checks.v1_entity_drift import run as _v1_entity_drift_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    actor = root / "context" / "actors" / "ACTOR-legacy.md"
+    log = root / "context" / "logs" / "2026" / "05" / "LOG-legacy.md"
+    actor.parent.mkdir(parents=True)
+    log.parent.mkdir(parents=True)
+    actor.write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v1
+            kind: Actor
+            metadata:
+              id: ACTOR-legacy
+            spec: {}
+            ---
+            """),
+        encoding="utf-8",
+    )
+    log.write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v1
+            kind: LogEntry
+            metadata:
+              id: LOG-legacy
+            spec: {}
+            ---
+            """),
+        encoding="utf-8",
+    )
+
+    drift = _v1_entity_drift_run({"repo_root": root})
+    drift_by_id = {item.id: item for item in drift}
+    check(
+        "6f: v1 Actor in active dir emits superseded WARN",
+        drift_by_id.get("v1.entity-superseded")
+        and drift_by_id["v1.entity-superseded"].severity == "WARN"
+        and "TeamMember" in drift_by_id["v1.entity-superseded"].message,
+        [item.to_dict() for item in drift],
+    )
+    check(
+        "6f: v1 LogEntry in append-only bucket is INFO",
+        drift_by_id.get("v1.immutable-bucket")
+        and drift_by_id["v1.immutable-bucket"].severity == "INFO",
+        [item.to_dict() for item in drift],
+    )
 
 # ---------------------------------------------------------------------------
 # Test 7: pk-doctor integration — invalid actor ID triggers ERROR
@@ -1895,6 +1950,149 @@ with tempfile.TemporaryDirectory() as tmp:
         and result.id == "runtime-home.write-ok"
         and not list(target.glob(".pk-doctor-write-*")),
         json.dumps(result.to_dict(), indent=2),
+    )
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    restored = {
+        "_is_container": runtime_health._is_container,
+        "_configured_lnav": runtime_health._configured_lnav,
+        "_sqlite_vec_probe": runtime_health._sqlite_vec_probe,
+        "_codex_enabled": runtime_health._codex_enabled,
+        "_bwrap_smoke": runtime_health._bwrap_smoke,
+        "_pid1_finding": runtime_health._pid1_finding,
+        "_cgroup_findings": runtime_health._cgroup_findings,
+        "_process_counts": runtime_health._process_counts,
+        "_powerkit_configured": runtime_health._powerkit_configured,
+        "_aibox_runtime_markers": runtime_health._aibox_runtime_markers,
+        "_runtime_home_findings": runtime_health._runtime_home_findings,
+        "shutil_which": runtime_health.shutil.which,
+    }
+    try:
+        runtime_health._is_container = lambda: True
+        runtime_health._configured_lnav = lambda _root: True
+        runtime_health.shutil.which = lambda name: (
+            "/usr/bin/lnav" if name == "lnav" else f"/usr/bin/{name}"
+        )
+        runtime_health._sqlite_vec_probe = lambda: (
+            True,
+            "sqlite-vec import/load probe passed",
+        )
+        runtime_health._codex_enabled = lambda _root: True
+        runtime_health._bwrap_smoke = lambda: (True, "bwrap smoke probe passed")
+        runtime_health._pid1_finding = lambda: runtime_health.CheckResult(
+            severity="INFO",
+            category=runtime_health.CATEGORY,
+            id="runtime.pid1-ok",
+            message="PID 1 runtime process is healthy",
+        )
+        runtime_health._cgroup_findings = lambda: [
+            runtime_health.CheckResult(
+                severity="INFO",
+                category=runtime_health.CATEGORY,
+                id="runtime.cgroup-memory-current",
+                message="cgroup memory.current is 1 byte",
+            )
+        ]
+        runtime_health._process_counts = lambda: [
+            runtime_health.CheckResult(
+                severity="INFO",
+                category=runtime_health.CATEGORY,
+                id="runtime.process-count",
+                message="runtime process count is 1",
+            )
+        ]
+        runtime_health._powerkit_configured = lambda _root: False
+        runtime_health._aibox_runtime_markers = lambda _root: True
+        runtime_health._runtime_home_findings = lambda _root: [
+            runtime_health.CheckResult(
+                severity="INFO",
+                category=runtime_health.CATEGORY,
+                id="runtime-home.write-ok",
+                message="runtime home writable",
+            )
+        ]
+
+        run_results = runtime_health.run({"repo_root": root})
+    finally:
+        runtime_health._is_container = restored["_is_container"]
+        runtime_health._configured_lnav = restored["_configured_lnav"]
+        runtime_health._sqlite_vec_probe = restored["_sqlite_vec_probe"]
+        runtime_health._codex_enabled = restored["_codex_enabled"]
+        runtime_health._bwrap_smoke = restored["_bwrap_smoke"]
+        runtime_health._pid1_finding = restored["_pid1_finding"]
+        runtime_health._cgroup_findings = restored["_cgroup_findings"]
+        runtime_health._process_counts = restored["_process_counts"]
+        runtime_health._powerkit_configured = restored["_powerkit_configured"]
+        runtime_health._aibox_runtime_markers = restored["_aibox_runtime_markers"]
+        runtime_health._runtime_home_findings = restored["_runtime_home_findings"]
+        runtime_health.shutil.which = restored["shutil_which"]
+
+    runtime_ids = {item.id for item in run_results}
+    for expected in {
+        "runtime.container-detected",
+        "runtime.lnav-available",
+        "runtime.sqlite-vec-ok",
+        "runtime.codex-bwrap-ok",
+        "runtime.pid1-ok",
+        "runtime.cgroup-memory-current",
+        "runtime.process-count",
+        "runtime-home.write-ok",
+    }:
+        check(
+            f"19: runtime_health.run emits {expected}",
+            expected in runtime_ids,
+            [item.to_dict() for item in run_results],
+        )
+
+# ---------------------------------------------------------------------------
+# Test 20: id_vocabulary — historical collisions are inventory only
+# ---------------------------------------------------------------------------
+print("\n[20] id_vocabulary — historical lexical collisions are non-actionable")
+
+from checks.id_vocabulary import run as _id_vocabulary_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    lib = _REPO_ROOT / "src" / "context" / "skills" / "_lib"
+    if str(lib) not in sys.path:
+        sys.path.insert(0, str(lib))
+    db = root / "context" / ".cache" / "processkit" / "index.sqlite"
+    db.parent.mkdir(parents=True)
+    conn = sqlite3.connect(db)
+    try:
+        conn.execute("CREATE TABLE entities (id TEXT)")
+        conn.executemany(
+            "INSERT INTO entities (id) VALUES (?)",
+            [
+                ("BACK-20260409_1449-CleanRapidRiver-one",),
+                ("DEC-20260409_1450-CleanRapidRiver-two",),
+            ],
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    findings = _id_vocabulary_run({"repo_root": root})
+    vocab_ids = {item.id for item in findings}
+    check(
+        "20: configured kind capacity replaces default-pair warning",
+        "id-vocabulary.configured-kind-capacity-ok" in vocab_ids
+        and "id-vocabulary.default-pair-capacity-low" not in vocab_ids,
+        [item.to_dict() for item in findings],
+    )
+    ambiguity = [
+        item for item in findings
+        if item.id == "id-vocabulary.lexical-token-historical-ambiguity"
+    ]
+    check("20: historical ambiguity emits one finding", len(ambiguity) == 1)
+    payload = ambiguity[0].to_dict() if ambiguity else {}
+    check(
+        "20: historical ambiguity is INFO and non-actionable",
+        payload.get("severity") == "INFO"
+        and payload.get("action_required") is False
+        and payload.get("action_kind") is None,
+        json.dumps(payload, indent=2),
     )
 
 # ---------------------------------------------------------------------------
