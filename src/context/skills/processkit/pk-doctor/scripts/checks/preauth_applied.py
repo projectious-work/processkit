@@ -108,6 +108,35 @@ def _load_codex_allowed_tools(path: Path) -> set[str] | None:
     return {item for item in parsed if isinstance(item, str)}
 
 
+def _load_codex_managed_allowed_tools(path: Path) -> set[str] | None:
+    """Return Codex's processkit-managed allowed tools marker."""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+
+    wanted = "_processkit_managed_allowed_tools"
+    in_mcp = False
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            in_mcp = line == "[mcp]"
+            continue
+        if not in_mcp or not line.startswith(wanted) or "=" not in line:
+            continue
+        raw_value = line.split("=", 1)[1].strip()
+        try:
+            parsed = ast.literal_eval(raw_value)
+        except (SyntaxError, ValueError):
+            return None
+        if not isinstance(parsed, list):
+            return None
+        return {item for item in parsed if isinstance(item, str)}
+    return set()
+
+
 def _expected_servers_from_manifest(manifest: dict) -> set[str]:
     names: set[str] = set()
     for entry in manifest.get("per_skill") or []:
@@ -339,7 +368,8 @@ def run(ctx) -> list[CheckResult]:
         ))
     else:
         live_codex_tools = _load_codex_allowed_tools(codex_path)
-        if live_codex_tools is None:
+        managed_codex_tools = _load_codex_managed_allowed_tools(codex_path)
+        if live_codex_tools is None or managed_codex_tools is None:
             results.append(CheckResult(
                 severity="ERROR",
                 category="preauth_applied",
@@ -348,6 +378,12 @@ def run(ctx) -> list[CheckResult]:
             ))
         else:
             missing_codex_tools = sorted(spec_codex_tools - live_codex_tools)
+            in_codex_gateway_mode = (
+                "processkit-gateway" in live_codex_tools
+                and managed_codex_tools == {"processkit-gateway"}
+            )
+            if missing_codex_tools and in_codex_gateway_mode:
+                missing_codex_tools = []
             if missing_codex_tools:
                 preview = ", ".join(missing_codex_tools[:5])
                 if len(missing_codex_tools) > 5:

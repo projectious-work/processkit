@@ -43,6 +43,7 @@ _SPEC_REL = Path("context/skills/processkit/skill-gate/assets/preauth.json")
 _SETTINGS_REL = Path(".claude/settings.json")
 _CODEX_CONFIG_REL = Path(".codex/config.toml")
 _MANIFEST_REL = Path("context/.processkit-mcp-manifest.json")
+_GATEWAY_SERVER = "processkit-gateway"
 
 
 def _load_json(path: Path) -> dict | None:
@@ -107,6 +108,35 @@ def _load_codex_allowed_tools(path: Path) -> set[str] | None:
     return {item for item in parsed if isinstance(item, str)}
 
 
+def _load_codex_managed_allowed_tools(path: Path) -> set[str] | None:
+    """Return Codex's processkit-managed allowed tools marker."""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+
+    wanted = "_processkit_managed_allowed_tools"
+    in_mcp = False
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            in_mcp = line == "[mcp]"
+            continue
+        if not in_mcp or not line.startswith(wanted) or "=" not in line:
+            continue
+        raw_value = line.split("=", 1)[1].strip()
+        try:
+            parsed = ast.literal_eval(raw_value)
+        except (SyntaxError, ValueError):
+            return None
+        if not isinstance(parsed, list):
+            return None
+        return {item for item in parsed if isinstance(item, str)}
+    return set()
+
+
 def _expected_servers_from_manifest(manifest: dict) -> set[str]:
     names: set[str] = set()
     for entry in manifest.get("per_skill") or []:
@@ -119,6 +149,69 @@ def _expected_servers_from_manifest(manifest: dict) -> set[str]:
         if mcp_idx >= 1:
             names.add(f"processkit-{parts[mcp_idx - 1]}")
     return names
+
+
+def _expected_servers_from_mcp_configs(repo_root: Path) -> set[str]:
+    names: set[str] = set()
+    skills_roots = [
+        repo_root / "context" / "skills",
+        repo_root / "src" / "context" / "skills",
+    ]
+    seen_paths: set[str] = set()
+    for skills_root in skills_roots:
+        if not skills_root.is_dir():
+            continue
+        configs = [
+            *skills_root.glob("*/*/mcp/mcp-config.json"),
+            *skills_root.glob("*/mcp/mcp-config.json"),
+        ]
+        for cfg in sorted(configs):
+            try:
+                rel = cfg.relative_to(repo_root).as_posix()
+            except ValueError:
+                rel = cfg.as_posix()
+            if rel.startswith("src/context/"):
+                rel = rel[len("src/"):]
+            if rel in seen_paths:
+                continue
+            seen_paths.add(rel)
+            data = _load_json(cfg)
+            if data is None:
+                continue
+            servers = data.get("mcpServers") or {}
+            if not isinstance(servers, dict):
+                continue
+            names.update(
+                name for name in servers
+                if isinstance(name, str) and name != _GATEWAY_SERVER
+            )
+    return names
+
+
+def _drift_result(source: str, expected: set[str], spec_servers: set[str]):
+    missing = sorted(expected - spec_servers)
+    extra = sorted(spec_servers - expected)
+    bits: list[str] = []
+    if missing:
+        bits.append(f"missing from spec: {', '.join(missing[:5])}"
+                    + (f" (+{len(missing) - 5} more)"
+                       if len(missing) > 5 else ""))
+    if extra:
+        bits.append(f"extra in spec: {', '.join(extra[:5])}"
+                    + (f" (+{len(extra) - 5} more)"
+                       if len(extra) > 5 else ""))
+    return CheckResult(
+        severity="WARN",
+        category="preauth_applied",
+        id="preauth_applied.spec-drift",
+        message=(
+            "preauth.json enabledMcpjsonServers does not match "
+            f"{source}-derived names; {'; '.join(bits)}"
+        ),
+        suggested_fix=(
+            "regenerate preauth.json from shipped mcp-config.json files"
+        ),
+    )
 
 
 def run(ctx) -> list[CheckResult]:
@@ -157,36 +250,21 @@ def run(ctx) -> list[CheckResult]:
     # Drift: spec server list vs manifest-derived list. Warns processkit
     # maintainers when the manifest moves but preauth.json hasn't been
     # regenerated.
+    expected_from_configs = _expected_servers_from_mcp_configs(repo_root)
+    if expected_from_configs and expected_from_configs != spec_servers:
+        results.append(_drift_result(
+            "mcp-config",
+            expected_from_configs,
+            spec_servers,
+        ))
+
     manifest_path = repo_root / _MANIFEST_REL
     if manifest_path.is_file():
         manifest = _load_json(manifest_path)
         if manifest is not None:
             expected = _expected_servers_from_manifest(manifest)
             if expected and expected != spec_servers:
-                missing = sorted(expected - spec_servers)
-                extra = sorted(spec_servers - expected)
-                bits: list[str] = []
-                if missing:
-                    bits.append(f"missing from spec: {', '.join(missing[:5])}"
-                                + (f" (+{len(missing) - 5} more)"
-                                   if len(missing) > 5 else ""))
-                if extra:
-                    bits.append(f"extra in spec: {', '.join(extra[:5])}"
-                                + (f" (+{len(extra) - 5} more)"
-                                   if len(extra) > 5 else ""))
-                results.append(CheckResult(
-                    severity="WARN",
-                    category="preauth_applied",
-                    id="preauth_applied.spec-drift",
-                    message=(
-                        "preauth.json enabledMcpjsonServers does not match "
-                        f"manifest-derived names; {'; '.join(bits)}"
-                    ),
-                    suggested_fix=(
-                        "regenerate preauth.json from "
-                        ".processkit-mcp-manifest.json"
-                    ),
-                ))
+                results.append(_drift_result("manifest", expected, spec_servers))
 
     settings_path = repo_root / _SETTINGS_REL
     if not settings_path.is_file():
@@ -290,7 +368,8 @@ def run(ctx) -> list[CheckResult]:
         ))
     else:
         live_codex_tools = _load_codex_allowed_tools(codex_path)
-        if live_codex_tools is None:
+        managed_codex_tools = _load_codex_managed_allowed_tools(codex_path)
+        if live_codex_tools is None or managed_codex_tools is None:
             results.append(CheckResult(
                 severity="ERROR",
                 category="preauth_applied",
@@ -299,6 +378,12 @@ def run(ctx) -> list[CheckResult]:
             ))
         else:
             missing_codex_tools = sorted(spec_codex_tools - live_codex_tools)
+            in_codex_gateway_mode = (
+                "processkit-gateway" in live_codex_tools
+                and managed_codex_tools == {"processkit-gateway"}
+            )
+            if missing_codex_tools and in_codex_gateway_mode:
+                missing_codex_tools = []
             if missing_codex_tools:
                 preview = ", ".join(missing_codex_tools[:5])
                 if len(missing_codex_tools) > 5:

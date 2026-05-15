@@ -31,8 +31,9 @@ metadata:
 
 `runtime-prune` gives agents a provider-neutral cleanup workflow for
 aibox-managed runtime state. It inventories selected cleanup scopes,
-produces a dry-run plan, and invokes `aibox prune` for the destructive
-path when that command is available.
+produces a dry-run plan, applies low-risk processkit-owned cleanup from
+an explicit allowlist, and delegates high-risk runtime-owner cleanup to
+`aibox prune` when that command is available.
 
 ## Overview
 
@@ -48,9 +49,9 @@ The workflow is:
    expected reclaimed bytes, risk labels, and the exact confirmation
    token needed for apply.
 3. Call `apply_prune(project_root, scopes, confirmation)` only after
-   the user has explicitly approved the plan. The apply tool delegates
-   to `aibox prune`; it does not duplicate destructive provider cleanup
-   logic inside processkit.
+   the user has explicitly approved the plan. The apply tool may remove
+   only explicit processkit-owned allowlist targets; provider/runtime
+   owner cleanup still delegates to `aibox prune`.
 
 ### MCP Tools
 
@@ -64,8 +65,8 @@ The workflow is:
 
 | Scope | What it covers | Apply policy |
 |---|---|---|
-| `runtime-home` | Managed `.aibox-home` and bounded `.aibox` runtime cache or diagnostics paths. | Delegated to `aibox prune`. |
-| `build-cache` | Explicit build-cache paths such as Rust incremental and build subdirectories. | Delegated to `aibox prune`. |
+| `runtime-home` | Bounded `.aibox-home` and `.aibox` cache, diagnostics, tmp, and runtime paths. | Processkit allowlist cleanup. |
+| `build-cache` | Explicit build-cache paths such as Rust incremental and build subdirectories. | Processkit allowlist cleanup. |
 | `agent-worktrees` | Provider-created or aibox-managed Git worktrees discovered from Git metadata. | Delegated to `aibox prune` after explicit confirmation. |
 | `containers` | aibox-owned container cleanup. | Delegated to `aibox prune`; no direct Docker or Podman calls. |
 | `e2e-companion` | Nested companion environment cleanup. | Delegated to `aibox prune`; companion access must be via SSH reachability. |
@@ -76,8 +77,12 @@ The workflow is:
   `plan_prune()` are read-only. Apply still needs the exact confirmation
   token returned by the plan.
 - **Do not hand-roll destructive provider cleanup.** If `aibox prune`
-  is unavailable, `apply_prune()` must return an error instead of
-  deleting worktrees, containers, or caches itself.
+  is unavailable, `apply_prune()` may still clean processkit-owned
+  allowlist targets, but worktrees, containers, and companion state must
+  return structured unsupported evidence.
+- **Do not remove the whole runtime home.** `runtime-home` targets only
+  narrow cache, diagnostics, tmp, and runtime subpaths, not the whole
+  `.aibox-home` tree.
 - **Do not inspect local Docker or Podman for E2E companion cleanup.**
   Companion state is remote from the devcontainer's perspective; use
   the aibox workflow that checks SSH reachability.
@@ -102,18 +107,21 @@ symlinks during size walks.
 
 - `required_confirmation`, formatted as
   `apply-prune:<comma-separated-scopes>`
-- per-scope actions with `risk`, `expected_reclaim_bytes`, `targets`,
-  `dry_run_command`, and `apply_command`
+- per-scope actions with `risk`, `apply_owner`,
+  `expected_reclaim_bytes`, `targets`, `dry_run_command`, and
+  `apply_command`
 - whether `aibox prune` is currently available on `PATH`
 
 `apply_prune()` accepts only the exact `required_confirmation` value
-from the matching plan. If the token matches and `aibox prune` is on
-`PATH`, it runs:
+from the matching plan. For `runtime-home` and `build-cache`, it removes
+only the allowlisted paths from the plan. For delegated scopes, if the
+token matches and `aibox prune` is on `PATH`, it runs one command per
+delegated scope:
 
 ```sh
-aibox prune --scope <scope> ... --yes --json
+aibox prune <scope> --yes
 ```
 
-The tool records stdout, stderr, exit code, and the command arguments in
-the returned evidence. A non-zero `aibox prune` exit code is returned to
-the caller as structured evidence instead of being hidden.
+The tool records per-scope evidence. A non-zero `aibox prune` exit code
+or unavailable delegated command is returned to the caller as structured
+evidence instead of being hidden.

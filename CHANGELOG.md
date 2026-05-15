@@ -11,6 +11,45 @@ _No unreleased changes yet._
 
 ---
 
+## [v0.26.11] - 2026-05-15
+
+v0.26.11 is a **patch release** that clears the remaining derived-project
+pk-doctor false positives and makes runtime-prune usable for low-risk
+in-container cleanup without requiring the aibox CLI.
+
+### Fixed
+
+- **Accepted gateway MCP mode in pk-doctor preauth checks.** Codex and
+  Claude configurations that intentionally expose only the
+  `processkit-gateway` proxy now satisfy the per-skill processkit MCP
+  preauth surface. Closes
+  [#52](https://github.com/projectious-work/processkit/issues/52).
+- **Derived MCP drift checks from the shippable skill tree.** pk-doctor
+  MCP-config and server-header drift checks now scan both dogfood
+  `context/` and shipped `src/context/` skill trees, using consumer-facing
+  paths for comparison so source-only shipped skills do not report false
+  drift.
+- **Allowed runtime-prune to clean low-risk allowlist targets directly.**
+  `runtime-home` and `build-cache` apply paths now remove only explicit
+  processkit-owned cache/build targets after confirmation, while
+  containers, companion state, and agent worktrees still delegate to
+  `aibox prune`. Closes
+  [#53](https://github.com/projectious-work/processkit/issues/53).
+- **Matched the current aibox prune CLI shape.** Delegated runtime-prune
+  commands now use `aibox prune <scope> --dry-run|--yes` instead of stale
+  repeatable `--scope` and `--json` arguments.
+
+### Verification
+
+- `pk-doctor`: 0 errors, 0 warnings, 0 actionable infos
+- `pk-release-audit --tree=both`
+- `uv run scripts/smoke-test-servers.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run src/context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run --with pytest --with 'mcp[cli]>=1.0' pytest -q src/context/skills/processkit/runtime-prune/scripts/test_runtime_prune.py`
+
+---
+
 ## [v0.26.10] - 2026-05-14
 
 v0.26.10 is a **patch release** that clears false-actionable

@@ -1,14 +1,14 @@
 [aibox]
-cli_version = "0.26.3"
-synced_at = "2026-05-14T19:39:35.992158+00:00"
+cli_version = "0.26.4"
+synced_at = "2026-05-15T07:30:21.536902+00:00"
 
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.26.9"
+version = "v0.26.10"
 src_path = "src"
-release_asset_sha256 = "d0e610206740f33ea1a1a78670360c987820f8651c25b9e4738aa3bbafb0a93d"
-installed_at = "2026-05-14T19:39:35.992158+00:00"
-processkit_install_hash = "v2:7712d83fb536046e4dc1a8d302698a90094d561be311d19a723c34588658d86a"
+release_asset_sha256 = "4f22fb5e1669c61439a23a15d0756879c6547f8b0c00200dccc0eedb2c6392d8"
+installed_at = "2026-05-15T07:30:21.536902+00:00"
+processkit_install_hash = "v2:0d25e94423d27ab3d21343c7e31674ee37e2498f20f590611e248268cde29855"
 
 [addons]
 resolved_at = "2026-05-09T11:20:52Z"
@@ -28,7 +28,7 @@ python = [
 ]
 
 [runtime_home]
-generated_at = "2026-05-14T19:39:36.337453+00:00"
+generated_at = "2026-05-15T07:30:21.785092+00:00"
 
 [runtime_home.files]
 ".asoundrc" = "f34609b11d315cd613cb5333b561032baec860faf4a7eccb28b5567ae72019af"
@@ -45,7 +45,7 @@ generated_at = "2026-05-14T19:39:36.337453+00:00"
 ".config/tmux/layouts/cowork.sh" = "30b423a0006afb5b314634ea599e4ebf8a314aade2dd5621841751a657ed7d89"
 ".config/tmux/layouts/dev.sh" = "92f56f6ef62b3d72f37042d7e3e8e83689ac8a86d89472a15a746c9c2f47c9fe"
 ".config/tmux/layouts/focus.sh" = "b3493be52ad30f295b8f90e460f54aafdf8da6d84f379fcbdfc22f4d04ff233e"
-".config/tmux/tmux.conf" = "1dbf621cd33720d26d00c9a815247ba15fd2442fc1fa2fc3842b0e1de9e73638"
+".config/tmux/tmux.conf" = "37a96b8796a4916e58e9646e6c7f93aefdc91ecc5829eb31198c7d51e6c486ac"
 ".config/yazi/init.lua" = "eae04462c0b3bcbb486ee59aa9c2c9e9595680a0626997c942e5abb2ae5a48d7"
 ".config/yazi/keymap.toml" = "0b20be4e5f58d0af2ba72b8621e288ef2d6a7665a8a73c5fca5a172f83c6ebdd"
 ".config/yazi/plugins/dir-preview.yazi/main.lua" = "1700f0400a0a8362d895d247b27bfae2478c1e76385d4b076846a6a7c16c74f4"
