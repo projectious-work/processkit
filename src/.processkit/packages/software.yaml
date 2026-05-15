@@ -42,6 +42,7 @@ spec:
       - linux-administration
       - dns-networking
       - shell-scripting
+      - repo-management
       # Security
       - auth-patterns
       - secret-management

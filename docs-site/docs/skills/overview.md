@@ -69,7 +69,7 @@ metadata:
 
 See [Skills → Format](./format) for the complete specification.
 
-## Current catalog (140 skills)
+## Current catalog (142 skills)
 
 | Category | Count | Examples |
 |---|---|---|

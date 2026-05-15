@@ -242,6 +242,41 @@ User asks "Are my dependencies secure?" The agent runs the appropriate audit too
 
 ---
 
+### repo-management
+
+> Repository stewardship across issues, change requests, commits, and
+> pushes. Use when reconciling open issues or PRs/MRs, merging ready
+> work, or committing and pushing local repository changes.
+
+**Triggers:** When the user asks to "check all open issues", "check all
+PRs", "merge ready PRs", "repo reconcile", "commit and push all", or
+"clean up the repository".
+**Tools:** `processkit-repo-management` MCP server
+**References:** None
+
+Key capabilities:
+
+- Provider detection for GitHub, GitLab, Gitea, Forgejo/Codeberg,
+  Bitbucket Cloud, Azure DevOps, and SourceHut remotes
+- Local git inspection: branch, upstream, dirty state, ahead/behind,
+  and push readiness
+- GitHub issue and PR listing through `gh` when authenticated
+- Guarded issue comments/closes, PR merges, local commits, and pushes
+- Dry-run reconciliation plans with blockers for unsupported providers,
+  auth gaps, draft PRs, failing checks, and missing upstreams
+
+<details><summary>Example usage</summary>
+
+User asks "check all open issues and PRs, resolve what is ready, commit
+and push." The agent detects the provider, lists supported remote work,
+plans blockers and safe actions, commits intended local changes, pushes
+the current branch, and only closes or merges remote items with evidence
+and required confirmation.
+
+</details>
+
+---
+
 ### secret-management
 
 > Guides secure handling of secrets -- env vars, .env files, vault patterns. Use when dealing with API keys, passwords, tokens, or credentials.

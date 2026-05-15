@@ -1,6 +1,6 @@
 {
-  "aggregate_sha256": "cc428414abe18fb997ee1ca70ccf56a87292935c348b999a5290828e5dabd903",
-  "generated_at": "2026-05-15T09:13:07Z",
+  "aggregate_sha256": "00a0a423829f028d760d194f60c8c747e370f7e319627b2065bd886703c59c83",
+  "generated_at": "2026-05-15T10:23:07Z",
   "per_gateway": [
     {
       "path": "context/skills/processkit/processkit-gateway/mcp/mcp-config.json",
@@ -8,6 +8,10 @@
     }
   ],
   "per_server_header": [
+    {
+      "path": "context/skills/devops/repo-management/mcp/server.py",
+      "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
+    },
     {
       "path": "context/skills/processkit/actor-profile/mcp/server.py",
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
@@ -123,6 +127,10 @@
   ],
   "per_skill": [
     {
+      "path": "context/skills/devops/repo-management/mcp/mcp-config.json",
+      "sha256": "9c87a158dec87b259589134b25e0bce872b97a06715b66bd4460312d12e2c6c1"
+    },
+    {
       "path": "context/skills/processkit/actor-profile/mcp/mcp-config.json",
       "sha256": "b5b6f3137c0503707427dc45c508b51096d3681758500f312d237fee766539ef"
     },
@@ -219,6 +227,6 @@
       "sha256": "a4ae7e26a980aeebed953f3cc2e761cde6dd8692fb033c81c9e3c8927e8b5898"
     }
   ],
-  "processkit_version": "v0.26.11",
+  "processkit_version": "v0.26.10",
   "version": 1
 }

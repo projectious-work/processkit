@@ -9,6 +9,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Added `repo-management` with `/pk-repo-reconcile` and a
+  `processkit-repo-management` MCP server for guarded repository
+  reconciliation across local git state, issues, change requests,
+  commits, and pushes. The provider model detects GitHub, GitLab,
+  Gitea, Forgejo/Codeberg, Bitbucket Cloud, Azure DevOps, and SourceHut,
+  with GitHub remote issue/PR mutation backed by `gh`.
 - Added a `runtime_health` pk-doctor category for container-local aibox
   runtime probes: lnav availability, sqlite-vec import/load health,
   Codex bubblewrap/user-namespace smoke checks, PID 1 hygiene, cgroup

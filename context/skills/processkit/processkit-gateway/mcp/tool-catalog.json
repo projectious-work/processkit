@@ -1,6 +1,6 @@
 {
   "catalog_version": 1,
-  "source_server_count": 26,
+  "source_server_count": 27,
   "tools": [
     {
       "annotations": {
@@ -3095,6 +3095,23 @@
       "output_schema": null,
       "parameters": {
         "properties": {
+          "allocation_mode": {
+            "default": "pair",
+            "title": "Allocation Mode",
+            "type": "string"
+          },
+          "intent_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Intent Text"
+          },
           "kind": {
             "title": "Kind",
             "type": "string"
@@ -3216,6 +3233,62 @@
       "source_server_path": "processkit/id-management/mcp/server.py",
       "source_skill": "id-management",
       "source_tool": "validate_id",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "id-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return vocabulary palette and lexical-token capacity details.",
+      "name": "vocabulary_status",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "allocation_mode": {
+            "default": "pair",
+            "title": "Allocation Mode",
+            "type": "string"
+          },
+          "intent_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Intent Text"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Kind"
+          }
+        },
+        "title": "vocabulary_statusArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/id-management/mcp/server.py",
+      "source_skill": "id-management",
+      "source_tool": "vocabulary_status",
       "title": null
     },
     {
@@ -5530,6 +5603,600 @@
         "readOnlyHint": false
       },
       "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Run optional checks, stage paths, and create a git commit.",
+      "name": "commit_local_changes",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "checks": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checks"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "paths": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Paths"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "title": "commit_local_changesArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "commit_local_changes",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Detect the repository provider from a git remote.",
+      "name": "detect_repo_provider",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "remote": {
+            "default": "origin",
+            "title": "Remote",
+            "type": "string"
+          }
+        },
+        "title": "detect_repo_providerArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "detect_repo_provider",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Inspect local git state, remotes, branch, and provider support.",
+      "name": "inspect_repo_state",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "include_remote": {
+            "default": true,
+            "title": "Include Remote",
+            "type": "boolean"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          }
+        },
+        "title": "inspect_repo_stateArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "inspect_repo_state",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "List repository pull requests, merge requests, or change requests.",
+      "name": "list_repo_change_requests",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "state": {
+            "default": "open",
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "title": "list_repo_change_requestsArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "list_repo_change_requests",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "List repository issues for the detected provider.",
+      "name": "list_repo_issues",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "state": {
+            "default": "open",
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "title": "list_repo_issuesArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "list_repo_issues",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Merge or queue a supported change request without bypassing checks.",
+      "name": "merge_change_request",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "auto_queue": {
+            "default": true,
+            "title": "Auto Queue",
+            "type": "boolean"
+          },
+          "confirmation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmation"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "method": {
+            "default": "squash",
+            "title": "Method",
+            "type": "string"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "merge_change_requestArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "merge_change_request",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Build a repository reconciliation plan without mutating state.",
+      "name": "plan_repo_reconcile",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "dry_run": {
+            "default": true,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "scope": {
+            "default": "all",
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "title": "plan_repo_reconcileArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "plan_repo_reconcile",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Push the current branch to its configured remote without force.",
+      "name": "push_current_branch",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Branch"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "remote": {
+            "default": "origin",
+            "title": "Remote",
+            "type": "string"
+          }
+        },
+        "title": "push_current_branchArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "push_current_branch",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Comment on and optionally close a supported issue.",
+      "name": "resolve_repo_issue",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "close": {
+            "default": false,
+            "title": "Close",
+            "type": "boolean"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Comment"
+          },
+          "confirmation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmation"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "resolution": {
+            "title": "Resolution",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "resolution"
+        ],
+        "title": "resolve_repo_issueArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "resolve_repo_issue",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Apply guarded repository reconciliation actions.",
+      "name": "run_repo_reconcile",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "commit_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Commit Message"
+          },
+          "dry_run": {
+            "default": true,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "max_items": {
+            "default": 50,
+            "title": "Max Items",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "push": {
+            "default": false,
+            "title": "Push",
+            "type": "boolean"
+          },
+          "scope": {
+            "default": "all",
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "title": "run_repo_reconcileArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "run_repo_reconcile",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
         "role-management"
       ],
       "collision_status": "unique",
@@ -5987,7 +6654,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Invoke aibox prune for explicitly confirmed scopes.",
+      "description": "Apply confirmed cleanup for processkit-owned or delegated scopes.",
       "name": "apply_prune",
       "output_schema": null,
       "parameters": {

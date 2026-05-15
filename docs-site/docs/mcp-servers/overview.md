@@ -13,16 +13,17 @@ LogEntries where the server owns the side effect.
 
 ## Status
 
-**Twenty-five MCP server scripts ship** across processkit's primitive,
-workflow, projection, routing, gateway, and guard skills. Most ship
-default `mcp-config.json` fragments. `aggregate-mcp` remains an
+**Twenty-nine MCP server scripts ship** across processkit's primitive,
+workflow, projection, routing, gateway, guard, and devops skills. Most
+ship default `mcp-config.json` fragments. `aggregate-mcp` remains an
 alternate compatibility entry point and does not register itself by
 default; `context-archiving` also ships a server script without a
 default config fragment.
 
 Server scripts live under
-`context/skills/processkit/<skill>/mcp/server.py` and share a Python
-utility library at `context/skills/_lib/processkit/`.
+`context/skills/<category>/<skill>/mcp/server.py`. Processkit
+operation servers share a Python utility library at
+`context/skills/_lib/processkit/`.
 
 The current direction is gateway first for harnesses that pay startup
 cost per stdio process. Per-skill servers remain canonical, but clients
@@ -92,6 +93,12 @@ importing every backing skill server at startup.
 gateway surfaces keep unique tool names unchanged. If two source servers
 expose the same helper name, later duplicates are registered as
 `<skill_slug>__<tool_name>`.
+
+### Devops
+
+| Server | Tools |
+|---|---|
+| [`repo-management`](https://github.com/projectious-work/processkit/tree/main/src/context/skills/devops/repo-management/mcp/) | `detect_repo_provider`, `inspect_repo_state`, `list_repo_issues`, `list_repo_change_requests`, `plan_repo_reconcile`, `resolve_repo_issue`, `merge_change_request`, `commit_local_changes`, `push_current_branch`, `run_repo_reconcile` |
 
 ### Routing (cross-layer)
 
