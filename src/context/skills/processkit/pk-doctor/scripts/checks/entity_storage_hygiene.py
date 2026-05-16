@@ -8,6 +8,7 @@ current processkit storage policy, and are legacy layouts explained?
 from __future__ import annotations
 
 import re
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,11 @@ _WORDPAIR_RE = re.compile(r"^[A-Z][a-z]+[A-Z][A-Za-z]+$")
 _CLI_MIGRATION_RE = re.compile(
     r"^\d{8}_\d{4}_\d+\.\d+\.\d+-to-\d+\.\d+\.\d+\.md$"
 )
+_CLI_MIGRATION_COMPLETED_RE = re.compile(
+    r"^\*\*Status:\*\*\s*completed\b",
+    re.IGNORECASE | re.MULTILINE,
+)
+_BRIEFING_ARCHIVE_SUBDIR = "context/archive/cli-migration-briefings"
 
 _ENTITY_DIRS = {
     "artifacts": "ART",
@@ -91,6 +97,43 @@ def _load_frontmatter(path: Path) -> dict[str, Any] | None:
     except yaml.YAMLError:
         return None
     return data if isinstance(data, dict) else None
+
+
+def _is_cli_migration_completed(path: Path) -> bool:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return _CLI_MIGRATION_COMPLETED_RE.search(text) is not None
+
+
+def _cli_migration_briefings(repo_root: Path) -> list[Path]:
+    root = repo_root / "context" / "migrations"
+    briefings = [
+        p for p in _root_markdown_files(root)
+        if _CLI_MIGRATION_RE.match(p.name)
+        and not _is_cli_migration_completed(p)
+    ]
+    return sorted(briefings)
+
+
+def _briefing_archive_root(repo_root: Path) -> Path:
+    return repo_root / _BRIEFING_ARCHIVE_SUBDIR
+
+
+def _allocate_archive_path(dst_root: Path, source: Path) -> Path:
+    target = dst_root / source.name
+    if not target.exists():
+        return target
+    stem = source.stem
+    suffix = source.suffix
+    for i in range(1, 1000):
+        target = dst_root / f"{stem}-archived-{i:03d}{suffix}"
+        if not target.exists():
+            return target
+    raise RuntimeError(
+        f"archive path unavailable for {source.name} under {dst_root}"
+    )
 
 
 def _is_v2(path: Path) -> bool:
@@ -240,11 +283,7 @@ def _legacy_locations(repo_root: Path) -> list[CheckResult]:
 
 
 def _migration_briefings(repo_root: Path) -> list[CheckResult]:
-    root = repo_root / "context" / "migrations"
-    briefings = [
-        p for p in _root_markdown_files(root)
-        if _CLI_MIGRATION_RE.match(p.name)
-    ]
+    briefings = _cli_migration_briefings(repo_root)
     if not briefings:
         return []
     return [CheckResult(
@@ -455,3 +494,82 @@ def run(ctx) -> list[CheckResult]:
         ),
     ))
     return results
+
+
+def run_fix(ctx, results: list[CheckResult]) -> list[dict]:
+    """Move non-completed CLI migration briefing files to archive.
+
+    They are operational upgrade notes, not processkit entity files.
+    Archiving keeps historical content while removing lifecycle noise.
+    """
+    interactive = ctx.get("interactive", False)
+    auto_yes = ctx.get("yes", False)
+    repo_root: Path = ctx["repo_root"]
+    fixes: list[dict] = []
+
+    if not interactive and not auto_yes:
+        fixes.append({
+            "category": "entity_storage_hygiene",
+            "status": "skipped",
+            "reason": (
+                "fix requires interactive prompt; re-run from terminal "
+                "or pass --yes"
+            ),
+        })
+        return fixes
+
+    briefings = _cli_migration_briefings(repo_root)
+
+    if not briefings:
+        fixes.append({
+            "category": "entity_storage_hygiene",
+            "status": "skipped",
+            "reason": "no uncompleted migration briefings found",
+        })
+        return fixes
+
+    archive_root = _briefing_archive_root(repo_root)
+    archive_root.mkdir(parents=True, exist_ok=True)
+
+    for source in briefings:
+        if not source.is_file():
+            fixes.append({
+                "category": "entity_storage_hygiene",
+                "entity": str(source.relative_to(repo_root)),
+                "status": "skipped",
+                "reason": "source not found",
+            })
+            continue
+        if not _CLI_MIGRATION_RE.match(source.name):
+            continue
+        if _is_cli_migration_completed(source):
+            fixes.append({
+                "category": "entity_storage_hygiene",
+                "entity": str(source.relative_to(repo_root)),
+                "status": "skipped",
+                "reason": "already completed",
+            })
+            continue
+        try:
+            target = _allocate_archive_path(archive_root, source)
+            shutil.move(str(source), str(target))
+        except (OSError, RuntimeError) as exc:
+            fixes.append({
+                "category": "entity_storage_hygiene",
+                "entity": str(source.relative_to(repo_root)),
+                "status": "failed",
+                "reason": str(exc),
+            })
+            continue
+        fixes.append({
+            "category": "entity_storage_hygiene",
+            "entity": str(source.relative_to(repo_root)),
+            "status": "archived",
+            "archived_to": str(_rel(repo_root, target)),
+            "rationale": (
+                "moved non-entity CLI migration briefing out of migration "
+                "lifecycle root"
+            ),
+        })
+
+    return fixes

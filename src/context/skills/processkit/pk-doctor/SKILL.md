@@ -207,7 +207,9 @@ Additional checks added after Phase 1:
   mixed filename policies, placeholder `0000` timestamps, and
   TeamMember private/slug policy explanations. Emits WARN for
   actionable storage drift; legacy layouts and mixed filename policies
-  are migration work, not accepted policy exceptions. Detect-only.
+  are migration work. `storage.root-migration-briefings` can be
+  auto-resolved via `--fix=entity_storage_hygiene` by archiving
+  non-completed CLI migration briefings.
 - **`schema_vocabulary`** — validates closed-vocabulary subtype fields across v2 entities by comparing frontmatter values against Schema-declared known-kinds/known-types (Artifact kind, Binding type, WorkItem type, LogEntry event_type, Migration kind). `legacy_known_*` schema fields are not accepted as a terminal state; legacy values require an explicit data-fix Migration or a schema migration. Also validates that Migration entities include required v2 version metadata fields. Emits ERROR for unknown vocabulary values or missing version fields; detect-only.
 - **`migration_integrity`** — flags malformed pending migrations that exhibit the "empty-baseline" defect (same-version migrations with content in affected_groups/affected_files despite no-op intent, or affected_groups populated but affected_files empty). Per BACK-20260425_1711-CleverRiver, both patterns are defect signatures. Emits WARN with suggested fix to reject via migration-management MCP and refile the upstream bug; detect-only.
 - **`mcp_gateway`** — reports processkit-gateway MCP config health and harness registration state. Validates gateway config presence/structure at `context/skills/processkit/processkit-gateway/mcp/mcp-config.json`, checks env vars and command launch target, detects mixed gateway+granular server registrations in `.mcp.json`, and warns on insecure daemon bindings. Emits INFO on healthy state, WARN on minor gaps (missing proxy --url, nonlocal daemon bind), ERROR on parsing failure; detect-only.

@@ -63,13 +63,13 @@ project:
 
 ```sh
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.26.13/processkit-v0.26.13.tar.gz \
-  -o processkit-v0.26.13.tar.gz
-tar -xzf processkit-v0.26.13.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.26.14/processkit-v0.26.14.tar.gz \
+  -o processkit-v0.26.14.tar.gz
+tar -xzf processkit-v0.26.14.tar.gz
 
-cp -a processkit-v0.26.13/context ./context
-cp -a processkit-v0.26.13/.processkit ./.processkit
-cp processkit-v0.26.13/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.26.14/context ./context
+cp -a processkit-v0.26.14/.processkit ./.processkit
+cp processkit-v0.26.14/AGENTS.md ./AGENTS.md
 ```
 
 Then point your harness at the gateway MCP server. For stdio-based MCP:
@@ -139,7 +139,7 @@ processkit automatically for devcontainers:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.26.13"
+version = "v0.26.14"
 
 [context]
 packages = ["managed"]
@@ -160,10 +160,10 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 processkit is currently pre-1.0. Breaking changes can still land in
 minor releases, and release notes call them out explicitly.
 
-`v0.26.13` is the current patch release. It keeps the v0.26 gateway and
-v2 deliverable boundary, adds guarded repo reconciliation, keeps
-processkit guidance separated from aibox host orchestration, and hardens
-recent fixes with regression tests.
+`v0.26.14` is the current patch release. It keeps the v0.26 gateway and
+v2 deliverable boundary, adds TeamMember runtime launch/status records,
+keeps processkit guidance separated from aibox host orchestration, and
+hardens derived-project reconciliation paths.
 
 ## Development
 

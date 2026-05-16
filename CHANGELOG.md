@@ -9,6 +9,50 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.26.14] - 2026-05-16
+
+v0.26.14 is a **patch release** that closes the TeamMember runtime
+dispatch gap and hardens derived-project reconciliation paths reported
+by pk-doctor.
+
+### Added
+
+- Added first-class TeamMember runtime launch/status tools:
+  `launch_team_member`, `launch_workitem_assignee`,
+  `get_team_member_runtime`, `list_team_member_runtimes`, and
+  `stop_team_member_runtime`. Runtime records persist separately from
+  TeamMember and WorkItem state at `context/team/runtime-sessions.json`
+  and include harness, provider/model/effort, write scope, MCP/context
+  write policy, runtime state, and an opaque runtime handle. Closes
+  [#59](https://github.com/projectious-work/processkit/issues/59).
+- Added harness dispatch payloads for TeamMember launches. Claude
+  payloads refresh/use `.claude/agents/<slug>.md` and return
+  `subagent_type`; Codex, Aider, and OpenCode receive explicit
+  outer-harness dispatch requests with resolved TeamMember identity and
+  scoped write policy.
+
+### Fixed
+
+- Added canonical pk-doctor reconciliation for schema-invalid or
+  filename-drifted append-only LogEntries by emitting append-only
+  `logentry.corrected` records instead of requiring direct mutation.
+- Added canonical pk-doctor reconciliation for root-level CLI migration
+  briefing files that are not Migration entities, moving uncompleted
+  briefings out of the Migration entity lifecycle tree while keeping
+  completed briefings as historical notes.
+
+### Verification
+
+- `uv run --with pyyaml --with jsonschema --with pytest --with mcp pytest context/skills/processkit/team-manager/scripts/test_team_manager.py -q`
+- `uv run --with mcp --with pyyaml --with jsonschema --with httpx --with sqlite-vec --with pytest pytest context/skills/processkit/processkit-gateway/scripts -q`
+- `python3 -m py_compile context/skills/processkit/team-manager/mcp/server.py src/context/skills/processkit/team-manager/mcp/server.py`
+- `PYTHONDONTWRITEBYTECODE=1 uv run context/skills/processkit/pk-doctor/scripts/doctor.py --json`
+- `uv run context/skills/processkit/release-audit/scripts/release_audit.py --tree=both`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+- `UV_CACHE_DIR=/tmp/uv-cache PYTHONDONTWRITEBYTECODE=1 uv run scripts/smoke-test-servers.py`
+
+---
+
 ## [v0.26.13] - 2026-05-15
 
 v0.26.13 is a **patch release** that hardens recent fixes with

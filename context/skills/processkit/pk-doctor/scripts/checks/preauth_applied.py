@@ -44,6 +44,40 @@ _SETTINGS_REL = Path(".claude/settings.json")
 _CODEX_CONFIG_REL = Path(".codex/config.toml")
 _MANIFEST_REL = Path("context/.processkit-mcp-manifest.json")
 _GATEWAY_SERVER = "processkit-gateway"
+_GATEWAY_TOOL_PATTERN = "mcp__processkit-gateway__*"
+
+
+def _is_gateway_tool_pattern(tools: set[str] | None) -> bool:
+    return bool(tools and _GATEWAY_TOOL_PATTERN in tools)
+
+
+def _is_gateway_mode(
+    settings: dict | None,
+    codex_allowed_tools: set[str] | None,
+    mcp_json: dict | None,
+) -> bool:
+    if settings is not None:
+        managed = settings.get("_processkit_managed_keys") or {}
+        managed_enabled = set(managed.get("enabled_servers") or [])
+        live_servers = set(settings.get("enabledMcpjsonServers") or [])
+        if _GATEWAY_SERVER in live_servers and managed_enabled == {_GATEWAY_SERVER}:
+            return True
+
+    if _is_gateway_tool_pattern(codex_allowed_tools):
+        managed = settings.get("_processkit_managed_keys") if settings else None
+        if (
+            managed is not None
+            and set(managed.get("enabled_servers") or []) == {_GATEWAY_SERVER}
+        ):
+            return True
+
+    if not isinstance(mcp_json, dict):
+        return False
+    servers = mcp_json.get("mcpServers") or {}
+    if not isinstance(servers, dict):
+        return False
+    processkit_servers = [name for name in servers if name.startswith("processkit-")]
+    return set(processkit_servers) == {_GATEWAY_SERVER}
 
 
 def _load_json(path: Path) -> dict | None:
@@ -245,13 +279,27 @@ def run(ctx) -> list[CheckResult]:
         or spec_perms
     )
 
+    settings_path = repo_root / _SETTINGS_REL
+    codex_path = repo_root / _CODEX_CONFIG_REL
+    managed_codex_tools = _load_codex_managed_allowed_tools(codex_path) if codex_path.is_file() else None
+    settings: dict | None = None
+    codex_tools: set[str] | None = None
+
+    if settings_path.is_file():
+        settings = _load_json(settings_path)
+    if codex_path.is_file():
+        codex_tools = _load_codex_allowed_tools(codex_path)
+
+    mcp_json = _load_json(repo_root / ".mcp.json")
+    gateway_mode = _is_gateway_mode(settings, codex_tools, mcp_json)
+
     results: list[CheckResult] = []
 
     # Drift: spec server list vs manifest-derived list. Warns processkit
     # maintainers when the manifest moves but preauth.json hasn't been
     # regenerated.
     expected_from_configs = _expected_servers_from_mcp_configs(repo_root)
-    if expected_from_configs and expected_from_configs != spec_servers:
+    if expected_from_configs and not gateway_mode and expected_from_configs != spec_servers:
         results.append(_drift_result(
             "mcp-config",
             expected_from_configs,
@@ -263,10 +311,9 @@ def run(ctx) -> list[CheckResult]:
         manifest = _load_json(manifest_path)
         if manifest is not None:
             expected = _expected_servers_from_manifest(manifest)
-            if expected and expected != spec_servers:
+            if expected and not gateway_mode and expected != spec_servers:
                 results.append(_drift_result("manifest", expected, spec_servers))
 
-    settings_path = repo_root / _SETTINGS_REL
     if not settings_path.is_file():
         results.append(CheckResult(
             severity="INFO",
@@ -278,7 +325,6 @@ def run(ctx) -> list[CheckResult]:
             ),
         ))
     else:
-        settings = _load_json(settings_path)
         if settings is None:
             results.append(CheckResult(
                 severity="ERROR",
@@ -287,6 +333,7 @@ def run(ctx) -> list[CheckResult]:
                 message=f"could not parse {_SETTINGS_REL.as_posix()}",
             ))
         else:
+            managed = settings.get("_processkit_managed_keys") or {}
             live_perms = set(
                 ((settings.get("permissions") or {}).get("allow")) or []
             )
@@ -361,7 +408,6 @@ def run(ctx) -> list[CheckResult]:
                     ),
                 ))
 
-    codex_path = repo_root / _CODEX_CONFIG_REL
     if not codex_path.is_file():
         results.append(CheckResult(
             severity="INFO",
@@ -385,8 +431,8 @@ def run(ctx) -> list[CheckResult]:
         else:
             missing_codex_tools = sorted(spec_codex_tools - live_codex_tools)
             in_codex_gateway_mode = (
-                "processkit-gateway" in live_codex_tools
-                and managed_codex_tools == {"processkit-gateway"}
+                _is_gateway_tool_pattern(managed_codex_tools)
+                and _is_gateway_tool_pattern(live_codex_tools)
             )
             if missing_codex_tools and in_codex_gateway_mode:
                 missing_codex_tools = []

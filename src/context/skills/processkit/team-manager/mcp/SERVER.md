@@ -25,6 +25,16 @@ Replaces the deprecated actor-profile server.
 | `get_interlocutor_runtime_binding(scope?, observed_model?, observed_effort?, task_hints?)` | Return the active interlocutor plus the resolved model binding, harness capability mode, and informational mismatch report. |
 | `set_active_interlocutor(id, scope?)` | Configure the TeamMember speaker for a scope by writing `context/team/session-identity.json`. |
 
+### Runtime launch
+
+| Tool | Purpose |
+|---|---|
+| `launch_team_member(id, harness?, scope?, workitem_id?, task?, write_scope?, can_write_context?, can_use_mcp?, task_hints?, refresh_adapter?)` | Create a runtime launch record and return a harness-specific dispatch payload for a TeamMember. |
+| `launch_workitem_assignee(workitem_id, harness?, task?, write_scope?, can_write_context?, can_use_mcp?, task_hints?, refresh_adapter?)` | Resolve a WorkItem's `TEAMMEMBER-*` assignee and create the same runtime launch record. |
+| `get_team_member_runtime(runtime_handle)` | Fetch one runtime record by opaque handle. |
+| `list_team_member_runtimes(team_member_id?, runtime_state?, active_only?)` | List runtime records, optionally filtered by TeamMember or runtime state. |
+| `stop_team_member_runtime(runtime_handle, reason?)` | Mark a runtime stopped in processkit state. The outer harness remains responsible for terminating any live process. |
+
 ### Name pool
 
 | Tool | Purpose |
@@ -70,6 +80,13 @@ provider-neutral resolved candidate and harness capability mode, but it
 does not hot-swap an already running primary harness session. When the
 caller supplies `observed_model` or `observed_effort`, mismatches are
 returned as informational warnings for session-start display.
+
+Runtime launch records live at
+`<project-root>/context/team/runtime-sessions.json`. They are distinct
+from TeamMember lifecycle state and WorkItem state. The launch tools
+return `queued` records for harnesses that can consume a dispatch
+payload, and `failed` with `unsupported_reason` when no launch-capable
+harness can be resolved.
 
 ## Running
 

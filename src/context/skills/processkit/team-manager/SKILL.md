@@ -80,8 +80,9 @@ entry and updates the SQLite index automatically — callers do not log
 or reindex by hand. Read tools (`get_team_member`,
 `list_team_members`, `get_active_interlocutor`,
 `get_interlocutor_runtime_binding`, `list_available_names`,
-`suggest_name`, `check_consistency`) are side-effect-free and safe to
-call from any agent context.
+`suggest_name`, `get_team_member_runtime`, `list_team_member_runtimes`,
+`check_consistency`) are side-effect-free and safe to call from any
+agent context.
 
 ### Capability groups
 
@@ -89,6 +90,7 @@ call from any agent context.
 |---|---|---|
 | Lifecycle | `create_team_member`, `get_team_member`, `list_team_members`, `update_team_member`, `deactivate_team_member`, `reactivate_team_member` | Adding, editing, retiring or restoring a persistent team-member entity |
 | Session identity | `get_active_interlocutor`, `get_interlocutor_runtime_binding`, `set_active_interlocutor` | Showing which persistent TeamMember, if any, is the current harness interlocutor, plus the resolved runtime binding when available |
+| Runtime launch | `launch_team_member`, `launch_workitem_assignee`, `get_team_member_runtime`, `list_team_member_runtimes`, `stop_team_member_runtime` | Creating and tracking a harness-consumable TeamMember runtime request with explicit model, status, and write policy |
 | Name pool | `reserve_name`, `release_name`, `list_available_names`, `suggest_name` | Choosing or rotating an AI persona name; the pool is the canonical source of truth for AI-agent slugs |
 | Memory scaffolding | `init_memory_tree` | Creating the six tier subdirectories + frontmatter-validated headers under `context/team-members/<slug>/` |
 | Export / import | `export_team_member`, `export_claude_subagent`, `export_claude_subagents`, `import_team_member` | Moving a TeamMember between projects or generating provider-specific adapter files; tarball export redacts confidential/PII memory |
@@ -135,6 +137,23 @@ harness mode, and an informational mismatch report. processkit cannot
 hot-swap an already running primary harness session; unsupported
 harnesses therefore fall back to identity-only behavior while still
 growing memory on the configured TeamMember.
+
+**Launching TeamMember runtimes.**
+`launch_team_member(id, harness?, ...)` creates a runtime record under
+`context/team/runtime-sessions.json` and returns a harness-specific
+dispatch payload. `launch_workitem_assignee(workitem_id, ...)` resolves
+the WorkItem's `TEAMMEMBER-*` assignee first and then records the same
+runtime contract. Runtime state is separate from WorkItem state:
+`queued`, `running`, `failed`, and `stopped` describe the harness
+session, not the work lifecycle.
+
+The MCP server does not spawn host harness processes directly. For
+Claude, the dispatch payload names the `subagent_type` and refreshes the
+`.claude/agents/<slug>.md` adapter by default. For Codex, Aider, and
+OpenCode, the payload carries the TeamMember identity, resolved model,
+effort, write scope, and MCP/context-write policy for the outer harness
+adapter to consume. Use `list_team_member_runtimes(active_only=true)`
+and `stop_team_member_runtime(handle)` to report and update status.
 
 **Exporting Claude Code subagents.**
 `export_claude_subagent(slug)` writes one generated adapter to

@@ -45,6 +45,18 @@ Export/import:
                             overwrite?, model_policy?) -> {results}
     import_team_member(tarball_path) -> {slug, path}
 
+Runtime launch:
+    launch_team_member(id, harness?, scope?, workitem_id?, task?,
+                       write_scope?, can_write_context?, can_use_mcp?,
+                       task_hints?, refresh_adapter?) -> {runtime}
+    launch_workitem_assignee(workitem_id, harness?, task?, write_scope?,
+                             can_write_context?, can_use_mcp?, task_hints?,
+                             refresh_adapter?) -> {runtime}
+    get_team_member_runtime(runtime_handle) -> {runtime}
+    list_team_member_runtimes(team_member_id?, runtime_state?,
+                              active_only?) -> {runtimes}
+    stop_team_member_runtime(runtime_handle, reason?) -> {runtime}
+
 Consistency:
     check_consistency(slug) -> {slug, findings}
     check_all_consistency() -> {members: {...}, summary}
@@ -57,6 +69,7 @@ import json
 import os
 import re
 import sys
+import uuid
 from pathlib import Path
 
 
@@ -98,6 +111,19 @@ _VALID_TYPES = {"human", "ai-agent", "service", "consultant"}
 _VALID_SENIORITY = {"junior", "specialist", "expert", "senior", "principal"}
 _VALID_SLOT_STATES = {"open", "filled", "closed"}
 _VALID_EFFORTS = {"low", "medium", "high", "extra-high", "max"}
+_RUNTIME_ACTIVE_STATES = {"queued", "starting", "running"}
+_RUNTIME_TERMINAL_STATES = {"failed", "stopped"}
+_RUNTIME_STATES = _RUNTIME_ACTIVE_STATES | _RUNTIME_TERMINAL_STATES
+_LIVE_HARNESS_MODES = {
+    "claude": "claude-subagent",
+    "codex": "codex-agent",
+    "aider": "aider-agent",
+    "opencode": "opencode-agent",
+}
+_LAUNCH_CONFORM_HARNESSES = {
+    "claude", "codex", "gemini", "aider", "continue", "cursor",
+    "opencode", "hermes",
+}
 # Allowed RoleSlot state transitions (Phase A team-creator v2;
 # DEC-20260509_1906-CoolBadger). closed is terminal — reverse
 # transitions are rejected.
@@ -243,6 +269,10 @@ def _identity_path(root: Path) -> Path:
     return root / "context" / "team" / "session-identity.json"
 
 
+def _runtime_state_path(root: Path) -> Path:
+    return root / "context" / "team" / "runtime-sessions.json"
+
+
 def _team_member_summary(ent: entity.Entity) -> dict:
     spec = ent.spec or {}
     role = spec.get("default_role") or "ephemeral-role"
@@ -269,6 +299,194 @@ def _read_json(path: Path) -> dict:
 def _write_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _read_runtime_state(root: Path) -> dict:
+    data = _read_json(_runtime_state_path(root))
+    if not isinstance(data.get("runtimes"), dict):
+        data["runtimes"] = {}
+    data.setdefault("version", 1)
+    return data
+
+
+def _write_runtime_state(root: Path, data: dict) -> None:
+    data.setdefault("version", 1)
+    data.setdefault("runtimes", {})
+    _write_json(_runtime_state_path(root), data)
+
+
+def _runtime_handle(slug: str) -> str:
+    stamp = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return f"TMRT-{stamp}-{slug}-{uuid.uuid4().hex[:8]}"
+
+
+def _first_runtime_harness(binding: dict, requested: str | None) -> str | None:
+    if requested:
+        return _normalize_runtime_name(requested)
+    runtime_context = binding.get("runtime_context") or {}
+    for harness in runtime_context.get("harnesses") or []:
+        norm = _normalize_runtime_name(harness)
+        if norm:
+            return norm
+    return None
+
+
+def _runtime_model_fields(resolved: dict | None) -> dict:
+    if not resolved:
+        return {
+            "provider": None,
+            "model": None,
+            "effort": None,
+        }
+    return {
+        "provider": resolved.get("provider"),
+        "model": (
+            resolved.get("vendor_model_id")
+            or resolved.get("family")
+            or resolved.get("model_id")
+        ),
+        "effort": resolved.get("effort"),
+    }
+
+
+def _load_workitem(root: Path, workitem_id: str) -> entity.Entity | None:
+    try:
+        db = index.open_db()
+        try:
+            row = index.get_entity(db, workitem_id)
+        finally:
+            db.close()
+        if row and row.get("path"):
+            return entity.load(row["path"])
+    except Exception:
+        pass
+
+    wi_root = root / "context" / "workitems"
+    if not wi_root.is_dir():
+        return None
+    for path in wi_root.rglob(f"{workitem_id}.md"):
+        try:
+            return entity.load(path)
+        except Exception:
+            return None
+    return None
+
+
+def _workitem_assignee(root: Path, workitem_id: str) -> tuple[str | None, dict | None]:
+    ent = _load_workitem(root, workitem_id)
+    if ent is None:
+        return None, {"error": f"workitem {workitem_id!r} not found"}
+    assignee = (ent.spec or {}).get("assignee")
+    if not assignee:
+        return None, {"error": f"workitem {workitem_id!r} has no assignee"}
+    if not str(assignee).startswith("TEAMMEMBER-"):
+        return None, {
+            "error": (
+                f"workitem {workitem_id!r} assignee {assignee!r} is not a "
+                "TeamMember"
+            )
+        }
+    return str(assignee), None
+
+
+def _launch_payload(
+    ent: entity.Entity,
+    harness: str | None,
+    binding: dict,
+    *,
+    task: str | None,
+    workitem_id: str | None,
+    write_scope: list[str],
+    can_write_context: bool,
+    can_use_mcp: bool,
+    refresh_adapter: bool,
+) -> tuple[dict, str, str | None]:
+    spec = ent.spec or {}
+    slug = str(spec.get("slug") or ent.id.removeprefix("TEAMMEMBER-"))
+    normalized = _first_runtime_harness(binding, harness)
+    resolved = binding.get("resolved")
+    model = _runtime_model_fields(resolved)
+    base = {
+        "team_member_id": ent.id,
+        "team_member_slug": slug,
+        "harness": normalized,
+        "provider": model["provider"],
+        "model": model["model"],
+        "effort": model["effort"],
+        "workitem_id": workitem_id,
+        "task": task,
+        "write_scope": write_scope,
+        "can_write_context": bool(can_write_context),
+        "can_use_mcp": bool(can_use_mcp),
+    }
+
+    if normalized in _LIVE_HARNESS_MODES:
+        payload = {
+            **base,
+            "launch_mode": _LIVE_HARNESS_MODES[normalized],
+            "requires_harness_dispatch": True,
+            "instructions": (
+                f"Launch TeamMember {ent.id} as {slug!r}; keep processkit "
+                "entity writes on the main session unless explicitly elevated."
+            ),
+        }
+        if normalized == "claude":
+            export_result = None
+            if refresh_adapter:
+                export_result = export_claude_subagent(slug)
+                if export_result.get("error"):
+                    payload["adapter_error"] = export_result["error"]
+                    return payload, "failed", export_result["error"]
+            adapter_path = (
+                export_result.get("path") if export_result
+                else str(paths.find_project_root() / ".claude" / "agents" / f"{slug}.md")
+            )
+            payload["dispatch"] = {
+                "type": "claude_subagent",
+                "subagent_type": slug,
+                "adapter_path": adapter_path,
+            }
+        else:
+            payload["dispatch"] = {
+                "type": f"{normalized}_team_member_request",
+                "identity": {
+                    "team_member_id": ent.id,
+                    "slug": slug,
+                    "name": spec.get("name"),
+                    "role": spec.get("default_role"),
+                    "seniority": spec.get("default_seniority"),
+                },
+                "model": model["model"],
+                "effort": model["effort"],
+                "write_scope": write_scope,
+            }
+        return payload, "queued", None
+
+    if normalized in _LAUNCH_CONFORM_HARNESSES:
+        payload = {
+            **base,
+            "launch_mode": "launch-conform",
+            "requires_harness_dispatch": True,
+            "dispatch": {
+                "type": f"{normalized}_launch_conform_request",
+                "identity": ent.id,
+                "model": model["model"],
+                "effort": model["effort"],
+            },
+        }
+        return payload, "queued", None
+
+    reason = (
+        f"harness {normalized!r} is identity-only or unsupported"
+        if normalized else
+        "no launch-capable harness was resolved"
+    )
+    return {
+        **base,
+        "launch_mode": "identity-only",
+        "requires_harness_dispatch": False,
+        "unsupported_reason": reason,
+    }, "failed", reason
 
 
 def _load_model_resolver():
@@ -2210,6 +2428,243 @@ def import_team_member(tarball_path: str) -> dict:
         actor=f"TEAMMEMBER-{slug}",
     )
     return result
+
+
+# ---------------------------------------------------------------------------
+# Runtime launch
+# ---------------------------------------------------------------------------
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def launch_team_member(
+    id: str,
+    harness: str | None = None,
+    scope: str | None = None,
+    workitem_id: str | None = None,
+    task: str | None = None,
+    write_scope: list[str] | None = None,
+    can_write_context: bool = False,
+    can_use_mcp: bool = False,
+    task_hints: dict | None = None,
+    refresh_adapter: bool = True,
+) -> dict:
+    """Create a runtime launch record for a TeamMember.
+
+    processkit cannot directly control host harness process lifecycles from
+    inside this MCP server. The launch record is the durable contract a
+    harness adapter consumes: resolved identity/model metadata, explicit
+    write policy, runtime state, and a harness-specific dispatch payload.
+    """
+    root = paths.find_project_root()
+    ent = _load_tm(root, id)
+    if ent is None:
+        return {"error": f"team-member {id!r} not found"}
+    spec = ent.spec or {}
+    if not spec.get("active", True):
+        return {"error": f"team-member {ent.id!r} is inactive"}
+    if spec.get("type") == "consultant" and not _consultant_in_window(spec):
+        return {
+            "error": (
+                f"consultant {ent.id!r} is outside their engagement_window "
+                "and cannot be launched"
+            ),
+            "out_of_window": True,
+        }
+
+    hints = dict(task_hints or {})
+    if harness:
+        hints.setdefault("harnesses", [harness])
+        hints.setdefault("available_harnesses", [harness])
+    binding = _runtime_binding_for(
+        ent=ent,
+        scope=scope,
+        observed_model=None,
+        observed_effort=None,
+        task_hints=hints,
+    )
+    dispatch, runtime_state, failure_reason = _launch_payload(
+        ent,
+        harness,
+        binding,
+        task=task,
+        workitem_id=workitem_id,
+        write_scope=list(write_scope or []),
+        can_write_context=can_write_context,
+        can_use_mcp=can_use_mcp,
+        refresh_adapter=refresh_adapter,
+    )
+    handle = _runtime_handle(str(spec.get("slug") or ent.id.removeprefix("TEAMMEMBER-")))
+    now = _now_iso()
+    record = {
+        "runtime_handle": handle,
+        "team_member_id": ent.id,
+        "team_member_slug": spec.get("slug"),
+        "harness": dispatch.get("harness"),
+        "provider": dispatch.get("provider"),
+        "model": dispatch.get("model"),
+        "effort": dispatch.get("effort"),
+        "runtime_state": runtime_state,
+        "launch_mode": dispatch.get("launch_mode"),
+        "workitem_id": workitem_id,
+        "task": task,
+        "write_scope": list(write_scope or []),
+        "can_write_context": bool(can_write_context),
+        "can_use_mcp": bool(can_use_mcp),
+        "created_at": now,
+        "updated_at": now,
+        "failure_reason": failure_reason,
+        "binding": binding,
+        "dispatch": dispatch,
+    }
+
+    state = _read_runtime_state(root)
+    state["runtimes"][handle] = record
+    _write_runtime_state(root, state)
+    log.log_side_effect(
+        "TeamMember", ent.id, "team_member.runtime_launched",
+        f"Recorded TeamMember runtime {handle!r} for {ent.id!r}",
+        root=root,
+        actor=ent.id,
+        details={
+            "runtime_handle": handle,
+            "runtime_state": runtime_state,
+            "harness": dispatch.get("harness"),
+            "workitem_id": workitem_id,
+        },
+    )
+    return {
+        "ok": runtime_state != "failed",
+        "runtime": record,
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def launch_workitem_assignee(
+    workitem_id: str,
+    harness: str | None = None,
+    task: str | None = None,
+    write_scope: list[str] | None = None,
+    can_write_context: bool = False,
+    can_use_mcp: bool = False,
+    task_hints: dict | None = None,
+    refresh_adapter: bool = True,
+) -> dict:
+    """Launch the TeamMember currently assigned to a WorkItem."""
+    root = paths.find_project_root()
+    assignee, error = _workitem_assignee(root, workitem_id)
+    if error:
+        return error
+    return launch_team_member(
+        assignee or "",
+        harness=harness,
+        workitem_id=workitem_id,
+        task=task,
+        write_scope=write_scope,
+        can_write_context=can_write_context,
+        can_use_mcp=can_use_mcp,
+        task_hints=task_hints,
+        refresh_adapter=refresh_adapter,
+    )
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def get_team_member_runtime(runtime_handle: str) -> dict:
+    """Return one TeamMember runtime record by opaque handle."""
+    root = paths.find_project_root()
+    state = _read_runtime_state(root)
+    runtime = state.get("runtimes", {}).get(runtime_handle)
+    if not runtime:
+        return {"error": f"runtime {runtime_handle!r} not found"}
+    return {"runtime": runtime}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def list_team_member_runtimes(
+    team_member_id: str | None = None,
+    runtime_state: str | None = None,
+    active_only: bool = False,
+) -> dict:
+    """List TeamMember runtime records with optional filters."""
+    if runtime_state and runtime_state not in _RUNTIME_STATES:
+        return {"error": f"runtime_state must be one of {sorted(_RUNTIME_STATES)}"}
+    root = paths.find_project_root()
+    state = _read_runtime_state(root)
+    runtimes = list((state.get("runtimes") or {}).values())
+    if team_member_id:
+        wanted = (
+            team_member_id if team_member_id.startswith("TEAMMEMBER-")
+            else f"TEAMMEMBER-{team_member_id}"
+        )
+        runtimes = [r for r in runtimes if r.get("team_member_id") == wanted]
+    if runtime_state:
+        runtimes = [
+            r for r in runtimes if r.get("runtime_state") == runtime_state
+        ]
+    if active_only:
+        runtimes = [
+            r for r in runtimes
+            if r.get("runtime_state") in _RUNTIME_ACTIVE_STATES
+        ]
+    runtimes.sort(key=lambda r: str(r.get("created_at") or ""), reverse=True)
+    return {"runtimes": runtimes, "count": len(runtimes)}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def stop_team_member_runtime(
+    runtime_handle: str,
+    reason: str | None = None,
+) -> dict:
+    """Mark a TeamMember runtime stopped.
+
+    The outer harness is responsible for terminating a live process. This
+    tool records the processkit-side runtime status transition.
+    """
+    root = paths.find_project_root()
+    state = _read_runtime_state(root)
+    runtime = (state.get("runtimes") or {}).get(runtime_handle)
+    if not runtime:
+        return {"error": f"runtime {runtime_handle!r} not found"}
+    if runtime.get("runtime_state") == "stopped":
+        return {"ok": True, "runtime": runtime}
+    runtime["runtime_state"] = "stopped"
+    runtime["stopped_at"] = _now_iso()
+    runtime["updated_at"] = runtime["stopped_at"]
+    runtime["stop_reason"] = reason
+    state["runtimes"][runtime_handle] = runtime
+    _write_runtime_state(root, state)
+    log.log_side_effect(
+        "TeamMember", runtime.get("team_member_id") or "TEAMMEMBER",
+        "team_member.runtime_stopped",
+        f"Stopped TeamMember runtime {runtime_handle!r}",
+        root=root,
+        actor=runtime.get("team_member_id") or "system",
+        details={"runtime_handle": runtime_handle, "reason": reason},
+    )
+    return {"ok": True, "runtime": runtime}
 
 
 # ---------------------------------------------------------------------------

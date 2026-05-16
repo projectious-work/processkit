@@ -12,8 +12,8 @@ None.
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
-| 2026-05-14 | MIG-20260514T193936 — processkit v0.26.5 → v0.26.9 | 0 changed upstream, 0 conflicts, 4 new, 0 removed, 0 stale-removed (2 groups affected) |
-| 2026-05-14 | MIG-RUNTIME-20260514T193936 — aibox-runtime-home 0.25.14 → 0.26.3 | 0 changed upstream, 0 conflicts, 7 new, 0 removed (2 groups affected) |
+| 2026-05-16 | MIG-20260515T184054 — processkit v0.26.10 → v0.26.13 | 0 changed upstream, 0 conflicts, 8 new, 0 removed, 0 stale-removed (2 groups affected) |
+| 2026-05-16 | MIG-RUNTIME-20260515T184054 — aibox-runtime-home 0.26.4 → 0.26.5 | 0 changed upstream, 0 conflicts, 1 new, 0 removed (1 groups affected) |
 
 ## Rejected (1)
 
@@ -33,3 +33,4 @@ None.
 | 20260411_2249_0.17.12-to-0.17.15.md | v0.17.12 → v0.17.15 | completed |
 | 20260413_1336_0.18.1-to-0.18.2.md | v0.18.1 → v0.18.2 | completed |
 | 20260417_1626_0.18.2-to-0.18.3.md | v0.18.2 → v0.18.3 | completed (doc stale — actual host jumped 0.18.2 → 0.18.4; aibox upstream investigating the skipped 0.18.3 sync artefacts) |
+| 20260515_2040_0.26.4-to-0.26.5.md | 0.26.4 → 0.26.5 | completed |

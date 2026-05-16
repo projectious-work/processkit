@@ -1,6 +1,6 @@
 {
   "catalog_version": 1,
-  "source_server_count": 27,
+  "source_server_count": 26,
   "tools": [
     {
       "annotations": {
@@ -6588,189 +6588,6 @@
     {
       "annotations": {
         "destructiveHint": false,
-        "idempotentHint": true,
-        "openWorldHint": false,
-        "readOnlyHint": true
-      },
-      "collision_sources": [
-        "runtime-prune"
-      ],
-      "collision_status": "unique",
-      "deduplicated": false,
-      "description": "Return structured disk usage and risk data for prune scopes.",
-      "name": "analyze_disk_usage",
-      "output_schema": null,
-      "parameters": {
-        "properties": {
-          "project_root": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Project Root"
-          },
-          "scopes": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Scopes"
-          }
-        },
-        "title": "analyze_disk_usageArguments",
-        "type": "object"
-      },
-      "permission_class": "read-only",
-      "source_server_path": "processkit/runtime-prune/mcp/server.py",
-      "source_skill": "runtime-prune",
-      "source_tool": "analyze_disk_usage",
-      "title": null
-    },
-    {
-      "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": false,
-        "openWorldHint": false,
-        "readOnlyHint": false
-      },
-      "collision_sources": [
-        "runtime-prune"
-      ],
-      "collision_status": "unique",
-      "deduplicated": false,
-      "description": "Apply confirmed cleanup for processkit-owned scopes.",
-      "name": "apply_prune",
-      "output_schema": null,
-      "parameters": {
-        "properties": {
-          "confirmation": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Confirmation"
-          },
-          "project_root": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Project Root"
-          },
-          "scopes": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Scopes"
-          }
-        },
-        "title": "apply_pruneArguments",
-        "type": "object"
-      },
-      "permission_class": "destructive-write",
-      "source_server_path": "processkit/runtime-prune/mcp/server.py",
-      "source_skill": "runtime-prune",
-      "source_tool": "apply_prune",
-      "title": null
-    },
-    {
-      "annotations": {
-        "destructiveHint": false,
-        "idempotentHint": true,
-        "openWorldHint": false,
-        "readOnlyHint": true
-      },
-      "collision_sources": [
-        "runtime-prune"
-      ],
-      "collision_status": "unique",
-      "deduplicated": false,
-      "description": "Return a dry-run prune plan without applying cleanup.",
-      "name": "plan_prune",
-      "output_schema": null,
-      "parameters": {
-        "properties": {
-          "project_root": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Project Root"
-          },
-          "scopes": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Scopes"
-          }
-        },
-        "title": "plan_pruneArguments",
-        "type": "object"
-      },
-      "permission_class": "read-only",
-      "source_server_path": "processkit/runtime-prune/mcp/server.py",
-      "source_skill": "runtime-prune",
-      "source_tool": "plan_prune",
-      "title": null
-    },
-    {
-      "annotations": {
-        "destructiveHint": false,
         "idempotentHint": false,
         "openWorldHint": false,
         "readOnlyHint": false
@@ -8300,6 +8117,40 @@
     {
       "annotations": {
         "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return one TeamMember runtime record by opaque handle.",
+      "name": "get_team_member_runtime",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "runtime_handle": {
+            "title": "Runtime Handle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "runtime_handle"
+        ],
+        "title": "get_team_member_runtimeArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "get_team_member_runtime",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
         "idempotentHint": false,
         "openWorldHint": false,
         "readOnlyHint": false
@@ -8363,6 +8214,232 @@
       "source_server_path": "processkit/team-manager/mcp/server.py",
       "source_skill": "team-manager",
       "source_tool": "init_memory_tree",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Create a runtime launch record for a TeamMember.\n\nprocesskit cannot directly control host harness process lifecycles from\ninside this MCP server. The launch record is the durable contract a\nharness adapter consumes: resolved identity/model metadata, explicit\nwrite policy, runtime state, and a harness-specific dispatch payload.\n",
+      "name": "launch_team_member",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "can_use_mcp": {
+            "default": false,
+            "title": "Can Use Mcp",
+            "type": "boolean"
+          },
+          "can_write_context": {
+            "default": false,
+            "title": "Can Write Context",
+            "type": "boolean"
+          },
+          "harness": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Harness"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "refresh_adapter": {
+            "default": true,
+            "title": "Refresh Adapter",
+            "type": "boolean"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Task"
+          },
+          "task_hints": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Task Hints"
+          },
+          "workitem_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Workitem Id"
+          },
+          "write_scope": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Write Scope"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "launch_team_memberArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "launch_team_member",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Launch the TeamMember currently assigned to a WorkItem.",
+      "name": "launch_workitem_assignee",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "can_use_mcp": {
+            "default": false,
+            "title": "Can Use Mcp",
+            "type": "boolean"
+          },
+          "can_write_context": {
+            "default": false,
+            "title": "Can Write Context",
+            "type": "boolean"
+          },
+          "harness": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Harness"
+          },
+          "refresh_adapter": {
+            "default": true,
+            "title": "Refresh Adapter",
+            "type": "boolean"
+          },
+          "task": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Task"
+          },
+          "task_hints": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Task Hints"
+          },
+          "workitem_id": {
+            "title": "Workitem Id",
+            "type": "string"
+          },
+          "write_scope": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Write Scope"
+          }
+        },
+        "required": [
+          "workitem_id"
+        ],
+        "title": "launch_workitem_assigneeArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "launch_workitem_assignee",
       "title": null
     },
     {
@@ -8501,6 +8578,62 @@
       "source_server_path": "processkit/team-manager/mcp/server.py",
       "source_skill": "team-manager",
       "source_tool": "list_role_slots",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "List TeamMember runtime records with optional filters.",
+      "name": "list_team_member_runtimes",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "active_only": {
+            "default": false,
+            "title": "Active Only",
+            "type": "boolean"
+          },
+          "runtime_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Runtime State"
+          },
+          "team_member_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Team Member Id"
+          }
+        },
+        "title": "list_team_member_runtimesArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "list_team_member_runtimes",
       "title": null
     },
     {
@@ -8821,6 +8954,52 @@
       "source_server_path": "processkit/team-manager/mcp/server.py",
       "source_skill": "team-manager",
       "source_tool": "set_active_interlocutor",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "team-manager"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Mark a TeamMember runtime stopped.\n\nThe outer harness is responsible for terminating a live process. This\ntool records the processkit-side runtime status transition.\n",
+      "name": "stop_team_member_runtime",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Reason"
+          },
+          "runtime_handle": {
+            "title": "Runtime Handle",
+            "type": "string"
+          }
+        },
+        "required": [
+          "runtime_handle"
+        ],
+        "title": "stop_team_member_runtimeArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/team-manager/mcp/server.py",
+      "source_skill": "team-manager",
+      "source_tool": "stop_team_member_runtime",
       "title": null
     },
     {

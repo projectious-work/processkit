@@ -448,6 +448,194 @@ def test_interlocutor_runtime_binding_reports_mismatch(
     assert got["binding"]["mismatch"]["effort"] is False
 
 
+def _install_resolver(
+    server_mod,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    harness: str,
+    provider: str,
+    family: str,
+    model_id: str,
+    vendor_model_id: str | None = None,
+    effort: str = "medium",
+):
+    class Candidate:
+        version_id = "1"
+        rank = 1
+        source_layer = 2
+        rationale = "team-member preference"
+        profile_id = "ART-profile"
+        profile_rank = 1
+
+    Candidate.model_id = model_id
+    Candidate.effort = effort
+
+    class Resolver:
+        @staticmethod
+        def _runtime_context(task_hints=None):
+            return {
+                "harnesses": [harness],
+                "allowed_providers": [provider],
+                "preferred_providers": [provider],
+                "provider_source": "test",
+            }
+
+        @staticmethod
+        def resolve(**kwargs):
+            return [Candidate()], [{"step": 2, "action": "test"}]
+
+    monkeypatch.setattr(server_mod, "_load_model_resolver", lambda: Resolver)
+    monkeypatch.setattr(
+        server_mod,
+        "_model_spec_from_id",
+        lambda _model_id: {
+            "provider": provider,
+            "family": family,
+            "profile_ids": [family],
+            "versions": [{
+                "version_id": "1",
+                "vendor_model_id": vendor_model_id,
+            }],
+        },
+    )
+
+
+def test_launch_team_member_records_claude_dispatch(
+    server_mod,
+    project_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    server_mod.create_team_member(
+        name="Alice", type="ai-agent", slug="alice",
+        default_role="ROLE-software-engineer",
+        default_seniority="expert",
+    )
+    _install_resolver(
+        server_mod,
+        monkeypatch,
+        harness="claude",
+        provider="anthropic",
+        family="claude-sonnet",
+        model_id="ART-claude",
+        vendor_model_id="claude-sonnet-4.5",
+        effort="high",
+    )
+
+    result = server_mod.launch_team_member(
+        "alice",
+        harness="claude",
+        task="implement the assigned fix",
+        write_scope=["src/"],
+        can_write_context=False,
+        can_use_mcp=False,
+    )
+
+    assert result["ok"] is True
+    runtime = result["runtime"]
+    assert runtime["runtime_state"] == "queued"
+    assert runtime["team_member_id"] == "TEAMMEMBER-alice"
+    assert runtime["launch_mode"] == "claude-subagent"
+    assert runtime["dispatch"]["dispatch"]["type"] == "claude_subagent"
+    assert runtime["dispatch"]["dispatch"]["subagent_type"] == "alice"
+    assert runtime["write_scope"] == ["src/"]
+    assert runtime["can_write_context"] is False
+    assert (project_root / ".claude" / "agents" / "alice.md").is_file()
+    assert (project_root / "context" / "team" / "runtime-sessions.json").is_file()
+
+
+def test_launch_team_member_records_codex_dispatch_and_status(
+    server_mod,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    server_mod.create_team_member(
+        name="Alice", type="ai-agent", slug="alice",
+        default_role="ROLE-software-engineer",
+        default_seniority="expert",
+    )
+    _install_resolver(
+        server_mod,
+        monkeypatch,
+        harness="codex",
+        provider="openai",
+        family="gpt-5",
+        model_id="ART-openai",
+        vendor_model_id="gpt-5.5",
+        effort="medium",
+    )
+
+    result = server_mod.launch_team_member(
+        "alice",
+        harness="codex",
+        task="review a patch",
+        write_scope=["docs/"],
+        refresh_adapter=False,
+    )
+
+    runtime = result["runtime"]
+    handle = runtime["runtime_handle"]
+    assert result["ok"] is True
+    assert runtime["harness"] == "codex"
+    assert runtime["model"] == "gpt-5.5"
+    assert runtime["launch_mode"] == "codex-agent"
+    assert runtime["dispatch"]["requires_harness_dispatch"] is True
+    assert runtime["dispatch"]["dispatch"]["identity"]["slug"] == "alice"
+
+    listed = server_mod.list_team_member_runtimes(active_only=True)
+    assert listed["count"] == 1
+    assert listed["runtimes"][0]["runtime_handle"] == handle
+    got = server_mod.get_team_member_runtime(handle)
+    assert got["runtime"]["runtime_handle"] == handle
+
+    stopped = server_mod.stop_team_member_runtime(handle, reason="done")
+    assert stopped["ok"] is True
+    assert stopped["runtime"]["runtime_state"] == "stopped"
+    assert stopped["runtime"]["stop_reason"] == "done"
+    assert server_mod.list_team_member_runtimes(active_only=True)["count"] == 0
+
+
+def test_launch_workitem_assignee_uses_teammember_assignee(
+    server_mod,
+    project_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    server_mod.create_team_member(
+        name="Alice", type="ai-agent", slug="alice",
+        default_role="ROLE-software-engineer",
+        default_seniority="expert",
+    )
+    _install_resolver(
+        server_mod,
+        monkeypatch,
+        harness="codex",
+        provider="openai",
+        family="gpt-5",
+        model_id="ART-openai",
+        vendor_model_id="gpt-5.5",
+    )
+    workitem_id = "BACK-20260516_1200-TestLaunch-runtime-launch-smoke"
+    wi = _entity_mod.new(
+        "WorkItem",
+        workitem_id,
+        {
+            "title": "Runtime launch smoke",
+            "state": "open",
+            "assignee": "TEAMMEMBER-alice",
+        },
+    )
+    wi.write(project_root / "context" / "workitems" / "2026" / "05" / f"{workitem_id}.md")
+
+    result = server_mod.launch_workitem_assignee(
+        workitem_id,
+        harness="codex",
+        task="pick up the workitem",
+        refresh_adapter=False,
+    )
+
+    assert result["ok"] is True
+    assert result["runtime"]["workitem_id"] == workitem_id
+    assert result["runtime"]["team_member_id"] == "TEAMMEMBER-alice"
+
+
 def test_active_interlocutor_rejects_inactive(server_mod):
     server_mod.create_team_member(name="Alice Chen", type="human", slug="alice-chen")
     server_mod.deactivate_team_member("alice-chen")

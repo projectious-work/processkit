@@ -19,8 +19,10 @@ Known parser quirks:
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import re
 from pathlib import Path
+from random import choices
 from typing import Iterator
 
 import yaml  # via uv inline deps in doctor.py
@@ -57,6 +59,9 @@ _ACTOR_IDENTITY_RE = re.compile(
     r"^ACTOR-\d{8}_\d{4}-[A-Z][a-z]+[A-Z][a-z]+-[a-z0-9-]+$"
 )
 _ACTOR_ROLE_RE = re.compile(r"^ACTOR-[a-z][a-z0-9-]*$")
+_MISSING_ACTOR_MARKER = "'actor' is a required property"
+_CORRECTION_EVENT_TYPE = "logentry.corrected"
+_CORRECTION_GENERIC_REASON = "_schema_filename_all"
 
 
 def _check_actor_id_pattern(
@@ -134,6 +139,86 @@ def _parse_frontmatter(path: Path) -> tuple[dict | None, str | None]:
     return data, None
 
 
+def _to_isodate(ts: datetime) -> str:
+    return ts.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _safe_slug() -> str:
+    return "".join(choices("abcdefghijklmnopqrstuvwxyz0123456789", k=8))
+
+
+def _iter_log_corrections(repo_root: Path) -> list[Path]:
+    log_root = repo_root / "context" / "logs"
+    if not log_root.is_dir():
+        return []
+    return list(log_root.rglob("*.md"))
+
+
+def _extract_correction_targets(details: dict[str, object]) -> set[str]:
+    targets: set[str] = set()
+    raw = details.get("corrects")
+    if isinstance(raw, str):
+        targets.add(raw)
+    elif isinstance(raw, dict):
+        if isinstance(raw.get("id"), str):
+            targets.add(raw.get("id"))
+    elif isinstance(raw, list):
+        for item in raw:
+            if isinstance(item, str):
+                targets.add(item)
+            elif isinstance(item, dict) and isinstance(item.get("id"), str):
+                targets.add(item.get("id"))
+    return targets
+
+
+def _extract_correction_issue_ids(details: dict[str, object]) -> set[str]:
+    issues: set[str] = set()
+    raw = details.get("issues")
+    if isinstance(raw, str):
+        issues.add(raw)
+    elif isinstance(raw, list):
+        for item in raw:
+            if isinstance(item, str):
+                issues.add(item)
+            elif isinstance(item, dict) and isinstance(item.get("id"), str):
+                issues.add(item.get("id"))
+    return issues or {_CORRECTION_GENERIC_REASON}
+
+
+def _load_log_correction_map(repo_root: Path) -> dict[str, set[str]]:
+    out: dict[str, set[str]] = {}
+    for p in _iter_log_corrections(repo_root):
+        fm, perr = _parse_frontmatter(p)
+        if fm is None:
+            continue
+        spec = fm.get("spec") if isinstance(fm, dict) else None
+        if not isinstance(spec, dict):
+            continue
+        if spec.get("event_type") != _CORRECTION_EVENT_TYPE:
+            continue
+        details = spec.get("details")
+        if not isinstance(details, dict):
+            continue
+        targets = _extract_correction_targets(details)
+        if not targets:
+            continue
+        issue_ids = _extract_correction_issue_ids(details)
+        for target_id in targets:
+            out.setdefault(target_id, set()).update(issue_ids)
+    return out
+
+
+def _already_corrected(
+    correction_map: dict[str, set[str]],
+    entity_id: str,
+    finding_id: str,
+) -> bool:
+    by_entity = correction_map.get(entity_id)
+    if by_entity is None:
+        return False
+    return finding_id in by_entity or _CORRECTION_GENERIC_REASON in by_entity
+
+
 def _iter_entity_files(ctx_root: Path, kind_dir: str, since_files: set[Path] | None) -> Iterator[Path]:
     root = ctx_root / kind_dir
     if not root.is_dir():
@@ -191,6 +276,7 @@ def run(ctx) -> list[CheckResult]:
     repo_root: Path = ctx["repo_root"]
     since_files: set[Path] | None = ctx.get("since_files")
     results: list[CheckResult] = []
+    correction_map = _load_log_correction_map(repo_root)
 
     ctx_root = repo_root / "context"
     schemas_dir = _resolve_schemas_dir(repo_root)
@@ -251,17 +337,31 @@ def run(ctx) -> list[CheckResult]:
             # --- filename stem vs metadata.id -----------------------------
             stem = path.stem
             if meta_id and stem != meta_id:
+                finding_id = "schema.filename-id-mismatch"
+                is_fixed = (
+                    kind == "logentry"
+                    and _already_corrected(
+                        correction_map,
+                        str(meta_id),
+                        finding_id,
+                    )
+                )
                 results.append(CheckResult(
-                    severity="WARN",
+                    severity="INFO" if is_fixed else "WARN",
                     category="schema_filename",
-                    id="schema.filename-id-mismatch",
+                    id=finding_id,
                     message=(
                         f"{rel}: filename stem '{stem}' != metadata.id "
                         f"'{meta_id}' (Phase 1: rename deferred)"
+                        + (f" (reconciled in correction LogEntry)" if is_fixed else "")
                     ),
                     entity_ref=str(rel),
-                    fixable=False,
-                    suggested_fix=f"rename to {meta_id}.md (Phase 2)",
+                    fixable=(kind == "logentry" and not is_fixed),
+                    suggested_fix=(
+                        f"emit logentry.corrected for {meta_id}"
+                        if kind == "logentry" and not is_fixed
+                        else None
+                    ),
                 ))
 
             # --- Actor: two-class ID pattern check -------------------------
@@ -285,15 +385,33 @@ def run(ctx) -> list[CheckResult]:
                 fn_date = m.group(1)  # YYYYMMDD
                 created_str = created.isoformat() if hasattr(created, "isoformat") else str(created)
                 if fn_date not in created_str.replace("-", ""):
+                    finding_id = "schema.filename-date-mismatch"
+                    is_fixed = (
+                        kind == "logentry"
+                        and isinstance(meta_id, str)
+                        and _already_corrected(
+                            correction_map,
+                            meta_id,
+                            finding_id,
+                        )
+                    )
                     results.append(CheckResult(
-                        severity="WARN",
+                        severity="INFO" if is_fixed else "WARN",
                         category="schema_filename",
-                        id="schema.filename-date-mismatch",
+                        id=finding_id,
                         message=(
                             f"{rel}: filename date '{fn_date}' not in "
                             f"metadata.created '{created_str}'"
+                            + (f" (reconciled in correction LogEntry)"
+                               if is_fixed else " (Phase 1: rename deferred)")
                         ),
                         entity_ref=str(rel),
+                        fixable=(kind == "logentry" and not is_fixed),
+                        suggested_fix=(
+                            f"emit logentry.corrected for {meta_id}"
+                            if kind == "logentry" and not is_fixed
+                            else None
+                        ),
                     ))
 
             # --- schema validation ----------------------------------------
@@ -301,6 +419,7 @@ def run(ctx) -> list[CheckResult]:
             for err in errs:
                 # Owner policy: datetime-coercion errors are WARN (parser quirk),
                 # all other schema errors are ERROR.
+                finding_id = "schema.invalid"
                 if "date-time" in err or "datetime" in err.lower() or "is not of type 'string'" in err and "created" in err:
                     results.append(CheckResult(
                         severity="WARN",
@@ -310,10 +429,38 @@ def run(ctx) -> list[CheckResult]:
                         entity_ref=str(rel),
                     ))
                 else:
+                    if kind == "logentry" and _MISSING_ACTOR_MARKER in err:
+                        finding_id = "schema.invalid"
+                        is_fixed = _already_corrected(
+                            correction_map,
+                            str(meta_id) if isinstance(meta_id, str) else path.stem,
+                            finding_id,
+                        )
+                        results.append(CheckResult(
+                            severity="INFO" if is_fixed else "ERROR",
+                            category="schema_filename",
+                            id=finding_id,
+                            message=(
+                                f"{rel}: {err}"
+                                + (
+                                    " (reconciled in correction LogEntry)"
+                                    if is_fixed
+                                    else ""
+                                )
+                            ),
+                            entity_ref=str(rel),
+                            fixable=(not is_fixed),
+                            suggested_fix=(
+                                f"emit logentry.corrected for {meta_id}"
+                                if not is_fixed
+                                else None
+                            ),
+                        ))
+                        continue
                     results.append(CheckResult(
                         severity="ERROR",
                         category="schema_filename",
-                        id="schema.invalid",
+                        id=finding_id,
                         message=f"{rel}: {err}",
                         entity_ref=str(rel),
                     ))
@@ -327,43 +474,42 @@ def run(ctx) -> list[CheckResult]:
     return results
 
 
-# --- narrow autofix (DEC-BrightHawk / SnappyBird replacement) --------------
+# --- narrow autofix (append-only log correction) -----------------------------
 #
-# Scope: exactly ONE failure pattern — a LogEntry missing the required
-# `actor` field (CalmAnt-class, pre-TeamMember schema-drift window).
-# The fix inserts `actor: system` into spec. Any other schema.invalid
-# pattern is left untouched — extend case-by-case when a real need
-# arises, per DEC-20260424_0128-BrightHawk.
-
-_MISSING_ACTOR_MARKER = "'actor' is a required property"
+# Scope:
+# - LogEntry filename-id mismatch
+# - LogEntry filename date mismatch
+# - LogEntry schema-invalid "actor is required" marker
 
 
 def run_fix(ctx, results: list[CheckResult]) -> list[dict]:
-    """Apply narrow, known-safe patches for specific schema ERRORs.
-
-    Currently handles only: LogEntry missing required field ``actor``
-    → insert ``actor: system`` into spec, validate post-patch, write
-    back on success.
-
-    Returns a list of fix records with ``status`` in
-    ``applied | skipped | rolled-back``.  Called by doctor.py only
-    when ``--fix=schema_filename`` (or ``--fix-all``) is passed.
-    """
+    """Write correction LogEntries instead of editing source log files."""
     repo_root: Path = ctx["repo_root"]
-    schemas_dir = repo_root / "src" / "context" / "schemas"
-    log_schema = _load_schema(schemas_dir, "logentry")
     fixes: list[dict] = []
+    correction_map = _load_log_correction_map(repo_root)
 
+    fix_targets: dict[Path, set[str]] = {}
     for r in results:
-        if r.id != "schema.invalid":
+        if r.category != "schema_filename":
             continue
-        if _MISSING_ACTOR_MARKER not in (r.message or ""):
-            continue
-        if not r.entity_ref:
+        if r.entity_ref is None:
             continue
         rel = Path(r.entity_ref)
         if rel.parts[:2] != ("context", "logs"):
-            continue  # only LogEntries
+            continue
+        if r.id not in {
+            "schema.filename-id-mismatch",
+            "schema.filename-date-mismatch",
+            "schema.invalid",
+        }:
+            continue
+        if r.id == "schema.invalid" and _MISSING_ACTOR_MARKER not in (
+            r.message or ""
+        ):
+            continue
+        fix_targets.setdefault(rel, set()).add(r.id)
+
+    for rel, ids in fix_targets.items():
         abs_path = repo_root / rel
         if not abs_path.is_file():
             fixes.append({
@@ -371,14 +517,6 @@ def run_fix(ctx, results: list[CheckResult]) -> list[dict]:
                 "entity": str(rel),
                 "status": "skipped",
                 "reason": "file not found",
-            })
-            continue
-        if log_schema is None:
-            fixes.append({
-                "category": "schema_filename",
-                "entity": str(rel),
-                "status": "skipped",
-                "reason": "no logentry.yaml schema available for validation",
             })
             continue
 
@@ -392,62 +530,79 @@ def run_fix(ctx, results: list[CheckResult]) -> list[dict]:
             })
             continue
 
-        spec = fm.get("spec") if isinstance(fm, dict) else None
-        if not isinstance(spec, dict):
+        md = fm.get("metadata") if isinstance(fm, dict) else None
+        if not isinstance(md, dict):
             fixes.append({
                 "category": "schema_filename",
                 "entity": str(rel),
                 "status": "skipped",
-                "reason": "no spec block in frontmatter",
-            })
-            continue
-        if "actor" in spec:
-            fixes.append({
-                "category": "schema_filename",
-                "entity": str(rel),
-                "status": "skipped",
-                "reason": "actor already present",
+                "reason": "no metadata block in frontmatter",
             })
             continue
 
-        # Patch in memory and re-validate against the schema.
-        spec["actor"] = "system"
-        errs_after = _validate_against_schema(fm, log_schema)
-        if errs_after:
-            # Post-patch STILL invalid → don't write; report.
-            fixes.append({
-                "category": "schema_filename",
-                "entity": str(rel),
-                "status": "rolled-back",
-                "reason": f"post-patch still invalid: {errs_after[0]}",
-            })
-            continue
-
-        # Rewrite frontmatter, preserving the original body verbatim.
-        original_text = abs_path.read_text(encoding="utf-8")
-        parts = original_text.split("---", 2)
-        if len(parts) < 3:
+        target_id = str(md.get("id", abs_path.stem))
+        unresolved = {
+            fid for fid in ids if not _already_corrected(
+                correction_map, target_id, fid
+            )
+        }
+        if not unresolved:
             fixes.append({
                 "category": "schema_filename",
                 "entity": str(rel),
                 "status": "skipped",
-                "reason": "unterminated frontmatter",
+                "reason": "already corrected",
             })
             continue
-        body = parts[2]
-        new_fm_text = yaml.safe_dump(fm, sort_keys=False, allow_unicode=True)
-        new_text = f"---\n{new_fm_text}---{body}"
-        abs_path.write_text(new_text, encoding="utf-8")
+
+        now = datetime.now(timezone.utc)
+        log_id = f"LOG-{now.strftime('%Y%m%d_%H%M')}-Fix-{_safe_slug()}"
+        correction_path = (
+            repo_root / "context" / "logs" / now.strftime("%Y") / now.strftime("%m")
+            / f"{log_id}.md"
+        )
+        details = {
+            "corrects": {
+                "kind": "LogEntry",
+                "id": target_id,
+                "path": str(rel),
+            },
+            "issues": sorted(unresolved),
+        }
+        spec: dict[str, object] = {
+            "event_type": _CORRECTION_EVENT_TYPE,
+            "timestamp": _to_isodate(now),
+            "actor": "system",
+            "subject": target_id,
+            "subject_kind": "LogEntry",
+            "summary": f"Correction for LogEntry {target_id}",
+            "details": details,
+        }
+        fm_text = yaml.safe_dump(
+            {
+                "apiVersion": "processkit.projectious.work/v2",
+                "kind": "LogEntry",
+                "metadata": {
+                    "id": log_id,
+                    "created": _to_isodate(now),
+                },
+                "spec": spec,
+            },
+            sort_keys=False,
+            allow_unicode=True,
+        )
+        correction_path.parent.mkdir(parents=True, exist_ok=True)
+        correction_path.write_text(f"---\n{fm_text}---\n", encoding="utf-8")
 
         fixes.append({
             "category": "schema_filename",
             "entity": str(rel),
             "status": "applied",
-            "patch": "spec.actor = 'system'",
-            "rationale": (
-                "missing required 'actor' field (CalmAnt-class, "
-                "DEC-BrightHawk)"
-            ),
+            "correction_log_id": log_id,
+            "correction_path": str(correction_path.relative_to(repo_root)),
+            "issue_ids": sorted(unresolved),
+            "rationale": "append-only logentry.corrected emitted",
         })
+        correction_map.setdefault(target_id, set()).update(unresolved)
 
     return fixes

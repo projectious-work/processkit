@@ -1,6 +1,6 @@
 ---
 name: pk-doctor
-description: Use the pk-doctor skill to run the aggregator health check and print a
+description: Use the pk-doctor skill to run the aggregator health check and resolve
 ---
 
 Use the pk-doctor skill to run the aggregator health check and resolve

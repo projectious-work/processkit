@@ -35,6 +35,7 @@ import tempfile
 import textwrap
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+import yaml
 
 
 # ---------------------------------------------------------------------------
@@ -910,6 +911,122 @@ with tempfile.TemporaryDirectory() as tmp:
         "walked > 0 entity files (no longer silent zero)",
         "walked 1 entity file" in result.stdout,
         result.stdout[-400:],
+    )
+
+# ---------------------------------------------------------------------------
+# Test 8b: schema_filename --fix emits append-only logentry correction
+# ---------------------------------------------------------------------------
+print("\n[8b] schema_filename --fix emits append-only logentry.corrected")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    # No src/ tree for this test: use derived schema layout.
+    (root / "context" / "schemas").mkdir(parents=True)
+    src_logentry = _SCHEMAS_SRC / "logentry.yaml"
+    if src_logentry.is_file():
+        (root / "context" / "schemas" / "logentry.yaml").write_text(
+            src_logentry.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    # Stub drift script so doctor can run in this fixture.
+    (root / "scripts").mkdir()
+    drift = root / "scripts" / "check-src-context-drift.sh"
+    drift.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    drift.chmod(0o755)
+
+    # Seed one malformed LogEntry (id/date mismatches + missing actor).
+    (root / "context" / "logs").mkdir(parents=True)
+    malformed = root / "context" / "logs" / "LOG-20260425_1100-Fixture-event.md"
+    malformed.write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: LogEntry
+            metadata:
+              id: LOG-20260424_1100-Fixture-event
+              created: '2026-04-24T11:00:00+00:00'
+            spec:
+              event_type: test.fixture
+              timestamp: '2026-04-25T11:00:00+00:00'
+              summary: mismatched filename and no actor
+            ---
+            """),
+        encoding="utf-8",
+    )
+    malformed_before = malformed.read_text(encoding="utf-8")
+    stub = root / ".doctor-logentry.json"
+
+    detect = _run_doctor(root, "--category=schema_filename", stub_path=stub)
+    check(
+        "detect-only catches schema_filename issues",
+        detect.returncode == 1 and "schema.filename-id-mismatch" in detect.stdout
+        and "schema.filename-date-mismatch" in detect.stdout
+        and "'actor' is a required property" in detect.stdout,
+        detect.stdout[-600:],
+    )
+
+    fixed = _run_doctor(
+        root,
+        "--category=schema_filename",
+        "--fix=schema_filename",
+        "--yes",
+        stub_path=stub,
+    )
+    check(
+        "schema_filename fix pass still exits ERROR (pre-fix checks are pre-status)",
+        fixed.returncode == 1,
+        f"got {fixed.returncode}; stdout: {fixed.stdout[-400:]}",
+    )
+    payload_fix = json.loads(stub.read_text())
+    check(
+        "fix run emitted at least one correction LogEntry",
+        any(
+            isinstance(item, dict)
+            and item.get("correction_log_id")
+            for item in payload_fix.get("details", {}).get("fixes_applied", [])
+        ),
+        json.dumps(payload_fix.get("details", {}).get("fixes_applied", []), indent=2),
+    )
+    check(
+        "original logfrontmatter untouched",
+        malformed.read_text(encoding="utf-8") == malformed_before,
+    )
+
+    corrected = [
+        p for p in (root / "context" / "logs").rglob("LOG-*-Fix-*.md")
+    ]
+    check("exactly one append-only correction file written", len(corrected) == 1, str(corrected))
+    if corrected:
+        corrected_fm_text = corrected[0].read_text(encoding="utf-8").split("---", 2)
+        if len(corrected_fm_text) >= 3:
+            corrected_fm = yaml.safe_load(corrected_fm_text[1])
+        else:
+            corrected_fm = {}
+        check(
+            "correction has logentry.corrected event_type",
+            isinstance(corrected_fm, dict)
+            and corrected_fm.get("spec", {}).get("event_type")
+            == "logentry.corrected",
+        )
+        check(
+            "correction targets the malformed log",
+            isinstance(corrected_fm.get("spec", {}).get("details"), dict)
+            and corrected_fm["spec"]["details"].get("corrects", {}).get("id")
+            == "LOG-20260424_1100-Fixture-event",
+        )
+
+    fixed_detect = _run_doctor(root, "--category=schema_filename", stub_path=stub)
+    payload_fixed_detect = json.loads(stub.read_text())
+    fixed_stats = payload_fixed_detect.get("details", {}).get("categories", {}).get(
+        "schema_filename", {}
+    )
+    check(
+        "re-run drops schema_filename errors after correction",
+        fixed_stats.get("ERROR", 0) == 0 and fixed_stats.get("WARN", 0) == 0,
+    )
+    check(
+        "re-run keeps schema_filename as INFO-only",
+        fixed_stats.get("INFO", 0) >= 1,
+        str(fixed_stats),
     )
 
 # ---------------------------------------------------------------------------
@@ -1807,6 +1924,94 @@ with tempfile.TemporaryDirectory() as tmp:
             and payload["acceptable_resolution"] == "migrated",
             json.dumps(payload, indent=2),
         )
+
+
+# ---------------------------------------------------------------------------
+# Test 17b: entity_storage_hygiene --fix archives CLI migration briefings
+# ---------------------------------------------------------------------------
+print("\n[17b] entity_storage_hygiene --fix moves uncompleted CLI briefings")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "context" / "migrations").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    drift = root / "scripts" / "check-src-context-drift.sh"
+    drift.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    drift.chmod(0o755)
+
+    active_briefing = (
+        root / "context" / "migrations" / "20260410_1523_0.17.6-to-0.17.9.md"
+    )
+    completed_briefing = (
+        root / "context" / "migrations" / "20260409_0900_0.17.5-to-0.17.6.md"
+    )
+    active_briefing.write_text(
+        "# Active historical migration note\n",
+        encoding="utf-8",
+    )
+    completed_briefing.write_text(
+        textwrap.dedent("""\
+            # Migration: v0.17.5 → v0.17.6
+
+            **Status:** completed
+            """),
+        encoding="utf-8",
+    )
+
+    storage_results = _entity_storage_run({"repo_root": root})
+    storage_ids = {r.id for r in storage_results}
+    check("17b: detects root migration briefing", "storage.root-migration-briefings" in storage_ids)
+
+    stub = root / ".doctor-logentry.json"
+    fixed = _run_doctor(
+        root,
+        "--category=entity_storage_hygiene",
+        "--fix=entity_storage_hygiene",
+        "--yes",
+        stub_path=stub,
+    )
+    check(
+        "17b: fix pass exits cleanly",
+        fixed.returncode == 0,
+        f"got {fixed.returncode}; stdout: {fixed.stdout[-400:]}",
+    )
+
+    fix_payload = json.loads(stub.read_text())
+    fix_records = fix_payload.get("details", {}).get("fixes_applied", [])
+    archived = [
+        item for item in fix_records
+        if isinstance(item, dict)
+        and item.get("status") == "archived"
+    ]
+    check(
+        "17b: fix run emits archived status",
+        len(archived) == 1,
+        json.dumps(fix_records, indent=2),
+    )
+    check(
+        "17b: briefing moved out of migration root",
+        not active_briefing.exists(),
+        str(active_briefing),
+    )
+    check(
+        "17b: archive contains briefing payload",
+        (root / "context" / "archive" / "cli-migration-briefings" /
+         active_briefing.name).exists(),
+    )
+    check(
+        "17b: completed briefing stays in place",
+        completed_briefing.exists(),
+        str(completed_briefing),
+    )
+
+    storage_after = _entity_storage_run({"repo_root": root})
+    storage_after_ids = {r.id for r in storage_after}
+    check(
+        "17b: no uncompleted briefing finding remains after fix",
+        "storage.root-migration-briefings" not in storage_after_ids
+        or len(storage_after) == 0,
+        json.dumps([r.to_dict() for r in storage_after], indent=2),
+    )
 
 # ---------------------------------------------------------------------------
 # Test 18: agents_md_hygiene — managed blocks, references, stale guidance
