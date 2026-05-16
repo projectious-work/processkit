@@ -99,6 +99,43 @@ def _load_frontmatter(path: Path) -> dict[str, Any] | None:
     return data if isinstance(data, dict) else None
 
 
+def _is_cli_migration_completed(path: Path) -> bool:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    return _CLI_MIGRATION_COMPLETED_RE.search(text) is not None
+
+
+def _cli_migration_briefings(repo_root: Path) -> list[Path]:
+    root = repo_root / "context" / "migrations"
+    briefings = [
+        p for p in _root_markdown_files(root)
+        if _CLI_MIGRATION_RE.match(p.name)
+        and not _is_cli_migration_completed(p)
+    ]
+    return sorted(briefings)
+
+
+def _briefing_archive_root(repo_root: Path) -> Path:
+    return repo_root / _BRIEFING_ARCHIVE_SUBDIR
+
+
+def _allocate_archive_path(dst_root: Path, source: Path) -> Path:
+    target = dst_root / source.name
+    if not target.exists():
+        return target
+    stem = source.stem
+    suffix = source.suffix
+    for i in range(1, 1000):
+        target = dst_root / f"{stem}-archived-{i:03d}{suffix}"
+        if not target.exists():
+            return target
+    raise RuntimeError(
+        f"archive path unavailable for {source.name} under {dst_root}"
+    )
+
+
 def _is_v2(path: Path) -> bool:
     fm = _load_frontmatter(path) or {}
     return str(fm.get("apiVersion") or "").endswith("/v2")
@@ -163,43 +200,6 @@ def _nested_markdown_files(base: Path) -> list[Path]:
         if p.is_file()
         and not p.name.startswith("INDEX")
         and p.parent != base
-    )
-
-
-def _is_cli_migration_completed(path: Path) -> bool:
-    try:
-        text = path.read_text(encoding="utf-8")
-    except OSError:
-        return False
-    return _CLI_MIGRATION_COMPLETED_RE.search(text) is not None
-
-
-def _cli_migration_briefings(repo_root: Path) -> list[Path]:
-    root = repo_root / "context" / "migrations"
-    briefings = [
-        p for p in _root_markdown_files(root)
-        if _CLI_MIGRATION_RE.match(p.name)
-        and not _is_cli_migration_completed(p)
-    ]
-    return sorted(briefings)
-
-
-def _briefing_archive_root(repo_root: Path) -> Path:
-    return repo_root / _BRIEFING_ARCHIVE_SUBDIR
-
-
-def _allocate_archive_path(dst_root: Path, source: Path) -> Path:
-    target = dst_root / source.name
-    if not target.exists():
-        return target
-    stem = source.stem
-    suffix = source.suffix
-    for i in range(1, 1000):
-        target = dst_root / f"{stem}-archived-{i:03d}{suffix}"
-        if not target.exists():
-            return target
-    raise RuntimeError(
-        f"archive path unavailable for {source.name} under {dst_root}"
     )
 
 

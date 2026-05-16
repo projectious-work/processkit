@@ -43,35 +43,11 @@ import yaml
 # ---------------------------------------------------------------------------
 _SCRIPTS_DIR = Path(__file__).resolve().parent
 _DOCTOR = _SCRIPTS_DIR / "doctor.py"
-
-
-def _infer_repo_root(from_path: Path) -> Path:
-    for candidate in (from_path, *from_path.parents):
-        if (candidate / "context" / "skills" / "processkit" / "pk-doctor" / "scripts" / "doctor.py").is_file():
-            return candidate
-        if (candidate / "src" / "context" / "schemas").is_dir():
-            # legacy guardrail for environments that accidentally point at a
-            # file path named "schemas".
-            return candidate
-        if (candidate / "context" / "schemas").is_dir():
-            return candidate
-
-    # Local fallback for detached script execution.
-    return Path.cwd()
-
-
-def _schema_dir(repo_root: Path) -> Path:
-    for candidate in (
-        repo_root / "src" / "context" / "schemas",
-        repo_root / "context" / "schemas",
-    ):
-        if candidate.is_dir():
-            return candidate
-    return repo_root / "src" / "context" / "schemas"
-
-
-_REPO_ROOT = _infer_repo_root(_SCRIPTS_DIR)
-_SCHEMAS_SRC = _schema_dir(_REPO_ROOT)
+_REPO_ROOT = next(
+    p for p in Path(__file__).resolve().parents
+    if (p / "src" / "context" / "schemas").is_dir()
+)
+_SCHEMAS_SRC = _REPO_ROOT / "src" / "context" / "schemas"
 
 PASS = "\033[32mPASS\033[0m"
 FAIL = "\033[31mFAIL\033[0m"
@@ -506,90 +482,6 @@ with tempfile.TemporaryDirectory() as tmp:
         and "processkit-runtime-prune" in drift_warns[0].message,
         drift_warns[0].message if drift_warns else "",
     )
-
-# ---------------------------------------------------------------------------
-# Test 6b3: preauth_applied — gateway mode is intentional and intentional drift is ignored
-# ---------------------------------------------------------------------------
-print("\n[6b3] preauth_applied — gateway mode suppresses preauth drift")
-
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    spec_dir = (
-        root / "context" / "skills" / "processkit" /
-        "skill-gate" / "assets"
-    )
-    cfg_a = (
-        root / "context" / "skills" / "processkit" /
-        "artifact-management" / "mcp" / "mcp-config.json"
-    )
-    manifest = root / "context" / ".processkit-mcp-manifest.json"
-    spec_dir.mkdir(parents=True)
-    cfg_a.parent.mkdir(parents=True)
-    spec_dir.joinpath("preauth.json").write_text(
-        json.dumps({
-            "version": 1,
-            "permissions": {"allow": ["mcp__processkit-gateway__*"]},
-            "enabledMcpjsonServers": ["processkit-gateway"],
-            "codex": {
-                "mcp": {
-                    "allowed_tools": ["mcp__processkit-gateway__*"],
-                },
-            },
-        }),
-        encoding="utf-8",
-    )
-    cfg_a.write_text(
-        json.dumps({"mcpServers": {"processkit-artifact-management": {}}}),
-        encoding="utf-8",
-    )
-    manifest.write_text(
-        json.dumps({
-            "version": 1,
-            "generated_at": "2026-05-15T00:00:00Z",
-            "processkit_version": "v0.test",
-            "per_skill": [{
-                "path": "context/skills/processkit/artifact-management/mcp/mcp-config.json",
-                "sha256": "stale",
-            }],
-            "per_gateway": [],
-            "per_server_header": [],
-            "aggregate_sha256": "stale",
-        }),
-        encoding="utf-8",
-    )
-    (root / ".claude").mkdir()
-    (root / ".codex").mkdir()
-    (root / ".claude" / "settings.json").write_text(
-        json.dumps({
-            "permissions": {"allow": ["mcp__processkit-gateway__*"]},
-            "enabledMcpjsonServers": ["processkit-gateway"],
-            "_processkit_managed_keys": {
-                "enabled_servers": ["processkit-gateway"],
-            },
-        }),
-        encoding="utf-8",
-    )
-    (root / ".codex" / "config.toml").write_text(
-        textwrap.dedent(
-            '''
-            [mcp]
-            allowed_tools = ["mcp__processkit-gateway__*"]
-            _processkit_managed_allowed_tools = ["mcp__processkit-gateway__*"]
-            '''
-        ).strip() + "\n",
-        encoding="utf-8",
-    )
-    (root / ".mcp.json").write_text(
-        json.dumps({"mcpServers": {"processkit-gateway": {}}}),
-        encoding="utf-8",
-    )
-
-    gateway_results = _preauth_run({"repo_root": root})
-    drift = [
-        r for r in gateway_results
-        if r.id == "preauth_applied.spec-drift"
-    ]
-    check("gateway mode suppresses preauth spec drift", not drift, [r.to_dict() for r in gateway_results])
 
 # ---------------------------------------------------------------------------
 # Test 6c: MCP gateway mode is an intentional derived-project alternative

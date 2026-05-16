@@ -7,7 +7,6 @@ import re
 import sqlite3
 from pathlib import Path
 from typing import Any
-from datetime import datetime, timedelta, timezone
 
 import yaml
 
@@ -315,16 +314,10 @@ def _archive_candidate_count(
     pattern: str,
     *,
     state: str | None = None,
-    older_than_days: int | None = None,
-    now: datetime | None = None,
 ) -> int:
     base = root
     if not base.is_dir():
         return 0
-    cutoff = None
-    if older_than_days is not None:
-        now_dt = now or datetime.now(timezone.utc)
-        cutoff = now_dt - timedelta(days=older_than_days)
     count = 0
     for path in base.rglob(pattern):
         if not path.is_file():
@@ -334,36 +327,8 @@ def _archive_candidate_count(
             spec = fm.get("spec") if isinstance(fm.get("spec"), dict) else {}
             if spec.get("state") != state:
                 continue
-            if cutoff is not None:
-                timestamp = None
-                metadata = fm.get("metadata") if isinstance(fm.get("metadata"), dict) else {}
-                for key in ("applied_at", "created"):
-                    raw = spec.get(key) or (metadata.get(key) if isinstance(metadata, dict) else None)
-                    if isinstance(raw, str):
-                        parsed = _parse_iso_timestamp(raw)
-                    else:
-                        parsed = None
-                    if parsed is not None:
-                        timestamp = parsed
-                        break
-                if timestamp is None:
-                    count += 1
-                    continue
-                if timestamp > cutoff:
-                    continue
         count += 1
     return count
-
-
-def _parse_iso_timestamp(value: str) -> datetime | None:
-    try:
-        value = value.replace("Z", "+00:00")
-        parsed = datetime.fromisoformat(value)
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    return parsed
 
 
 def _sqlite_vec_available() -> bool:
@@ -547,7 +512,6 @@ def run(ctx) -> list[CheckResult]:
         repo_root / "context" / "migrations" / "applied",
         "*.md",
         state="applied",
-        older_than_days=30,
     )
     if applied_migrations:
         results.append(CheckResult(
@@ -555,7 +519,7 @@ def run(ctx) -> list[CheckResult]:
             category="context_hygiene",
             id="archive.applied-migrations",
             message=f"{applied_migrations} applied migration(s) are archive candidates",
-            suggested_fix="plan archival for migrations older than 30 days",
+            suggested_fix="plan archival via context-archiving policy",
         ))
 
     if not _sqlite_vec_available():
