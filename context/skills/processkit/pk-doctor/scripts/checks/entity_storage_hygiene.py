@@ -23,6 +23,9 @@ _WORDPAIR_RE = re.compile(r"^[A-Z][a-z]+[A-Z][A-Za-z]+$")
 _CLI_MIGRATION_RE = re.compile(
     r"^\d{8}_\d{4}_\d+\.\d+\.\d+-to-\d+\.\d+\.\d+\.md$"
 )
+_LEGACY_RUNTIME_MIGRATION_RE = re.compile(
+    r"^MIG-RUNTIME(?:-DRIFT)?-\d{8}T\d{6}$"
+)
 _CLI_MIGRATION_COMPLETED_RE = re.compile(
     r"^\*\*Status:\*\*\s*completed\b",
     re.IGNORECASE | re.MULTILINE,
@@ -208,6 +211,8 @@ def _sample(paths: list[Path], repo_root: Path, limit: int = 5) -> list[str]:
 
 
 def _filename_style(stem: str, prefix: str) -> str:
+    if prefix == "MIG" and _LEGACY_RUNTIME_MIGRATION_RE.match(stem):
+        return "legacy_runtime_migration"
     if not stem.startswith(prefix + "-"):
         return "other"
     body = stem[len(prefix) + 1:]
@@ -386,6 +391,7 @@ def _layout_checks(repo_root: Path) -> list[CheckResult]:
 
         styles: dict[str, list[Path]] = {
             "datetime_wordpair": [],
+            "legacy_runtime_migration": [],
             "placeholder_time": [],
             "other": [],
         }
@@ -410,6 +416,24 @@ def _layout_checks(repo_root: Path) -> list[CheckResult]:
                 ),
                 extra={
                     "sample": _sample(styles["placeholder_time"], repo_root),
+                },
+            ))
+        if styles["legacy_runtime_migration"]:
+            results.append(CheckResult(
+                severity="INFO",
+                category="entity_storage_hygiene",
+                id="storage.legacy-runtime-migration-filenames",
+                message=(
+                    f"context/{dirname} contains "
+                    f"{len(styles['legacy_runtime_migration'])} legacy "
+                    "runtime Migration filename(s); these are tolerated "
+                    "historical runtime-producer IDs and should not be "
+                    "renamed outside an explicit history-rewrite migration"
+                ),
+                extra={
+                    "sample": _sample(
+                        styles["legacy_runtime_migration"], repo_root
+                    ),
                 },
             ))
         if styles["datetime_wordpair"] and styles["other"]:

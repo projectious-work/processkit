@@ -192,9 +192,11 @@ def _scan_model_bindings(
         if not root.is_dir():
             continue
         timestamped = deterministic = 0
+        timestamped_role_slot_fill: list[str] = []
         for path in sorted(root.glob("*.md")):
             stem = path.stem
-            if _TIMESTAMPED_BIND_RE.match(stem):
+            is_timestamped = bool(_TIMESTAMPED_BIND_RE.match(stem))
+            if is_timestamped:
                 timestamped += 1
             if _DETERMINISTIC_BIND_RE.match(stem):
                 deterministic += 1
@@ -202,6 +204,10 @@ def _scan_model_bindings(
             if not fm:
                 continue
             spec = fm.get("spec") if isinstance(fm.get("spec"), dict) else {}
+            if is_timestamped and spec.get("type") == "role-slot-fill":
+                timestamped_role_slot_fill.append(
+                    str(path.relative_to(repo_root))
+                )
             if spec.get("type") != "model-assignment":
                 continue
             target = str(spec.get("target") or "")
@@ -293,6 +299,14 @@ def _scan_model_bindings(
                     entity_ref=target,
                 ))
         if timestamped and deterministic:
+            role_slot_note = ""
+            extra: dict = {}
+            if timestamped_role_slot_fill:
+                role_slot_note = (
+                    f", including {len(timestamped_role_slot_fill)} "
+                    "timestamped role-slot-fill Binding file(s)"
+                )
+                extra = {"sample": timestamped_role_slot_fill[:5]}
             results.append(CheckResult(
                 severity="WARN",
                 category="context_hygiene",
@@ -300,11 +314,14 @@ def _scan_model_bindings(
                 message=(
                     f"{root_name} mixes timestamped ({timestamped}) and "
                     f"deterministic ({deterministic}) Binding filenames"
+                    f"{role_slot_note}"
                 ),
                 suggested_fix=(
-                    "create and apply a data-fix Migration that normalizes "
-                    "Binding filenames and updates references"
+                    "create and apply a data-fix Migration that renames "
+                    "non-canonical Binding files, updates metadata.id, "
+                    "and rewrites all entity and LogEntry references"
                 ),
+                extra=extra,
             ))
     return results
 

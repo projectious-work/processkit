@@ -1927,9 +1927,124 @@ with tempfile.TemporaryDirectory() as tmp:
 
 
 # ---------------------------------------------------------------------------
-# Test 17b: entity_storage_hygiene --fix archives CLI migration briefings
+# Test 17a: legacy runtime Migration IDs are tolerated historical IDs
 # ---------------------------------------------------------------------------
-print("\n[17b] entity_storage_hygiene --fix moves uncompleted CLI briefings")
+print("\n[17a] entity storage hygiene — legacy runtime migration IDs")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    applied = root / "context" / "migrations" / "applied"
+    applied.mkdir(parents=True)
+    (applied / "MIG-20260517_1500-QuietLake.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Migration
+            metadata:
+              id: MIG-20260517_1500-QuietLake
+              created: 2026-05-17T15:00:00Z
+            spec:
+              state: applied
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (applied / "MIG-RUNTIME-20260517T150001.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Migration
+            metadata:
+              id: MIG-RUNTIME-20260517T150001
+              created: 2026-05-17T15:00:01Z
+            spec:
+              state: applied
+            ---
+            """),
+        encoding="utf-8",
+    )
+    storage_results = _entity_storage_run({"repo_root": root})
+    storage_ids = {r.id for r in storage_results}
+    check(
+        "17a: legacy runtime migration emits INFO",
+        "storage.legacy-runtime-migration-filenames" in storage_ids,
+        [r.to_dict() for r in storage_results],
+    )
+    mixed = [
+        r.to_dict() for r in storage_results
+        if r.id == "storage.filename-policy-mixed"
+    ]
+    check(
+        "17a: legacy runtime migration does not trigger mixed policy WARN",
+        not mixed,
+        json.dumps(mixed, indent=2),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Test 17b: binding filename warning stays strict and actionable
+# ---------------------------------------------------------------------------
+print("\n[17b] context hygiene — mixed Binding filenames advise data fix")
+
+from checks.context_hygiene import (  # noqa: E402
+    run as _context_hygiene_run,
+)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    bindings = root / "context" / "bindings"
+    bindings.mkdir(parents=True)
+    (bindings / "BIND-20260517_1500-QuietLake-role-slot-fill.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Binding
+            metadata:
+              id: BIND-20260517_1500-QuietLake-role-slot-fill
+              created: 2026-05-17T15:00:00Z
+            spec:
+              type: role-slot-fill
+              subject: TEAMMEMBER-cora
+              target: SLOT-20260517_1500-QuietLake
+            ---
+            """),
+        encoding="utf-8",
+    )
+    (bindings / "BIND-product-manager-senior-hf3f8e9.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Binding
+            metadata:
+              id: BIND-product-manager-senior-hf3f8e9
+              created: 2026-05-17T15:00:00Z
+            spec:
+              type: role-slot-fill
+              subject: TEAMMEMBER-finn
+              target: SLOT-product-manager-senior
+            ---
+            """),
+        encoding="utf-8",
+    )
+    results = _context_hygiene_run({"repo_root": root})
+    mixed = [
+        r.to_dict() for r in results
+        if r.id == "binding.filename-style-mixed"
+    ]
+    check("17b: mixed Binding filenames still WARN", bool(mixed), results)
+    check(
+        "17b: warning calls out role-slot-fill and LogEntry rewrites",
+        bool(mixed)
+        and "role-slot-fill" in mixed[0]["message"]
+        and "LogEntry references" in mixed[0]["suggested_fix"],
+        json.dumps(mixed, indent=2),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Test 17c: entity_storage_hygiene --fix archives CLI migration briefings
+# ---------------------------------------------------------------------------
+print("\n[17c] entity_storage_hygiene --fix moves uncompleted CLI briefings")
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
@@ -1960,7 +2075,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
     storage_results = _entity_storage_run({"repo_root": root})
     storage_ids = {r.id for r in storage_results}
-    check("17b: detects root migration briefing", "storage.root-migration-briefings" in storage_ids)
+    check("17c: detects root migration briefing", "storage.root-migration-briefings" in storage_ids)
 
     stub = root / ".doctor-logentry.json"
     fixed = _run_doctor(
@@ -1971,7 +2086,7 @@ with tempfile.TemporaryDirectory() as tmp:
         stub_path=stub,
     )
     check(
-        "17b: fix pass exits cleanly",
+        "17c: fix pass exits cleanly",
         fixed.returncode == 0,
         f"got {fixed.returncode}; stdout: {fixed.stdout[-400:]}",
     )
@@ -1984,22 +2099,22 @@ with tempfile.TemporaryDirectory() as tmp:
         and item.get("status") == "archived"
     ]
     check(
-        "17b: fix run emits archived status",
+        "17c: fix run emits archived status",
         len(archived) == 1,
         json.dumps(fix_records, indent=2),
     )
     check(
-        "17b: briefing moved out of migration root",
+        "17c: briefing moved out of migration root",
         not active_briefing.exists(),
         str(active_briefing),
     )
     check(
-        "17b: archive contains briefing payload",
+        "17c: archive contains briefing payload",
         (root / "context" / "archive" / "cli-migration-briefings" /
          active_briefing.name).exists(),
     )
     check(
-        "17b: completed briefing stays in place",
+        "17c: completed briefing stays in place",
         completed_briefing.exists(),
         str(completed_briefing),
     )
@@ -2007,7 +2122,7 @@ with tempfile.TemporaryDirectory() as tmp:
     storage_after = _entity_storage_run({"repo_root": root})
     storage_after_ids = {r.id for r in storage_after}
     check(
-        "17b: no uncompleted briefing finding remains after fix",
+        "17c: no uncompleted briefing finding remains after fix",
         "storage.root-migration-briefings" not in storage_after_ids
         or len(storage_after) == 0,
         json.dumps([r.to_dict() for r in storage_after], indent=2),

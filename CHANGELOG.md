@@ -9,6 +9,39 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.26.15] - 2026-05-17
+
+v0.26.15 is a **patch release** that resolves the latest downstream
+pk-doctor policy issues without adding installer-specific coupling.
+
+### Fixed
+
+- Classified legacy runtime Migration IDs (`MIG-RUNTIME-*` and
+  `MIG-RUNTIME-DRIFT-*`) as historical runtime-producer filenames so
+  pk-doctor reports them as INFO/non-actionable instead of persistent
+  mixed filename-policy WARNs. Closes
+  [#62](https://github.com/projectious-work/processkit/issues/62).
+- Kept Binding filename policy strict while making mixed Binding
+  filename warnings more actionable: timestamped `role-slot-fill`
+  Bindings are called out explicitly, and the advice now requires a
+  data-fix Migration that renames files, updates `metadata.id`, and
+  rewrites entity plus LogEntry references. Closes
+  [#60](https://github.com/projectious-work/processkit/issues/60).
+- Confirmed the MCP manifest responsibility boundary remains in
+  processkit release packaging; installer preservation is tracked
+  separately outside processkit. Closes
+  [#61](https://github.com/projectious-work/processkit/issues/61).
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --category=entity_storage_hygiene --json`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --category=context_hygiene --json`
+- `python3 -m py_compile context/skills/processkit/pk-doctor/scripts/checks/entity_storage_hygiene.py context/skills/processkit/pk-doctor/scripts/checks/context_hygiene.py src/context/skills/processkit/pk-doctor/scripts/checks/entity_storage_hygiene.py src/context/skills/processkit/pk-doctor/scripts/checks/context_hygiene.py`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+
+---
+
 ## [v0.26.14] - 2026-05-16
 
 v0.26.14 is a **patch release** that closes the TeamMember runtime
