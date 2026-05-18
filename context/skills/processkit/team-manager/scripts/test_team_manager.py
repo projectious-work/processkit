@@ -258,14 +258,34 @@ def test_create_human_roundtrip(server_mod, project_root: Path):
         default_seniority="senior",
     )
     assert r.get("id") == "TEAMMEMBER-alice-chen"
+    assert r.get("privacy_redacted") is True
+    assert set(r["redacted_fields"]) == {"name", "email"}
     assert Path(r["path"]).is_file()
 
     got = server_mod.get_team_member("alice-chen")
-    assert got["name"] == "Alice Chen"
+    assert got["name"] == "alice-chen"
     assert got["type"] == "human"
     assert got["slug"] == "alice-chen"
-    assert got["email"] == "alice@example.com"
+    assert got["email"] is None
+    assert got["privacy"]["committed_identity"] == "alias-only"
     assert got["default_seniority"] == "senior"
+
+
+def test_create_human_committed_pii_requires_explicit_opt_in(server_mod, project_root: Path):
+    r = server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        email="alice@example.com",
+        handle="alice",
+        allow_committed_pii=True,
+    )
+    assert r.get("id") == "TEAMMEMBER-alice-chen"
+    assert "privacy_redacted" not in r
+
+    got = server_mod.get_team_member("alice-chen")
+    assert got["name"] == "Alice Chen"
+    assert got["email"] == "alice@example.com"
+    assert got["handle"] == "alice"
+    assert got["privacy"]["allow_committed_pii"] is True
 
 
 def test_create_ai_agent_from_pool_auto_reserves(server_mod, project_root: Path):
@@ -318,10 +338,11 @@ def test_update_team_member(server_mod):
         "alice-chen", email="a@b.com", handle="alice", default_seniority="expert"
     )
     assert r.get("ok") is True
-    assert set(r["updated"]) == {"email", "handle", "default_seniority"}
+    assert r.get("privacy_redacted") is True
+    assert {"email", "handle", "default_seniority", "privacy"} <= set(r["updated"])
     got = server_mod.get_team_member("alice-chen")
-    assert got["email"] == "a@b.com"
-    assert got["handle"] == "alice"
+    assert got["email"] is None
+    assert got["handle"] is None
     assert got["default_seniority"] == "expert"
 
 
@@ -763,8 +784,14 @@ def test_check_dangling_ref_pass(server_mod, project_root: Path, assets_dir):
 
 
 def test_check_name_collision(server_mod, project_root: Path, assets_dir):
-    server_mod.create_team_member(name="Alice Chen", type="human", slug="alice-a")
-    server_mod.create_team_member(name="Alice Chen", type="human", slug="alice-b")
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-a",
+        allow_committed_pii=True,
+    )
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-b",
+        allow_committed_pii=True,
+    )
     server_mod.init_memory_tree("alice-a")
     server_mod.init_memory_tree("alice-b")
     report = consistency.check_all(
@@ -798,6 +825,28 @@ def test_check_name_collision_pass(server_mod, project_root: Path, assets_dir):
         if f["code"] == "team.name_collision"
     ]
     assert collisions == []
+
+
+def test_check_human_committed_pii_warns(server_mod, project_root: Path, assets_dir):
+    server_mod.create_team_member(
+        name="Alice Chen", type="human", slug="alice-chen",
+        allow_committed_pii=True,
+    )
+    tm_dir = project_root / "context" / "team-members" / "alice-chen"
+    tm_md = tm_dir / "team-member.md"
+    text = tm_md.read_text(encoding="utf-8")
+    text = text.replace(
+        "  privacy:\n"
+        "    allow_committed_pii: true\n"
+        "    committed_identity: explicit-pii\n",
+        "",
+    )
+    tm_md.write_text(text, encoding="utf-8")
+
+    findings = consistency.check_one(
+        project_root, tm_dir, "alice-chen", server_mod._pool_path(), assets_dir
+    )
+    assert _check_codes(findings, "team.privacy.committed_pii")
 
 
 def test_check_name_off_pool_fail(server_mod, project_root: Path, assets_dir):

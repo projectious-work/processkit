@@ -1,6 +1,6 @@
 """Consistency checks for team-manager.
 
-10 checks per team-member. Each returns findings shaped as
+11 checks per team-member. Each returns findings shaped as
 ``{severity, code, team_member, path, message}``.
 
 Check codes:
@@ -12,6 +12,7 @@ Check codes:
     team.name.off_pool             warning  — ai-agent name in pool
     team.drift.orphan_file         warning  — no unexpected top-level files
     team.sensitivity.leak_risk     warning  — confidential/pii files live under private/
+    team.privacy.committed_pii     warning  — human committed identity is alias-only
     team.private.not_ignored       warning  — private/ covered by .gitignore
     team.memory.bad_header         warning  — memory files carry required frontmatter
     team.card.stale                warning  — card.json name/role/seniority match entity
@@ -190,7 +191,18 @@ def check_one(
                     f"{sens} file outside private/: {md.relative_to(tm_dir)}",
                 ))
 
-    # 8. team.private.not_ignored
+    # 8. team.privacy.committed_pii
+    if ent is not None:
+        spec = ent.spec or {}
+        pii_fields = _committed_human_pii_fields(spec)
+        if pii_fields:
+            findings.append(_finding(
+                "warning", "team.privacy.committed_pii", slug, tm_md,
+                "human TeamMember has repo-visible personal identity fields "
+                f"without explicit opt-in: {pii_fields}",
+            ))
+
+    # 9. team.private.not_ignored
     priv = tm_dir / "private"
     if priv.is_dir():
         if not _is_gitignored(root, priv):
@@ -199,7 +211,7 @@ def check_one(
                 "private/ directory is not covered by a .gitignore rule",
             ))
 
-    # 9. team.memory.bad_header
+    # 10. team.memory.bad_header
     for tier in EXPECTED_TIERS:
         sub = tm_dir / tier
         if not sub.is_dir():
@@ -220,7 +232,7 @@ def check_one(
                     f"memory file missing required keys: {missing}",
                 ))
 
-    # 10. team.card.stale
+    # 11. team.card.stale
     card_path = tm_dir / "card.json"
     if ent is not None and card_path.is_file():
         try:
@@ -325,6 +337,24 @@ def _read_front_matter(path: Path) -> dict[str, Any] | None:
     except yaml.YAMLError:
         return None
     return data if isinstance(data, dict) else None
+
+
+def _committed_human_pii_fields(spec: dict[str, Any]) -> list[str]:
+    if spec.get("type") != "human":
+        return []
+    privacy = spec.get("privacy") or {}
+    if privacy.get("allow_committed_pii") is True:
+        return []
+    fields: list[str] = []
+    name = spec.get("name")
+    slug = spec.get("slug")
+    if isinstance(name, str) and name and name != slug:
+        fields.append("name")
+    if spec.get("email"):
+        fields.append("email")
+    if spec.get("handle"):
+        fields.append("handle")
+    return fields
 
 
 def _load_pool_names(pool_path: Path) -> set[str]:

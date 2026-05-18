@@ -50,16 +50,25 @@ metadata:
 
 ## Intro
 
-TeamMembers are the persistent participants in the project — humans, named
-AI personas, and services — that accumulate identity, personality, and
-tiered memory over time. This skill owns their lifecycle: creation, memory
-tree scaffolding, a curated international name pool, A2A-compatible Agent
-Cards, export/import bundles, and 10 consistency checks.
+TeamMembers are the persistent participants in the project — named AI
+personas, services, consultants, and explicitly managed human aliases —
+that accumulate identity, personality, and tiered memory over time. This
+skill owns their lifecycle: creation, memory tree scaffolding, a curated
+international name pool, A2A-compatible Agent Cards, export/import
+bundles, and consistency checks.
 
 Unlike ephemeral worker invocations (role+seniority dispatches resolved on
 the fly and never persisted), TeamMembers live as directory trees on disk:
 `persona.md` + `card.json` + `team-member.md` (entity) + tiered memory
 subdirectories + optional `private/` (gitignored).
+
+Human TeamMembers are privacy-sensitive. Do not auto-create them from
+ambient host, git, or harness identity. `create_team_member(type="human",
+...)` stores only the slug as the committed display name by default and
+drops `email`/`handle`; pass `allow_committed_pii=true` only after the
+human explicitly agrees that their name or contact details may live in
+repo-visible files. Store local-only human details under `private/`, not
+in `team-member.md`.
 
 > **MCP server.** This skill ships a self-contained MCP server at
 > `mcp/server.py` (PEP 723 script — requires `uv` and Python ≥ 3.10 on
@@ -94,14 +103,17 @@ agent context.
 | Name pool | `reserve_name`, `release_name`, `list_available_names`, `suggest_name` | Choosing or rotating an AI persona name; the pool is the canonical source of truth for AI-agent slugs |
 | Memory scaffolding | `init_memory_tree` | Creating the six tier subdirectories + frontmatter-validated headers under `context/team-members/<slug>/` |
 | Export / import | `export_team_member`, `export_claude_subagent`, `export_claude_subagents`, `import_team_member` | Moving a TeamMember between projects or generating provider-specific adapter files; tarball export redacts confidential/PII memory |
-| Consistency | `check_consistency`, `check_all_consistency` | Pre-release health-check; CI validation; ad-hoc audits |
+| Consistency | `check_consistency`, `check_all_consistency` | Pre-release health-check; CI validation; ad-hoc audits, including human committed-PII warnings |
 
 ### Common workflows
 
-**Adding a human contributor.** `create_team_member(type="human",
-slug="alice-chen", ...)` → `init_memory_tree(slug)` → optionally
-seed `persona.md` and a starter `relations/` file. No name-pool
-interaction; humans use any valid kebab-case slug.
+**Adding a human contributor.** Prefer an ephemeral Actor/reference unless
+the project really needs a persistent human TeamMember. When persistence
+is needed, use a privacy-preserving slug such as `human-user` or
+`project-owner`: `create_team_member(type="human", name="human-user",
+slug="human-user", ...)` → `init_memory_tree(slug)`. No name-pool
+interaction; humans use any valid kebab-case slug. Real names, emails,
+and handles require `allow_committed_pii=true` and explicit human consent.
 
 **Adding a named AI persona.** `suggest_name(kind="neutral")` →
 `create_team_member(type="ai-agent", slug=<name>, ...)` (auto-reserves
@@ -167,7 +179,10 @@ candidate. TeamMember remains the canonical, provider-neutral identity;
 `.claude/agents/*.md` is only an adapter.
 
 **Pre-release audit.** `check_all_consistency()` → triage findings by
-severity. Errors block release; warnings are advisory.
+severity. Errors block release; warnings are advisory. Treat
+`team.privacy.committed_pii` as release-blocking for derived-project
+templates and installer output: rotate the TeamMember to an alias or move
+the personal data into `private/`.
 
 ### Mental model
 

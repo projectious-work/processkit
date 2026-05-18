@@ -9,6 +9,40 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.26.16] - 2026-05-18
+
+v0.26.16 is a **patch release** that hardens TeamMember privacy defaults
+so derived projects do not commit ambient human identity data by default.
+
+### Changed
+
+- Human TeamMember creation and update now store repo-visible identity as
+  alias-only metadata by default: the committed display name is the slug,
+  and `email`/`handle` are dropped unless the caller explicitly passes
+  `allow_committed_pii=true`.
+- The human TeamMember template now uses a generic `human-user` alias,
+  disables memory and export by default, and omits personal contact
+  placeholders.
+- Team-manager guidance now states that humans must not be auto-created
+  from ambient host, git, or harness identity.
+
+### Fixed
+
+- Added a `team.privacy.committed_pii` consistency warning, surfaced
+  through pk-doctor's `team_consistency` category, for legacy human
+  TeamMembers that still contain repo-visible personal identity fields
+  without explicit opt-in.
+
+### Verification
+
+- `python3 -m py_compile context/skills/processkit/team-manager/mcp/server.py context/skills/processkit/team-manager/scripts/consistency.py context/skills/processkit/pk-doctor/scripts/checks/team_consistency.py`
+- `uv run --with pyyaml --with jsonschema --with pytest --with mcp pytest context/skills/processkit/team-manager/scripts/test_team_manager.py -q`
+- `uv run --with pyyaml --with jsonschema --with pytest --with mcp pytest src/context/skills/processkit/team-manager/scripts/test_team_manager.py -q`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --category=team_consistency`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+
+---
+
 ## [v0.26.15] - 2026-05-17
 
 v0.26.15 is a **patch release** that resolves the latest downstream

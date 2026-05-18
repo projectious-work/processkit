@@ -18,7 +18,8 @@ Tools
 
 Lifecycle:
     create_team_member(name, type, slug, default_role?, default_seniority?,
-                       personality?, email?, handle?, joined_at?) -> {id, path}
+                       personality?, email?, handle?, joined_at?,
+                       allow_committed_pii?) -> {id, path}
     get_team_member(id) -> {...} | {error}
     list_team_members(type?, active_only?, role?, limit?) -> [members]
     get_active_interlocutor(scope?) -> {configured, interlocutor?}
@@ -151,6 +152,63 @@ _CLAUDE_MODEL_POLICIES = {"inherit", "resolved"}
 
 def _now_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
+
+
+def _human_pii_opted_in(spec: dict) -> bool:
+    privacy = spec.get("privacy") or {}
+    return bool(privacy.get("allow_committed_pii") is True)
+
+
+def _mark_human_privacy(
+    spec: dict,
+    *,
+    allow_committed_pii: bool,
+    redacted_fields: list[str] | None = None,
+) -> None:
+    privacy = dict(spec.get("privacy") or {})
+    privacy["allow_committed_pii"] = bool(allow_committed_pii)
+    privacy["committed_identity"] = (
+        "explicit-pii" if allow_committed_pii else "alias-only"
+    )
+    if redacted_fields:
+        privacy["redacted_fields"] = sorted(set(redacted_fields))
+    elif "redacted_fields" in privacy:
+        privacy.pop("redacted_fields", None)
+    spec["privacy"] = privacy
+
+
+def _apply_human_privacy_defaults(
+    spec: dict,
+    *,
+    requested_name: str | None,
+    requested_email: str | None,
+    requested_handle: str | None,
+    allow_committed_pii: bool,
+) -> list[str]:
+    """Keep repo-visible human TeamMember identity alias-only by default."""
+    if spec.get("type") != "human":
+        return []
+    if allow_committed_pii:
+        _mark_human_privacy(spec, allow_committed_pii=True)
+        return []
+
+    slug = spec.get("slug") or ""
+    redacted: list[str] = []
+    if spec.get("name") and spec.get("name") != slug:
+        spec["name"] = slug
+        redacted.append("name")
+    if spec.get("email"):
+        spec.pop("email", None)
+        redacted.append("email")
+    if spec.get("handle"):
+        spec.pop("handle", None)
+        redacted.append("handle")
+    _mark_human_privacy(
+        spec,
+        allow_committed_pii=False,
+        redacted_fields=redacted or None,
+    )
+    return redacted
 
 
 def _now_utc() -> _dt.datetime:
@@ -1006,12 +1064,14 @@ def create_team_member(
     engaged_for: str | None = None,
     engagement_window: dict | None = None,
     auto_deactivate_on_scope_close: bool = True,
+    allow_committed_pii: bool = False,
 ) -> dict:
     """Create a new TeamMember entity.
 
     Parameters
     ----------
-    name:               display name (e.g. "Atlas" or "Alice Chen")
+    name:               display name. Human names are redacted to slug unless
+                        allow_committed_pii=True.
     type:               "human", "ai-agent", "service", or "consultant"
     slug:               canonical kebab-case slug; becomes TEAMMEMBER-<slug>
     default_role:       optional ROLE-<id>
@@ -1020,6 +1080,9 @@ def create_team_member(
     email:              optional; humans only
     handle:             optional; GitHub/Slack handle
     joined_at:          ISO datetime; defaults to now
+    allow_committed_pii:
+                        humans only. When false (default), repo-visible
+                        name/email/handle are stored as alias-only metadata.
 
     Consultant-only fields (required when type=consultant; rejected otherwise):
     engaged_for:                    SCOPE-<id> the consultant is engaged for
@@ -1096,6 +1159,14 @@ def create_team_member(
             spec["engagement_window"] = dict(engagement_window)
         spec["auto_deactivate_on_scope_close"] = auto_deactivate_on_scope_close
 
+    redacted_fields = _apply_human_privacy_defaults(
+        spec,
+        requested_name=name,
+        requested_email=email,
+        requested_handle=handle,
+        allow_committed_pii=allow_committed_pii,
+    )
+
     errors = schema.validate_spec("TeamMember", spec)
     if errors:
         if pool_reservation_done:
@@ -1124,18 +1195,22 @@ def create_team_member(
 
     log.log_side_effect(
         "TeamMember", new_id, "team_member.created",
-        f"Created TeamMember {new_id!r}: {name!r} ({type})",
+        f"Created TeamMember {new_id!r}: {spec.get('name')!r} ({type})",
         root=root,
         actor=new_id,
     )
-    return {
+    result = {
         "id": new_id,
         "path": str(tm_path),
         "type": type,
-        "name": name,
+        "name": spec.get("name"),
         "slug": slug,
         "scaffolded": scaffolded,
     }
+    if redacted_fields:
+        result["privacy_redacted"] = True
+        result["redacted_fields"] = redacted_fields
+    return result
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -1161,6 +1236,7 @@ def get_team_member(id: str) -> dict:
         "default_seniority": ent.spec.get("default_seniority"),
         "personality": ent.spec.get("personality", {}),
         "memory": ent.spec.get("memory", {}),
+        "privacy": ent.spec.get("privacy", {}),
         "relationships": ent.spec.get("relationships", []),
         "active": ent.spec.get("active", True),
         "joined_at": ent.spec.get("joined_at"),
@@ -1447,6 +1523,7 @@ def update_team_member(
     engagement_window: dict | None = None,
     engaged_for: str | None = None,
     auto_deactivate_on_scope_close: bool | None = None,
+    allow_committed_pii: bool | None = None,
 ) -> dict:
     """Update fields on an existing TeamMember. Only supplied fields change.
 
@@ -1461,6 +1538,41 @@ def update_team_member(
         return {"error": f"team-member {id!r} not found"}
 
     updated: list[str] = []
+    redacted_fields: list[str] = []
+    if ent.spec.get("type") == "human":
+        pii_allowed = (
+            allow_committed_pii
+            if allow_committed_pii is not None
+            else _human_pii_opted_in(ent.spec)
+        )
+        if allow_committed_pii is not None:
+            _mark_human_privacy(ent.spec, allow_committed_pii=pii_allowed)
+            updated.append("privacy")
+        if not pii_allowed:
+            requested_name = name
+            requested_email = email
+            requested_handle = handle
+            if name is not None:
+                ent.spec["name"] = name
+                name = None
+            if email is not None:
+                ent.spec["email"] = email
+                email = None
+            if handle is not None:
+                ent.spec["handle"] = handle
+                handle = None
+            redacted_fields = _apply_human_privacy_defaults(
+                ent.spec,
+                requested_name=requested_name,
+                requested_email=requested_email,
+                requested_handle=requested_handle,
+                allow_committed_pii=False,
+            )
+            for field in redacted_fields:
+                if field not in updated:
+                    updated.append(field)
+            if "privacy" not in updated:
+                updated.append("privacy")
     locals_map = {
         "name": name, "email": email, "handle": handle,
         "default_role": default_role, "default_seniority": default_seniority,
@@ -1515,7 +1627,11 @@ def update_team_member(
         root=root,
         actor=ent.id,
     )
-    return {"ok": True, "id": ent.id, "updated": updated}
+    result = {"ok": True, "id": ent.id, "updated": updated}
+    if redacted_fields:
+        result["privacy_redacted"] = True
+        result["redacted_fields"] = redacted_fields
+    return result
 
 
 @server.tool(annotations=ToolAnnotations(

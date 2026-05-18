@@ -1,7 +1,7 @@
 """team_consistency check — wraps team-manager.check_all().
 
-Runs all 10 team-member consistency checks defined by the team-manager
-skill (DEC-20260422_0233-SpryTulip) and surfaces findings in the pk-doctor
+Runs the team-member consistency checks defined by the team-manager skill
+(DEC-20260422_0233-SpryTulip) and surfaces findings in the pk-doctor
 report vocabulary.
 
 If the team-manager skill is not installed, emits one INFO finding and
