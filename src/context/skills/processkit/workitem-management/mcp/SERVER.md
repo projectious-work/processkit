@@ -8,6 +8,7 @@ WorkItem creation, transitions, queries, and links. Layer 2 — depends on
 | Tool                                                                                                | Purpose                                                       |
 |-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
 | `create_workitem(title, type?, priority?, assignee?, description?, parent?, scope?, labels?)`      | Create a new WorkItem under `context/workitems/`              |
+| `update_workitem(id, title?, priority?, assignee?, description?, parent?, scope?, process_definition_artifact?)` | Update safe mutable WorkItem spec fields; use `transition_workitem` for state |
 | `transition_workitem(id, to_state, note?)`                                                          | Move a WorkItem to a new state (validates the state machine) |
 | `query_workitems(state?, type?, assignee?, limit?)`                                                 | List WorkItems matching filters                               |
 | `get_workitem(id)`                                                                                  | Fetch a WorkItem with full spec                               |

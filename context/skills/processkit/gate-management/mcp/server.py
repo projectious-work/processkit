@@ -17,6 +17,11 @@ Tools:
 
     get_gate(id) -> {...} | {error}
 
+    update_gate(id, name?, description?, kind?, validator?,
+                validator_command?, required_roles?, blocking?,
+                evidence_required?, force?)
+        -> {ok, id, updated, path}
+
     list_gates(kind?, blocking?, limit?) -> [gates]
 
     evaluate_gate(id, outcome, actor?, evidence?, reason?)
@@ -123,6 +128,17 @@ def _load_gate(root: Path, id: str) -> entity.Entity | None:
     finally:
         db.close()
     return None
+
+
+def _has_evaluations(root: Path, gate_id: str) -> bool:
+    db = index.open_db()
+    try:
+        for event_type in ("gate.passed", "gate.failed", "gate.waived"):
+            if index.query_events(db, event_type=event_type, subject=gate_id, limit=1):
+                return True
+    finally:
+        db.close()
+    return False
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -281,6 +297,107 @@ def get_gate(id: str) -> dict:
         "blocking": ent.spec.get("blocking", True),
         "evidence_required": ent.spec.get("evidence_required", False),
         "path": str(ent.path) if ent.path else None,
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def update_gate(
+    id: str,
+    name: str | None = None,
+    description: str | None = None,
+    kind: str | None = None,
+    validator: str | None = None,
+    validator_command: str | None = None,
+    required_roles: list[str] | None = None,
+    blocking: bool | None = None,
+    evidence_required: bool | None = None,
+    force: bool = False,
+) -> dict:
+    """Update a Gate definition before it has evaluation history.
+
+    Gates are rules and evaluations are LogEntries. To preserve audit
+    meaning, this tool refuses to update a Gate after any gate.passed,
+    gate.failed, or gate.waived event unless ``force=True`` is supplied
+    for an explicit emergency repair. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool. 1% rule:
+    call route_task first; commit in the same turn — deferred writes are
+    dropped.
+    """
+    root = paths.find_project_root()
+    ent = _load_gate(root, id)
+    if ent is None:
+        return {"error": f"gate {id!r} not found"}
+    if not force and _has_evaluations(root, ent.id):
+        return {
+            "error": (
+                "gate has evaluation history; create a replacement Gate "
+                "or call update_gate(..., force=True) for an explicit "
+                "emergency repair"
+            )
+        }
+
+    updates: dict[str, object | None] = {}
+    if name is not None:
+        if not name:
+            return {"error": "name must be non-empty when supplied"}
+        updates["name"] = name
+    if description is not None:
+        if not description:
+            return {"error": "description must be non-empty when supplied"}
+        updates["description"] = description
+    if kind is not None:
+        if kind not in _VALID_KINDS:
+            return {"error": f"invalid kind {kind!r}; must be one of {sorted(_VALID_KINDS)}"}
+        updates["kind"] = kind
+    if validator is not None:
+        if not validator:
+            return {"error": "validator must be non-empty when supplied"}
+        updates["validator"] = validator
+    if validator_command is not None:
+        updates["validator_command"] = validator_command or None
+    if required_roles is not None:
+        updates["required_roles"] = list(required_roles)
+    if blocking is not None:
+        updates["blocking"] = bool(blocking)
+    if evidence_required is not None:
+        updates["evidence_required"] = bool(evidence_required)
+
+    if not updates:
+        return {"ok": True, "id": ent.id, "updated": [], "path": str(ent.path)}
+
+    ent.spec.update(updates)
+    errors = schema.validate_spec("Gate", ent.spec)
+    if errors:
+        return {"error": "schema validation failed", "details": errors}
+
+    ent.write()
+    db = index.open_db()
+    try:
+        index.upsert_entity(db, ent)
+    finally:
+        db.close()
+
+    event_type = "gate.emergency-updated" if force else "gate.updated"
+    log.log_side_effect(
+        "Gate", ent.id, event_type,
+        f"Updated Gate {ent.id!r}: {', '.join(sorted(updates))}",
+        root=root,
+        actor=ent.id,
+        details={"updated": sorted(updates), "force": force},
+    )
+    return {
+        "ok": True,
+        "id": ent.id,
+        "updated": sorted(updates),
+        "path": str(ent.path),
+        "spec": ent.spec,
+        "force": force,
     }
 
 

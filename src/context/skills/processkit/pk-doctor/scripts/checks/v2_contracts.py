@@ -151,6 +151,14 @@ def run(ctx) -> list[CheckResult]:
                     id="v2.process-instance-without-definition",
                     message=f"{_rel(repo_root, path)}: process-instance has no definition",
                     entity_ref=_rel(repo_root, path),
+                    fix_mcp_tool="workitem-management.update_workitem",
+                    suggested_fix=(
+                        "Set spec.process_definition_artifact to the "
+                        "Artifact(kind=process-definition) id with "
+                        "update_workitem(..., process_definition_artifact=...)."
+                    ),
+                    action_kind="safe_fix",
+                    default_agent_action="fix_now",
                 ))
 
     for binding in _bindings_by_type(repo_root, "time-window"):
@@ -166,6 +174,14 @@ def run(ctx) -> list[CheckResult]:
                 id="v2.schedule-without-rule",
                 message=f"{_rel(repo_root, path)}: time-window has no recurrence_rule",
                 entity_ref=_rel(repo_root, path),
+                fix_mcp_tool="binding-management.update_binding",
+                suggested_fix=(
+                    "Set conditions.recurrence_rule to the "
+                    "Artifact(kind=schedule-rule) id with update_binding(..., "
+                    "conditions={...})."
+                ),
+                action_kind="safe_fix",
+                default_agent_action="fix_now",
             ))
 
     budget_subjects = {
@@ -299,6 +315,13 @@ def run(ctx) -> list[CheckResult]:
                     "binding has no valid conditions.injection_mode"
                 ),
                 entity_ref=_rel(repo_root, path),
+                fix_mcp_tool="binding-management.update_binding",
+                suggested_fix=(
+                    "Set conditions.injection_mode to interrupt, ambient, "
+                    "or next-cycle with update_binding(..., conditions={...})."
+                ),
+                action_kind="safe_fix",
+                default_agent_action="fix_now",
             ))
 
     for path, data in _iter_entities(repo_root, "bindings"):
@@ -323,6 +346,14 @@ def run(ctx) -> list[CheckResult]:
                     "is only valid on triage-classification bindings"
                 ),
                 entity_ref=_rel(repo_root, path),
+                fix_mcp_tool="binding-management.update_binding",
+                suggested_fix=(
+                    "Remove conditions.injection_mode or create a replacement "
+                    "triage-classification Binding; use update_binding for "
+                    "safe condition repair."
+                ),
+                action_kind="safe_fix",
+                default_agent_action="fix_now",
             ))
 
     now = _dt.datetime.now(_dt.timezone.utc)

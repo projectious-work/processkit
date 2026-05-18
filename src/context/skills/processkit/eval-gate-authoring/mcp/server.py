@@ -142,8 +142,6 @@ def codify_eval(
     errors = schema.validate_spec("Artifact", artifact_spec)
     if errors:
         return {"error": "artifact schema validation failed", "details": errors}
-    art = entity.new("Artifact", artifact_id, artifact_spec, body=description)
-    artifact_path = _write(art, root)
 
     gate_id = ids.generate_id(
         "Gate",
@@ -166,6 +164,9 @@ def codify_eval(
     errors = schema.validate_spec("Gate", gate_spec)
     if errors:
         return {"error": "gate schema validation failed", "details": errors}
+
+    art = entity.new("Artifact", artifact_id, artifact_spec, body=description)
+    artifact_path = _write(art, root)
     gate = entity.new("Gate", gate_id, gate_spec)
     gate_path = _write(gate, root)
 

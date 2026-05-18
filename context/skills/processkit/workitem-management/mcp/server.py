@@ -18,6 +18,10 @@ Tools:
     transition_workitem(id, to_state, note?)
         -> {ok, from_state, to_state}
 
+    update_workitem(id, title?, priority?, assignee?, description?, parent?,
+                    scope?, process_definition_artifact?)
+        -> {ok, id, updated, path}
+
     query_workitems(state?, type?, assignee?, limit?)
         -> [workitems]
 
@@ -253,7 +257,7 @@ def create_process_instance(
         assignee=assignee,
         description=description,
         scope=scope,
-        slug_summary=slug_summary or title,
+        slug_summary=slug_summary,
     )
     if "error" in created_parent:
         return created_parent
@@ -263,6 +267,12 @@ def create_process_instance(
     if parent is None:
         return {"error": f"created parent {created_parent['id']!r} could not be reloaded"}
     parent.spec["process_definition_artifact"] = process_definition_artifact
+    parent.write()
+    db = index.open_db()
+    try:
+        index.upsert_entity(db, parent)
+    finally:
+        db.close()
 
     children: list[str] = []
     child_results: list[dict] = []
@@ -274,7 +284,6 @@ def create_process_instance(
             assignee=assignee,
             parent=parent.id,
             scope=scope,
-            slug_summary=step_title,
         )
         if "error" in created_step:
             return {
@@ -316,6 +325,7 @@ def create_process_instance(
         "id": parent.id,
         "path": str(parent.path),
         "state": parent.spec.get("state"),
+        "process_definition_artifact": process_definition_artifact,
         "children": child_results,
     }
 
@@ -379,6 +389,92 @@ def create_sep_handoff(
         details={"target": target},
     )
     return {"id": ent.id, "path": str(ent.path), "state": ent.spec.get("state")}
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def update_workitem(
+    id: str,
+    title: str | None = None,
+    priority: str | None = None,
+    assignee: str | None = None,
+    description: str | None = None,
+    parent: str | None = None,
+    scope: str | None = None,
+    process_definition_artifact: str | None = None,
+) -> dict:
+    """Update safe mutable WorkItem spec fields.
+
+    This intentionally excludes ``state``; use ``transition_workitem`` for
+    state changes so the state machine, timestamps, and archive movement are
+    preserved. Prerequisite: call find_skill(task_description) or confirm you
+    are already operating within a named processkit skill before using this
+    tool. 1% rule: call route_task first; commit in the same turn — deferred
+    writes are dropped.
+    """
+    root = paths.find_project_root()
+    ent = _load_workitem(root, id)
+    if ent is None:
+        return {"error": f"workitem {id!r} not found"}
+
+    updates: dict[str, object | None] = {}
+    if title is not None:
+        if not title:
+            return {"error": "title must be non-empty when supplied"}
+        updates["title"] = title
+    if priority is not None:
+        if priority not in _VALID_PRIORITIES:
+            return {"error": f"invalid priority {priority!r}"}
+        updates["priority"] = priority
+    if assignee is not None:
+        updates["assignee"] = assignee
+    if description is not None:
+        updates["description"] = description
+    if parent is not None:
+        if parent and not parent.startswith("BACK-"):
+            return {"error": "parent must be a BACK-* id when supplied"}
+        updates["parent"] = parent
+    if scope is not None:
+        updates["scope"] = scope
+    if process_definition_artifact is not None:
+        if not process_definition_artifact.startswith("ART-"):
+            return {"error": "process_definition_artifact must be an ART-* id"}
+        updates["process_definition_artifact"] = process_definition_artifact
+
+    if not updates:
+        return {"ok": True, "id": ent.id, "updated": [], "path": str(ent.path)}
+
+    ent.spec.update(updates)
+    errors = schema.validate_spec("WorkItem", ent.spec)
+    if errors:
+        return {"error": "schema validation failed", "details": errors}
+
+    ent.write()
+    db = index.open_db()
+    try:
+        index.upsert_entity(db, ent)
+    finally:
+        db.close()
+
+    log.log_side_effect(
+        "WorkItem", ent.id, "workitem.updated",
+        f"Updated WorkItem {ent.id!r}: {', '.join(sorted(updates))}",
+        root=root,
+        actor=ent.id,
+        details={"updated": sorted(updates)},
+    )
+    return {
+        "ok": True,
+        "id": ent.id,
+        "updated": sorted(updates),
+        "path": str(ent.path),
+        "state": ent.spec.get("state"),
+        "spec": ent.spec,
+    }
 
 
 @server.tool(annotations=ToolAnnotations(
@@ -533,6 +629,11 @@ def get_workitem(id: str) -> dict:
         "blocks": spec.get("blocks", []),
         "blocked_by": spec.get("blocked_by", []),
         "related_decisions": spec.get("related_decisions", []),
+        "process_definition_artifact": spec.get("process_definition_artifact"),
+        "process_instance": spec.get("process_instance"),
+        "step_order": spec.get("step_order"),
+        "children": spec.get("children", []),
+        "spec": spec,
         "path": row.get("path"),
     }
 

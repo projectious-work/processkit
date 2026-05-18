@@ -16,6 +16,7 @@ manifest.
 | `create_binding(type, subject, target, scope?, valid_from?, valid_until?, conditions?, description?)`     | Create a new Binding under `context/bindings/`           |
 | `create_time_window(subject, target, recurrence_rule_artifact, valid_from?, valid_until?, scope?, description?)` | Create a v2 schedule-demotion Binding using an Artifact-backed recurrence rule |
 | `create_budget_application(cost_policy_artifact, target, enforcement_point, cap_usd?, scope?, valid_from?, valid_until?, description?)` | Bind a cost-policy Artifact to a target with budget metadata |
+| `update_binding(id, subject?, target?, scope?, valid_from?, valid_until?, conditions?, description?)`    | Repair mutable Binding fields without changing its type  |
 | `end_binding(id, end_date?)`                                                                              | Set `valid_until` (default: today)                       |
 | `query_bindings(type?, subject?, target?, scope?, active_only?, limit?)`                                  | Query Bindings with filters; default returns active only |
 | `resolve_bindings_for(entity_id, type?, at_time?)`                                                        | Find all Bindings whose subject or target is `entity_id` |

@@ -9,6 +9,7 @@ pass (code review, tests green, security scan, stakeholder approval).
 |---|---|
 | `create_gate(name, description, kind, validator, validator_command?, required_roles?, blocking?, evidence_required?)` | Create a new Gate |
 | `get_gate(id)` | Fetch a single Gate by ID |
+| `update_gate(id, name?, description?, kind?, validator?, validator_command?, required_roles?, blocking?, evidence_required?, force?)` | Repair a Gate definition before evaluation history; `force` is emergency-only |
 | `list_gates(kind?, blocking?, limit?)` | List Gate entities |
 | `evaluate_gate(id, outcome, actor?, evidence?, reason?)` | Record an evaluation as a LogEntry |
 

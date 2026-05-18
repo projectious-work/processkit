@@ -15,6 +15,10 @@ Tools:
                    conditions?, description?)
         -> {id, path}
 
+    update_binding(id, subject?, target?, scope?, valid_from?, valid_until?,
+                   conditions?, description?)
+        -> {ok, id, updated, path}
+
     end_binding(id, end_date?)
         -> {ok}
 
@@ -265,6 +269,89 @@ def create_budget_application(
         conditions=conditions,
         description=description,
     )
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def update_binding(
+    id: str,
+    subject: str | None = None,
+    target: str | None = None,
+    scope: str | None = None,
+    valid_from: str | None = None,
+    valid_until: str | None = None,
+    conditions: dict | None = None,
+    description: str | None = None,
+) -> dict:
+    """Update safe mutable Binding spec fields.
+
+    Binding ``type`` is intentionally immutable; if the relationship
+    category is wrong, create a new Binding and end the old one. This
+    tool exists to repair relationship endpoints, scope/time bounds, and
+    contract-bearing conditions flagged by pk-doctor. Prerequisite: call
+    find_skill(task_description) or confirm you are already operating
+    within a named processkit skill before using this tool. 1% rule:
+    call route_task first; commit in the same turn — deferred writes are
+    dropped.
+    """
+    root = paths.find_project_root()
+    ent = _load_binding(root, id)
+    if ent is None:
+        return {"error": f"binding {id!r} not found"}
+
+    updates: dict[str, object | None] = {}
+    if subject is not None:
+        if not subject:
+            return {"error": "subject must be non-empty when supplied"}
+        updates["subject"] = subject
+    if target is not None:
+        if not target:
+            return {"error": "target must be non-empty when supplied"}
+        updates["target"] = target
+    if scope is not None:
+        updates["scope"] = scope or None
+    if valid_from is not None:
+        updates["valid_from"] = valid_from or None
+    if valid_until is not None:
+        updates["valid_until"] = valid_until or None
+    if conditions is not None:
+        updates["conditions"] = conditions
+    if description is not None:
+        updates["description"] = description
+
+    if not updates:
+        return {"ok": True, "id": ent.id, "updated": [], "path": str(ent.path)}
+
+    ent.spec.update(updates)
+    errors = schema.validate_spec("Binding", ent.spec)
+    if errors:
+        return {"error": "schema validation failed", "details": errors}
+
+    ent.write()
+    db = index.open_db()
+    try:
+        index.upsert_entity(db, ent)
+    finally:
+        db.close()
+
+    log.log_side_effect(
+        "Binding", ent.id, "binding.updated",
+        f"Updated Binding {ent.id!r}: {', '.join(sorted(updates))}",
+        root=root,
+        actor=ent.id,
+        details={"updated": sorted(updates)},
+    )
+    return {
+        "ok": True,
+        "id": ent.id,
+        "updated": sorted(updates),
+        "path": str(ent.path),
+        "spec": ent.spec,
+    }
 
 
 @server.tool(annotations=ToolAnnotations(
