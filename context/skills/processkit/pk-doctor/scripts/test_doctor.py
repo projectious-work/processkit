@@ -2548,6 +2548,16 @@ with tempfile.TemporaryDirectory() as tmp:
             and bool(briefing[0].extra.get("probabilistic_examples")),
             json.dumps(briefing[0].extra, indent=2),
         )
+        serialized_briefing = json.dumps(briefing[0].extra)
+        check(
+            "21: briefing examples do not trigger URL credential pattern",
+            not any(
+                pattern.id == "sensitive-data.url-credential"
+                and pattern.regex.search(serialized_briefing)
+                for pattern in sensitive_data._PATTERNS
+            ),
+            serialized_briefing,
+        )
 
 # ---------------------------------------------------------------------------
 # Summary

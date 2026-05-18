@@ -7,6 +7,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed `pk-doctor` `sensitive_data` briefing examples so the checker no
+  longer reports `sensitive-data.url-credential` against its own
+  non-secret guidance text. Closes #64.
+
 ---
 
 ## [v0.27.0] - 2026-05-18
