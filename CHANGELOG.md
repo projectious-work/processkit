@@ -9,6 +9,54 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.27.0] - 2026-05-18
+
+v0.27.0 is a **minor release** that expands repository and runtime
+cleanup planning for derived projects and fixes the supply-chain command
+projection drift reported after v0.26.18.
+
+### Added
+
+- Extended `runtime-prune` with provider-neutral cleanup scopes for
+  `repo-artifacts`, `tool-caches`, `action-artifacts`,
+  `release-assets`, and `package-registry`.
+- Added provider-adapted external cleanup runbooks for GitHub, GitLab,
+  Codeberg, Forgejo, Gitea, and generic/unknown forges. Each runbook
+  now reports `required_env`, `inventory_command`, `dry_run_command`,
+  `apply_command`, and `space_estimate` so a derived-project agent can
+  advise before deletion and run the approved command when it has
+  sufficient credentials.
+- Added regression coverage for local artifact/cache allowlists,
+  provider-neutral remote scopes, and GitHub/GitLab runbook adaptation.
+
+### Changed
+
+- Documented `runtime-prune` as the canonical cleanup/space-recovery
+  skill for local generated artifacts, tool caches, container cleanup
+  planning, CI/action artifacts, release assets, and package/container
+  registry versions.
+- Remote cleanup remains outside MCP direct execution: `plan_prune`
+  produces concrete dry-run/apply commands, while `apply_prune` returns
+  host-action evidence for provider-owned scopes.
+
+### Fixed
+
+- Fixed `/pk-supply-chain` command metadata so its command
+  `argument-hint` matches `metadata.processkit.commands[].args` in both
+  `context/` and `src/context/`.
+- Removed a stale tracked Codex command projection that caused
+  `commands_consistency.agent-only-command` drift.
+
+### Verification
+
+- `python3 -m py_compile src/context/skills/processkit/runtime-prune/mcp/server.py src/context/skills/processkit/runtime-prune/scripts/test_runtime_prune.py`
+- `uv run --with pytest --with mcp pytest -q src/context/skills/processkit/runtime-prune/scripts/test_runtime_prune.py`
+- `uv run scripts/smoke-test-servers.py`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+- `uv run context/skills/processkit/release-audit/scripts/release_audit.py --tree=src-context --repo-root .`
+
+---
+
 ## [v0.26.18] - 2026-05-18
 
 v0.26.18 is a **patch release** that closes MCP repair-surface gaps for

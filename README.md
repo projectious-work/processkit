@@ -63,13 +63,13 @@ project:
 
 ```sh
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.26.18/processkit-v0.26.18.tar.gz \
-  -o processkit-v0.26.18.tar.gz
-tar -xzf processkit-v0.26.18.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.27.0/processkit-v0.27.0.tar.gz \
+  -o processkit-v0.27.0.tar.gz
+tar -xzf processkit-v0.27.0.tar.gz
 
-cp -a processkit-v0.26.18/context ./context
-cp -a processkit-v0.26.18/.processkit ./.processkit
-cp processkit-v0.26.18/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.27.0/context ./context
+cp -a processkit-v0.27.0/.processkit ./.processkit
+cp processkit-v0.27.0/AGENTS.md ./AGENTS.md
 ```
 
 Then point your harness at the gateway MCP server. For stdio-based MCP:
@@ -139,7 +139,7 @@ processkit automatically for devcontainers:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.26.18"
+version = "v0.27.0"
 
 [context]
 packages = ["managed"]
@@ -167,10 +167,10 @@ release artifacts for this repository.
 processkit is currently pre-1.0. Breaking changes can still land in
 minor releases, and release notes call them out explicitly.
 
-`v0.26.18` is the current patch release. It keeps the v0.26 gateway and
-v2 deliverable boundary, adds typed MCP repair tools for WorkItem,
-Binding, and Gate contract issues, and hardens multi-entity creation
-against stranded partial writes.
+`v0.27.0` is the current minor release. It keeps the v2 deliverable
+boundary, adds provider-neutral repository/runtime cleanup planning with
+concrete dry-run/apply runbooks, and includes the latest command
+metadata drift fixes.
 
 ## Development
 
