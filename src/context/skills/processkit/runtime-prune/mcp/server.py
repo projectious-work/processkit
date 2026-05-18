@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Iterable, Optional
@@ -40,16 +41,26 @@ server = FastMCP("processkit-runtime-prune")
 SUPPORTED_SCOPES = {
     "runtime-home",
     "build-cache",
+    "repo-artifacts",
+    "tool-caches",
     "agent-worktrees",
     "e2e-companion",
     "containers",
+    "action-artifacts",
+    "release-assets",
+    "package-registry",
 }
 DEFAULT_SCOPES = [
     "runtime-home",
     "build-cache",
+    "repo-artifacts",
+    "tool-caches",
     "agent-worktrees",
     "containers",
     "e2e-companion",
+    "action-artifacts",
+    "release-assets",
+    "package-registry",
 ]
 
 RUNTIME_HOME_REL_PATHS = [
@@ -68,11 +79,40 @@ BUILD_CACHE_REL_PATHS = [
     "target/release/incremental",
     "target/release/build",
 ]
-PROCESSKIT_APPLY_SCOPES = {"runtime-home", "build-cache"}
+REPO_ARTIFACT_REL_PATHS = [
+    "dist",
+    "build",
+    "site",
+    "htmlcov",
+    "coverage",
+    ".coverage",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".mypy_cache",
+    ".nox",
+    ".tox",
+]
+TOOL_CACHE_REL_PATHS = [
+    ".cache/pip",
+    ".cache/pip-tools",
+    ".cache/uv",
+    ".npm/_cacache",
+    ".pnpm-store",
+    "node_modules/.cache",
+]
+PROCESSKIT_APPLY_SCOPES = {
+    "runtime-home",
+    "build-cache",
+    "repo-artifacts",
+    "tool-caches",
+}
 DELEGATED_APPLY_SCOPES = {
     "agent-worktrees",
     "e2e-companion",
     "containers",
+    "action-artifacts",
+    "release-assets",
+    "package-registry",
 }
 
 
@@ -228,6 +268,58 @@ def _looks_managed_worktree(path: Path) -> bool:
     )
 
 
+def _git_remote_url(root: Path) -> str | None:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(root), "remote", "get-url", "origin"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if completed.returncode != 0:
+        return None
+    url = completed.stdout.strip()
+    return url or None
+
+
+def _repo_provider(root: Path) -> dict:
+    url = _git_remote_url(root)
+    if not url:
+        return {
+            "provider": "unknown",
+            "remote_url": None,
+            "host": None,
+            "notes": ["No origin remote detected; use generic provider docs."],
+        }
+
+    lowered = url.lower()
+    provider = "generic"
+    host = None
+    for marker in ("github.com", "gitlab.com", "codeberg.org"):
+        if marker in lowered:
+            host = marker
+            break
+    if "github.com" in lowered:
+        provider = "github"
+    elif "gitlab.com" in lowered:
+        provider = "gitlab"
+    elif "codeberg.org" in lowered:
+        provider = "codeberg"
+    elif "forgejo" in lowered:
+        provider = "forgejo"
+    elif "gitea" in lowered:
+        provider = "gitea"
+    return {
+        "provider": provider,
+        "remote_url": url,
+        "host": host,
+        "notes": [],
+    }
+
+
 def _confirmation(scopes: list[str]) -> str:
     return "apply-prune:" + ",".join(scopes)
 
@@ -235,6 +327,7 @@ def _confirmation(scopes: list[str]) -> str:
 def _analyze(root: Path, scopes: list[str]) -> dict:
     scope_data: list[dict] = []
     total = 0
+    provider = _repo_provider(root)
 
     if "runtime-home" in scopes:
         targets = _path_targets(root, RUNTIME_HOME_REL_PATHS)
@@ -263,6 +356,40 @@ def _analyze(root: Path, scopes: list[str]) -> dict:
                 (
                     "Explicit build-cache subdirectories; not the whole "
                     "target tree."
+                ),
+            ],
+        })
+
+    if "repo-artifacts" in scopes:
+        targets = _path_targets(root, REPO_ARTIFACT_REL_PATHS)
+        size = sum(item["size_bytes"] for item in targets)
+        total += size
+        scope_data.append({
+            "scope": "repo-artifacts",
+            "risk": "medium",
+            "expected_reclaim_bytes": size,
+            "targets": targets,
+            "notes": [
+                (
+                    "Local generated release/build/test artifacts only; "
+                    "verify nothing here is the only copy before applying."
+                ),
+            ],
+        })
+
+    if "tool-caches" in scopes:
+        targets = _path_targets(root, TOOL_CACHE_REL_PATHS)
+        size = sum(item["size_bytes"] for item in targets)
+        total += size
+        scope_data.append({
+            "scope": "tool-caches",
+            "risk": "medium",
+            "expected_reclaim_bytes": size,
+            "targets": targets,
+            "notes": [
+                (
+                    "Project-local package/tool caches only; global caches "
+                    "are host-owned and intentionally not removed."
                 ),
             ],
         })
@@ -298,6 +425,11 @@ def _analyze(root: Path, scopes: list[str]) -> dict:
                     "manager; this tool does not call local Docker, Podman, "
                     "or host CLI wrappers directly."
                 ),
+                (
+                    "Best practice is staged cleanup: inspect with "
+                    "`docker system df`, prune builder cache separately, "
+                    "avoid `--volumes` unless data ownership is explicit."
+                ),
             ],
         })
 
@@ -315,10 +447,60 @@ def _analyze(root: Path, scopes: list[str]) -> dict:
             ],
         })
 
+    if "action-artifacts" in scopes:
+        scope_data.append({
+            "scope": "action-artifacts",
+            "risk": "high",
+            "expected_reclaim_bytes": 0,
+            "targets": [],
+            "provider": provider,
+            "notes": [
+                (
+                    "Remote CI/action artifacts and logs are provider-owned; "
+                    "set short retention for non-release artifacts and "
+                    "delete older artifacts/runs through the provider API."
+                ),
+            ],
+        })
+
+    if "release-assets" in scopes:
+        scope_data.append({
+            "scope": "release-assets",
+            "risk": "high",
+            "expected_reclaim_bytes": 0,
+            "targets": [],
+            "provider": provider,
+            "notes": [
+                (
+                    "Remote release assets are permanent until deleted; "
+                    "keep source tags/releases, but remove binary assets "
+                    "outside the supported-version retention window."
+                ),
+            ],
+        })
+
+    if "package-registry" in scopes:
+        scope_data.append({
+            "scope": "package-registry",
+            "risk": "high",
+            "expected_reclaim_bytes": 0,
+            "targets": [],
+            "provider": provider,
+            "notes": [
+                (
+                    "Remote package/container cleanup needs registry admin "
+                    "permissions; keep semver releases, active deployment "
+                    "tags, and referenced digests; delete stale untagged or "
+                    "superseded versions."
+                ),
+            ],
+        })
+
     return {
         "project_root": root.as_posix(),
         "scopes": scopes,
         "supported_scopes": sorted(SUPPORTED_SCOPES),
+        "repo_provider": provider,
         "total_expected_reclaim_bytes": total,
         "scope_data": scope_data,
     }
@@ -329,7 +511,436 @@ def _targets_for_scope(root: Path, scope: str) -> list[dict]:
         return _path_targets(root, RUNTIME_HOME_REL_PATHS)
     if scope == "build-cache":
         return _path_targets(root, BUILD_CACHE_REL_PATHS)
+    if scope == "repo-artifacts":
+        return _path_targets(root, REPO_ARTIFACT_REL_PATHS)
+    if scope == "tool-caches":
+        return _path_targets(root, TOOL_CACHE_REL_PATHS)
     return []
+
+
+def _remote_runbook(scope: str, provider: str = "unknown") -> dict | None:
+    if scope == "containers":
+        return {
+            "required_env": [],
+            "inventory_command": "docker system df && docker buildx du",
+            "dry_run_command": (
+                "docker builder prune --filter until=${RETENTION_HOURS:-168}h "
+                "--dry-run || true"
+            ),
+            "apply_command": (
+                "docker builder prune --filter until=${RETENTION_HOURS:-168}h "
+                "--force && docker image prune "
+                "--filter until=${RETENTION_HOURS:-168}h --force"
+            ),
+            "space_estimate": (
+                "Use the RECLAIMABLE column from `docker system df` and "
+                "`docker buildx du`."
+            ),
+        }
+
+    if provider == "github":
+        return _github_runbook(scope)
+    if provider == "gitlab":
+        return _gitlab_runbook(scope)
+    if provider in {"codeberg", "forgejo", "gitea"}:
+        return _forgejo_gitea_runbook(scope, provider)
+    if scope in {"action-artifacts", "release-assets", "package-registry"}:
+        return {
+            "required_env": ["PROVIDER_API_URL", "PROVIDER_TOKEN"],
+            "inventory_command": None,
+            "dry_run_command": None,
+            "apply_command": None,
+            "space_estimate": (
+                "Provider is unknown; inventory and deletion endpoints must "
+                "be filled from the forge or registry API documentation."
+            ),
+        }
+    return None
+
+
+def _github_runbook(scope: str) -> dict | None:
+    if scope == "action-artifacts":
+        inventory = (
+            "gh api \"repos/${OWNER}/${REPO}/actions/artifacts?per_page=100\" "
+            "--paginate > /tmp/pk-action-artifacts.json\n"
+            "jq -r '.artifacts[] | [.id,.name,.size_in_bytes,.created_at,"
+            ".expires_at] | @tsv' /tmp/pk-action-artifacts.json"
+        )
+        dry_run = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-60}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            "gh api \"repos/${OWNER}/${REPO}/actions/artifacts?per_page=100\" "
+            "--paginate > /tmp/pk-action-artifacts.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '\n"
+            "  .artifacts[] | select(.created_at < $cutoff) |\n"
+            "  [.id,.name,.size_in_bytes,.created_at,.expires_at] | @tsv\n"
+            "' /tmp/pk-action-artifacts.json\n"
+            "jq --arg cutoff \"$cutoff\" '\n"
+            "  [ .artifacts[] | select(.created_at < $cutoff) | "
+            ".size_in_bytes ] | add // 0\n"
+            "' /tmp/pk-action-artifacts.json"
+        )
+        apply = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-60}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            "gh api \"repos/${OWNER}/${REPO}/actions/artifacts?per_page=100\" "
+            "--paginate > /tmp/pk-action-artifacts.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '\n"
+            "  .artifacts[] | select(.created_at < $cutoff) | .id\n"
+            "' /tmp/pk-action-artifacts.json |\n"
+            "while read -r id; do\n"
+            "  gh api --method DELETE "
+            "\"repos/${OWNER}/${REPO}/actions/artifacts/${id}\"\n"
+            "done"
+        )
+        return _runbook(["OWNER", "REPO"], inventory, dry_run, apply)
+
+    if scope == "release-assets":
+        inventory = (
+            "gh release list --limit 200 --json tagName,createdAt,isLatest "
+            "> /tmp/pk-releases.json\n"
+            "jq -r '.[] | [.tagName,.createdAt,.isLatest] | @tsv' "
+            "/tmp/pk-releases.json"
+        )
+        dry_run = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-180}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            "gh release list --limit 200 --json tagName,createdAt,isLatest |\n"
+            "jq -r --arg cutoff \"$cutoff\" '\n"
+            "  .[] | select(.createdAt < $cutoff and (.isLatest|not)) | "
+            ".tagName\n"
+            "' | while read -r tag; do\n"
+            "  gh release view \"$tag\" --json tagName,assets |\n"
+            "  jq -r '.assets[] | [$tag,.name,.size] | @tsv' "
+            "--arg tag \"$tag\"\n"
+            "done"
+        )
+        apply = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-180}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            "gh release list --limit 200 --json tagName,createdAt,isLatest |\n"
+            "jq -r --arg cutoff \"$cutoff\" '\n"
+            "  .[] | select(.createdAt < $cutoff and (.isLatest|not)) | "
+            ".tagName\n"
+            "' | while read -r tag; do\n"
+            "  gh release view \"$tag\" --json assets |\n"
+            "  jq -r '.assets[].name' |\n"
+            "  while read -r asset; do\n"
+            "    gh release delete-asset \"$tag\" \"$asset\" --yes\n"
+            "  done\n"
+            "done"
+        )
+        return _runbook([], inventory, dry_run, apply)
+
+    if scope == "package-registry":
+        inventory = (
+            "OWNER_TYPE=${OWNER_TYPE:-orgs}\n"
+            "PACKAGE_TYPE=${PACKAGE_TYPE:-container}\n"
+            "gh api \"$OWNER_TYPE/${OWNER}/packages/${PACKAGE_TYPE}/"
+            "${PACKAGE_NAME}/versions?per_page=100\" --paginate "
+            "> /tmp/pk-package-versions.json\n"
+            "jq -r '.[] | [.id,.name,((.metadata.container.tags // [])|join("
+            "\",\")),.created_at] | @tsv' /tmp/pk-package-versions.json"
+        )
+        dry_run = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-90}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            "OWNER_TYPE=${OWNER_TYPE:-orgs}\n"
+            "PACKAGE_TYPE=${PACKAGE_TYPE:-container}\n"
+            "gh api \"$OWNER_TYPE/${OWNER}/packages/${PACKAGE_TYPE}/"
+            "${PACKAGE_NAME}/versions?per_page=100\" --paginate "
+            "> /tmp/pk-package-versions.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '\n"
+            "  .[] | select(.created_at < $cutoff) |\n"
+            "  select((.metadata.container.tags // []) | length == 0) |\n"
+            "  [.id,.name,.created_at] | @tsv\n"
+            "' /tmp/pk-package-versions.json"
+        )
+        apply = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-90}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            "OWNER_TYPE=${OWNER_TYPE:-orgs}\n"
+            "PACKAGE_TYPE=${PACKAGE_TYPE:-container}\n"
+            "gh api \"$OWNER_TYPE/${OWNER}/packages/${PACKAGE_TYPE}/"
+            "${PACKAGE_NAME}/versions?per_page=100\" --paginate "
+            "> /tmp/pk-package-versions.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '\n"
+            "  .[] | select(.created_at < $cutoff) |\n"
+            "  select((.metadata.container.tags // []) | length == 0) | .id\n"
+            "' /tmp/pk-package-versions.json |\n"
+            "while read -r id; do\n"
+            "  gh api --method DELETE "
+            "\"$OWNER_TYPE/${OWNER}/packages/${PACKAGE_TYPE}/"
+            "${PACKAGE_NAME}/versions/${id}\"\n"
+            "done"
+        )
+        return _runbook(
+            ["OWNER", "PACKAGE_NAME"],
+            inventory,
+            dry_run,
+            apply,
+            space_estimate=(
+                "GitHub package version listings do not always expose "
+                "reclaimable bytes; dry-run prints the exact versions."
+            ),
+        )
+    return None
+
+
+def _gitlab_runbook(scope: str) -> dict | None:
+    api = "${GITLAB_API_URL:-https://gitlab.com/api/v4}"
+    if scope == "action-artifacts":
+        inventory = (
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/jobs?per_page=100\" "
+            "> /tmp/pk-gitlab-jobs.json\n"
+            "jq -r '.[] | select(.artifacts_file) | "
+            "[.id,.name,.artifacts_file.size,.created_at] | @tsv' "
+            "/tmp/pk-gitlab-jobs.json"
+        )
+        dry_run = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-60}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/jobs?per_page=100\" "
+            "> /tmp/pk-gitlab-jobs.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '\n"
+            "  .[] | select(.created_at < $cutoff) | "
+            "select(.artifacts_file) |\n"
+            "  [.id,.name,.artifacts_file.size,.created_at] | @tsv\n"
+            "' /tmp/pk-gitlab-jobs.json\n"
+            "jq --arg cutoff \"$cutoff\" '[.[] | select(.created_at < "
+            "$cutoff) | .artifacts_file.size? // 0] | add // 0' "
+            "/tmp/pk-gitlab-jobs.json"
+        )
+        apply = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-60}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/jobs?per_page=100\" "
+            "> /tmp/pk-gitlab-jobs.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '.[] | select(.created_at < "
+            "$cutoff) | select(.artifacts_file) | .id' "
+            "/tmp/pk-gitlab-jobs.json |\n"
+            "while read -r id; do\n"
+            f"  curl --request DELETE --header "
+            f"\"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/jobs/${{id}}/artifacts\"\n"
+            "done"
+        )
+        return _runbook(["GITLAB_TOKEN", "PROJECT_ID"], inventory, dry_run, apply)
+
+    if scope == "package-registry":
+        inventory = (
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/packages?per_page=100\" "
+            "> /tmp/pk-gitlab-packages.json\n"
+            "jq -r '.[] | [.id,.name,.version,.package_type,.created_at] | "
+            "@tsv' /tmp/pk-gitlab-packages.json"
+        )
+        dry_run = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-90}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/packages?per_page=100\" "
+            "> /tmp/pk-gitlab-packages.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '.[] | "
+            "select(.created_at < $cutoff) | "
+            "[.id,.name,.version,.package_type,.created_at] | @tsv' "
+            "/tmp/pk-gitlab-packages.json"
+        )
+        apply = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-90}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/packages?per_page=100\" "
+            "> /tmp/pk-gitlab-packages.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '.[] | "
+            "select(.created_at < $cutoff) | .id' "
+            "/tmp/pk-gitlab-packages.json |\n"
+            "while read -r id; do\n"
+            f"  curl --request DELETE --header "
+            f"\"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/packages/${{id}}\"\n"
+            "done"
+        )
+        return _runbook(
+            ["GITLAB_TOKEN", "PROJECT_ID"],
+            inventory,
+            dry_run,
+            apply,
+            space_estimate=(
+                "GitLab package listings may omit byte totals; dry-run "
+                "prints exact package IDs and versions."
+            ),
+        )
+
+    if scope == "release-assets":
+        inventory = (
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/releases?per_page=100\" "
+            "> /tmp/pk-gitlab-releases.json\n"
+            "jq -r '.[] | [.tag_name,.created_at,(.assets.links|length)] | "
+            "@tsv' /tmp/pk-gitlab-releases.json"
+        )
+        dry_run = (
+            "RETENTION_DAYS=${RETENTION_DAYS:-180}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/releases?per_page=100\" "
+            "> /tmp/pk-gitlab-releases.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '.[] | "
+            "select(.created_at < $cutoff) | "
+            ".tag_name as $tag | .assets.links[]? | "
+            "[$tag,.id,.name,.url] | @tsv' /tmp/pk-gitlab-releases.json"
+        )
+        apply = (
+            "# GitLab release asset links can point to external or package "
+            "assets; review dry-run output before deleting links.\n"
+            "RETENTION_DAYS=${RETENTION_DAYS:-180}\n"
+            "cutoff=$(date -u -d \"$RETENTION_DAYS days ago\" "
+            "+%Y-%m-%dT%H:%M:%SZ)\n"
+            f"curl --header \"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/releases?per_page=100\" "
+            "> /tmp/pk-gitlab-releases.json\n"
+            "jq -r --arg cutoff \"$cutoff\" '.[] | "
+            "select(.created_at < $cutoff) | "
+            ".tag_name as $tag | .assets.links[]? | [$tag,.id] | @tsv' "
+            "/tmp/pk-gitlab-releases.json |\n"
+            "while IFS=$'\\t' read -r tag link_id; do\n"
+            f"  curl --request DELETE --header "
+            f"\"PRIVATE-TOKEN: $GITLAB_TOKEN\" "
+            f"\"{api}/projects/${{PROJECT_ID}}/releases/${{tag}}/assets/"
+            "links/${link_id}\"\n"
+            "done"
+        )
+        return _runbook(["GITLAB_TOKEN", "PROJECT_ID"], inventory, dry_run, apply)
+    return None
+
+
+def _forgejo_gitea_runbook(scope: str, provider: str) -> dict | None:
+    api = "${FORGE_API_URL:-https://codeberg.org/api/v1}"
+    required = ["FORGE_API_URL", "FORGE_TOKEN", "OWNER", "REPO"]
+    auth = "Authorization: token $FORGE_TOKEN"
+    if scope == "action-artifacts":
+        inventory = (
+            f"curl --header \"{auth}\" "
+            f"\"{api}/repos/${{OWNER}}/${{REPO}}/actions/artifacts\" "
+            "> /tmp/pk-forge-artifacts.json\n"
+            "jq -r '.artifacts[]? | [.id,.name,.size_in_bytes,.created_at] | "
+            "@tsv' /tmp/pk-forge-artifacts.json"
+        )
+        dry_run = inventory + "\n" + (
+            "jq '[.artifacts[]?.size_in_bytes // 0] | add // 0' "
+            "/tmp/pk-forge-artifacts.json"
+        )
+        apply = (
+            "# Review the dry-run output before applying.\n"
+            + inventory
+            + "\n"
+            "jq -r '.artifacts[]?.id' /tmp/pk-forge-artifacts.json |\n"
+            "while read -r id; do\n"
+            f"  curl --request DELETE --header \"{auth}\" "
+            f"\"{api}/repos/${{OWNER}}/${{REPO}}/actions/artifacts/${{id}}\"\n"
+            "done"
+        )
+        return _runbook(required, inventory, dry_run, apply)
+
+    if scope == "release-assets":
+        inventory = (
+            f"curl --header \"{auth}\" "
+            f"\"{api}/repos/${{OWNER}}/${{REPO}}/releases\" "
+            "> /tmp/pk-forge-releases.json\n"
+            "jq -r '.[] | [.tag_name,.created_at,(.assets|length)] | @tsv' "
+            "/tmp/pk-forge-releases.json"
+        )
+        dry_run = (
+            inventory
+            + "\n"
+            "jq -r '.[] | .tag_name as $tag | .assets[]? | "
+            "[$tag,.id,.name,.size] | @tsv' /tmp/pk-forge-releases.json"
+        )
+        apply = (
+            "# Review the dry-run output before applying.\n"
+            + inventory
+            + "\n"
+            "jq -r '.[] | .tag_name as $tag | .assets[]? | [$tag,.id] | "
+            "@tsv' /tmp/pk-forge-releases.json |\n"
+            "while IFS=$'\\t' read -r tag asset_id; do\n"
+            f"  curl --request DELETE --header \"{auth}\" "
+            f"\"{api}/repos/${{OWNER}}/${{REPO}}/releases/tags/"
+            "${tag}/assets/${asset_id}\"\n"
+            "done"
+        )
+        return _runbook(required, inventory, dry_run, apply)
+
+    if scope == "package-registry":
+        inventory = (
+            f"curl --header \"{auth}\" "
+            f"\"{api}/packages/${{OWNER}}\" > /tmp/pk-forge-packages.json\n"
+            "jq -r '.[] | [.type,.name,.version,.created_at] | @tsv' "
+            "/tmp/pk-forge-packages.json"
+        )
+        dry_run = inventory
+        apply = (
+            "# Set PACKAGE_TYPE, PACKAGE_NAME, and PACKAGE_VERSION from the "
+            "dry-run output before applying one package version.\n"
+            f"curl --request DELETE --header \"{auth}\" "
+            f"\"{api}/packages/${{OWNER}}/${{PACKAGE_TYPE}}/"
+            "${PACKAGE_NAME}/${PACKAGE_VERSION}\""
+        )
+        return _runbook(
+            required + ["PACKAGE_TYPE", "PACKAGE_NAME", "PACKAGE_VERSION"],
+            inventory,
+            dry_run,
+            apply,
+            space_estimate=(
+                f"{provider} package listings may not expose byte totals; "
+                "dry-run prints package coordinates."
+            ),
+        )
+    return None
+
+
+def _runbook(
+    required_env: list[str],
+    inventory_command: str | None,
+    dry_run_command: str | None,
+    apply_command: str | None,
+    *,
+    space_estimate: str = (
+        "Dry-run prints selected rows and a provider-reported byte total "
+        "when the API exposes sizes."
+    ),
+) -> dict:
+    return {
+        "required_env": required_env,
+        "inventory_command": inventory_command,
+        "dry_run_command": dry_run_command,
+        "apply_command": apply_command,
+        "space_estimate": space_estimate,
+    }
+
+
+def _remote_dry_run_command(scope: str, provider: str = "unknown") -> str | None:
+    runbook = _remote_runbook(scope, provider)
+    return runbook.get("dry_run_command") if runbook else None
+
+
+def _remote_apply_command(scope: str, provider: str = "unknown") -> str | None:
+    runbook = _remote_runbook(scope, provider)
+    return runbook.get("apply_command") if runbook else None
 
 
 def _remove_target(root: Path, rel_path: str) -> dict:
@@ -446,6 +1057,11 @@ def plan_prune(
     actions = []
     for item in analysis["scope_data"]:
         processkit_owned = item["scope"] in PROCESSKIT_APPLY_SCOPES
+        provider = item.get("provider", {}).get(
+            "provider",
+            analysis.get("repo_provider", {}).get("provider", "unknown"),
+        )
+        runbook = _remote_runbook(item["scope"], provider)
         actions.append({
             "scope": item["scope"],
             "risk": item["risk"],
@@ -456,14 +1072,27 @@ def plan_prune(
             ),
             "expected_reclaim_bytes": item["expected_reclaim_bytes"],
             "targets": item.get("targets", []),
-            "dry_run_command": None,
-            "apply_command": None,
+            "provider": item.get("provider"),
+            "required_env": (
+                runbook.get("required_env") if runbook else []
+            ),
+            "inventory_command": (
+                runbook.get("inventory_command") if runbook else None
+            ),
+            "dry_run_command": (
+                runbook.get("dry_run_command") if runbook else None
+            ),
+            "apply_command": runbook.get("apply_command") if runbook else None,
+            "space_estimate": (
+                runbook.get("space_estimate") if runbook else None
+            ),
             "notes": item.get("notes", []),
         })
 
     return {
         "project_root": root.as_posix(),
         "scopes": normalized,
+        "repo_provider": analysis.get("repo_provider"),
         "dry_run": True,
         "required_confirmation": _confirmation(normalized),
         "total_expected_reclaim_bytes": (
