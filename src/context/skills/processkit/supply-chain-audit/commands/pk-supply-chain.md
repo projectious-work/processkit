@@ -1,8 +1,8 @@
 ---
 argument-hint: >
-  --root=<path> [--discover-only] [--run-security]
-  [--run-quality] [--manifest <path>...]
-  [--export-sbom <path>]
+  [--root=<path>] [--manifest <path>...]
+  [--discover-only] [--run-security]
+  [--run-quality] [--export-sbom <path>]
 allowed-tools: []
 ---
 
@@ -14,4 +14,3 @@ Default behavior:
 - Run local manifest checks only.
 - Keep security and quality probes off unless `--run-security`
   and/or `--run-quality` are passed.
-
