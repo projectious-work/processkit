@@ -9,6 +9,50 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.26.18] - 2026-05-18
+
+v0.26.18 is a **patch release** that closes MCP repair-surface gaps for
+derived projects and hardens process-instance creation.
+
+### Added
+
+- Added `workitem-management.update_workitem` for scoped WorkItem
+  repairs, including `process_definition_artifact`.
+- Added `binding-management.update_binding` for scoped Binding repairs,
+  including contract-bearing `conditions` updates.
+- Added `gate-management.update_gate` for guarded Gate definition
+  repairs, with `force=True` reserved for explicit emergency updates
+  after evaluation history exists.
+- Added focused regression tests for WorkItem process instances,
+  Binding repairs, Gate repairs, and eval-gate partial-write behavior.
+
+### Fixed
+
+- Fixed `create_process_instance` so it persists
+  `process_definition_artifact` immediately and no longer treats short
+  titles or step titles as invalid slug summaries.
+- Fixed `get_workitem` to include full `spec` plus process-instance and
+  process-step fields in its response.
+- Fixed `codify_eval` so Gate validation happens before writing the
+  eval-spec Artifact, avoiding stranded partial creations.
+- Added pk-doctor repair guidance for v2 contract findings that can now
+  be fixed through MCP tools instead of hand-editing entity files.
+
+### Verification
+
+- `python3 -m py_compile context/skills/processkit/binding-management/mcp/server.py context/skills/processkit/gate-management/mcp/server.py context/skills/processkit/eval-gate-authoring/mcp/server.py context/skills/processkit/workitem-management/mcp/server.py context/skills/processkit/pk-doctor/scripts/checks/v2_contracts.py`
+- `uv run --with mcp --with pyyaml --with jsonschema context/skills/processkit/binding-management/scripts/test_binding_management.py`
+- `uv run --with mcp --with pyyaml --with jsonschema context/skills/processkit/gate-management/scripts/test_gate_management.py`
+- `uv run --with mcp --with pyyaml --with jsonschema context/skills/processkit/eval-gate-authoring/scripts/test_eval_gate_authoring.py`
+- `uv run --with mcp --with pyyaml --with jsonschema context/skills/processkit/workitem-management/scripts/test_workitem_management.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --category=v2_contracts --json`
+- `uv run scripts/smoke-test-servers.py`
+- `uv run context/skills/processkit/release-audit/scripts/release_audit.py --tree=both --repo-root .`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+
+---
+
 ## [v0.26.17] - 2026-05-18
 
 v0.26.17 is a **patch release** that adds the supply-chain audit
