@@ -63,13 +63,13 @@ project:
 
 ```sh
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.26.16/processkit-v0.26.16.tar.gz \
-  -o processkit-v0.26.16.tar.gz
-tar -xzf processkit-v0.26.16.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.26.17/processkit-v0.26.17.tar.gz \
+  -o processkit-v0.26.17.tar.gz
+tar -xzf processkit-v0.26.17.tar.gz
 
-cp -a processkit-v0.26.16/context ./context
-cp -a processkit-v0.26.16/.processkit ./.processkit
-cp processkit-v0.26.16/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.26.17/context ./context
+cp -a processkit-v0.26.17/.processkit ./.processkit
+cp processkit-v0.26.17/AGENTS.md ./AGENTS.md
 ```
 
 Then point your harness at the gateway MCP server. For stdio-based MCP:
@@ -139,7 +139,7 @@ processkit automatically for devcontainers:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.26.16"
+version = "v0.26.17"
 
 [context]
 packages = ["managed"]
@@ -167,9 +167,10 @@ release artifacts for this repository.
 processkit is currently pre-1.0. Breaking changes can still land in
 minor releases, and release notes call them out explicitly.
 
-`v0.26.16` is the current patch release. It keeps the v0.26 gateway and
-v2 deliverable boundary, hardens derived-project reconciliation paths,
-and keeps committed human TeamMember identity alias-only by default.
+`v0.26.17` is the current patch release. It keeps the v0.26 gateway and
+v2 deliverable boundary, adds supply-chain inventory/license audit
+surfaces, and strengthens derived-project privacy/security advisory
+checks.
 
 ## Development
 

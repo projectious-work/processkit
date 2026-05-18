@@ -9,6 +9,49 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.26.17] - 2026-05-18
+
+v0.26.17 is a **patch release** that adds the supply-chain audit
+surface and tightens privacy/security advisory checks for derived
+projects.
+
+### Added
+
+- Added `supply-chain-audit` with `/pk-supply-chain`, a
+  `processkit-supply-chain-audit` MCP server, offline npm lockfile
+  inventory, license policy classification, JSON reporting, and
+  CycloneDX-like SBOM export.
+- Added opt-in supply-chain Phase 2 probes for local `npm audit` and
+  `npm outdated` orchestration, plus Phase 3 supplier-quality advisory
+  signals derived from local dependency metadata.
+- Added pk-doctor `supply_chain` coverage for manifest/lockfile
+  inventory, missing project supply-chain policy, license risk,
+  vulnerability signals, outdated signals, and supplier-quality
+  advisories.
+- Added pk-doctor `sensitive_data` coverage with deterministic
+  secret/PII patterns plus agent-facing deterministic and probabilistic
+  briefing examples.
+
+### Changed
+
+- Added release-process guidance requiring root `LICENSE` coverage in
+  release tarballs, GitHub release assets, and the shipped release
+  process template.
+- Added a README license notice stating the maintainers' intent that
+  the MIT License applies retroactively to historical repository commits,
+  tags, and release artifacts unless a file states otherwise.
+
+### Verification
+
+- `python3 -m py_compile context/skills/processkit/supply-chain-audit/scripts/supply_chain_audit.py context/skills/processkit/supply-chain-audit/mcp/server.py src/context/skills/processkit/supply-chain-audit/scripts/supply_chain_audit.py src/context/skills/processkit/supply-chain-audit/mcp/server.py`
+- `uv run context/skills/processkit/supply-chain-audit/scripts/test_supply_chain_audit.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --category=supply_chain --json`
+- `uv run context/skills/processkit/release-audit/scripts/release_audit.py --tree=both --repo-root .`
+- `bash scripts/check-src-context-drift.sh --release-deliverable`
+
+---
+
 ## [v0.26.16] - 2026-05-18
 
 v0.26.16 is a **patch release** that hardens TeamMember privacy defaults
