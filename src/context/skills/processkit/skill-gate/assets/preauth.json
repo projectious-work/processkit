@@ -25,6 +25,7 @@
       "mcp__processkit-security-projections__*",
       "mcp__processkit-skill-finder__*",
       "mcp__processkit-skill-gate__*",
+      "mcp__processkit-supply-chain-audit__*",
       "mcp__processkit-task-router__*",
       "mcp__processkit-team-manager__*",
       "mcp__processkit-workitem-management__*"
@@ -53,6 +54,7 @@
     "processkit-security-projections",
     "processkit-skill-finder",
     "processkit-skill-gate",
+    "processkit-supply-chain-audit",
     "processkit-task-router",
     "processkit-team-manager",
     "processkit-workitem-management"
@@ -82,6 +84,7 @@
         "mcp__processkit-security-projections__*",
         "mcp__processkit-skill-finder__*",
         "mcp__processkit-skill-gate__*",
+        "mcp__processkit-supply-chain-audit__*",
         "mcp__processkit-task-router__*",
         "mcp__processkit-team-manager__*",
         "mcp__processkit-workitem-management__*"

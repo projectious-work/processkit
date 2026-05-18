@@ -2416,6 +2416,140 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 21: supply_chain — offline lockfile/license/security advisories
+# ---------------------------------------------------------------------------
+print("\n[21] supply_chain — offline lockfile/license/security advisories")
+
+from checks.supply_chain import run as _supply_chain_run  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "package.json").write_text(
+        textwrap.dedent("""\
+            {
+                "name": "test-app",
+                "private": true
+            }
+            """),
+        encoding="utf-8",
+    )
+    findings = _supply_chain_run({"repo_root": root, "since_files": None})
+    ids = {item.id for item in findings}
+    check("21a: missing lockfile emits ERROR", "supply_chain.missing-lockfile" in ids)
+    check("21b: missing policy emits WARN", "supply_chain.no-policy" in ids)
+    check("21c: inventory summary is emitted", "supply_chain.inventory" in ids)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    policy = root / ".processkit"
+    policy.mkdir()
+    (policy / "supply-chain-policy.yaml").write_text(
+        textwrap.dedent("""\
+            licenses:
+              allow:
+                - MIT
+              review:
+                - CDDL-1.0
+              deny:
+                - AGPL-3.0-only
+            """),
+        encoding="utf-8",
+    )
+    core_root = (
+        root / "src" / "context" / "skills" /
+        "processkit" / "supply-chain-audit" / "scripts"
+    )
+    core_root.mkdir(parents=True)
+    (core_root / "supply_chain_audit.py").write_text(
+        textwrap.dedent("""\
+            from __future__ import annotations
+
+            def run_audit(repo_root, *_, **__):
+                return {
+                    "components": [
+                        {"name": "blocked-lib", "license": "AGPL-3.0-only"},
+                        {"name": "review-lib", "license": "CDDL-1.0"},
+                        {"name": "mystery-lib", "license": "UNKNOWN-LICENSE"},
+                    ],
+                    "security": [
+                        {"id": "CVE-2026-9999", "severity": "critical", "dependency": "blocked-lib"},
+                        {"id": "CVE-2026-1111", "severity": "medium", "dependency": "review-lib"},
+                    ],
+                    "skipped_scanners": [
+                        {"name": "trivy", "reason": "not-installed"},
+                    ],
+                    "outdated": [{"name": "blocked-lib", "severity": "high"}],
+                    "supplier_quality": [{"supplier": "acme", "risk": "medium"}],
+                    "phases": {
+                        "phase2": {
+                            "scanner_findings": [
+                                {"id": "TRVY-0001", "severity": "low", "dependency": "blocked-lib"},
+                            ],
+                        },
+                    },
+                }
+            """),
+        encoding="utf-8",
+    )
+    (root / "sbom.json").write_text(
+        "{}",
+        encoding="utf-8",
+    )
+
+    core_findings = _supply_chain_run({"repo_root": root, "since_files": None})
+    ids = {item.id for item in core_findings}
+    check("21d: denied license emits ERROR", "supply_chain.denied-license" in ids)
+    check("21e: review license emits WARN", "supply_chain.review-license" in ids)
+    check("21f: unknown license emits WARN", "supply_chain.unknown-license" in ids)
+    check("21g: skipped scanner is WARN", "supply_chain.scanner-skipped" in ids)
+    check("21h: high severity vulnerability emits ERROR", "supply_chain.high-or-critical-vulnerability" in ids)
+    check("21i: outdated signal remains advisory", "supply_chain.advisory-outdated" in ids)
+    check("21j: supplier quality remains advisory", "supply_chain.advisory-supplier-quality" in ids)
+    check("21k: sbom files are reported", "supply_chain.sbom-found" in ids)
+
+# ---------------------------------------------------------------------------
+# Test 22: sensitive_data — deterministic findings plus briefing
+# ---------------------------------------------------------------------------
+print("\n[22] sensitive_data — deterministic findings plus briefing")
+
+from checks import sensitive_data  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "AGENTS.md").write_text("# test\n", encoding="utf-8")
+    (root / "app.env").write_text(
+        "\n".join([
+            "OPENAI_API_KEY=sk-" + "a" * 24,
+            "CONTACT=owner@example.com",
+            "CARD=4111 1111 1111 1111",
+            "CUSTOMER_FULL_NAME=Alice Example",
+        ]),
+        encoding="utf-8",
+    )
+    findings = sensitive_data.run({"repo_root": root, "since_files": None})
+    ids = {item.id for item in findings}
+    check("21: detects OpenAI-style key", "sensitive-data.openai-key" in ids)
+    check("21: detects email address", "sensitive-data.email-address" in ids)
+    check("21: detects Luhn-valid credit card", "sensitive-data.credit-card" in ids)
+    briefing = [
+        item for item in findings
+        if item.id == "sensitive-data.probabilistic-briefing"
+    ]
+    check("21: emits probabilistic briefing", len(briefing) == 1)
+    if briefing:
+        check(
+            "21: briefing records weak-signal files",
+            "app.env" in briefing[0].extra.get("weak_signal_files", []),
+            json.dumps(briefing[0].extra, indent=2),
+        )
+        check(
+            "21: briefing includes agent search examples",
+            bool(briefing[0].extra.get("deterministic_examples"))
+            and bool(briefing[0].extra.get("probabilistic_examples")),
+            json.dumps(briefing[0].extra, indent=2),
+        )
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()

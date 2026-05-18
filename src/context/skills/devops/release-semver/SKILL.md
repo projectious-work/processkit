@@ -48,6 +48,11 @@ you ship 1.0, the rules become strict.
 - No uncommitted changes in the working tree.
 - Dependencies reviewed and up to date where appropriate.
 - CHANGELOG or release notes drafted.
+- A root `LICENSE` file exists and matches the intended project
+  license. If the project ships release archives, the archive build must
+  include that `LICENSE` at the top level. For processkit,
+  `scripts/build-release-tarball.sh` copies root `LICENSE` into
+  `processkit-vX.Y.Z/`.
 
 ### Draft the changelog
 
@@ -76,9 +81,16 @@ passes. See DEC-20260422_1348-SnowyWolf.
    A tag push alone does **not** create a GitHub Release — it is a
    git ref, not a distribution-channel artifact.
 7. **Create the GitHub Release** with notes extracted from the
-   CHANGELOG. The single canonical command:
+   CHANGELOG and attach the release archive plus checksum when the
+   project produces binary/archive assets. For processkit, build first
+   with `scripts/build-release-tarball.sh vX.Y.Z`; the tarball must
+   contain top-level `LICENSE` and `CHANGELOG.md`. The tag commit must
+   also contain root `LICENSE`, so GitHub's generated source archives
+   carry the license. The single canonical command:
    ```bash
    gh release create vX.Y.Z \
+     dist/processkit-vX.Y.Z.tar.gz \
+     dist/processkit-vX.Y.Z.tar.gz.sha256 \
      --repo <org>/<repo> \
      --title "vX.Y.Z — <one-line summary>" \
      --notes-file <(awk -v v=X.Y.Z '
@@ -89,9 +101,14 @@ passes. See DEC-20260422_1348-SnowyWolf.
      --latest
    ```
 8. **Verify** the Release is live. This is the release's
-   completion gate:
+   completion gate. For archive-based releases, verify the Release has
+   the expected tarball/checksum assets and that extracting the tarball
+   shows a top-level `LICENSE`; also verify the tag itself contains
+   root `LICENSE`:
    ```bash
    gh release view vX.Y.Z --repo <org>/<repo>
+   tar -tzf dist/processkit-vX.Y.Z.tar.gz | grep '/LICENSE$'
+   git show vX.Y.Z:LICENSE >/dev/null
    ```
    If this exits non-zero, the release is **incomplete** — return
    to step 7. Do not report the release as done until step 8

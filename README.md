@@ -155,6 +155,13 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
 
+## License
+
+processkit is distributed under the MIT License. Unless a file states
+otherwise, the project maintainers intend the MIT License in this
+repository to apply retroactively to all historical commits, tags, and
+release artifacts for this repository.
+
 ## Status
 
 processkit is currently pre-1.0. Breaking changes can still land in

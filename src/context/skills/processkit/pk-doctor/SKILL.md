@@ -227,6 +227,33 @@ Additional checks added after Phase 1:
   policy. WARN findings include a `briefing` payload for a project agent
   to reconcile the file after processkit upgrades. Detect-only; managed
   block replacement and local policy merges remain user-reviewed.
+- **`sensitive_data`** — scans tracked text/config files for
+  deterministic high-signal secret and personal-data patterns: private
+  key blocks, provider tokens, JWTs, URL credentials, assigned
+  high-entropy secret values, email addresses, phone numbers, SSN-like
+  values, and credit-card-like numbers with a valid Luhn checksum.
+  Deterministic secret findings are ERROR/WARN and require human
+  confirmation because the correct response may be rotation, redaction,
+  migration, or explicit policy acceptance. The check also emits one
+  INFO `sensitive-data.probabilistic-briefing` that tells the
+  derived-project agent what regex cannot prove: real names and aliases,
+  addresses, dates of birth, customer/account IDs, medical/financial/
+  employment data, screenshots, archives, database dumps, logs, and
+  non-standard short secrets. The briefing includes non-triggering
+  deterministic and probabilistic example prompts so an agent knows what
+  to search for without adding realistic secrets to the shipped scanner.
+  This is an advisory layer, not a complete DLP engine.
+- **`supply_chain`** — performs offline supply-chain hygiene checks for
+  dependency manifests/lockfiles, license policy, and local scanner
+  outcomes:
+  - emits `ERROR` on denied licenses, missing application lockfiles, and
+    high/critical vulnerabilities;
+  - emits `WARN` on unknown/review/allowed-policy misses and skipped
+    security scanners;
+  - emits `INFO` for inventory counts and SBOM discoveries.
+  Security/outdated/supplier-quality checks stay advisory and require
+  explicit core-surface opt-in data; pk-doctor performs no outbound
+  network calls during this check.
 
 ### What doctor will NEVER do
 

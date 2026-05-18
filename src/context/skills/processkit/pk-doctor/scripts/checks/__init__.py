@@ -32,6 +32,8 @@ from . import (
     doctor_boundary,
     id_vocabulary,
     agents_md_hygiene,
+    supply_chain,
+    sensitive_data,
 )
 
 # (name, module). Name is the --category= token and the key in the
@@ -61,6 +63,8 @@ REGISTRY = [
     ("doctor_boundary", doctor_boundary),
     ("id_vocabulary", id_vocabulary),
     ("agents_md_hygiene", agents_md_hygiene),
+    ("supply_chain", supply_chain),
+    ("sensitive_data", sensitive_data),
 ]
 
 
