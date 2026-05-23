@@ -7,11 +7,44 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [v0.27.1] - 2026-05-23
+
+v0.27.1 is a **patch release** that clears derived-project health
+warnings discovered during `pk-resume`, resolves outstanding
+doctor/release hygiene issues, and keeps gateway-mode MCP configuration
+quiet.
+
 ### Fixed
 
 - Fixed `pk-doctor` `sensitive_data` briefing examples so the checker no
   longer reports `sensitive-data.url-credential` against its own
   non-secret guidance text. Closes #64.
+- Fixed `pk-doctor` `sensitive_data` false positives for documented
+  placeholders, processkit timestamp/link examples, lexical-token helper
+  code, and TeamMember PII that explicitly opts into committed identity
+  fields. Closes #65.
+- Added `sqlite-vec` to the `pk-doctor` MCP wrapper dependencies so the
+  wrapper runtime matches the doctor subprocess and no longer reports
+  missing semantic-index support. Closes #66.
+- Fixed `preauth_applied` so managed gateway-mode projects treat
+  `mcp__processkit-gateway__*` as covering proxied per-skill
+  processkit tools for both Claude and Codex. Closes #67.
+- Confirmed AGENTS.md hygiene preserves project-local `pk-commands`
+  values while validating the command schema. Closes #68.
+- Resolved pending/applied migration hygiene by applying the active
+  migration, archiving old CLI migration briefings, and archiving applied
+  Migration entities through processkit-owned archive paths. Closes #69.
+- Reclassified absent supply-chain policy as informational advisory
+  until a project opts into enforcement. Closes #70.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --no-log`
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run context/skills/processkit/release-audit/scripts/release_audit.py --json`
+- `uv run scripts/smoke-test-servers.py`
 
 ---
 
