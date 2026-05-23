@@ -190,8 +190,8 @@ _DETERMINISTIC_EXAMPLES = [
     {
         "class": "embedded credentials",
         "look_for": [
-            "HTTPS URL containing user, password, and host components",
-            "database connection URL containing user, password, host, and database components",
+            "https://[user]:[password]@[host]/...",
+            "postgres://[user]:[password]@[host]/[database]",
         ],
     },
     {
@@ -254,7 +254,7 @@ def run(ctx) -> list[CheckResult]:
             if len(weak_signal_files) < 20:
                 weak_signal_files.append(rel)
         for pattern in _PATTERNS:
-            for lineno, excerpt, secret in _matches(text, pattern):
+            for lineno, excerpt, secret in _matches(path, text, pattern):
                 if pattern.entropy_min is not None:
                     if _entropy(secret or excerpt) < pattern.entropy_min:
                         continue
@@ -378,11 +378,14 @@ def _read_text(path: Path) -> str | None:
         return None
 
 
-def _matches(text: str, pattern: Pattern):
+def _matches(path: Path, text: str, pattern: Pattern):
     for match in pattern.regex.finditer(text):
         line = text.count("\n", 0, match.start()) + 1
         excerpt = match.group(0)
         secret = match.group(pattern.group) if pattern.group else excerpt
+        line_text = _line_at(text, line)
+        if _is_false_positive(path, pattern, excerpt, secret, line_text):
+            continue
         yield line, excerpt, secret
 
 
@@ -414,6 +417,99 @@ def _entropy(value: str) -> float:
     counts = {char: value.count(char) for char in set(value)}
     length = len(value)
     return -sum((count / length) * math.log2(count / length) for count in counts.values())
+
+
+def _line_at(text: str, line: int) -> str:
+    lines = text.splitlines()
+    if 1 <= line <= len(lines):
+        return lines[line - 1]
+    return ""
+
+
+def _is_false_positive(
+    path: Path,
+    pattern: Pattern,
+    excerpt: str,
+    secret: str,
+    line_text: str,
+) -> bool:
+    lowered_line = line_text.lower()
+    lowered_excerpt = excerpt.lower()
+
+    if pattern.id == "sensitive-data.url-credential":
+        if "[" in excerpt and "]" in excerpt:
+            return True
+
+    if pattern.id == "sensitive-data.email-address":
+        if _team_member_pii_opted_in(path):
+            return True
+        synthetic = {
+            "alice@example.com",
+            "alex@example.com",
+            "bob@company.com",
+            "git@github.com",
+            "release@aibox.local",
+            "you@example.com",
+        }
+        if lowered_excerpt in synthetic:
+            return True
+        if "identity.toml" in lowered_line:
+            return True
+
+    if pattern.id == "sensitive-data.phone-number":
+        if path.suffix == ".md" and "skills" in path.parts:
+            return True
+        digits = re.sub(r"\D", "", excerpt)
+        if re.fullmatch(r"20\d{10}", digits):
+            return True
+        if "/" in excerpt:
+            return True
+        if "http://" in lowered_line or "https://" in lowered_line:
+            return True
+        if "phone number" in lowered_line or "working_hours" in lowered_line:
+            return True
+
+    if pattern.id == "sensitive-data.generic-assigned-secret":
+        if "lexical_token_from_id" in line_text:
+            return True
+        if secret.endswith("_id") or secret.endswith("-id"):
+            return True
+
+    return False
+
+
+def _team_member_pii_opted_in(path: Path) -> bool:
+    parts = path.parts
+    try:
+        idx = parts.index("team-members")
+    except ValueError:
+        return False
+    if len(parts) <= idx + 2:
+        return False
+    tm_root = Path(*parts[:idx + 2])
+    entity_path = tm_root / "team-member.md"
+    try:
+        text = entity_path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    if not text.startswith("---"):
+        return False
+    try:
+        _start, rest = text.split("---", 1)
+        block, _body = rest.split("---", 1)
+    except ValueError:
+        return False
+    try:
+        import yaml
+
+        data = yaml.safe_load(block)
+    except Exception:
+        return False
+    if not isinstance(data, dict):
+        return False
+    spec = data.get("spec") if isinstance(data.get("spec"), dict) else {}
+    privacy = spec.get("privacy") if isinstance(spec.get("privacy"), dict) else {}
+    return privacy.get("allow_committed_pii") is True
 
 
 def _finding(

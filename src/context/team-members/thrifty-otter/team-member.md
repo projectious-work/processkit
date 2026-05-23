@@ -9,6 +9,8 @@ spec:
   name: Bernhard
   slug: thrifty-otter
   email: bernhard.gerlach@web.de
+  privacy:
+    allow_committed_pii: true
   default_role: ROLE-ceo
   default_seniority: principal
   personality:

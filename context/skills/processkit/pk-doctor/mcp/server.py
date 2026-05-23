@@ -3,6 +3,7 @@
 # requires-python = ">=3.10"
 # dependencies = [
 #   "mcp[cli]>=1.0",
+#   "sqlite-vec>=0.1.0",
 # ]
 # ///
 """processkit pk-doctor MCP server.

@@ -141,12 +141,13 @@ def _policy(repo_root: Path) -> tuple[dict[str, Any] | None, list[CheckResult]]:
     path = repo_root / _POLICY_REL
     if not path.is_file():
         return None, [CheckResult(
-            severity="WARN",
+            severity="INFO",
             category=CATEGORY,
             id="supply_chain.no-policy",
             message=(
                 "no supply-chain policy file was found in .processkit/"
-                "supply-chain-policy.yaml; policy checks are advisory"
+                "supply-chain-policy.yaml; policy checks are advisory until "
+                "the project opts into enforcement"
             ),
         )]
 

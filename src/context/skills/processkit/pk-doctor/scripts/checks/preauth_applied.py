@@ -44,6 +44,7 @@ _SETTINGS_REL = Path(".claude/settings.json")
 _CODEX_CONFIG_REL = Path(".codex/config.toml")
 _MANIFEST_REL = Path("context/.processkit-mcp-manifest.json")
 _GATEWAY_SERVER = "processkit-gateway"
+_GATEWAY_TOOL = "mcp__processkit-gateway__*"
 
 
 def _load_json(path: Path) -> dict | None:
@@ -188,6 +189,36 @@ def _expected_servers_from_mcp_configs(repo_root: Path) -> set[str]:
     return names
 
 
+def _gateway_covers_permissions(
+    missing: list[str],
+    *,
+    live_perms: set[str],
+    live_servers: set[str],
+    managed_enabled: set[str],
+) -> bool:
+    return (
+        bool(missing)
+        and _GATEWAY_TOOL in live_perms
+        and _GATEWAY_SERVER in live_servers
+        and managed_enabled == {_GATEWAY_SERVER}
+        and all(item.startswith("mcp__processkit-") for item in missing)
+    )
+
+
+def _gateway_covers_codex_tools(
+    missing: list[str],
+    *,
+    live_tools: set[str],
+    managed_tools: set[str],
+) -> bool:
+    return (
+        bool(missing)
+        and _GATEWAY_TOOL in live_tools
+        and managed_tools == {_GATEWAY_TOOL}
+        and all(item.startswith("mcp__processkit-") for item in missing)
+    )
+
+
 def _drift_result(source: str, expected: set[str], spec_servers: set[str]):
     missing = sorted(expected - spec_servers)
     extra = sorted(spec_servers - expected)
@@ -306,6 +337,13 @@ def run(ctx) -> list[CheckResult]:
             )
 
             missing_perms = sorted(spec_perms - live_perms)
+            if _gateway_covers_permissions(
+                missing_perms,
+                live_perms=live_perms,
+                live_servers=live_servers,
+                managed_enabled=managed_enabled,
+            ):
+                missing_perms = []
             if missing_perms:
                 preview = ", ".join(missing_perms[:5])
                 if len(missing_perms) > 5:
@@ -384,11 +422,11 @@ def run(ctx) -> list[CheckResult]:
             ))
         else:
             missing_codex_tools = sorted(spec_codex_tools - live_codex_tools)
-            in_codex_gateway_mode = (
-                "processkit-gateway" in live_codex_tools
-                and managed_codex_tools == {"processkit-gateway"}
-            )
-            if missing_codex_tools and in_codex_gateway_mode:
+            if _gateway_covers_codex_tools(
+                missing_codex_tools,
+                live_tools=live_codex_tools,
+                managed_tools=managed_codex_tools,
+            ):
                 missing_codex_tools = []
             if missing_codex_tools:
                 preview = ", ".join(missing_codex_tools[:5])
