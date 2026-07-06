@@ -3,6 +3,32 @@ const sidebars = {
   docs: [
     'intro',
     {
+      type: 'category', label: 'Development',
+      items: [
+        'development/index',
+        'development/product-specification',
+        'development/architecture-specification',
+        'development/ontology-reference',
+        'development/tooling-architecture',
+        'development/test-strategy',
+        'development/alpha-scope',
+        'development/landscape-note',
+        'development/acceptance-gate',
+        {
+          type: 'category', label: 'Analysis',
+          collapsed: true,
+          items: [
+            'development/analysis/index',
+            'development/analysis/base-context',
+            'development/analysis/concept-mapping-briefing-analysis',
+            'development/analysis/processkit-v1-rfc-analysis',
+            'development/analysis/okf-compatibility-analysis',
+            'development/analysis/processkit-v1-start-assessment',
+          ],
+        },
+      ],
+    },
+    {
       type: 'category', label: 'Getting Started', collapsed: false,
       items: [
         'getting-started/overview',
