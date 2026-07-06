@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-development/analysis/processkit-v1-rfc-analysis" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">processkit v1.0 RFC Analysis | processkit</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-rfc-analysis"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="processkit v1.0 RFC Analysis | processkit"><meta data-rh="true" name="description" content="Analysis of the guiding RFC for the processkit v1.0 redesign."><meta data-rh="true" property="og:description" content="Analysis of the guiding RFC for the processkit v1.0 redesign."><link data-rh="true" rel="icon" href="/processkit/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-rfc-analysis"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-rfc-analysis" hreflang="en"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-rfc-analysis" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"processkit v1.0 RFC Analysis","item":"https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-rfc-analysis"}]}</script><link rel="stylesheet" href="/processkit/assets/css/styles.c0aa031c.css">
+<script src="/processkit/assets/js/runtime~main.0fc29a8d.js" defer="defer"></script>
+<script src="/processkit/assets/js/main.ce062115.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/processkit/"><b class="navbar__title text--truncate">processkit</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/processkit/docs/">Docs</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/processkit/docs/"><span title="Introduction" class="linkLabel_WmDU">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/processkit/docs/development/"><span title="Development" class="categoryLinkLabel_W154">Development</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/"><span title="Development" class="linkLabel_WmDU">Development</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/product-specification"><span title="Product Specification" class="linkLabel_WmDU">Product Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/architecture-specification"><span title="Architecture Specification" class="linkLabel_WmDU">Architecture Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/alpha-scope"><span title="Alpha Scope" class="linkLabel_WmDU">Alpha Scope</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/landscape-note"><span title="Landscape Note" class="linkLabel_WmDU">Landscape Note</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/acceptance-gate"><span title="Acceptance Gate" class="linkLabel_WmDU">Acceptance Gate</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis" class="categoryLinkLabel_W154">Analysis</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis Archive" class="linkLabel_WmDU">Analysis Archive</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/base-context"><span title="processkit2 Base Context" class="linkLabel_WmDU">processkit2 Base Context</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/concept-mapping-briefing-analysis"><span title="Concept Mapping Briefing Analysis" class="linkLabel_WmDU">Concept Mapping Briefing Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/processkit/docs/development/analysis/processkit-v1-rfc-analysis"><span title="processkit v1.0 RFC Analysis" class="linkLabel_WmDU">processkit v1.0 RFC Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/okf-compatibility-analysis"><span title="OKF Compatibility Analysis" class="linkLabel_WmDU">OKF Compatibility Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/processkit-v1-start-assessment"><span title="processkit v1.0 Start Assessment" class="linkLabel_WmDU">processkit v1.0 Start Assessment</span></a></li></ul></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/processkit/docs/getting-started/overview"><span title="Getting Started" class="categoryLinkLabel_W154">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/overview"><span title="Overview" class="linkLabel_WmDU">Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/installing"><span title="Installing" class="linkLabel_WmDU">Installing</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/first-entity"><span title="Your First Entity" class="linkLabel_WmDU">Your First Entity</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/primitives/overview"><span title="Primitives" class="categoryLinkLabel_W154">Primitives</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/skills/overview"><span title="Skills" class="categoryLinkLabel_W154">Skills</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/packages/overview"><span title="Packages" class="categoryLinkLabel_W154">Packages</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/processes/overview"><span title="Processes" class="categoryLinkLabel_W154">Processes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/mcp-servers/overview"><span title="MCP Servers" class="categoryLinkLabel_W154">MCP Servers</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/reference/apiversion-policy"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/processkit/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Development</span></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Analysis</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">processkit v1.0 RFC Analysis</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>processkit v1.0 RFC Analysis</h1></header>
+<p>Source: <code>processkit-v1.0-rfc-draft.md</code></p>
+<p>Analyzed: 2026-07-04</p>
+<p>Status for this project: guiding briefing. Where this RFC conflicts with
+<code>concept-mapping-2026-05-16.md</code> or
+<a class="" href="/processkit/docs/development/analysis/concept-mapping-briefing-analysis">concept-mapping-briefing-analysis.md</a>,
+this RFC wins.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="executive-read">Executive Read<a href="#executive-read" class="hash-link" aria-label="Direct link to Executive Read" title="Direct link to Executive Read" translate="no">​</a></h2>
+<p>The RFC turns the earlier concept-mapping work into an implementation
+and release proposal. It is no longer just an ontology discussion. It
+asks upstream processkit maintainers to host a full v1.0 greenfield
+rebuild on a parallel <code>v1.0</code> branch while <code>main</code> continues v0.x
+maintenance.</p>
+<p>The product target from the base context remains intact: processkit is
+still provider-neutral process memory, skills, and MCP tooling for
+agentic software projects. The RFC changes the model and build plan used
+to reach that target.</p>
+<p>The RFC&#x27;s operational direction is:</p>
+<ul>
+<li class="">full greenfield ontology rebuild</li>
+<li class="">89 concepts in T/P/D/C classes</li>
+<li class="">Jinja + YAML schema composition</li>
+<li class="">committed build-time <code>_generated/</code> schemas</li>
+<li class="">new <code>regenerate_schemas</code> MCP endpoint</li>
+<li class="">interface-aware polymorphic queries</li>
+<li class="">strict/tolerant per-kind validation during migration</li>
+<li class="">9-12 month rebuild on a <code>v1.0</code> branch</li>
+<li class="">alpha, beta, rc, final pre-release progression</li>
+<li class="">81-criterion cutover gate before <code>v1.0.0</code></li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="authority-and-evidence">Authority And Evidence<a href="#authority-and-evidence" class="hash-link" aria-label="Direct link to Authority And Evidence" title="Direct link to Authority And Evidence" translate="no">​</a></h2>
+<p>The RFC cites:</p>
+<ul>
+<li class=""><code>DEC-DeepTide</code>: rebuild authorization</li>
+<li class=""><code>DEC-BraveAtlas</code>: 81-criterion cutover gate</li>
+<li class=""><code>DISC-BriskWillow</code>: 20-round ontology discussion</li>
+<li class="">upstream issues <code>#74</code> and <code>#75</code> as pk-doctor reliability evidence</li>
+</ul>
+<p>Those DEC/DISC entities are not indexed in this new repository, so they
+were not locally verifiable through processkit MCP.</p>
+<p>I also checked the private <code>projectious-work/internal</code> repository as an
+external evidence source:</p>
+<ul>
+<li class=""><code>origin/main</code>
+<code>44704b451d4baa53d04eb0e53c1bc01a41f6627e</code>
+(<code>2026-05-16T20:18:07+02:00</code>)</li>
+<li class=""><code>origin/policy-primitive-trigger-reeval-2026-06-29</code>
+<code>8197000d5951ae5e5303e6f2ca868d9f7b4e9ad9</code>
+(<code>2026-06-29T07:05:29Z</code>)</li>
+</ul>
+<p>That repository verifies <code>DISC-BriskWillow</code> at
+<code>context/discussions/</code>
+<code>DISC-20260515_1955-BriskWillow-is-hierarchy-a-primitive-are-higher.md</code>.
+The discussion is active, supersedes the earlier <code>DISC-OpenPanda</code>
+record, and carries forward the hierarchy / abstraction-level question.
+It also says the proposed decision was leaning toward editorial
+three-level framing without new primitives or schema migration, with
+hierarchy remaining composable through existing parent / Scope / Role /
+Binding shapes.</p>
+<p>The same internal repository did not contain <code>DEC-DeepTide</code> or
+<code>DEC-BraveAtlas</code> by filename, ID token, or all-history search on the
+available branches. The June branch only adds
+<code>tmp/policy-primitive-trigger-reeval-2026-06-29.md</code>, which corroborates
+that <code>DISC-BriskWillow</code> is a live non-Policy primitive-admission
+question but does not provide the missing RFC decision records.</p>
+<p>Treat the RFC as the authority because the user explicitly selected it
+as the guiding document. Treat <code>DEC-DeepTide</code> and <code>DEC-BraveAtlas</code> as
+unresolved external provenance to be imported, recreated, or replaced by
+new local decision records before irreversible implementation cutover.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="what-supersedes-the-earlier-concept-mapping">What Supersedes The Earlier Concept Mapping<a href="#what-supersedes-the-earlier-concept-mapping" class="hash-link" aria-label="Direct link to What Supersedes The Earlier Concept Mapping" title="Direct link to What Supersedes The Earlier Concept Mapping" translate="no">​</a></h2>
+<p>The earlier analysis treated Round 14/15 as the likely baseline and
+noted open questions. The RFC closes or changes several of those points.</p>
+<p>The RFC now says:</p>
+<ul>
+<li class="">final ontology count is 89 concepts, not 81/82</li>
+<li class=""><code>Location</code> is a new primitive</li>
+<li class=""><code>Skill</code> is a primitive, not a composition</li>
+<li class=""><code>TeamMember</code> is a composition, not <code>Actor{kind=team-member}</code></li>
+<li class=""><code>Service</code> is <code>S(Capability)/C</code>, not a primitive</li>
+<li class=""><code>Position</code> is <code>Binding{kind=role-slot}</code> with nullable subject</li>
+<li class=""><code>Location</code> has five discriminator variants</li>
+<li class=""><code>Capability{kind=disposition}</code> settles the disposition question</li>
+<li class="">build-time Jinja + YAML composition is the preferred mechanism</li>
+<li class=""><code>_generated/</code> output is committed</li>
+<li class="">processkit v1.0 should be built upstream on a <code>v1.0</code> branch, not only
+in this derived repo</li>
+</ul>
+<p>Any earlier note saying &quot;confirm this later&quot; should be read as resolved
+when the RFC makes a concrete settlement.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="ontology-direction">Ontology Direction<a href="#ontology-direction" class="hash-link" aria-label="Direct link to Ontology Direction" title="Direct link to Ontology Direction" translate="no">​</a></h2>
+<p>The current v0.x 13-primitive ontology is rejected as insufficient. The
+RFC says it cannot cleanly model AI-first SAFe execution at 100x5000
+scale without both:</p>
+<ul>
+<li class="">missing first-class concepts, and</li>
+<li class="">grammar concepts leaking into the entity layer</li>
+</ul>
+<p>The intended v1.0 ontology uses four concept classes:</p>
+<ul>
+<li class=""><code>T</code>: foundational terminology or meta-mechanic, no own lifecycle</li>
+<li class=""><code>P</code>: atomic primitive with schema, lifecycle, and persistence</li>
+<li class=""><code>D</code>: discriminator variant of a primitive</li>
+<li class=""><code>C</code>: composition of primitives and terminology fragments</li>
+</ul>
+<p>Final RFC counts:</p>
+<ul>
+<li class=""><code>T</code>: 19</li>
+<li class=""><code>P</code>: 22</li>
+<li class=""><code>D</code>: 24</li>
+<li class=""><code>C</code>: 24</li>
+<li class="">total: 89</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="key-primitive-settlements">Key Primitive Settlements<a href="#key-primitive-settlements" class="hash-link" aria-label="Direct link to Key Primitive Settlements" title="Direct link to Key Primitive Settlements" translate="no">​</a></h2>
+<p>The RFC explicitly calls out these settlements:</p>
+<ul>
+<li class=""><code>Proposition</code> is a new primitive. It is the parent for Belief, Risk,
+WorldFact, WSJF-estimate, and related epistemic content.</li>
+<li class=""><code>Location</code> is a new primitive, with discriminator variants for
+geographic region, site, coordinate, logical region, and timezone.</li>
+<li class=""><code>Skill</code> is a primitive with its own schema and lifecycle, distinct
+from Capability.</li>
+<li class=""><code>Capability</code> remains a primitive; <code>Service</code> is composed from
+Capability.</li>
+<li class=""><code>TeamMember</code> becomes a composition of Actor plus calendar,
+capabilities, persona, skill list, and journal.</li>
+<li class=""><code>Position</code> is a Binding variant with nullable subject.</li>
+<li class=""><code>Hierarchy</code> remains named for mental anchoring but is implemented as
+<code>Binding{kind=parent-child}</code>.</li>
+</ul>
+<p>These are guiding decisions for processkit2 unless later input
+supersedes the RFC.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="implementation-mechanics">Implementation Mechanics<a href="#implementation-mechanics" class="hash-link" aria-label="Direct link to Implementation Mechanics" title="Direct link to Implementation Mechanics" translate="no">​</a></h2>
+<p>The RFC rejects runtime <code>$ref</code> as the main solution and chooses
+build-time generation:</p>
+<ul>
+<li class="">schema sources live under <code>schemas/src/</code></li>
+<li class="">Jinja templates render into flat <code>_generated/*.yaml</code></li>
+<li class="">runtime tools consume <code>_generated/</code></li>
+<li class=""><code>_generated/</code> is committed to git</li>
+<li class="">composition uses <code>extends: parent.yaml</code></li>
+<li class="">templates use <code>{% include %}</code> for T fragments</li>
+<li class="">merge behavior uses <code>__merge: replace|concat|name-merge</code></li>
+</ul>
+<p>This is more specific than the earlier &quot;Option 8 first, Option 3 later&quot;
+guidance. The RFC chooses the build-time path directly.</p>
+<p>Required MCP endpoint:</p>
+<div class="language-python codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-python codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token plain">regenerate_schemas</span><span class="token punctuation" style="color:rgb(248, 248, 242)">(</span><span class="token plain">kinds</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> </span><span class="token builtin" style="color:rgb(189, 147, 249)">list</span><span class="token plain"> </span><span class="token operator">|</span><span class="token plain"> </span><span class="token boolean">None</span><span class="token punctuation" style="color:rgb(248, 248, 242)">)</span><span class="token plain"> </span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain">rebuilt</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"> unchanged</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"> errors</span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><br></span></code></pre></div></div>
+<p>The same endpoint handles full and partial rebuilds. <code>aibox apply</code>
+triggers full rebuilds by default, with opt-out for fast iteration.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="validation-and-indexing">Validation And Indexing<a href="#validation-and-indexing" class="hash-link" aria-label="Direct link to Validation And Indexing" title="Direct link to Validation And Indexing" translate="no">​</a></h2>
+<p>Validation is phase-gated:</p>
+<ul>
+<li class="">migrated kinds: strict validation</li>
+<li class="">kinds still migrating: tolerant validation, warn but pass</li>
+<li class="">per-kind validation mode must be observable through MCP</li>
+</ul>
+<p>Indexing extends the existing FTS5 surface rather than replacing it.
+Schemas declare interfaces:</p>
+<div class="language-yaml codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-yaml codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token key atrule">interfaces</span><span class="token punctuation" style="color:rgb(248, 248, 242)">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">[</span><span class="token plain">Record</span><span class="token punctuation" style="color:rgb(248, 248, 242)">,</span><span class="token plain"> Versioned</span><span class="token punctuation" style="color:rgb(248, 248, 242)">]</span><br></span></code></pre></div></div>
+<p>The required new query capability is:</p>
+<div class="language-text codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_QJqH"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token plain">query_by_interface(Record, ...)</span><br></span></code></pre></div></div>
+<p>This is load-bearing. The RFC identifies it as the fix for agent routing
+failures where agents have to choose between WorkItem, DecisionRecord,
+Artifact, LogEntry, and similar concrete kinds.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="branch-and-release-model">Branch And Release Model<a href="#branch-and-release-model" class="hash-link" aria-label="Direct link to Branch And Release Model" title="Direct link to Branch And Release Model" translate="no">​</a></h2>
+<p>The RFC proposes an upstream <code>v1.0</code> feature branch:</p>
+<ul>
+<li class=""><code>main</code> continues v0.x.y maintenance</li>
+<li class=""><code>v1.0</code> receives all greenfield rebuild work</li>
+<li class="">alpha, beta, rc, and final tags are cut from <code>v1.0</code></li>
+<li class="">final cutover merges <code>v1.0</code> into <code>main</code> and tags <code>v1.0.0</code></li>
+<li class="">derived projects opt in by pinning <code>aibox.toml</code> to alpha/beta/rc tags</li>
+</ul>
+<p>Backport policy:</p>
+<ul>
+<li class="">security fixes flow both ways</li>
+<li class="">dependency bumps flow at maintainer discretion</li>
+<li class="">feature work does not backport either way</li>
+</ul>
+<p>This keeps the 9-12 month divergence bounded.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="cutover-gate">Cutover Gate<a href="#cutover-gate" class="hash-link" aria-label="Direct link to Cutover Gate" title="Direct link to Cutover Gate" translate="no">​</a></h2>
+<p>The RFC adopts an 81-criterion acceptance gate:</p>
+<ul>
+<li class="">75 strict criteria</li>
+<li class="">6 soft criteria</li>
+<li class="">8 phases</li>
+</ul>
+<p>Phases:</p>
+<ul>
+<li class="">P0: pre-conditions</li>
+<li class="">O1: ontology completeness</li>
+<li class="">T2: tooling parity</li>
+<li class="">C3: corpus migration</li>
+<li class="">S4: skills and agents</li>
+<li class="">A5: first-ART validation</li>
+<li class="">G6: cutover decision point</li>
+<li class="">R7: post-cutover stabilization</li>
+</ul>
+<p>The most important proof phase is A5: model a real ART end to end and
+run one full PI cycle in the new ontology.</p>
+<p>The RFC highlights these specific acceptance constraints:</p>
+<ul>
+<li class=""><code>regenerate_schemas(kinds: list | None)</code> MCP endpoint is required</li>
+<li class="">search must include FTS5 plus interface grouping</li>
+<li class="">canned query set must be signed off before rc</li>
+<li class="">all MCP tools need valid Python type signatures and matching
+draft-2020-12 JSON Schemas</li>
+<li class="">pk-doctor must pass a golden adversarial fixture</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="upstream-asks">Upstream Asks<a href="#upstream-asks" class="hash-link" aria-label="Direct link to Upstream Asks" title="Direct link to Upstream Asks" translate="no">​</a></h2>
+<p>The RFC asks upstream maintainers for:</p>
+<ol>
+<li class="">host the <code>v1.0</code> feature branch upstream</li>
+<li class="">endorse merge-to-main and <code>v1.0.0</code> release model</li>
+<li class="">accept the backport policy</li>
+<li class="">name an upstream owner/contact</li>
+<li class="">adopt DEC-BraveAtlas or counter-propose a release gate</li>
+</ol>
+<p>It explicitly does not ask upstream for engineering capacity.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="timeline">Timeline<a href="#timeline" class="hash-link" aria-label="Direct link to Timeline" title="Direct link to Timeline" translate="no">​</a></h2>
+<p>Indicative timeline:</p>
+<ul>
+<li class="">months 1-2: composition tooling and first alpha</li>
+<li class="">months 3-4: parent promotion and migration scripts</li>
+<li class="">months 5-6: specification compositions plus Channel, Queue, Resource,
+Container; beta begins</li>
+<li class="">months 7-9: skills, MCP tools, doctor, indexer; beta to rc</li>
+<li class="">months 10-12: cutover and first ART on v1.0</li>
+<li class="">post-cutover: at least 14 days stabilization</li>
+</ul>
+<p>The gate, not the calendar, decides release progress.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="risks">Risks<a href="#risks" class="hash-link" aria-label="Direct link to Risks" title="Direct link to Risks" translate="no">​</a></h2>
+<p>The RFC&#x27;s main risks:</p>
+<ul>
+<li class="">upstream rejects branch model</li>
+<li class="">single derived-project decider bottlenecks sign-off</li>
+<li class="">pk-doctor bugs hide failures</li>
+<li class="">corpus migration loses data</li>
+<li class="">agents drift into non-canonical interpretations</li>
+<li class="">long-lived <code>main</code> / <code>v1.0</code> divergence becomes hard to merge</li>
+</ul>
+<p>The RFC mitigates these through the RFC itself, DEC-BraveAtlas tracking,
+adversarial doctor fixtures, migration loss ceilings, agent scenario
+tests, and strict backport policy.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="implications-for-this-repository">Implications For This Repository<a href="#implications-for-this-repository" class="hash-link" aria-label="Direct link to Implications For This Repository" title="Direct link to Implications For This Repository" translate="no">​</a></h2>
+<p>For processkit2, this RFC should become the primary planning baseline:</p>
+<ul>
+<li class="">do not build from the old v0.27.1 schema set</li>
+<li class="">do not follow the earlier 81/82-concept Round 14/15 interpretation</li>
+<li class="">use the RFC&#x27;s 89-concept shape as current guidance</li>
+<li class="">plan schema tooling before broad schema migration</li>
+<li class="">make interface-aware indexing a first-class requirement</li>
+<li class="">design validation modes before migrating live corpora</li>
+<li class="">treat pk-doctor rewrite/hardening as part of v1.0, not afterthought</li>
+<li class="">prepare for upstream-branch workflow or a fork fallback</li>
+</ul>
+<p>The first concrete work products should be:</p>
+<ol>
+<li class="">local copy of the RFC analysis and conflict rules</li>
+<li class="">ontology inventory derived from the 89-concept RFC</li>
+<li class="">phase-zero work plan for composition tooling</li>
+<li class="">local representation of the 81-criterion gate</li>
+<li class="">decision record for processkit2 adopting this RFC as guidance</li>
+</ol>
+<p>The fifth item should be recorded through processkit DecisionRecord MCP
+only after explicit acceptance, or when the user asks us to start
+planning work items.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="conflict-rule">Conflict Rule<a href="#conflict-rule" class="hash-link" aria-label="Direct link to Conflict Rule" title="Direct link to Conflict Rule" translate="no">​</a></h2>
+<p>If <code>processkit-v1.0-rfc-draft.md</code> conflicts with
+<code>concept-mapping-2026-05-16.md</code>, the RFC wins.</p>
+<p>If the RFC conflicts with old processkit v0.27.1 implementation, the RFC
+wins for processkit2 design, while v0.27.1 remains migration-source
+evidence.</p>
+<p>If later user-provided input conflicts with the RFC, analyze that input
+explicitly and decide whether it supersedes this RFC.</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/projectious-work/processkit/tree/main/docs-site/docs/development/analysis/processkit-v1-rfc-analysis.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/processkit/docs/development/analysis/concept-mapping-briefing-analysis"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Concept Mapping Briefing Analysis</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/processkit/docs/development/analysis/okf-compatibility-analysis"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">OKF Compatibility Analysis</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#executive-read" class="table-of-contents__link toc-highlight">Executive Read</a></li><li><a href="#authority-and-evidence" class="table-of-contents__link toc-highlight">Authority And Evidence</a></li><li><a href="#what-supersedes-the-earlier-concept-mapping" class="table-of-contents__link toc-highlight">What Supersedes The Earlier Concept Mapping</a></li><li><a href="#ontology-direction" class="table-of-contents__link toc-highlight">Ontology Direction</a></li><li><a href="#key-primitive-settlements" class="table-of-contents__link toc-highlight">Key Primitive Settlements</a></li><li><a href="#implementation-mechanics" class="table-of-contents__link toc-highlight">Implementation Mechanics</a></li><li><a href="#validation-and-indexing" class="table-of-contents__link toc-highlight">Validation And Indexing</a></li><li><a href="#branch-and-release-model" class="table-of-contents__link toc-highlight">Branch And Release Model</a></li><li><a href="#cutover-gate" class="table-of-contents__link toc-highlight">Cutover Gate</a></li><li><a href="#upstream-asks" class="table-of-contents__link toc-highlight">Upstream Asks</a></li><li><a href="#timeline" class="table-of-contents__link toc-highlight">Timeline</a></li><li><a href="#risks" class="table-of-contents__link toc-highlight">Risks</a></li><li><a href="#implications-for-this-repository" class="table-of-contents__link toc-highlight">Implications For This Repository</a></li><li><a href="#conflict-rule" class="table-of-contents__link toc-highlight">Conflict Rule</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/getting-started/overview">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/primitives/overview">Primitives</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/skills/overview">Skills</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/packages/overview">Packages</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Project</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://github.com/projectious-work/processkit/releases" target="_blank" rel="noopener noreferrer" class="footer__link-item">Releases<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">© 2026 projectious.work</div></div></div></footer></div>
+</body>
+</html>

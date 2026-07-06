@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-development/analysis/base-context" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">processkit2 Base Context | processkit</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://projectious-work.github.io/processkit/docs/development/analysis/base-context"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="processkit2 Base Context | processkit"><meta data-rh="true" name="description" content="Baseline context for the processkit v1.0 redesign."><meta data-rh="true" property="og:description" content="Baseline context for the processkit v1.0 redesign."><link data-rh="true" rel="icon" href="/processkit/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://projectious-work.github.io/processkit/docs/development/analysis/base-context"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/analysis/base-context" hreflang="en"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/analysis/base-context" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"processkit2 Base Context","item":"https://projectious-work.github.io/processkit/docs/development/analysis/base-context"}]}</script><link rel="stylesheet" href="/processkit/assets/css/styles.c0aa031c.css">
+<script src="/processkit/assets/js/runtime~main.0fc29a8d.js" defer="defer"></script>
+<script src="/processkit/assets/js/main.ce062115.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/processkit/"><b class="navbar__title text--truncate">processkit</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/processkit/docs/">Docs</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/processkit/docs/"><span title="Introduction" class="linkLabel_WmDU">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/processkit/docs/development/"><span title="Development" class="categoryLinkLabel_W154">Development</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/"><span title="Development" class="linkLabel_WmDU">Development</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/product-specification"><span title="Product Specification" class="linkLabel_WmDU">Product Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/architecture-specification"><span title="Architecture Specification" class="linkLabel_WmDU">Architecture Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/alpha-scope"><span title="Alpha Scope" class="linkLabel_WmDU">Alpha Scope</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/landscape-note"><span title="Landscape Note" class="linkLabel_WmDU">Landscape Note</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/acceptance-gate"><span title="Acceptance Gate" class="linkLabel_WmDU">Acceptance Gate</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis" class="categoryLinkLabel_W154">Analysis</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis Archive" class="linkLabel_WmDU">Analysis Archive</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/processkit/docs/development/analysis/base-context"><span title="processkit2 Base Context" class="linkLabel_WmDU">processkit2 Base Context</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/concept-mapping-briefing-analysis"><span title="Concept Mapping Briefing Analysis" class="linkLabel_WmDU">Concept Mapping Briefing Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/processkit-v1-rfc-analysis"><span title="processkit v1.0 RFC Analysis" class="linkLabel_WmDU">processkit v1.0 RFC Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/okf-compatibility-analysis"><span title="OKF Compatibility Analysis" class="linkLabel_WmDU">OKF Compatibility Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/processkit-v1-start-assessment"><span title="processkit v1.0 Start Assessment" class="linkLabel_WmDU">processkit v1.0 Start Assessment</span></a></li></ul></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/processkit/docs/getting-started/overview"><span title="Getting Started" class="categoryLinkLabel_W154">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/overview"><span title="Overview" class="linkLabel_WmDU">Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/installing"><span title="Installing" class="linkLabel_WmDU">Installing</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/first-entity"><span title="Your First Entity" class="linkLabel_WmDU">Your First Entity</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/primitives/overview"><span title="Primitives" class="categoryLinkLabel_W154">Primitives</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/skills/overview"><span title="Skills" class="categoryLinkLabel_W154">Skills</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/packages/overview"><span title="Packages" class="categoryLinkLabel_W154">Packages</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/processes/overview"><span title="Processes" class="categoryLinkLabel_W154">Processes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/mcp-servers/overview"><span title="MCP Servers" class="categoryLinkLabel_W154">MCP Servers</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/reference/apiversion-policy"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/processkit/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Development</span></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Analysis</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">processkit2 Base Context</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>processkit2 Base Context</h1></header>
+<p>Created: 2026-07-04</p>
+<p>This document is the initial base context for <code>processkit2</code>. It was built
+from the earlier <code>projectious-work/processkit</code> repository, cloned locally at:</p>
+<ul>
+<li class="">Source URL: <a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="">https://github.com/projectious-work/processkit</a></li>
+<li class="">Analyzed commit: <code>6a9a175f95c42dd76e23488feca42e3d05526b98</code></li>
+<li class="">Local clone: <code>/tmp/processkit-original</code></li>
+</ul>
+<p>The goal is to preserve the proven product target from the first
+processkit version while creating a clean basis for later improvement
+briefings.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="current-guiding-briefing">Current Guiding Briefing<a href="#current-guiding-briefing" class="hash-link" aria-label="Direct link to Current Guiding Briefing" title="Direct link to Current Guiding Briefing" translate="no">​</a></h2>
+<p>The current guiding briefing is <code>processkit-v1.0-rfc-draft.md</code>, analyzed
+in the <a class="" href="/processkit/docs/development/analysis/processkit-v1-rfc-analysis">processkit v1.0 RFC analysis</a>.</p>
+<p>Conflict rule:</p>
+<ul>
+<li class="">preserve the stable product target captured in this base context</li>
+<li class="">use the v1.0 RFC for ontology, branch, release, schema-composition,
+validation, indexing, and cutover-gate direction</li>
+<li class="">treat <code>concept-mapping-2026-05-16.md</code> as historical input where it
+agrees with the RFC, not as current guidance where it conflicts</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="current-repository-status">Current Repository Status<a href="#current-repository-status" class="hash-link" aria-label="Direct link to Current Repository Status" title="Direct link to Current Repository Status" translate="no">​</a></h2>
+<p>The current <code>processkit2</code> workspace is a fresh aibox/processkit-derived
+project scaffold, not yet a rebuilt processkit source tree.</p>
+<ul>
+<li class=""><code>aibox.lock</code> pins upstream processkit to <code>v0.27.1</code>.</li>
+<li class=""><code>aibox.toml</code> enables the processkit core/managed skill surface and
+configures the project name as <code>processkit2</code>.</li>
+<li class="">The workspace currently has no <code>src/</code>, <code>docs-site/</code>, or implementation
+source tree.</li>
+<li class="">Indexed processkit entities for WorkItems, DecisionRecords,
+Discussions, and Artifacts are currently empty in this project.</li>
+<li class="">GitHub auth is available; <code>projectious-work/processkit2</code> currently has
+no open issues and no open pull requests.</li>
+</ul>
+<p>Session-start process checks were run before this document was created.
+The pending <code>aibox.lock</code> backfill migration
+<code>MIG-LOCK-20260703T161218</code> was applied through migration-management.
+After that, active migrations were zero.</p>
+<p><code>pk-doctor</code> still reports setup drift that should be tracked separately:</p>
+<ul>
+<li class="">missing <code>scripts/check-src-context-drift.sh</code></li>
+<li class="">missing TeamMember tier directories for <code>cora</code> and <code>thrifty-otter</code></li>
+<li class="">missing Claude sub-agent export for <code>cora</code></li>
+<li class="">stale MCP manifest / server-header / preauth metadata</li>
+<li class="">one applied migration that is now an archive candidate</li>
+</ul>
+<p>These findings are not part of the base-context target itself, but they
+are important when this repository starts growing source and release
+machinery.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="stable-product-target">Stable Product Target<a href="#stable-product-target" class="hash-link" aria-label="Direct link to Stable Product Target" title="Direct link to Stable Product Target" translate="no">​</a></h2>
+<p>The first processkit version defines processkit as:</p>
+<blockquote>
+<p>provider-neutral process memory, skills, and MCP tools for agentic
+software projects.</p>
+</blockquote>
+<p>The stable target should not change:</p>
+<ol>
+<li class="">processkit is a versioned content and runtime layer for AI-assisted
+projects.</li>
+<li class="">It gives agents and humans structured project memory through
+repository files, schemas, skills, state machines, and MCP tools.</li>
+<li class="">It is provider-neutral and harness-neutral. Claude, Codex, OpenCode,
+Hermes, Aider, and other harnesses are integration targets, not core
+dependencies.</li>
+<li class="">It is a process layer, not a replacement for a harness, runtime
+manager, issue tracker, or model provider.</li>
+<li class="">It must remain usable manually, through MCP-capable harnesses, or via
+an external installer such as aibox.</li>
+<li class="">It must remain forkable. Organizations can maintain private forks and
+downstream projects can consume those forks without changing their
+own structure.</li>
+</ol>
+<p>The original PRD states the primary goal clearly: make it easy for any
+team to add a structured, agent-readable process layer to any repository.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="shipped-deliverable-boundary">Shipped Deliverable Boundary<a href="#shipped-deliverable-boundary" class="hash-link" aria-label="Direct link to Shipped Deliverable Boundary" title="Direct link to Shipped Deliverable Boundary" translate="no">​</a></h2>
+<p>The old project made a hard distinction between the processkit
+repository&#x27;s dogfooding context and the content shipped to consumers.
+This distinction is foundational and should be preserved.</p>
+<p><code>src/</code> in the original repository is a literal mirror of a fresh
+consumer project root:</p>
+<ul>
+<li class=""><code>src/AGENTS.md</code> becomes <code>&lt;project&gt;/AGENTS.md</code>.</li>
+<li class=""><code>src/context/</code> becomes <code>&lt;project&gt;/context/</code>.</li>
+<li class=""><code>src/.gitignore.example</code> is the recommended ignore template.</li>
+<li class=""><code>src/.processkit/</code> is catalog tooling and package metadata; it is not
+installed into consumers as live project context.</li>
+</ul>
+<p>The repository-root <code>context/</code> in the old project is dogfood project
+state. It contains processkit&#x27;s own WorkItems, Decisions, Artifacts,
+logs, migrations, team state, and release history. That content must not
+be blindly mirrored into <code>src/context/</code>.</p>
+<p>The release boundary guard from the original project explicitly allows
+dogfood-only directories under root <code>context/</code> while forbidding them from
+shipping under <code>src/context/</code>. In <code>src/context/</code>, shipped Artifacts are
+model specs and model profiles only; dogfood Decisions, WorkItems,
+Discussions, Notes, Logs, Migrations, and Templates do not ship.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="consumer-usage-model">Consumer Usage Model<a href="#consumer-usage-model" class="hash-link" aria-label="Direct link to Consumer Usage Model" title="Direct link to Consumer Usage Model" translate="no">​</a></h2>
+<p>Consumers can use processkit manually or through a manager.</p>
+<p>Manual use:</p>
+<ol>
+<li class="">Download a versioned processkit release tarball.</li>
+<li class="">Copy the shipped <code>context/</code>, <code>.processkit</code>, and <code>AGENTS.md</code> into the
+consuming project.</li>
+<li class="">Configure the harness to launch <code>processkit-gateway</code>, or launch
+individual per-skill MCP servers.</li>
+</ol>
+<p>aibox-assisted use:</p>
+<ol>
+<li class=""><code>aibox.toml</code> pins <code>[processkit] source</code>, <code>version</code>, and <code>src_path</code>.</li>
+<li class="">aibox fetches the source release, installs selected package tiers, and
+records <code>aibox.lock</code>.</li>
+<li class="">aibox may configure or supervise runtime files, but processkit remains
+the standalone source for schemas, skills, packages, and MCP runtime.</li>
+</ol>
+<p>The old README names three MCP layouts:</p>
+<ul>
+<li class=""><code>processkit-gateway</code>: preferred provider-neutral entry point.</li>
+<li class="">Per-skill MCP servers: canonical granular compatibility surface.</li>
+<li class=""><code>aggregate-mcp</code>: legacy compatibility bridge.</li>
+</ul>
+<p>The gateway is additive. It must not replace per-skill servers as the
+canonical validation and compatibility surface.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="package-tiers">Package Tiers<a href="#package-tiers" class="hash-link" aria-label="Direct link to Package Tiers" title="Direct link to Package Tiers" translate="no">​</a></h2>
+<p>The original package model has five tiers:</p>
+<ul>
+<li class=""><code>minimal</code>: foundation for solo developers and small side projects.</li>
+<li class=""><code>managed</code>: recommended default for small teams with backlog and
+process cadence.</li>
+<li class=""><code>software</code>: managed plus architecture, infrastructure, security,
+performance, database, and observability skills.</li>
+<li class=""><code>research</code>: managed plus data, ML, AI, and research-authoring skills.</li>
+<li class=""><code>product</code>: software plus design, framework, product, and broader
+end-to-end product-development skills.</li>
+</ul>
+<p>Packages compose through <code>spec.extends</code>; consumers can add or remove
+specific skills through config overrides.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="entity-and-contract-model">Entity and Contract Model<a href="#entity-and-contract-model" class="hash-link" aria-label="Direct link to Entity and Contract Model" title="Direct link to Entity and Contract Model" translate="no">​</a></h2>
+<p>The stable entity model is Markdown files with YAML frontmatter:</p>
+<ul>
+<li class=""><code>apiVersion</code></li>
+<li class=""><code>kind</code></li>
+<li class=""><code>metadata</code></li>
+<li class=""><code>spec</code></li>
+<li class="">body content where appropriate</li>
+</ul>
+<p>The v2 direction is intentionally breaking and explicit. The historical
+decisions rejected long-term v1/v2 compatibility shims. v1 contexts are
+migration sources; after migration, v2 schemas and index semantics are
+authoritative.</p>
+<p>Important v2 contract points:</p>
+<ul>
+<li class="">Unknown kinds, stale primitive assumptions, and ad hoc event/type
+vocabulary should fail validation.</li>
+<li class=""><code>Metric</code>, <code>Model</code>, <code>Process</code>, <code>Schedule</code>, and <code>StateMachine</code> are
+legacy v1 migration-source kinds, not shipped v2 entity primitives.</li>
+<li class="">Process definitions are Artifacts plus process-instance WorkItems.</li>
+<li class="">Schedule semantics use <code>Binding(type=time-window)</code>.</li>
+<li class="">Runtime state-machine YAML files are implementation contracts, not
+user-authored StateMachine entities.</li>
+<li class="">Hook inbox items are Notes with <code>spec.inbox</code>.</li>
+<li class="">Agent cards and security policies are Artifact-backed projections.</li>
+<li class="">Eval gates produce eval-spec Artifacts, paired Gates, policy/application
+Bindings, and calibration LogEntries.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="mcp-and-indexing-principles">MCP and Indexing Principles<a href="#mcp-and-indexing-principles" class="hash-link" aria-label="Direct link to MCP and Indexing Principles" title="Direct link to MCP and Indexing Principles" translate="no">​</a></h2>
+<p>The old project converged on these operational rules:</p>
+<ul>
+<li class="">Agents read entities through <code>index-management</code>, not raw filesystem
+scraping.</li>
+<li class="">Agents write entities through management MCP tools so schema
+validation, state-machine enforcement, index updates, and event logs
+happen consistently.</li>
+<li class=""><code>index-management</code> is the read-side foundation.</li>
+<li class=""><code>id-management</code> is the write-side ID foundation.</li>
+<li class="">Entity search uses SQLite FTS5, with optional sqlite-vec semantic
+search and hybrid search.</li>
+<li class="">Broad health checks and release checks should return structured JSON
+so agents can route findings instead of re-parsing prose.</li>
+</ul>
+<p>The original release had 30 MCP server files under <code>src/context/skills</code>.
+Most are processkit management servers; one additional shipped server was
+<code>devops/repo-management</code>.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="provider-and-model-neutrality">Provider and Model Neutrality<a href="#provider-and-model-neutrality" class="hash-link" aria-label="Direct link to Provider and Model Neutrality" title="Direct link to Provider and Model Neutrality" translate="no">​</a></h2>
+<p>Provider neutrality is a core invariant, not a convenience.</p>
+<p>The old decisions establish:</p>
+<ul>
+<li class="">processkit skills, commands, MCP tools, and doctor findings must not
+require or invoke aibox host commands from inside derived project
+containers.</li>
+<li class="">aibox and other managers may install, supervise, or provide runtime
+signals, but processkit remediation surfaces stay generic.</li>
+<li class="">Role and TeamMember model assignments bind to provider-neutral
+<code>Artifact(kind=model-profile)</code> artifacts by default.</li>
+<li class="">Concrete <code>Artifact(kind=model-spec)</code> artifacts may encode provider and
+model names because they describe real provider models.</li>
+<li class="">Runtime access gates expand profiles into concrete candidates.</li>
+<li class="">Direct Role/TeamMember bindings to concrete ModelSpec artifacts are
+explicit pins or compatibility cases.</li>
+</ul>
+<p>This is the design line that lets a processkit project move between
+Codex, Claude Code, Gemini CLI, Aider, Cursor, Copilot, OpenCode,
+Hermes, and future harnesses without rewriting its process memory.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="team-and-role-model">Team and Role Model<a href="#team-and-role-model" class="hash-link" aria-label="Direct link to Team and Role Model" title="Direct link to Team and Role Model" translate="no">​</a></h2>
+<p>The old project introduced persistent TeamMembers, Roles, RoleSlots, and
+Bindings to support repeatable multi-agent collaboration:</p>
+<ul>
+<li class="">Roles define responsibilities.</li>
+<li class="">TeamMembers represent named humans or AI personas.</li>
+<li class="">Bindings connect actors, roles, model profiles, scopes, and other
+addressable surfaces.</li>
+<li class="">RoleSlots decouple identity and capacity planning from concrete people
+or model invocations.</li>
+<li class="">Sub-agent dispatch should route through <code>route_task</code> first and use the
+recommended TeamMember/model class when available.</li>
+</ul>
+<p>The current <code>processkit2</code> workspace has processkit TeamMember remnants
+from installation, but <code>pk-doctor</code> reports missing tier directories and
+one missing Claude sub-agent export. Treat that as setup hygiene, not as
+the future team model.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="release-and-migration-model">Release and Migration Model<a href="#release-and-migration-model" class="hash-link" aria-label="Direct link to Release and Migration Model" title="Direct link to Release and Migration Model" translate="no">​</a></h2>
+<p>The first processkit version treated releases as deliberate versioned
+content, not silent syncs.</p>
+<p>Stable release expectations:</p>
+<ul>
+<li class=""><code>src/PROVENANCE.toml</code> maps shipped files to the tag where each last
+changed.</li>
+<li class=""><code>scripts/processkit-diff.sh</code> compares tagged versions and classifies
+added, removed, changed, and unchanged files.</li>
+<li class="">Installers write explicit Migration documents for upgrades.</li>
+<li class="">Users and agents review migrations before applying them.</li>
+<li class="">Migration flow is <code>pending</code> -&gt; <code>in-progress</code> -&gt; <code>applied</code>.</li>
+<li class="">Release tarballs are built reproducibly from <code>src/</code>.</li>
+<li class="">Release packaging runs a release-boundary guard, release audit,
+provenance freshness check, MCP preauth validation, and checksum
+generation.</li>
+</ul>
+<p>The old release process guarded against a known failure mode: dogfood
+context had changed while <code>src/context/</code> did not receive corresponding
+shippable changes. The new version should preserve a guard that makes
+that drift visible.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="documentation-surface">Documentation Surface<a href="#documentation-surface" class="hash-link" aria-label="Direct link to Documentation Surface" title="Direct link to Documentation Surface" translate="no">​</a></h2>
+<p>The first version had two user-facing documentation surfaces:</p>
+<ul>
+<li class="">root docs such as <code>docs/harness-claude-code.md</code></li>
+<li class="">Docusaurus docs under <code>docs-site/</code></li>
+</ul>
+<p>The most important stable docs topics are:</p>
+<ul>
+<li class="">installation and harness setup</li>
+<li class="">package tiers and skill catalog</li>
+<li class="">API version policy</li>
+<li class="">migration model</li>
+<li class="">v2 contracts</li>
+<li class="">ID formats</li>
+<li class="">privacy tiers</li>
+<li class="">gateway and MCP layouts</li>
+</ul>
+<p>The current <code>processkit2</code> workspace does not yet have a docs site or
+source docs beyond this base context.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="current-gap-summary">Current Gap Summary<a href="#current-gap-summary" class="hash-link" aria-label="Direct link to Current Gap Summary" title="Direct link to Current Gap Summary" translate="no">​</a></h2>
+<p>Compared with the original processkit repository, this project currently
+has:</p>
+<ul>
+<li class="">processkit runtime context installed under root <code>context/</code></li>
+<li class="">aibox config and lock data</li>
+<li class="">devcontainer/runtime scaffolding</li>
+<li class="">this base-context document</li>
+</ul>
+<p>It does not yet have:</p>
+<ul>
+<li class=""><code>src/</code> deliverable tree</li>
+<li class=""><code>src/context/</code> schemas, state machines, skills, model artifacts, roles,
+bindings, and TeamMember defaults</li>
+<li class="">package definitions under <code>src/.processkit/packages</code></li>
+<li class="">release scripts and verification scripts</li>
+<li class="">docs-site user documentation</li>
+<li class="">changelog, contribution guide, or release packaging flow</li>
+<li class="">processkit2-specific WorkItems, Decisions, or Artifacts describing the
+rebuild roadmap</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="base-context-readiness-audit">Base-Context Readiness Audit<a href="#base-context-readiness-audit" class="hash-link" aria-label="Direct link to Base-Context Readiness Audit" title="Direct link to Base-Context Readiness Audit" translate="no">​</a></h2>
+<p>This first phase is complete enough for the next briefing document.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Requirement</th><th>Evidence</th><th>Status</th></tr></thead><tbody><tr><td>Clone/analyze original repository</td><td><code>/tmp/processkit-original</code> at commit <code>6a9a175f95c42dd76e23488feca42e3d05526b98</code></td><td>Done</td></tr><tr><td>Capture target that should not change</td><td>Stable Product Target, Consumer Usage Model, Entity and Contract Model</td><td>Done</td></tr><tr><td>Analyze old <code>context/</code> decisions/artifacts</td><td>Evidence Index lists PRD and high-signal DecisionRecords</td><td>Done</td></tr><tr><td>Analyze old <code>src/</code> source deliverable</td><td>Shipped Deliverable Boundary, Package Tiers, MCP and Indexing Principles</td><td>Done</td></tr><tr><td>Analyze user-facing docs</td><td>Documentation Surface plus reference-doc evidence list</td><td>Done</td></tr><tr><td>Capture current <code>processkit2</code> status</td><td>Current Repository Status and Current Gap Summary</td><td>Done</td></tr><tr><td>Verify process health before handoff</td><td>active migrations: zero; <code>pk-doctor</code> findings summarized above</td><td>Done</td></tr></tbody></table>
+<p>Open items are intentionally deferred until the incoming briefing is
+reviewed:</p>
+<ul>
+<li class="">creating processkit2-specific WorkItems or DecisionRecords</li>
+<li class="">choosing which old skills or runtime code to import versus redesign</li>
+<li class="">rebuilding <code>src/</code>, <code>docs-site/</code>, release scripts, or MCP runtime code</li>
+<li class="">resolving unrelated installed-context hygiene findings from <code>pk-doctor</code></li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="improvement-surface-for-later-briefing">Improvement Surface for Later Briefing<a href="#improvement-surface-for-later-briefing" class="hash-link" aria-label="Direct link to Improvement Surface for Later Briefing" title="Direct link to Improvement Surface for Later Briefing" translate="no">​</a></h2>
+<p>The next briefing can change how the new implementation is built, but it
+should do so against these preserved targets:</p>
+<ul>
+<li class="">keep processkit provider-neutral and host-orchestrator-neutral</li>
+<li class="">keep the shipped deliverable boundary explicit</li>
+<li class="">keep entity writes validated through MCP, not hand-edited context files</li>
+<li class="">keep migrations explicit and reviewable</li>
+<li class="">keep gateway additive rather than replacing per-skill canonical servers</li>
+<li class="">keep model routing provider-neutral through profiles</li>
+<li class="">keep docs and release checks first-class</li>
+<li class="">keep dogfood project context separate from consumer deliverables</li>
+</ul>
+<p>Likely redesign areas for processkit2:</p>
+<ul>
+<li class="">simplify the source layout without losing the consumer mirror invariant</li>
+<li class="">reduce prompt/runtime overhead of the skill and MCP surfaces</li>
+<li class="">make package selection and command projection easier to reason about</li>
+<li class="">strengthen release and migration tests from the start</li>
+<li class="">define processkit2-specific WorkItems/Decisions after the incoming
+briefing document is reviewed</li>
+<li class="">decide whether to import, regenerate, or redesign each old skill family
+rather than copying the whole first-version catalog wholesale</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="evidence-index">Evidence Index<a href="#evidence-index" class="hash-link" aria-label="Direct link to Evidence Index" title="Direct link to Evidence Index" translate="no">​</a></h2>
+<p>Primary evidence from the original repository:</p>
+<ul>
+<li class=""><code>README.md</code>: product promise, install model, MCP layouts, current status</li>
+<li class=""><code>ART-20260409_1854-KindCrane-processkit-product-requirements-document</code>:
+original approved PRD</li>
+<li class=""><code>src/INDEX.md</code>: shipped deliverable boundary and mirror invariant</li>
+<li class=""><code>src/.processkit/packages/*.yaml</code>: package tiers and composition</li>
+<li class=""><code>docs/harness-claude-code.md</code>: harness behavior and compliance payloads</li>
+<li class=""><code>docs-site/docs/reference/apiversion-policy.md</code>: apiVersion rules</li>
+<li class=""><code>docs-site/docs/reference/migration.md</code>: version migration model</li>
+<li class=""><code>docs-site/docs/reference/v2-contracts.md</code>: v2 entity/projection rules</li>
+<li class=""><code>docs-site/docs/reference/id-formats.md</code>: ID prefix and format policy</li>
+<li class=""><code>docs-site/docs/reference/privacy.md</code>: privacy tiers and private dirs</li>
+<li class=""><code>src/context/skills/processkit/processkit-gateway/SKILL.md</code>: gateway
+architecture</li>
+<li class=""><code>src/context/skills/processkit/index-management/SKILL.md</code>: read-side
+index foundation</li>
+<li class=""><code>scripts/check-src-context-drift.sh</code>: release boundary guard</li>
+<li class=""><code>scripts/build-release-tarball.sh</code>: release packaging flow</li>
+<li class=""><code>scripts/smoke-test-servers.py</code>: MCP smoke workflow</li>
+</ul>
+<p>High-signal historical decisions:</p>
+<ul>
+<li class=""><code>DEC-20260430_1416-SmoothTiger-adopt-breaking-v2-implementation-plan-for</code></li>
+<li class=""><code>DEC-20260501_1739-ProudCrane-adopt-smoothtiger-informed-split-track-v2</code></li>
+<li class=""><code>DEC-20260502_0743-CoolFjord-adopt-provider-neutral-processkit-gateway-daemon</code></li>
+<li class=""><code>DEC-20260503_1829-LoyalComet-route-roles-and-team-members-through</code></li>
+<li class=""><code>DEC-20260515_1232-GentleLantern-keep-processkit-host-orchestrator-neutral</code></li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/projectious-work/processkit/tree/main/docs-site/docs/development/analysis/base-context.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/processkit/docs/development/analysis/"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Analysis Archive</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/processkit/docs/development/analysis/concept-mapping-briefing-analysis"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Concept Mapping Briefing Analysis</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#current-guiding-briefing" class="table-of-contents__link toc-highlight">Current Guiding Briefing</a></li><li><a href="#current-repository-status" class="table-of-contents__link toc-highlight">Current Repository Status</a></li><li><a href="#stable-product-target" class="table-of-contents__link toc-highlight">Stable Product Target</a></li><li><a href="#shipped-deliverable-boundary" class="table-of-contents__link toc-highlight">Shipped Deliverable Boundary</a></li><li><a href="#consumer-usage-model" class="table-of-contents__link toc-highlight">Consumer Usage Model</a></li><li><a href="#package-tiers" class="table-of-contents__link toc-highlight">Package Tiers</a></li><li><a href="#entity-and-contract-model" class="table-of-contents__link toc-highlight">Entity and Contract Model</a></li><li><a href="#mcp-and-indexing-principles" class="table-of-contents__link toc-highlight">MCP and Indexing Principles</a></li><li><a href="#provider-and-model-neutrality" class="table-of-contents__link toc-highlight">Provider and Model Neutrality</a></li><li><a href="#team-and-role-model" class="table-of-contents__link toc-highlight">Team and Role Model</a></li><li><a href="#release-and-migration-model" class="table-of-contents__link toc-highlight">Release and Migration Model</a></li><li><a href="#documentation-surface" class="table-of-contents__link toc-highlight">Documentation Surface</a></li><li><a href="#current-gap-summary" class="table-of-contents__link toc-highlight">Current Gap Summary</a></li><li><a href="#base-context-readiness-audit" class="table-of-contents__link toc-highlight">Base-Context Readiness Audit</a></li><li><a href="#improvement-surface-for-later-briefing" class="table-of-contents__link toc-highlight">Improvement Surface for Later Briefing</a></li><li><a href="#evidence-index" class="table-of-contents__link toc-highlight">Evidence Index</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/getting-started/overview">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/primitives/overview">Primitives</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/skills/overview">Skills</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/packages/overview">Packages</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Project</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://github.com/projectious-work/processkit/releases" target="_blank" rel="noopener noreferrer" class="footer__link-item">Releases<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">© 2026 projectious.work</div></div></div></footer></div>
+</body>
+</html>

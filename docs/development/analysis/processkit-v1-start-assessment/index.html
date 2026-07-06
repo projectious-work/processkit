@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-development/analysis/processkit-v1-start-assessment" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">processkit v1.0 Start Assessment | processkit</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-start-assessment"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="processkit v1.0 Start Assessment | processkit"><meta data-rh="true" name="description" content="Scope and risk assessment for starting the v1.0 redesign."><meta data-rh="true" property="og:description" content="Scope and risk assessment for starting the v1.0 redesign."><link data-rh="true" rel="icon" href="/processkit/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-start-assessment"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-start-assessment" hreflang="en"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-start-assessment" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"processkit v1.0 Start Assessment","item":"https://projectious-work.github.io/processkit/docs/development/analysis/processkit-v1-start-assessment"}]}</script><link rel="stylesheet" href="/processkit/assets/css/styles.c0aa031c.css">
+<script src="/processkit/assets/js/runtime~main.0fc29a8d.js" defer="defer"></script>
+<script src="/processkit/assets/js/main.ce062115.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/processkit/"><b class="navbar__title text--truncate">processkit</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/processkit/docs/">Docs</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/processkit/docs/"><span title="Introduction" class="linkLabel_WmDU">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/processkit/docs/development/"><span title="Development" class="categoryLinkLabel_W154">Development</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/"><span title="Development" class="linkLabel_WmDU">Development</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/product-specification"><span title="Product Specification" class="linkLabel_WmDU">Product Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/architecture-specification"><span title="Architecture Specification" class="linkLabel_WmDU">Architecture Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/alpha-scope"><span title="Alpha Scope" class="linkLabel_WmDU">Alpha Scope</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/landscape-note"><span title="Landscape Note" class="linkLabel_WmDU">Landscape Note</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/acceptance-gate"><span title="Acceptance Gate" class="linkLabel_WmDU">Acceptance Gate</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis" class="categoryLinkLabel_W154">Analysis</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis Archive" class="linkLabel_WmDU">Analysis Archive</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/base-context"><span title="processkit2 Base Context" class="linkLabel_WmDU">processkit2 Base Context</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/concept-mapping-briefing-analysis"><span title="Concept Mapping Briefing Analysis" class="linkLabel_WmDU">Concept Mapping Briefing Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/processkit-v1-rfc-analysis"><span title="processkit v1.0 RFC Analysis" class="linkLabel_WmDU">processkit v1.0 RFC Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/analysis/okf-compatibility-analysis"><span title="OKF Compatibility Analysis" class="linkLabel_WmDU">OKF Compatibility Analysis</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/processkit/docs/development/analysis/processkit-v1-start-assessment"><span title="processkit v1.0 Start Assessment" class="linkLabel_WmDU">processkit v1.0 Start Assessment</span></a></li></ul></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/processkit/docs/getting-started/overview"><span title="Getting Started" class="categoryLinkLabel_W154">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/overview"><span title="Overview" class="linkLabel_WmDU">Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/installing"><span title="Installing" class="linkLabel_WmDU">Installing</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/first-entity"><span title="Your First Entity" class="linkLabel_WmDU">Your First Entity</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/primitives/overview"><span title="Primitives" class="categoryLinkLabel_W154">Primitives</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/skills/overview"><span title="Skills" class="categoryLinkLabel_W154">Skills</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/packages/overview"><span title="Packages" class="categoryLinkLabel_W154">Packages</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/processes/overview"><span title="Processes" class="categoryLinkLabel_W154">Processes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/mcp-servers/overview"><span title="MCP Servers" class="categoryLinkLabel_W154">MCP Servers</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/reference/apiversion-policy"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/processkit/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Development</span></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Analysis</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">processkit v1.0 Start Assessment</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>processkit v1.0 Start Assessment</h1></header>
+<p>Analyzed: 2026-07-04</p>
+<p>Sources considered:</p>
+<ul>
+<li class=""><code>processkit-v1.0-rfc-draft.md</code></li>
+<li class=""><a class="" href="/processkit/docs/development/analysis/processkit-v1-rfc-analysis">processkit v1.0 RFC Analysis</a></li>
+<li class=""><a class="" href="/processkit/docs/development/analysis/concept-mapping-briefing-analysis">Concept Mapping Briefing Analysis</a></li>
+<li class=""><a class="" href="/processkit/docs/development/analysis/okf-compatibility-analysis">OKF Compatibility Analysis</a></li>
+<li class="">Google OKF announcement and v0.1 specification</li>
+<li class="">External survey of adjacent agent, memory, metadata, and coding-agent
+projects</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="judgement">Judgement<a href="#judgement" class="hash-link" aria-label="Direct link to Judgement" title="Direct link to Judgement" translate="no">​</a></h2>
+<p>The v1.0 plan is good enough to start, but not as an unconstrained
+9-12 month greenfield rebuild.</p>
+<p>Start a <code>v1.0</code> branch now, but run it as a narrow alpha first:</p>
+<ul>
+<li class="">prove a small vertical slice before implementing the full ontology</li>
+<li class="">keep processkit&#x27;s canonical semantics stricter than OKF</li>
+<li class="">position processkit as process memory and governance, not as another
+agent runtime</li>
+<li class="">integrate with external runtimes instead of rebuilding them</li>
+<li class="">add OKF import/export as a boundary compatibility feature</li>
+</ul>
+<p>The plan&#x27;s direction is strong. Its main risk is scope, not concept.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-start">Why Start<a href="#why-start" class="hash-link" aria-label="Direct link to Why Start" title="Direct link to Why Start" translate="no">​</a></h2>
+<p>The market is converging toward exactly the problems processkit is
+trying to solve:</p>
+<ul>
+<li class="">persistent agent context</li>
+<li class="">local and git-native knowledge</li>
+<li class="">markdown / frontmatter agent memory</li>
+<li class="">MCP tool interoperability</li>
+<li class="">durable work state</li>
+<li class="">human review and approval gates</li>
+<li class="">multi-agent role specialization</li>
+<li class="">observability, lineage, and auditability</li>
+</ul>
+<p>The RFC&#x27;s core differentiators remain valid:</p>
+<ul>
+<li class="">schema-backed process entities</li>
+<li class="">lifecycle-aware WorkItems, Decisions, Discussions, Notes, Artifacts,
+Bindings, Gates, Skills, and Logs</li>
+<li class="">MCP write paths rather than ad hoc file edits</li>
+<li class="">typed relations instead of prose-only links</li>
+<li class="">provider-neutral model and role routing</li>
+<li class="">interface-aware search and query</li>
+<li class="">structured event history</li>
+</ul>
+<p>No surveyed external project fully covers this combination.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="why-constrain-the-start">Why Constrain The Start<a href="#why-constrain-the-start" class="hash-link" aria-label="Direct link to Why Constrain The Start" title="Direct link to Why Constrain The Start" translate="no">​</a></h2>
+<p>The RFC&#x27;s 89-concept ontology is too large to treat as proven before
+implementation. It should be validated by usage.</p>
+<p>The first alpha should answer:</p>
+<ul>
+<li class="">Does the new ontology reduce agent confusion in real work?</li>
+<li class="">Does <code>query_by_interface</code> improve routing and retrieval?</li>
+<li class="">Can existing v0.x history migrate without losing process evidence?</li>
+<li class="">Can agents create and transition entities reliably through MCP tools?</li>
+<li class="">Can humans still inspect and review the files directly?</li>
+<li class="">Can OKF export/import work without weakening internal semantics?</li>
+</ul>
+<p>If those are not proven early, a larger rebuild will produce more schema
+surface without enough operational proof.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="concepts-to-learn-from">Concepts To Learn From<a href="#concepts-to-learn-from" class="hash-link" aria-label="Direct link to Concepts To Learn From" title="Direct link to Concepts To Learn From" translate="no">​</a></h2>
+<p>These external concepts should influence v1.0 without replacing
+processkit&#x27;s identity.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="okf-boundary-format">OKF: Boundary Format<a href="#okf-boundary-format" class="hash-link" aria-label="Direct link to OKF: Boundary Format" title="Direct link to OKF: Boundary Format" translate="no">​</a></h3>
+<p>Learn:</p>
+<ul>
+<li class="">minimal markdown + YAML interchange</li>
+<li class="">permissive consumers</li>
+<li class="">path-readable bundles</li>
+<li class="">generated <code>index.md</code> for progressive disclosure</li>
+<li class="">plain markdown links for generic graph consumers</li>
+</ul>
+<p>Apply:</p>
+<ul>
+<li class="">OKF exporter and importer</li>
+<li class="">extension frontmatter preserving processkit IDs and kinds</li>
+<li class="">OKF validator mode</li>
+<li class="">generated OKF bundles for publication and exchange</li>
+</ul>
+<p>Do not copy:</p>
+<ul>
+<li class="">path IDs as canonical IDs</li>
+<li class="">untyped relations as the only graph model</li>
+<li class="">prose <code>log.md</code> as authoritative event history</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="basic-memory--llm-wiki-local-first-memory">Basic Memory / LLM Wiki: Local-First Memory<a href="#basic-memory--llm-wiki-local-first-memory" class="hash-link" aria-label="Direct link to Basic Memory / LLM Wiki: Local-First Memory" title="Direct link to Basic Memory / LLM Wiki: Local-First Memory" translate="no">​</a></h3>
+<p>Learn:</p>
+<ul>
+<li class="">agents work well with simple, readable markdown memory</li>
+<li class="">backlinks and lightweight entity extraction are useful</li>
+<li class="">user-owned files build trust</li>
+<li class="">MCP access to memory lowers integration friction</li>
+</ul>
+<p>Apply:</p>
+<ul>
+<li class="">keep canonical files inspectable by humans</li>
+<li class="">improve indexes, backlinks, and local search ergonomics</li>
+<li class="">expose memory operations through MCP with clear tool metadata</li>
+<li class="">make agent write paths safe but still low-friction</li>
+</ul>
+<p>Do not copy:</p>
+<ul>
+<li class="">free-form notes as the only data model</li>
+<li class="">weak lifecycle semantics</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="langgraph--adk--microsoft-agent-framework-runtime-boundaries">LangGraph / ADK / Microsoft Agent Framework: Runtime Boundaries<a href="#langgraph--adk--microsoft-agent-framework-runtime-boundaries" class="hash-link" aria-label="Direct link to LangGraph / ADK / Microsoft Agent Framework: Runtime Boundaries" title="Direct link to LangGraph / ADK / Microsoft Agent Framework: Runtime Boundaries" translate="no">​</a></h3>
+<p>Learn:</p>
+<ul>
+<li class="">durable execution, pause/resume, and human-in-the-loop workflows are
+now table stakes</li>
+<li class="">agent runtimes increasingly support state, tools, telemetry, and
+multi-agent orchestration</li>
+<li class="">framework-specific orchestration changes quickly</li>
+</ul>
+<p>Apply:</p>
+<ul>
+<li class="">make processkit easy for those runtimes to use</li>
+<li class="">define stable MCP tools for work, decisions, gates, and logs</li>
+<li class="">model approvals and interrupts as first-class process state</li>
+<li class="">provide runtime-neutral integration examples</li>
+</ul>
+<p>Do not copy:</p>
+<ul>
+<li class="">agent loop orchestration</li>
+<li class="">provider-specific runtime assumptions</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="openai-agents-sdk-handoffs-guardrails-tracing">OpenAI Agents SDK: Handoffs, Guardrails, Tracing<a href="#openai-agents-sdk-handoffs-guardrails-tracing" class="hash-link" aria-label="Direct link to OpenAI Agents SDK: Handoffs, Guardrails, Tracing" title="Direct link to OpenAI Agents SDK: Handoffs, Guardrails, Tracing" translate="no">​</a></h3>
+<p>Learn:</p>
+<ul>
+<li class="">handoffs need explicit target identity and task shape</li>
+<li class="">guardrails should be auditable process artifacts</li>
+<li class="">traces are valuable when debugging agent behavior</li>
+</ul>
+<p>Apply:</p>
+<ul>
+<li class="">connect TeamMember / Role routing to handoff metadata</li>
+<li class="">model guardrails as Gates and policy Bindings</li>
+<li class="">map traces or summaries into structured LogEntries or Artifacts</li>
+</ul>
+<p>Do not copy:</p>
+<ul>
+<li class="">SDK-specific session state as canonical project memory</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="letta--mem0-memory-layering">Letta / Mem0: Memory Layering<a href="#letta--mem0-memory-layering" class="hash-link" aria-label="Direct link to Letta / Mem0: Memory Layering" title="Direct link to Letta / Mem0: Memory Layering" translate="no">​</a></h3>
+<p>Learn:</p>
+<ul>
+<li class="">long-term memory needs summarization, retrieval, and consolidation</li>
+<li class="">different memory layers serve different retrieval needs</li>
+<li class="">graph memory can improve multi-hop questions</li>
+</ul>
+<p>Apply:</p>
+<ul>
+<li class="">separate fleeting notes, permanent artifacts, decisions, logs, and
+team-member memory</li>
+<li class="">add explicit promotion and consolidation workflows</li>
+<li class="">support graph-aware retrieval over typed entities and Bindings</li>
+</ul>
+<p>Do not copy:</p>
+<ul>
+<li class="">opaque memory stores as the only source of truth</li>
+<li class="">personalization-first memory as the center of the project model</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="datahub--openmetadata--unity-catalog-metadata-governance">DataHub / OpenMetadata / Unity Catalog: Metadata Governance<a href="#datahub--openmetadata--unity-catalog-metadata-governance" class="hash-link" aria-label="Direct link to DataHub / OpenMetadata / Unity Catalog: Metadata Governance" title="Direct link to DataHub / OpenMetadata / Unity Catalog: Metadata Governance" translate="no">​</a></h3>
+<p>Learn:</p>
+<ul>
+<li class="">catalogs win by combining metadata, lineage, ownership, search,
+quality, and governance</li>
+<li class="">typed metadata supports automation better than prose alone</li>
+<li class="">enterprise users expect lineage and ownership to be queryable</li>
+</ul>
+<p>Apply:</p>
+<ul>
+<li class="">make ownership, source, provenance, and lifecycle queryable</li>
+<li class="">add lineage-style relations where process artifacts derive from one
+another</li>
+<li class="">expose health and quality checks through pk-doctor</li>
+<li class="">keep metadata extensible without losing validation</li>
+</ul>
+<p>Do not copy:</p>
+<ul>
+<li class="">data-catalog scope as the core product</li>
+<li class="">centralized service dependency</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="openlineage-faceted-extensibility">OpenLineage: Faceted Extensibility<a href="#openlineage-faceted-extensibility" class="hash-link" aria-label="Direct link to OpenLineage: Faceted Extensibility" title="Direct link to OpenLineage: Faceted Extensibility" translate="no">​</a></h3>
+<p>Learn:</p>
+<ul>
+<li class="">a small core model plus extension facets can scale across domains</li>
+<li class="">lineage events benefit from consistent naming and extensible metadata</li>
+</ul>
+<p>Apply:</p>
+<ul>
+<li class="">consider facet-like schema extension points for v1.0 entities</li>
+<li class="">keep core fields stable while allowing typed extension payloads</li>
+<li class="">use event metadata to preserve provenance and causal relationships</li>
+</ul>
+<p>Do not copy:</p>
+<ul>
+<li class="">run/job/dataset as processkit&#x27;s universal core model</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="openhands--swe-agent--copilot-agent--aider-coding-agent-fit">OpenHands / SWE-agent / Copilot Agent / Aider: Coding-Agent Fit<a href="#openhands--swe-agent--copilot-agent--aider-coding-agent-fit" class="hash-link" aria-label="Direct link to OpenHands / SWE-agent / Copilot Agent / Aider: Coding-Agent Fit" title="Direct link to OpenHands / SWE-agent / Copilot Agent / Aider: Coding-Agent Fit" translate="no">​</a></h3>
+<p>Learn:</p>
+<ul>
+<li class="">coding agents need repository maps, task context, plans, tests, and
+review loops</li>
+<li class="">asynchronous agents need durable project state outside chat</li>
+<li class="">issue-to-PR agents benefit from clear acceptance criteria</li>
+</ul>
+<p>Apply:</p>
+<ul>
+<li class="">make processkit the context substrate for coding agents</li>
+<li class="">export concise task briefs with related decisions and artifacts</li>
+<li class="">model acceptance criteria and verification as queryable fields</li>
+<li class="">preserve branch, PR, test, and review evidence in structured logs</li>
+</ul>
+<p>Do not copy:</p>
+<ul>
+<li class="">code-editing agent behavior</li>
+<li class="">benchmark chasing as the project goal</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="immediate-plan-improvements">Immediate Plan Improvements<a href="#immediate-plan-improvements" class="hash-link" aria-label="Direct link to Immediate Plan Improvements" title="Direct link to Immediate Plan Improvements" translate="no">​</a></h2>
+<p>Before full implementation, amend the v1.0 plan with these additions:</p>
+<ol>
+<li class="">Add an OKF compatibility acceptance slice.</li>
+<li class="">Add a one-project alpha proving a small ontology subset.</li>
+<li class="">Define processkit&#x27;s runtime boundary explicitly.</li>
+<li class="">Add a &quot;not building&quot; list:
+agent runtime, vector database, data catalog, OKF-only wiki.</li>
+<li class="">Add provenance and lineage requirements.</li>
+<li class="">Add handoff / approval / guardrail mapping to Roles, Gates, and Logs.</li>
+<li class="">Add graph/backlink ergonomics for human and agent navigation.</li>
+<li class="">Add migration proof for existing v0.x entities.</li>
+<li class="">Add examples for LangGraph, ADK, OpenAI Agents SDK, and Microsoft
+Agent Framework as consumers.</li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="start-condition">Start Condition<a href="#start-condition" class="hash-link" aria-label="Direct link to Start Condition" title="Direct link to Start Condition" translate="no">​</a></h2>
+<p>Start once the first alpha slice is defined as a vertical proof:</p>
+<ul>
+<li class="">10-15 highest-value concepts only</li>
+<li class="">generated schemas</li>
+<li class="">MCP create/read/transition path</li>
+<li class="">interface query</li>
+<li class="">OKF export</li>
+<li class="">migration of a small existing corpus</li>
+<li class="">one real process cycle driven through the new model</li>
+</ul>
+<p>That is enough to learn quickly while preserving the RFC&#x27;s direction.</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/projectious-work/processkit/tree/main/docs-site/docs/development/analysis/processkit-v1-start-assessment.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/processkit/docs/development/analysis/okf-compatibility-analysis"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">OKF Compatibility Analysis</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/processkit/docs/getting-started/overview"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Overview</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#judgement" class="table-of-contents__link toc-highlight">Judgement</a></li><li><a href="#why-start" class="table-of-contents__link toc-highlight">Why Start</a></li><li><a href="#why-constrain-the-start" class="table-of-contents__link toc-highlight">Why Constrain The Start</a></li><li><a href="#concepts-to-learn-from" class="table-of-contents__link toc-highlight">Concepts To Learn From</a><ul><li><a href="#okf-boundary-format" class="table-of-contents__link toc-highlight">OKF: Boundary Format</a></li><li><a href="#basic-memory--llm-wiki-local-first-memory" class="table-of-contents__link toc-highlight">Basic Memory / LLM Wiki: Local-First Memory</a></li><li><a href="#langgraph--adk--microsoft-agent-framework-runtime-boundaries" class="table-of-contents__link toc-highlight">LangGraph / ADK / Microsoft Agent Framework: Runtime Boundaries</a></li><li><a href="#openai-agents-sdk-handoffs-guardrails-tracing" class="table-of-contents__link toc-highlight">OpenAI Agents SDK: Handoffs, Guardrails, Tracing</a></li><li><a href="#letta--mem0-memory-layering" class="table-of-contents__link toc-highlight">Letta / Mem0: Memory Layering</a></li><li><a href="#datahub--openmetadata--unity-catalog-metadata-governance" class="table-of-contents__link toc-highlight">DataHub / OpenMetadata / Unity Catalog: Metadata Governance</a></li><li><a href="#openlineage-faceted-extensibility" class="table-of-contents__link toc-highlight">OpenLineage: Faceted Extensibility</a></li><li><a href="#openhands--swe-agent--copilot-agent--aider-coding-agent-fit" class="table-of-contents__link toc-highlight">OpenHands / SWE-agent / Copilot Agent / Aider: Coding-Agent Fit</a></li></ul></li><li><a href="#immediate-plan-improvements" class="table-of-contents__link toc-highlight">Immediate Plan Improvements</a></li><li><a href="#start-condition" class="table-of-contents__link toc-highlight">Start Condition</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/getting-started/overview">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/primitives/overview">Primitives</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/skills/overview">Skills</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/packages/overview">Packages</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Project</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://github.com/projectious-work/processkit/releases" target="_blank" rel="noopener noreferrer" class="footer__link-item">Releases<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">© 2026 projectious.work</div></div></div></footer></div>
+</body>
+</html>
