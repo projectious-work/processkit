@@ -71,10 +71,10 @@ recorded rationale. All other criteria are strict.
 | T2.5 | Full and partial schema regeneration are both deterministic and test-covered. |
 | T2.6 | Per-kind validation mode is observable through MCP. |
 | T2.7 | Strict validation fails invalid migrated entities; tolerant validation warns for kinds still being migrated. |
-| T2.8 | MCP create/read/update/transition paths exist for the alpha entity set and use generated schemas. |
-| T2.9 | Entity writes emit required events and update the read index or report index drift. |
+| T2.8 | MCP create/read/update/transition paths exist for the alpha entity set, use generated schemas, and expose typed doctor remediation dispositions. |
+| T2.9 | Entity and remediation writes emit required events and update the read index or report index drift. |
 | T2.10 | Search includes FTS5 plus interface grouping; the canned-query set is signed off before rc. |
-| T2.11 | All MCP tools have valid Python type signatures and matching draft-2020-12 JSON Schemas. |
+| T2.11 | All MCP tools have valid Python type signatures and matching draft-2020-12 JSON Schemas; every doctor-declared remediation tool exists in the gateway catalog with compatible arguments. |
 | T2.12 | Soft: local developer commands make schema rebuild, validation, and MCP smoke tests easy to run. |
 
 ### C3 - Corpus Migration
@@ -82,15 +82,15 @@ recorded rationale. All other criteria are strict.
 | ID | Criterion |
 |---|---|
 | C3.1 | A migration plan maps every v0.x entity kind to a v1.0 primitive, discriminator, composition, archive, or explicit rejection. |
-| C3.2 | Migration tooling runs repeatably from a clean checkout and records source/target processkit versions. |
-| C3.3 | Migrated entities preserve stable IDs or record durable predecessor/successor links. |
+| C3.2 | Declarative migration planning and execution run repeatably from a clean checkout, enforce expected source hashes, and record source/target processkit versions. |
+| C3.3 | Migrated entities preserve stable IDs or record durable predecessor/successor links and aliases that the read index resolves. |
 | C3.4 | Field loss is measured and stays within the RFC's maximum 5 percent ceiling. |
 | C3.5 | Unknown fields are preserved, transformed, or reported; they are not silently dropped. |
-| C3.6 | LogEntry hash and append-only invariants are checked during migration. |
+| C3.6 | LogEntry hash and append-only invariants are checked during migration; history rewrites require explicit policy, source hashes, and archived originals. |
 | C3.7 | Orphaned entities, broken required links, and invalid required owners hard-fail the migration. |
 | C3.8 | Migrated strict kinds pass generated-schema validation. |
-| C3.9 | Migration reports include counts, warnings, failures, and remediation guidance. |
-| C3.10 | A representative v0.x fixture corpus migrates in CI without manual aibox steps. |
+| C3.9 | Migration reports include counts, warnings, failures, typed remediation guidance, and doctor recheck results. |
+| C3.10 | A representative v0.x fixture corpus is detected, planned, migrated, and rechecked in CI without manual aibox steps. |
 
 ### S4 - Skills And Agents
 
@@ -181,6 +181,8 @@ Beta is ready when:
 - docs cover user workflows and architecture
 - pk-doctor checks the important invariants
 - pk-doctor passes a golden adversarial fixture
+- each actionable finding names an installed tool with compatible arguments
+  or a recognized policy, migration, archive, or external disposition
 - runtime integration examples exist
 - OKF import and export are both tested
 - human review and approval workflows are represented
@@ -191,6 +193,7 @@ Release candidate is ready when:
 
 - schema generation is deterministic
 - migration tools are repeatable
+- doctor remediations execute through the shipped gateway and recheck cleanly
 - acceptance fixtures cover adversarial cases
 - docs, examples, and publishing scripts are stable
 - a real project has run a full planning and delivery cycle
