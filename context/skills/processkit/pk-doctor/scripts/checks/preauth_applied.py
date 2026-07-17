@@ -250,7 +250,12 @@ def _gateway_covers_codex_tools(
     )
 
 
-def _drift_result(source: str, expected: set[str], spec_servers: set[str]):
+def _drift_result(
+    source: str,
+    expected: set[str],
+    spec_servers: set[str],
+    repo_root: Path,
+):
     missing = sorted(expected - spec_servers)
     extra = sorted(spec_servers - expected)
     bits: list[str] = []
@@ -271,7 +276,10 @@ def _drift_result(source: str, expected: set[str], spec_servers: set[str]):
             f"{source}-derived names; {'; '.join(bits)}"
         ),
         suggested_fix=(
-            "regenerate preauth.json from shipped mcp-config.json files"
+            "host action: re-run the project installer/sync tool outside "
+            "the container to refresh processkit metadata"
+            if _is_derived_install(repo_root)
+            else "regenerate preauth.json from shipped mcp-config.json files"
         ),
     )
 
@@ -325,6 +333,7 @@ def run(ctx) -> list[CheckResult]:
             "mcp-config",
             expected_from_configs,
             spec_servers,
+            repo_root,
         ))
 
     manifest_path = repo_root / _MANIFEST_REL
@@ -335,7 +344,12 @@ def run(ctx) -> list[CheckResult]:
             if _is_derived_install(repo_root) and expected_from_configs:
                 expected &= expected_from_configs
             if expected and expected != spec_servers:
-                results.append(_drift_result("manifest", expected, spec_servers))
+                results.append(_drift_result(
+                    "manifest",
+                    expected,
+                    spec_servers,
+                    repo_root,
+                ))
 
     settings_path = repo_root / _SETTINGS_REL
     if not settings_path.is_file():

@@ -1,6 +1,6 @@
 {
   "aggregate_sha256": "676bfe83ab55146810b947d34d262a3344427c5377de6c5c815126092f347483",
-  "generated_at": "2026-07-17T15:06:34Z",
+  "generated_at": "2026-07-17T15:12:46Z",
   "per_gateway": [
     {
       "path": "context/skills/processkit/processkit-gateway/mcp/mcp-config.json",
@@ -235,6 +235,6 @@
       "sha256": "a4ae7e26a980aeebed953f3cc2e761cde6dd8692fb033c81c9e3c8927e8b5898"
     }
   ],
-  "processkit_version": "v0.27.3",
+  "processkit_version": "v0.27.4",
   "version": 1
 }

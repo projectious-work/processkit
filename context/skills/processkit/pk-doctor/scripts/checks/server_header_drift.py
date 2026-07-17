@@ -100,6 +100,15 @@ def _is_derived_install(repo_root: Path) -> bool:
     )
 
 
+def _manifest_fix(repo_root: Path) -> str:
+    if _is_derived_install(repo_root):
+        return (
+            "host action: re-run the project installer/sync tool outside "
+            "the container to refresh processkit metadata"
+        )
+    return "uv run scripts/generate-mcp-manifest.py"
+
+
 def _slug_for(path_str: str) -> str:
     parts = Path(path_str).parts
     try:
@@ -124,7 +133,7 @@ def run(ctx) -> list[CheckResult]:
                 f"{_MANIFEST_REL.as_posix()} not found; "
                 "run `scripts/generate-mcp-manifest.py` before release."
             ),
-            suggested_fix="uv run scripts/generate-mcp-manifest.py",
+            suggested_fix=_manifest_fix(repo_root),
         )]
 
     try:
@@ -147,7 +156,7 @@ def run(ctx) -> list[CheckResult]:
                 "manifest has no per_server_header field; regenerate with "
                 "`scripts/generate-mcp-manifest.py` to record current headers."
             ),
-            suggested_fix="uv run scripts/generate-mcp-manifest.py",
+            suggested_fix=_manifest_fix(repo_root),
         )]
 
     current = _collect_current(repo_root)
@@ -178,7 +187,7 @@ def run(ctx) -> list[CheckResult]:
                 f"({preview}); restart the harness to pick up dep changes "
                 "and regenerate the manifest."
             ),
-            suggested_fix="uv run scripts/generate-mcp-manifest.py",
+            suggested_fix=_manifest_fix(repo_root),
         ))
 
     only_live = sorted(p for p in current if p not in manifest_map)

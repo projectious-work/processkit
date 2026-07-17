@@ -7,8 +7,8 @@
 [source]
 project = "processkit"
 upstream = "https://github.com/projectious-work/processkit.git"
-generated_at = "2026-07-17T15:10:10Z"
-generated_for_tag = "v0.27.3"
+generated_at = "2026-07-17T15:12:49Z"
+generated_for_tag = "v0.27.4"
 
 [files]
 ".gitignore.example" = "v0.25.2"

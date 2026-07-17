@@ -124,6 +124,15 @@ def _installed_manifest(manifest: dict, current: list[dict], repo_root: Path) ->
     return filtered
 
 
+def _manifest_fix(repo_root: Path) -> str:
+    if _is_derived_install(repo_root):
+        return (
+            "host action: re-run the project installer/sync tool outside "
+            "the container to refresh processkit metadata"
+        )
+    return "uv run scripts/generate-mcp-manifest.py"
+
+
 def _manifest_server_names(manifest: dict) -> list[str]:
     """Derive expected mcpServers keys from a manifest's per_skill paths.
 
@@ -171,7 +180,7 @@ def run(ctx) -> list[CheckResult]:
                 "context/.processkit-mcp-manifest.json not found; "
                 "run `scripts/generate-mcp-manifest.py` before release."
             ),
-            suggested_fix="uv run scripts/generate-mcp-manifest.py",
+            suggested_fix=_manifest_fix(repo_root),
         )]
 
     try:
@@ -220,7 +229,7 @@ def run(ctx) -> list[CheckResult]:
                 f"{changed} skill config(s) changed since manifest was "
                 f"generated; run `scripts/generate-mcp-manifest.py`"
             ),
-            suggested_fix="uv run scripts/generate-mcp-manifest.py",
+            suggested_fix=_manifest_fix(repo_root),
         )]
 
     manifest_gateway = manifest.get("per_gateway") or []
@@ -233,7 +242,7 @@ def run(ctx) -> list[CheckResult]:
                 "gateway MCP config changed since manifest was generated; "
                 "run `scripts/generate-mcp-manifest.py`"
             ),
-            suggested_fix="uv run scripts/generate-mcp-manifest.py",
+            suggested_fix=_manifest_fix(repo_root),
         )]
 
     # Derived-project harness-stale check.

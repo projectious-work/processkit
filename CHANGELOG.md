@@ -9,6 +9,24 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.27.4] - 2026-07-17
+
+v0.27.4 is a **patch release** that makes genuine metadata-drift
+findings actionable from derived projects.
+
+### Fixed
+
+- Direct derived projects to re-run their installer or sync tool for MCP
+  manifest, server-header, and preauth metadata drift instead of pointing
+  them to upstream-only generator scripts. Closes #78.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `scripts/build-release-tarball.sh v0.27.4`
+
+---
+
 ## [v0.27.3] - 2026-07-17
 
 v0.27.3 is a **patch release** that resolves false-positive doctor
