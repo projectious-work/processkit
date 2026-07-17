@@ -9,6 +9,42 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.27.2] - 2026-07-17
+
+v0.27.2 is a **patch release** that closes narrow `pk-doctor`
+remediation gaps reported by derived projects without adding a broad
+v0 history-rewrite surface.
+
+### Fixed
+
+- Preserved project-local `pk-commands` values by excluding the command
+  adapter block from upstream template hash comparison while retaining
+  marker and required-key validation. Closes #71 and #80.
+- Accepted processkit-generated timestamped `role-slot-fill` Binding IDs
+  alongside deterministic policy Bindings, avoiding unsafe historical
+  LogEntry rewrites solely for filename uniformity.
+- Added explicit MCP confirmation forwarding through
+  `run_pk_doctor(fix=..., yes=true)` and marked the wrapper as a guarded
+  write surface.
+- Attached executable MCP remediation metadata to CLI migration
+  briefing and applied-Migration archive findings.
+- Documented applied and rejected Migrations in the context-archiving
+  policy so existing `create_archive` support is discoverable.
+- Regenerated the gateway catalog and MCP manifest with the corrected
+  doctor signature and permission class.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run --with pytest --with mcp --with sqlite-vec pytest -q context/skills/processkit/pk-doctor/scripts/test_pk_doctor_mcp.py`
+- `uv run --with pytest --with mcp --with pyyaml pytest -q context/skills/processkit/context-archiving/scripts/test_context_archiving.py`
+- `uv run scripts/smoke-test-servers.py`
+- `npm --prefix docs-site run build`
+- `run_pk_doctor()` (`0 ERROR / 0 WARN / 0 actionable`)
+- `run_pk_release_audit(tree="both")` (`0 ERROR / 0 WARN`)
+
+---
+
 ## [v0.27.1] - 2026-05-23
 
 v0.27.1 is a **patch release** that clears derived-project health
