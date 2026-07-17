@@ -12,7 +12,7 @@ Exposes a single tool that runs the aggregator health-check script and
 returns structured JSON output (BACK-20260510_0751-TallFern, T1.3).
 
 Tools provided:
-    run_pk_doctor(check?, fix?) -> {findings, totals, exit_code, ...}
+    run_pk_doctor(check?, fix?, yes?) -> {findings, totals, exit_code, ...}
 """
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ _DOCTOR_SCRIPT = (
 
 
 @server.tool(annotations=ToolAnnotations(
-    readOnlyHint=True,
+    readOnlyHint=False,
     destructiveHint=False,
     idempotentHint=False,
     openWorldHint=False,
@@ -60,6 +60,7 @@ _DOCTOR_SCRIPT = (
 def run_pk_doctor(
     check: str | None = None,
     fix: str | None = None,
+    yes: bool = False,
 ) -> dict:
     """Run the pk-doctor aggregator health check and return structured JSON.
 
@@ -78,6 +79,8 @@ def run_pk_doctor(
     fix:
         Comma-separated list of categories to enable automatic fixes for.
         Passed as ``--fix=<value>`` to the script.
+    yes:
+        Confirm non-data-loss fixes. Passed as ``--yes`` to the script.
 
     Returns
     -------
@@ -99,6 +102,8 @@ def run_pk_doctor(
         cmd += [f"--category={check}"]
     if fix:
         cmd += [f"--fix={fix}"]
+    if yes:
+        cmd += ["--yes"]
 
     try:
         result = subprocess.run(

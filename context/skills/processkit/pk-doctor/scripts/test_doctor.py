@@ -1982,9 +1982,9 @@ with tempfile.TemporaryDirectory() as tmp:
 
 
 # ---------------------------------------------------------------------------
-# Test 17b: binding filename warning stays strict and actionable
+# Test 17b: runtime Binding IDs coexist with deterministic policy Bindings
 # ---------------------------------------------------------------------------
-print("\n[17b] context hygiene — mixed Binding filenames advise data fix")
+print("\n[17b] context hygiene — runtime Binding filename policy")
 
 from checks.context_hygiene import (  # noqa: E402
     run as _context_hygiene_run,
@@ -2031,13 +2031,17 @@ with tempfile.TemporaryDirectory() as tmp:
         r.to_dict() for r in results
         if r.id == "binding.filename-style-mixed"
     ]
-    check("17b: mixed Binding filenames still WARN", bool(mixed), results)
+    check("17b: role-slot-fill Binding IDs do not WARN", not mixed, results)
+
+    storage_results = _entity_storage_run({"repo_root": root})
+    storage_mixed = [
+        r.to_dict() for r in storage_results
+        if r.id == "storage.filename-policy-mixed"
+    ]
     check(
-        "17b: warning calls out role-slot-fill and LogEntry rewrites",
-        bool(mixed)
-        and "role-slot-fill" in mixed[0]["message"]
-        and "LogEntry references" in mixed[0]["suggested_fix"],
-        json.dumps(mixed, indent=2),
+        "17b: storage policy accepts role-slot-fill Binding IDs",
+        not storage_mixed,
+        json.dumps(storage_mixed, indent=2),
     )
 
 
@@ -2228,6 +2232,25 @@ with tempfile.TemporaryDirectory() as tmp:
         "18: clean AGENTS.md emits clean INFO",
         [r.id for r in clean_results] == ["agents_md_hygiene.clean"],
         [r.to_dict() for r in clean_results],
+    )
+
+    reference_text = agents_text.replace(
+        'build: "make build"',
+        'build: "npm --prefix docs-site run build"',
+    )
+    (root / "src" / "AGENTS.md").write_text(
+        reference_text,
+        encoding="utf-8",
+    )
+    project_commands = _agents_md_hygiene_run({"repo_root": root})
+    check(
+        "18: project-local pk-commands values do not drift",
+        not [
+            r for r in project_commands
+            if r.id == "agents_md_hygiene.managed-block-drift"
+            and r.extra.get("block_id") == "pk-commands"
+        ],
+        [r.to_dict() for r in project_commands],
     )
 
 print("\n[19] runtime_health — container-local probe helpers")

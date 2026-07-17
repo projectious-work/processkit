@@ -65,6 +65,7 @@ explicit payload extraction tool.
 - WorkItems: archive terminal states after 30 days.
 - DecisionRecords: keep accepted/superseded decisions hot for 90 days.
 - LogEntries: shard by month; archive payload shards after 90 days.
+- Migrations: archive applied or rejected history after 30 days.
 - Never archive active, proposed, blocked, or in-progress entities.
 - Never archive files under `context/templates/`.
 

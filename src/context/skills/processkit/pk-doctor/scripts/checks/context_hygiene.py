@@ -298,7 +298,10 @@ def _scan_model_bindings(
                     ),
                     entity_ref=target,
                 ))
-        if timestamped and deterministic:
+        timestamped_policy_drift = (
+            timestamped - len(timestamped_role_slot_fill)
+        )
+        if timestamped_policy_drift and deterministic:
             role_slot_note = ""
             extra: dict = {}
             if timestamped_role_slot_fill:
@@ -537,6 +540,14 @@ def run(ctx) -> list[CheckResult]:
             id="archive.applied-migrations",
             message=f"{applied_migrations} applied migration(s) are archive candidates",
             suggested_fix="plan archival via context-archiving policy",
+            fix_mcp_tool="create_archive",
+            extra={
+                "fix_mcp_args": {
+                    "kind": "Migration",
+                    "state": "applied",
+                    "dry_run": False,
+                },
+            },
         ))
 
     if not _sqlite_vec_available():

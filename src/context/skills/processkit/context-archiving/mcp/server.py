@@ -166,6 +166,10 @@ def describe_archive_policy() -> dict:
                 "older_than_days": 90,
             },
             "LogEntry": {"older_than_days": 90, "group_by": "month"},
+            "Migration": {
+                "states": ["applied", "rejected"],
+                "older_than_days": 30,
+            },
         },
         "note": (
             "create_archive() writes a tar.gz plus manifest, removes hot "

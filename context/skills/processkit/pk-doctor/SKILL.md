@@ -81,6 +81,10 @@ harden the `--fix` paths — each with their own WorkItem.
 /pk-doctor --yes                        # non-interactive (auto-confirms safe fixes)
 ```
 
+The MCP wrapper accepts the same confirmation explicitly as
+`run_pk_doctor(fix="...", yes=true)`. Calls without `yes=true` remain
+detect-only when a category requires confirmation.
+
 The script flags `--fix` and `--fix-all` are mutually exclusive. Exit
 code is `0` if no ERRORs were produced, `1` otherwise. Every script run
 — regardless of outcome — writes exactly one `doctor.report` LogEntry
