@@ -76,12 +76,19 @@ Backlog:
 - Add state-machine fixtures for valid transitions, invalid transitions,
   guard failures, and terminal states.
 - Keep per-domain tool ownership while allowing gateway aggregation.
+- Define a shared remediation descriptor schema for doctor findings.
+- Validate every executable remediation against the installed gateway tool
+  catalog and input schema.
+- Add a structured policy-exception resolver with scope, fingerprint,
+  decision, and review metadata.
 
 Exit criteria:
 
 - Alpha entity writes happen through MCP helpers.
 - Tool signatures and JSON Schemas match.
 - State-machine and validation-mode tests pass.
+- Every actionable alpha finding has an executable or formally recognized
+  disposition.
 
 ## Phase 3 - Indexing And Corpus Migration
 
@@ -95,7 +102,12 @@ Backlog:
 - Index typed Binding edges, provenance, ownership, hierarchy, and event
   subjects.
 - Build v0-to-v1 migration adapters for the alpha corpus.
-- Preserve predecessor/successor links and unknown-field reports.
+- Implement declarative migration drafting, planning, and execution with
+  source-hash preconditions and recovery journals.
+- Support bounded operations for path moves, field updates, entity renames,
+  reference rewrites, and archival.
+- Preserve predecessor/successor links, durable ID aliases, and unknown-field
+  reports without silently rewriting append-only logs.
 - Measure field loss and orphan rates.
 - Add index drift detection and `reindex` recovery tests.
 
@@ -105,6 +117,8 @@ Exit criteria:
   steps.
 - Interface queries return mixed-kind results correctly.
 - Migration reports are deterministic and actionable.
+- Migration-backed doctor findings can be planned, executed, and rechecked
+  cleanly through the shipped gateway.
 
 ## Phase 4 - Skills, Agents, And Runtime Surfaces
 
@@ -190,4 +204,3 @@ Exit criteria:
 - Stabilization findings are closed, tracked, or accepted.
 - Release integrity and adversarial fixture checks pass.
 - v1.x becomes the normal development line after cutover.
-

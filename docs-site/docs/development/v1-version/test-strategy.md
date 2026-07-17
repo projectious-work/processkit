@@ -23,7 +23,8 @@ The v1.0 test strategy must prove:
   migrations
 - `query_by_interface` returns complete mixed-kind results
 - migration tools preserve data within the RFC gate limits
-- pk-doctor catches deliberately invalid entities
+- pk-doctor catches deliberately invalid entities and every actionable
+  finding has an executable or formally recognized disposition
 - docs and examples remain buildable
 - aibox integration works as an adapter, not as the only system test
 
@@ -36,8 +37,8 @@ The v1.0 test strategy must prove:
 | MCP contract tests | Check every tool signature against its JSON Schema and run typed request/response fixtures. |
 | State-machine tests | Exercise valid and invalid transitions, guard failures, terminal states, and emitted events. |
 | Index tests | Create and mutate fixture entities, then assert search, relation traversal, backlinks, and interface grouping. |
-| Migration tests | Run v0.x fixture corpora through migration adapters and assert field-loss, orphan, and hash-immutability gates. |
-| pk-doctor adversarial tests | Feed deliberately invalid fixtures and require every expected finding with no blocking false positives. |
+| Migration tests | Plan and execute v0.x fixture migrations; assert field-loss, orphan, source-hash, alias-resolution, and append-only gates. |
+| pk-doctor adversarial tests | Require every expected finding, validate remediation tools against the gateway catalog, execute remediations, and require a clean recheck. |
 | Package smoke tests | Install processkit from the local tree or release tarball into a temporary fixture project without aibox. |
 | Docs tests | Build Docusaurus and verify links to generated reference pages. |
 | Adapter tests | Run a small aibox install/apply workflow to prove integration, but keep it outside the core correctness suite. |
@@ -53,6 +54,8 @@ Use local fixture projects under the test tree:
   adapters
 - `adversarial-project`: invalid frontmatter, bad transitions, broken
   links, malformed bindings, and inconsistent index state
+- `remediation-project`: actionable doctor findings with safe fixes,
+  archives, migrations, policy exceptions, and external blockers
 - `art-project`: a compact first-ART scenario that exercises planning,
   execution, demo, inspect-and-adapt, decisions, risks, and evidence
 
@@ -70,6 +73,8 @@ Alpha automation should pass before any alpha tag:
 - `query_by_interface` works for at least `Record`
 - strict and tolerant validation modes are observable
 - the alpha fixture migrates from v0.x or maps explicitly
+- actionable alpha findings close through the shipped gateway or resolve to
+  a recognized non-executable disposition
 - docs build locally
 
 Manual dogfood remains useful after this automated baseline, not instead
@@ -82,11 +87,11 @@ The final gate should include:
 - all strict 81-gate criteria green
 - first-ART validation completed with recorded evidence
 - all MCP tools schema-checked
-- pk-doctor adversarial fixture green
+- pk-doctor adversarial and remediation fixtures green after executing their
+  declared closure paths
 - package smoke tests green from release artifact
 - aibox adapter test green for a pinned `v1.0.0-rc.*`
 - no known index/schema/migration blocker
 
 This keeps the RFC's first-ART proof while removing the current hard
 dependency on manual aibox experimentation.
-

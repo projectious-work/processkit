@@ -49,6 +49,38 @@ process rules. The helper layer should provide:
 The RFC requires MCP tools to have valid Python type signatures and
 matching draft-2020-12 JSON Schemas before release candidate.
 
+## Doctor Remediation Contract
+
+Every `pk-doctor` finding with `action_required: true` must have a typed
+disposition. Supported dispositions are:
+
+- `safe_fix`: a bounded, idempotent repair
+- `migration_needed`: a planned data or identity transformation
+- `archive_needed`: a lifecycle-preserving archive operation
+- `policy_decision_needed`: a structured, reviewable exception
+- `external_dependency`: a named downstream or infrastructure blocker
+
+Executable dispositions must name a gateway tool, provide schema-valid
+arguments, and declare whether confirmation, data-loss approval, preflight,
+or dry-run support is required. Release validation must introspect the
+gateway catalog and fail when a declared tool is absent or its input schema
+is incompatible with the finding.
+
+Prose guidance alone is not an actionable remediation. When processkit
+cannot execute or formally recognize the required disposition, the finding
+must be informational and link to tracked implementation work instead of
+claiming that the derived project can resolve it.
+
+## Policy Exceptions
+
+A policy exception is structured data, not an arbitrary DecisionRecord. It
+must identify the check and finding fingerprint, affected scope, rationale,
+approver or accepted decision, and an expiry or review condition. Doctor
+resolves exceptions through a shared policy service and reports stale,
+over-broad, or unmatched exceptions. The underlying DecisionRecord remains
+the durable rationale, while the exception supplies the machine-readable
+suppression contract.
+
 ## Schema Generation
 
 Schema sources live under `schemas/src/`. Runtime tools consume a flat,
@@ -132,3 +164,33 @@ If index update fails after a file write, the response must surface drift
 and `pk-doctor` must detect it. A separate `reindex` tool should rebuild
 SQLite from files for recovery, CI fixtures, and release checks.
 
+## Declarative Migration Execution
+
+Migration management must support a processkit-native lifecycle:
+
+1. `draft_migration` records intent, source and target versions, operations,
+   and expected source hashes.
+2. `plan_migration` validates schemas, references, permissions, collisions,
+   and append-only constraints without writing.
+3. `execute_migration` applies the approved plan through the shared atomic
+   write, event, and index-update path.
+4. A failed execution aborts before commit or leaves a recovery journal that
+   can be resumed or rolled back deterministically.
+
+The initial declarative operation vocabulary should cover `move_path`,
+`update_field`, `rename_entity`, `rewrite_reference`, and `archive_payload`.
+Migration files must not embed arbitrary executable scripts. Each operation
+declares preconditions and expected hashes so a plan cannot silently apply to
+changed input.
+
+## Stable Identity And History
+
+Identity changes should preserve historical truth without rewriting
+append-only LogEntries. The preferred model is a canonical replacement plus
+durable predecessor/successor relations and an ID alias index. Reads through
+an old ID resolve to the canonical entity while returning the alias path used
+for resolution.
+
+History rewriting is exceptional. It requires an explicit migration policy,
+original-content hashes, archived source payloads, and an auditable event. A
+filename-style warning alone never justifies rewriting event history.
