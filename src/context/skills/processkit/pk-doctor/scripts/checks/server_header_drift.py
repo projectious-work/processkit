@@ -93,6 +93,13 @@ def _collect_current(repo_root: Path) -> dict[str, str]:
     return found
 
 
+def _is_derived_install(repo_root: Path) -> bool:
+    return (
+        (repo_root / "context" / "skills").is_dir()
+        and not (repo_root / "src" / "context" / "skills").is_dir()
+    )
+
+
 def _slug_for(path_str: str) -> str:
     parts = Path(path_str).parts
     try:
@@ -143,8 +150,13 @@ def run(ctx) -> list[CheckResult]:
             suggested_fix="uv run scripts/generate-mcp-manifest.py",
         )]
 
-    manifest_map = {e["path"]: e["sha256"] for e in manifest_entries}
     current = _collect_current(repo_root)
+    manifest_map = {e["path"]: e["sha256"] for e in manifest_entries}
+    if _is_derived_install(repo_root):
+        manifest_map = {
+            path: sha for path, sha in manifest_map.items()
+            if path in current
+        }
 
     results: list[CheckResult] = []
 

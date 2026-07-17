@@ -395,6 +395,8 @@ def _credit_cards(text: str):
         digits = re.sub(r"\D", "", raw)
         if 13 <= len(digits) <= 19 and _luhn(digits):
             line = text.count("\n", 0, match.start()) + 1
+            if _looks_like_url_identifier(_line_at(text, line), raw):
+                continue
             yield line, raw
 
 
@@ -439,6 +441,8 @@ def _is_false_positive(
     if pattern.id == "sensitive-data.url-credential":
         if "[" in excerpt and "]" in excerpt:
             return True
+        if "${" in excerpt or "$" in excerpt:
+            return True
 
     if pattern.id == "sensitive-data.email-address":
         if _team_member_pii_opted_in(path):
@@ -476,6 +480,16 @@ def _is_false_positive(
             return True
 
     return False
+
+
+def _looks_like_url_identifier(line_text: str, raw: str) -> bool:
+    """Avoid treating numeric social-media URL path segments as card data."""
+    escaped = re.escape(raw)
+    return bool(re.search(
+        rf"https?://[^\s]+/(?:status|posts?|reel|video)/{escaped}(?:\b|[/?#])",
+        line_text,
+        re.IGNORECASE,
+    ))
 
 
 def _team_member_pii_opted_in(path: Path) -> bool:

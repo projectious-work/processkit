@@ -484,6 +484,99 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 6b3: pruned derived installs use their installed MCP surface
+# ---------------------------------------------------------------------------
+print("\n[6b3] derived install — pruned MCP skills do not cause drift")
+
+from checks.mcp_config_drift import (  # noqa: E402
+    _aggregate as _pruned_aggregate,
+    _sha256_of_file as _pruned_sha256,
+    run as _pruned_mcp_run,
+)
+from checks.server_header_drift import (  # noqa: E402
+    _extract_header as _pruned_header,
+    _sha256 as _pruned_header_sha256,
+    run as _pruned_header_run,
+)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    spec_dir = (
+        root / "context" / "skills" / "processkit" / "skill-gate" / "assets"
+    )
+    spec_dir.mkdir(parents=True)
+    (spec_dir / "preauth.json").write_text(
+        json.dumps({
+            "permissions": {
+                "allow": ["mcp__processkit-a__*", "mcp__processkit-b__*"],
+            },
+            "enabledMcpjsonServers": ["processkit-a", "processkit-b"],
+            "codex": {
+                "mcp": {
+                    "allowed_tools": [
+                        "mcp__processkit-a__*", "mcp__processkit-b__*",
+                    ],
+                },
+            },
+        }),
+        encoding="utf-8",
+    )
+    cfg_a = root / "context" / "skills" / "processkit" / "a" / "mcp" / "mcp-config.json"
+    cfg_a.parent.mkdir(parents=True)
+    cfg_a.write_text('{"mcpServers":{"processkit-a":{}}}\n', encoding="utf-8")
+    server_a = cfg_a.parent / "server.py"
+    server_a.write_text("# /// script\n# ///\n", encoding="utf-8")
+    per_skill = [{
+        "path": "context/skills/processkit/a/mcp/mcp-config.json",
+        "sha256": _pruned_sha256(cfg_a),
+    }, {
+        "path": "context/skills/processkit/b/mcp/mcp-config.json",
+        "sha256": "removed-skill",
+    }]
+    per_header = [{
+        "path": "context/skills/processkit/a/mcp/server.py",
+        "sha256": _pruned_header_sha256(_pruned_header(server_a) or ""),
+    }, {
+        "path": "context/skills/processkit/b/mcp/server.py",
+        "sha256": "removed-skill",
+    }]
+    (root / "context" / ".processkit-mcp-manifest.json").write_text(
+        json.dumps({
+            "per_skill": per_skill,
+            "per_gateway": [],
+            "per_server_header": per_header,
+            "aggregate_sha256": _pruned_aggregate(per_skill),
+        }),
+        encoding="utf-8",
+    )
+    (root / ".claude").mkdir()
+    (root / ".claude" / "settings.json").write_text(
+        json.dumps({
+            "permissions": {"allow": ["mcp__processkit-a__*"]},
+            "enabledMcpjsonServers": ["processkit-a"],
+        }),
+        encoding="utf-8",
+    )
+    results = _preauth_run({"repo_root": root})
+    check(
+        "pruned derived preauth has no false drift",
+        not any(r.id == "preauth_applied.spec-drift" for r in results),
+        [r.to_dict() for r in results],
+    )
+    mcp_results = _pruned_mcp_run({"repo_root": root})
+    check(
+        "pruned derived manifest is in sync",
+        any(r.id == "mcp_config_drift.in-sync" for r in mcp_results),
+        [r.to_dict() for r in mcp_results],
+    )
+    header_results = _pruned_header_run({"repo_root": root})
+    check(
+        "pruned derived server headers are in sync",
+        any(r.id == "server_header_drift.in-sync" for r in header_results),
+        [r.to_dict() for r in header_results],
+    )
+
+# ---------------------------------------------------------------------------
 # Test 6c: MCP gateway mode is an intentional derived-project alternative
 # ---------------------------------------------------------------------------
 print("\n[6c] mcp gateway — manifest + harness gateway mode")
@@ -2536,6 +2629,7 @@ with tempfile.TemporaryDirectory() as tmp:
 print("\n[22] sensitive_data — deterministic findings plus briefing")
 
 from checks import sensitive_data  # noqa: E402
+from checks.schema_filename import _parse_frontmatter as _parse_entity_frontmatter  # noqa: E402
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
@@ -2587,6 +2681,31 @@ with tempfile.TemporaryDirectory() as tmp:
             )),
             sample,
         )
+        url_with_variable = "https://user:${GH_TOKEN}@github.com/org/repo"
+        check(
+            "22: URL environment-variable credential is ignored",
+            not list(sensitive_data._matches(
+                root / "AGENTS.md", url_with_variable, url_pattern
+            )),
+            url_with_variable,
+        )
+        social_url = "https://x.com/example/status/1745511940351287394"
+        check(
+            "22: social-media numeric URL identifier is not a card",
+            not list(sensitive_data._credit_cards(social_url)),
+            social_url,
+        )
+    frontmatter_path = root / "frontmatter.md"
+    frontmatter_path.write_text(
+        "---\nspec:\n  divider: '|---|---|'\n---\nbody\n",
+        encoding="utf-8",
+    )
+    parsed, parse_error = _parse_entity_frontmatter(frontmatter_path)
+    check(
+        "22: frontmatter parser accepts literal --- content",
+        parsed is not None and parse_error is None,
+        parse_error or "",
+    )
 
 # ---------------------------------------------------------------------------
 # Summary

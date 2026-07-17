@@ -102,6 +102,28 @@ def _collect_gateway_current(repo_root: Path) -> list[dict]:
     }]
 
 
+def _is_derived_install(repo_root: Path) -> bool:
+    """Return whether the tree has installed context but no source mirror."""
+    return (
+        (repo_root / "context" / "skills").is_dir()
+        and not (repo_root / "src" / "context" / "skills").is_dir()
+    )
+
+
+def _installed_manifest(manifest: dict, current: list[dict], repo_root: Path) -> dict:
+    """Limit release metadata to installed skill configs in derived trees."""
+    if not _is_derived_install(repo_root):
+        return manifest
+    installed_paths = {entry["path"] for entry in current}
+    filtered = dict(manifest)
+    filtered["per_skill"] = [
+        entry for entry in manifest.get("per_skill") or []
+        if entry.get("path") in installed_paths
+    ]
+    filtered["aggregate_sha256"] = _aggregate(filtered["per_skill"])
+    return filtered
+
+
 def _manifest_server_names(manifest: dict) -> list[str]:
     """Derive expected mcpServers keys from a manifest's per_skill paths.
 
@@ -173,11 +195,15 @@ def run(ctx) -> list[CheckResult]:
             message=f"could not walk mcp-config.json files: {e}",
         )]
 
+    effective_manifest = _installed_manifest(manifest, current, repo_root)
     current_aggregate = _aggregate(current)
-    manifest_aggregate = manifest.get("aggregate_sha256")
+    manifest_aggregate = effective_manifest.get("aggregate_sha256")
 
     if current_aggregate != manifest_aggregate:
-        manifest_paths = {e["path"]: e["sha256"] for e in manifest.get("per_skill") or []}
+        manifest_paths = {
+            e["path"]: e["sha256"]
+            for e in effective_manifest.get("per_skill") or []
+        }
         current_paths = {e["path"]: e["sha256"] for e in current}
         changed = 0
         for p, sha in current_paths.items():
@@ -236,7 +262,7 @@ def run(ctx) -> list[CheckResult]:
                     "gateway mode."
                 ),
             )]
-        expected = _manifest_server_names(manifest)
+        expected = _manifest_server_names(effective_manifest)
         missing = [name for name in expected if name not in servers]
         if missing:
             preview = ", ".join(missing[:5])

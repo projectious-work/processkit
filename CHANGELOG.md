@@ -9,6 +9,35 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.27.3] - 2026-07-17
+
+v0.27.3 is a **patch release** that resolves false-positive doctor
+findings and makes installed, selectively pruned processkit surfaces
+the source of truth for downstream validation.
+
+### Fixed
+
+- Parse YAML frontmatter using its delimiter line, so scalar values that
+  contain `---` no longer produce spurious schema or command findings.
+  Closes #74.
+- Exclude social-media numeric URL identifiers and shell-variable URL
+  credentials from sensitive-data findings while retaining literal secret
+  detection. Closes #75 and #76.
+- Omit an absent optional `channel` from captured inbox Notes instead of
+  serializing schema-invalid `null`. Closes #82.
+- Query GitHub Release tags once per doctor run instead of spawning one
+  `gh release view` process per local tag. Closes #83.
+- Treat a derived project's installed MCP configs as its effective
+  manifest, preauth, and server-header surface after optional skills are
+  pruned. Closes #84.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run scripts/smoke-test-servers.py`
+
+---
+
 ## [v0.27.2] - 2026-07-17
 
 v0.27.2 is a **patch release** that closes narrow `pk-doctor`

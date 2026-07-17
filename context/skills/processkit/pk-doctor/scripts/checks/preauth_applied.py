@@ -189,6 +189,37 @@ def _expected_servers_from_mcp_configs(repo_root: Path) -> set[str]:
     return names
 
 
+def _is_derived_install(repo_root: Path) -> bool:
+    return (
+        (repo_root / "context" / "skills").is_dir()
+        and not (repo_root / "src" / "context" / "skills").is_dir()
+    )
+
+
+def _installed_spec(
+    spec_perms: set[str],
+    spec_servers: set[str],
+    spec_codex_tools: set[str],
+    installed_servers: set[str],
+    repo_root: Path,
+) -> tuple[set[str], set[str], set[str]]:
+    """Use only installed processkit server grants in derived projects."""
+    if not _is_derived_install(repo_root) or not installed_servers:
+        return spec_perms, spec_servers, spec_codex_tools
+    allowed_tools = {f"mcp__{server}__*" for server in installed_servers}
+    return (
+        {
+            item for item in spec_perms
+            if not item.startswith("mcp__processkit-") or item in allowed_tools
+        },
+        spec_servers & installed_servers,
+        {
+            item for item in spec_codex_tools
+            if not item.startswith("mcp__processkit-") or item in allowed_tools
+        },
+    )
+
+
 def _gateway_covers_permissions(
     missing: list[str],
     *,
@@ -276,12 +307,19 @@ def run(ctx) -> list[CheckResult]:
         or spec_perms
     )
 
+    expected_from_configs = _expected_servers_from_mcp_configs(repo_root)
+    spec_perms, spec_servers, spec_codex_tools = _installed_spec(
+        spec_perms,
+        spec_servers,
+        spec_codex_tools,
+        expected_from_configs,
+        repo_root,
+    )
     results: list[CheckResult] = []
 
     # Drift: spec server list vs manifest-derived list. Warns processkit
     # maintainers when the manifest moves but preauth.json hasn't been
     # regenerated.
-    expected_from_configs = _expected_servers_from_mcp_configs(repo_root)
     if expected_from_configs and expected_from_configs != spec_servers:
         results.append(_drift_result(
             "mcp-config",
@@ -294,6 +332,8 @@ def run(ctx) -> list[CheckResult]:
         manifest = _load_json(manifest_path)
         if manifest is not None:
             expected = _expected_servers_from_manifest(manifest)
+            if _is_derived_install(repo_root) and expected_from_configs:
+                expected &= expected_from_configs
             if expected and expected != spec_servers:
                 results.append(_drift_result("manifest", expected, spec_servers))
 
