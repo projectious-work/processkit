@@ -83,8 +83,11 @@ suppression contract.
 
 ## Schema Generation
 
-Schema sources live under `schemas/src/`. Runtime tools consume a flat,
-committed `_generated/*.yaml` tree.
+Shipped schema sources live under `src/context/schemas/src/`, which becomes
+`context/schemas/src/` in an installed project. Runtime tools consume a
+committed `context/schemas/_generated/*.yaml` tree. Keeping both paths inside
+`src/` ensures that derived projects can regenerate schemas without fetching
+repository-only build inputs.
 
 Composition rules:
 
@@ -104,7 +107,7 @@ regenerate_schemas(kinds: list | None) -> {rebuilt, unchanged, errors}
 `kinds=None` performs a full rebuild. A non-empty list rebuilds only the
 requested generated schemas and their dependencies. `aibox apply` may
 trigger full rebuilds by default, but schema generation must not depend
-on aibox; it must be runnable in processkit tests and CI directly.
+on aibox; it must be runnable through processkit's local test commands.
 
 ## Validation Modes
 
@@ -162,7 +165,7 @@ Writes should follow one transaction-like path:
 
 If index update fails after a file write, the response must surface drift
 and `pk-doctor` must detect it. A separate `reindex` tool should rebuild
-SQLite from files for recovery, CI fixtures, and release checks.
+SQLite from files for recovery, local fixtures, and release checks.
 
 ## Declarative Migration Execution
 

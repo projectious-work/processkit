@@ -18,21 +18,15 @@ npm run build         # outputs to build/
 npm run serve         # serve the built site locally
 ```
 
-## Deploy
+## Build Locally
 
-The site is published to GitHub Pages at
-[https://projectious-work.github.io/processkit/](https://projectious-work.github.io/processkit/).
-Deployment is manual and happens from the repository root during a
-processkit release:
+The documentation is built and reviewed locally. The repository does not
+publish through GitHub Pages or use GitHub Actions.
 
 ```bash
-scripts/publish-docs-gh-pages.sh vX.Y.Z
+npm --prefix docs-site run build
+npm --prefix docs-site run serve
 ```
-
-The publish script runs the local Docusaurus build, copies
-`docs-site/build/` into a temporary worktree, commits the generated site,
-and pushes it to the `gh-pages` branch. The repository intentionally
-does not use a GitHub Actions workflow for docs publishing.
 
 ## Structure
 

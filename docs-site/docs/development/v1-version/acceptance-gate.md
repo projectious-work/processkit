@@ -64,8 +64,8 @@ recorded rationale. All other criteria are strict.
 
 | ID | Criterion |
 |---|---|
-| T2.1 | Jinja + YAML schema sources live under `schemas/src/` or an equivalent documented source tree. |
-| T2.2 | Generated flat schemas are written to a committed `_generated/*.yaml` tree consumed by runtime tooling. |
+| T2.1 | Jinja + YAML schema sources ship under `context/schemas/src/`. |
+| T2.2 | Generated flat schemas are committed under `context/schemas/_generated/` and consumed by runtime tooling. |
 | T2.3 | Composition supports `extends`, `{% include %}`, and `__merge: replace|concat|name-merge`. |
 | T2.4 | The MCP endpoint `regenerate_schemas(kinds: list \| None) -> {rebuilt, unchanged, errors}` exists. |
 | T2.5 | Full and partial schema regeneration are both deterministic and test-covered. |
@@ -90,7 +90,7 @@ recorded rationale. All other criteria are strict.
 | C3.7 | Orphaned entities, broken required links, and invalid required owners hard-fail the migration. |
 | C3.8 | Migrated strict kinds pass generated-schema validation. |
 | C3.9 | Migration reports include counts, warnings, failures, typed remediation guidance, and doctor recheck results. |
-| C3.10 | A representative v0.x fixture corpus is detected, planned, migrated, and rechecked in CI without manual aibox steps. |
+| C3.10 | A representative v0.x fixture corpus is detected, planned, migrated, and rechecked with documented local commands without aibox. |
 
 ### S4 - Skills And Agents
 

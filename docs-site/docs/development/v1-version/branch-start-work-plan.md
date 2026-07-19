@@ -19,15 +19,15 @@ Backlog:
 - Freeze the branch contract and backport policy in docs.
 - Add a visible branch banner or README note explaining that `v1.0` is
   the rebuild line.
-- Decide the initial source layout for `schemas/src/`, `_generated/`,
+- Decide the initial source layout for `context/schemas/src/`, `_generated/`,
   schema renderer tests, and fixture projects.
 - Add a minimal fixture-project layout for `empty-project`,
   `alpha-project`, `migration-v0-project`, `adversarial-project`, and
   `art-project`.
 - Define the command surface for schema rebuild, validation, MCP smoke,
   index rebuild, and docs build.
-- Establish CI or local release-audit commands that do not depend on
-  aibox.
+- Establish manual local release-audit commands that do not depend on
+  aibox or GitHub Actions.
 - Record any accepted deviations from the RFC before implementation
   starts.
 
@@ -46,7 +46,7 @@ Backlog:
 
 - Create the canonical ontology registry with class, name, description,
   parent, discriminator, interface, lifecycle, and migration note fields.
-- Scaffold `schemas/src/` with T fragments, primitive schemas,
+- Scaffold `src/context/schemas/src/` with T fragments, primitive schemas,
   discriminator overlays, and composition templates.
 - Implement the Jinja + YAML renderer.
 - Implement merge strategies for `replace`, `concat`, and `name-merge`.

@@ -1,0 +1,12 @@
+fixtureVersion: 1
+name: alpha-project
+expected:
+  entity_counts:
+    WorkItem: 1
+    DecisionRecord: 1
+    Binding: 1
+    LogEntry: 1
+  interfaces:
+    Record:
+      - DEC-20260719_0001-ClearPath-alpha-decision
+      - LOG-20260719_0001-ClearPath-alpha-event

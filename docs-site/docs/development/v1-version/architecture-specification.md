@@ -27,6 +27,10 @@ The full RFC target is 89 concepts. The alpha should implement only a
 small proven subset before expanding. The detailed inventory is captured
 in [Ontology Reference](./ontology-reference.md).
 
+The product release version and entity API version are independent. The
+v1.0 release keeps `apiVersion: processkit.projectious.work/v2`; changing
+that value requires a separate, explicit migration.
+
 ## Required Internal Semantics
 
 The canonical model must preserve:
@@ -48,7 +52,7 @@ free-form notes, or OKF's permissive interchange model.
 
 The RFC's build-time schema generation remains the preferred direction:
 
-- source schemas live under a source tree
+- source schemas ship under `context/schemas/src/`
 - templates and fragments compose schemas
 - generated flat schemas are committed
 - runtime tools consume generated schemas
