@@ -150,7 +150,7 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Documentation](https://projectious-work.github.io/processkit/docs/)
+- [Documentation](docs-site/docs/intro.md)
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
@@ -180,11 +180,8 @@ npm --prefix docs-site run build
 uv run scripts/smoke-test-servers.py
 ```
 
-Release docs publishing is manual:
-
-```sh
-scripts/publish-docs-gh-pages.sh vX.Y.Z
-```
+The repository does not use GitHub Actions; maintainers run and report these
+checks locally before merging or releasing.
 
 Release packaging is guarded by:
 
