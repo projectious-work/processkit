@@ -18,14 +18,14 @@ npm run build         # outputs to build/
 npm run serve         # serve the built site locally
 ```
 
-## Build Locally
+## Publish Locally
 
-The documentation is built and reviewed locally. The repository does not
-publish through GitHub Pages or use GitHub Actions.
+The documentation is published to
+[GitHub Pages](https://projectious-work.github.io/processkit/) from a local
+build. The repository does not use GitHub Actions.
 
 ```bash
-npm --prefix docs-site run build
-npm --prefix docs-site run serve
+scripts/publish-docs-gh-pages.sh
 ```
 
 ## Structure

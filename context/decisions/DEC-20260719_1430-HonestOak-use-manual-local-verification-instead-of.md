@@ -4,9 +4,10 @@ kind: DecisionRecord
 metadata:
   id: DEC-20260719_1430-HonestOak-use-manual-local-verification-instead-of
   created: '2026-07-19T14:30:50+00:00'
+  updated: '2026-07-19T18:58:03+00:00'
 spec:
   title: Use manual local verification instead of GitHub Actions
-  state: accepted
+  state: superseded
   decision: Remove GitHub Actions workflows and repository-local GitHub actions from
     every maintained branch. Build, test, package, doctor, and documentation verification
     will be run manually with documented local commands.
@@ -25,4 +26,5 @@ spec:
     must run and report the local verification suite before merging or releasing.
   decided_at: '2026-07-19T14:30:50+00:00'
   supersedes: DEC-20260717_1431-FairLotus-make-processkit-core-ci-independent-of
+  superseded_by: DEC-20260719_1857-KindGarnet-publish-documentation-to-gh-pages-from
 ---

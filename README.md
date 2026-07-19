@@ -150,7 +150,7 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Documentation](docs-site/docs/intro.md)
+- [Documentation](https://projectious-work.github.io/processkit/docs/)
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
@@ -191,6 +191,12 @@ running the MCP workflow, so repository imports cannot hide missing package
 content.
 The repository does not use GitHub Actions; maintainers run and report these
 checks locally before merging or releasing.
+
+Documentation publishing is also manual:
+
+```sh
+scripts/publish-docs-gh-pages.sh
+```
 
 Release packaging is guarded by:
 
