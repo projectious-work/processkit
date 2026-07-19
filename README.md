@@ -150,7 +150,7 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Documentation](https://projectious-work.github.io/processkit/docs/)
+- [Documentation](docs-site/docs/intro.md)
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
@@ -177,14 +177,20 @@ Common local checks:
 
 ```sh
 npm --prefix docs-site run build
+uv run scripts/generate-v1-schemas.py --check
 uv run scripts/smoke-test-servers.py
+uv run scripts/smoke-test-package.py
+uv run --with pytest --with jinja2 --with pyyaml --with jsonschema \
+  pytest -p no:cacheprovider tests/schema_generation \
+  scripts/test_processkit_diff.py
 ```
 
-Release docs publishing is manual:
-
-```sh
-scripts/publish-docs-gh-pages.sh vX.Y.Z
-```
+The smoke tests create provider-neutral temporary projects and do not install
+or invoke aibox. `smoke-test-package.py` stages and extracts `src/` before
+running the MCP workflow, so repository imports cannot hide missing package
+content.
+The repository does not use GitHub Actions; maintainers run and report these
+checks locally before merging or releasing.
 
 Release packaging is guarded by:
 

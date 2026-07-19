@@ -14,13 +14,11 @@ The alpha is a vertical slice, not a miniature final release.
 
 ## Scope
 
-Implement 10-15 high-value concepts covering:
+The alpha contract is frozen to these 14 high-value concepts:
 
 - WorkItem
 - DecisionRecord
 - Artifact
-- Discussion
-- Note
 - LogEntry
 - Binding
 - Gate
@@ -28,13 +26,14 @@ Implement 10-15 high-value concepts covering:
 - TeamMember
 - Skill
 - Capability
-- Proposition or Risk
+- Proposition
+- Risk
 - Scope
 - Migration
 
-The exact list may change if implementation evidence shows a better
-slice, but it must cover work, decisions, artifacts, relations, gates,
-roles, skills, and event history.
+The first implementation slice generates `WorkItem`, `DecisionRecord`,
+`Binding`, and `LogEntry`. The remaining concepts expand the same registry
+after composition and compatibility gates pass.
 
 ## Required Capabilities
 

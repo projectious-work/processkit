@@ -109,8 +109,12 @@ def _resolve_schemas_dir(repo_root: Path) -> Path | None:
 
 
 def _load_schema(schemas_dir: Path, kind: str) -> dict | None:
-    path = schemas_dir / f"{kind}.yaml"
-    if not path.is_file():
+    candidates = (
+        schemas_dir / "_generated" / f"{kind}.yaml",
+        schemas_dir / f"{kind}.yaml",
+    )
+    path = next((item for item in candidates if item.is_file()), None)
+    if path is None:
         return None
     try:
         with path.open("r", encoding="utf-8") as f:

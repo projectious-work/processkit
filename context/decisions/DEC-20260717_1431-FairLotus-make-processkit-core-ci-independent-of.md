@@ -4,9 +4,10 @@ kind: DecisionRecord
 metadata:
   id: DEC-20260717_1431-FairLotus-make-processkit-core-ci-independent-of
   created: '2026-07-17T14:31:22+00:00'
+  updated: '2026-07-19T14:30:50+00:00'
 spec:
   title: Make processkit core CI independent of aibox
-  state: accepted
+  state: superseded
   decision: Processkit core CI will run native MCP, staged-package, regression, and
     documentation checks without installing or invoking aibox. Aibox integration remains
     a separate adapter test boundary.
@@ -29,4 +30,5 @@ spec:
     Release validation can reuse the package smoke test against a built archive. Aibox
     coverage remains necessary, but as a separately owned adapter suite.
   decided_at: '2026-07-17T14:31:22+00:00'
+  superseded_by: DEC-20260719_1430-HonestOak-use-manual-local-verification-instead-of
 ---

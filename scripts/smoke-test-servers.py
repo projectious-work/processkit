@@ -18,6 +18,7 @@ the protocol), and exercises a realistic workflow:
 """
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import os
 import sys
@@ -26,15 +27,32 @@ import shutil
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-PROCESSKIT = Path(__file__).resolve().parent.parent
-LIB = PROCESSKIT / "src" / "context" / "skills" / "_lib"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DISTRIBUTION_ROOT = REPO_ROOT / "src"
+CONTEXT_ROOT = DISTRIBUTION_ROOT / "context"
+LIB = CONTEXT_ROOT / "skills" / "_lib"
 sys.path.insert(0, str(LIB))
+
+
+def configure_distribution_root(path: Path | str | None) -> None:
+    """Select the staged or extracted processkit distribution to exercise."""
+    global DISTRIBUTION_ROOT, CONTEXT_ROOT, LIB
+    if path is not None:
+        DISTRIBUTION_ROOT = Path(path).resolve()
+    CONTEXT_ROOT = DISTRIBUTION_ROOT / "context"
+    LIB = CONTEXT_ROOT / "skills" / "_lib"
+    if not (LIB / "processkit" / "__init__.py").is_file():
+        raise RuntimeError(
+            f"distribution root does not contain the processkit library: "
+            f"{DISTRIBUTION_ROOT}"
+        )
+    sys.path.insert(0, str(LIB))
 
 
 def import_server(name: str):
     """Import a server.py module by skill name without running its main()."""
     # Skills are now organized into category subdirectories. Search all of them.
-    skills_root = PROCESSKIT / "src" / "context" / "skills"
+    skills_root = CONTEXT_ROOT / "skills"
     path = None
     for cat_dir in skills_root.iterdir():
         if not cat_dir.is_dir():
@@ -67,19 +85,21 @@ def get_tool(server_module, name: str):
     return tool.fn
 
 
-def run():
+def run(distribution_root: Path | str | None = None):
+    configure_distribution_root(distribution_root)
     workdir = Path(tempfile.mkdtemp(prefix="processkit-smoke-"))
     print(f"workdir: {workdir}")
     try:
         # 1. Set up a minimal project
-        (workdir / "aibox.toml").write_text(
-            '[aibox]\nversion = "0.14.1"\n[context]\npackages = ["managed"]\n'
+        (workdir / "AGENTS.md").write_text(
+            "# Standalone processkit smoke fixture\n",
+            encoding="utf-8",
         )
         (workdir / "context").mkdir()
         # Seed schemas + state machines at the consumer install paths so
         # paths.primitive_schemas_dir / state_machines_dir find them.
-        # paths.find_project_root walks up looking for aibox.toml — that
-        # finds workdir. The lib then looks for:
+        # paths.find_project_root uses the provider-neutral AGENTS.md marker.
+        # The lib then looks for:
         #   workdir/context/schemas/        (consumer install)
         #   workdir/context/state-machines/ (consumer install)
         # falling back to processkit's src/primitives/{schemas,state-machines}
@@ -87,16 +107,15 @@ def run():
         # code path.
         context_root = workdir / "context"
         shutil.copytree(
-            PROCESSKIT / "src" / "context" / "schemas",
+            CONTEXT_ROOT / "schemas",
             context_root / "schemas",
         )
         shutil.copytree(
-            PROCESSKIT / "src" / "context" / "state-machines",
+            CONTEXT_ROOT / "state-machines",
             context_root / "state-machines",
         )
         shutil.copytree(
-            PROCESSKIT
-            / "src" / "context" / "skills"
+            CONTEXT_ROOT / "skills"
             / "processkit" / "index-management" / "config",
             context_root
             / "skills" / "processkit" / "index-management" / "config",
@@ -107,8 +126,7 @@ def run():
         # Seed a minimal skill catalog so skill-finder and task-router
         # can parse triggers and read skill descriptions.
         _skf_src = (
-            PROCESSKIT
-            / "src" / "context" / "skills"
+            CONTEXT_ROOT / "skills"
             / "processkit" / "skill-finder" / "SKILL.md"
         )
         _skf_dst = (
@@ -121,8 +139,7 @@ def run():
         # Seed workitem-management SKILL.md so task-router can read its
         # description excerpt.
         _wi_src = (
-            PROCESSKIT
-            / "src" / "context" / "skills"
+            CONTEXT_ROOT / "skills"
             / "processkit" / "workitem-management" / "SKILL.md"
         )
         _wi_dst = (
@@ -1136,14 +1153,19 @@ def run():
                 assert _rows, (
                     f"{_label}: no {_evt!r} LogEntry found for {_subj!r}"
                 )
-                _full = _index.get_entity(_db_sa, _rows[0]["id"])
-                assert _full and _full.get("path"), (
-                    f"{_label}: LogEntry row has no path: {_full}"
-                )
-                _ent = _entity_sa.load(_full["path"])
-                assert _ent.spec.get("actor") == _subj, (
-                    f"{_label}: spec.actor={_ent.spec.get('actor')!r} "
-                    f"expected {_subj!r} (self-attribution)"
+                _ent = None
+                for _row in _rows:
+                    _full = _index.get_entity(_db_sa, _row["id"])
+                    assert _full and _full.get("path"), (
+                        f"{_label}: LogEntry row has no path: {_full}"
+                    )
+                    _candidate = _entity_sa.load(_full["path"])
+                    if _candidate.spec.get("actor") == _subj:
+                        _ent = _candidate
+                        break
+                assert _ent is not None, (
+                    f"{_label}: no self-attributed {_evt!r} LogEntry found "
+                    f"for {_subj!r}"
                 )
                 _errs = _schema_sa.validate_spec("LogEntry", _ent.spec)
                 assert _errs == [], (
@@ -1305,8 +1327,7 @@ def run():
         # 9. skill-gate: acknowledge_contract + check_contract_acknowledged
         # Seed the compliance contract asset so the server can find it.
         _sg_assets_src = (
-            PROCESSKIT
-            / "src" / "context" / "skills"
+            CONTEXT_ROOT / "skills"
             / "processkit" / "skill-gate" / "assets"
         )
         _sg_assets_dst = (
@@ -1376,7 +1397,7 @@ def run():
 
         # ── 1% rule guard (DEC-20260414_1430-SteelLatch / FEAT-InkStamp) ──────
         # Assert that every locked MCP tool description contains "1% rule".
-        # If any description is missing the string, fail loudly so CI catches it.
+        # If a description is missing the string, fail the local check loudly.
         _1pct_checks = [
             (tr,   "route_task"),
             (skf,  "find_skill"),
@@ -1405,7 +1426,7 @@ def run():
                 )
         if _1pct_failures:
             raise AssertionError(
-                "1% rule CI guard failed — the following tool descriptions "
+                "1% rule local guard failed — the following tool descriptions "
                 "are missing the literal string '1% rule':\n"
                 + "\n".join(_1pct_failures)
                 + "\n\nFix: append the canonical 1%-rule sentence to each "
@@ -1454,5 +1475,16 @@ def run():
         shutil.rmtree(workdir, ignore_errors=True)
 
 
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--distribution-root",
+        help="staged processkit root containing context/ (default: src/)",
+    )
+    args = parser.parse_args(argv)
+    run(args.distribution_root)
+    return 0
+
+
 if __name__ == "__main__":
-    run()
+    raise SystemExit(main())

@@ -59,15 +59,15 @@ Use local fixture projects under the test tree:
 - `art-project`: a compact first-ART scenario that exercises planning,
   execution, demo, inspect-and-adapt, decisions, risks, and evidence
 
-These fixtures should run with plain repository commands in CI. aibox can
-consume the same fixtures in an adapter suite, but the fixtures must not
-require aibox to exist.
+These fixtures run through plain local repository commands. aibox can consume
+the same fixtures in an adapter suite, but the fixtures must not require
+aibox or GitHub Actions to exist.
 
 ## Alpha Proof
 
 Alpha automation should pass before any alpha tag:
 
-- full schema rebuild from `schemas/src/`
+- full schema rebuild from shipped `context/schemas/src/`
 - committed `_generated` tree matches the renderer output
 - create/read/transition MCP paths work for the alpha slice
 - `query_by_interface` works for at least `Record`

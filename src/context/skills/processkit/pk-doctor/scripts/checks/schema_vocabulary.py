@@ -86,11 +86,15 @@ def _load_schema_vocab(repo_root: Path, kind: str, field: str) -> set[str]:
     filename = kind.lower().replace("decisionrecord", "decisionrecord")
     if kind == "TeamMember":
         filename = "team-member"
-    schema_path = repo_root / "context" / "schemas" / f"{filename}.yaml"
-    if not schema_path.is_file():
-        schema_path = (
-            repo_root / "src" / "context" / "schemas" / f"{filename}.yaml"
-        )
+    roots = (
+        repo_root / "context" / "schemas",
+        repo_root / "src" / "context" / "schemas",
+    )
+    candidates = [root / "_generated" / f"{filename}.yaml" for root in roots]
+    candidates.extend(root / f"{filename}.yaml" for root in roots)
+    schema_path = next(
+        (path for path in candidates if path.is_file()), candidates[0]
+    )
     data = _load_frontmatter(schema_path)
     spec = data.get("spec", {}) if data else {}
     values = spec.get(field) or []

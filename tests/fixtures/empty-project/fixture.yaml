@@ -1,0 +1,5 @@
+fixtureVersion: 1
+name: empty-project
+expected:
+  entity_counts: {}
+  interfaces: {}
