@@ -4,18 +4,503 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">Acceptance Gate | processkit</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://projectious-work.github.io/processkit/docs/development/acceptance-gate"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Acceptance Gate | processkit"><meta data-rh="true" name="description" content="Readiness criteria for processkit v1.0 stages."><meta data-rh="true" property="og:description" content="Readiness criteria for processkit v1.0 stages."><link data-rh="true" rel="icon" href="/processkit/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://projectious-work.github.io/processkit/docs/development/acceptance-gate"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/acceptance-gate" hreflang="en"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/acceptance-gate" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Acceptance Gate","item":"https://projectious-work.github.io/processkit/docs/development/acceptance-gate"}]}</script><link rel="stylesheet" href="/processkit/assets/css/styles.c0aa031c.css">
-<script src="/processkit/assets/js/runtime~main.0fc29a8d.js" defer="defer"></script>
-<script src="/processkit/assets/js/main.ce062115.js" defer="defer"></script>
+<script src="/processkit/assets/js/runtime~main.95aabb41.js" defer="defer"></script>
+<script src="/processkit/assets/js/main.ca1728cd.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
 <symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
 </defs></svg>
-<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/processkit/"><b class="navbar__title text--truncate">processkit</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/processkit/docs/">Docs</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/processkit/docs/"><span title="Introduction" class="linkLabel_WmDU">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/processkit/docs/development/"><span title="Development" class="categoryLinkLabel_W154">Development</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/"><span title="Development" class="linkLabel_WmDU">Development</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/product-specification"><span title="Product Specification" class="linkLabel_WmDU">Product Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/architecture-specification"><span title="Architecture Specification" class="linkLabel_WmDU">Architecture Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/alpha-scope"><span title="Alpha Scope" class="linkLabel_WmDU">Alpha Scope</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/landscape-note"><span title="Landscape Note" class="linkLabel_WmDU">Landscape Note</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/processkit/docs/development/acceptance-gate"><span title="Acceptance Gate" class="linkLabel_WmDU">Acceptance Gate</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis" class="categoryLinkLabel_W154">Analysis</span></a></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/processkit/docs/getting-started/overview"><span title="Getting Started" class="categoryLinkLabel_W154">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/overview"><span title="Overview" class="linkLabel_WmDU">Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/installing"><span title="Installing" class="linkLabel_WmDU">Installing</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/first-entity"><span title="Your First Entity" class="linkLabel_WmDU">Your First Entity</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/primitives/overview"><span title="Primitives" class="categoryLinkLabel_W154">Primitives</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/skills/overview"><span title="Skills" class="categoryLinkLabel_W154">Skills</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/packages/overview"><span title="Packages" class="categoryLinkLabel_W154">Packages</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/processes/overview"><span title="Processes" class="categoryLinkLabel_W154">Processes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/mcp-servers/overview"><span title="MCP Servers" class="categoryLinkLabel_W154">MCP Servers</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/reference/apiversion-policy"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/processkit/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Development</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Acceptance Gate</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Acceptance Gate</h1></header>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/processkit/"><b class="navbar__title text--truncate">processkit</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/processkit/docs/">Docs</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/processkit/docs/"><span title="Introduction" class="linkLabel_WmDU">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/processkit/docs/development/"><span title="Development" class="categoryLinkLabel_W154">Development</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/"><span title="Development" class="linkLabel_WmDU">Development</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/product-specification"><span title="Product Specification" class="linkLabel_WmDU">Product Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/architecture-specification"><span title="Architecture Specification" class="linkLabel_WmDU">Architecture Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/ontology-reference"><span title="Ontology Reference" class="linkLabel_WmDU">Ontology Reference</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/tooling-architecture"><span title="Tooling Architecture" class="linkLabel_WmDU">Tooling Architecture</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/test-strategy"><span title="Test Strategy" class="linkLabel_WmDU">Test Strategy</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/alpha-scope"><span title="Alpha Scope" class="linkLabel_WmDU">Alpha Scope</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/landscape-note"><span title="Landscape Note" class="linkLabel_WmDU">Landscape Note</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/processkit/docs/development/acceptance-gate"><span title="Acceptance Gate" class="linkLabel_WmDU">Acceptance Gate</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis" class="categoryLinkLabel_W154">Analysis</span></a></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/processkit/docs/getting-started/overview"><span title="Getting Started" class="categoryLinkLabel_W154">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/overview"><span title="Overview" class="linkLabel_WmDU">Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/installing"><span title="Installing" class="linkLabel_WmDU">Installing</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/first-entity"><span title="Your First Entity" class="linkLabel_WmDU">Your First Entity</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/primitives/overview"><span title="Primitives" class="categoryLinkLabel_W154">Primitives</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/skills/overview"><span title="Skills" class="categoryLinkLabel_W154">Skills</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/packages/overview"><span title="Packages" class="categoryLinkLabel_W154">Packages</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/processes/overview"><span title="Processes" class="categoryLinkLabel_W154">Processes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/mcp-servers/overview"><span title="MCP Servers" class="categoryLinkLabel_W154">MCP Servers</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/reference/apiversion-policy"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/processkit/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Development</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Acceptance Gate</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Acceptance Gate</h1></header>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="purpose">Purpose<a href="#purpose" class="hash-link" aria-label="Direct link to Purpose" title="Direct link to Purpose" translate="no">​</a></h2>
-<p>The acceptance gate keeps the v1.0 rebuild measurable. It complements
-the RFC&#x27;s larger 81-criterion gate with a smaller staged gate suitable
-for alpha-first execution.</p>
+<p>The acceptance gate keeps the v1.0 rebuild measurable. The RFC&#x27;s
+81-criterion gate is authoritative for final cutover; the staged lists
+below are working summaries for alpha-first execution.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="rfc-cutover-gate">RFC Cutover Gate<a href="#rfc-cutover-gate" class="hash-link" aria-label="Direct link to RFC Cutover Gate" title="Direct link to RFC Cutover Gate" translate="no">​</a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>Phase</th><th style="text-align:right">Criteria</th><th style="text-align:right">Strict</th><th style="text-align:right">Soft</th></tr></thead><tbody><tr><td>P0 - Pre-conditions</td><td style="text-align:right">5</td><td style="text-align:right">5</td><td style="text-align:right">0</td></tr><tr><td>O1 - Ontology completeness</td><td style="text-align:right">11</td><td style="text-align:right">9</td><td style="text-align:right">2</td></tr><tr><td>T2 - Tooling parity</td><td style="text-align:right">12</td><td style="text-align:right">9</td><td style="text-align:right">3</td></tr><tr><td>C3 - Corpus migration</td><td style="text-align:right">10</td><td style="text-align:right">10</td><td style="text-align:right">0</td></tr><tr><td>S4 - Skills and agents</td><td style="text-align:right">8</td><td style="text-align:right">8</td><td style="text-align:right">0</td></tr><tr><td>A5 - First-ART validation</td><td style="text-align:right">18</td><td style="text-align:right">18</td><td style="text-align:right">0</td></tr><tr><td>G6 - Cutover decision point</td><td style="text-align:right">8</td><td style="text-align:right">8</td><td style="text-align:right">0</td></tr><tr><td>R7 - Post-cutover stabilisation</td><td style="text-align:right">9</td><td style="text-align:right">8</td><td style="text-align:right">1</td></tr><tr><td><strong>Total</strong></td><td style="text-align:right"><strong>81</strong></td><td style="text-align:right"><strong>75</strong></td><td style="text-align:right"><strong>6</strong></td></tr></tbody></table>
+<p>A5 is the proof phase: model a real ART end to end and run one full PI
+cycle through planning, execution, demo, and inspect-and-adapt.</p>
+<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="detailed-rfc-criteria">Detailed RFC Criteria<a href="#detailed-rfc-criteria" class="hash-link" aria-label="Direct link to Detailed RFC Criteria" title="Direct link to Detailed RFC Criteria" translate="no">​</a></h2>
+<p>The detailed list below expands the RFC gate into checkable criteria for
+planning and implementation. Criteria marked <code>soft</code> may be waived with a
+recorded rationale. All other criteria are strict.</p>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="p0---pre-conditions">P0 - Pre-conditions<a href="#p0---pre-conditions" class="hash-link" aria-label="Direct link to P0 - Pre-conditions" title="Direct link to P0 - Pre-conditions" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>ID</th><th>Criterion</th></tr></thead><tbody><tr><td>P0.1</td><td>Upstream agrees to host the <code>v1.0</code> feature branch or records an explicit alternative branch/repository model.</td></tr><tr><td>P0.2</td><td>The RFC is accepted as the leading document for ontology, release, validation, indexing, and cutover planning.</td></tr><tr><td>P0.3</td><td>A named maintainer contact or owner exists for reviewing v1.0 changes.</td></tr><tr><td>P0.4</td><td>The v0.x maintenance boundary and backport policy are documented before v1.0 feature work begins.</td></tr><tr><td>P0.5</td><td>The baseline corpus, migration source, and release-gate evidence locations are frozen for Phase 1.</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="o1---ontology-completeness">O1 - Ontology Completeness<a href="#o1---ontology-completeness" class="hash-link" aria-label="Direct link to O1 - Ontology Completeness" title="Direct link to O1 - Ontology Completeness" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>ID</th><th>Criterion</th></tr></thead><tbody><tr><td>O1.1</td><td>The 89-concept T/P/D/C ontology inventory is documented with 19 T, 22 P, 24 D, and 24 C entries.</td></tr><tr><td>O1.2</td><td>Each concept has a canonical name, class, description, and migration note from the v0.x model where applicable.</td></tr><tr><td>O1.3</td><td>The grammar-leak concepts rejected by the RFC are excluded from the entity layer.</td></tr><tr><td>O1.4</td><td><code>Location</code> is modeled as a primitive with geographic-region, site, coordinate, logical-region, and timezone variants.</td></tr><tr><td>O1.5</td><td><code>Skill</code> is modeled as a primitive with its own schema and lifecycle, distinct from <code>Capability</code>.</td></tr><tr><td>O1.6</td><td><code>TeamMember</code> is modeled as a composition of Actor, calendar, capabilities, persona, skill-list, and journal.</td></tr><tr><td>O1.7</td><td><code>Service</code> is modeled as <code>S(Capability)/C</code>, not as a primitive.</td></tr><tr><td>O1.8</td><td><code>Proposition</code> is modeled as the parent for risk, belief, world-fact, WSJF estimate, and related epistemic content.</td></tr><tr><td>O1.9</td><td><code>Hierarchy</code> and <code>Position</code> are represented through Binding variants, including nullable role-slot subject support.</td></tr><tr><td>O1.10</td><td>Soft: each ontology concept has at least one concrete example from a SAFe or agentic software workflow.</td></tr><tr><td>O1.11</td><td>Soft: human-facing glossary language is reviewed for non-specialist readability.</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="t2---tooling-parity">T2 - Tooling Parity<a href="#t2---tooling-parity" class="hash-link" aria-label="Direct link to T2 - Tooling Parity" title="Direct link to T2 - Tooling Parity" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>ID</th><th>Criterion</th></tr></thead><tbody><tr><td>T2.1</td><td>Jinja + YAML schema sources live under <code>schemas/src/</code> or an equivalent documented source tree.</td></tr><tr><td>T2.2</td><td>Generated flat schemas are written to a committed <code>_generated/*.yaml</code> tree consumed by runtime tooling.</td></tr><tr><td>T2.3</td><td>Composition supports <code>extends</code>, <code>{% include %}</code>, and `__merge: replace</td></tr><tr><td>T2.4</td><td>The MCP endpoint <code>regenerate_schemas(kinds: list | None) -&gt; {rebuilt, unchanged, errors}</code> exists.</td></tr><tr><td>T2.5</td><td>Full and partial schema regeneration are both deterministic and test-covered.</td></tr><tr><td>T2.6</td><td>Per-kind validation mode is observable through MCP.</td></tr><tr><td>T2.7</td><td>Strict validation fails invalid migrated entities; tolerant validation warns for kinds still being migrated.</td></tr><tr><td>T2.8</td><td>MCP create/read/update/transition paths exist for the alpha entity set and use generated schemas.</td></tr><tr><td>T2.9</td><td>Entity writes emit required events and update the read index or report index drift.</td></tr><tr><td>T2.10</td><td>Search includes FTS5 plus interface grouping; the canned-query set is signed off before rc.</td></tr><tr><td>T2.11</td><td>All MCP tools have valid Python type signatures and matching draft-2020-12 JSON Schemas.</td></tr><tr><td>T2.12</td><td>Soft: local developer commands make schema rebuild, validation, and MCP smoke tests easy to run.</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="c3---corpus-migration">C3 - Corpus Migration<a href="#c3---corpus-migration" class="hash-link" aria-label="Direct link to C3 - Corpus Migration" title="Direct link to C3 - Corpus Migration" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>ID</th><th>Criterion</th></tr></thead><tbody><tr><td>C3.1</td><td>A migration plan maps every v0.x entity kind to a v1.0 primitive, discriminator, composition, archive, or explicit rejection.</td></tr><tr><td>C3.2</td><td>Migration tooling runs repeatably from a clean checkout and records source/target processkit versions.</td></tr><tr><td>C3.3</td><td>Migrated entities preserve stable IDs or record durable predecessor/successor links.</td></tr><tr><td>C3.4</td><td>Field loss is measured and stays within the RFC&#x27;s maximum 5 percent ceiling.</td></tr><tr><td>C3.5</td><td>Unknown fields are preserved, transformed, or reported; they are not silently dropped.</td></tr><tr><td>C3.6</td><td>LogEntry hash and append-only invariants are checked during migration.</td></tr><tr><td>C3.7</td><td>Orphaned entities, broken required links, and invalid required owners hard-fail the migration.</td></tr><tr><td>C3.8</td><td>Migrated strict kinds pass generated-schema validation.</td></tr><tr><td>C3.9</td><td>Migration reports include counts, warnings, failures, and remediation guidance.</td></tr><tr><td>C3.10</td><td>A representative v0.x fixture corpus migrates in CI without manual aibox steps.</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="s4---skills-and-agents">S4 - Skills And Agents<a href="#s4---skills-and-agents" class="hash-link" aria-label="Direct link to S4 - Skills And Agents" title="Direct link to S4 - Skills And Agents" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>ID</th><th>Criterion</th></tr></thead><tbody><tr><td>S4.1</td><td>Skill metadata and routing instructions use the v1.0 ontology names and storage semantics.</td></tr><tr><td>S4.2</td><td>Skills that write process entities call MCP tools instead of hand-editing canonical context files.</td></tr><tr><td>S4.3</td><td>Skill examples demonstrate query-by-interface and typed relation lookup where appropriate.</td></tr><tr><td>S4.4</td><td>Multi-persona and harness prompts are updated to prevent v0.x primitive assumptions.</td></tr><tr><td>S4.5</td><td>Agent handoff, role, TeamMember, and model-routing documentation reflects the v1.0 TeamMember composition.</td></tr><tr><td>S4.6</td><td>At least 20 canned agent scenarios exercise work, decisions, gates, risks, roles, skills, and artifacts.</td></tr><tr><td>S4.7</td><td>Scenario runs keep malformed entity output below 0.1 percent.</td></tr><tr><td>S4.8</td><td>Skills and agent docs include transition guidance for v0.x adopters.</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="a5---first-art-validation">A5 - First-ART Validation<a href="#a5---first-art-validation" class="hash-link" aria-label="Direct link to A5 - First-ART Validation" title="Direct link to A5 - First-ART Validation" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>ID</th><th>Criterion</th></tr></thead><tbody><tr><td>A5.1</td><td>A real or production-shaped ART is modeled with Portfolio, ValueStream, ART, Team, Scope, and RoleSlot structure.</td></tr><tr><td>A5.2</td><td>PI planning creates objectives, risks, dependencies, capacity assumptions, and committed WorkItems.</td></tr><tr><td>A5.3</td><td>Execution moves work through state machines using MCP transition tools.</td></tr><tr><td>A5.4</td><td>Decisions, assumptions, risks, and world facts are recorded as the correct Record/Proposition shapes.</td></tr><tr><td>A5.5</td><td>Gates represent approval, policy, evaluation, and release checks with required evidence.</td></tr><tr><td>A5.6</td><td>TeamMember, Role, Skill, Capability, and Binding data support realistic task routing.</td></tr><tr><td>A5.7</td><td>Channels and queues capture handoffs, intake, or asynchronous coordination.</td></tr><tr><td>A5.8</td><td>Resources, constraints, and ownership are queryable for the ART.</td></tr><tr><td>A5.9</td><td>Demo evidence is captured as Artifacts, Measurements, Outcomes, or related Records.</td></tr><tr><td>A5.10</td><td>Inspect-and-adapt produces follow-up WorkItems, Decisions, and retrospective evidence.</td></tr><tr><td>A5.11</td><td>Interface queries retrieve mixed-kind records without concrete-kind guessing.</td></tr><tr><td>A5.12</td><td>Relation traversal answers dependency, provenance, ownership, and hierarchy questions.</td></tr><tr><td>A5.13</td><td>Generated schemas validate all strict entities created during the cycle.</td></tr><tr><td>A5.14</td><td>pk-doctor reports no blocking errors on the ART fixture or pilot corpus.</td></tr><tr><td>A5.15</td><td>Human reviewers can inspect the same state through files and documentation.</td></tr><tr><td>A5.16</td><td>Runtime-specific integrations are examples only; the ART proof does not require one agent framework.</td></tr><tr><td>A5.17</td><td>The pilot records friction, interpretation drift, and missing tool affordances as tracked issues.</td></tr><tr><td>A5.18</td><td>The first-ART result is reviewed and accepted before rc promotion.</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="g6---cutover-decision-point">G6 - Cutover Decision Point<a href="#g6---cutover-decision-point" class="hash-link" aria-label="Direct link to G6 - Cutover Decision Point" title="Direct link to G6 - Cutover Decision Point" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>ID</th><th>Criterion</th></tr></thead><tbody><tr><td>G6.1</td><td>Phases P0 through A5 are green except for explicitly accepted soft criteria.</td></tr><tr><td>G6.2</td><td>The final ontology and migration plan are accepted by the named maintainer/owner.</td></tr><tr><td>G6.3</td><td>The cutover DecisionRecord or equivalent release decision is recorded.</td></tr><tr><td>G6.4</td><td>Release artifacts are reproducible from a clean checkout.</td></tr><tr><td>G6.5</td><td>Documentation for install, migration, MCP tooling, schemas, indexes, and testing is published.</td></tr><tr><td>G6.6</td><td>Downstream adoption paths are documented for production, alpha/beta/rc, and final v1.0 pins.</td></tr><tr><td>G6.7</td><td>v0.x maintenance, LTS, and feature-backport boundaries are documented.</td></tr><tr><td>G6.8</td><td>No known blocker remains for merging <code>v1.0</code> to <code>main</code> and tagging <code>v1.0.0</code>.</td></tr></tbody></table>
+<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="r7---post-cutover-stabilisation">R7 - Post-cutover Stabilisation<a href="#r7---post-cutover-stabilisation" class="hash-link" aria-label="Direct link to R7 - Post-cutover Stabilisation" title="Direct link to R7 - Post-cutover Stabilisation" translate="no">​</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>ID</th><th>Criterion</th></tr></thead><tbody><tr><td>R7.1</td><td>A minimum 14-day post-cutover stabilisation window is observed.</td></tr><tr><td>R7.2</td><td>Critical regressions have documented owner, status, and remediation path.</td></tr><tr><td>R7.3</td><td>Migration support handles at least one downstream adopter from v0.x to v1.0.</td></tr><tr><td>R7.4</td><td>Release integrity checks verify tags, tarballs, checksums, provenance, and docs publication.</td></tr><tr><td>R7.5</td><td>Index rebuild and drift-recovery procedures are exercised after cutover.</td></tr><tr><td>R7.6</td><td>MCP gateway and per-domain MCP tools pass smoke tests in a clean fixture project.</td></tr><tr><td>R7.7</td><td>Sensitive-data, privacy, and publication checks run on the shipped docs and release artifacts.</td></tr><tr><td>R7.8</td><td>Soft: v0.x LTS guidance is validated with at least one slow-adopter scenario.</td></tr><tr><td>R7.9</td><td>New pk-doctor checks pass a golden adversarial fixture containing deliberately invalid entities.</td></tr></tbody></table>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="alpha-gate">Alpha Gate<a href="#alpha-gate" class="hash-link" aria-label="Direct link to Alpha Gate" title="Direct link to Alpha Gate" translate="no">​</a></h2>
 <p>Alpha is ready when:</p>
 <ul>
@@ -25,6 +510,7 @@ for alpha-first execution.</p>
 <li class=""><code>query_by_interface</code> works for at least one shared interface</li>
 <li class="">strict and tolerant validation modes are observable</li>
 <li class="">a small v0.x corpus migrates or maps into the alpha model</li>
+<li class="">processkit-native fixture tests pass without depending on aibox</li>
 <li class="">one real process cycle runs through the alpha</li>
 <li class="">OKF export produces a conformant bundle</li>
 <li class="">docs build locally</li>
@@ -35,8 +521,10 @@ for alpha-first execution.</p>
 <li class="">the ontology has expanded beyond the alpha subset with migration proof</li>
 <li class="">all migrated kinds validate strictly</li>
 <li class="">core MCP tools have stable signatures</li>
+<li class="">MCP Python signatures match draft-2020-12 JSON Schemas</li>
 <li class="">docs cover user workflows and architecture</li>
 <li class="">pk-doctor checks the important invariants</li>
+<li class="">pk-doctor passes a golden adversarial fixture</li>
 <li class="">runtime integration examples exist</li>
 <li class="">OKF import and export are both tested</li>
 <li class="">human review and approval workflows are represented</li>
@@ -49,6 +537,7 @@ for alpha-first execution.</p>
 <li class="">acceptance fixtures cover adversarial cases</li>
 <li class="">docs, examples, and publishing scripts are stable</li>
 <li class="">a real project has run a full planning and delivery cycle</li>
+<li class="">package smoke tests pass from release artifacts without aibox</li>
 <li class="">no known blocker remains for v1.0.0 cutover</li>
 </ul>
 <h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="final-gate">Final Gate<a href="#final-gate" class="hash-link" aria-label="Direct link to Final Gate" title="Direct link to Final Gate" translate="no">​</a></h2>
@@ -60,6 +549,6 @@ for alpha-first execution.</p>
 <li class="">release artifacts are reproducible</li>
 <li class="">downstream projects have a supported adoption path</li>
 <li class="">v0.x maintenance and v1.x development boundaries are documented</li>
-</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/projectious-work/processkit/tree/main/docs-site/docs/development/acceptance-gate.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/processkit/docs/development/landscape-note"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Landscape Note</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/processkit/docs/development/analysis/"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Analysis Archive</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#purpose" class="table-of-contents__link toc-highlight">Purpose</a></li><li><a href="#alpha-gate" class="table-of-contents__link toc-highlight">Alpha Gate</a></li><li><a href="#beta-gate" class="table-of-contents__link toc-highlight">Beta Gate</a></li><li><a href="#release-candidate-gate" class="table-of-contents__link toc-highlight">Release Candidate Gate</a></li><li><a href="#final-gate" class="table-of-contents__link toc-highlight">Final Gate</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/getting-started/overview">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/primitives/overview">Primitives</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/skills/overview">Skills</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/packages/overview">Packages</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Project</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://github.com/projectious-work/processkit/releases" target="_blank" rel="noopener noreferrer" class="footer__link-item">Releases<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">© 2026 projectious.work</div></div></div></footer></div>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/projectious-work/processkit/tree/main/docs-site/docs/development/acceptance-gate.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/processkit/docs/development/landscape-note"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Landscape Note</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/processkit/docs/development/analysis/"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Analysis Archive</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#purpose" class="table-of-contents__link toc-highlight">Purpose</a></li><li><a href="#rfc-cutover-gate" class="table-of-contents__link toc-highlight">RFC Cutover Gate</a></li><li><a href="#detailed-rfc-criteria" class="table-of-contents__link toc-highlight">Detailed RFC Criteria</a><ul><li><a href="#p0---pre-conditions" class="table-of-contents__link toc-highlight">P0 - Pre-conditions</a></li><li><a href="#o1---ontology-completeness" class="table-of-contents__link toc-highlight">O1 - Ontology Completeness</a></li><li><a href="#t2---tooling-parity" class="table-of-contents__link toc-highlight">T2 - Tooling Parity</a></li><li><a href="#c3---corpus-migration" class="table-of-contents__link toc-highlight">C3 - Corpus Migration</a></li><li><a href="#s4---skills-and-agents" class="table-of-contents__link toc-highlight">S4 - Skills And Agents</a></li><li><a href="#a5---first-art-validation" class="table-of-contents__link toc-highlight">A5 - First-ART Validation</a></li><li><a href="#g6---cutover-decision-point" class="table-of-contents__link toc-highlight">G6 - Cutover Decision Point</a></li><li><a href="#r7---post-cutover-stabilisation" class="table-of-contents__link toc-highlight">R7 - Post-cutover Stabilisation</a></li></ul></li><li><a href="#alpha-gate" class="table-of-contents__link toc-highlight">Alpha Gate</a></li><li><a href="#beta-gate" class="table-of-contents__link toc-highlight">Beta Gate</a></li><li><a href="#release-candidate-gate" class="table-of-contents__link toc-highlight">Release Candidate Gate</a></li><li><a href="#final-gate" class="table-of-contents__link toc-highlight">Final Gate</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/getting-started/overview">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/primitives/overview">Primitives</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/skills/overview">Skills</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/packages/overview">Packages</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Project</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://github.com/projectious-work/processkit/releases" target="_blank" rel="noopener noreferrer" class="footer__link-item">Releases<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">© 2026 projectious.work</div></div></div></footer></div>
 </body>
 </html>
