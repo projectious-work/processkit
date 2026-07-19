@@ -208,13 +208,12 @@ To release a new tag:
    ```
    This is the preferred consumption path for aibox (DEC-025); aibox
    falls back to a git fetch if the asset is missing.
-9. **Build and review the documentation locally:**
+9. **Build and publish the documentation locally:**
    ```bash
-   npm --prefix docs-site run build
-   npm --prefix docs-site run serve
+   scripts/publish-docs-gh-pages.sh vX.Y.Z
    ```
-   Do not add GitHub Actions or a GitHub Pages dependency to the release
-   path.
+   This builds the site, commits the generated output to `gh-pages`, and
+   pushes the branch. Do not add a GitHub Actions workflow.
 
 ## Backlog and tracked work
 
