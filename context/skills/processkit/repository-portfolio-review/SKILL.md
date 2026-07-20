@@ -16,6 +16,8 @@ metadata:
 
 # Repository Portfolio Review
 
+## Intro
+
 Review only repositories visible to the authenticated account. Treat the
 result as engineering evidence, not a legal, privacy, or security guarantee.
 
@@ -33,16 +35,30 @@ result as engineering evidence, not a legal, privacy, or security guarantee.
 5. Separate completed remediation from findings, external decisions, and
    access limitations in the final report.
 
-## Required issue content
+## Overview
+
+### Required issue content
 
 Every created issue states the evidence, concrete proposed change, observable
 acceptance criteria, legal/IP/privacy/security notes, and ownership or
 dependencies. Do not assign a lifecycle state, change Actions settings, or
 rewrite history without explicit owner authorization.
 
-## Validation
+### Validation
 
 Confirm the intended branch and repository before changing settings. For each
 finding, preserve a direct evidence link or command output. Re-run the local
 build/test commands after repository-content changes and report any checks
 that were unavailable.
+
+## Gotchas
+
+- Do not represent visible repositories as a complete organization inventory.
+- Never place alleged secrets, exploit details, or personal data in a public issue.
+- Do not treat a new issue as completed remediation.
+
+## Full reference
+
+The review distinguishes verified remediation, repository-local follow-up,
+and owner decisions across governance, documentation, provenance, privacy,
+security, and portfolio boundaries.
