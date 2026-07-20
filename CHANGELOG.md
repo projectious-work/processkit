@@ -9,6 +9,35 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.27.5] - 2026-07-20
+
+v0.27.5 is a **patch release** for derived-project doctor correctness and
+release-workflow hygiene.
+
+### Fixed
+
+- Skip the source-only release-boundary script in derived projects, respect
+  ignored files during sensitive-data scans, and apply the 30-day migration
+  archive threshold. Closes #87.
+- Add a project email allowlist for intentional public and synthetic contact
+  addresses. Closes #77.
+- Add `draft_migration` to author pending data-fix and schema-extension
+  Migrations through MCP, including lazy gateway catalog exposure. Closes #81.
+
+### Added
+
+- Add the repository-portfolio-review workflow skill and repository security
+  baseline. Closes #85 and #86.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run context/skills/processkit/migration-management/scripts/test_migration_management.py`
+- `uv run scripts/smoke-test-servers.py`
+- `npm --prefix docs-site run build`
+
+---
+
 ## [v0.27.4] - 2026-07-17
 
 v0.27.4 is a **patch release** that makes genuine metadata-drift

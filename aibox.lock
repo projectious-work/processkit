@@ -28,13 +28,14 @@ python = [
 ]
 
 [runtime_home]
-generated_at = "2026-05-22T19:24:06.590430+00:00"
+generated_at = "2026-07-17T12:55:49.349831+00:00"
 
 [runtime_home.files]
 ".asoundrc" = "f34609b11d315cd613cb5333b561032baec860faf4a7eccb28b5567ae72019af"
 ".config/aibox/theme-env.sh" = "47022ee9db045559af31343b1ec30f3287626f7be868ee118941ce65b6a68a0d"
 ".config/cheatsheet.txt" = "8f8cd32d9f0b6e3d92015f440c78b11afd87d20ff2a517e5dea009135dc7e0fa"
-".config/git/config" = "fd9f76744e8c202092c02a31913f81e501e4502c077e51969d2584db5eadf753"
+".config/git/aibox-github.inc" = "43194b7e2452cee72f61ced12e4203b72b3e09a88f12d827f178b5b229a0aa6b"
+".config/git/config" = "160ff8788f7c79f3f887a6daef2db1e68bbd3bd3221a8d52d8d10fde1cd874ff"
 ".config/lnav/config.json" = "5ff30db2fce0d3e56843dd771f1c48ffbbc6a586ea22aa5f97360b59906c10c7"
 ".config/lnav/formats/aibox/aibox.json" = "10e1af791380119ecd6860f8d31becb183a26b01868d9b20b2e277177e17c660"
 ".config/starship.toml" = "78f7f2ec35e2569eaa3cdffb2774413feda577183326d4f28688eccb6b64a641"
