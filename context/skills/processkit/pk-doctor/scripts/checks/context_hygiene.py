@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 import json
 import re
 import sqlite3
@@ -25,6 +26,7 @@ _PROVIDER_MODEL_TERMS = {
     "moonshot", "kimi", "nvidia", "nemotron", "microsoft", "phi",
     "aws", "nova", "zai", "glm",
 }
+_APPLIED_MIGRATION_ARCHIVE_AGE_DAYS = 30
 
 
 def _load_frontmatter(path: Path) -> dict[str, Any] | None:
@@ -351,6 +353,36 @@ def _archive_candidate_count(
     return count
 
 
+def _applied_migration_archive_count(root: Path, now: dt.datetime | None = None) -> int:
+    """Count only applied migrations past the context archive retention age."""
+    if not root.is_dir():
+        return 0
+    now = now or dt.datetime.now(dt.timezone.utc)
+    cutoff = now - dt.timedelta(days=_APPLIED_MIGRATION_ARCHIVE_AGE_DAYS)
+    count = 0
+    for path in root.rglob("*.md"):
+        fm = _load_frontmatter(path) or {}
+        spec = fm.get("spec") if isinstance(fm.get("spec"), dict) else {}
+        if spec.get("state") != "applied":
+            continue
+        metadata = fm.get("metadata") if isinstance(fm.get("metadata"), dict) else {}
+        value = spec.get("applied_at") or metadata.get("created")
+        if isinstance(value, dt.datetime):
+            applied_at = value
+        elif isinstance(value, str):
+            try:
+                applied_at = dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+            except ValueError:
+                continue
+        else:
+            continue
+        if applied_at.tzinfo is None:
+            applied_at = applied_at.replace(tzinfo=dt.timezone.utc)
+        if applied_at <= cutoff:
+            count += 1
+    return count
+
+
 def _sqlite_vec_available() -> bool:
     try:
         import sqlite3
@@ -528,17 +560,18 @@ def run(ctx) -> list[CheckResult]:
             suggested_fix="convert to markdown/pointer artifact or move outside context artifacts",
         ))
 
-    applied_migrations = _archive_candidate_count(
-        repo_root / "context" / "migrations" / "applied",
-        "*.md",
-        state="applied",
+    applied_migrations = _applied_migration_archive_count(
+        repo_root / "context" / "migrations" / "applied"
     )
     if applied_migrations:
         results.append(CheckResult(
             severity="WARN",
             category="context_hygiene",
             id="archive.applied-migrations",
-            message=f"{applied_migrations} applied migration(s) are archive candidates",
+            message=(
+                f"{applied_migrations} applied migration(s) exceed the "
+                f"{_APPLIED_MIGRATION_ARCHIVE_AGE_DAYS}-day archive policy"
+            ),
             suggested_fix="plan archival via context-archiving policy",
             fix_mcp_tool="create_archive",
             extra={

@@ -13,6 +13,7 @@ manifest.
 
 | Tool                                   | Purpose                                                                                                  |
 |----------------------------------------|----------------------------------------------------------------------------------------------------------|
+| `draft_migration(kind, summary, affected_files, related_decisions?, body?)` | Create a well-formed locally-authored pending migration for a schema extension or data fix. |
 | `list_migrations(state?)`              | List active Migrations by default (`pending` + `in-progress`), or explicitly filter by `pending`, `in-progress`, `applied`, or `rejected`. Walks the state directories directly (no index dependency). |
 | `get_migration(id)`                    | Fetch one Migration with full spec + body. Accepts full ID, prefix, or bare word-pair.                   |
 | `start_migration(id)`                  | Transition `pending → in-progress`. Stamps `spec.started_at`, moves file, refreshes INDEX.md.            |

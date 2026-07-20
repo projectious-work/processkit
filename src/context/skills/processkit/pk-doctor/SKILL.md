@@ -195,6 +195,14 @@ Additional checks added after Phase 1:
   not provider-billed usage.
 - **`v2_contracts`** — validates v2 API contract invariants across WorkItem, Binding, Artifact, and LogEntry entities. Catches process-instance definitions missing their definition reference, time-window bindings without a recurrence rule, orphaned cost-policy artifacts (not bound to a budget), policy supersession chains with breaks, uncalibrated eval-spec judges, and stale or missing agent-card projections. Emits ERROR for all contract violations; detect-only.
 - **`context_hygiene`** — validates artifact naming policies (model-spec and model-profile use timestamped `ART-YYYYMMDD_HHMM-*` scheme), model binding integrity (role/TeamMember defaults must target provider-neutral model-profile artifacts unless marked direct_model_pin), and cross-reference health. Also detects demoted schema kinds still present in src/, detects archive candidates, warns on mixed binding filename styles, and checks sqlite-vec semantic index health. Emits WARN / ERROR depending on severity; detect-only.
+- **`sensitive_data` allowlist** — intentional public or synthetic email
+  addresses may be listed in `.pk-doctor-allowlist.toml`:
+  ```toml
+  [sensitive_data.email_allowlist]
+  addresses = ["info@projectious.work", "deploy@example.local"]
+  ```
+  The allowlist applies only to email-address findings; secrets and other PII
+  are never suppressed.
 - **`runtime_health`** — owns in-container runtime probes that host-side
   installer diagnostics cannot verify directly. Checks lnav availability
   for the Prefix L structured log viewer, sqlite-vec import/load health

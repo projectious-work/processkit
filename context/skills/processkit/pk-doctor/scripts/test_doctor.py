@@ -2708,6 +2708,73 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 23: fresh derived-project doctor regressions
+# ---------------------------------------------------------------------------
+print("\n[23] pk-doctor — fresh derived project regressions")
+
+from checks import drift as _drift  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    no_script = _drift.run({"repo_root": root})
+    check(
+        "23: missing release script is not applicable, not an ERROR",
+        len(no_script) == 1 and no_script[0].id == "drift.not-applicable"
+        and no_script[0].severity == "INFO",
+        [item.to_dict() for item in no_script],
+    )
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    (root / ".gitignore").write_text(".aibox/\n", encoding="utf-8")
+    (root / ".aibox").mkdir()
+    (root / ".aibox" / "auth.env").write_text(
+        "CONTACT=private@example.com\n", encoding="utf-8"
+    )
+    (root / "project.env").write_text(
+        "CONTACT=public@example.com\n", encoding="utf-8"
+    )
+    findings = sensitive_data.run({"repo_root": root, "since_files": None})
+    emails = [
+        item.extra.get("path") for item in findings
+        if item.id == "sensitive-data.email-address"
+    ]
+    check(
+        "23: empty Git index scans non-ignored files but not ignored state",
+        emails == ["project.env"], emails,
+    )
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    applied = root / "context" / "migrations" / "applied"
+    applied.mkdir(parents=True)
+    for name, applied_at in (("MIG-new", "2026-07-19T00:00:00Z"),
+                             ("MIG-old", "2020-01-01T00:00:00Z")):
+        (applied / f"{name}.md").write_text(
+            textwrap.dedent(f"""\
+                ---
+                apiVersion: processkit.projectious.work/v2
+                kind: Migration
+                metadata:
+                  id: {name}
+                  created: {applied_at}
+                spec:
+                  state: applied
+                  applied_at: {applied_at}
+                ---
+                """),
+            encoding="utf-8",
+        )
+    findings = _context_hygiene_run({"repo_root": root})
+    archive = [item for item in findings if item.id == "archive.applied-migrations"]
+    check(
+        "23: only migrations older than the archive policy are candidates",
+        len(archive) == 1 and "1 applied migration" in archive[0].message,
+        [item.to_dict() for item in archive],
+    )
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 print()
