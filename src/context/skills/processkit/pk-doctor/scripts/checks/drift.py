@@ -18,10 +18,13 @@ def run(ctx) -> list[CheckResult]:
     script = repo_root / "scripts" / "check-src-context-drift.sh"
     if not script.is_file():
         return [CheckResult(
-            severity="ERROR",
+            severity="INFO",
             category="drift",
-            id="drift.script-missing",
-            message=f"{script.relative_to(repo_root)} not found",
+            id="drift.not-applicable",
+            message=(
+                "release-boundary check is not applicable: "
+                f"{script.relative_to(repo_root)} is absent"
+            ),
         )]
 
     proc = subprocess.run(

@@ -1,5 +1,9 @@
 # processkit
 
+> **Lifecycle: Stable.** Maintained by projectious-work for teams building
+> provider-neutral agent workflows. Support and security reports: see
+> [SECURITY.md](SECURITY.md).
+
 **Provider-neutral process memory, skills, and MCP tools for agentic
 software projects.**
 

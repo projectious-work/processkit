@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 import re
 import subprocess
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -240,6 +241,7 @@ def run(ctx) -> list[CheckResult]:
     scanned = 0
     skipped_examples = 0
     weak_signal_files: list[str] = []
+    email_allowlist = _email_allowlist(repo_root)
 
     for path in _candidate_files(repo_root, since_files):
         rel = _rel(repo_root, path)
@@ -254,7 +256,9 @@ def run(ctx) -> list[CheckResult]:
             if len(weak_signal_files) < 20:
                 weak_signal_files.append(rel)
         for pattern in _PATTERNS:
-            for lineno, excerpt, secret in _matches(path, text, pattern):
+            for lineno, excerpt, secret in _matches(
+                path, text, pattern, email_allowlist
+            ):
                 if pattern.entropy_min is not None:
                     if _entropy(secret or excerpt) < pattern.entropy_min:
                         continue
@@ -316,7 +320,7 @@ def _candidate_files(repo_root: Path, since_files: set[Path] | None) -> list[Pat
         files = [p for p in since_files if p.is_file()]
     else:
         files = _git_files(repo_root)
-        if not files:
+        if files is None:
             files = [p for p in repo_root.rglob("*") if p.is_file()]
     return [
         p for p in sorted(files)
@@ -324,15 +328,18 @@ def _candidate_files(repo_root: Path, since_files: set[Path] | None) -> list[Pat
     ]
 
 
-def _git_files(repo_root: Path) -> list[Path]:
+def _git_files(repo_root: Path) -> list[Path] | None:
     try:
         out = subprocess.run(
-            ["git", "-C", str(repo_root), "ls-files", "-z"],
+            [
+                "git", "-C", str(repo_root), "ls-files", "--cached",
+                "--others", "--exclude-standard", "-z",
+            ],
             capture_output=True,
             check=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError):
-        return []
+        return None
     return [
         (repo_root / part.decode("utf-8", "replace")).resolve()
         for part in out.split(b"\0")
@@ -378,13 +385,20 @@ def _read_text(path: Path) -> str | None:
         return None
 
 
-def _matches(path: Path, text: str, pattern: Pattern):
+def _matches(
+    path: Path,
+    text: str,
+    pattern: Pattern,
+    email_allowlist: set[str] | None = None,
+):
     for match in pattern.regex.finditer(text):
         line = text.count("\n", 0, match.start()) + 1
         excerpt = match.group(0)
         secret = match.group(pattern.group) if pattern.group else excerpt
         line_text = _line_at(text, line)
-        if _is_false_positive(path, pattern, excerpt, secret, line_text):
+        if _is_false_positive(
+            path, pattern, excerpt, secret, line_text, email_allowlist
+        ):
             continue
         yield line, excerpt, secret
 
@@ -432,6 +446,7 @@ def _is_false_positive(
     excerpt: str,
     secret: str,
     line_text: str,
+    email_allowlist: set[str] | None = None,
 ) -> bool:
     lowered_line = line_text.lower()
     lowered_excerpt = excerpt.lower()
@@ -452,6 +467,8 @@ def _is_false_positive(
             "you@example.com",
         }
         if lowered_excerpt in synthetic:
+            return True
+        if lowered_excerpt in (email_allowlist or set()):
             return True
         if "identity.toml" in lowered_line:
             return True
@@ -476,6 +493,23 @@ def _is_false_positive(
             return True
 
     return False
+
+
+def _email_allowlist(repo_root: Path) -> set[str]:
+    """Read intentional public/synthetic email addresses from project config."""
+    path = repo_root / ".pk-doctor-allowlist.toml"
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError):
+        return set()
+    section = data.get("sensitive_data", {})
+    allowlist = section.get("email_allowlist", {}) if isinstance(section, dict) else {}
+    addresses = allowlist.get("addresses", []) if isinstance(allowlist, dict) else []
+    return {
+        address.strip().lower()
+        for address in addresses
+        if isinstance(address, str) and address.strip()
+    }
 
 
 def _team_member_pii_opted_in(path: Path) -> bool:

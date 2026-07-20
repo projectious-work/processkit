@@ -121,8 +121,38 @@ def test_list_migrations_empty_pending_returns_empty_list() -> None:
     assert migrations == []
 
 
+def test_draft_migration_creates_pending_schema_valid_entity() -> None:
+    server = _load_server()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "AGENTS.md").write_text("# Test repo\n", encoding="utf-8")
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(root)
+            result = server.draft_migration(
+                kind="data-fix",
+                summary="Normalize legacy Binding filenames",
+                affected_files=[{
+                    "path": "context/bindings/BIND-legacy.md",
+                    "classification": "changed-locally-only",
+                }],
+                related_decisions=["DEC-test"],
+            )
+        finally:
+            os.chdir(old_cwd)
+
+        assert result["state"] == "pending"
+        path = Path(result["path"])
+        assert path.is_file()
+        text = path.read_text(encoding="utf-8")
+        assert "kind: data-fix" in text
+        assert "state: pending" in text
+        assert "related_decisions:" in text
+
+
 if __name__ == "__main__":
     test_list_migrations_default_returns_only_active_states()
     test_list_migrations_ignores_non_entity_briefings()
     test_list_migrations_empty_pending_returns_empty_list()
+    test_draft_migration_creates_pending_schema_valid_entity()
     print("All tests passed.")
