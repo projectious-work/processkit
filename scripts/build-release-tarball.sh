@@ -57,6 +57,21 @@ if [[ ! -d "$SRC_DIR" ]]; then
     exit 1
 fi
 
+# A release archive is only useful when its changelog names the exact version.
+# Keep this guard before staging so a missing or stale entry cannot reach a
+# published asset. The release task must curate this entry before tagging.
+if [[ ! -f "$REPO_ROOT/CHANGELOG.md" ]]; then
+    echo "error: CHANGELOG.md is required for a release archive" >&2
+    exit 1
+fi
+if ! awk -v version="$VERSION" \
+    '$0 ~ "^## \\[" version "\\]" { found = 1 } END { exit !found }' \
+    "$REPO_ROOT/CHANGELOG.md"; then
+    echo "error: CHANGELOG.md has no entry for $VERSION" >&2
+    echo "Add and commit a curated $VERSION section before tagging." >&2
+    exit 1
+fi
+
 # Resolve the tag's commit date for reproducible mtime. If the tag does
 # not yet exist (cutting a fresh release), fall back to HEAD's commit date.
 if git -C "$REPO_ROOT" rev-parse "$VERSION" >/dev/null 2>&1; then
@@ -119,9 +134,9 @@ echo "staging src/ → $STAGING_DIR/" >&2
                        --exclude='.DS_Store' \
                        -cf - .) | (cd "$STAGING_DIR" && tar -xf -)
 
-# Optionally include LICENSE and CHANGELOG.md from the repo root.
+# Include LICENSE and the validated CHANGELOG.md from the repo root.
 [[ -f "$REPO_ROOT/LICENSE" ]] && cp "$REPO_ROOT/LICENSE" "$STAGING_DIR/"
-[[ -f "$REPO_ROOT/CHANGELOG.md" ]] && cp "$REPO_ROOT/CHANGELOG.md" "$STAGING_DIR/"
+cp "$REPO_ROOT/CHANGELOG.md" "$STAGING_DIR/"
 
 # Build the tarball reproducibly. The top-level entry inside the tarball
 # is "processkit-<version>/" (so consumers unpack into the right

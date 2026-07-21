@@ -7,6 +7,144 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Defined dedicated development and release-integration branches for v0 and
+  v1 lines, with stable release tags merged into `main` after publication.
+- Made a curated, version-matched `CHANGELOG.md` entry a required release
+  archive preflight rather than an optional staged file.
+
+---
+
+## [v0.27.6] - 2026-07-21
+
+v0.27.6 is a **patch release** that establishes the canonical v0 release
+line on `main` after the v1 development branch was separated.
+
+### Fixed
+
+- Publish the v0.27.5 release contents from the v0 maintenance branch with
+  a new, canonical `v0.27.6` tag and release artifact.
+- Verify the generated MCP manifest during archive builds instead of
+  rewriting tracked release metadata after tagging.
+
+### Notes
+
+- The earlier `v0.27.5` tag remains immutable and is retained on the
+  archived pre-cleanup branch for historical provenance.
+
+---
+
+## [v0.27.5] - 2026-07-20
+
+v0.27.5 is a **patch release** for derived-project doctor correctness and
+release-workflow hygiene.
+
+### Fixed
+
+- Skip the source-only release-boundary script in derived projects, respect
+  ignored files during sensitive-data scans, and apply the 30-day migration
+  archive threshold. Closes #87.
+- Add a project email allowlist for intentional public and synthetic contact
+  addresses. Closes #77.
+- Add `draft_migration` to author pending data-fix and schema-extension
+  Migrations through MCP, including lazy gateway catalog exposure. Closes #81.
+
+### Added
+
+- Add the repository-portfolio-review workflow skill and repository security
+  baseline. Closes #85 and #86.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run context/skills/processkit/migration-management/scripts/test_migration_management.py`
+- `uv run scripts/smoke-test-servers.py`
+- `npm --prefix docs-site run build`
+
+---
+
+## [v0.27.4] - 2026-07-17
+
+v0.27.4 is a **patch release** that makes genuine metadata-drift
+findings actionable from derived projects.
+
+### Fixed
+
+- Direct derived projects to re-run their installer or sync tool for MCP
+  manifest, server-header, and preauth metadata drift instead of pointing
+  them to upstream-only generator scripts. Closes #78.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `scripts/build-release-tarball.sh v0.27.4`
+
+---
+
+## [v0.27.3] - 2026-07-17
+
+v0.27.3 is a **patch release** that resolves false-positive doctor
+findings and makes installed, selectively pruned processkit surfaces
+the source of truth for downstream validation.
+
+### Fixed
+
+- Parse YAML frontmatter using its delimiter line, so scalar values that
+  contain `---` no longer produce spurious schema or command findings.
+  Closes #74.
+- Exclude social-media numeric URL identifiers and shell-variable URL
+  credentials from sensitive-data findings while retaining literal secret
+  detection. Closes #75 and #76.
+- Omit an absent optional `channel` from captured inbox Notes instead of
+  serializing schema-invalid `null`. Closes #82.
+- Query GitHub Release tags once per doctor run instead of spawning one
+  `gh release view` process per local tag. Closes #83.
+- Treat a derived project's installed MCP configs as its effective
+  manifest, preauth, and server-header surface after optional skills are
+  pruned. Closes #84.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run scripts/smoke-test-servers.py`
+
+---
+
+## [v0.27.2] - 2026-07-17
+
+v0.27.2 is a **patch release** that closes narrow `pk-doctor`
+remediation gaps reported by derived projects without adding a broad
+v0 history-rewrite surface.
+
+### Fixed
+
+- Preserved project-local `pk-commands` values by excluding the command
+  adapter block from upstream template hash comparison while retaining
+  marker and required-key validation. Closes #71 and #80.
+- Accepted processkit-generated timestamped `role-slot-fill` Binding IDs
+  alongside deterministic policy Bindings, avoiding unsafe historical
+  LogEntry rewrites solely for filename uniformity.
+- Added explicit MCP confirmation forwarding through
+  `run_pk_doctor(fix=..., yes=true)` and marked the wrapper as a guarded
+  write surface.
+- Attached executable MCP remediation metadata to CLI migration
+  briefing and applied-Migration archive findings.
+- Documented applied and rejected Migrations in the context-archiving
+  policy so existing `create_archive` support is discoverable.
+- Regenerated the gateway catalog and MCP manifest with the corrected
+  doctor signature and permission class.
+
+### Verification
+
+- `uv run context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+- `uv run --with pytest --with mcp --with sqlite-vec pytest -q context/skills/processkit/pk-doctor/scripts/test_pk_doctor_mcp.py`
+- `uv run --with pytest --with mcp --with pyyaml pytest -q context/skills/processkit/context-archiving/scripts/test_context_archiving.py`
+- `uv run scripts/smoke-test-servers.py`
+- `npm --prefix docs-site run build`
+- `run_pk_doctor()` (`0 ERROR / 0 WARN / 0 actionable`)
+- `run_pk_release_audit(tree="both")` (`0 ERROR / 0 WARN`)
+
 ---
 
 ## [v0.27.1] - 2026-05-23
