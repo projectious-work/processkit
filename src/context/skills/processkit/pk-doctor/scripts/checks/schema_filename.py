@@ -49,6 +49,10 @@ KIND_TO_DIR = {
 }
 
 FILENAME_DATE_RE = re.compile(r"(\d{8})(?:[_T](\d{4,6}))?")
+_FRONTMATTER_RE = re.compile(
+    r"\A---\s*\n(?P<yaml>.*?)\n---\s*(?:\n.*)?\Z",
+    re.DOTALL,
+)
 # aibox-CLI migration docs (e.g. 20260410_1523_0.17.6-to-0.17.9.md) live in
 # context/migrations/ but are NOT processkit Migration entities — they are
 # CLI upgrade notes. Exempt them from schema validation.
@@ -131,11 +135,11 @@ def _parse_frontmatter(path: Path) -> tuple[dict | None, str | None]:
         return None, f"unreadable: {e}"
     if not text.startswith("---"):
         return None, "no YAML frontmatter"
-    parts = text.split("---", 2)
-    if len(parts) < 3:
+    match = _FRONTMATTER_RE.match(text)
+    if match is None:
         return None, "unterminated YAML frontmatter"
     try:
-        data = yaml.safe_load(parts[1])
+        data = yaml.safe_load(match.group("yaml") + "\n")
     except yaml.YAMLError as e:
         return None, f"YAML parse error: {e}"
     if not isinstance(data, dict):
