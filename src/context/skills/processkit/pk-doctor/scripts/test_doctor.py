@@ -1007,6 +1007,58 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 8a: schema_filename preserves block scalars containing --- (issue #88)
+# ---------------------------------------------------------------------------
+print("\n[8a] schema_filename — YAML block scalar delimiter regression")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "context" / "schemas").mkdir(parents=True)
+    src_note = _SCHEMAS_SRC / "note.yaml"
+    if src_note.is_file():
+        (root / "context" / "schemas" / "note.yaml").write_text(
+            src_note.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    (root / "scripts").mkdir()
+    drift = root / "scripts" / "check-src-context-drift.sh"
+    drift.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    drift.chmod(0o755)
+    (root / "context" / "notes").mkdir()
+    (root / "context" / "notes" / "NOTE-20260720_1407-PlainCedar-frontmatter.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Note
+            metadata:
+              id: NOTE-20260720_1407-PlainCedar-frontmatter
+              created: '2026-07-20T14:07:00Z'
+            spec:
+              title: Frontmatter delimiter regression
+              body: |
+                A Markdown horizontal rule must remain within this scalar.
+                ---
+                Parsing must continue after it.
+              type: insight
+              state: captured
+            ---
+            """),
+        encoding="utf-8",
+    )
+    stub = root / ".doctor-logentry.json"
+    result = _run_doctor(root, "--category=schema_filename", stub_path=stub)
+    check(
+        "block scalar delimiter does not truncate frontmatter",
+        result.returncode == 0,
+        f"got {result.returncode}; stdout: {result.stdout[-600:]}",
+    )
+    check(
+        "block scalar fixture has no missing Note fields",
+        "'type' is a required property" not in result.stdout
+        and "'state' is a required property" not in result.stdout,
+        result.stdout[-600:],
+    )
+
+# ---------------------------------------------------------------------------
 # Test 8b: schema_filename --fix emits append-only logentry correction
 # ---------------------------------------------------------------------------
 print("\n[8b] schema_filename --fix emits append-only logentry.corrected")
