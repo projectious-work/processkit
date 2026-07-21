@@ -18,6 +18,8 @@ line on `main` after the v1 development branch was separated.
 
 - Publish the v0.27.5 release contents from the v0 maintenance branch with
   a new, canonical `v0.27.6` tag and release artifact.
+- Verify the generated MCP manifest during archive builds instead of
+  rewriting tracked release metadata after tagging.
 
 ### Notes
 
