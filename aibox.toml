@@ -56,12 +56,47 @@ install = true  # selects the internal audio-voice recipe
 pulse_server = "tcp:host.docker.internal:4714"  # PulseAudio TCP endpoint (default port: 4714)
 
 # =============================================================================
+# [latex] — reproducible document builds and live PDF preview
+# =============================================================================
+# Configure one or more named documents. Inside the container,
+# `aibox-latex-build` builds all and `aibox-latex-watch <name>` watches one.
+# A Compose sidecar serves every configured PDF from one index page.
+[latex]
+engine = "lualatex"  # Shared engine: lualatex, pdflatex, xelatex, or tectonic (build-only; no watch).
+cache_dir = ".latex-cache"  # Project-local TEXMFVAR/TEXMFCONFIG root; keep this gitignored.
+options = []  # Extra engine/latexmk arguments applied to every document.
+# Repeat this block for every independently built PDF. Names must be unique.
+# [[latex.documents]]
+# name = "overview"                    # CLI name and URL slug: [a-zA-Z0-9_-].
+# source = "docs/overview.tex"         # Main TeX file, relative to the project root.
+# output_dir = ".latex-cache/overview"  # Separate output directory per document.
+
+[latex.preview]
+# `aibox apply` generates a dedicated Compose sidecar and port mapping. The
+# server listens on port 8765 inside that sidecar; bind/port below control only
+# how Compose publishes it on the host. `aibox up` starts the sidecar.
+enabled = false  # Generate and run the shared preview sidecar.
+engine = "embedpdf"  # PDF viewer implementation; currently only embedpdf.
+bind = "127.0.0.1"  # Host publish address: 127.0.0.1 = local only; 0.0.0.0 = network access.
+port = 8765  # Host port; maps to the sidecar's fixed internal port 8765.
+# document = "overview"  # Optional legacy-route default; all configured PDFs are served.
+allow_public = false  # Required for a non-loopback host bind; endpoint has no authentication.
+
+# =============================================================================
 # [integrations.github] — GitHub CLI backed HTTPS git credentials
 # =============================================================================
 # credential_helper: auto enables when git-ui.gh is installed; gh forces it; none removes it.
 # Tokens are never written to git config; Git asks `gh auth git-credential` at runtime.
 [integrations.github]
 credential_helper = "auto"  # options: auto, gh, none
+
+# =============================================================================
+# [context]
+# =============================================================================
+# mode: processkit installs the project context layer.
+[context]
+mode = "processkit"
+packages = ["product"]
 
 # =============================================================================
 # [skills] — processkit skill catalog
@@ -191,6 +226,7 @@ enabled = [
     # "reflex-python", # engineering; Reflex Python web framework for full-stack apps in pure Python — components, state, routing, and deployment. …
     # "release-semver", # devops; Semantic versioning releases — version bumps, changelogs, tags, publishing. Use when preparing a new release:…
     # "repo-management", # devops; Reconcile repository issues, pull requests, merge requests, local git state, commits, and pushes across GitHu…
+    # "repository-portfolio-review", # processkit; Review one or more GitHub repositories for governance, documentation, licensing, privacy, security, and portf…
     # "research-with-confidence", # product; Investigates a question systematically before answering — verifying claims through sources, distinguishing kn…
     # "runtime-prune", # processkit; Inspect, plan, and invoke safe cleanup for runtime-manager-owned state without binding the workflow to a spec…
     # "rust-conventions", # engineering; Rust conventions — error handling with anyhow/thiserror, module layout, clippy. Use when writing or reviewing…
@@ -366,6 +402,10 @@ lazygit = { enabled = false } # Interactive terminal UI for Git status, commits,
 # ghostscript = { enabled = false } # PostScript and EPS rendering support for document previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 rich = {} # Markdown, JSON, RST, and notebook terminal rendering for Yazi previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
+# Tools/yazi-omp — oh-my-posh for the omp.yazi header prompt
+# [addons.yazi-omp.tools]
+# oh-my-posh = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+
 # =============================================================================
 # [ai] — AI agent harnesses and model providers
 # =============================================================================
@@ -487,9 +527,7 @@ provider_mode = "pointer"  # options: pointer, full
 # =============================================================================
 # [ai.mcp] — MCP gateway, permissions, and extra servers
 # =============================================================================
-# Auto-allow / deny MCP tools by glob pattern. processkit's own MCP tools are
-# pre-approved separately via the skill-gate preauth spec — these patterns are
-# for user-added MCP servers. See:
+# Auto-allow / deny MCP tools by glob pattern. See:
 # https://projectious-work.github.io/aibox/docs/reference/configuration#permission-configuration-mcppermissions
 # [ai.mcp.permissions]
 # default_mode   = "ask"

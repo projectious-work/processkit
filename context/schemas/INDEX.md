@@ -7,6 +7,12 @@ Schema files use **JSON Schema (draft 2020-12) expressed in YAML** for the
 `spec_schema` field. This is the format consumed by the `index-management`
 MCP server (Phase 3).
 
+The v1 alpha generator inputs live under `src/` in this directory and its
+committed outputs live under `_generated/`. Runtime schema loading prefers a
+generated file and falls back to the matching flat file while the alpha slice
+is being migrated. Run `uv run scripts/generate-v1-schemas.py --check` from a
+processkit checkout to verify that committed outputs are current.
+
 ## Shape
 
 ```yaml
