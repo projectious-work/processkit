@@ -9,6 +9,23 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.27.6] - 2026-07-21
+
+v0.27.6 is a **patch release** that establishes the canonical v0 release
+line on `main` after the v1 development branch was separated.
+
+### Fixed
+
+- Publish the v0.27.5 release contents from the v0 maintenance branch with
+  a new, canonical `v0.27.6` tag and release artifact.
+
+### Notes
+
+- The earlier `v0.27.5` tag remains immutable and is retained on the
+  archived pre-cleanup branch for historical provenance.
+
+---
+
 ## [v0.27.5] - 2026-07-20
 
 v0.27.5 is a **patch release** for derived-project doctor correctness and
