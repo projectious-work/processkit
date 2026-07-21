@@ -11,8 +11,7 @@ but replaces the current v0 ontology and tooling internals with an
 89-concept T/P/D/C model, generated schemas, stronger MCP contracts, and
 automated validation.
 
-This section is the working design package for the `v1.0` development
-branch.
+This section is the working design package for the v1 development line.
 
 ## Core Documents
 
@@ -38,15 +37,26 @@ branch.
 
 ## Branch Contract
 
-The `v1.0` branch is for the rebuild line only:
+The v1 development line is isolated from v0 maintenance:
 
 - schema source and generated schema machinery
 - v1.0 ontology and migration adapters
 - MCP gateway, helper, and index changes required by the RFC
 - automated fixture suites and first-ART validation evidence
-- docs and acceptance-gate updates for the v1.0 line
+- docs and acceptance-gate updates for the v1 line
 
-v0.x maintenance continues on `main` until the final cutover decision.
-Security fixes and dependency bumps may flow both ways; feature work does
-not automatically backport.
+| Purpose | Branch | Tag policy |
+| --- | --- | --- |
+| v0 maintenance development | `v0.x-dev` | never tag |
+| v0 integration | `v0.x-release` | stable v0 tags only |
+| v1 development | `v1.x-dev` | never tag |
+| v1 prerelease integration | `v1.x-pre-release` | v1 alpha, beta, and RC tags only |
+| v1 GA integration | `v1.x-release` | stable v1 tags only |
+| published history | `main` | contains every stable tagged release |
 
+`v1.x-dev` merges to `v1.x-pre-release` for each prerelease. At general
+availability, create `v1.x-release` from the selected prerelease state,
+validate and tag there, then merge it into `main`. v0 follows the same
+development-to-release-to-main pattern. Security fixes and dependency
+bumps may flow between lines when needed; feature work does not
+automatically backport.

@@ -1,4 +1,4 @@
-# RFC — processkit v1.0: greenfield ontology rebuild on a parallel `v1.0` feature branch
+# RFC — processkit v1.0: greenfield ontology rebuild on parallel v1 branches
 
 **Status:** DRAFT — awaiting derived-project owner sign-off before upstream submission
 **Audience:** maintainers of `projectious-work/processkit`
@@ -16,10 +16,15 @@ After a 20-round ontology discussion in our derived project, we have concluded t
 
 We want to do this **upstream, on `projectious-work/processkit`**, not as a fork. The proposed shape:
 
-1. A **`v1.0` feature-development branch** on this repository. `main` continues shipping v0.x.y maintenance throughout the 9–12 month rebuild.
-2. A **pre-release tag stream** (`v1.0.0-alpha.* → -beta.* → -rc.* → v1.0.0`) cut from `v1.0` HEAD, each anchored to a specific cutover-phase gate.
-3. **Backport policy**: security fixes and dependency bumps flow `main ↔ v1.0`; no feature backports either direction.
-4. **Cutover** = merge `v1.0` → `main`, tag `v1.0.0`. Derived projects flip a pin in `aibox.toml`.
+1. A **`v1.x-dev` development branch** on this repository. `main` continues
+   receiving only finalized v0.x.y releases throughout the rebuild.
+2. A **`v1.x-pre-release` integration branch** for the pre-release tag
+   stream (`v1.0.0-alpha.* → -beta.* → -rc.*`).
+3. **Backport policy**: security fixes and dependency bumps flow between
+   version lines as needed; no feature backports either direction.
+4. **Cutover** = create `v1.x-release` from the selected prerelease state,
+   validate and tag `v1.0.0` there, then merge it into `main`. Derived
+   projects flip a pin in `aibox.toml`.
 5. An **81-criterion acceptance gate** (75 strict + 6 soft, 8 phases) governs when v1.0.0 ships. The gate is durably recorded in our derived project as DEC-BraveAtlas; we propose adopting it upstream as the formal v1.0 release criteria.
 
 The ontology work is fully scoped. Implementation needs upstream agreement on the branch model and a maintainer commitment to host it. **This RFC is asking for that agreement, not for upstream to take over the engineering.**
@@ -133,16 +138,26 @@ The indexer extends the existing FTS5 surface with interface-level grouping (no 
 ### 4.1 Branches
 
 ```
-main      ←  v0.27.0 → v0.27.1 → v0.27.2 → …          (maintenance, indefinite)
-                                              ╲
-v1.0      ←  v1.0.0-alpha.1 → -alpha.2 → -beta.1 → -rc.1 → v1.0.0 → (merge to main)
+v0.x-dev ──merge──> v0.x-release ──tag v0.x.y──> main
+
+v1.x-dev ──merge──> v1.x-pre-release ──tag v1 prereleases
+                                      └─promote──> v1.x-release
+                                                       └─tag v1.x.y──> main
 ```
 
-`main` keeps shipping v0.x.y throughout the rebuild — derived projects on production workloads stay on a v0.27.x pin and see no disruption.
+`main` is the published-history branch: it receives each stable release
+after its tag is created on the relevant integration branch. `v0.x-dev` is
+the v0 maintenance development line and `v0.x-release` is its release and
+tag authority. `v1.x-dev` is where rebuild work lands: composition tooling,
+schemas, skills, MCP gateway redesign, pk-doctor rewrite, and indexer
+extension. Its prereleases are integrated and tagged on
+`v1.x-pre-release`.
 
-`v1.0` is where all rebuild work lands: composition tooling, schemas, skills, MCP gateway redesign, pk-doctor rewrite, indexer extension.
-
-On cutover day, `v1.0` merges into `main` (fast-forward or single squash), tagged `v1.0.0`. Subsequent `main` ships v1.x.y. The `v0.x` line can be retained as an LTS branch if you want a long-term-support window for slow adopters.
+At v1 general availability, create `v1.x-release` from the selected
+prerelease state, perform final validation, tag `v1.0.0`, and merge that
+release branch into `main`. Subsequent stable v1 releases follow the same
+development-to-release-to-main pattern. The v0.x line remains available as
+an LTS branch for slow adopters.
 
 ### 4.2 Pre-release stream
 
@@ -151,7 +166,7 @@ On cutover day, `v1.0` merges into `main` (fast-forward or single squash), tagge
 | `v1.0.0-alpha.*` | Phase 1 (ontology completeness) green; Phase 2 (tooling parity) ≥75 % |
 | `v1.0.0-beta.*` | Phases 1–3 all green (incl. corpus migration); Phase 4 ≥75 % |
 | `v1.0.0-rc.*` | Phases 1–5 strict green; G6 cutover-gate outstanding |
-| `v1.0.0` (final) | All strict criteria pass; G6 approved; merged to `main` |
+| `v1.0.0` (final) | All strict criteria pass; G6 approved; tagged on `v1.x-release`, then merged to `main` |
 
 All pre-release tags cut with `gh release create --prerelease`, so the GitHub "Latest" badge stays on the v0.x.y line until cutover. No surprises for casual visitors.
 
@@ -174,7 +189,8 @@ Per semver, every pre-release tag sorts strictly before `v1.0.0`, and `v1.0.0-al
 
 ### 4.4 Backport policy
 
-- **Security fixes** flow `main → v1.0` and `v1.0 → main` as soon as they land on either side.
+- **Security fixes** flow between the relevant v0 and v1 development lines
+  as soon as they land on either side.
 - **Dependency bumps** flow either direction at maintainer discretion.
 - **Feature work** does NOT backport in either direction. Features intended for both ontologies are implemented twice (once in v0.x idioms, once in v1.0 idioms) or deferred to v1.x.
 
