@@ -7,6 +7,13 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Defined dedicated development and release-integration branches for v0 and
+  v1 lines, with stable release tags merged into `main` after publication.
+- Made a curated, version-matched `CHANGELOG.md` entry a required release
+  archive preflight rather than an optional staged file.
+
 ---
 
 ## [v0.27.6] - 2026-07-21
