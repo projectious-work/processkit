@@ -16,6 +16,34 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.0] - 2026-07-21
+
+v0.28.0 is a **minor release** that adds an explicit, research-backed
+branching-strategy guide and establishes the v0 development-to-release
+promotion model for future maintenance releases.
+
+### Added
+
+- Added `git-branching`, a skill for selecting and documenting Feature
+  Branch Workflow, GitHub Flow, Trunk-Based Development, Gitflow, GitLab
+  Flow, or processkit's version-line integration model.
+- Added a strategy catalog with selection criteria, branch-contract output,
+  hotfix guidance, and branch-protection baseline.
+- Added `pk-reconcile` to coordinate migrations, pk-doctor findings, and
+  guarded GitHub issue and pull-request reconciliation in one command.
+
+### Changed
+
+- Established `v0.x-dev` as the v0 development line and `v0.x-release` as
+  its release and stable-tag authority; stable release commits are merged
+  into `main` after tagging.
+- Required a curated, version-matched `CHANGELOG.md` entry before building
+  a processkit release archive.
+- Made `pk-resume` delegate its session-start cleanup to `pk-reconcile`,
+  removing duplicated migration, health, and GitHub preflight instructions.
+
+---
+
 ## [v0.27.6] - 2026-07-21
 
 v0.27.6 is a **patch release** that establishes the canonical v0 release
