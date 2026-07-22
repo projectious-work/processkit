@@ -67,6 +67,7 @@ SCHEMA_DDL = """
 CREATE TABLE IF NOT EXISTS entities (
     id TEXT PRIMARY KEY,
     kind TEXT NOT NULL,
+    discriminator TEXT,
     api_version TEXT NOT NULL,
     path TEXT NOT NULL,
     storage_location TEXT,
@@ -221,6 +222,12 @@ def _migrate_schema(db: sqlite3.Connection) -> None:
     }
     if "storage_location" not in columns:
         db.execute("ALTER TABLE entities ADD COLUMN storage_location TEXT")
+    if "discriminator" not in columns:
+        db.execute("ALTER TABLE entities ADD COLUMN discriminator TEXT")
+    db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_entities_discriminator "
+        "ON entities (discriminator)"
+    )
 
 
 def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> IndexStats:
@@ -307,6 +314,7 @@ def _insert_entity(
     storage_location: str | None = None,
 ) -> None:
     spec = ent.spec or {}
+    discriminator = schema_mod.discriminator_for_kind(ent.kind, spec)
     title = spec.get("title") or spec.get("name")
     spec_json = json.dumps(spec, default=str)
     if storage_location is None and ent.path:
@@ -315,14 +323,16 @@ def _insert_entity(
         """
         INSERT OR REPLACE INTO entities
         (
-            id, kind, api_version, path, storage_location, created, updated,
+            id, kind, discriminator, api_version, path, storage_location,
+            created, updated,
             title, state, labels_json, spec_json, body
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             ent.id,
             ent.kind,
+            discriminator,
             ent.apiVersion,
             str(ent.path) if ent.path else "",
             storage_location,
@@ -343,7 +353,10 @@ def _insert_entity(
         "INSERT INTO entity_interfaces (entity_id, interface) VALUES (?, ?)",
         [
             (ent.id, interface)
-            for interface in schema_mod.interfaces_for_kind(ent.kind)
+            for interface in schema_mod.interfaces_for_kind(
+                ent.kind,
+                discriminator=discriminator,
+            )
         ],
     )
     _upsert_fts(db, ent, title=title, spec_json=spec_json)
@@ -684,7 +697,7 @@ def query_entities(
 ) -> list[dict[str, Any]]:
     limit = coerce_limit(limit, max_limit=MAX_ENTITY_RESULT_LIMIT)
     sql = (
-        "SELECT id, kind, title, state, created, updated, path,"
+        "SELECT id, kind, discriminator, title, state, created, updated, path,"
         " storage_location FROM entities WHERE 1=1"
     )
     params: list[Any] = []
@@ -710,7 +723,8 @@ def query_by_interface(
     """List entities whose generated schema declares ``interface``."""
     limit = coerce_limit(limit, max_limit=MAX_ENTITY_RESULT_LIMIT)
     sql = (
-        "SELECT e.id, e.kind, e.title, e.state, e.created, e.updated,"
+        "SELECT e.id, e.kind, e.discriminator, e.title, e.state,"
+        " e.created, e.updated,"
         " e.path, e.storage_location FROM entities AS e"
         " JOIN entity_interfaces AS i ON i.entity_id = e.id"
         " WHERE i.interface = ?"
@@ -730,7 +744,7 @@ def query_by_interface(
 def get_entity(db: sqlite3.Connection, id: str) -> dict[str, Any] | None:
     row = db.execute(
         (
-            "SELECT id, kind, title, state, created, updated, path,"
+            "SELECT id, kind, discriminator, title, state, created, updated, path,"
             " storage_location, spec_json, labels_json FROM entities WHERE id = ?"
         ),
         (id,),
@@ -782,7 +796,7 @@ def resolve_entity(
 
     def _fetch(where: str, params: list[Any]) -> list[dict[str, Any]]:
         sql = (
-            "SELECT id, kind, title, state, created, updated, path,"
+            "SELECT id, kind, discriminator, title, state, created, updated, path,"
             " storage_location, spec_json, labels_json FROM entities WHERE " + where
         )
         if kind:

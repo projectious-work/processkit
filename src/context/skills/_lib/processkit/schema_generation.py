@@ -184,6 +184,41 @@ def regenerate_schemas(
     if not isinstance(entries, dict) or not isinstance(interfaces, list):
         raise SchemaGenerationError("registry requires kinds and interfaces")
 
+    discriminator_keys: dict[tuple[str, str, str], str] = {}
+    registry_errors: dict[str, str] = {}
+    for selector, entry in entries.items():
+        if not isinstance(entry, dict) or entry.get("class") != "discriminator":
+            continue
+        parent = entry.get("parent")
+        discriminator = entry.get("discriminator")
+        parent_entry = entries.get(parent) if isinstance(parent, str) else None
+        if (
+            not isinstance(parent, str)
+            or not isinstance(parent_entry, dict)
+            or parent_entry.get("class") == "discriminator"
+        ):
+            registry_errors[selector] = "discriminator requires ordinary parent"
+            continue
+        if not isinstance(discriminator, dict):
+            registry_errors[selector] = "discriminator mapping is required"
+            continue
+        field = discriminator.get("field")
+        value = discriminator.get("value")
+        if not isinstance(field, str) or not isinstance(value, str):
+            registry_errors[selector] = (
+                "discriminator field and value must be strings"
+            )
+            continue
+        key = (parent, field, value)
+        if key in discriminator_keys:
+            registry_errors[selector] = (
+                f"discriminator collides with {discriminator_keys[key]}"
+            )
+        else:
+            discriminator_keys[key] = selector
+    if registry_errors:
+        return {"rebuilt": [], "unchanged": [], "errors": registry_errors}
+
     selected = list(entries) if kinds is None else kinds
     unknown = sorted(set(selected) - set(entries))
     if unknown:
@@ -208,14 +243,36 @@ def regenerate_schemas(
             document = _compose(source, source_root, ())
             metadata = document.get("metadata", {})
             target_kind = str(metadata.get("target_kind", "")).lower()
-            if document.get("kind") != "Schema" or target_kind != kind:
+            is_discriminator = entry.get("class") == "discriminator"
+            expected_target = entry.get("parent") if is_discriminator else kind
+            if (
+                document.get("kind") != "Schema"
+                or target_kind != expected_target
+            ):
                 raise SchemaGenerationError(
                     "source kind/metadata.target_kind does not match registry"
                 )
-            if metadata.get("id") != f"SCHEMA-{kind}":
+            expected_id = (
+                f"SCHEMA-{expected_target}-{kind}"
+                if is_discriminator
+                else f"SCHEMA-{kind}"
+            )
+            if metadata.get("id") != expected_id:
                 raise SchemaGenerationError(
-                    f"schema id must be SCHEMA-{kind}"
+                    f"schema id must be {expected_id}"
                 )
+            if is_discriminator:
+                schema_spec = document.get("spec", {})
+                declared_parent = str(schema_spec.get("parent", "")).lower()
+                declared_discriminator = schema_spec.get("discriminator")
+                if declared_parent != expected_target:
+                    raise SchemaGenerationError(
+                        "discriminator spec.parent does not match registry"
+                    )
+                if declared_discriminator != entry.get("discriminator"):
+                    raise SchemaGenerationError(
+                        "discriminator spec does not match registry"
+                    )
             declared = document.get("spec", {}).get("interfaces", [])
             if not isinstance(declared, list) or not all(
                 isinstance(interface, str) for interface in declared

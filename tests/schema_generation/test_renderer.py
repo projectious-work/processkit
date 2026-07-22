@@ -38,6 +38,8 @@ def test_committed_generation_is_current() -> None:
             "logentry",
             "artifact",
             "gate",
+            "proposition",
+            "risk",
         ],
         "errors": {},
     }
@@ -72,6 +74,8 @@ def test_full_generation_is_deterministic(tmp_path: Path) -> None:
         "logentry",
         "artifact",
         "gate",
+        "proposition",
+        "risk",
     ]
     assert second["rebuilt"] == []
     assert first_bytes == second_bytes
@@ -86,6 +90,16 @@ def test_partial_generation_does_not_touch_other_kinds(tmp_path: Path) -> None:
     assert result["rebuilt"] == ["decisionrecord"]
     assert [path.name for path in tmp_path.iterdir()] == [
         "decisionrecord.yaml"
+    ]
+
+    risk = generation.regenerate_schemas(
+        SCHEMAS_ROOT,
+        kinds=["risk"],
+        output_dir=tmp_path / "risk",
+    )
+    assert risk["rebuilt"] == ["risk"]
+    assert [path.name for path in (tmp_path / "risk").iterdir()] == [
+        "proposition-risk.yaml"
     ]
 
 
@@ -188,6 +202,44 @@ def test_registry_target_and_output_collisions_are_rejected(
     )
     assert "decisionrecord" in result["errors"]
 
+
+def test_discriminator_registry_contracts_are_rejected(
+    tmp_path: Path,
+) -> None:
+    schemas = tmp_path / "schemas"
+    shutil.copytree(SCHEMAS_ROOT, schemas)
+    registry_path = schemas / "src/registry.yaml"
+    registry = yaml.safe_load(registry_path.read_text())
+
+    registry["kinds"]["risk"]["parent"] = "missing"
+    registry_path.write_text(yaml.safe_dump(registry, sort_keys=False))
+    result = generation.regenerate_schemas(
+        schemas, output_dir=tmp_path / "missing-parent"
+    )
+    assert "risk" in result["errors"]
+
+    registry = yaml.safe_load(
+        (SCHEMAS_ROOT / "src/registry.yaml").read_text()
+    )
+    duplicate = dict(registry["kinds"]["risk"])
+    duplicate["output"] = "proposition-risk-copy.yaml"
+    registry["kinds"]["risk-copy"] = duplicate
+    registry_path.write_text(yaml.safe_dump(registry, sort_keys=False))
+    result = generation.regenerate_schemas(
+        schemas, output_dir=tmp_path / "collision"
+    )
+    assert "risk-copy" in result["errors"]
+
+    registry["kinds"].pop("risk-copy")
+    registry_path.write_text(yaml.safe_dump(registry, sort_keys=False))
+    risk_path = schemas / "src/discriminators/risk.yaml"
+    risk_path.write_text(
+        risk_path.read_text().replace("value: risk", "value: hazard")
+    )
+    result = generation.regenerate_schemas(
+        schemas, output_dir=tmp_path / "mismatch"
+    )
+    assert "risk" in result["errors"]
 
 def test_generated_schema_precedes_flat_fallback(tmp_path: Path) -> None:
     library = ROOT / "src/context/skills/_lib"

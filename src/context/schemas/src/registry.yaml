@@ -6,6 +6,7 @@ interfaces:
   - Record
   - Relationship
   - Versioned
+  - Proposition
 alpha_concepts:
   - WorkItem
   - DecisionRecord
@@ -40,3 +41,14 @@ kinds:
   gate:
     source: primitives/gate.yaml
     output: gate.yaml
+  proposition:
+    source: primitives/proposition.yaml
+    output: proposition.yaml
+  risk:
+    class: discriminator
+    parent: proposition
+    discriminator:
+      field: kind
+      value: risk
+    source: discriminators/risk.yaml
+    output: proposition-risk.yaml

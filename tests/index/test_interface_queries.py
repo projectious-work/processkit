@@ -16,7 +16,7 @@ def test_reindex_groups_entities_by_declared_interface(tmp_path: Path) -> None:
     db = index.open_db(tmp_path / "index.sqlite3")
     try:
         stats = index.reindex(FIXTURE, db)
-        assert stats.entities == 6
+        assert stats.entities == 8
 
         records = index.query_by_interface(db, "Record")
         assert {row["kind"] for row in records} == {
@@ -31,11 +31,25 @@ def test_reindex_groups_entities_by_declared_interface(tmp_path: Path) -> None:
             "DecisionRecord",
             "Gate",
             "WorkItem",
+            "Proposition",
         }
         assert index.query_by_interface(
             db, "Versioned", kind="Gate"
         )[0]["kind"] == "Gate"
         assert index.query_by_interface(db, "Unknown") == []
+
+        propositions = index.query_by_interface(db, "Proposition")
+        assert {row["id"] for row in propositions} == {
+            "PROP-20260722_0001-ClearPath-alpha-claim",
+            "PROP-20260722_0002-ClearPath-alpha-risk",
+        }
+        by_id = {row["id"]: row for row in propositions}
+        assert by_id[
+            "PROP-20260722_0001-ClearPath-alpha-claim"
+        ]["discriminator"] is None
+        assert by_id[
+            "PROP-20260722_0002-ClearPath-alpha-risk"
+        ]["discriminator"] == "risk"
     finally:
         db.close()
 
@@ -57,3 +71,29 @@ def test_upsert_replaces_stale_interface_rows(tmp_path: Path) -> None:
         )
     finally:
         db.close()
+
+
+def test_existing_index_adds_discriminator_column(tmp_path: Path) -> None:
+    import sqlite3
+
+    path = tmp_path / "legacy.sqlite3"
+    db = sqlite3.connect(path)
+    db.execute(
+        "CREATE TABLE entities ("
+        "id TEXT PRIMARY KEY, kind TEXT NOT NULL, api_version TEXT NOT NULL,"
+        "path TEXT NOT NULL, storage_location TEXT, created TEXT NOT NULL,"
+        "updated TEXT, title TEXT, state TEXT, labels_json TEXT,"
+        "spec_json TEXT NOT NULL, body TEXT)"
+    )
+    db.commit()
+    db.close()
+
+    migrated = index.open_db(path)
+    try:
+        columns = {
+            row["name"]
+            for row in migrated.execute("PRAGMA table_info(entities)")
+        }
+        assert "discriminator" in columns
+    finally:
+        migrated.close()

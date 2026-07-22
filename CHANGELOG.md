@@ -12,9 +12,15 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Expanded the v1 generated-schema alpha slice with Artifact and Gate.
 - Added interface-aware indexing and the `query_by_interface` MCP tool for
   polymorphic reads across schema-declared interfaces.
+- Added schema-management MCP tools for deterministic regeneration, contract
+  inspection, and validation-mode inspection.
+- Added Proposition as an alpha primitive and Risk as its first generated
+  discriminator overlay, with discriminator-aware validation and indexing.
 
 ### Changed
 
+- Separated the v1 product version from entity API v2 and independent
+  per-kind schema versions so migration provenance reports product 1.x.
 - Defined dedicated development and release-integration branches for v0 and
   v1 lines, with stable release tags merged into `main` after publication.
 - Made a curated, version-matched `CHANGELOG.md` entry a required release
