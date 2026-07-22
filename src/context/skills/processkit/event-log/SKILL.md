@@ -165,6 +165,7 @@ well-established:
 | `binding.ended`           | Binding `valid_until` reached or Binding deleted             |
 | `gate.passed` / `gate.failed` | A gate validation result                                 |
 | `migration.applied`       | Migration reached applied state                              |
+| `migration.filename-normalized` | An audited Migration ID/filename normalization completed |
 | `release.published`       | A release was published                                      |
 | `logentry.corrected`      | Correction of an earlier LogEntry (referenced in details)    |
 | `session.handover`        | End-of-session handover written before container shutdown    |

@@ -54,6 +54,7 @@ spec:
     - migration.transitioned
     - migration.applied
     - migration.rejected
+    - migration.filename-normalized
     - migration.v2-context-converted
     - note.created
     - process.backlog_review

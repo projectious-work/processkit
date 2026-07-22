@@ -4374,6 +4374,45 @@
     {
       "annotations": {
         "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "migration-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Atomically normalize a Migration filename and identifier.\n\n``target_id`` must use the canonical ``MIG-YYYYMMDD_HHMM-WordPair``\npolicy.  The operation is intentionally limited to Migration entities:\nit writes the corrected entity before removing the old file, regenerates\n``context/migrations/INDEX.md``, rebuilds the SQLite index, updates exact\nreferences in mutable canonical files, and records a\n``migration.filename-normalized`` event.\n\nApplied and rejected Migrations are allowed because this is an audited\nadministrative correction. Existing LogEntries and other terminal\nMigration files are never rewritten; the emitted event preserves the\nold-to-new ID bridge for append-only history.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this tool.\n1% rule: call route_task first; commit in the same turn \u2014 deferred writes\nare dropped.\n",
+      "name": "normalize_migration_filename",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "target_id": {
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "target_id"
+        ],
+        "title": "normalize_migration_filenameArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/migration-management/mcp/server.py",
+      "source_skill": "migration-management",
+      "source_tool": "normalize_migration_filename",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
         "idempotentHint": false,
         "openWorldHint": false,
         "readOnlyHint": false
