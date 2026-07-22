@@ -163,10 +163,16 @@ well-established:
 | `decision.superseded`     | DecisionRecord transitioned to `superseded`                  |
 | `binding.created`         | New Binding written                                          |
 | `binding.ended`           | Binding `valid_until` reached or Binding deleted             |
+| `binding.updated`         | Binding fields changed through binding-management            |
 | `gate.passed` / `gate.failed` | A gate validation result                                 |
+| `gate.updated` / `gate.emergency-updated` | A Gate changed through its audited update path |
 | `migration.applied`       | Migration reached applied state                              |
+| `migration.filename-normalized` | An audited Migration ID/filename normalization completed |
 | `release.published`       | A release was published                                      |
 | `logentry.corrected`      | Correction of an earlier LogEntry (referenced in details)    |
+| `team_member.runtime_launched` / `team_member.runtime_stopped` | Managed TeamMember runtime changed state |
+| `workitem.updated`        | WorkItem fields changed through workitem-management          |
+| `role_slot.created` / `role_slot.filled` / `role_slot.closed` | Team role-slot lifecycle changed |
 | `session.handover`        | End-of-session handover written before container shutdown    |
 | `session.standup`         | Standup update recording what was done and what comes next   |
 
