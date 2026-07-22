@@ -6,7 +6,7 @@ metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
     id: SKILL-release-semver
-    version: "1.1.0"
+    version: "1.2.0"
     created: 2026-04-06T00:00:00Z
     category: devops
     layer: 3
@@ -44,10 +44,12 @@ you ship 1.0, the rules become strict.
 
 ### Pre-release checklist
 
-- All tests pass on the main branch.
+- All tests pass on the designated release-integration branch.
 - No uncommitted changes in the working tree.
 - Dependencies reviewed and up to date where appropriate.
-- CHANGELOG or release notes drafted.
+- `CHANGELOG.md` has a curated, dated section for the exact release tag;
+  it includes only user-visible changes, uses standard categories, and has
+  correct comparison links.
 - A root `LICENSE` file exists and matches the intended project
   license. If the project ships release archives, the archive build must
   include that `LICENSE` at the top level. For processkit,
@@ -72,12 +74,16 @@ passes. See DEC-20260422_1348-SnowyWolf.
    `Cargo.toml`, `pyproject.toml`, `package.json`, lockfiles).
 2. **Finalize CHANGELOG** — rename the `[vX.Y.Z-candidate]` section
    to `[vX.Y.Z] — YYYY-MM-DD`; ensure Added/Changed/Fixed/Removed
-   grouping; call out breaking changes if a major bump.
+   grouping; call out breaking changes if a major bump. Confirm the
+   root `CHANGELOG.md` contains a `## [vX.Y.Z]` heading; the archive
+   build rejects a release without it.
 3. **Regenerate provenance / transitive artifacts** — for processkit,
    `scripts/stamp-provenance.sh vX.Y.Z`.
 4. **Commit** the bump with message `chore(release): bump to vX.Y.Z`.
 5. **Tag** the commit: `git tag -a vX.Y.Z -m "<tag summary>"`.
-6. **Push** branch then tag: `git push origin main && git push origin vX.Y.Z`.
+6. **Push** the release-integration branch then tag. For a stable release,
+   merge that tagged branch into `main` immediately afterwards; for a v1
+   prerelease, retain the tag on `v1.x-pre-release`.
    A tag push alone does **not** create a GitHub Release — it is a
    git ref, not a distribution-channel artifact.
 7. **Create the GitHub Release** with notes extracted from the
