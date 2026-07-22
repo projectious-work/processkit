@@ -30,6 +30,11 @@ Tools:
         (pending OR in-progress → rejected; stamps spec.rejected_reason;
          moves the file to applied/ per processkit convention)
 
+    normalize_migration_filename(id, target_id)
+        -> {ok, old_id, new_id, path, updated_references}
+        (audited administrative normalization of a Migration ID and
+         filename; valid for applied history without rewriting LogEntries)
+
 Migrations have a state machine: pending → in-progress → applied
 (terminal). Either pending or in-progress can branch to rejected
 (terminal side state). The directory the file lives in mirrors the
@@ -74,6 +79,9 @@ from processkit.frontmatter import _BlockStyleDumper  # noqa: E402
 server = FastMCP("processkit-migration-management")
 
 _STATES = ("pending", "in-progress", "applied", "rejected")
+_CANONICAL_ID_RE = re.compile(
+    r"^MIG-\d{8}_\d{4}-[A-Z][a-z]+[A-Z][A-Za-z]+$"
+)
 
 
 def _now_iso() -> str:
@@ -475,6 +483,52 @@ def _commit_transition(
         actor=ent.id,
     )
     return new_path
+
+
+def _historical_path(root: Path, path: Path) -> bool:
+    """Whether ``path`` is append-only or otherwise immutable history.
+
+    The normalization operation may repair the selected Migration itself,
+    but it must never rewrite existing LogEntries or other terminal Migration
+    records merely to replace an ID string.  Its own side-effect event is the
+    durable bridge between the old and new identifiers.
+    """
+    context = root / "context"
+    return _is_relative_to(path, context / "logs") or _is_relative_to(
+        path, context / "migrations" / "applied"
+    )
+
+
+def _rewrite_active_references(
+    root: Path,
+    old_id: str,
+    new_id: str,
+    source_path: Path,
+) -> tuple[list[str], list[str]]:
+    """Replace exact IDs in mutable canonical files only.
+
+    Historical files are deliberately reported but left intact.  Rewriting
+    the exact token rather than parsing selected schema fields also preserves
+    references in migration plans and Markdown bodies while avoiding broad
+    textual substitutions.
+    """
+    changed: list[str] = []
+    preserved_history: list[str] = []
+    for path in _iter_context_entities(root):
+        if path == source_path or "/templates/" in str(path):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if old_id not in text:
+            continue
+        if _historical_path(root, path):
+            preserved_history.append(str(path.relative_to(root)))
+            continue
+        path.write_text(text.replace(old_id, new_id), encoding="utf-8")
+        changed.append(str(path.relative_to(root)))
+    return changed, preserved_history
 
 
 def _iter_context_entities(root: Path) -> list[Path]:
@@ -1036,6 +1090,123 @@ def reject_migration(id: str, reason: str) -> dict:
         "from_state": original,
         "to_state": "rejected",
         "path": str(ent.path),
+    }
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def normalize_migration_filename(id: str, target_id: str) -> dict:
+    """Atomically normalize a Migration filename and identifier.
+
+    ``target_id`` must use the canonical ``MIG-YYYYMMDD_HHMM-WordPair``
+    policy.  The operation is intentionally limited to Migration entities:
+    it writes the corrected entity before removing the old file, regenerates
+    ``context/migrations/INDEX.md``, rebuilds the SQLite index, updates exact
+    references in mutable canonical files, and records a
+    ``migration.filename-normalized`` event.
+
+    Applied and rejected Migrations are allowed because this is an audited
+    administrative correction. Existing LogEntries and other terminal
+    Migration files are never rewritten; the emitted event preserves the
+    old-to-new ID bridge for append-only history.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
+    already operating within a named processkit skill before using this tool.
+    1% rule: call route_task first; commit in the same turn — deferred writes
+    are dropped.
+    """
+    target_id = (target_id or "").strip()
+    if not _CANONICAL_ID_RE.fullmatch(target_id):
+        return {
+            "error": (
+                "target_id must match canonical policy "
+                "MIG-YYYYMMDD_HHMM-WordPair"
+            )
+        }
+
+    root = paths.find_project_root()
+    ent = _load_by_id(root, id)
+    if ent is None:
+        return {"error": f"Migration {id!r} not found"}
+    if ent.id == target_id:
+        return {
+            "ok": True,
+            "old_id": ent.id,
+            "new_id": target_id,
+            "path": str(ent.path),
+            "updated_references": [],
+            "preserved_history": [],
+            "already_normalized": True,
+        }
+    if _load_by_id(root, target_id) is not None:
+        return {"error": f"target Migration ID already exists: {target_id!r}"}
+    if ent.path is None:
+        return {"error": f"Migration {ent.id!r} has no storage path"}
+
+    old_id = ent.id
+    old_path = ent.path
+    target_path = old_path.with_name(f"{target_id}.md")
+    if target_path.exists():
+        return {"error": f"target path already exists: {target_path}"}
+
+    # Write first, then remove: a crash can leave a recoverable duplicate but
+    # never a missing historical Migration.
+    ent.metadata["id"] = target_id
+    ent.body = ent.body.replace(old_id, target_id)
+    ent.write(target_path, touch_updated=False)
+    try:
+        updated_references, preserved_history = _rewrite_active_references(
+            root, old_id, target_id, old_path
+        )
+        old_path.unlink()
+        _regenerate_index(root)
+        db = index.open_db()
+        try:
+            index.reindex(root, db)
+        finally:
+            db.close()
+        log.log_side_effect(
+            "Migration",
+            target_id,
+            "migration.filename-normalized",
+            f"Migration ID normalized: {old_id!r} → {target_id!r}",
+            root=root,
+            actor="processkit-migration-management",
+            details={
+                "old_id": old_id,
+                "new_id": target_id,
+                "updated_references": updated_references,
+                "preserved_history": preserved_history,
+            },
+        )
+    except Exception as exc:
+        # Leave the original untouched whenever the first write fails. If a
+        # later step fails, retain both copies for an operator-visible,
+        # non-destructive recovery rather than silently losing history.
+        if old_path.exists() and target_path.exists():
+            return {
+                "error": f"normalization incomplete; both files retained: {exc}",
+                "old_path": str(old_path),
+                "target_path": str(target_path),
+            }
+        if target_path.exists() and not old_path.exists():
+            return {
+                "error": f"normalization incomplete after old-file removal: {exc}",
+                "target_path": str(target_path),
+            }
+        return {"error": str(exc)}
+
+    return {
+        "ok": True,
+        "old_id": old_id,
+        "new_id": target_id,
+        "path": str(target_path),
+        "updated_references": updated_references,
+        "preserved_history": preserved_history,
     }
 
 
