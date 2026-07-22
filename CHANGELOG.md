@@ -9,6 +9,37 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.1] - 2026-07-22
+
+v0.28.1 is a **patch release** that removes two derived-project doctor
+dead ends in the v0 maintenance line.
+
+### Fixed
+
+- Added `normalize_migration_filename` to migration-management so canonical
+  Migration filename/ID repairs are audited, refresh indexes and mutable
+  references, and preserve append-only historical records. Closes #96.
+- Declared every literal MCP side-effect event type in the LogEntry schema,
+  including the six reported emitters and three role-slot lifecycle events,
+  so normal MCP writes no longer produce pk-doctor vocabulary errors.
+  Closes #97.
+
+### Changed
+
+- Expanded repository-portfolio-review to check the GitHub short description,
+  an applicable project logo, a maintained documentation/project page, and a
+  resolving GitHub Website link to that canonical page.
+
+### Verification
+
+- `uv run --with mcp --with pyyaml --with jsonschema
+  src/context/skills/processkit/migration-management/scripts/test_migration_management.py`
+- `uv run --with pyyaml --with jsonschema --with pytest --with mcp pytest
+  src/context/skills/processkit/event-log/scripts/test_log_event.py -v`
+- `uv run src/context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+
+---
+
 ## [v0.28.0] - 2026-07-21
 
 v0.28.0 is a **minor release** that adds an explicit, research-backed
