@@ -7,12 +7,29 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [v0.28.0] - 2026-07-21
+
+v0.28.0 is a **minor release** that adds an explicit, research-backed
+branching-strategy guide and establishes the v0 development-to-release
+promotion model for future maintenance releases.
+
+### Added
+
+- Added `git-branching`, a skill for selecting and documenting Feature
+  Branch Workflow, GitHub Flow, Trunk-Based Development, Gitflow, GitLab
+  Flow, or processkit's version-line integration model.
+- Added a strategy catalog with selection criteria, branch-contract output,
+  hotfix guidance, and branch-protection baseline.
+
 ### Changed
 
-- Defined dedicated development and release-integration branches for v0 and
-  v1 lines, with stable release tags merged into `main` after publication.
-- Made a curated, version-matched `CHANGELOG.md` entry a required release
-  archive preflight rather than an optional staged file.
+- Established `v0.x-dev` as the v0 development line and `v0.x-release` as
+  its release and stable-tag authority; stable release commits are merged
+  into `main` after tagging.
+- Required a curated, version-matched `CHANGELOG.md` entry before building
+  a processkit release archive.
 
 ---
 
