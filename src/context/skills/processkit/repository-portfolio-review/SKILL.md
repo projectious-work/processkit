@@ -25,14 +25,24 @@ result as engineering evidence, not a legal, privacy, or security guarantee.
 
 1. Inventory each repository's visibility, lifecycle, default branch,
    description, homepage, license metadata, and accessible branches.
-2. Check README, contributing and security guidance, release/rollback steps,
+2. Check the repository presentation surface:
+   - GitHub short description is present, concise, accurate, and explains the
+     repository's purpose to a first-time visitor.
+   - A small, appropriate logo or project mark exists where the project has a
+     public/product identity; otherwise record that a logo is not applicable
+     rather than creating a cosmetic finding.
+   - A maintained documentation or project page exists for repositories with
+     user-facing installation, usage, or public project information.
+   - GitHub's Website field links to that canonical page and the link resolves.
+     Do not substitute a README URL when a dedicated docs/project page exists.
+3. Check README, contributing and security guidance, release/rollback steps,
    local identity policy, hosted-automation policy, dependency provenance, and
    sensitive-data handling.
-3. Search open and recently closed local issues before recording a finding.
-4. Create repository-local issues only for verified, actionable gaps. Keep
+4. Search open and recently closed local issues before recording a finding.
+5. Create repository-local issues only for verified, actionable gaps. Keep
    security-sensitive details out of public issues and use the private
    reporting route instead.
-5. Separate completed remediation from findings, external decisions, and
+6. Separate completed remediation from findings, external decisions, and
    access limitations in the final report.
 
 ## Overview
@@ -50,6 +60,13 @@ Confirm the intended branch and repository before changing settings. For each
 finding, preserve a direct evidence link or command output. Re-run the local
 build/test commands after repository-content changes and report any checks
 that were unavailable.
+
+For presentation findings, record the inspected GitHub description and Website
+values, the canonical documentation/project-page URL, and logo evidence (or
+the reason it is not applicable). A missing logo is actionable only for a
+repository that presents a public-facing project identity; a missing or stale
+description, documentation page, or Website link is actionable when it harms
+discoverability or directs users to the wrong information.
 
 ## Gotchas
 
