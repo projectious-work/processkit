@@ -13,7 +13,7 @@ utilities (not a public skill category).
 
 ```
 skills/
-  processkit/    — 45 skills for operating the processkit system
+  processkit/    — 46 skills for operating the processkit system
   engineering/   — 47 skills: software design, architecture, backend, languages
   devops/        — 16 skills: infrastructure, CI/CD, ops, monitoring
   data-ai/       — 11 skills: data science, ML, AI/LLM, embeddings
