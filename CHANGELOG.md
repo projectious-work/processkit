@@ -7,6 +7,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Expanded the v1 generated-schema alpha slice with Artifact and Gate.
+- Added interface-aware indexing and the `query_by_interface` MCP tool for
+  polymorphic reads across schema-declared interfaces.
+
 ### Changed
 
 - Defined dedicated development and release-integration branches for v0 and

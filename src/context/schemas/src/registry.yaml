@@ -34,3 +34,9 @@ kinds:
   logentry:
     source: compositions/logentry.yaml
     output: logentry.yaml
+  artifact:
+    source: primitives/artifact.yaml
+    output: artifact.yaml
+  gate:
+    source: primitives/gate.yaml
+    output: gate.yaml

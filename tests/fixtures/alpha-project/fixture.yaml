@@ -6,6 +6,8 @@ expected:
     DecisionRecord: 1
     Binding: 1
     LogEntry: 1
+    Artifact: 1
+    Gate: 1
   interfaces:
     Record:
       - DEC-20260719_0001-ClearPath-alpha-decision

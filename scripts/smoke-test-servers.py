@@ -1199,6 +1199,12 @@ def run(distribution_root: Path | str | None = None):
         assert "BACK-template-asset" not in wi_row_ids
         assert len(wi_rows) >= 5
 
+        query_i = get_tool(idx, "query_by_interface")
+        record_rows = query_i(interface="Record", limit=200)
+        print("query_by_interface Record:", len(record_rows))
+        assert query_i(interface="Record", kind="DecisionRecord", limit=10)
+        assert query_i(interface="Record", kind="LogEntry", limit=10)
+
         search = get_tool(idx, "search_entities")
         s = search(text="lint", limit=10)
         print("search lint:", len(s))

@@ -23,6 +23,7 @@ import re
 
 from . import entity as entity_mod
 from . import paths
+from . import schema as schema_mod
 
 
 DEFAULT_RESULT_LIMIT = 50
@@ -80,6 +81,14 @@ CREATE TABLE IF NOT EXISTS entities (
 CREATE INDEX IF NOT EXISTS idx_entities_kind ON entities (kind);
 CREATE INDEX IF NOT EXISTS idx_entities_state ON entities (state);
 CREATE INDEX IF NOT EXISTS idx_entities_created ON entities (created);
+
+CREATE TABLE IF NOT EXISTS entity_interfaces (
+    entity_id TEXT NOT NULL,
+    interface TEXT NOT NULL,
+    PRIMARY KEY (entity_id, interface)
+);
+CREATE INDEX IF NOT EXISTS idx_entity_interfaces_interface
+    ON entity_interfaces (interface);
 
 CREATE TABLE IF NOT EXISTS events (
     id TEXT PRIMARY KEY,
@@ -221,6 +230,7 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
     if db is None:
         db = open_db()
     db.execute("DELETE FROM entities")
+    db.execute("DELETE FROM entity_interfaces")
     db.execute("DELETE FROM events")
     db.execute("DELETE FROM errors")
     if _has_fts(db):
@@ -324,6 +334,17 @@ def _insert_entity(
             spec_json,
             ent.body or None,
         ),
+    )
+    db.execute(
+        "DELETE FROM entity_interfaces WHERE entity_id = ?",
+        (ent.id,),
+    )
+    db.executemany(
+        "INSERT INTO entity_interfaces (entity_id, interface) VALUES (?, ?)",
+        [
+            (ent.id, interface)
+            for interface in schema_mod.interfaces_for_kind(ent.kind)
+        ],
     )
     _upsert_fts(db, ent, title=title, spec_json=spec_json)
     _upsert_semantic(
@@ -674,6 +695,34 @@ def query_entities(
         sql += " AND state = ?"
         params.append(state)
     sql += " ORDER BY created DESC LIMIT ?"
+    params.append(limit)
+    return [dict(row) for row in db.execute(sql, params).fetchall()]
+
+
+def query_by_interface(
+    db: sqlite3.Connection,
+    interface: str,
+    *,
+    kind: str | None = None,
+    state: str | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    """List entities whose generated schema declares ``interface``."""
+    limit = coerce_limit(limit, max_limit=MAX_ENTITY_RESULT_LIMIT)
+    sql = (
+        "SELECT e.id, e.kind, e.title, e.state, e.created, e.updated,"
+        " e.path, e.storage_location FROM entities AS e"
+        " JOIN entity_interfaces AS i ON i.entity_id = e.id"
+        " WHERE i.interface = ?"
+    )
+    params: list[Any] = [interface]
+    if kind:
+        sql += " AND e.kind = ?"
+        params.append(kind)
+    if state:
+        sql += " AND e.state = ?"
+        params.append(state)
+    sql += " ORDER BY e.created DESC LIMIT ?"
     params.append(limit)
     return [dict(row) for row in db.execute(sql, params).fetchall()]
 

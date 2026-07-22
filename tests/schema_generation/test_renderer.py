@@ -36,6 +36,8 @@ def test_committed_generation_is_current() -> None:
             "decisionrecord",
             "binding",
             "logentry",
+            "artifact",
+            "gate",
         ],
         "errors": {},
     }
@@ -68,6 +70,8 @@ def test_full_generation_is_deterministic(tmp_path: Path) -> None:
         "decisionrecord",
         "binding",
         "logentry",
+        "artifact",
+        "gate",
     ]
     assert second["rebuilt"] == []
     assert first_bytes == second_bytes

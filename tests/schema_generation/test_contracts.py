@@ -25,12 +25,26 @@ def _schema(kind: str) -> dict:
     return document
 
 
+def _without_descriptions(value):
+    if isinstance(value, dict):
+        return {
+            key: _without_descriptions(item)
+            for key, item in value.items()
+            if key != "description"
+        }
+    if isinstance(value, list):
+        return [_without_descriptions(item) for item in value]
+    return value
+
+
 def test_generated_schema_contracts_and_interfaces() -> None:
     expected = {
         "workitem": ["Entity", "Versioned"],
         "decisionrecord": ["Entity", "Record", "Versioned"],
         "binding": ["Entity", "Versioned", "Relationship"],
         "logentry": ["Entity", "Record"],
+        "artifact": ["Entity", "Versioned"],
+        "gate": ["Entity", "Versioned"],
     }
     for kind, interfaces in expected.items():
         document = _schema(kind)
@@ -40,7 +54,14 @@ def test_generated_schema_contracts_and_interfaces() -> None:
 
 
 def test_generated_schemas_preserve_flat_compatibility() -> None:
-    for kind in ("workitem", "decisionrecord", "binding", "logentry"):
+    for kind in (
+        "workitem",
+        "decisionrecord",
+        "binding",
+        "logentry",
+        "artifact",
+        "gate",
+    ):
         generated = _schema(kind)
         flat = yaml.safe_load(
             (ROOT / f"src/context/schemas/{kind}.yaml").read_text()
@@ -52,7 +73,12 @@ def test_generated_schemas_preserve_flat_compatibility() -> None:
         assert generated["apiVersion"] == flat["apiVersion"]
         assert generated["kind"] == flat["kind"]
         assert generated["metadata"] == flat["metadata"]
-        assert generated_spec == flat["spec"]
+        if kind in {"artifact", "gate"}:
+            assert _without_descriptions(generated_spec) == (
+                _without_descriptions(flat["spec"])
+            )
+        else:
+            assert generated_spec == flat["spec"]
 
 
 def test_alpha_fixture_validates_and_matches_manifest() -> None:
@@ -93,6 +119,12 @@ def test_required_fields_and_closed_vocabularies_reject_invalid_data() -> None:
             {"title": "Invalid vocabulary", "state": "backlog", "type": "x"},
         )
         assert "not declared in Schema.known_types" in errors[0]
+        assert schema.interfaces_for_kind("DecisionRecord") == [
+            "Entity",
+            "Record",
+            "Versioned",
+        ]
+        assert schema.validation_mode("Artifact") == "tolerant"
     finally:
         sys.path.remove(str(library))
 

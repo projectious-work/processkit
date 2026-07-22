@@ -137,6 +137,34 @@ def known_values(
     return [str(v) for v in values]
 
 
+def interfaces_for_kind(
+    kind: str,
+    schemas_dir: Path | None = None,
+) -> list[str]:
+    """Return the schema-declared interfaces implemented by ``kind``."""
+    try:
+        schema_spec = load_schema(kind, schemas_dir)
+    except SchemaError:
+        return []
+    interfaces = schema_spec.get("interfaces") or []
+    if not isinstance(interfaces, list):
+        return []
+    return [str(interface) for interface in interfaces]
+
+
+def validation_mode(
+    kind: str,
+    schemas_dir: Path | None = None,
+) -> str | None:
+    """Return the schema-declared validation mode for ``kind``."""
+    try:
+        schema_spec = load_schema(kind, schemas_dir)
+    except SchemaError:
+        return None
+    mode = schema_spec.get("validation_mode")
+    return str(mode) if mode is not None else None
+
+
 def list_known_kinds(schemas_dir: Path | None = None) -> list[str]:
     """Return all primitive kinds for which a schema file exists."""
     schemas_dir = schemas_dir or paths.primitive_schemas_dir()
