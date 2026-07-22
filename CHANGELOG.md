@@ -22,6 +22,8 @@ promotion model for future maintenance releases.
   Flow, or processkit's version-line integration model.
 - Added a strategy catalog with selection criteria, branch-contract output,
   hotfix guidance, and branch-protection baseline.
+- Added `pk-reconcile` to coordinate migrations, pk-doctor findings, and
+  guarded GitHub issue and pull-request reconciliation in one command.
 
 ### Changed
 
@@ -30,6 +32,8 @@ promotion model for future maintenance releases.
   into `main` after tagging.
 - Required a curated, version-matched `CHANGELOG.md` entry before building
   a processkit release archive.
+- Made `pk-resume` delegate its session-start cleanup to `pk-reconcile`,
+  removing duplicated migration, health, and GitHub preflight instructions.
 
 ---
 
