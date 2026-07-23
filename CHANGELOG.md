@@ -7,6 +7,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Let long-lived gateways refresh GitHub CLI credentials from an owner-only
+  token file immediately before each `gh` call, while redacting supported
+  token values from subprocess results. Closes #107.
+
 ### Changed
 
 - Defined dedicated development and release-integration branches for v0 and
