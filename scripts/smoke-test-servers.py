@@ -254,6 +254,11 @@ def run(distribution_root: Path | str | None = None):
         art = import_server("artifact-management")
         mig = import_server("migration-management")
         note = import_server("note-management")
+        capability = import_server("capability-management")
+        proposition = import_server("proposition-management")
+        skill_mgmt = import_server("skill-management")
+        okf = import_server("okf-compatibility")
+        team = import_server("team-manager")
 
         schema_contract = get_tool(
             schema_mgmt, "get_schema_contract"
@@ -283,6 +288,11 @@ def run(distribution_root: Path | str | None = None):
         assert gateway_tools["runtime"]["transport"] == "stdio"
         assert "create_workitem" in gateway.server._tool_manager._tools
         assert "regenerate_schemas" in gateway.server._tool_manager._tools
+        assert "create_capability" in gateway.server._tool_manager._tools
+        assert "create_proposition" in gateway.server._tool_manager._tools
+        assert "create_skill" in gateway.server._tool_manager._tools
+        assert "export_okf_bundle" in gateway.server._tool_manager._tools
+        assert "plan_v0_to_v1_migration" in gateway.server._tool_manager._tools
         gateway_health = get_tool(gateway, "gateway_health")()
         assert gateway_health["ok"] is True
 
@@ -488,6 +498,23 @@ def run(distribution_root: Path | str | None = None):
         assert lk["ok"]
         role_binding_id = lk["binding_id"]
 
+        create_member = get_tool(team, "create_team_member")
+        member = create_member(
+            name="Alpha Reviewer",
+            type="human",
+            slug="alpha-reviewer",
+            default_role=role_id,
+            default_seniority="expert",
+        )
+        print("create_team_member:", member)
+        assert member["id"] == "TEAMMEMBER-alpha-reviewer"
+        member_link = link_rta(
+            role_id=role_id,
+            actor_id=member["id"],
+        )
+        print("link_role_to_actor TeamMember:", member_link)
+        assert member_link["ok"]
+
         # 4d. scope-management
         create_scope = get_tool(scope, "create_scope")
         sc = create_scope(
@@ -520,6 +547,53 @@ def run(distribution_root: Path | str | None = None):
         ls = list_scopes(kind="sprint")
         print("list_scopes sprint:", len(ls))
         assert any(x["id"] == scope_id for x in ls)
+
+        # 4d.1. v1 alpha Capability, Proposition, Risk, and Skill lifecycles.
+        create_capability = get_tool(capability, "create_capability")
+        alpha_capability = create_capability(
+            name="Alpha contract validation",
+            description="Validate the generated v1 alpha contracts.",
+            owner=member["id"],
+        )
+        print("create_capability:", alpha_capability)
+        assert alpha_capability["state"] == "draft"
+        transition_capability = get_tool(
+            capability, "transition_capability"
+        )
+        capability_active = transition_capability(
+            id=alpha_capability["id"], to_state="active"
+        )
+        assert capability_active["to_state"] == "active"
+
+        create_proposition = get_tool(proposition, "create_proposition")
+        alpha_claim = create_proposition(
+            statement="The alpha package validates generated schemas.",
+            kind="claim",
+            owner=member["id"],
+        )
+        alpha_risk = create_proposition(
+            statement="A downstream adapter may reject prerelease tags.",
+            kind="risk",
+            likelihood="possible",
+            impact="major",
+            owner=member["id"],
+        )
+        print("create_proposition:", alpha_claim, alpha_risk)
+        assert alpha_claim["kind"] == "claim"
+        assert alpha_risk["kind"] == "risk"
+
+        create_skill = get_tool(skill_mgmt, "create_skill")
+        alpha_skill = create_skill(
+            name="alpha-contract-review",
+            description="Review v1 alpha contract evidence.",
+        )
+        assert alpha_skill["state"] == "draft"
+        transition_skill = get_tool(skill_mgmt, "transition_skill")
+        alpha_skill_active = transition_skill(
+            name="alpha-contract-review", to_state="active"
+        )
+        print("transition_skill:", alpha_skill_active)
+        assert alpha_skill_active["to_state"] == "active"
 
         # 4e. gate-management
         create_gate = get_tool(gate, "create_gate")
@@ -1152,6 +1226,18 @@ def run(distribution_root: Path | str | None = None):
         assert len(_ev_gate_eval) >= 1, "gate.passed log entry missing"
         assert len(_ev_disc) >= 1, "discussion.opened log entry missing"
         assert len(_ev_art) >= 1, "artifact.created log entry missing"
+
+        export_okf = get_tool(okf, "export_okf_bundle")
+        okf_result = export_okf(
+            output_dir=".processkit/exports/smoke-okf",
+        )
+        print("export_okf_bundle:", okf_result["entity_count"])
+        assert okf_result["ok"] is True
+        assert okf_result["entity_count"] >= 13
+        validate_okf = get_tool(okf, "validate_okf_bundle")
+        assert validate_okf(
+            bundle_dir=".processkit/exports/smoke-okf"
+        )["valid"] is True
 
         # Systemic self-attribution guard (BACK-20260421_0209-*).
         # Every entity-mutating MCP tool must pass actor=<subject-id> to its

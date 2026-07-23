@@ -1,6 +1,6 @@
 {
-  "aggregate_sha256": "08553fd00266cb259f792bfb5f1182ebd6efc3ad47be217a667e0e89fb4c7226",
-  "generated_at": "2026-07-22T18:17:57Z",
+  "aggregate_sha256": "4cf628afb05f1653a0c89745c0b5adba505353a569b4ee1f4174fba545db1722",
+  "generated_at": "2026-07-23T18:45:36Z",
   "per_gateway": [
     {
       "path": "context/skills/processkit/processkit-gateway/mcp/mcp-config.json",
@@ -30,6 +30,10 @@
     },
     {
       "path": "context/skills/processkit/binding-management/mcp/server.py",
+      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+    },
+    {
+      "path": "context/skills/processkit/capability-management/mcp/server.py",
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
     },
     {
@@ -77,12 +81,20 @@
       "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
     },
     {
+      "path": "context/skills/processkit/okf-compatibility/mcp/server.py",
+      "sha256": "aba8150d6533eadba8e7152a09c36740959d81dddfb3b6199fbf53a2edccaa71"
+    },
+    {
       "path": "context/skills/processkit/pk-doctor/mcp/server.py",
       "sha256": "a7f0216908812a8ef9acf5f93fc54c44f7dfb937c4f1c3ec385a92a37d7adcf2"
     },
     {
       "path": "context/skills/processkit/processkit-gateway/mcp/server.py",
       "sha256": "e67c7cb4eabea3c15f3c8681e42a4e65c47ebc3dd39a3f5cd6e426c21c284025"
+    },
+    {
+      "path": "context/skills/processkit/proposition-management/mcp/server.py",
+      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
     },
     {
       "path": "context/skills/processkit/release-audit/mcp/server.py",
@@ -115,6 +127,10 @@
     {
       "path": "context/skills/processkit/skill-gate/mcp/server.py",
       "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
+    },
+    {
+      "path": "context/skills/processkit/skill-management/mcp/server.py",
+      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
     },
     {
       "path": "context/skills/processkit/supply-chain-audit/mcp/server.py",
@@ -153,6 +169,10 @@
     {
       "path": "context/skills/processkit/binding-management/mcp/mcp-config.json",
       "sha256": "dea4c50fc489403a2d0fa39f1dd7edea47b5214c2f46d704d7d56deaa5706a42"
+    },
+    {
+      "path": "context/skills/processkit/capability-management/mcp/mcp-config.json",
+      "sha256": "fe680ff5dbebbc32a57e9c32f740c84f3b104245034175fa23aab3547cbaef56"
     },
     {
       "path": "context/skills/processkit/decision-record/mcp/mcp-config.json",
@@ -195,8 +215,16 @@
       "sha256": "85c2647b01060028420f0102178a490360e312dc7a1e1ef87531b20f52059697"
     },
     {
+      "path": "context/skills/processkit/okf-compatibility/mcp/mcp-config.json",
+      "sha256": "7392c4e546a72cf3437c35ff2693457ed67dee90cf6b4701b6e320c6d02e9426"
+    },
+    {
       "path": "context/skills/processkit/pk-doctor/mcp/mcp-config.json",
       "sha256": "66fbb69975cdaddb3ea6d06a57a4ab735ff4b8ef5d08899fea49b5ea43b6ba33"
+    },
+    {
+      "path": "context/skills/processkit/proposition-management/mcp/mcp-config.json",
+      "sha256": "79ae70b45edf033701dc68689127b7fbc50e2edecff234dd8b144600985bae45"
     },
     {
       "path": "context/skills/processkit/role-management/mcp/mcp-config.json",
@@ -225,6 +253,10 @@
     {
       "path": "context/skills/processkit/skill-gate/mcp/mcp-config.json",
       "sha256": "03f85f9d1b916f262c5de12c5bc43f78945027989e87a29e75de753dcf990564"
+    },
+    {
+      "path": "context/skills/processkit/skill-management/mcp/mcp-config.json",
+      "sha256": "ec65a131daf488094377f16d613013cc1232c62723db2e2f5e10f1e247f3dce2"
     },
     {
       "path": "context/skills/processkit/supply-chain-audit/mcp/mcp-config.json",

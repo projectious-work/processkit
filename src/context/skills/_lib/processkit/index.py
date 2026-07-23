@@ -24,6 +24,7 @@ import re
 from . import entity as entity_mod
 from . import paths
 from . import schema as schema_mod
+from . import frontmatter
 
 
 DEFAULT_RESULT_LIMIT = 50
@@ -276,6 +277,34 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
         if ent.kind == "LogEntry":
             _insert_event(db, ent)
             n_events += 1
+    for manifest_path in sorted((context_dir / "skills").glob("*/*/SKILL.md")):
+        try:
+            manifest, body = frontmatter.parse(
+                manifest_path.read_text(encoding="utf-8")
+            )
+            projected = schema_mod.skill_spec_from_manifest(manifest)
+            processkit = (manifest.get("metadata") or {}).get("processkit") or {}
+            skill_id = processkit.get("id") or f"SKILL-{projected.get('name')}"
+            created = processkit.get("created") or "1970-01-01T00:00:00Z"
+            errors = schema_mod.validate_spec("Skill", projected)
+            if errors:
+                raise ValueError("; ".join(errors))
+            ent = entity_mod.Entity(
+                apiVersion=processkit.get("apiVersion") or entity_mod.API_VERSION,
+                kind="Skill",
+                metadata={"id": skill_id, "created": created},
+                spec=projected,
+                body=body,
+                path=manifest_path,
+            )
+            _insert_entity(db, ent)
+            n_entities += 1
+        except Exception as e:
+            db.execute(
+                "INSERT OR REPLACE INTO errors (path, message) VALUES (?, ?)",
+                (str(manifest_path), f"Skill manifest projection: {e}"),
+            )
+            n_errors += 1
     for manifest_path in sorted((context_dir / "archives").rglob("*.json")):
         try:
             archived_entities, archived_events = _insert_archive_manifest(

@@ -12,6 +12,8 @@ validation in MCP servers. Validation uses the ``jsonschema`` library
 from __future__ import annotations
 
 import json
+import datetime as _dt
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -88,7 +90,10 @@ def validate_spec(kind: str, spec: dict[str, Any]) -> list[str]:
         except ModuleNotFoundError:
             errors = []
         else:
-            validator = jsonschema.Draft202012Validator(json_schema)
+            validator = jsonschema.Draft202012Validator(
+                json_schema,
+                format_checker=_format_checker(jsonschema),
+            )
             iter_errors = validator.iter_errors(normalized_spec)
             sorted_errors = sorted(iter_errors, key=lambda e: list(e.absolute_path))
             errors = [_format_error(e) for e in sorted_errors]
@@ -99,6 +104,30 @@ def validate_spec(kind: str, spec: dict[str, Any]) -> list[str]:
 def _json_compatible(spec: dict[str, Any]) -> dict[str, Any]:
     """Return ``spec`` as JSON-compatible data before JSON Schema checks."""
     return json.loads(json.dumps(spec, default=str))
+
+
+def _format_checker(jsonschema_module: Any) -> Any:
+    """Return a checker with a dependency-free RFC 3339 date-time check.
+
+    ``jsonschema`` only enables ``date-time`` when an optional package is
+    installed. Every processkit MCP server already has the standard library,
+    so register the core check locally and keep validation consistent across
+    packaged and development environments.
+    """
+    checker = jsonschema_module.FormatChecker()
+    pattern = re.compile(
+        r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}"
+        r"(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
+    )
+
+    @checker.checks("date-time", raises=(TypeError, ValueError))
+    def valid_date_time(value: Any) -> bool:
+        if not isinstance(value, str) or not pattern.fullmatch(value):
+            return False
+        parsed = _dt.datetime.fromisoformat(value.replace("Z", "+00:00"))
+        return parsed.tzinfo is not None
+
+    return checker
 
 
 def skill_spec_from_manifest(frontmatter: dict[str, Any]) -> dict[str, Any]:

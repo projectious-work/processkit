@@ -26,8 +26,6 @@ spec:
     - name
     - type
     - slug
-    - default_role
-    - default_seniority
     additionalProperties: true
     properties:
       name:
@@ -40,6 +38,7 @@ spec:
         - ai-agent
         - service
         - organization
+        - consultant
       state:
         type: string
         enum:

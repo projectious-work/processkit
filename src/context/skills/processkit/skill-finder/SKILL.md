@@ -62,6 +62,10 @@ that skill before proceeding.
 | "database design", "schema design" | `database-modeling` |
 | "database migration", "migrate the schema" | `database-migration` |
 | "regenerate schemas", "schema contract", "validation mode" | `schema-management` |
+| "manage a capability", "capability lifecycle" | `capability-management` |
+| "record a proposition", "record a risk" | `proposition-management` |
+| "manage a skill lifecycle", "transition a skill" | `skill-management` |
+| "export OKF", "validate an OKF bundle" | `okf-compatibility` |
 | "NoSQL", "MongoDB", "document store" | `nosql-patterns` |
 | "secure this", "security review" | `secure-coding` |
 | "threat model" | `threat-modeling` |
@@ -156,7 +160,7 @@ directory name as the `category:` value when authoring or filtering:
 
 | Directory | Contents |
 |---|---|
-| `processkit/` | 46 skills for operating the processkit system |
+| `processkit/` | 51 skills for operating the processkit system |
 | `engineering/` | 46 skills: software design, architecture, backend, languages |
 | `devops/` | 16 skills: infrastructure, CI/CD, ops, monitoring |
 | `data-ai/` | 11 skills: data science, ML, AI/LLM, embeddings |
@@ -183,6 +187,10 @@ For the full catalog, read `skills/INDEX.md`.
 - `runtime-prune` — inspect and invoke safe cleanup for
   runtime-manager-owned state
 - `schema-management` — rebuild and inspect generated schema contracts
+- `capability-management` — manage Capability entities and lifecycle
+- `proposition-management` — create and query claims and risks
+- `skill-management` — govern package-backed Skill lifecycle
+- `okf-compatibility` — export and validate OKF v0.1 bundles
 - `release-semver` — plan and execute a semver release
 - `retrospective` — post-release blameless retrospective (4 signals, dual-emit Artifact+LogEntry)
 

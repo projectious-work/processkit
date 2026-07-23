@@ -42,7 +42,17 @@ spec:
         source_processkit_version: {type: [string, "null"]}
         target_processkit_version: {type: [string, "null"]}
         apply_mode: {type: string, enum: [automatic, manual, mixed]}
-        affected_files: {type: array, items: {type: string}}
+        affected_files:
+          type: array
+          items:
+            oneOf:
+              - {type: string}
+              - type: object
+                required: [path, classification]
+                additionalProperties: true
+                properties:
+                  path: {type: string, minLength: 1}
+                  classification: {type: string, minLength: 1}
         affected_groups: {type: array, items: {type: string}}
         plan: {type: array, items: {type: string}}
         progress: {type: object}
