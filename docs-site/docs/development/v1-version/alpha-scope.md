@@ -31,9 +31,10 @@ The alpha contract is frozen to these 14 high-value concepts:
 - Scope
 - Migration
 
-The first implementation slice generates `WorkItem`, `DecisionRecord`,
-`Binding`, and `LogEntry`. The remaining concepts expand the same registry
-after composition and compatibility gates pass.
+The generated implementation currently covers `WorkItem`, `DecisionRecord`,
+`Binding`, `LogEntry`, `Artifact`, `Gate`, `Proposition`, and the `Risk`
+discriminator. The remaining concepts expand the same registry after
+composition and compatibility gates pass.
 
 ## Required Capabilities
 

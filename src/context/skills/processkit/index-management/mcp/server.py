@@ -17,6 +17,7 @@ can query.
 Tools provided:
     reindex()                              -> stats
     query_entities(kind?, state?, limit?)  -> [entities]
+    query_by_interface(interface, kind?, state?, limit?) -> [entities]
     get_entity(id)                         -> entity | null
     get_entity_by_path(path)               -> entity | {error}
     list_entities(kind?, state?, limit?)   -> [entities]
@@ -268,6 +269,45 @@ def query_entities(
             return rows
         penalty = _v1_penalty()
         api_map = _api_versions_for(db, [r["id"] for r in rows])
+        return [
+            _annotate_row(
+                row,
+                api_map.get(row["id"], ""),
+                penalty=penalty,
+                apply_score=False,
+            )
+            for row in rows
+        ]
+    finally:
+        db.close()
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+))
+def query_by_interface(
+    interface: str,
+    kind: str | None = None,
+    state: str | None = None,
+    limit: int = 50,
+) -> list[dict]:
+    """List entities implementing a schema-declared interface."""
+    _, db = _open()
+    try:
+        rows = index.query_by_interface(
+            db,
+            interface,
+            kind=kind,
+            state=state,
+            limit=limit,
+        )
+        if not rows:
+            return rows
+        penalty = _v1_penalty()
+        api_map = _api_versions_for(db, [row["id"] for row in rows])
         return [
             _annotate_row(
                 row,

@@ -1,7 +1,12 @@
 #!/usr/bin/env -S uv run
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["mcp[cli]>=1.0", "pyyaml>=6.0", "jsonschema>=4.0"]
+# dependencies = [
+#   "mcp[cli]>=1.0",
+#   "pyyaml>=6.0",
+#   "jsonschema>=4.0",
+#   "jinja2>=3.1",
+# ]
 # ///
 """End-to-end smoke test for processkit MCP servers.
 
@@ -239,6 +244,7 @@ def run(distribution_root: Path | str | None = None):
         bind = import_server("binding-management")
         elog = import_server("event-log")
         idx = import_server("index-management")
+        schema_mgmt = import_server("schema-management")
         idm = import_server("id-management")
         actor = import_server("actor-profile")
         role = import_server("role-management")
@@ -248,6 +254,22 @@ def run(distribution_root: Path | str | None = None):
         art = import_server("artifact-management")
         mig = import_server("migration-management")
         note = import_server("note-management")
+
+        schema_contract = get_tool(
+            schema_mgmt, "get_schema_contract"
+        )(kind="WorkItem")
+        assert schema_contract["contract"]["interfaces"] == [
+            "Entity",
+            "Versioned",
+        ]
+        schema_mode = get_tool(
+            schema_mgmt, "get_validation_mode"
+        )(kind="WorkItem")
+        assert schema_mode["validation_mode"] == "tolerant"
+        schema_regen = get_tool(
+            schema_mgmt, "regenerate_schemas"
+        )(kinds=["WorkItem"])
+        assert schema_regen["errors"] == {}
         agent_card = import_server("agent-card")
         eval_gate = import_server("eval-gate-authoring")
         security = import_server("security-projections")
@@ -260,6 +282,7 @@ def run(distribution_root: Path | str | None = None):
         assert gateway_tools["count"] >= 90
         assert gateway_tools["runtime"]["transport"] == "stdio"
         assert "create_workitem" in gateway.server._tool_manager._tools
+        assert "regenerate_schemas" in gateway.server._tool_manager._tools
         gateway_health = get_tool(gateway, "gateway_health")()
         assert gateway_health["ok"] is True
 
@@ -267,6 +290,7 @@ def run(distribution_root: Path | str | None = None):
         print("aggregate-mcp tool count:", aggregate_tools["count"])
         assert aggregate_tools["count"] >= 90
         assert "create_workitem" in agg.server._tool_manager._tools
+        assert "regenerate_schemas" in agg.server._tool_manager._tools
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -1198,6 +1222,12 @@ def run(distribution_root: Path | str | None = None):
         assert sep["id"] in wi_row_ids
         assert "BACK-template-asset" not in wi_row_ids
         assert len(wi_rows) >= 5
+
+        query_i = get_tool(idx, "query_by_interface")
+        record_rows = query_i(interface="Record", limit=200)
+        print("query_by_interface Record:", len(record_rows))
+        assert query_i(interface="Record", kind="DecisionRecord", limit=10)
+        assert query_i(interface="Record", kind="LogEntry", limit=10)
 
         search = get_tool(idx, "search_entities")
         s = search(text="lint", limit=10)

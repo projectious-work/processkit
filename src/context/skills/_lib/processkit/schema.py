@@ -25,8 +25,12 @@ class SchemaError(ValueError):
     """Raised when a schema cannot be loaded or applied."""
 
 
-@lru_cache(maxsize=64)
-def load_schema(kind: str, schemas_dir: Path | None = None) -> dict[str, Any]:
+@lru_cache(maxsize=128)
+def load_schema(
+    kind: str,
+    schemas_dir: Path | None = None,
+    discriminator: str | None = None,
+) -> dict[str, Any]:
     """Load the schema entity for ``kind`` and return its spec block.
 
     The returned dict has keys: ``description``, ``id_prefix``,
@@ -36,7 +40,13 @@ def load_schema(kind: str, schemas_dir: Path | None = None) -> dict[str, Any]:
     if schemas_dir is None:
         raise SchemaError("no schemas directory found")
     import re as _re
-    names = [f"{kind.lower()}.yaml"]
+    names: list[str] = []
+    if discriminator:
+        discriminator_name = _re.sub(
+            r"(?<!^)(?=[A-Z])", "-", discriminator
+        ).lower()
+        names.append(f"{kind.lower()}-{discriminator_name}.yaml")
+    names.append(f"{kind.lower()}.yaml")
     kebab = _re.sub(r"(?<!^)(?=[A-Z])", "-", kind).lower()
     if f"{kebab}.yaml" not in names:
         names.append(f"{kebab}.yaml")
@@ -65,7 +75,7 @@ def validate_spec(kind: str, spec: dict[str, Any]) -> list[str]:
     list (i.e., schemas are advisory until they exist for all primitives).
     """
     try:
-        schema = load_schema(kind)
+        schema = load_schema(kind, discriminator=_discriminator_value(spec))
     except SchemaError:
         return []
     normalized_spec = _json_compatible(spec)
@@ -102,6 +112,7 @@ def _validate_known_vocabulary(
         ("Binding", "type", "known_types"),
         ("LogEntry", "event_type", "known_event_types"),
         ("Migration", "kind", "known_kinds"),
+        ("Proposition", "kind", "known_kinds"),
         ("WorkItem", "type", "known_types"),
     )
     errors: list[str] = []
@@ -137,6 +148,62 @@ def known_values(
     return [str(v) for v in values]
 
 
+def interfaces_for_kind(
+    kind: str,
+    schemas_dir: Path | None = None,
+    discriminator: str | None = None,
+) -> list[str]:
+    """Return the schema-declared interfaces implemented by ``kind``."""
+    try:
+        schema_spec = load_schema(kind, schemas_dir, discriminator)
+    except SchemaError:
+        return []
+    interfaces = schema_spec.get("interfaces") or []
+    if not isinstance(interfaces, list):
+        return []
+    return [str(interface) for interface in interfaces]
+
+
+def _discriminator_value(spec: dict[str, Any]) -> str | None:
+    value = spec.get("kind")
+    return str(value) if isinstance(value, str) and value else None
+
+
+def discriminator_for_kind(
+    kind: str,
+    spec: dict[str, Any],
+    schemas_dir: Path | None = None,
+) -> str | None:
+    """Return the recognized generated discriminator for an entity spec."""
+    value = _discriminator_value(spec)
+    if value is None:
+        return None
+    try:
+        schema_spec = load_schema(kind, schemas_dir, value)
+    except SchemaError:
+        return None
+    discriminator = schema_spec.get("discriminator")
+    if not isinstance(discriminator, dict):
+        return None
+    if discriminator.get("field") != "kind":
+        return None
+    return value if discriminator.get("value") == value else None
+
+
+def validation_mode(
+    kind: str,
+    schemas_dir: Path | None = None,
+    discriminator: str | None = None,
+) -> str | None:
+    """Return the schema-declared validation mode for ``kind``."""
+    try:
+        schema_spec = load_schema(kind, schemas_dir, discriminator)
+    except SchemaError:
+        return None
+    mode = schema_spec.get("validation_mode")
+    return str(mode) if mode is not None else None
+
+
 def list_known_kinds(schemas_dir: Path | None = None) -> list[str]:
     """Return all primitive kinds for which a schema file exists."""
     schemas_dir = schemas_dir or paths.primitive_schemas_dir()
@@ -157,7 +224,8 @@ def list_known_kinds(schemas_dir: Path | None = None) -> list[str]:
             if isinstance(data, dict) and data.get("kind") == "Schema":
                 target = data.get("metadata", {}).get("target_kind")
                 if target:
-                    out.append(target)
+                    if target not in out:
+                        out.append(target)
         except Exception:
             continue
     return out

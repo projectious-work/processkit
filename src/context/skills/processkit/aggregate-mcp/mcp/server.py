@@ -5,6 +5,7 @@
 #   "mcp[cli]>=1.0",
 #   "pyyaml>=6.0",
 #   "jsonschema>=4.0",
+#   "jinja2>=3.1",
 #   "httpx>=0.27",
 #   "sqlite-vec>=0.1.0",
 # ]

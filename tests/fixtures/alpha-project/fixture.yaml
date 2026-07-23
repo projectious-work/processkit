@@ -6,7 +6,16 @@ expected:
     DecisionRecord: 1
     Binding: 1
     LogEntry: 1
+    Artifact: 1
+    Gate: 1
+    Proposition: 2
   interfaces:
     Record:
       - DEC-20260719_0001-ClearPath-alpha-decision
       - LOG-20260719_0001-ClearPath-alpha-event
+    Proposition:
+      - PROP-20260722_0001-ClearPath-alpha-claim
+      - PROP-20260722_0002-ClearPath-alpha-risk
+  discriminators:
+    risk:
+      - PROP-20260722_0002-ClearPath-alpha-risk

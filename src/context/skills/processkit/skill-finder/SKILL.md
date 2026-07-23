@@ -61,6 +61,7 @@ that skill before proceeding.
 | "SQL style", "format the SQL" | `sql-style-guide` |
 | "database design", "schema design" | `database-modeling` |
 | "database migration", "migrate the schema" | `database-migration` |
+| "regenerate schemas", "schema contract", "validation mode" | `schema-management` |
 | "NoSQL", "MongoDB", "document store" | `nosql-patterns` |
 | "secure this", "security review" | `secure-coding` |
 | "threat model" | `threat-modeling` |
@@ -155,7 +156,7 @@ directory name as the `category:` value when authoring or filtering:
 
 | Directory | Contents |
 |---|---|
-| `processkit/` | 45 skills for operating the processkit system |
+| `processkit/` | 46 skills for operating the processkit system |
 | `engineering/` | 46 skills: software design, architecture, backend, languages |
 | `devops/` | 16 skills: infrastructure, CI/CD, ops, monitoring |
 | `data-ai/` | 11 skills: data science, ML, AI/LLM, embeddings |
@@ -181,6 +182,7 @@ For the full catalog, read `skills/INDEX.md`.
 - `context-grooming` — periodically prune and compact the project context
 - `runtime-prune` — inspect and invoke safe cleanup for
   runtime-manager-owned state
+- `schema-management` — rebuild and inspect generated schema contracts
 - `release-semver` — plan and execute a semver release
 - `retrospective` — post-release blameless retrospective (4 signals, dual-emit Artifact+LogEntry)
 
