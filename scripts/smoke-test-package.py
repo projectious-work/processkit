@@ -40,10 +40,19 @@ REQUIRED_PATHS = (
     "context/schemas",
     "context/schemas/src/registry.yaml",
     "context/schemas/_generated/workitem.yaml",
+    "context/schemas/_generated/proposition.yaml",
+    "context/schemas/_generated/capability.yaml",
+    "context/schemas/_generated/migration.yaml",
     "context/state-machines",
     "context/skills/_lib/processkit/__init__.py",
     "context/skills/processkit/processkit-gateway/mcp/mcp-config.json",
     "context/skills/processkit/processkit-gateway/mcp/server.py",
+    "context/skills/processkit/schema-management/mcp/mcp-config.json",
+    "context/skills/processkit/schema-management/mcp/server.py",
+    "context/skills/processkit/capability-management/mcp/server.py",
+    "context/skills/processkit/proposition-management/mcp/server.py",
+    "context/skills/processkit/skill-management/mcp/server.py",
+    "context/skills/processkit/okf-compatibility/mcp/server.py",
 )
 
 

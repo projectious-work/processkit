@@ -7,12 +7,73 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [v1.0.0-alpha.1] - 2026-07-23
+
+v1.0.0-alpha.1 is the first opt-in prerelease of the processkit v1 line.
+Stable consumers remain on the supported v0 line; alpha consumers must pin
+this exact version.
+
+### Added
+
+- Added v1 lifecycle MCP servers for Capability, Proposition/Risk, and
+  package-backed Skill entities, including schema validation, interface
+  indexing, lifecycle events, and gateway exposure.
+- Added deterministic, hash-guarded v0-to-v1 corpus migration planning and
+  execution with field-loss reporting, append-only LogEntry preservation,
+  and a recovery journal.
+- Added OKF v0.1 export and validation as an explicit boundary profile, with
+  stable processkit identity, interfaces, and typed relation extensions.
+- Added a release-tested alpha workflow covering TeamMember role assignment,
+  Scope, Capability, Proposition, Risk, Skill, migration, interface queries,
+  and OKF export from the staged package.
+- Added v0 reconciliation and explicit aibox alpha-pilot documentation.
+- Expanded the v1 generated-schema alpha slice with Artifact and Gate.
+- Added interface-aware indexing and the `query_by_interface` MCP tool for
+  polymorphic reads across schema-declared interfaces.
+- Added schema-management MCP tools for deterministic regeneration, contract
+  inspection, and validation-mode inspection.
+- Added Proposition as an alpha primitive and Risk as its first generated
+  discriminator overlay, with discriminator-aware validation and indexing.
+- Completed the dependency-correct alpha schema slice with Role, TeamMember,
+  Skill, Capability, Scope, and Migration, plus their Actor, Container,
+  Command, and Event parent contracts.
+- Added representative Role, Capability, TeamMember, Scope, and Migration
+  fixtures with interface and discriminator indexing coverage.
+- Added an explicit adapter that validates package-based `SKILL.md` manifests
+  against the generated Skill contract.
+- Added a dependency-aware beta ontology plan targeting 62 of 89 concepts
+  (69.7%).
+
 ### Changed
 
+- Canonicalized Scope writes as `Container(kind=scope)` while preserving the
+  public Scope API and date-only inputs.
+- Projected package `SKILL.md` manifests into the v1 index instead of
+  introducing a competing Skill storage format.
+- Enabled dependency-free RFC 3339 date-time format validation and aligned
+  TeamMember alpha compatibility with the existing lifecycle server.
+- Made release builds verify committed MCP manifests without mutating the
+  tagged worktree.
+- Carried forward secure refreshable GitHub token-file authentication from
+  the supported v0 line.
+- Separated the v1 product version from entity API v2 and independent
+  per-kind schema versions so migration provenance reports product 1.x.
 - Defined dedicated development and release-integration branches for v0 and
   v1 lines, with stable release tags merged into `main` after publication.
 - Made a curated, version-matched `CHANGELOG.md` entry a required release
   archive preflight rather than an optional staged file.
+- Clarified that the 14-concept alpha product scope requires 18 generated
+  ontology contracts once composition parents are counted.
+
+### Fixed
+
+- Restored a compliant v1 migration draft and historical filename
+  normalization path with mutable-reference repair and append-only audit
+  preservation.
+- Allowed Role bindings to target TeamMembers through their generated Actor
+  interface.
 
 ---
 

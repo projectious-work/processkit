@@ -8,7 +8,7 @@ title: "apiVersion Policy"
 processkit uses a Kubernetes-style `apiVersion` field on every entity:
 
 ```yaml
-apiVersion: processkit.projectious.work/v1
+apiVersion: processkit.projectious.work/v2
 ```
 
 ## The group
@@ -26,11 +26,17 @@ parts.
 
 | apiVersion                              | Status            | Meaning                                              |
 |-----------------------------------------|-------------------|------------------------------------------------------|
-| `processkit.projectious.work/v1`        | current v0.x entity format | Initial public entity version        |
-| `processkit.projectious.work/v1beta1`   | not used          | Reserved                                             |
-| `processkit.projectious.work/v2`        | planned           | Breaking contract with explicit migration required   |
+| apiVersion | Product line | Status |
+|---|---|---|
+| `processkit.projectious.work/v1` | v0.x | Current v0.x entity format |
+| `processkit.projectious.work/v1beta1` | none | Reserved; not used |
+| `processkit.projectious.work/v2` | v1.x | Current v1.x entity format |
 
-### Non-breaking changes (stay at v1)
+The processkit product version, entity API version, schema-source format,
+and per-kind schema versions are independent axes. In particular,
+processkit `v1.x` deliberately uses entity API `v2`.
+
+### Non-breaking entity changes
 
 - Adding new optional fields to schemas
 - Adding new primitive kinds
@@ -38,7 +44,7 @@ parts.
 - Adding new skills
 - Adding new packages
 
-### Breaking changes (require v2)
+### Breaking entity changes
 
 - Removing or renaming existing fields
 - Changing the type or meaning of existing fields

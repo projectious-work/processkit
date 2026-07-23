@@ -1,6 +1,6 @@
 {
   "catalog_version": 1,
-  "source_server_count": 26,
+  "source_server_count": 33,
   "tools": [
     {
       "annotations": {
@@ -1524,6 +1524,452 @@
       "source_server_path": "processkit/binding-management/mcp/server.py",
       "source_skill": "binding-management",
       "source_tool": "update_binding",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "capability-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Create a draft Capability under the generated v1 schema.",
+      "name": "create_capability",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "constraints": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Constraints"
+          },
+          "consumers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Consumers"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence"
+          },
+          "inputs": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Inputs"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "outputs": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Outputs"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Owner"
+          },
+          "providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Providers"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ],
+        "title": "create_capabilityArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/capability-management/mcp/server.py",
+      "source_skill": "capability-management",
+      "source_tool": "create_capability",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "capability-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return one Capability by ID.",
+      "name": "get_capability",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "get_capabilityArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/capability-management/mcp/server.py",
+      "source_skill": "capability-management",
+      "source_tool": "get_capability",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "capability-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "List indexed Capabilities, optionally filtered by lifecycle state.",
+      "name": "list_capabilities",
+      "output_schema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_capabilitiesOutput",
+        "type": "object"
+      },
+      "parameters": {
+        "properties": {
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "State"
+          }
+        },
+        "title": "list_capabilitiesArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/capability-management/mcp/server.py",
+      "source_skill": "capability-management",
+      "source_tool": "list_capabilities",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "capability-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Transition a Capability through its generated state machine.",
+      "name": "transition_capability",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "to_state": {
+            "title": "To State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "to_state"
+        ],
+        "title": "transition_capabilityArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/capability-management/mcp/server.py",
+      "source_skill": "capability-management",
+      "source_tool": "transition_capability",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "capability-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Update non-lifecycle Capability fields.",
+      "name": "update_capability",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "constraints": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Constraints"
+          },
+          "consumers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Consumers"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "inputs": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Inputs"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "outputs": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Outputs"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Owner"
+          },
+          "providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Providers"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Supersedes"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "update_capabilityArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/capability-management/mcp/server.py",
+      "source_skill": "capability-management",
+      "source_tool": "update_capability",
       "title": null
     },
     {
@@ -3803,6 +4249,85 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
+      "description": "List entities implementing a schema-declared interface.",
+      "name": "query_by_interface",
+      "output_schema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "query_by_interfaceOutput",
+        "type": "object"
+      },
+      "parameters": {
+        "properties": {
+          "interface": {
+            "title": "Interface",
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Kind"
+          },
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "State"
+          }
+        },
+        "required": [
+          "interface"
+        ],
+        "title": "query_by_interfaceArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/index-management/mcp/server.py",
+      "source_skill": "index-management",
+      "source_tool": "query_by_interface",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "index-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
       "description": "List entities matching the filters.\n\nParameters\n----------\nkind: optional primitive kind (e.g. \"WorkItem\", \"DecisionRecord\").\nstate: optional state to filter by.\nlimit: maximum rows to return (default 50).\n\nEach result is annotated with ``v1_penalty_applied`` and\n``v1_successor_hint`` (BACK-20260509_1318-WarmOak). Results are\nordered by ``created DESC`` (no score), so the penalty is surfaced\nas annotation only \u2014 no re-ranking is applied.\n",
       "name": "query_entities",
       "output_schema": {
@@ -4185,6 +4710,109 @@
     {
       "annotations": {
         "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "migration-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Create a pending, locally-authored Migration entity.\n\nUse this for schema extensions and auditable data repairs that cannot be\ngenerated by an installer. Each ``affected_files`` entry requires\n``path`` and ``classification`` strings. Review the returned pending\nMigration before applying it.\n\nPrerequisite: call find_skill(task_description) or confirm a named\nprocesskit skill. Call route_task before this write and commit the\nresulting entity in the same turn.\n",
+      "name": "draft_migration",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "affected_files": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Affected Files",
+            "type": "array"
+          },
+          "body": {
+            "default": "",
+            "title": "Body",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "related_decisions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Related Decisions"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "summary",
+          "affected_files"
+        ],
+        "title": "draft_migrationArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/migration-management/mcp/server.py",
+      "source_skill": "migration-management",
+      "source_tool": "draft_migration",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "migration-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Execute a previously returned, hash-guarded v0-to-v1 plan.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill. 1% rule: call\nroute_task first; commit in the same turn \u2014 deferred writes are dropped.\n",
+      "name": "execute_v0_to_v1_migration",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "plan": {
+            "additionalProperties": true,
+            "title": "Plan",
+            "type": "object"
+          }
+        },
+        "required": [
+          "plan"
+        ],
+        "title": "execute_v0_to_v1_migrationArguments",
+        "type": "object"
+      },
+      "permission_class": "destructive-write",
+      "source_server_path": "processkit/migration-management/mcp/server.py",
+      "source_skill": "migration-management",
+      "source_tool": "execute_v0_to_v1_migration",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
         "readOnlyHint": true
@@ -4301,6 +4929,82 @@
       "source_server_path": "processkit/migration-management/mcp/server.py",
       "source_skill": "migration-management",
       "source_tool": "migrate_context_to_v2",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "migration-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Normalize a Migration filename and ID with an audit bridge.\n\nThe target must match ``MIG-YYYYMMDD_HHMM-WordPair``. The corrected\nentity is written before the old file is removed. Mutable references and\nindexes are refreshed, while LogEntries and terminal Migration history\nremain append-only and are bridged by a new normalization event.\n\nPrerequisite: call find_skill(task_description) or confirm a named\nprocesskit skill. Call route_task before this write and commit all\nresulting changes in the same turn.\n",
+      "name": "normalize_migration_filename",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "target_id": {
+            "title": "Target Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "target_id"
+        ],
+        "title": "normalize_migration_filenameArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/migration-management/mcp/server.py",
+      "source_skill": "migration-management",
+      "source_tool": "normalize_migration_filename",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "migration-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Plan the deterministic v0-to-v1 ontology migration without writing.\n\nThe returned plan contains source hashes and must be passed unchanged to\n``execute_v0_to_v1_migration``. Prerequisite: call\nfind_skill(task_description) or confirm a named processkit skill.\n",
+      "name": "plan_v0_to_v1_migration",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "source_version": {
+            "default": "v0.28.3",
+            "title": "Source Version",
+            "type": "string"
+          },
+          "target_version": {
+            "default": "v1.0.0-alpha.1",
+            "title": "Target Version",
+            "type": "string"
+          }
+        },
+        "title": "plan_v0_to_v1_migrationArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/migration-management/mcp/server.py",
+      "source_skill": "migration-management",
+      "source_tool": "plan_v0_to_v1_migration",
       "title": null
     },
     {
@@ -5767,6 +6471,92 @@
         "destructiveHint": false,
         "idempotentHint": false,
         "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "okf-compatibility"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Export selected processkit entities into a new OKF v0.1 bundle.",
+      "name": "export_okf_bundle",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "include_log_summary": {
+            "default": true,
+            "title": "Include Log Summary",
+            "type": "boolean"
+          },
+          "kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Kinds"
+          },
+          "output_dir": {
+            "default": ".processkit/exports/okf-alpha",
+            "title": "Output Dir",
+            "type": "string"
+          }
+        },
+        "title": "export_okf_bundleArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/okf-compatibility/mcp/server.py",
+      "source_skill": "okf-compatibility",
+      "source_tool": "export_okf_bundle",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "okf-compatibility"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Validate an OKF v0.1 bundle and its internal Markdown links.",
+      "name": "validate_okf_bundle",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "bundle_dir": {
+            "title": "Bundle Dir",
+            "type": "string"
+          }
+        },
+        "required": [
+          "bundle_dir"
+        ],
+        "title": "validate_okf_bundleArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/okf-compatibility/mcp/server.py",
+      "source_skill": "okf-compatibility",
+      "source_tool": "validate_okf_bundle",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
         "readOnlyHint": true
       },
       "collision_sources": [
@@ -5818,6 +6608,617 @@
         "destructiveHint": false,
         "idempotentHint": false,
         "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "proposition-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Create a claim or Risk discriminator under one Proposition kind.",
+      "name": "create_proposition",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "affected_entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Affected Entities"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confidence"
+          },
+          "contingency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Contingency"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Impact"
+          },
+          "kind": {
+            "default": "claim",
+            "title": "Kind",
+            "type": "string"
+          },
+          "likelihood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Likelihood"
+          },
+          "mitigation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Mitigation"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Owner"
+          },
+          "probability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Probability"
+          },
+          "response": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Response"
+          },
+          "review_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Review At"
+          },
+          "risk_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Risk Status"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source"
+          },
+          "statement": {
+            "title": "Statement",
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "required": [
+          "statement"
+        ],
+        "title": "create_propositionArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/proposition-management/mcp/server.py",
+      "source_skill": "proposition-management",
+      "source_tool": "create_proposition",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "proposition-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return one Proposition by ID.",
+      "name": "get_proposition",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "get_propositionArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/proposition-management/mcp/server.py",
+      "source_skill": "proposition-management",
+      "source_tool": "get_proposition",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "proposition-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Query Propositions by discriminator and epistemic status.",
+      "name": "query_propositions",
+      "output_schema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "query_propositionsOutput",
+        "type": "object"
+      },
+      "parameters": {
+        "properties": {
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Kind"
+          },
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          }
+        },
+        "title": "query_propositionsArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/proposition-management/mcp/server.py",
+      "source_skill": "proposition-management",
+      "source_tool": "query_propositions",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "proposition-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Update a Proposition while preserving its discriminator.",
+      "name": "update_proposition",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "affected_entities": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Affected Entities"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confidence"
+          },
+          "contingency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Contingency"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Evidence"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "impact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Impact"
+          },
+          "likelihood": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Likelihood"
+          },
+          "mitigation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Mitigation"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Owner"
+          },
+          "probability": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Probability"
+          },
+          "realized_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Realized At"
+          },
+          "response": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Response"
+          },
+          "review_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Review At"
+          },
+          "risk_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Risk Status"
+          },
+          "scope": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scope"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source"
+          },
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Statement"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Supersedes"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid Until"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "update_propositionArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/proposition-management/mcp/server.py",
+      "source_skill": "proposition-management",
+      "source_tool": "update_proposition",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
         "readOnlyHint": true
       },
       "collision_sources": [
@@ -5850,6 +7251,600 @@
       "source_server_path": "processkit/release-audit/mcp/server.py",
       "source_skill": "release-audit",
       "source_tool": "run_pk_release_audit",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Run optional checks, stage paths, and create a git commit.",
+      "name": "commit_local_changes",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "checks": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Checks"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "paths": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Paths"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "title": "commit_local_changesArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "commit_local_changes",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Detect the repository provider from a git remote.",
+      "name": "detect_repo_provider",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "remote": {
+            "default": "origin",
+            "title": "Remote",
+            "type": "string"
+          }
+        },
+        "title": "detect_repo_providerArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "detect_repo_provider",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Inspect local git state, remotes, branch, and provider support.",
+      "name": "inspect_repo_state",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "include_remote": {
+            "default": true,
+            "title": "Include Remote",
+            "type": "boolean"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          }
+        },
+        "title": "inspect_repo_stateArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "inspect_repo_state",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "List repository pull requests, merge requests, or change requests.",
+      "name": "list_repo_change_requests",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "state": {
+            "default": "open",
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "title": "list_repo_change_requestsArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "list_repo_change_requests",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "List repository issues for the detected provider.",
+      "name": "list_repo_issues",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "state": {
+            "default": "open",
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "title": "list_repo_issuesArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "list_repo_issues",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Merge or queue a supported change request without bypassing checks.",
+      "name": "merge_change_request",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "auto_queue": {
+            "default": true,
+            "title": "Auto Queue",
+            "type": "boolean"
+          },
+          "confirmation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmation"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "method": {
+            "default": "squash",
+            "title": "Method",
+            "type": "string"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "merge_change_requestArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "merge_change_request",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Build a repository reconciliation plan without mutating state.",
+      "name": "plan_repo_reconcile",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "dry_run": {
+            "default": true,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "limit": {
+            "default": 50,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "scope": {
+            "default": "all",
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "title": "plan_repo_reconcileArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "plan_repo_reconcile",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Push the current branch to its configured remote without force.",
+      "name": "push_current_branch",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Branch"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "remote": {
+            "default": "origin",
+            "title": "Remote",
+            "type": "string"
+          }
+        },
+        "title": "push_current_branchArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "push_current_branch",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Comment on and optionally close a supported issue.",
+      "name": "resolve_repo_issue",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "close": {
+            "default": false,
+            "title": "Close",
+            "type": "boolean"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Comment"
+          },
+          "confirmation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmation"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "resolution": {
+            "title": "Resolution",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "resolution"
+        ],
+        "title": "resolve_repo_issueArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "resolve_repo_issue",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "repo-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Apply guarded repository reconciliation actions.",
+      "name": "run_repo_reconcile",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "commit_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Commit Message"
+          },
+          "dry_run": {
+            "default": true,
+            "title": "Dry Run",
+            "type": "boolean"
+          },
+          "max_items": {
+            "default": 50,
+            "title": "Max Items",
+            "type": "integer"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "push": {
+            "default": false,
+            "title": "Push",
+            "type": "boolean"
+          },
+          "scope": {
+            "default": "all",
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "title": "run_repo_reconcileArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "devops/repo-management/mcp/server.py",
+      "source_skill": "repo-management",
+      "source_tool": "run_repo_reconcile",
       "title": null
     },
     {
@@ -6025,7 +8020,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Bind an Actor to a Role by creating a Binding (type: role-assignment).\n\nUse this rather than editing the Actor's ``spec.roles`` field when\nthe assignment has scope, time, or its own attributes. The created\nbinding can be queried via binding-management's\nresolve_bindings_for.    Prerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this\ntool. 1% rule: call route_task first; commit in the same turn \u2014\ndeferred writes are dropped.\n",
+      "description": "Bind an Actor-compatible entity to a Role.\n\nUse this rather than editing the Actor's ``spec.roles`` field when\nthe assignment has scope, time, or its own attributes. The created\nbinding accepts both Actor and TeamMember subjects because TeamMember\nimplements the generated Actor interface. It can be queried via\nbinding-management's ``resolve_bindings_for``.\n\nPrerequisite: call find_skill(task_description) or confirm you are\nalready operating within a named processkit skill before using this\ntool. 1% rule: call route_task first; commit in the same turn \u2014\ndeferred writes are dropped.\n",
       "name": "link_role_to_actor",
       "output_schema": null,
       "parameters": {
@@ -6246,6 +8241,323 @@
       "source_server_path": "processkit/role-management/mcp/server.py",
       "source_skill": "role-management",
       "source_tool": "update_role",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "runtime-prune"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return structured disk usage and risk data for prune scopes.",
+      "name": "analyze_disk_usage",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scopes"
+          }
+        },
+        "title": "analyze_disk_usageArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/runtime-prune/mcp/server.py",
+      "source_skill": "runtime-prune",
+      "source_tool": "analyze_disk_usage",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "runtime-prune"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Apply confirmed cleanup for processkit-owned scopes.",
+      "name": "apply_prune",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "confirmation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Confirmation"
+          },
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scopes"
+          }
+        },
+        "title": "apply_pruneArguments",
+        "type": "object"
+      },
+      "permission_class": "destructive-write",
+      "source_server_path": "processkit/runtime-prune/mcp/server.py",
+      "source_skill": "runtime-prune",
+      "source_tool": "apply_prune",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "runtime-prune"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return a dry-run prune plan without applying cleanup.",
+      "name": "plan_prune",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "project_root": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Project Root"
+          },
+          "scopes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scopes"
+          }
+        },
+        "title": "plan_pruneArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/runtime-prune/mcp/server.py",
+      "source_skill": "runtime-prune",
+      "source_tool": "plan_prune",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "schema-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return a base or discriminator-specific runtime Schema spec.",
+      "name": "get_schema_contract",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "discriminator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Discriminator"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "get_schema_contractArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/schema-management/mcp/server.py",
+      "source_skill": "schema-management",
+      "source_tool": "get_schema_contract",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "schema-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return a base or discriminator-specific schema validation mode.",
+      "name": "get_validation_mode",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "discriminator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Discriminator"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "title": "get_validation_modeArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/schema-management/mcp/server.py",
+      "source_skill": "schema-management",
+      "source_tool": "get_validation_mode",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "schema-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Rebuild all or selected committed generated schema contracts.",
+      "name": "regenerate_schemas",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "kinds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Kinds"
+          }
+        },
+        "title": "regenerate_schemasArguments",
+        "type": "object"
+      },
+      "permission_class": "destructive-write",
+      "source_server_path": "processkit/schema-management/mcp/server.py",
+      "source_skill": "schema-management",
+      "source_tool": "regenerate_schemas",
       "title": null
     },
     {
@@ -6757,9 +9069,10 @@
         "readOnlyHint": true
       },
       "collision_sources": [
-        "skill-finder"
+        "skill-finder",
+        "skill-management"
       ],
-      "collision_status": "unique",
+      "collision_status": "primary",
       "deduplicated": false,
       "description": "List all processkit skills, optionally filtered by category.\n\nReturns name, one-line description, category, and whether the skill\nhas an MCP server. Use this to browse the catalog when find_skill\nreturns no confident match, or to discover what skills exist in a\ngiven domain.\n\nParameters\n----------\ncategory:\n    Optional filter. One of: processkit, engineering, devops,\n    data-ai, product, documents, design. Omit for all skills.\n\nReturns\n-------\n[{skill, description, category, has_mcp, skill_md_path}]\n",
       "name": "list_skills",
@@ -6908,6 +9221,258 @@
       "source_server_path": "processkit/skill-gate/mcp/server.py",
       "source_skill": "skill-gate",
       "source_tool": "skip_decision_record",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "skill-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Create a minimal draft Skill package.",
+      "name": "create_skill",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "body": {
+            "default": "",
+            "title": "Body",
+            "type": "string"
+          },
+          "category": {
+            "default": "processkit",
+            "title": "Category",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "layer": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Layer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "version": {
+            "default": "1.0.0-alpha.1",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ],
+        "title": "create_skillArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/skill-management/mcp/server.py",
+      "source_skill": "skill-management",
+      "source_tool": "create_skill",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "skill-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Return a projected Skill package by name.",
+      "name": "get_skill",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "get_skillArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/skill-management/mcp/server.py",
+      "source_skill": "skill-management",
+      "source_tool": "get_skill",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "collision_sources": [
+        "skill-finder",
+        "skill-management"
+      ],
+      "collision_status": "namespaced_duplicate",
+      "deduplicated": true,
+      "description": "List package-backed Skill projections.",
+      "name": "skill_management__list_skills",
+      "output_schema": {
+        "properties": {
+          "result": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Result",
+            "type": "array"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_skillsOutput",
+        "type": "object"
+      },
+      "parameters": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Category"
+          },
+          "limit": {
+            "default": 200,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "State"
+          }
+        },
+        "title": "list_skillsArguments",
+        "type": "object"
+      },
+      "permission_class": "read-only",
+      "source_server_path": "processkit/skill-management/mcp/server.py",
+      "source_skill": "skill-management",
+      "source_tool": "list_skills",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "skill-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Transition a package-backed Skill through its v1 state machine.",
+      "name": "transition_skill",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "to_state": {
+            "title": "To State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "to_state"
+        ],
+        "title": "transition_skillArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/skill-management/mcp/server.py",
+      "source_skill": "skill-management",
+      "source_tool": "transition_skill",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "skill-management"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Update non-lifecycle fields in a Skill manifest.",
+      "name": "update_skill",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "updates": {
+            "additionalProperties": true,
+            "title": "Updates",
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "updates"
+        ],
+        "title": "update_skillArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/skill-management/mcp/server.py",
+      "source_skill": "skill-management",
+      "source_tool": "update_skill",
       "title": null
     },
     {

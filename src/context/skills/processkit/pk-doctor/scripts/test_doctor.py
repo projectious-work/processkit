@@ -484,6 +484,51 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 6b3: source checkout validates each release line against its own spec
+# ---------------------------------------------------------------------------
+print("\n[6b3] preauth_applied — split source and dogfood release lines")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    dogfood_spec = (
+        root / "context" / "skills" / "processkit" /
+        "skill-gate" / "assets" / "preauth.json"
+    )
+    source_spec = root / "src" / dogfood_spec.relative_to(root)
+    dogfood_spec.parent.mkdir(parents=True)
+    source_spec.parent.mkdir(parents=True)
+    dogfood_spec.write_text(json.dumps({
+        "version": 1,
+        "permissions": {"allow": ["mcp__processkit-stable__*"]},
+        "enabledMcpjsonServers": ["processkit-stable"],
+    }), encoding="utf-8")
+    source_spec.write_text(json.dumps({
+        "version": 1,
+        "permissions": {"allow": ["mcp__processkit-alpha__*"]},
+        "enabledMcpjsonServers": ["processkit-alpha"],
+    }), encoding="utf-8")
+    source_cfg = (
+        root / "src" / "context" / "skills" / "processkit" /
+        "alpha" / "mcp" / "mcp-config.json"
+    )
+    source_cfg.parent.mkdir(parents=True)
+    source_cfg.write_text(
+        '{"mcpServers":{"processkit-alpha":{}}}\n',
+        encoding="utf-8",
+    )
+    source_manifest = root / "src" / "context" / ".processkit-mcp-manifest.json"
+    source_manifest.write_text(json.dumps({
+        "per_skill": [{
+            "path": "context/skills/processkit/alpha/mcp/mcp-config.json",
+        }],
+    }), encoding="utf-8")
+    results = _preauth_run({"repo_root": root})
+    check(
+        "split source and dogfood specs produce no false drift",
+        not any(r.id == "preauth_applied.spec-drift" for r in results),
+    )
+
+# ---------------------------------------------------------------------------
 # Test 6c: MCP gateway mode is an intentional derived-project alternative
 # ---------------------------------------------------------------------------
 print("\n[6c] mcp gateway — manifest + harness gateway mode")

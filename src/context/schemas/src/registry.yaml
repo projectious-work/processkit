@@ -6,6 +6,13 @@ interfaces:
   - Record
   - Relationship
   - Versioned
+  - Proposition
+  - Actor
+  - Capability
+  - Skill
+  - Container
+  - Command
+  - Event
 alpha_concepts:
   - WorkItem
   - DecisionRecord
@@ -34,3 +41,55 @@ kinds:
   logentry:
     source: compositions/logentry.yaml
     output: logentry.yaml
+  artifact:
+    source: primitives/artifact.yaml
+    output: artifact.yaml
+  gate:
+    source: primitives/gate.yaml
+    output: gate.yaml
+  proposition:
+    source: primitives/proposition.yaml
+    output: proposition.yaml
+  risk:
+    class: discriminator
+    parent: proposition
+    discriminator:
+      field: kind
+      value: risk
+    source: discriminators/risk.yaml
+    output: proposition-risk.yaml
+  actor:
+    source: primitives/actor.yaml
+    output: actor.yaml
+  role:
+    source: primitives/role.yaml
+    output: role.yaml
+  capability:
+    source: primitives/capability.yaml
+    output: capability.yaml
+  skill:
+    source: primitives/skill.yaml
+    output: skill.yaml
+  container:
+    source: primitives/container.yaml
+    output: container.yaml
+  scope:
+    class: discriminator
+    parent: container
+    discriminator:
+      field: kind
+      value: scope
+    source: discriminators/scope.yaml
+    output: container-scope.yaml
+  command:
+    source: primitives/command.yaml
+    output: command.yaml
+  event:
+    source: primitives/event.yaml
+    output: event.yaml
+  teammember:
+    source: compositions/teammember.yaml
+    output: teammember.yaml
+  migration:
+    source: compositions/migration.yaml
+    output: migration.yaml

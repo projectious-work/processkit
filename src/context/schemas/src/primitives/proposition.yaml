@@ -1,0 +1,73 @@
+---
+extends:
+  - ../fragments/entity.yaml
+  - ../fragments/versioned.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-proposition
+  target_kind: Proposition
+  version: "1.0.0-alpha.1"
+  created: 2026-07-22T00:00:00Z
+spec:
+  interfaces:
+    __merge: concat
+    value:
+      - Proposition
+  description: >
+    A claim about the world, work, risk, belief, forecast, estimate, or
+    assumption. Discriminator variants refine the epistemic contract while
+    preserving one Proposition identity and query surface.
+  id_prefix: PROP
+  state_machine: null
+  default_directory: context/propositions
+  known_kinds:
+    - claim
+    - risk
+  spec_schema:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    required: [kind, statement]
+    additionalProperties: true
+    properties:
+      kind:
+        type: string
+        enum: [claim, risk]
+        description: Proposition discriminator.
+      statement:
+        type: string
+        minLength: 1
+        description: The claim expressed by this Proposition.
+      status:
+        type: string
+        enum: [open, supported, refuted, withdrawn, superseded]
+        description: Current epistemic status.
+      confidence:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Confidence from zero to one.
+      owner:
+        type: [string, "null"]
+        pattern: "^(ACTOR|TEAMMEMBER)-[a-zA-Z0-9_-]+$"
+        description: Accountable Actor or TeamMember.
+      evidence:
+        type: array
+        items:
+          type: string
+        description: Entity IDs or external evidence references.
+      scope:
+        type: [string, "null"]
+        description: Scope in which the claim applies.
+      source:
+        type: [string, "null"]
+        description: Origin of the claim.
+      valid_from:
+        type: string
+        format: date-time
+      valid_until:
+        type: string
+        format: date-time
+      supersedes:
+        type: [string, "null"]
+        pattern: "^PROP-[a-zA-Z0-9_-]+$"
