@@ -9,6 +9,24 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.3] - 2026-07-23
+
+v0.28.3 is a **patch release** that publishes the gateway GitHub credential
+refresh fix with consistent release metadata.
+
+### Fixed
+
+- Regenerated both MCP manifests with the release version before archive
+  construction, satisfying the release-integrity preflight.
+
+### Notes
+
+- The immutable `v0.28.2` tag contains the gateway fix, but archive preflight
+  stopped its distribution because its MCP manifest still identified the
+  preceding release. No GitHub Release or archive was published for it.
+
+---
+
 ## [v0.28.2] - 2026-07-23
 
 v0.28.2 is a **patch release** that restores authenticated GitHub repository
