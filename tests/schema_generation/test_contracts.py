@@ -183,6 +183,14 @@ def test_required_fields_and_closed_vocabularies_reject_invalid_data() -> None:
             "Proposition",
             {"kind": "unknown", "statement": "Unknown variant"},
         )
+        assert schema.validate_spec(
+            "LogEntry",
+            {
+                "event_type": "test.event",
+                "actor": "system",
+                "timestamp": "not-a-date-time",
+            },
+        )
     finally:
         sys.path.remove(str(library))
 

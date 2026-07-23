@@ -50,6 +50,15 @@ spec:
         type:
         - string
         - 'null'
+      scope_type:
+        type: string
+        enum:
+        - sprint
+        - milestone
+        - quarter
+        - project
+        - release
+        - other
       state:
         type: string
         enum:

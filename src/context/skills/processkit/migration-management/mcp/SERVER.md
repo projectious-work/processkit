@@ -1,7 +1,7 @@
-# migration-management MCP server
+# Migration Management MCP Server
 
-Upstream-migration lifecycle — list, read, start, apply, and reject
-Migrations. Layer 3 — depends on `event-log`, `index-management`,
+Migration drafting, lifecycle, normalization, and deterministic v0-to-v1
+corpus conversion. Layer 3 — depends on `event-log`, `index-management`,
 and `id-management`.
 
 This server documents its own tool contract only. In gateway deployments,
@@ -15,9 +15,14 @@ manifest.
 |----------------------------------------|----------------------------------------------------------------------------------------------------------|
 | `list_migrations(state?)`              | List active Migrations by default (`pending` + `in-progress`), or explicitly filter by `pending`, `in-progress`, `applied`, or `rejected`. Walks the state directories directly (no index dependency). |
 | `get_migration(id)`                    | Fetch one Migration with full spec + body. Accepts full ID, prefix, or bare word-pair.                   |
+| `draft_migration(kind, summary, affected_files, related_decisions?, body?)` | Create a schema-valid pending local Migration and event. |
 | `start_migration(id)`                  | Transition `pending → in-progress`. Stamps `spec.started_at`, moves file, refreshes INDEX.md.            |
 | `apply_migration(id, notes?)`          | Transition `in-progress → applied` (or `pending → in-progress → applied` via implicit start). Appends `notes` to `spec.progress_notes` if given. |
 | `reject_migration(id, reason)`         | Transition `pending` or `in-progress` → `rejected`. Stamps `spec.rejected_reason`. Moves file to `applied/` per processkit convention. |
+| `normalize_migration_filename(id, target_id)` | Normalize a Migration ID and mutable references while preserving append-only history. |
+| `migrate_context_to_v2(dry_run?)` | Restamp legacy entity API content through the v2 compatibility path. |
+| `plan_v0_to_v1_migration(source_version?, target_version?)` | Produce a deterministic hash-guarded corpus plan. |
+| `execute_v0_to_v1_migration(plan)` | Stage, validate, and apply the unchanged corpus plan with a recovery journal. |
 
 ## State machine
 

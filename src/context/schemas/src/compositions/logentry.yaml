@@ -29,6 +29,9 @@ spec:
     - binding.created
     - binding.ended
     - binding.role-assigned
+    - capability.created
+    - capability.updated
+    - capability.transitioned
     - context.groomed
     - context_archive.created
     - decision.created
@@ -55,9 +58,12 @@ spec:
     - metric.recorded
     - milestone
     - migration.transitioned
+    - migration.drafted
     - migration.applied
     - migration.rejected
+    - migration.filename-normalized
     - migration.v2-context-converted
+    - migration.v0-v1-corpus-applied
     - note.created
     - process.backlog_review
     - process.behavioral_norms_encoded
@@ -68,6 +74,8 @@ spec:
     - process.prd_relocated
     - process.prd_updated
     - process.skill_updated
+    - proposition.created
+    - proposition.updated
     - research.completed
     - release.published
     - retro.action_item_created
@@ -100,6 +108,7 @@ spec:
     - workitem.transitioned
     - scope.archive-moved
     - note.archive-moved
+    - okf.bundle-exported
     - cost.call.accounted
     - cost.budget.warning
     - cost.budget.breach
@@ -112,6 +121,8 @@ spec:
     - security.tetragon_policy_projected
     - sep.handoff.created
     - skill.implemented
+    - skill.updated
+    - skill.transitioned
     - decision.re-recorded
     - entity.renamed
     - test.event

@@ -29,8 +29,10 @@ issue at projectious-work/aibox#54.
 
 Usage:
     uv run scripts/generate-mcp-manifest.py
+    uv run scripts/generate-mcp-manifest.py --check
 
-Exits 0 on success, 1 on any error.
+``--check`` verifies both tracked manifests without writing. Exits 0 on
+success and 1 on stale content or another error.
 """
 
 from __future__ import annotations
@@ -232,6 +234,11 @@ def _write_manifest(path: Path, manifest: dict) -> None:
 
 
 def main() -> int:
+    args = sys.argv[1:]
+    if any(arg not in {"--check"} for arg in args):
+        print("usage: generate-mcp-manifest.py [--check]", file=sys.stderr)
+        return 2
+    check_only = "--check" in args
     try:
         entries = _collect_entries(REPO_ROOT)
         gateway_entries = _collect_gateway_entries(REPO_ROOT)
@@ -278,6 +285,24 @@ def main() -> int:
         "per_server_header": server_headers,
         "aggregate_sha256": aggregate,
     }
+
+    if check_only:
+        if (
+            _load_existing(DOGFOOD_MANIFEST) != manifest
+            or _load_existing(SRC_MANIFEST) != manifest
+        ):
+            print(
+                "MCP manifests are out of date. Regenerate with: "
+                "uv run scripts/generate-mcp-manifest.py",
+                file=sys.stderr,
+            )
+            return 1
+        print(
+            f"MCP manifests are up to date ({len(entries)} skills, "
+            f"{len(server_headers)} server header(s), "
+            f"aggregate {aggregate[:12]}...)"
+        )
+        return 0
 
     try:
         _write_manifest(DOGFOOD_MANIFEST, manifest)

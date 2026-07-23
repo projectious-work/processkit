@@ -14,11 +14,14 @@ spec:
   spec_schema:
     required:
       __merge: concat
-      value: [slug, default_role, default_seniority]
+      value: [slug]
     properties:
       __merge: name-merge
       value:
         slug: {type: string, pattern: "^[a-z0-9][a-z0-9-]*$"}
+        type:
+          type: string
+          enum: [human, ai-agent, service, organization, consultant]
         default_role: {type: string, pattern: "^ROLE-"}
         default_seniority:
           type: string
