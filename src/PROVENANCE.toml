@@ -7,7 +7,7 @@
 [source]
 project = "processkit"
 upstream = "https://github.com/projectious-work/processkit.git"
-generated_at = "2026-07-23T15:41:42Z"
+generated_at = "2026-07-23T15:43:27Z"
 generated_for_tag = "v0.28.3"
 
 [files]
@@ -23,7 +23,7 @@ generated_for_tag = "v0.28.3"
 ".processkit/primitives-INDEX.md" = "v0.8.0"
 "AGENTS.md" = "v0.26.6"
 "INDEX.md" = "v0.25.2"
-"context/.processkit-mcp-manifest.json" = "v0.28.1"
+"context/.processkit-mcp-manifest.json" = "v0.28.3"
 "context/artifacts/ART-20260503_1424-ModelSpec-alibaba-qwen2-5-72b.md" = "v0.25.2"
 "context/artifacts/ART-20260503_1424-ModelSpec-alibaba-qwen2-5-coder-32b.md" = "v0.25.2"
 "context/artifacts/ART-20260503_1424-ModelSpec-alibaba-qwen3-235b.md" = "v0.25.2"
