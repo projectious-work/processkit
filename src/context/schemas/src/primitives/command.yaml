@@ -1,0 +1,28 @@
+extends:
+  - ../fragments/entity.yaml
+  - ../fragments/versioned.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-command
+  target_kind: Command
+  version: "1.0.0-alpha.1"
+  created: 2026-07-23T00:00:00Z
+spec:
+  interfaces:
+    __merge: concat
+    value: [Command]
+  description: An intentional request to change system state.
+  id_prefix: CMD
+  state_machine: null
+  default_directory: context/commands
+  spec_schema:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    required: [action]
+    additionalProperties: true
+    properties:
+      action: {type: string, minLength: 1}
+      requested_by: {type: [string, "null"]}
+      target: {type: [string, "null"]}
+      parameters: {type: object}

@@ -84,13 +84,10 @@ fi
 mkdir -p "$DIST_DIR"
 mkdir -p "$STAGING_DIR"
 
-# Regenerate the MCP-config manifest so the release tarball carries the
-# current aggregate hash (consumed by `aibox sync` to detect per-skill
-# mcp-config changes that don't bump the processkit version).  See
-# DEC-20260423_2049-VastLake and projectious-work/aibox#54.
-echo "regenerating MCP-config manifest" >&2
-if ! PROCESSKIT_VERSION="$VERSION" uv run "$REPO_ROOT/scripts/generate-mcp-manifest.py"; then
-    echo "error: generate-mcp-manifest.py failed" >&2
+# Verify rather than mutate tracked release metadata during a build.
+echo "checking MCP-config manifest" >&2
+if ! PROCESSKIT_VERSION="$VERSION" uv run "$REPO_ROOT/scripts/generate-mcp-manifest.py" --check; then
+    echo "error: MCP manifest is stale; regenerate and commit it before tagging" >&2
     exit 1
 fi
 

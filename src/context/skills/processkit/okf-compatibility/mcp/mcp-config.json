@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "processkit-okf-compatibility": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--script",
+        "context/skills/processkit/okf-compatibility/mcp/server.py"
+      ],
+      "env": {}
+    }
+  }
+}

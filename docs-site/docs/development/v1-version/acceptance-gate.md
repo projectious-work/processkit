@@ -174,6 +174,10 @@ Alpha is ready when:
 
 Beta is ready when:
 
+- the implemented beta inventory targets approximately 60-70% of the
+  89-concept ontology (roughly 54-62 concepts), with explicit exclusions;
+  this directional coverage target complements rather than replaces the
+  capability and evidence criteria below
 - the ontology has expanded beyond the alpha subset with migration proof
 - all migrated kinds validate strictly
 - core MCP tools have stable signatures

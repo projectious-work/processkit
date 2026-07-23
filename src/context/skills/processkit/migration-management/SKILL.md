@@ -22,6 +22,17 @@ metadata:
     provides:
       primitives: [Migration]
       templates: [migration]
+      mcp_tools:
+        - list_migrations
+        - get_migration
+        - draft_migration
+        - start_migration
+        - apply_migration
+        - reject_migration
+        - normalize_migration_filename
+        - migrate_context_to_v2
+        - plan_v0_to_v1_migration
+        - execute_v0_to_v1_migration
 ---
 
 # Migration Management
@@ -222,7 +233,7 @@ Frequently-used fields:
 | `summary` | string | one-line for INDEX.md |
 | `affected_files` | list[object] | path + classification per file |
 | `affected_groups` | list[string] | logical groups touched |
-| `plan` | string | the approved migration plan (markdown) |
+| `plan` | list[string] | ordered declarative or reviewed plan steps |
 | `progress_notes` | list[object] | append-only progress log |
 
 ### Data-fix migrations are required for legacy shapes
@@ -295,8 +306,10 @@ resolved commit live in the project lockfile at the project root
 
 This skill ships an MCP server — see
 [`mcp/SERVER.md`](mcp/SERVER.md) for the contract. The server exposes
-five tools that together cover the full lifecycle: `list_migrations`
-and `get_migration` for discovery, `start_migration` for the
+tools that cover discovery, local drafting, lifecycle, administrative
+normalization, and the v0-to-v1 corpus conversion. `list_migrations`
+and `get_migration` provide discovery, `draft_migration` creates a
+schema-valid pending repair, and `start_migration` handles the
 `pending → in-progress` edge, `apply_migration` for the terminal
 `in-progress → applied` edge (with implicit-start support from a
 pending file), and `reject_migration` for the
@@ -319,9 +332,18 @@ view: it returns only `pending` and `in-progress` migrations. Historical
 and must be requested explicitly with `state="applied"` or
 `state="rejected"` to avoid filling status/resume context.
 
-### What this skill does NOT do (yet)
+`normalize_migration_filename` is the narrow, audited repair path for
+historical filename-policy findings. It preserves LogEntries and other
+terminal Migration references rather than rewriting append-only history.
 
-- **Generate** migrations — that's the host installer/sync tool's job.
-- **Apply file changes** — the agent does the actual edits as part of
-  walking the plan. This skill describes the workflow but doesn't ship a
-  tool that auto-edits.
+`plan_v0_to_v1_migration` produces a deterministic, source-hashed plan.
+`execute_v0_to_v1_migration` accepts that plan unchanged, validates stale
+input and target hashes, stages all writes, preserves unknown fields and
+LogEntry bytes, and records a recovery journal.
+
+### Boundaries
+
+- Host installers may still generate version-diff Migrations.
+- General migration plans do not execute arbitrary scripts.
+- The v0-to-v1 executor only implements its declared deterministic corpus
+  transformation vocabulary.

@@ -18,7 +18,7 @@ The public modules are:
 See `src/lib/README.md` for the import strategy from MCP server scripts.
 """
 
-__version__ = "2.0.0-alpha.1"
+__version__ = "1.0.0-alpha.1"
 
 API_VERSION = "processkit.projectious.work/v2"
 
@@ -37,6 +37,11 @@ KIND_PREFIXES = {
     "Context": "CTX",
     "Discussion": "DISC",
     "Artifact": "ART",
+    "Capability": "CAP",
+    "Command": "CMD",
+    "Container": "CONT",
+    "Event": "EVT",
+    "Proposition": "PROP",
     "Migration": "MIG",
     "Note": "NOTE",
     "TeamMember": "TEAMMEMBER",
@@ -57,6 +62,11 @@ DEFAULT_DIRS = {
     "Constraint": "constraints",
     "Discussion": "discussions",
     "Artifact": "artifacts",
+    "Capability": "capabilities",
+    "Command": "commands",
+    "Container": "containers",
+    "Event": "events",
+    "Proposition": "propositions",
     # Migration's "default" is a logical root; the actual file lives under
     # context/migrations/{pending,in-progress,applied}/ — the substate
     # mirrors the entity's spec.state. The migration-management skill
