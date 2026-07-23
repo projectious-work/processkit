@@ -1,0 +1,30 @@
+extends:
+  - ../fragments/entity.yaml
+  - ../fragments/versioned.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-container
+  target_kind: Container
+  version: "1.0.0-alpha.1"
+  created: 2026-07-23T00:00:00Z
+spec:
+  interfaces:
+    __merge: concat
+    value: [Container]
+  description: A bounded grouping of entities, work, or responsibility.
+  id_prefix: CONT
+  state_machine: null
+  default_directory: context/containers
+  known_kinds: [scope]
+  spec_schema:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    required: [kind, name]
+    additionalProperties: true
+    properties:
+      kind: {type: string, enum: [scope]}
+      name: {type: string, minLength: 1}
+      description: {type: [string, "null"]}
+      members: {type: array, items: {type: string}}
+      parent: {type: [string, "null"]}

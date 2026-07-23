@@ -16,6 +16,15 @@ Versions follow [Semantic Versioning](https://semver.org/).
   inspection, and validation-mode inspection.
 - Added Proposition as an alpha primitive and Risk as its first generated
   discriminator overlay, with discriminator-aware validation and indexing.
+- Completed the dependency-correct alpha schema slice with Role, TeamMember,
+  Skill, Capability, Scope, and Migration, plus their Actor, Container,
+  Command, and Event parent contracts.
+- Added representative Role, Capability, TeamMember, Scope, and Migration
+  fixtures with interface and discriminator indexing coverage.
+- Added an explicit adapter that validates package-based `SKILL.md` manifests
+  against the generated Skill contract.
+- Added a dependency-aware beta ontology plan targeting 62 of 89 concepts
+  (69.7%).
 
 ### Changed
 
@@ -25,6 +34,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
   v1 lines, with stable release tags merged into `main` after publication.
 - Made a curated, version-matched `CHANGELOG.md` entry a required release
   archive preflight rather than an optional staged file.
+- Clarified that the 14-concept alpha product scope requires 18 generated
+  ontology contracts once composition parents are counted.
 
 ---
 

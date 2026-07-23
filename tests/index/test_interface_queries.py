@@ -16,12 +16,13 @@ def test_reindex_groups_entities_by_declared_interface(tmp_path: Path) -> None:
     db = index.open_db(tmp_path / "index.sqlite3")
     try:
         stats = index.reindex(FIXTURE, db)
-        assert stats.entities == 8
+        assert stats.entities == 13
 
         records = index.query_by_interface(db, "Record")
         assert {row["kind"] for row in records} == {
             "DecisionRecord",
             "LogEntry",
+            "Migration",
         }
 
         versioned = index.query_by_interface(db, "Versioned")
@@ -32,6 +33,11 @@ def test_reindex_groups_entities_by_declared_interface(tmp_path: Path) -> None:
             "Gate",
             "WorkItem",
             "Proposition",
+            "Role",
+            "Capability",
+            "TeamMember",
+            "Container",
+            "Migration",
         }
         assert index.query_by_interface(
             db, "Versioned", kind="Gate"
@@ -50,6 +56,23 @@ def test_reindex_groups_entities_by_declared_interface(tmp_path: Path) -> None:
         assert by_id[
             "PROP-20260722_0002-ClearPath-alpha-risk"
         ]["discriminator"] == "risk"
+
+        assert {
+            row["kind"] for row in index.query_by_interface(db, "Actor")
+        } == {"TeamMember"}
+        assert {
+            row["kind"]
+            for row in index.query_by_interface(db, "Capability")
+        } == {"Capability"}
+        containers = index.query_by_interface(db, "Container")
+        assert {row["kind"] for row in containers} == {"Container"}
+        assert containers[0]["discriminator"] == "scope"
+        assert {
+            row["kind"] for row in index.query_by_interface(db, "Command")
+        } == {"Migration"}
+        assert {
+            row["kind"] for row in index.query_by_interface(db, "Event")
+        } == {"Migration"}
     finally:
         db.close()
 

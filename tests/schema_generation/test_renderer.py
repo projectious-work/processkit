@@ -40,6 +40,16 @@ def test_committed_generation_is_current() -> None:
             "gate",
             "proposition",
             "risk",
+            "actor",
+            "role",
+            "capability",
+            "skill",
+            "container",
+            "scope",
+            "command",
+            "event",
+            "teammember",
+            "migration",
         ],
         "errors": {},
     }
@@ -76,6 +86,16 @@ def test_full_generation_is_deterministic(tmp_path: Path) -> None:
         "gate",
         "proposition",
         "risk",
+        "actor",
+        "role",
+        "capability",
+        "skill",
+        "container",
+        "scope",
+        "command",
+        "event",
+        "teammember",
+        "migration",
     ]
     assert second["rebuilt"] == []
     assert first_bytes == second_bytes
@@ -100,6 +120,16 @@ def test_partial_generation_does_not_touch_other_kinds(tmp_path: Path) -> None:
     assert risk["rebuilt"] == ["risk"]
     assert [path.name for path in (tmp_path / "risk").iterdir()] == [
         "proposition-risk.yaml"
+    ]
+
+    scope = generation.regenerate_schemas(
+        SCHEMAS_ROOT,
+        kinds=["scope"],
+        output_dir=tmp_path / "scope",
+    )
+    assert scope["rebuilt"] == ["scope"]
+    assert [path.name for path in (tmp_path / "scope").iterdir()] == [
+        "container-scope.yaml"
     ]
 
 

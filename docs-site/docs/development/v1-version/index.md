@@ -21,6 +21,7 @@ This section is the working design package for the v1 development line.
 - [Tooling Architecture](./tooling-architecture.md)
 - [Test Strategy](./test-strategy.md)
 - [Alpha Scope](./alpha-scope.md)
+- [Beta Ontology Plan](./beta-ontology-plan.md)
 - [Branch Start Work Plan](./branch-start-work-plan.md)
 - [Landscape Note](./landscape-note.md)
 - [Acceptance Gate](./acceptance-gate.md)

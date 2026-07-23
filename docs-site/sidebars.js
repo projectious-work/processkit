@@ -18,6 +18,7 @@ const sidebars = {
             'development/v1-version/tooling-architecture',
             'development/v1-version/test-strategy',
             'development/v1-version/alpha-scope',
+            'development/v1-version/beta-ontology-plan',
             'development/v1-version/branch-start-work-plan',
             'development/v1-version/landscape-note',
             'development/v1-version/acceptance-gate',

@@ -19,7 +19,11 @@ def _frontmatter(path: Path) -> dict:
 
 
 def _schema(kind: str) -> dict:
-    filename = "proposition-risk" if kind == "risk" else kind.lower()
+    overlays = {
+        "risk": "proposition-risk",
+        "scope": "container-scope",
+    }
+    filename = overlays.get(kind, kind.lower())
     document = yaml.safe_load((SCHEMAS / f"{filename}.yaml").read_text())
     schema = document["spec"]["spec_schema"]
     jsonschema.Draft202012Validator.check_schema(schema)
@@ -48,6 +52,22 @@ def test_generated_schema_contracts_and_interfaces() -> None:
         "gate": ["Entity", "Versioned"],
         "proposition": ["Entity", "Versioned", "Proposition"],
         "risk": ["Entity", "Versioned", "Proposition"],
+        "actor": ["Entity", "Versioned", "Actor"],
+        "role": ["Entity", "Versioned"],
+        "capability": ["Entity", "Versioned", "Capability"],
+        "skill": ["Entity", "Versioned", "Skill"],
+        "container": ["Entity", "Versioned", "Container"],
+        "scope": ["Entity", "Versioned", "Container"],
+        "command": ["Entity", "Versioned", "Command"],
+        "event": ["Entity", "Record", "Versioned", "Event"],
+        "teammember": ["Entity", "Versioned", "Actor"],
+        "migration": [
+            "Entity",
+            "Record",
+            "Versioned",
+            "Event",
+            "Command",
+        ],
     }
     for kind, interfaces in expected.items():
         document = _schema(kind)
@@ -94,6 +114,8 @@ def test_alpha_fixture_validates_and_matches_manifest() -> None:
         selector = (
             "risk"
             if kind == "Proposition" and entity["spec"].get("kind") == "risk"
+            else "scope"
+            if kind == "Container" and entity["spec"].get("kind") == "scope"
             else kind.lower()
         )
         document = _schema(selector)
@@ -161,6 +183,24 @@ def test_required_fields_and_closed_vocabularies_reject_invalid_data() -> None:
             "Proposition",
             {"kind": "unknown", "statement": "Unknown variant"},
         )
+    finally:
+        sys.path.remove(str(library))
+
+
+def test_skill_package_manifest_projects_to_generated_contract() -> None:
+    library = ROOT / "src/context/skills/_lib"
+    sys.path.insert(0, str(library))
+    try:
+        from processkit import schema
+
+        manifest = _frontmatter(
+            ROOT
+            / "src/context/skills/processkit/schema-management/SKILL.md"
+        )
+        projected = schema.skill_spec_from_manifest(manifest)
+        assert projected["name"] == "schema-management"
+        assert projected["state"] == "active"
+        assert schema.validate_spec("Skill", projected) == []
     finally:
         sys.path.remove(str(library))
 

@@ -37,6 +37,10 @@ KIND_PREFIXES = {
     "Context": "CTX",
     "Discussion": "DISC",
     "Artifact": "ART",
+    "Capability": "CAP",
+    "Command": "CMD",
+    "Container": "CONT",
+    "Event": "EVT",
     "Proposition": "PROP",
     "Migration": "MIG",
     "Note": "NOTE",
@@ -58,6 +62,10 @@ DEFAULT_DIRS = {
     "Constraint": "constraints",
     "Discussion": "discussions",
     "Artifact": "artifacts",
+    "Capability": "capabilities",
+    "Command": "commands",
+    "Container": "containers",
+    "Event": "events",
     "Proposition": "propositions",
     # Migration's "default" is a logical root; the actual file lives under
     # context/migrations/{pending,in-progress,applied}/ — the substate
