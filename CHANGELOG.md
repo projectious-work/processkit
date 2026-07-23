@@ -16,6 +16,46 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.3] - 2026-07-23
+
+v0.28.3 is a **patch release** that publishes the gateway GitHub credential
+refresh fix with consistent release metadata.
+
+### Fixed
+
+- Regenerated both MCP manifests with the release version before archive
+  construction, satisfying the release-integrity preflight.
+
+### Notes
+
+- The immutable `v0.28.2` tag contains the gateway fix, but archive preflight
+  stopped its distribution because its MCP manifest still identified the
+  preceding release. No GitHub Release or archive was published for it.
+
+---
+
+## [v0.28.2] - 2026-07-23
+
+v0.28.2 is a **patch release** that restores authenticated GitHub repository
+reconciliation through long-lived processkit gateway daemons.
+
+### Fixed
+
+- Let long-lived gateways refresh GitHub CLI credentials from an owner-only
+  token file immediately before each `gh` call, while redacting supported
+  token values from subprocess results. Closes #107.
+
+### Verification
+
+- `uv run --with pytest --with 'mcp[cli]>=1.0' pytest
+  src/context/skills/devops/repo-management/scripts/test_repo_management.py -q`
+- `uv run scripts/smoke-test-servers.py`
+- `uv run
+  src/context/skills/processkit/release-audit/scripts/release_audit.py
+  --tree src-context --json`
+
+---
+
 ## [v0.28.1] - 2026-07-22
 
 v0.28.1 is a **patch release** that removes two derived-project doctor
