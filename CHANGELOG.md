@@ -7,6 +7,14 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [v1.0.0-alpha.1] - 2026-07-23
+
+v1.0.0-alpha.1 is the first opt-in prerelease of the processkit v1 line.
+Stable consumers remain on the supported v0 line; alpha consumers must pin
+this exact version.
+
 ### Added
 
 - Added v1 lifecycle MCP servers for Capability, Proposition/Risk, and
