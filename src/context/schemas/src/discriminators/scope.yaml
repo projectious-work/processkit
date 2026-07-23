@@ -1,0 +1,30 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-container-scope
+  target_kind: Container
+  version: "1.0.0-alpha.1"
+  created: 2026-07-23T00:00:00Z
+spec:
+  parent: Container
+  discriminator: {field: kind, value: scope}
+  description: A bounded objective, project, sprint, or organizational scope.
+  id_prefix: SCOPE
+  state_machine: scope
+  default_directory: context/scopes
+  spec_schema:
+    required:
+      __merge: concat
+      value: [state]
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: scope}
+        state:
+          type: string
+          enum: [planned, active, completed, cancelled]
+        goals: {type: array, items: {type: string}}
+        starts_at: {type: [string, "null"], format: date-time}
+        ends_at: {type: [string, "null"], format: date-time}
+        related_decisions: {type: array, items: {type: string}}

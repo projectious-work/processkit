@@ -1,0 +1,31 @@
+extends:
+  - ../primitives/actor.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-teammember
+  target_kind: TeamMember
+  version: "1.0.0-alpha.1"
+  created: 2026-07-23T00:00:00Z
+spec:
+  description: An Actor with team identity, role, skills, and memory policy.
+  id_prefix: TEAMMEMBER
+  default_directory: context/team-members
+  spec_schema:
+    required:
+      __merge: concat
+      value: [slug, default_role, default_seniority]
+    properties:
+      __merge: name-merge
+      value:
+        slug: {type: string, pattern: "^[a-z0-9][a-z0-9-]*$"}
+        default_role: {type: string, pattern: "^ROLE-"}
+        default_seniority:
+          type: string
+          enum: [junior, specialist, expert, senior, principal]
+        skills: {type: array, items: {type: string}}
+        capabilities: {type: array, items: {type: string}}
+        calendar: {type: object}
+        persona: {type: object}
+        memory_policy: {type: object}
+        journal: {type: array, items: {type: string}}

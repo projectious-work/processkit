@@ -101,6 +101,42 @@ def _json_compatible(spec: dict[str, Any]) -> dict[str, Any]:
     return json.loads(json.dumps(spec, default=str))
 
 
+def skill_spec_from_manifest(frontmatter: dict[str, Any]) -> dict[str, Any]:
+    """Project a package ``SKILL.md`` manifest into the v2 Skill spec.
+
+    Skills remain package manifests rather than ordinary indexed entity files.
+    This adapter makes that storage distinction explicit while giving the
+    generated Skill contract one canonical validation surface.
+    """
+    metadata = frontmatter.get("metadata")
+    processkit = (
+        metadata.get("processkit")
+        if isinstance(metadata, dict)
+        else None
+    )
+    if not isinstance(processkit, dict):
+        processkit = {}
+    projected: dict[str, Any] = {
+        "name": frontmatter.get("name"),
+        "description": frontmatter.get("description"),
+        "version": processkit.get("version"),
+        "state": processkit.get("state", "active"),
+    }
+    for field in (
+        "category",
+        "layer",
+        "uses",
+        "provides",
+        "commands",
+        "triggers",
+        "owners",
+        "capabilities",
+    ):
+        if field in processkit:
+            projected[field] = processkit[field]
+    return projected
+
+
 def _validate_known_vocabulary(
     kind: str,
     spec: dict[str, Any],
@@ -110,6 +146,7 @@ def _validate_known_vocabulary(
     checks = (
         ("Artifact", "kind", "known_kinds"),
         ("Binding", "type", "known_types"),
+        ("Container", "kind", "known_kinds"),
         ("LogEntry", "event_type", "known_event_types"),
         ("Migration", "kind", "known_kinds"),
         ("Proposition", "kind", "known_kinds"),

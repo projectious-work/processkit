@@ -9,13 +9,31 @@ expected:
     Artifact: 1
     Gate: 1
     Proposition: 2
+    Role: 1
+    Capability: 1
+    TeamMember: 1
+    Container: 1
+    Migration: 1
   interfaces:
     Record:
       - DEC-20260719_0001-ClearPath-alpha-decision
       - LOG-20260719_0001-ClearPath-alpha-event
+      - MIG-20260723T000500
     Proposition:
       - PROP-20260722_0001-ClearPath-alpha-claim
       - PROP-20260722_0002-ClearPath-alpha-risk
+    Actor:
+      - TEAMMEMBER-alpha-reviewer
+    Capability:
+      - CAP-alpha-validation
+    Container:
+      - SCOPE-alpha-delivery
+    Event:
+      - MIG-20260723T000500
+    Command:
+      - MIG-20260723T000500
   discriminators:
     risk:
       - PROP-20260722_0002-ClearPath-alpha-risk
+    scope:
+      - SCOPE-alpha-delivery

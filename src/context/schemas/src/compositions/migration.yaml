@@ -1,0 +1,51 @@
+extends:
+  - ../primitives/command.yaml
+  - ../primitives/event.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-migration
+  target_kind: Migration
+  version: "1.0.0-alpha.1"
+  created: 2026-07-23T00:00:00Z
+spec:
+  interfaces:
+    __merge: concat
+    value: [Command]
+  description: A governed Command and Event describing a context migration.
+  id_prefix: MIG
+  state_machine: migration
+  default_directory: context/migrations
+  spec_schema:
+    required:
+      __merge: replace
+      value: [source, state]
+    anyOf:
+      - required: [source_api_version, target_api_version]
+      - required: [from_version, to_version]
+    properties:
+      __merge: name-merge
+      value:
+        source: {type: string, minLength: 1}
+        state:
+          type: string
+          enum: [pending, in-progress, applied, rejected]
+        kind: {type: string}
+        source_api_version: {type: string}
+        target_api_version: {type: string}
+        from_version:
+          type: string
+          description: Compatibility alias for source_api_version.
+        to_version:
+          type: string
+          description: Compatibility alias for target_api_version.
+        source_processkit_version: {type: [string, "null"]}
+        target_processkit_version: {type: [string, "null"]}
+        apply_mode: {type: string, enum: [automatic, manual, mixed]}
+        affected_files: {type: array, items: {type: string}}
+        affected_groups: {type: array, items: {type: string}}
+        plan: {type: array, items: {type: string}}
+        progress: {type: object}
+        validation_evidence: {type: array, items: {type: string}}
+        source_schema: {type: [string, "null"]}
+        target_schema: {type: [string, "null"]}
