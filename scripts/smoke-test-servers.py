@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import os
+import subprocess
 import sys
 import tempfile
 import shutil
@@ -1585,6 +1586,37 @@ def run(distribution_root: Path | str | None = None):
             "callable reload_schemas with correct shape."
         )
         # End BraveBird guard.
+
+        # Release gate: the package must also be healthy from the consumer
+        # project's point of view after the full alpha lifecycle smoke.
+        doctor = (
+            CONTEXT_ROOT
+            / "skills"
+            / "processkit"
+            / "pk-doctor"
+            / "scripts"
+            / "doctor.py"
+        )
+        doctor_run = subprocess.run(
+            [
+                "uv",
+                "run",
+                "--script",
+                str(doctor),
+                "--category=schema_vocabulary,v2_contracts,drift,"
+                "team_consistency",
+            ],
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert doctor_run.returncode == 0, (
+            "derived-project pk-doctor failed after the package smoke:\n"
+            f"stdout:\n{doctor_run.stdout}\n"
+            f"stderr:\n{doctor_run.stderr}"
+        )
+        print("derived-project pk-doctor: PASSED")
 
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:

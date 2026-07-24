@@ -161,6 +161,13 @@ if ! "$REPO_ROOT/scripts/validate-release-mcp-preauth.py" \
     exit 1
 fi
 
+echo "running release artifact gate: disposable-project acceptance" >&2
+if ! uv run "$REPO_ROOT/scripts/smoke-test-package.py" --archive "$TARBALL"; then
+    echo "" >&2
+    echo "error: release artifact gate failed — disposable-project acceptance failed." >&2
+    exit 1
+fi
+
 # Compute and write the sibling checksum file.
 # Format matches `sha256sum`'s output: `<hash>  <filename>`.
 echo "computing sha256 → $CHECKSUM" >&2
