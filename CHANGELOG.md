@@ -22,6 +22,26 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.4] - 2026-07-24
+
+v0.28.4 refreshes the provider-neutral model roster used by routing and
+model-profile resolution.
+
+### Changed
+
+- Refresh the roster from current provider documentation and add current
+  Anthropic, Moonshot, Google, MiniMax, xAI, Alibaba, and Subquadratic
+  model entries. Preserve models without published pricing as explicitly
+  unverified rather than estimating a price.
+- Regenerate model-spec artifacts from the refreshed compatibility projection
+  and add Subquadratic and Xiaomi provider mappings to the generator.
+
+### Verification
+
+- `uv run context/skills/processkit/model-recommender/scripts/test_migrate_models.py`
+
+---
+
 ## [v0.27.6] - 2026-07-21
 
 v0.27.6 is a **patch release** that establishes the canonical v0 release
