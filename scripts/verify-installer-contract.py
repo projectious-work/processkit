@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import sys
@@ -31,8 +32,16 @@ SCHEMAS = (
 
 
 def _safe_relative(value: str) -> bool:
+    if "\\" in value or "\x00" in value:
+        return False
     path = PurePosixPath(value)
-    return not path.is_absolute() and ".." not in path.parts
+    return bool(value) and not path.is_absolute() and ".." not in path.parts
+
+
+def _normalized_relative(value: str) -> str | None:
+    if not _safe_relative(value):
+        return None
+    return PurePosixPath(value).as_posix()
 
 
 def validate(release_root: Path) -> list[str]:
@@ -46,7 +55,8 @@ def validate(release_root: Path) -> list[str]:
     if failures:
         return failures
     try:
-        distribution = yaml.safe_load((base / "distribution.yaml").read_text())
+        distribution_path = base / "distribution.yaml"
+        distribution = yaml.safe_load(distribution_path.read_text())
         descriptor = json.loads((base / "release-descriptor.json").read_text())
         schema = json.loads((base / "schemas/distribution.schema.json").read_text())
         descriptor_schema = json.loads(
@@ -59,7 +69,10 @@ def validate(release_root: Path) -> list[str]:
 
     spec = distribution["spec"]
     operations = yaml.safe_load((base / "operations.yaml").read_text())
+    ownership = yaml.safe_load((base / "ownership-matrix.yaml").read_text())
+    catalog = yaml.safe_load((base / "catalogs/mcp.yaml").read_text())
     available = set(operations.get("operations", {}))
+    policies = set(ownership.get("policies", {}))
     component_ids: set[str] = set()
     destinations: set[str] = set()
     for component in spec["components"]:
@@ -69,20 +82,42 @@ def validate(release_root: Path) -> list[str]:
         if not ident or ident in component_ids:
             failures.append(f"duplicate or missing component id: {ident!r}")
         component_ids.add(ident)
-        if not isinstance(destination, str) or not _safe_relative(destination):
+        normalized_destination = (
+            _normalized_relative(destination)
+            if isinstance(destination, str) else None
+        )
+        if normalized_destination is None:
             failures.append(f"unsafe destination for {ident}: {destination!r}")
-        if destination in destinations and destination != ".":
-            failures.append(f"duplicate destination: {destination}")
-        destinations.add(destination)
+        elif normalized_destination in destinations and normalized_destination != ".":
+            failures.append(f"duplicate destination: {normalized_destination}")
+        elif normalized_destination is not None:
+            destinations.add(normalized_destination)
         if operation not in available:
             failures.append(f"unsupported operation for {ident}: {operation!r}")
+        if component.get("ownership") not in policies:
+            failures.append(
+                f"unknown ownership for {ident}: {component.get('ownership')!r}"
+            )
         source = component.get("source", {})
-        candidates = [source.get("file"), *(source.get("include") or [])]
+        file_source = source.get("file")
+        include_sources = source.get("include")
+        if bool(file_source) == bool(include_sources):
+            failures.append(
+                f"component {ident} must declare exactly one source form"
+            )
+            continue
+        candidates = [file_source, *(include_sources or [])]
         for candidate in candidates:
             if candidate is None:
                 continue
             if not isinstance(candidate, str) or not _safe_relative(candidate):
                 failures.append(f"unsafe source for {ident}: {candidate!r}")
+                continue
+            if candidate.endswith("/**"):
+                if not (release_root / candidate[:-3]).is_dir():
+                    failures.append(f"include source is missing for {ident}: {candidate}")
+            elif not (release_root / candidate).is_file():
+                failures.append(f"file source is missing for {ident}: {candidate}")
     for name, profile in spec["profiles"].items():
         unknown = set(profile.get("include", [])) - component_ids
         if unknown:
@@ -92,6 +127,31 @@ def validate(release_root: Path) -> list[str]:
         failures.append("descriptor manifest path is unsafe")
     elif not (release_root / manifest).is_file():
         failures.append(f"descriptor manifest is missing: {manifest}")
+    elif descriptor["distribution"].get("manifestSha256") != hashlib.sha256(
+        (release_root / manifest).read_bytes()
+    ).hexdigest():
+        failures.append("descriptor manifest digest does not match")
+    if descriptor["distribution"].get("protocol") != spec["installer"].get("protocol"):
+        failures.append("descriptor and manifest installer protocols differ")
+    catalog_source = catalog.get("source_of_truth", {})
+    for key in ("manifest", "preauth"):
+        path = catalog_source.get(key)
+        if not isinstance(path, str) or not _safe_relative(path):
+            failures.append(f"unsafe MCP catalog source {key}: {path!r}")
+        elif not (release_root / path).is_file():
+            failures.append(f"MCP catalog source is missing: {path}")
+    for adapter in spec.get("harnessAdapters", {}).values():
+        if not isinstance(adapter, str) or not _safe_relative(adapter):
+            failures.append(f"unsafe adapter path: {adapter!r}")
+        elif not (release_root / adapter).is_file():
+            failures.append(f"adapter is missing: {adapter}")
+        else:
+            adapter_data = yaml.safe_load((release_root / adapter).read_text())
+            if adapter_data.get("catalog") != spec["catalogs"].get("mcp"):
+                failures.append(f"adapter catalog differs from distribution: {adapter}")
+            destination = adapter_data.get("destination")
+            if not isinstance(destination, str) or not _safe_relative(destination):
+                failures.append(f"unsafe adapter destination: {adapter}")
     return failures
 
 

@@ -94,8 +94,15 @@ fn plan(root: &Path, distribution_root: &Path, mut profiles: Vec<String>, mut ha
             Ok(items) => items,
             Err(message) => { errors.push(Problem { code: "invalid-source".into(), path: component.id.clone(), message }); continue; }
         };
+        let file_source = component.source.file.is_some();
         for (source_path, relative) in sources {
-            let destination = if component.destination == "." { relative } else { format!("{}/{}", component.destination.trim_end_matches('/'), relative) };
+            let destination = if file_source {
+                component.destination.clone()
+            } else if component.destination == "." {
+                relative
+            } else {
+                format!("{}/{}", component.destination.trim_end_matches('/'), relative)
+            };
             let target = root.join(&destination);
             if target.symlink_metadata().map(|m| m.file_type().is_symlink()).unwrap_or(false) { conflicts.push(Problem { code: "symlink-target".into(), path: destination, message: "refusing symlink target".into() }); continue; }
             if target.exists() && component.operation == "preserve-user/v1" { changes.push(Change { destination, component: component.id.clone(), operation: component.operation.clone(), ownership: component.ownership.clone(), kind: "preserve".into(), source_sha256: digest(&source_path)? }); }

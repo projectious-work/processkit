@@ -7,6 +7,20 @@
     "apiVersion": {"const": "processkit.projectious.work/distribution/v1alpha1"},
     "kind": {"const": "Distribution"},
     "metadata": {"type": "object", "required": ["name", "version"]},
-    "spec": {"type": "object", "required": ["installer", "components", "profiles"]}
+    "spec": {
+      "type": "object",
+      "required": ["installer", "components", "profiles"],
+      "properties": {
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "source", "destination", "operation", "ownership"]
+          }
+        },
+        "profiles": {"type": "object", "minProperties": 1}
+      }
+    }
   }
 }
