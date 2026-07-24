@@ -1,0 +1,9 @@
+apiVersion: processkit.projectious.work/installer/v1alpha1
+kind: OperationRegistry
+operations:
+  copy/v1:
+    mutates: true
+    rollback: journal
+  preserve-user/v1:
+    mutates: false
+    rollback: none

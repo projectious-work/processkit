@@ -1,0 +1,6 @@
+apiVersion: processkit.projectious.work/installer/v1alpha1
+kind: McpCatalog
+source_of_truth:
+  manifest: context/.processkit-mcp-manifest.json
+  preauth: context/skills/processkit/skill-gate/assets/preauth.json
+servers: []

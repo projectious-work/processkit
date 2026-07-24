@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://processkit.projectious.work/schemas/installer/distribution/v1alpha1",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {"const": "processkit.projectious.work/distribution/v1alpha1"},
+    "kind": {"const": "Distribution"},
+    "metadata": {"type": "object", "required": ["name", "version"]},
+    "spec": {"type": "object", "required": ["installer", "components", "profiles"]}
+  }
+}

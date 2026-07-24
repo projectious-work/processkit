@@ -91,6 +91,12 @@ if ! PROCESSKIT_VERSION="$VERSION" uv run "$REPO_ROOT/scripts/generate-mcp-manif
     exit 1
 fi
 
+echo "checking installer contract" >&2
+if ! uv run "$REPO_ROOT/scripts/verify-installer-contract.py" "$SRC_DIR"; then
+    echo "error: installer contract is invalid or incomplete." >&2
+    exit 1
+fi
+
 # Release-boundary guard: validate the shipped src/context/ contract directly.
 # Live dogfood context/ may intentionally contain project memory and legacy
 # migration-source state that must not ship in the release tarball.
@@ -158,6 +164,13 @@ if ! "$REPO_ROOT/scripts/validate-release-mcp-preauth.py" \
         "$ARTIFACT_CHECK_PARENT/processkit-$VERSION"; then
     echo "" >&2
     echo "error: release artifact guard failed — tarball MCP metadata is stale." >&2
+    exit 1
+fi
+
+if ! uv run "$REPO_ROOT/scripts/verify-installer-contract.py" \
+        "$ARTIFACT_CHECK_PARENT/processkit-$VERSION"; then
+    echo "" >&2
+    echo "error: release artifact guard failed — installer contract is stale." >&2
     exit 1
 fi
 

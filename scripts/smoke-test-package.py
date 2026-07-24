@@ -36,6 +36,9 @@ REQUIRED_PATHS = (
     "AGENTS.md",
     "INDEX.md",
     "PROVENANCE.toml",
+    ".processkit/installer/distribution.yaml",
+    ".processkit/installer/release-descriptor.json",
+    ".processkit/installer/schemas/distribution.schema.json",
     "context/.processkit-mcp-manifest.json",
     "context/schemas",
     "context/schemas/src/registry.yaml",
@@ -133,6 +136,15 @@ def _validate_layout(distribution_root: Path) -> None:
     if failures:
         rendered = "\n".join(f"  - {failure}" for failure in failures)
         raise RuntimeError(f"staged MCP metadata is invalid:\n{rendered}")
+
+    installer_validator = _load_module(
+        "verify_installer_contract",
+        REPO_ROOT / "scripts" / "verify-installer-contract.py",
+    )
+    installer_failures = installer_validator.validate(distribution_root)
+    if installer_failures:
+        rendered = "\n".join(f"  - {failure}" for failure in installer_failures)
+        raise RuntimeError(f"staged installer contract is invalid:\n{rendered}")
 
 
 def run(release_root: Path | None, archive: Path | None) -> None:

@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["apiVersion","distribution","ownedPaths"],"properties":{"apiVersion":{"const":"processkit.projectious.work/installer/v1alpha1"},"ownedPaths":{"type":"array"}}}
