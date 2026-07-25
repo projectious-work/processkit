@@ -144,3 +144,47 @@ fn recovery_removes_only_digest_matched_interrupted_files() {
         .exists());
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn uninstall_removes_only_unchanged_managed_files() {
+    let root = std::env::temp_dir().join(format!(
+        "processkit-installer-test-{}-{}",
+        std::process::id(),
+        "uninstall"
+    ));
+    std::fs::create_dir_all(root.join("payload")).unwrap();
+    std::fs::create_dir_all(root.join(".processkit")).unwrap();
+    std::fs::write(root.join("payload/hello.txt"), "fixture payload\n").unwrap();
+    std::fs::write(
+        root.join(".processkit/state.json"),
+        r#"{
+          "apiVersion":"processkit.projectious.work/installer/v1alpha1",
+          "release":{"name":"fixture-processkit","version":"0.0.0-test","manifestSha256":"e43f58aec791ca1874fc98d0b208996ac4821de5bf48971733d8d9db0bf6300f"},
+          "profiles":["managed"],
+          "harnesses":[],
+          "ownedPaths":[{
+            "path":"payload/hello.txt","component":"payload","operation":"copy/v1","ownership":"managed-three-way",
+            "installedSha256":"565b24bc77ebeee74f70f6c608e099956666c3589ed85146fcea7e77d9f25356"
+          }]
+        }"#,
+    )
+    .unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args([
+            "uninstall",
+            "--root",
+            root.to_str().unwrap(),
+            "--yes",
+            "--json",
+        ])
+        .output()
+        .expect("uninstall command starts");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(!root.join("payload/hello.txt").exists());
+    assert!(!root.join(".processkit/state.json").exists());
+    std::fs::remove_dir_all(root).unwrap();
+}

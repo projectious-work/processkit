@@ -62,6 +62,15 @@ enum Command {
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
+    /// Remove unchanged files owned by a prior installation.
+    Uninstall {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long)]
+        yes: bool,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -381,6 +390,14 @@ fn main() {
         Command::Recover { root, yes, json } => match recover(&root, yes) {
             Ok(recovered) if json => println!("{{\"recovered\":{recovered}}}"),
             Ok(recovered) => println!("recovered {recovered} transaction(s)"),
+            Err(error) => {
+                eprintln!("processkit: {error}");
+                std::process::exit(3);
+            }
+        },
+        Command::Uninstall { root, yes, json } => match uninstall(&root, yes) {
+            Ok(removed) if json => println!("{{\"removed\":{removed}}}"),
+            Ok(removed) => println!("removed {removed} owned file(s)"),
             Err(error) => {
                 eprintln!("processkit: {error}");
                 std::process::exit(3);
@@ -809,6 +826,51 @@ fn recover(root: &Path, yes: bool) -> Result<usize, String> {
         recovered += 1;
     }
     Ok(recovered)
+}
+
+fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
+    if !yes {
+        return Err("uninstall requires --yes because it removes owned files".into());
+    }
+    let state_path = root.join(".processkit/state.json");
+    let state: InstallationState = serde_json::from_slice(
+        &fs::read(&state_path).map_err(|error| format!("installer state: {error}"))?,
+    )
+    .map_err(|error| format!("invalid installer state: {error}"))?;
+    if state.api_version != API_VERSION {
+        return Err("unsupported installer state version".into());
+    }
+    let removable: Vec<&OwnedPath> = state
+        .owned_paths
+        .iter()
+        .filter(|path| path.ownership == "managed-three-way")
+        .collect();
+    for path in &removable {
+        if !safe_relative(&path.path) || has_symlink_ancestor(root, &path.path)? {
+            return Err("uninstall refused an unsafe owned path".into());
+        }
+        let target = root.join(&path.path);
+        if !target.is_file()
+            || target
+                .symlink_metadata()
+                .map_err(|error| error.to_string())?
+                .file_type()
+                .is_symlink()
+            || digest(&target)? != path.installed_sha256
+        {
+            return Err(format!(
+                "uninstall conflict: owned file was changed or missing: {}",
+                path.path
+            ));
+        }
+    }
+    for path in &removable {
+        fs::remove_file(root.join(&path.path)).map_err(|error| error.to_string())?;
+    }
+    if state.owned_paths.len() == removable.len() {
+        fs::remove_file(&state_path).map_err(|error| error.to_string())?;
+    }
+    Ok(removable.len())
 }
 
 fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
