@@ -29,6 +29,7 @@ import sys
 import tarfile
 import tempfile
 from pathlib import Path
+from pathlib import PurePosixPath
 from types import ModuleType
 
 
@@ -59,6 +60,11 @@ REQUIRED_PATHS = (
     "context/skills/processkit/skill-management/mcp/server.py",
     "context/skills/processkit/okf-compatibility/mcp/server.py",
 )
+MAX_ARCHIVE_MEMBERS = 10_000
+MAX_ARCHIVE_MEMBER_BYTES = 64 * 1024 * 1024
+MAX_ARCHIVE_TOTAL_BYTES = 256 * 1024 * 1024
+MAX_ARCHIVE_PATH_LENGTH = 1_024
+MAX_ARCHIVE_PATH_DEPTH = 32
 
 
 def _load_module(name: str, path: Path) -> ModuleType:
@@ -89,12 +95,40 @@ def _extract_archive(archive: Path, destination: Path) -> Path:
         members = bundle.getmembers()
         if not members:
             raise RuntimeError(f"archive is empty: {archive}")
+        if len(members) > MAX_ARCHIVE_MEMBERS:
+            raise RuntimeError("archive has too many members")
         destination_resolved = destination.resolve()
+        seen: set[str] = set()
+        total_size = 0
         for member in members:
-            if member.issym() or member.islnk():
+            path = PurePosixPath(member.name)
+            if (
+                not member.name
+                or "\\" in member.name
+                or len(member.name) > MAX_ARCHIVE_PATH_LENGTH
+                or len(path.parts) > MAX_ARCHIVE_PATH_DEPTH
+                or path.is_absolute()
+                or ".." in path.parts
+            ):
+                raise RuntimeError(f"unsafe archive member: {member.name}")
+            normalized = str(path)
+            if normalized in seen:
+                raise RuntimeError(f"duplicate archive member: {member.name}")
+            seen.add(normalized)
+            if member.issym() or member.islnk() or not (
+                member.isfile() or member.isdir()
+            ):
                 raise RuntimeError(
-                    f"archive links are not supported: {member.name}"
+                    f"archive member type is not supported: {member.name}"
                 )
+            if member.isfile():
+                if member.size > MAX_ARCHIVE_MEMBER_BYTES:
+                    raise RuntimeError(
+                        f"archive member exceeds size limit: {member.name}"
+                    )
+                total_size += member.size
+                if total_size > MAX_ARCHIVE_TOTAL_BYTES:
+                    raise RuntimeError("archive exceeds total size limit")
             target = (destination / member.name).resolve()
             if (
                 destination_resolved not in target.parents
@@ -106,11 +140,7 @@ def _extract_archive(archive: Path, destination: Path) -> Path:
         else:
             bundle.extractall(destination)
 
-    top_level = {
-        Path(member.name).parts[0]
-        for member in members
-        if member.name
-    }
+    top_level = {PurePosixPath(member.name).parts[0] for member in members}
     if len(top_level) != 1:
         raise RuntimeError(
             "package archive must contain one top-level directory"
