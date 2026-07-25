@@ -14,7 +14,7 @@
         "uninstalled", "recovered"
       ]
     },
-    "changes": {},
+    "changes": {"type": "array"},
     "conflicts": {"type": "array"},
     "warnings": {"type": "array"},
     "errors": {"type": "array"},

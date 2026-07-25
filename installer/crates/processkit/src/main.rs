@@ -646,7 +646,7 @@ fn execute_request(path: &Path) -> Result<serde_json::Value, String> {
             Ok(serde_json::json!({
                 "apiVersion": API_VERSION,
                 "status": "installed",
-                "changes": state.owned_paths.len(),
+                "changes": [{"count": state.owned_paths.len()}],
                 "conflicts": [],
                 "warnings": [],
                 "errors": [],
@@ -753,7 +753,7 @@ fn success_result(status: &str, changes: usize) -> serde_json::Value {
     serde_json::json!({
         "apiVersion": API_VERSION,
         "status": status,
-        "changes": changes,
+        "changes": [{"count": changes}],
         "conflicts": [],
         "warnings": [],
         "errors": [],
