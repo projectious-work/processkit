@@ -1,5 +1,5 @@
 use clap::{ArgAction, Parser, Subcommand, ValueEnum};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeSet, HashSet};
 use std::fs;
@@ -43,7 +43,7 @@ enum OutputFormat {
     Human,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(Deserialize)]
 struct Distribution {
     apiVersion: String,
     kind: String,
@@ -57,8 +57,17 @@ struct Metadata {
 }
 #[derive(serde::Deserialize)]
 struct Spec {
+    installer: InstallerSpec,
     components: Vec<ComponentSpec>,
     profiles: std::collections::BTreeMap<String, Profile>,
+    #[serde(default, rename = "catalogs")]
+    catalogs: std::collections::BTreeMap<String, String>,
+    #[serde(default, rename = "harnessAdapters")]
+    harness_adapters: std::collections::BTreeMap<String, String>,
+}
+#[derive(Deserialize)]
+struct InstallerSpec {
+    protocol: String,
 }
 #[derive(serde::Deserialize)]
 struct Profile {
@@ -76,6 +85,44 @@ struct ComponentSpec {
 struct Source {
     file: Option<String>,
     include: Option<Vec<String>>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ReleaseDescriptor {
+    #[serde(rename = "$schema")]
+    schema: Option<String>,
+    #[serde(rename = "apiVersion")]
+    api_version: String,
+    kind: String,
+    distribution: DescriptorDistribution,
+    installer: DescriptorInstaller,
+    asset: DescriptorAsset,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DescriptorDistribution {
+    manifest: String,
+    #[serde(rename = "manifestSha256")]
+    manifest_sha256: String,
+    protocol: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DescriptorInstaller {
+    requires: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DescriptorAsset {
+    layout: String,
+}
+
+struct VerifiedRelease {
+    root: PathBuf,
+    distribution: Distribution,
+    manifest: PathBuf,
+    manifest_sha256: String,
 }
 
 #[derive(Serialize)]
@@ -120,6 +167,7 @@ fn safe_relative(value: &str) -> bool {
         && !value.contains('\\')
         && !value.contains('\0')
         && !path.is_absolute()
+        && (value == "." || value.split('/').all(|part| !part.is_empty() && part != "."))
         && !path.components().any(|component| {
             matches!(
                 component,
@@ -130,6 +178,87 @@ fn safe_relative(value: &str) -> bool {
 fn digest(path: &Path) -> Result<String, String> {
     let bytes = fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
     Ok(format!("{:x}", Sha256::digest(bytes)))
+}
+
+fn verified_release(distribution_root: &Path) -> Result<VerifiedRelease, String> {
+    let root_metadata = distribution_root
+        .symlink_metadata()
+        .map_err(|error| format!("release root: {error}"))?;
+    if root_metadata.file_type().is_symlink() || !root_metadata.is_dir() {
+        return Err("release root must be a non-symlink directory".into());
+    }
+    let descriptor_path = distribution_root.join(".processkit/installer/release-descriptor.json");
+    ensure_regular_file(distribution_root, &descriptor_path, "release descriptor")?;
+    let descriptor_bytes =
+        fs::read(&descriptor_path).map_err(|error| format!("release descriptor: {error}"))?;
+    let descriptor: ReleaseDescriptor = serde_json::from_slice(&descriptor_bytes)
+        .map_err(|error| format!("release descriptor JSON: {error}"))?;
+    if descriptor.api_version != API_VERSION || descriptor.kind != "ReleaseDescriptor" {
+        return Err("unsupported release descriptor API or kind".into());
+    }
+    if descriptor.distribution.protocol != API_VERSION {
+        return Err("release descriptor has unsupported installer protocol".into());
+    }
+    if descriptor.installer.requires.trim().is_empty()
+        || descriptor.asset.layout != "single-top-level-directory"
+    {
+        return Err("release descriptor has invalid installer or asset contract".into());
+    }
+    if !safe_relative(&descriptor.distribution.manifest) {
+        return Err("release descriptor manifest must be a safe relative path".into());
+    }
+    let manifest = distribution_root.join(&descriptor.distribution.manifest);
+    ensure_regular_file(distribution_root, &manifest, "distribution manifest")?;
+    let manifest_sha256 = digest(&manifest)?;
+    if manifest_sha256 != descriptor.distribution.manifest_sha256 {
+        return Err("release descriptor manifest SHA-256 mismatch".into());
+    }
+    let text = fs::read_to_string(&manifest).map_err(|error| format!("manifest: {error}"))?;
+    let distribution: Distribution =
+        serde_yaml::from_str(&text).map_err(|error| format!("manifest YAML: {error}"))?;
+    if distribution.apiVersion != "processkit.projectious.work/distribution/v1alpha1"
+        || distribution.kind != "Distribution"
+        || distribution.spec.installer.protocol != descriptor.distribution.protocol
+    {
+        return Err("release descriptor and distribution manifest disagree".into());
+    }
+    for path in distribution
+        .spec
+        .catalogs
+        .values()
+        .chain(distribution.spec.harness_adapters.values())
+    {
+        if !safe_relative(path) {
+            return Err("distribution references an unsafe catalog or adapter path".into());
+        }
+        ensure_regular_file(
+            distribution_root,
+            &distribution_root.join(path),
+            "release reference",
+        )?;
+    }
+    Ok(VerifiedRelease {
+        root: distribution_root.to_path_buf(),
+        distribution,
+        manifest,
+        manifest_sha256,
+    })
+}
+
+fn ensure_regular_file(root: &Path, path: &Path, label: &str) -> Result<(), String> {
+    let relative = path
+        .strip_prefix(root)
+        .map_err(|_| format!("{label} escaped release root"))?;
+    if !safe_relative(&relative.to_string_lossy()) {
+        return Err(format!("{label} must be a safe relative path"));
+    }
+    let metadata = path
+        .symlink_metadata()
+        .map_err(|error| format!("{label}: {error}"))?;
+    if metadata.file_type().is_symlink() || !metadata.is_file() {
+        return Err(format!("{label} must be a regular non-symlink file"));
+    }
+    Ok(())
 }
 fn main() {
     let cli = Cli::parse();
@@ -181,15 +310,12 @@ fn plan(
     profiles.dedup();
     harnesses.sort();
     harnesses.dedup();
-    let manifest = distribution_root.join(".processkit/installer/distribution.yaml");
-    let text = fs::read_to_string(&manifest).map_err(|e| format!("manifest: {e}"))?;
-    let distribution: Distribution =
-        serde_yaml::from_str(&text).map_err(|e| format!("manifest YAML: {e}"))?;
-    if distribution.apiVersion != "processkit.projectious.work/distribution/v1alpha1"
-        || distribution.kind != "Distribution"
-    {
-        return Err("unsupported distribution API or kind".into());
-    }
+    let VerifiedRelease {
+        root: release_root,
+        distribution,
+        manifest: _manifest,
+        manifest_sha256,
+    } = verified_release(distribution_root)?;
     let mut selected = BTreeSet::new();
     for profile in &profiles {
         let item = distribution
@@ -243,7 +369,7 @@ fn plan(
             });
             continue;
         }
-        let sources = match source_paths(distribution_root, &component.source) {
+        let sources = match source_paths(&release_root, &component.source) {
             Ok(items) => items,
             Err(message) => {
                 errors.push(Problem {
@@ -315,6 +441,16 @@ fn plan(
             }
         }
     }
+    let mut destinations = HashSet::new();
+    for change in &changes {
+        if !destinations.insert(change.destination.as_str()) {
+            errors.push(Problem {
+                code: "destination-collision".into(),
+                path: change.destination.clone(),
+                message: "multiple components resolve to the same destination".into(),
+            });
+        }
+    }
     changes.sort();
     conflicts.sort();
     errors.sort();
@@ -332,7 +468,7 @@ fn plan(
         distribution: DistributionInfo {
             name: distribution.metadata.name,
             version: distribution.metadata.version,
-            manifest_sha256: digest(&manifest)?,
+            manifest_sha256,
         },
         selected_profiles: profiles,
         harnesses,
