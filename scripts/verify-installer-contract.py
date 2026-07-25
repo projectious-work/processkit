@@ -28,6 +28,7 @@ SCHEMAS = (
     "distribution", "release-descriptor", "installer-request",
     "installer-result", "mcp-catalog", "harness-adapter",
     "installation-state", "compatibility", "variables",
+    "local-release-envelope", "local-trust-store",
 )
 
 

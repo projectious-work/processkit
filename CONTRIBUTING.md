@@ -197,17 +197,20 @@ To release a new tag:
 3. Update `docs-site` if user-visible changes shipped
 4. Run `uv run scripts/smoke-test-servers.py` and confirm green
 5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
-6. `git tag -a vX.Y.Z -m "..."`
-7. `git push origin main && git push origin vX.Y.Z`
-8. **Build and upload the release-asset tarball:**
+6. Generate a local release key once, outside the repository:
    ```bash
-   scripts/build-release-tarball.sh vX.Y.Z
-   gh release upload vX.Y.Z \
-       dist/processkit-vX.Y.Z.tar.gz \
-       dist/processkit-vX.Y.Z.tar.gz.sha256
+   scripts/processkit-keygen-local.sh \
+       "$HOME/.config/processkit/keys/release.pem" \
+       "$HOME/.config/processkit/trust.d/release.pub.pem"
    ```
-   This is the preferred consumption path for aibox (DEC-025); aibox
-   falls back to a git fetch if the asset is missing.
+7. Build, test, sign, and verify the complete release locally:
+   ```bash
+   scripts/release-local.sh vX.Y.Z \
+       "$HOME/.config/processkit/keys/release.pem" \
+       "$HOME/.config/processkit/trust.d/release.pub.pem"
+   ```
+8. Copy the verified files from `dist/` to the chosen publication location.
+   Publication is deliberately separate from release creation and trust.
 9. **Build and review the documentation locally:**
    ```bash
    npm --prefix docs-site run build

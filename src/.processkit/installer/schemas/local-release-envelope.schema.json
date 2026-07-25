@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "release", "archive", "signing"],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/local-release/v1alpha1"
+    },
+    "kind": {"const": "LocalRelease"},
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": {"const": "processkit"},
+        "version": {"type": "string", "minLength": 1}
+      }
+    },
+    "archive": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "sha256"],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "signing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "keyId"],
+      "properties": {
+        "algorithm": {"const": "Ed25519"},
+        "keyId": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  }
+}

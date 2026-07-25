@@ -196,5 +196,9 @@ Release packaging is guarded by:
 
 ```sh
 scripts/check-src-context-drift.sh --release-deliverable
-scripts/build-release-tarball.sh vX.Y.Z
+scripts/test-installer-local.sh
+scripts/release-local.sh vX.Y.Z <private-key.pem> <public-key.pem>
 ```
+
+See [Local release operation](docs/local-release.md) for the agent-first and
+human-operable signing, verification, and publication-independent workflow.

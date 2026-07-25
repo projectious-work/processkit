@@ -198,5 +198,4 @@ echo
 echo "built:"
 ls -lh "$TARBALL" "$CHECKSUM"
 echo
-echo "to upload as a release asset:"
-echo "    gh release upload $VERSION $TARBALL $CHECKSUM"
+echo "publication is separate; sign and verify with scripts/release-local.sh"
