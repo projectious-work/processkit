@@ -1,0 +1,41 @@
+# aibox v1 installer integration
+
+aibox should treat processkit as an opaque local executable. It creates a
+versioned JSON request, invokes `processkit execute --request <path>`, parses
+the single JSON result, and does not duplicate processkit ownership policy.
+
+The producer integration checkpoint is the schema bundle under
+`src/.processkit/installer/schemas/`, the executable built from `installer/`,
+and these local gates:
+
+```sh
+scripts/test-installer-local.sh
+scripts/test-installer-pilot-local.sh
+```
+
+The stable request fields are `apiVersion`, `operation`, `root`,
+`distributionPath`, `profiles`, `harnesses`, and `yes`.
+`distributionPath` is required for plan, install, and update. Mutation
+operations require `yes: true`.
+
+The stable result core is `apiVersion`, `status`, `changes`, `conflicts`,
+`warnings`, and `errors`. Install additionally returns the committed state.
+Callers must use `status` and the process exit code, not human output.
+
+Cancellation is process cancellation. A subsequent `recover` request is the
+only supported interruption repair path. Retries are safe after recovery; the
+target lock prevents concurrent mutations. Installation state and transaction
+evidence contain no private release key.
+
+For the first integration increment, aibox should:
+
+1. build or obtain the standalone executable;
+2. validate the shipped schema bundle;
+3. replace its provisional fixture call with `execute`;
+4. run plan, install, cancellation/recovery, update, and uninstall in a
+   disposable project;
+5. preserve its v0 policy until parity and rollback evidence passes.
+
+The readiness signal for removing the provisional adapter is a tagged
+processkit prerelease containing this protocol and a passing
+`scripts/test-installer-local.sh` result on both repositories.

@@ -52,9 +52,17 @@ complete stderr log, and report the generated file paths and public-key
 fingerprint. They must never print or copy private-key contents. A failed local
 gate stops release creation.
 
-## Current alpha boundary
+## Native consumer verification
 
-The shell verifier is the local release-side verifier. The Rust installer must
-gain native trust-store verification before signed releases become mandatory
-for install and update. Until that lands, the installer commands remain alpha
-and must not be presented as authenticity-enforcing.
+The shell verifier remains the human-operable release-side check. The Rust
+installer also verifies releases against the versioned JSON trust store:
+
+```sh
+processkit verify-release \
+  --envelope dist/processkit-v1.0.0-alpha.3.release.json \
+  --signature dist/processkit-v1.0.0-alpha.3.release.sig \
+  --trust-store "$HOME/.config/processkit/trust-store.json"
+```
+
+Both verifiers bind the exact envelope bytes, Ed25519 key identity, archive
+filename, semantic version, and archive SHA-256.

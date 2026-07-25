@@ -6,6 +6,7 @@ import importlib.util
 import shutil
 from pathlib import Path
 
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "verify-installer-contract.py"
@@ -21,6 +22,19 @@ def _module():
 
 def test_shipped_contract_is_valid() -> None:
     assert _module().validate(REPO_ROOT / "src") == []
+
+
+def test_mcp_catalog_projects_the_gateway() -> None:
+    catalog = yaml.safe_load(
+        (
+            REPO_ROOT / "src/.processkit/installer/catalogs/mcp.yaml"
+        ).read_text(encoding="utf-8")
+    )
+    servers = {server["id"]: server for server in catalog["servers"]}
+    gateway = servers["processkit-gateway"]
+    assert gateway["command"] == "uv"
+    assert gateway["args"][-1].endswith("processkit-gateway/mcp/server.py")
+    assert gateway["env"]["PROCESSKIT_MCP_MODE"] == "gateway"
 
 
 def test_traversal_destination_is_rejected(tmp_path: Path) -> None:

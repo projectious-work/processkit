@@ -97,6 +97,11 @@ enum Command {
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
+    /// Execute one versioned installer request and emit one result envelope.
+    Execute {
+        #[arg(long)]
+        request: PathBuf,
+    },
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -131,6 +136,32 @@ struct Spec {
 #[derive(Deserialize)]
 struct InstallerSpec {
     protocol: String,
+}
+#[derive(Deserialize)]
+struct HarnessAdapter {
+    #[serde(rename = "apiVersion")]
+    api_version: String,
+    kind: String,
+    id: String,
+    format: String,
+    destination: String,
+    ownership: String,
+    catalog: String,
+}
+#[derive(Deserialize)]
+struct McpCatalog {
+    #[serde(rename = "apiVersion")]
+    api_version: String,
+    kind: String,
+    servers: Vec<McpServer>,
+}
+#[derive(Deserialize, Serialize)]
+struct McpServer {
+    id: String,
+    command: String,
+    args: Vec<String>,
+    #[serde(default)]
+    env: std::collections::BTreeMap<String, String>,
 }
 #[derive(serde::Deserialize)]
 struct Profile {
@@ -275,6 +306,20 @@ struct VerifiedReleaseEvidence {
     archive: String,
     archive_sha256: String,
     key_id: String,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct InstallerRequest {
+    api_version: String,
+    operation: String,
+    root: PathBuf,
+    distribution_path: Option<PathBuf>,
+    #[serde(default)]
+    profiles: Vec<String>,
+    #[serde(default)]
+    harnesses: Vec<String>,
+    #[serde(default)]
+    yes: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -532,7 +577,97 @@ fn main() {
                 std::process::exit(3);
             }
         },
+        Command::Execute { request } => match execute_request(&request) {
+            Ok(result) => println!("{}", serde_json::to_string_pretty(&result).unwrap()),
+            Err(error) => {
+                println!(
+                    "{}",
+                    serde_json::json!({
+                        "apiVersion": API_VERSION,
+                        "status": "invalid",
+                        "changes": [],
+                        "conflicts": [],
+                        "warnings": [],
+                        "errors": [{
+                            "code": "request-failed",
+                            "path": "",
+                            "message": error,
+                        }],
+                    })
+                );
+                std::process::exit(3);
+            }
+        },
     }
+}
+
+fn execute_request(path: &Path) -> Result<serde_json::Value, String> {
+    let bytes = fs::read(path).map_err(|error| format!("installer request: {error}"))?;
+    let request: InstallerRequest = serde_json::from_slice(&bytes)
+        .map_err(|error| format!("installer request JSON: {error}"))?;
+    if request.api_version != API_VERSION {
+        return Err("unsupported installer request API version".into());
+    }
+    let distribution = || {
+        request
+            .distribution_path
+            .as_deref()
+            .ok_or("operation requires distributionPath")
+    };
+    match request.operation.as_str() {
+        "plan" => serde_json::to_value(plan(
+            &request.root,
+            distribution()?,
+            request.profiles,
+            request.harnesses,
+        ))
+        .map_err(|error| error.to_string()),
+        "install" => {
+            let state = install(
+                &request.root,
+                distribution()?,
+                request.profiles,
+                request.harnesses,
+                request.yes,
+            )?;
+            Ok(serde_json::json!({
+                "apiVersion": API_VERSION,
+                "status": "installed",
+                "changes": state.owned_paths.len(),
+                "conflicts": [],
+                "warnings": [],
+                "errors": [],
+                "state": state,
+            }))
+        }
+        "update" => {
+            let changed = update(&request.root, distribution()?, request.yes)?;
+            Ok(success_result("updated", changed))
+        }
+        "uninstall" => {
+            let changed = uninstall(&request.root, request.yes)?;
+            Ok(success_result("uninstalled", changed))
+        }
+        "recover" => {
+            let changed = recover(&request.root, request.yes)?;
+            Ok(success_result("recovered", changed))
+        }
+        _ => Err(format!(
+            "unsupported installer request operation: {}",
+            request.operation
+        )),
+    }
+}
+
+fn success_result(status: &str, changes: usize) -> serde_json::Value {
+    serde_json::json!({
+        "apiVersion": API_VERSION,
+        "status": status,
+        "changes": changes,
+        "conflicts": [],
+        "warnings": [],
+        "errors": [],
+    })
 }
 
 fn verify_local_release(
@@ -650,6 +785,11 @@ fn plan(
         manifest: _manifest,
         manifest_sha256,
     } = verified_release(distribution_root)?;
+    for harness in &harnesses {
+        if !distribution.spec.harness_adapters.contains_key(harness) {
+            return Err(format!("unknown harness adapter: {harness}"));
+        }
+    }
     let mut selected = BTreeSet::new();
     for profile in &profiles {
         let item = distribution
@@ -818,6 +958,7 @@ fn plan(
 struct PendingAction {
     action: TransactionAction,
     source: Option<PathBuf>,
+    content: Option<Vec<u8>>,
 }
 
 fn transaction_id(operation: &str) -> String {
@@ -860,12 +1001,22 @@ fn execute_transaction(
         if !safe_relative(&item.action.target) || has_symlink_ancestor(root, &item.action.target)? {
             return Err(format!("unsafe transaction target: {}", item.action.target));
         }
-        if let Some(source) = &item.source {
+        if item.source.is_some() || item.content.is_some() {
             let staged = new_dir.join(&item.action.target);
             if let Some(parent) = staged.parent() {
                 fs::create_dir_all(parent).map_err(|error| error.to_string())?;
             }
-            fs::copy(source, &staged).map_err(|error| error.to_string())?;
+            if let Some(source) = &item.source {
+                fs::copy(source, &staged).map_err(|error| error.to_string())?;
+            } else {
+                fs::write(
+                    &staged,
+                    item.content
+                        .as_ref()
+                        .ok_or("transaction content is missing")?,
+                )
+                .map_err(|error| error.to_string())?;
+            }
             let expected = item
                 .action
                 .new_sha256
@@ -948,6 +1099,13 @@ fn execute_transaction(
                     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
                 }
                 fs::rename(staged, &target).map_err(|error| error.to_string())?;
+            }
+            if std::env::var("PROCESSKIT_INSTALLER_FAIL_AFTER_ACTION")
+                .ok()
+                .and_then(|value| value.parse::<usize>().ok())
+                == Some(index)
+            {
+                std::process::exit(75);
             }
             journal.actions[index].applied = true;
             write_json_atomic(&journal_path, &journal)?;
@@ -1076,6 +1234,7 @@ fn install(
                     applied: false,
                 },
                 source: Some(change.source.clone()),
+                content: None,
             });
             owned_paths.push(OwnedPath {
                 path: change.destination.clone(),
@@ -1085,6 +1244,10 @@ fn install(
                 installed_sha256: change.source_sha256.clone(),
             });
         }
+    }
+    for (action, owned) in adapter_actions(root, distribution, &plan.harnesses, false)? {
+        pending.push(action);
+        owned_paths.push(owned);
     }
     let state = InstallationState {
         api_version: API_VERSION.into(),
@@ -1099,6 +1262,131 @@ fn install(
     };
     execute_transaction(root, "install", pending, Some(&state))?;
     Ok(state)
+}
+
+fn adapter_actions(
+    root: &Path,
+    distribution_root: &Path,
+    harnesses: &[String],
+    updating: bool,
+) -> Result<Vec<(PendingAction, OwnedPath)>, String> {
+    let verified = verified_release(distribution_root)?;
+    let mut actions = Vec::new();
+    for harness in harnesses {
+        let adapter_relative = verified
+            .distribution
+            .spec
+            .harness_adapters
+            .get(harness)
+            .ok_or_else(|| format!("unknown harness adapter: {harness}"))?;
+        let adapter_path = distribution_root.join(adapter_relative);
+        let adapter: HarnessAdapter = serde_yaml::from_slice(
+            &fs::read(&adapter_path).map_err(|error| format!("harness adapter: {error}"))?,
+        )
+        .map_err(|error| format!("harness adapter YAML: {error}"))?;
+        if adapter.api_version != API_VERSION
+            || adapter.kind != "HarnessAdapter"
+            || adapter.id != *harness
+            || adapter.format != "json"
+            || adapter.ownership != "managed-keys"
+            || !safe_relative(&adapter.destination)
+            || !safe_relative(&adapter.catalog)
+        {
+            return Err(format!("unsupported harness adapter contract: {harness}"));
+        }
+        let catalog_path = distribution_root.join(&adapter.catalog);
+        ensure_regular_file(distribution_root, &catalog_path, "MCP catalog")?;
+        let catalog: McpCatalog = serde_yaml::from_slice(
+            &fs::read(&catalog_path).map_err(|error| format!("MCP catalog: {error}"))?,
+        )
+        .map_err(|error| format!("MCP catalog YAML: {error}"))?;
+        if catalog.api_version != API_VERSION || catalog.kind != "McpCatalog" {
+            return Err("unsupported MCP catalog contract".into());
+        }
+        let target = root.join(&adapter.destination);
+        let old_sha256 = target.is_file().then(|| digest(&target)).transpose()?;
+        let config_existed = old_sha256.is_some();
+        let mut document = if target.exists() {
+            if target
+                .symlink_metadata()
+                .map_err(|error| error.to_string())?
+                .file_type()
+                .is_symlink()
+            {
+                return Err(format!(
+                    "harness config is a symlink: {}",
+                    adapter.destination
+                ));
+            }
+            serde_json::from_slice::<serde_json::Value>(
+                &fs::read(&target).map_err(|error| error.to_string())?,
+            )
+            .map_err(|error| format!("harness config JSON: {error}"))?
+        } else {
+            serde_json::json!({})
+        };
+        let object = document
+            .as_object_mut()
+            .ok_or("harness config root must be a JSON object")?;
+        let servers = object
+            .entry("mcpServers")
+            .or_insert_with(|| serde_json::json!({}))
+            .as_object_mut()
+            .ok_or("harness mcpServers must be a JSON object")?;
+        for server in catalog.servers {
+            let server_value = serde_json::json!({
+                "command": server.command,
+                "args": server.args,
+                "env": server.env,
+            });
+            if let Some(existing) = servers.get(&server.id) {
+                if existing != &server_value && !updating {
+                    return Err(format!(
+                        "harness config already defines managed server: {}",
+                        server.id
+                    ));
+                }
+            }
+            servers.insert(server.id, server_value);
+        }
+        let mut content =
+            serde_json::to_vec_pretty(&document).map_err(|error| error.to_string())?;
+        content.push(b'\n');
+        let new_sha256 = format!("{:x}", Sha256::digest(&content));
+        actions.push((
+            PendingAction {
+                action: TransactionAction {
+                    kind: if config_existed {
+                        "replace".into()
+                    } else {
+                        "create".into()
+                    },
+                    target: adapter.destination.clone(),
+                    old_sha256,
+                    new_sha256: Some(new_sha256.clone()),
+                    staged_path: None,
+                    backup_path: None,
+                    created_parents: Vec::new(),
+                    ownership: "managed-keys".into(),
+                    applied: false,
+                },
+                source: None,
+                content: Some(content),
+            },
+            OwnedPath {
+                path: adapter.destination,
+                component: format!("harness-adapter:{harness}"),
+                operation: if config_existed {
+                    "managed-keys-merge/v1".into()
+                } else {
+                    "managed-keys-create/v1".into()
+                },
+                ownership: "managed-keys".into(),
+                installed_sha256: new_sha256,
+            },
+        ));
+    }
+    Ok(actions)
 }
 
 fn recover(root: &Path, yes: bool) -> Result<usize, String> {
@@ -1215,8 +1503,7 @@ fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
             ));
         }
     }
-    let removed = removable.len();
-    let pending = removable
+    let mut pending: Vec<PendingAction> = removable
         .iter()
         .map(|path| PendingAction {
             action: TransactionAction {
@@ -1231,11 +1518,95 @@ fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
                 applied: false,
             },
             source: None,
+            content: None,
         })
         .collect();
-    state
+    let adapters: Vec<&OwnedPath> = state
         .owned_paths
-        .retain(|path| path.ownership != "managed-three-way");
+        .iter()
+        .filter(|path| path.ownership == "managed-keys")
+        .collect();
+    for adapter in &adapters {
+        if !safe_relative(&adapter.path) || has_symlink_ancestor(root, &adapter.path)? {
+            return Err("uninstall refused an unsafe adapter path".into());
+        }
+        let target = root.join(&adapter.path);
+        if !target.is_file() {
+            return Err(format!("uninstall adapter is missing: {}", adapter.path));
+        }
+        let current_sha256 = digest(&target)?;
+        if adapter.operation == "managed-keys-create/v1"
+            && current_sha256 == adapter.installed_sha256
+        {
+            pending.push(PendingAction {
+                action: TransactionAction {
+                    kind: "remove".into(),
+                    target: adapter.path.clone(),
+                    old_sha256: Some(current_sha256),
+                    new_sha256: None,
+                    staged_path: None,
+                    backup_path: None,
+                    created_parents: Vec::new(),
+                    ownership: adapter.ownership.clone(),
+                    applied: false,
+                },
+                source: None,
+                content: None,
+            });
+            continue;
+        }
+        let mut document: serde_json::Value =
+            serde_json::from_slice(&fs::read(&target).map_err(|error| error.to_string())?)
+                .map_err(|error| format!("harness config JSON: {error}"))?;
+        let servers = document
+            .get_mut("mcpServers")
+            .and_then(serde_json::Value::as_object_mut)
+            .ok_or("managed harness config no longer has mcpServers")?;
+        let managed = servers
+            .get("processkit-gateway")
+            .ok_or("managed processkit gateway key is missing")?;
+        if managed
+            .get("env")
+            .and_then(|env| env.get("PROCESSKIT_MCP_MODE"))
+            .and_then(serde_json::Value::as_str)
+            != Some("gateway")
+        {
+            return Err("managed processkit gateway key was changed".into());
+        }
+        servers.remove("processkit-gateway");
+        if servers.is_empty() {
+            document
+                .as_object_mut()
+                .ok_or("harness config root must be an object")?
+                .remove("mcpServers");
+        }
+        let mut content =
+            serde_json::to_vec_pretty(&document).map_err(|error| error.to_string())?;
+        content.push(b'\n');
+        let new_sha256 = format!("{:x}", Sha256::digest(&content));
+        pending.push(PendingAction {
+            action: TransactionAction {
+                kind: "replace".into(),
+                target: adapter.path.clone(),
+                old_sha256: Some(current_sha256),
+                new_sha256: Some(new_sha256),
+                staged_path: None,
+                backup_path: None,
+                created_parents: Vec::new(),
+                ownership: adapter.ownership.clone(),
+                applied: false,
+            },
+            source: None,
+            content: Some(content),
+        });
+    }
+    let removed = removable.len() + adapters.len();
+    state.owned_paths.retain(|path| {
+        !matches!(
+            path.ownership.as_str(),
+            "managed-three-way" | "managed-keys"
+        )
+    });
     if state.owned_paths.is_empty() {
         execute_transaction(root, "uninstall", pending, None)?;
     } else {
@@ -1358,6 +1729,7 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
                 applied: false,
             },
             source: Some(change.source.clone()),
+            content: None,
         });
     }
     for owned in &mut old.owned_paths {
@@ -1378,6 +1750,26 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
             ownership: change.ownership.clone(),
             installed_sha256: change.source_sha256.clone(),
         });
+    }
+    for adapter in old
+        .owned_paths
+        .iter()
+        .filter(|path| path.ownership == "managed-keys")
+    {
+        let target = root.join(&adapter.path);
+        if !target.is_file() || digest(&target)? != adapter.installed_sha256 {
+            return Err(format!(
+                "update conflict: managed harness config changed: {}",
+                adapter.path
+            ));
+        }
+    }
+    let adapter_changes = adapter_actions(root, distribution, &old.harnesses, true)?;
+    old.owned_paths
+        .retain(|path| path.ownership != "managed-keys");
+    for (action, owned) in adapter_changes {
+        pending.push(action);
+        old.owned_paths.push(owned);
     }
     let new_state = InstallationState {
         api_version: API_VERSION.into(),

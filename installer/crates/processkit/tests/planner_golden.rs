@@ -157,6 +157,42 @@ fn recovery_removes_only_digest_matched_interrupted_files() {
 }
 
 #[test]
+fn recovery_repairs_a_process_interrupted_after_rename() {
+    let root = std::env::temp_dir().join(format!(
+        "processkit-installer-test-{}-{}",
+        std::process::id(),
+        "interrupted-install"
+    ));
+    std::fs::create_dir_all(&root).unwrap();
+    let case = fixture("empty");
+    let interrupted = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .env("PROCESSKIT_INSTALLER_FAIL_AFTER_ACTION", "0")
+        .args([
+            "install",
+            "--root",
+            root.to_str().unwrap(),
+            "--distribution",
+            case.join("distribution").to_str().unwrap(),
+            "--profile",
+            "managed",
+            "--yes",
+        ])
+        .status()
+        .expect("interrupted install starts");
+    assert_eq!(interrupted.code(), Some(75));
+    assert!(root.join("payload/hello.txt").is_file());
+
+    let recovered = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args(["recover", "--root", root.to_str().unwrap(), "--yes"])
+        .status()
+        .expect("recovery starts");
+    assert!(recovered.success());
+    assert!(!root.join("payload/hello.txt").exists());
+    assert!(!root.join(".processkit/state.json").exists());
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
 fn uninstall_removes_only_unchanged_managed_files() {
     let root = std::env::temp_dir().join(format!(
         "processkit-installer-test-{}-{}",

@@ -1,1 +1,37 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["apiVersion","root","distributionPath","profiles"],"properties":{"apiVersion":{"const":"processkit.projectious.work/installer/v1alpha1"},"root":{"type":"string"},"distributionPath":{"type":"string"},"profiles":{"type":"array","items":{"type":"string"}},"harnesses":{"type":"array","items":{"type":"string"}}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "operation", "root"],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/installer/v1alpha1"
+    },
+    "operation": {
+      "enum": ["plan", "install", "update", "uninstall", "recover"]
+    },
+    "root": {"type": "string", "minLength": 1},
+    "distributionPath": {"type": "string", "minLength": 1},
+    "profiles": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "harnesses": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "yes": {"type": "boolean", "default": false}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {"enum": ["plan", "install", "update"]}
+        }
+      },
+      "then": {"required": ["distributionPath"]}
+    }
+  ]
+}

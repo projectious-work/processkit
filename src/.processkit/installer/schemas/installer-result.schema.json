@@ -1,1 +1,23 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["apiVersion","status","changes","conflicts","warnings","errors"],"properties":{"apiVersion":{"const":"processkit.projectious.work/installer/v1alpha1"},"status":{"enum":["planned","conflict","invalid"]},"changes":{"type":"array"},"conflicts":{"type":"array"},"warnings":{"type":"array"},"errors":{"type":"array"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "apiVersion", "status", "changes", "conflicts", "warnings", "errors"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/installer/v1alpha1"
+    },
+    "status": {
+      "enum": [
+        "planned", "conflict", "invalid", "installed", "updated",
+        "uninstalled", "recovered"
+      ]
+    },
+    "changes": {},
+    "conflicts": {"type": "array"},
+    "warnings": {"type": "array"},
+    "errors": {"type": "array"},
+    "state": {"type": "object"}
+  }
+}
