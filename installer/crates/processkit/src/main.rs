@@ -248,6 +248,14 @@ struct JournalPath {
     path: String,
     sha256: String,
 }
+struct OperationLock {
+    path: PathBuf,
+}
+impl Drop for OperationLock {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.path);
+    }
+}
 
 fn safe_relative(value: &str) -> bool {
     let path = Path::new(value);
@@ -654,13 +662,7 @@ fn install(
     if state_path.exists() {
         return Err("target already has processkit installation state; use update".into());
     }
-    let lock_path = state_dir.join("lock");
-    let mut lock = OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(&lock_path)
-        .map_err(|_| "another processkit operation is already in progress")?;
-    writeln!(lock, "install-{}", std::process::id()).map_err(|error| error.to_string())?;
+    let _lock = acquire_lock(root, "install")?;
     let transaction = format!("install-{}", std::process::id());
     let staging = state_dir.join(".staging").join(&transaction);
     let journal_path = state_dir
@@ -718,13 +720,13 @@ fn install(
                     change.destination
                 ));
             }
-            fs::rename(&staged, &target).map_err(|error| error.to_string())?;
             journal.created_paths.push(JournalPath {
                 path: change.destination.clone(),
                 sha256: change.source_sha256.clone(),
             });
             journal.phase = "applying".into();
             write_json_atomic(&journal_path, &journal)?;
+            fs::rename(&staged, &target).map_err(|error| error.to_string())?;
             owned_paths.push(OwnedPath {
                 path: change.destination.clone(),
                 component: change.component.clone(),
@@ -763,9 +765,10 @@ fn install(
         }
         let _ = fs::remove_file(&state_path);
     }
-    let _ = fs::remove_dir_all(&staging);
-    let _ = fs::remove_file(&journal_path);
-    let _ = fs::remove_file(&lock_path);
+    if result.is_ok() {
+        let _ = fs::remove_dir_all(&staging);
+        let _ = fs::remove_file(&journal_path);
+    }
     result
 }
 
@@ -773,6 +776,8 @@ fn recover(root: &Path, yes: bool) -> Result<usize, String> {
     if !yes {
         return Err("recovery requires --yes because it can remove staged files".into());
     }
+    clear_stale_lock_for_recovery(root)?;
+    let _lock = acquire_lock(root, "recover")?;
     let state_dir = root.join(".processkit");
     let transactions = state_dir.join("transactions");
     if !transactions.is_dir() {
@@ -856,6 +861,7 @@ fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
     if !yes {
         return Err("uninstall requires --yes because it removes owned files".into());
     }
+    let _lock = acquire_lock(root, "uninstall")?;
     let state_path = root.join(".processkit/state.json");
     let state: InstallationState = serde_json::from_slice(
         &fs::read(&state_path).map_err(|error| format!("installer state: {error}"))?,
@@ -894,13 +900,15 @@ fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
     if state.owned_paths.len() == removable.len() {
         fs::remove_file(&state_path).map_err(|error| error.to_string())?;
     }
-    Ok(removable.len())
+    let removed = removable.len();
+    Ok(removed)
 }
 
 fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> {
     if !yes {
         return Err("update requires --yes after reviewing a plan".into());
     }
+    let _lock = acquire_lock(root, "update")?;
     let state_path = root.join(".processkit/state.json");
     let mut old: InstallationState = serde_json::from_slice(
         &fs::read(&state_path).map_err(|error| format!("installer state: {error}"))?,
@@ -1024,6 +1032,38 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
     write_json_atomic(&state_path, &new_state)?;
     let _ = fs::remove_dir_all(staging);
     Ok(changed)
+}
+
+fn acquire_lock(root: &Path, operation: &str) -> Result<OperationLock, String> {
+    let state_dir = root.join(".processkit");
+    fs::create_dir_all(&state_dir).map_err(|error| error.to_string())?;
+    let lock_path = state_dir.join("lock");
+    let mut lock = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&lock_path)
+        .map_err(|_| "another processkit operation is already in progress")?;
+    writeln!(lock, "{operation}:{}", std::process::id()).map_err(|error| error.to_string())?;
+    lock.sync_all().map_err(|error| error.to_string())?;
+    Ok(OperationLock { path: lock_path })
+}
+
+fn clear_stale_lock_for_recovery(root: &Path) -> Result<(), String> {
+    let lock_path = root.join(".processkit/lock");
+    if !lock_path.exists() {
+        return Ok(());
+    }
+    let value = fs::read_to_string(&lock_path).map_err(|error| error.to_string())?;
+    let pid = value
+        .trim()
+        .rsplit(':')
+        .next()
+        .and_then(|item| item.parse::<u32>().ok())
+        .ok_or("manual recovery required: malformed operation lock")?;
+    if Path::new("/proc").join(pid.to_string()).exists() {
+        return Err("another processkit operation is still running".into());
+    }
+    fs::remove_file(lock_path).map_err(|error| error.to_string())
 }
 
 fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
