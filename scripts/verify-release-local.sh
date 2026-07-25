@@ -10,15 +10,32 @@ ENVELOPE="$1"
 SIGNATURE="$2"
 TRUST_INPUT="$3"
 
-for path in "$ENVELOPE" "$SIGNATURE" "$TRUST_INPUT"; do
+for path in "$ENVELOPE" "$SIGNATURE"; do
     [[ -f "$path" ]] || { echo "error: required file missing: $path" >&2; exit 1; }
 done
+[[ -f "$TRUST_INPUT" || -d "$TRUST_INPUT" ]] || {
+    echo "error: trust input missing: $TRUST_INPUT" >&2
+    exit 1
+}
 command -v jq >/dev/null || { echo "error: jq is required" >&2; exit 1; }
 command -v openssl >/dev/null || { echo "error: openssl is required" >&2; exit 1; }
 
 KEY_ID="$(jq -er '.signing.keyId' "$ENVELOPE")"
 if [[ -d "$TRUST_INPUT" ]]; then
     PUBLIC_KEY="$TRUST_INPUT/$KEY_ID.pub.pem"
+    if [[ ! -f "$PUBLIC_KEY" ]]; then
+        PUBLIC_KEY=""
+        while IFS= read -r candidate; do
+            candidate_id="$(
+                openssl pkey -pubin -in "$candidate" -outform DER 2>/dev/null |
+                    sha256sum | awk '{print $1}'
+            )"
+            if [[ "$candidate_id" == "$KEY_ID" ]]; then
+                PUBLIC_KEY="$candidate"
+                break
+            fi
+        done < <(find "$TRUST_INPUT" -maxdepth 1 -type f -name '*.pub.pem' -print)
+    fi
 else
     PUBLIC_KEY="$TRUST_INPUT"
 fi

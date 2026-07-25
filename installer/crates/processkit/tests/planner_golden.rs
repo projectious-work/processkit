@@ -115,10 +115,21 @@ fn recovery_removes_only_digest_matched_interrupted_files() {
         root.join(".processkit/transactions/install-1.json"),
         r#"{
           "apiVersion":"processkit.projectious.work/installer/v1alpha1",
+          "transactionId":"install-1",
+          "operation":"install",
           "phase":"applying",
-          "createdPaths":[{
+          "oldStateSha256":null,
+          "newStateSha256":"pending",
+          "actions":[{
+            "kind":"create",
             "path":"created.txt",
-            "sha256":"565b24bc77ebeee74f70f6c608e099956666c3589ed85146fcea7e77d9f25356"
+            "oldSha256":null,
+            "newSha256":"565b24bc77ebeee74f70f6c608e099956666c3589ed85146fcea7e77d9f25356",
+            "stagedPath":null,
+            "backupPath":null,
+            "createdParents":[],
+            "ownership":"managed-three-way",
+            "applied":true
           }]
         }"#,
     )

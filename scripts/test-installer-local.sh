@@ -19,6 +19,7 @@ cargo fmt --check --manifest-path "$REPO_ROOT/installer/Cargo.toml"
 cargo clippy --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml" \
     --all-targets -- -D warnings
 cargo test --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml"
+"$REPO_ROOT/scripts/test-release-trust-local.sh"
 uv run --offline --with pytest --with pyyaml --with jsonschema \
     pytest "$REPO_ROOT/tests/test_verify_installer_contract.py"
 uv run --offline "$REPO_ROOT/scripts/smoke-test-package.py" \

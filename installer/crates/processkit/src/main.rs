@@ -1,10 +1,14 @@
 use clap::{ArgAction, Parser, Subcommand, ValueEnum};
+use ed25519_dalek::pkcs8::{DecodePublicKey, EncodePublicKey};
+use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeSet, HashSet};
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
+#[cfg(unix)]
+use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
 use std::path::{Component, Path, PathBuf};
 
 const API_VERSION: &str = "processkit.projectious.work/installer/v1alpha1";
@@ -79,6 +83,17 @@ enum Command {
         distribution: PathBuf,
         #[arg(long)]
         yes: bool,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
+    /// Verify a signed local release against an explicit local trust store.
+    VerifyRelease {
+        #[arg(long)]
+        envelope: PathBuf,
+        #[arg(long)]
+        signature: PathBuf,
+        #[arg(long)]
+        trust_store: PathBuf,
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
@@ -211,6 +226,57 @@ struct Problem {
     message: String,
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LocalReleaseEnvelope {
+    api_version: String,
+    kind: String,
+    release: LocalReleaseIdentity,
+    archive: LocalReleaseArchive,
+    signing: LocalReleaseSigning,
+}
+#[derive(Deserialize)]
+struct LocalReleaseIdentity {
+    name: String,
+    version: String,
+}
+#[derive(Deserialize)]
+struct LocalReleaseArchive {
+    file: String,
+    sha256: String,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LocalReleaseSigning {
+    algorithm: String,
+    key_id: String,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LocalTrustStore {
+    api_version: String,
+    kind: String,
+    keys: Vec<LocalTrustKey>,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct LocalTrustKey {
+    key_id: String,
+    algorithm: String,
+    public_key_file: String,
+    status: String,
+}
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct VerifiedReleaseEvidence {
+    api_version: &'static str,
+    status: &'static str,
+    version: String,
+    archive: String,
+    archive_sha256: String,
+    key_id: String,
+}
+
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct InstallationState {
@@ -240,14 +306,26 @@ struct OwnedPath {
 #[serde(rename_all = "camelCase")]
 struct Journal {
     api_version: String,
+    transaction_id: String,
+    operation: String,
     phase: String,
-    created_paths: Vec<JournalPath>,
+    old_state_sha256: Option<String>,
+    new_state_sha256: Option<String>,
+    actions: Vec<TransactionAction>,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct JournalPath {
-    path: String,
-    sha256: String,
+struct TransactionAction {
+    kind: String,
+    #[serde(rename = "path")]
+    target: String,
+    old_sha256: Option<String>,
+    new_sha256: Option<String>,
+    staged_path: Option<String>,
+    backup_path: Option<String>,
+    created_parents: Vec<String>,
+    ownership: String,
+    applied: bool,
 }
 struct OperationLock {
     path: PathBuf,
@@ -436,8 +514,123 @@ fn main() {
                 std::process::exit(3);
             }
         },
+        Command::VerifyRelease {
+            envelope,
+            signature,
+            trust_store,
+            json,
+        } => match verify_local_release(&envelope, &signature, &trust_store) {
+            Ok(evidence) if json => {
+                println!("{}", serde_json::to_string_pretty(&evidence).unwrap())
+            }
+            Ok(evidence) => println!(
+                "verified local release {} with key {}",
+                evidence.version, evidence.key_id
+            ),
+            Err(error) => {
+                eprintln!("processkit: {error}");
+                std::process::exit(3);
+            }
+        },
     }
 }
+
+fn verify_local_release(
+    envelope_path: &Path,
+    signature_path: &Path,
+    trust_store_path: &Path,
+) -> Result<VerifiedReleaseEvidence, String> {
+    let envelope_bytes =
+        fs::read(envelope_path).map_err(|error| format!("release envelope: {error}"))?;
+    let envelope: LocalReleaseEnvelope = serde_json::from_slice(&envelope_bytes)
+        .map_err(|error| format!("release envelope JSON: {error}"))?;
+    if envelope.api_version != "processkit.projectious.work/local-release/v1alpha1"
+        || envelope.kind != "LocalRelease"
+        || envelope.release.name != "processkit"
+        || envelope.signing.algorithm != "Ed25519"
+    {
+        return Err("unsupported local release envelope".into());
+    }
+    semver::Version::parse(envelope.release.version.trim_start_matches('v'))
+        .map_err(|error| format!("release version is not semantic: {error}"))?;
+    if !safe_relative(&envelope.archive.file)
+        || envelope.archive.file.contains('/')
+        || envelope.archive.file != format!("processkit-{}.tar.gz", envelope.release.version)
+        || !valid_sha256(&envelope.archive.sha256)
+        || !valid_sha256(&envelope.signing.key_id)
+    {
+        return Err("local release envelope contains an unsafe field".into());
+    }
+
+    let trust_bytes =
+        fs::read(trust_store_path).map_err(|error| format!("local trust store: {error}"))?;
+    let trust: LocalTrustStore = serde_json::from_slice(&trust_bytes)
+        .map_err(|error| format!("local trust store JSON: {error}"))?;
+    if trust.api_version != "processkit.projectious.work/local-trust/v1alpha1"
+        || trust.kind != "TrustStore"
+    {
+        return Err("unsupported local trust store".into());
+    }
+    let trusted = trust
+        .keys
+        .iter()
+        .find(|key| {
+            key.key_id == envelope.signing.key_id
+                && key.algorithm == "Ed25519"
+                && key.status == "active"
+        })
+        .ok_or("release signing key is not active in the local trust store")?;
+    if !safe_relative(&trusted.public_key_file) {
+        return Err("local trust store contains an unsafe key path".into());
+    }
+    let trust_root = trust_store_path
+        .parent()
+        .ok_or("local trust store has no parent directory")?;
+    let key_path = trust_root.join(&trusted.public_key_file);
+    ensure_regular_file(trust_root, &key_path, "trusted public key")?;
+    let key_pem =
+        fs::read_to_string(&key_path).map_err(|error| format!("trusted public key: {error}"))?;
+    let key = VerifyingKey::from_public_key_pem(&key_pem)
+        .map_err(|error| format!("trusted public key: {error}"))?;
+    let der = key
+        .to_public_key_der()
+        .map_err(|error| format!("trusted public key DER: {error}"))?;
+    let actual_key_id = format!("{:x}", Sha256::digest(der.as_bytes()));
+    if actual_key_id != envelope.signing.key_id {
+        return Err("trusted public key ID does not match the release envelope".into());
+    }
+    let signature_bytes =
+        fs::read(signature_path).map_err(|error| format!("release signature: {error}"))?;
+    let signature = Signature::from_slice(&signature_bytes)
+        .map_err(|error| format!("release signature: {error}"))?;
+    key.verify(&envelope_bytes, &signature)
+        .map_err(|_| "release signature verification failed")?;
+
+    let envelope_root = envelope_path
+        .parent()
+        .ok_or("release envelope has no parent directory")?;
+    let archive_path = envelope_root.join(&envelope.archive.file);
+    ensure_regular_file(envelope_root, &archive_path, "release archive")?;
+    if digest(&archive_path)? != envelope.archive.sha256 {
+        return Err("release archive digest mismatch".into());
+    }
+    Ok(VerifiedReleaseEvidence {
+        api_version: API_VERSION,
+        status: "verified",
+        version: envelope.release.version,
+        archive: envelope.archive.file,
+        archive_sha256: envelope.archive.sha256,
+        key_id: envelope.signing.key_id,
+    })
+}
+
+fn valid_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+}
+
 fn plan(
     root: &Path,
     distribution_root: &Path,
@@ -622,6 +815,208 @@ fn plan(
     })
 }
 
+struct PendingAction {
+    action: TransactionAction,
+    source: Option<PathBuf>,
+}
+
+fn transaction_id(operation: &str) -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    format!("{operation}-{}-{nanos}", std::process::id())
+}
+
+fn execute_transaction(
+    root: &Path,
+    operation: &str,
+    mut pending: Vec<PendingAction>,
+    new_state: Option<&InstallationState>,
+) -> Result<(), String> {
+    let state_dir = root.join(".processkit");
+    let transaction = transaction_id(operation);
+    let staging = state_dir.join(".staging").join(&transaction);
+    let new_dir = staging.join("new");
+    let backup_dir = staging.join("backup");
+    create_private_dir(&new_dir)?;
+    create_private_dir(&backup_dir)?;
+
+    let state_path = state_dir.join("state.json");
+    let old_state_sha256 = state_path
+        .is_file()
+        .then(|| digest(&state_path))
+        .transpose()?;
+    let staged_state = staging.join("state.json");
+    let new_state_sha256 = if let Some(state) = new_state {
+        write_json_atomic(&staged_state, state)?;
+        Some(digest(&staged_state)?)
+    } else {
+        None
+    };
+
+    for item in &mut pending {
+        if !safe_relative(&item.action.target) || has_symlink_ancestor(root, &item.action.target)? {
+            return Err(format!("unsafe transaction target: {}", item.action.target));
+        }
+        if let Some(source) = &item.source {
+            let staged = new_dir.join(&item.action.target);
+            if let Some(parent) = staged.parent() {
+                fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+            }
+            fs::copy(source, &staged).map_err(|error| error.to_string())?;
+            let expected = item
+                .action
+                .new_sha256
+                .as_ref()
+                .ok_or("transaction write action lacks a new digest")?;
+            if digest(&staged)? != *expected {
+                return Err(format!("staged digest mismatch: {}", item.action.target));
+            }
+            item.action.staged_path = Some(
+                staged
+                    .strip_prefix(root)
+                    .map_err(|_| "staged path escaped target root")?
+                    .to_string_lossy()
+                    .replace('\\', "/"),
+            );
+        }
+        if item.action.old_sha256.is_some() {
+            let backup = backup_dir.join(&item.action.target);
+            item.action.backup_path = Some(
+                backup
+                    .strip_prefix(root)
+                    .map_err(|_| "backup path escaped target root")?
+                    .to_string_lossy()
+                    .replace('\\', "/"),
+            );
+        }
+    }
+
+    let journal_path = state_dir
+        .join("transactions")
+        .join(format!("{transaction}.json"));
+    let mut journal = Journal {
+        api_version: API_VERSION.into(),
+        transaction_id: transaction.clone(),
+        operation: operation.into(),
+        phase: "prepared".into(),
+        old_state_sha256,
+        new_state_sha256,
+        actions: pending.into_iter().map(|item| item.action).collect(),
+    };
+    write_json_atomic(&journal_path, &journal)?;
+
+    let apply_result = (|| -> Result<(), String> {
+        journal.phase = "applying".into();
+        write_json_atomic(&journal_path, &journal)?;
+        for index in 0..journal.actions.len() {
+            let action = &journal.actions[index];
+            let target = root.join(&action.target);
+            if let Some(expected) = &action.old_sha256 {
+                if !target.is_file() || digest(&target)? != *expected {
+                    return Err(format!(
+                        "transaction target changed before apply: {}",
+                        action.target
+                    ));
+                }
+                let backup = root.join(
+                    action
+                        .backup_path
+                        .as_ref()
+                        .ok_or("transaction backup path is missing")?,
+                );
+                if let Some(parent) = backup.parent() {
+                    fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+                }
+                fs::rename(&target, backup).map_err(|error| error.to_string())?;
+            } else if target.exists() {
+                return Err(format!(
+                    "transaction create target appeared: {}",
+                    action.target
+                ));
+            }
+            if action.kind != "remove" {
+                let staged = root.join(
+                    action
+                        .staged_path
+                        .as_ref()
+                        .ok_or("transaction staged path is missing")?,
+                );
+                if let Some(parent) = target.parent() {
+                    fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+                }
+                fs::rename(staged, &target).map_err(|error| error.to_string())?;
+            }
+            journal.actions[index].applied = true;
+            write_json_atomic(&journal_path, &journal)?;
+        }
+        journal.phase = "state-written".into();
+        if new_state.is_some() {
+            fs::rename(&staged_state, &state_path).map_err(|error| error.to_string())?;
+        } else if state_path.exists() {
+            fs::remove_file(&state_path).map_err(|error| error.to_string())?;
+        }
+        write_json_atomic(&journal_path, &journal)?;
+        journal.phase = "committed".into();
+        write_json_atomic(&journal_path, &journal)
+    })();
+
+    if let Err(error) = apply_result {
+        rollback_journal(root, &journal)?;
+        let _ = fs::remove_file(&journal_path);
+        let _ = fs::remove_dir_all(&staging);
+        return Err(error);
+    }
+    fs::remove_file(&journal_path).map_err(|error| error.to_string())?;
+    fs::remove_dir_all(&staging).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+fn rollback_journal(root: &Path, journal: &Journal) -> Result<(), String> {
+    for action in journal.actions.iter().rev() {
+        let target = root.join(&action.target);
+        let backup = action.backup_path.as_ref().map(|path| root.join(path));
+        let was_applied = action.applied
+            || backup.as_ref().is_some_and(|path| path.exists())
+            || action.new_sha256.as_ref().is_some_and(|expected| {
+                target.is_file() && digest(&target).ok().as_ref() == Some(expected)
+            });
+        if !was_applied {
+            continue;
+        }
+        if target.exists() {
+            if action.kind == "remove" {
+                return Err(format!(
+                    "manual recovery required: removed target reappeared: {}",
+                    action.target
+                ));
+            }
+            let expected = action
+                .new_sha256
+                .as_ref()
+                .ok_or("manual recovery required: missing new digest")?;
+            if !target.is_file() || digest(&target)? != *expected {
+                return Err(format!(
+                    "manual recovery required: applied target changed: {}",
+                    action.target
+                ));
+            }
+            fs::remove_file(&target).map_err(|error| error.to_string())?;
+        }
+        if let Some(backup) = backup {
+            if backup.exists() {
+                if let Some(parent) = target.parent() {
+                    fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+                }
+                fs::rename(backup, target).map_err(|error| error.to_string())?;
+            }
+        }
+    }
+    Ok(())
+}
+
 fn install(
     root: &Path,
     distribution: &Path,
@@ -664,70 +1059,24 @@ fn install(
         return Err("target already has processkit installation state; use update".into());
     }
     let _lock = acquire_lock(root, "install")?;
-    let transaction = format!("install-{}", std::process::id());
-    let staging = state_dir.join(".staging").join(&transaction);
-    let journal_path = state_dir
-        .join("transactions")
-        .join(format!("{transaction}.json"));
-    let mut journal = Journal {
-        api_version: API_VERSION.into(),
-        phase: "prepared".into(),
-        created_paths: Vec::new(),
-    };
-    let result = (|| -> Result<InstallationState, String> {
-        fs::create_dir_all(staging.join("new"))
-            .map_err(|error| format!("create staging directory: {error}"))?;
-        write_json_atomic(&journal_path, &journal)?;
-        let mut owned_paths = Vec::new();
-        for change in &plan.changes {
-            if change.kind != "create" {
-                continue;
-            }
-            if !safe_relative(&change.destination)
-                || has_symlink_ancestor(root, &change.destination)?
-            {
-                return Err(format!(
-                    "unsafe target during install: {}",
-                    change.destination
-                ));
-            }
-            if digest(&change.source)? != change.source_sha256 {
-                return Err(format!(
-                    "release source changed during install: {}",
-                    change.destination
-                ));
-            }
-            let staged = staging.join("new").join(&change.destination);
-            if let Some(parent) = staged.parent() {
-                fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-            }
-            fs::copy(&change.source, &staged).map_err(|error| error.to_string())?;
-            if digest(&staged)? != change.source_sha256 {
-                return Err(format!("staged digest mismatch: {}", change.destination));
-            }
-            let target = root.join(&change.destination);
-            if target.exists() {
-                return Err(format!(
-                    "target appeared during install: {}",
-                    change.destination
-                ));
-            }
-            if let Some(parent) = target.parent() {
-                fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-            }
-            if has_symlink_ancestor(root, &change.destination)? {
-                return Err(format!(
-                    "target ancestry changed during install: {}",
-                    change.destination
-                ));
-            }
-            journal.created_paths.push(JournalPath {
-                path: change.destination.clone(),
-                sha256: change.source_sha256.clone(),
+    let mut pending = Vec::new();
+    let mut owned_paths = Vec::new();
+    for change in &plan.changes {
+        if change.kind == "create" {
+            pending.push(PendingAction {
+                action: TransactionAction {
+                    kind: "create".into(),
+                    target: change.destination.clone(),
+                    old_sha256: None,
+                    new_sha256: Some(change.source_sha256.clone()),
+                    staged_path: None,
+                    backup_path: None,
+                    created_parents: Vec::new(),
+                    ownership: change.ownership.clone(),
+                    applied: false,
+                },
+                source: Some(change.source.clone()),
             });
-            journal.phase = "applying".into();
-            write_json_atomic(&journal_path, &journal)?;
-            fs::rename(&staged, &target).map_err(|error| error.to_string())?;
             owned_paths.push(OwnedPath {
                 path: change.destination.clone(),
                 component: change.component.clone(),
@@ -736,41 +1085,20 @@ fn install(
                 installed_sha256: change.source_sha256.clone(),
             });
         }
-        let state = InstallationState {
-            api_version: API_VERSION.into(),
-            release: StateRelease {
-                name: plan.distribution.name,
-                version: plan.distribution.version,
-                manifest_sha256: plan.distribution.manifest_sha256,
-            },
-            profiles: plan.selected_profiles,
-            harnesses: plan.harnesses,
-            owned_paths,
-        };
-        write_json_atomic(&state_path, &state)?;
-        journal.phase = "committed".into();
-        write_json_atomic(&journal_path, &journal)?;
-        Ok(state)
-    })();
-    if result.is_err() {
-        for entry in journal.created_paths.iter().rev() {
-            let target = root.join(&entry.path);
-            if target.is_file()
-                && !target
-                    .symlink_metadata()
-                    .map(|meta| meta.file_type().is_symlink())
-                    .unwrap_or(true)
-            {
-                let _ = fs::remove_file(target);
-            }
-        }
-        let _ = fs::remove_file(&state_path);
     }
-    if result.is_ok() {
-        let _ = fs::remove_dir_all(&staging);
-        let _ = fs::remove_file(&journal_path);
-    }
-    result
+    let state = InstallationState {
+        api_version: API_VERSION.into(),
+        release: StateRelease {
+            name: plan.distribution.name,
+            version: plan.distribution.version,
+            manifest_sha256: plan.distribution.manifest_sha256,
+        },
+        profiles: plan.selected_profiles,
+        harnesses: plan.harnesses,
+        owned_paths,
+    };
+    execute_transaction(root, "install", pending, Some(&state))?;
+    Ok(state)
 }
 
 fn recover(root: &Path, yes: bool) -> Result<usize, String> {
@@ -820,37 +1148,29 @@ fn recover(root: &Path, yes: bool) -> Result<usize, String> {
         if !safe_relative(transaction) {
             return Err("transaction journal has an unsafe name".into());
         }
-        if journal.phase == "committed" {
+        if journal.transaction_id != transaction || !safe_relative(&journal.transaction_id) {
+            return Err("transaction journal identity does not match its filename".into());
+        }
+        let state_path = state_dir.join("state.json");
+        let state_sha256 = state_path
+            .is_file()
+            .then(|| digest(&state_path))
+            .transpose()?;
+        let state_is_new = state_sha256 == journal.new_state_sha256;
+        let state_is_old = state_sha256 == journal.old_state_sha256;
+        if journal.phase == "committed" || state_is_new {
             fs::remove_file(&journal_path).map_err(|error| error.to_string())?;
             let _ = fs::remove_dir_all(state_dir.join(".staging").join(transaction));
             recovered += 1;
             continue;
         }
-        if state_dir.join("state.json").exists() {
+        if !state_is_old {
             return Err(
-                "manual recovery required: state exists for an uncommitted transaction".into(),
+                "manual recovery required: installation state matches neither transaction side"
+                    .into(),
             );
         }
-        for created in journal.created_paths.iter().rev() {
-            if !safe_relative(&created.path) || has_symlink_ancestor(root, &created.path)? {
-                return Err("manual recovery required: unsafe journal target".into());
-            }
-            let target = root.join(&created.path);
-            if !target.exists() {
-                continue;
-            }
-            if target
-                .symlink_metadata()
-                .map_err(|error| error.to_string())?
-                .file_type()
-                .is_symlink()
-                || !target.is_file()
-                || digest(&target)? != created.sha256
-            {
-                return Err("manual recovery required: target no longer matches journal".into());
-            }
-            fs::remove_file(target).map_err(|error| error.to_string())?;
-        }
+        rollback_journal(root, &journal)?;
         fs::remove_file(&journal_path).map_err(|error| error.to_string())?;
         let _ = fs::remove_dir_all(state_dir.join(".staging").join(transaction));
         recovered += 1;
@@ -864,7 +1184,7 @@ fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
     }
     let _lock = acquire_lock(root, "uninstall")?;
     let state_path = root.join(".processkit/state.json");
-    let state: InstallationState = serde_json::from_slice(
+    let mut state: InstallationState = serde_json::from_slice(
         &fs::read(&state_path).map_err(|error| format!("installer state: {error}"))?,
     )
     .map_err(|error| format!("invalid installer state: {error}"))?;
@@ -895,13 +1215,32 @@ fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
             ));
         }
     }
-    for path in &removable {
-        fs::remove_file(root.join(&path.path)).map_err(|error| error.to_string())?;
-    }
-    if state.owned_paths.len() == removable.len() {
-        fs::remove_file(&state_path).map_err(|error| error.to_string())?;
-    }
     let removed = removable.len();
+    let pending = removable
+        .iter()
+        .map(|path| PendingAction {
+            action: TransactionAction {
+                kind: "remove".into(),
+                target: path.path.clone(),
+                old_sha256: Some(path.installed_sha256.clone()),
+                new_sha256: None,
+                staged_path: None,
+                backup_path: None,
+                created_parents: Vec::new(),
+                ownership: path.ownership.clone(),
+                applied: false,
+            },
+            source: None,
+        })
+        .collect();
+    state
+        .owned_paths
+        .retain(|path| path.ownership != "managed-three-way");
+    if state.owned_paths.is_empty() {
+        execute_transaction(root, "uninstall", pending, None)?;
+    } else {
+        execute_transaction(root, "uninstall", pending, Some(&state))?;
+    }
     Ok(removed)
 }
 
@@ -929,6 +1268,18 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
     )?;
     if desired.status != "planned" {
         return Err("new release cannot be planned safely".into());
+    }
+    let old_version = semver::Version::parse(old.release.version.trim_start_matches('v'))
+        .map_err(|error| format!("installed release version is invalid: {error}"))?;
+    let new_version = semver::Version::parse(desired.distribution.version.trim_start_matches('v'))
+        .map_err(|error| format!("new release version is invalid: {error}"))?;
+    if new_version < old_version {
+        return Err("update refused a release downgrade".into());
+    }
+    if new_version == old_version
+        && desired.distribution.manifest_sha256 != old.release.manifest_sha256
+    {
+        return Err("update refused same-version release equivocation".into());
     }
     let mut desired_by_path = std::collections::BTreeMap::new();
     for change in desired
@@ -979,26 +1330,35 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
             ));
         }
     }
-    let staging = root
-        .join(".processkit/.staging")
-        .join(format!("update-{}", std::process::id()));
-    fs::create_dir_all(&staging).map_err(|error| error.to_string())?;
-    let mut changed = 0;
+    let changed = replacements.len() + additions.len();
+    let mut pending = Vec::new();
     for change in replacements.iter().chain(additions.iter()) {
         if digest(&change.source)? != change.source_sha256 {
             return Err("release source changed during update".into());
         }
-        let staged = staging.join(&change.destination);
-        if let Some(parent) = staged.parent() {
-            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-        }
-        fs::copy(&change.source, &staged).map_err(|error| error.to_string())?;
-        let target = root.join(&change.destination);
-        if let Some(parent) = target.parent() {
-            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-        }
-        fs::rename(&staged, &target).map_err(|error| error.to_string())?;
-        changed += 1;
+        let old_sha256 = old
+            .owned_paths
+            .iter()
+            .find(|owned| owned.path == change.destination)
+            .map(|owned| owned.installed_sha256.clone());
+        pending.push(PendingAction {
+            action: TransactionAction {
+                kind: if old_sha256.is_some() {
+                    "replace".into()
+                } else {
+                    "create".into()
+                },
+                target: change.destination.clone(),
+                old_sha256,
+                new_sha256: Some(change.source_sha256.clone()),
+                staged_path: None,
+                backup_path: None,
+                created_parents: Vec::new(),
+                ownership: change.ownership.clone(),
+                applied: false,
+            },
+            source: Some(change.source.clone()),
+        });
     }
     for owned in &mut old.owned_paths {
         if let Some(change) = replacements
@@ -1030,18 +1390,19 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
         harnesses: old.harnesses,
         owned_paths: old.owned_paths,
     };
-    write_json_atomic(&state_path, &new_state)?;
-    let _ = fs::remove_dir_all(staging);
+    execute_transaction(root, "update", pending, Some(&new_state))?;
     Ok(changed)
 }
 
 fn acquire_lock(root: &Path, operation: &str) -> Result<OperationLock, String> {
     let state_dir = root.join(".processkit");
-    fs::create_dir_all(&state_dir).map_err(|error| error.to_string())?;
+    create_private_dir(&state_dir)?;
     let lock_path = state_dir.join("lock");
-    let mut lock = OpenOptions::new()
-        .write(true)
-        .create_new(true)
+    let mut options = OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    options.mode(0o600);
+    let mut lock = options
         .open(&lock_path)
         .map_err(|_| "another processkit operation is already in progress")?;
     writeln!(lock, "{operation}:{}", std::process::id()).map_err(|error| error.to_string())?;
@@ -1069,18 +1430,37 @@ fn clear_stale_lock_for_recovery(root: &Path) -> Result<(), String> {
 
 fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
     let parent = path.parent().ok_or("state path has no parent")?;
-    fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    create_private_dir(parent)?;
     let temporary = parent.join(format!(
         ".{}.tmp-{}",
         path.file_name().unwrap().to_string_lossy(),
         std::process::id()
     ));
-    fs::write(
-        &temporary,
-        serde_json::to_vec_pretty(value).map_err(|error| error.to_string())?,
-    )
-    .map_err(|error| error.to_string())?;
-    fs::rename(temporary, path).map_err(|error| error.to_string())
+    let bytes = serde_json::to_vec_pretty(value).map_err(|error| error.to_string())?;
+    let mut options = OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    options.mode(0o600);
+    let mut file = options
+        .open(&temporary)
+        .map_err(|error| error.to_string())?;
+    file.write_all(&bytes).map_err(|error| error.to_string())?;
+    file.sync_all().map_err(|error| error.to_string())?;
+    fs::rename(&temporary, path).map_err(|error| error.to_string())?;
+    sync_directory(parent)
+}
+
+fn create_private_dir(path: &Path) -> Result<(), String> {
+    fs::create_dir_all(path).map_err(|error| error.to_string())?;
+    #[cfg(unix)]
+    fs::set_permissions(path, fs::Permissions::from_mode(0o700))
+        .map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+fn sync_directory(path: &Path) -> Result<(), String> {
+    let directory = fs::File::open(path).map_err(|error| error.to_string())?;
+    directory.sync_all().map_err(|error| error.to_string())
 }
 
 fn source_paths(root: &Path, source: &Source) -> Result<Vec<(PathBuf, String)>, String> {
