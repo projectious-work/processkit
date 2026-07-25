@@ -64,6 +64,43 @@ cargo run --quiet --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml" -- 
     --trust-store "$TRUST_STORE" \
     --json >/dev/null
 
+# Exercise the opaque request boundary with a real signed, safely extracted
+# release archive.
+tar -czf "$ARCHIVE" \
+    -C "$REPO_ROOT/installer/crates/processkit/tests/fixtures/plans/empty" \
+    distribution
+ARCHIVE_SHA="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
+printf '%s  %s\n' "$ARCHIVE_SHA" "$(basename "$ARCHIVE")" \
+    >"$ARCHIVE.sha256"
+jq --arg sha256 "$ARCHIVE_SHA" '.archive.sha256 = $sha256' \
+    "$ENVELOPE" >"$ENVELOPE.next"
+mv "$ENVELOPE.next" "$ENVELOPE"
+"$REPO_ROOT/scripts/sign-release-local.sh" \
+    "$ENVELOPE" "$PRIVATE_KEY" "$SIGNATURE" >/dev/null
+jq -n \
+    --arg root "$TEST_ROOT/project" \
+    --arg envelope "$ENVELOPE" \
+    --arg signature "$SIGNATURE" \
+    --arg trust_store "$TRUST_STORE" \
+    '{
+      apiVersion: "processkit.projectious.work/installer/v1alpha1",
+      operation: "plan",
+      root: $root,
+      envelopePath: $envelope,
+      signaturePath: $signature,
+      trustStorePath: $trust_store,
+      profiles: ["managed"]
+    }' >"$TEST_ROOT/request.json"
+SIGNED_RESULT="$(
+    cargo run --quiet --locked \
+        --manifest-path "$REPO_ROOT/installer/Cargo.toml" -- \
+        execute --request "$TEST_ROOT/request.json"
+)"
+jq -e '.status == "planned"' <<<"$SIGNED_RESULT" >/dev/null || {
+    echo "$SIGNED_RESULT" >&2
+    exit 1
+}
+
 printf 'tampered\n' >>"$ENVELOPE"
 if cargo run --quiet --locked --manifest-path \
     "$REPO_ROOT/installer/Cargo.toml" -- verify-release \

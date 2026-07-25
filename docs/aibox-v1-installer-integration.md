@@ -14,9 +14,11 @@ scripts/test-installer-pilot-local.sh
 ```
 
 The stable request fields are `apiVersion`, `operation`, `root`,
-`distributionPath`, `profiles`, `harnesses`, and `yes`.
-`distributionPath` is required for plan, install, and update. Mutation
-operations require `yes: true`.
+`distributionPath`, `envelopePath`, `signaturePath`, `trustStorePath`,
+`profiles`, `harnesses`, and `yes`. Plan, install, and update accept either a
+development `distributionPath` or the three signed-release paths. Production
+consumers use the signed-release form. Mutation operations require
+`yes: true`.
 
 The stable result core is `apiVersion`, `status`, `changes`, `conflicts`,
 `warnings`, and `errors`. Install additionally returns the committed state.

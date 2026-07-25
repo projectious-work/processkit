@@ -314,6 +314,9 @@ struct InstallerRequest {
     operation: String,
     root: PathBuf,
     distribution_path: Option<PathBuf>,
+    envelope_path: Option<PathBuf>,
+    signature_path: Option<PathBuf>,
+    trust_store_path: Option<PathBuf>,
     #[serde(default)]
     profiles: Vec<String>,
     #[serde(default)]
@@ -608,20 +611,30 @@ fn execute_request(path: &Path) -> Result<serde_json::Value, String> {
     if request.api_version != API_VERSION {
         return Err("unsupported installer request API version".into());
     }
-    let distribution = || {
-        request
-            .distribution_path
-            .as_deref()
-            .ok_or("operation requires distributionPath")
+    let extracted = if let (Some(envelope), Some(signature), Some(trust_store)) = (
+        request.envelope_path.as_deref(),
+        request.signature_path.as_deref(),
+        request.trust_store_path.as_deref(),
+    ) {
+        Some(extract_verified_release(envelope, signature, trust_store)?)
+    } else {
+        None
     };
+    let distribution_path = extracted
+        .as_ref()
+        .map(|release| release.1.as_path())
+        .or(request.distribution_path.as_deref());
+    let distribution = || distribution_path.ok_or("operation requires release input");
     match request.operation.as_str() {
-        "plan" => serde_json::to_value(plan(
-            &request.root,
-            distribution()?,
-            request.profiles,
-            request.harnesses,
-        ))
-        .map_err(|error| error.to_string()),
+        "plan" => {
+            let result = plan(
+                &request.root,
+                distribution()?,
+                request.profiles,
+                request.harnesses,
+            )?;
+            serde_json::to_value(result).map_err(|error| error.to_string())
+        }
         "install" => {
             let state = install(
                 &request.root,
@@ -657,6 +670,83 @@ fn execute_request(path: &Path) -> Result<serde_json::Value, String> {
             request.operation
         )),
     }
+}
+
+fn extract_verified_release(
+    envelope_path: &Path,
+    signature_path: &Path,
+    trust_store_path: &Path,
+) -> Result<(tempfile::TempDir, PathBuf), String> {
+    let evidence = verify_local_release(envelope_path, signature_path, trust_store_path)?;
+    let archive_path = envelope_path
+        .parent()
+        .ok_or("release envelope has no parent directory")?
+        .join(evidence.archive);
+    let file =
+        fs::File::open(&archive_path).map_err(|error| format!("release archive: {error}"))?;
+    let decoder = flate2::read::GzDecoder::new(file);
+    let mut archive = tar::Archive::new(decoder);
+    let temporary =
+        tempfile::tempdir().map_err(|error| format!("release extraction directory: {error}"))?;
+    let mut top_level = None;
+    let mut seen = BTreeSet::new();
+    let mut total_size = 0_u64;
+    let entries = archive
+        .entries()
+        .map_err(|error| format!("release archive entries: {error}"))?;
+    for (index, entry) in entries.enumerate() {
+        if index >= 100_000 {
+            return Err("release archive contains too many entries".into());
+        }
+        let mut entry = entry.map_err(|error| format!("release archive entry: {error}"))?;
+        let entry_type = entry.header().entry_type();
+        if !entry_type.is_file() && !entry_type.is_dir() {
+            return Err("release archive contains a link or special file".into());
+        }
+        total_size = total_size
+            .checked_add(entry.size())
+            .ok_or("release archive size overflow")?;
+        if total_size > 1024 * 1024 * 1024 {
+            return Err("release archive expands beyond the 1 GiB safety limit".into());
+        }
+        let path = entry
+            .path()
+            .map_err(|error| format!("release archive path: {error}"))?
+            .into_owned();
+        if path.is_absolute()
+            || path
+                .components()
+                .any(|component| !matches!(component, Component::Normal(_)))
+        {
+            return Err("release archive contains an unsafe path".into());
+        }
+        let first = path
+            .components()
+            .next()
+            .and_then(|component| match component {
+                Component::Normal(value) => Some(value.to_owned()),
+                _ => None,
+            })
+            .ok_or("release archive entry has no top-level directory")?;
+        if let Some(expected) = &top_level {
+            if expected != &first {
+                return Err("release archive has multiple top-level directories".into());
+            }
+        } else {
+            top_level = Some(first);
+        }
+        if !seen.insert(path.clone()) {
+            return Err("release archive contains a duplicate path".into());
+        }
+        entry
+            .unpack_in(temporary.path())
+            .map_err(|error| format!("release archive extraction: {error}"))?;
+    }
+    let root = temporary
+        .path()
+        .join(top_level.ok_or("release archive contains no entries")?);
+    verified_release(&root)?;
+    Ok((temporary, root))
 }
 
 fn success_result(status: &str, changes: usize) -> serde_json::Value {
