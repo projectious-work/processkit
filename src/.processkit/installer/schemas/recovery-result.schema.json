@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "status", "recovered", "errors"],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/installer/v1alpha1"
+    },
+    "status": {"enum": ["recovered", "clean", "manual-recovery-required"]},
+    "recovered": {"type": "integer", "minimum": 0},
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"type": "string"},
+          "message": {"type": "string"},
+          "path": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -29,6 +29,8 @@ SCHEMAS = (
     "installer-result", "mcp-catalog", "harness-adapter",
     "installation-state", "compatibility", "variables",
     "local-release-envelope", "local-trust-store",
+    "transaction-action", "transaction-journal",
+    "recovery-result", "managed-adapter-state",
 )
 
 
@@ -56,6 +58,10 @@ def validate(release_root: Path) -> list[str]:
     if failures:
         return failures
     try:
+        for name in SCHEMAS:
+            json.loads(
+                (base / "schemas" / f"{name}.schema.json").read_text()
+            )
         distribution_path = base / "distribution.yaml"
         distribution = yaml.safe_load(distribution_path.read_text())
         descriptor = json.loads((base / "release-descriptor.json").read_text())
