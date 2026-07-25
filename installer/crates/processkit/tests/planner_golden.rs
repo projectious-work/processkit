@@ -101,3 +101,46 @@ fn install_writes_owned_state_and_payload() {
     assert!(root.join(".processkit/state.json").is_file());
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn recovery_removes_only_digest_matched_interrupted_files() {
+    let root = std::env::temp_dir().join(format!(
+        "processkit-installer-test-{}-{}",
+        std::process::id(),
+        "recover"
+    ));
+    std::fs::create_dir_all(root.join(".processkit/transactions")).unwrap();
+    std::fs::write(root.join("created.txt"), "fixture payload\n").unwrap();
+    std::fs::write(
+        root.join(".processkit/transactions/install-1.json"),
+        r#"{
+          "apiVersion":"processkit.projectious.work/installer/v1alpha1",
+          "phase":"applying",
+          "createdPaths":[{
+            "path":"created.txt",
+            "sha256":"565b24bc77ebeee74f70f6c608e099956666c3589ed85146fcea7e77d9f25356"
+          }]
+        }"#,
+    )
+    .unwrap();
+    let output = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args([
+            "recover",
+            "--root",
+            root.to_str().unwrap(),
+            "--yes",
+            "--json",
+        ])
+        .output()
+        .expect("recover command starts");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(!root.join("created.txt").exists());
+    assert!(!root
+        .join(".processkit/transactions/install-1.json")
+        .exists());
+    std::fs::remove_dir_all(root).unwrap();
+}

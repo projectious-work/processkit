@@ -53,6 +53,15 @@ enum Command {
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
+    /// Roll back or finalize incomplete installer transactions.
+    Recover {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long)]
+        yes: bool,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -211,7 +220,13 @@ struct OwnedPath {
 struct Journal {
     api_version: String,
     phase: String,
-    created_paths: Vec<String>,
+    created_paths: Vec<JournalPath>,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct JournalPath {
+    path: String,
+    sha256: String,
 }
 
 fn safe_relative(value: &str) -> bool {
@@ -358,6 +373,14 @@ fn main() {
         } => match install(&root, &distribution, profile, harness, yes) {
             Ok(state) if json => println!("{}", serde_json::to_string_pretty(&state).unwrap()),
             Ok(state) => println!("installed {} {}", state.release.name, state.release.version),
+            Err(error) => {
+                eprintln!("processkit: {error}");
+                std::process::exit(3);
+            }
+        },
+        Command::Recover { root, yes, json } => match recover(&root, yes) {
+            Ok(recovered) if json => println!("{{\"recovered\":{recovered}}}"),
+            Ok(recovered) => println!("recovered {recovered} transaction(s)"),
             Err(error) => {
                 eprintln!("processkit: {error}");
                 std::process::exit(3);
@@ -655,7 +678,10 @@ fn install(
                 ));
             }
             fs::rename(&staged, &target).map_err(|error| error.to_string())?;
-            journal.created_paths.push(change.destination.clone());
+            journal.created_paths.push(JournalPath {
+                path: change.destination.clone(),
+                sha256: change.source_sha256.clone(),
+            });
             journal.phase = "applying".into();
             write_json_atomic(&journal_path, &journal)?;
             owned_paths.push(OwnedPath {
@@ -683,8 +709,8 @@ fn install(
         Ok(state)
     })();
     if result.is_err() {
-        for path in journal.created_paths.iter().rev() {
-            let target = root.join(path);
+        for entry in journal.created_paths.iter().rev() {
+            let target = root.join(&entry.path);
             if target.is_file()
                 && !target
                     .symlink_metadata()
@@ -700,6 +726,89 @@ fn install(
     let _ = fs::remove_file(&journal_path);
     let _ = fs::remove_file(&lock_path);
     result
+}
+
+fn recover(root: &Path, yes: bool) -> Result<usize, String> {
+    if !yes {
+        return Err("recovery requires --yes because it can remove staged files".into());
+    }
+    let state_dir = root.join(".processkit");
+    let transactions = state_dir.join("transactions");
+    if !transactions.is_dir() {
+        return Ok(0);
+    }
+    if state_dir
+        .symlink_metadata()
+        .map_err(|error| format!("installer state directory: {error}"))?
+        .file_type()
+        .is_symlink()
+    {
+        return Err("installer state directory must not be a symlink".into());
+    }
+    let mut recovered = 0;
+    for entry in fs::read_dir(&transactions).map_err(|error| error.to_string())? {
+        let entry = entry.map_err(|error| error.to_string())?;
+        let journal_path = entry.path();
+        if journal_path.extension().and_then(|value| value.to_str()) != Some("json") {
+            continue;
+        }
+        let journal: Journal =
+            serde_json::from_slice(&fs::read(&journal_path).map_err(|error| error.to_string())?)
+                .map_err(|error| {
+                    format!(
+                        "invalid transaction journal {}: {error}",
+                        journal_path.display()
+                    )
+                })?;
+        if journal.api_version != API_VERSION {
+            return Err(format!(
+                "unsupported transaction journal: {}",
+                journal_path.display()
+            ));
+        }
+        let transaction = journal_path
+            .file_stem()
+            .and_then(|value| value.to_str())
+            .ok_or("transaction journal has no safe name")?;
+        if !safe_relative(transaction) {
+            return Err("transaction journal has an unsafe name".into());
+        }
+        if journal.phase == "committed" {
+            fs::remove_file(&journal_path).map_err(|error| error.to_string())?;
+            let _ = fs::remove_dir_all(state_dir.join(".staging").join(transaction));
+            recovered += 1;
+            continue;
+        }
+        if state_dir.join("state.json").exists() {
+            return Err(
+                "manual recovery required: state exists for an uncommitted transaction".into(),
+            );
+        }
+        for created in journal.created_paths.iter().rev() {
+            if !safe_relative(&created.path) || has_symlink_ancestor(root, &created.path)? {
+                return Err("manual recovery required: unsafe journal target".into());
+            }
+            let target = root.join(&created.path);
+            if !target.exists() {
+                continue;
+            }
+            if target
+                .symlink_metadata()
+                .map_err(|error| error.to_string())?
+                .file_type()
+                .is_symlink()
+                || !target.is_file()
+                || digest(&target)? != created.sha256
+            {
+                return Err("manual recovery required: target no longer matches journal".into());
+            }
+            fs::remove_file(target).map_err(|error| error.to_string())?;
+        }
+        fs::remove_file(&journal_path).map_err(|error| error.to_string())?;
+        let _ = fs::remove_dir_all(state_dir.join(".staging").join(transaction));
+        recovered += 1;
+    }
+    Ok(recovered)
 }
 
 fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
