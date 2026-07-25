@@ -1,0 +1,21 @@
+{
+  "apiVersion": "processkit.projectious.work/installer/v1alpha1",
+  "status": "invalid",
+  "distribution": {
+    "name": "fixture-processkit",
+    "version": "0.0.0-test",
+    "manifestSha256": "5a21266126fd32031b2eec1d9e785af7d73a26e57fa9a9d3b2568accf52c3ad4"
+  },
+  "selectedProfiles": ["managed"],
+  "harnesses": [],
+  "changes": [],
+  "conflicts": [],
+  "warnings": [],
+  "errors": [
+    {
+      "code": "unsafe-destination",
+      "path": "../escape",
+      "message": "destination must be relative"
+    }
+  ]
+}

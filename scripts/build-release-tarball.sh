@@ -97,6 +97,12 @@ if ! uv run "$REPO_ROOT/scripts/verify-installer-contract.py" "$SRC_DIR"; then
     exit 1
 fi
 
+echo "testing installer planner" >&2
+if ! cargo test --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml"; then
+    echo "error: installer planner tests failed." >&2
+    exit 1
+fi
+
 # Release-boundary guard: validate the shipped src/context/ contract directly.
 # Live dogfood context/ may intentionally contain project memory and legacy
 # migration-source state that must not ship in the release tarball.
@@ -175,7 +181,9 @@ if ! uv run "$REPO_ROOT/scripts/verify-installer-contract.py" \
 fi
 
 echo "running release artifact gate: disposable-project acceptance" >&2
-if ! uv run "$REPO_ROOT/scripts/smoke-test-package.py" --archive "$TARBALL"; then
+if ! uv run "$REPO_ROOT/scripts/smoke-test-package.py" \
+        --archive "$TARBALL" \
+        --planner-source "$REPO_ROOT/installer"; then
     echo "" >&2
     echo "error: release artifact gate failed — disposable-project acceptance failed." >&2
     exit 1

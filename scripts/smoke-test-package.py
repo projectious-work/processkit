@@ -22,7 +22,9 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import shutil
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -147,7 +149,65 @@ def _validate_layout(distribution_root: Path) -> None:
         raise RuntimeError(f"staged installer contract is invalid:\n{rendered}")
 
 
-def run(release_root: Path | None, archive: Path | None) -> None:
+def _run_installer_planner(
+    planner_source: Path,
+    distribution_root: Path,
+    workspace: Path,
+) -> None:
+    """Exercise the Rust planner against the exact extracted artifact."""
+    manifest = planner_source / "Cargo.toml"
+    if not manifest.is_file():
+        raise RuntimeError(
+            f"installer planner workspace is missing Cargo.toml: {planner_source}"
+        )
+    project_root = workspace / "installer-project"
+    project_root.mkdir()
+    command = [
+        "cargo",
+        "run",
+        "--quiet",
+        "--locked",
+        "--manifest-path",
+        str(manifest),
+        "--",
+        "plan",
+        "--root",
+        str(project_root),
+        "--distribution",
+        str(distribution_root),
+        "--profile",
+        "managed",
+        "--dry-run",
+        "--json",
+    ]
+    completed = subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode:
+        raise RuntimeError(
+            "installer planner failed against extracted artifact:\n"
+            f"{completed.stderr}"
+        )
+    try:
+        plan = json.loads(completed.stdout)
+    except json.JSONDecodeError as error:
+        raise RuntimeError(
+            f"installer planner did not emit JSON: {error}"
+        ) from error
+    if plan.get("status") != "planned":
+        raise RuntimeError(f"installer planner rejected extracted artifact: {plan}")
+    if any(project_root.iterdir()):
+        raise RuntimeError("installer planner mutated its disposable project")
+
+
+def run(
+    release_root: Path | None,
+    archive: Path | None,
+    planner_source: Path | None = None,
+) -> None:
     workspace = Path(tempfile.mkdtemp(prefix="processkit-package-smoke-"))
     try:
         if archive is None:
@@ -158,6 +218,10 @@ def run(release_root: Path | None, archive: Path | None) -> None:
         extracted.mkdir()
         distribution_root = _extract_archive(archive.resolve(), extracted)
         _validate_layout(distribution_root)
+        if planner_source is not None:
+            _run_installer_planner(
+                planner_source.resolve(), distribution_root, workspace
+            )
 
         generator = _load_module(
             "processkit_schema_generation",
@@ -196,8 +260,16 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="existing processkit release archive to extract and test",
     )
+    parser.add_argument(
+        "--planner-source",
+        type=Path,
+        help=(
+            "Rust installer workspace used to plan against the extracted "
+            "artifact (release gate only)"
+        ),
+    )
     args = parser.parse_args(argv)
-    run(args.release_root, args.archive)
+    run(args.release_root, args.archive, args.planner_source)
     return 0
 
 
