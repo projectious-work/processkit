@@ -92,7 +92,8 @@ enum OutputFormat {
 
 #[derive(Deserialize)]
 struct Distribution {
-    apiVersion: String,
+    #[serde(rename = "apiVersion")]
+    api_version: String,
     kind: String,
     metadata: Metadata,
     spec: Spec,
@@ -138,7 +139,7 @@ struct Source {
 #[serde(deny_unknown_fields)]
 struct ReleaseDescriptor {
     #[serde(rename = "$schema")]
-    schema: Option<String>,
+    _schema: Option<String>,
     #[serde(rename = "apiVersion")]
     api_version: String,
     kind: String,
@@ -312,7 +313,7 @@ fn verified_release(distribution_root: &Path) -> Result<VerifiedRelease, String>
     let text = fs::read_to_string(&manifest).map_err(|error| format!("manifest: {error}"))?;
     let distribution: Distribution =
         serde_yaml::from_str(&text).map_err(|error| format!("manifest YAML: {error}"))?;
-    if distribution.apiVersion != "processkit.projectious.work/distribution/v1alpha1"
+    if distribution.api_version != "processkit.projectious.work/distribution/v1alpha1"
         || distribution.kind != "Distribution"
         || distribution.spec.installer.protocol != descriptor.distribution.protocol
     {
