@@ -1,4 +1,5 @@
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -6,6 +7,49 @@ fn fixture(name: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/plans")
         .join(name)
+}
+
+fn copy_tree(source: &std::path::Path, target: &std::path::Path) {
+    std::fs::create_dir_all(target).unwrap();
+    for entry in std::fs::read_dir(source).unwrap() {
+        let entry = entry.unwrap();
+        let destination = target.join(entry.file_name());
+        if entry.file_type().unwrap().is_dir() {
+            copy_tree(&entry.path(), &destination);
+        } else {
+            std::fs::copy(entry.path(), destination).unwrap();
+        }
+    }
+}
+
+fn set_fixture_release(distribution: &std::path::Path, version: &str, payload: Option<&str>) {
+    let manifest = distribution.join(".processkit/installer/distribution.yaml");
+    let mut text = std::fs::read_to_string(&manifest).unwrap();
+    text = text.replace("version: 0.0.0-test", &format!("version: {version}"));
+    if let Some(payload) = payload {
+        std::fs::write(distribution.join("payload/hello.txt"), payload).unwrap();
+    } else {
+        text = format!(
+            "apiVersion: processkit.projectious.work/distribution/v1alpha1\n\
+             kind: Distribution\n\
+             metadata:\n\
+             \u{20}\u{20}name: fixture-processkit\n\
+             \u{20}\u{20}version: {version}\n\
+             spec:\n\
+             \u{20}\u{20}installer:\n\
+             \u{20}\u{20}\u{20}\u{20}protocol: processkit.projectious.work/installer/v1alpha1\n\
+             \u{20}\u{20}components: []\n\
+             \u{20}\u{20}profiles:\n\
+             \u{20}\u{20}\u{20}\u{20}managed:\n\
+             \u{20}\u{20}\u{20}\u{20}\u{20}\u{20}include: []\n"
+        );
+    }
+    std::fs::write(&manifest, &text).unwrap();
+    let manifest_sha256 = format!("{:x}", Sha256::digest(text.as_bytes()));
+    let descriptor = distribution.join(".processkit/installer/release-descriptor.json");
+    let mut value: Value = serde_json::from_slice(&std::fs::read(&descriptor).unwrap()).unwrap();
+    value["distribution"]["manifestSha256"] = Value::String(manifest_sha256);
+    std::fs::write(descriptor, serde_json::to_vec_pretty(&value).unwrap()).unwrap();
 }
 
 fn plan(name: &str) -> std::process::Output {
@@ -99,6 +143,27 @@ fn install_writes_owned_state_and_payload() {
         "fixture payload\n"
     );
     assert!(root.join(".processkit/state.json").is_file());
+    let verified = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args(["verify", "--root", root.to_str().unwrap(), "--json"])
+        .output()
+        .expect("verify command starts");
+    assert!(
+        verified.status.success(),
+        "{}",
+        String::from_utf8_lossy(&verified.stderr)
+    );
+    let result: Value = serde_json::from_slice(&verified.stdout).unwrap();
+    assert_eq!(result["status"], "verified");
+
+    std::fs::write(root.join("payload/hello.txt"), "user modification\n").unwrap();
+    let drifted = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args(["verify", "--root", root.to_str().unwrap(), "--json"])
+        .output()
+        .expect("drift verify command starts");
+    assert_eq!(drifted.status.code(), Some(4));
+    let result: Value = serde_json::from_slice(&drifted.stdout).unwrap();
+    assert_eq!(result["status"], "drifted");
+    assert_eq!(result["errors"][0]["code"], "managed-path-drift");
     std::fs::remove_dir_all(root).unwrap();
 }
 
@@ -234,4 +299,91 @@ fn uninstall_removes_only_unchanged_managed_files() {
     assert!(!root.join("payload/hello.txt").exists());
     assert!(!root.join(".processkit/state.json").exists());
     std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn update_reconciles_replace_preserve_and_stale_removal() {
+    let case = fixture("empty");
+    let root = std::env::temp_dir().join(format!(
+        "processkit-installer-test-{}-update",
+        std::process::id()
+    ));
+    let release = std::env::temp_dir().join(format!(
+        "processkit-installer-release-{}-update",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&root).unwrap();
+    copy_tree(&case.join("distribution"), &release);
+    let install = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args([
+            "install",
+            "--root",
+            root.to_str().unwrap(),
+            "--distribution",
+            release.to_str().unwrap(),
+            "--yes",
+        ])
+        .status()
+        .unwrap();
+    assert!(install.success());
+
+    set_fixture_release(&release, "0.0.1-test", Some("upstream update\n"));
+    let update = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args([
+            "update",
+            "--root",
+            root.to_str().unwrap(),
+            "--distribution",
+            release.to_str().unwrap(),
+            "--yes",
+        ])
+        .status()
+        .unwrap();
+    assert!(update.success());
+    assert_eq!(
+        std::fs::read_to_string(root.join("payload/hello.txt")).unwrap(),
+        "upstream update\n"
+    );
+
+    std::fs::write(root.join("payload/hello.txt"), "user update\n").unwrap();
+    let preserve = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args([
+            "update",
+            "--root",
+            root.to_str().unwrap(),
+            "--distribution",
+            release.to_str().unwrap(),
+            "--yes",
+        ])
+        .status()
+        .unwrap();
+    assert!(preserve.success());
+    assert_eq!(
+        std::fs::read_to_string(root.join("payload/hello.txt")).unwrap(),
+        "user update\n"
+    );
+
+    set_fixture_release(&release, "0.0.2-test", None);
+    let stale = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args([
+            "update",
+            "--root",
+            root.to_str().unwrap(),
+            "--distribution",
+            release.to_str().unwrap(),
+            "--yes",
+        ])
+        .status()
+        .unwrap();
+    assert!(stale.success());
+    assert!(
+        root.join("payload/hello.txt").is_file(),
+        "user-modified stale file must be preserved"
+    );
+    let state: Value =
+        serde_json::from_slice(&std::fs::read(root.join(".processkit/state.json")).unwrap())
+            .unwrap();
+    assert!(state["ownedPaths"].as_array().unwrap().is_empty());
+    std::fs::remove_dir_all(root).unwrap();
+    std::fs::remove_dir_all(release).unwrap();
 }

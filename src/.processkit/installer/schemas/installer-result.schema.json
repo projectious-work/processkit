@@ -11,13 +11,15 @@
     "status": {
       "enum": [
         "planned", "conflict", "invalid", "installed", "updated",
-        "uninstalled", "recovered"
+        "uninstalled", "recovered", "verified", "drifted"
       ]
     },
     "changes": {"type": "array"},
     "conflicts": {"type": "array"},
     "warnings": {"type": "array"},
     "errors": {"type": "array"},
-    "state": {"type": "object"}
+    "state": {"type": "object"},
+    "checked": {"type": "integer", "minimum": 0},
+    "provenance": {"type": "object"}
   }
 }

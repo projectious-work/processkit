@@ -6,7 +6,11 @@
   "properties": {
     "kind": {"enum": ["create", "replace", "remove"]},
     "path": {"type": "string", "minLength": 1},
-    "ownership": {"enum": ["managed-three-way", "preserve-user", "shared"]},
+    "ownership": {
+      "enum": [
+        "managed-three-way", "managed-keys", "preserve-user", "shared"
+      ]
+    },
     "oldSha256": {
       "type": ["string", "null"],
       "pattern": "^[a-f0-9]{64}$"

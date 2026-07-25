@@ -97,6 +97,13 @@ enum Command {
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
+    /// Verify installed provenance and report managed-path drift.
+    Verify {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
     /// Execute one versioned installer request and emit one result envelope.
     Execute {
         #[arg(long)]
@@ -259,6 +266,7 @@ struct Problem {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct LocalReleaseEnvelope {
     api_version: String,
     kind: String,
@@ -267,23 +275,27 @@ struct LocalReleaseEnvelope {
     signing: LocalReleaseSigning,
 }
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 struct LocalReleaseIdentity {
     name: String,
     version: String,
 }
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 struct LocalReleaseArchive {
     file: String,
     sha256: String,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct LocalReleaseSigning {
     algorithm: String,
     key_id: String,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct LocalTrustStore {
     api_version: String,
     kind: String,
@@ -291,6 +303,7 @@ struct LocalTrustStore {
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct LocalTrustKey {
     key_id: String,
     algorithm: String,
@@ -309,6 +322,7 @@ struct VerifiedReleaseEvidence {
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct InstallerRequest {
     api_version: String,
     operation: String,
@@ -327,6 +341,7 @@ struct InstallerRequest {
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct InstallationState {
     api_version: String,
     release: StateRelease,
@@ -336,6 +351,7 @@ struct InstallationState {
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct StateRelease {
     name: String,
     version: String,
@@ -343,6 +359,7 @@ struct StateRelease {
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct OwnedPath {
     path: String,
     component: String,
@@ -352,6 +369,7 @@ struct OwnedPath {
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct Journal {
     api_version: String,
     transaction_id: String,
@@ -363,6 +381,7 @@ struct Journal {
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 struct TransactionAction {
     kind: String,
     #[serde(rename = "path")]
@@ -580,6 +599,27 @@ fn main() {
                 std::process::exit(3);
             }
         },
+        Command::Verify { root, json } => match verify_installation(&root) {
+            Ok(result) => {
+                if json {
+                    println!("{}", serde_json::to_string_pretty(&result).unwrap());
+                } else {
+                    println!(
+                        "{}: {} checked path(s), {} drift finding(s)",
+                        result["status"].as_str().unwrap_or("invalid"),
+                        result["checked"].as_u64().unwrap_or(0),
+                        result["errors"].as_array().map_or(0, Vec::len)
+                    );
+                }
+                if result["status"] != "verified" {
+                    std::process::exit(4);
+                }
+            }
+            Err(error) => {
+                eprintln!("processkit: {error}");
+                std::process::exit(3);
+            }
+        },
         Command::Execute { request } => match execute_request(&request) {
             Ok(result) => println!("{}", serde_json::to_string_pretty(&result).unwrap()),
             Err(error) => {
@@ -610,6 +650,24 @@ fn execute_request(path: &Path) -> Result<serde_json::Value, String> {
         .map_err(|error| format!("installer request JSON: {error}"))?;
     if request.api_version != API_VERSION {
         return Err("unsupported installer request API version".into());
+    }
+    let signed_input_count = [
+        request.envelope_path.is_some(),
+        request.signature_path.is_some(),
+        request.trust_store_path.is_some(),
+    ]
+    .into_iter()
+    .filter(|present| *present)
+    .count();
+    if !matches!(signed_input_count, 0 | 3) {
+        return Err("signed release input requires envelope, signature, and trust store".into());
+    }
+    if signed_input_count == 3 && request.distribution_path.is_some() {
+        return Err("signed and unsigned release inputs are mutually exclusive".into());
+    }
+    let needs_release = matches!(request.operation.as_str(), "plan" | "install" | "update");
+    if !needs_release && (signed_input_count != 0 || request.distribution_path.is_some()) {
+        return Err("operation does not accept a release input".into());
     }
     let extracted = if let (Some(envelope), Some(signature), Some(trust_store)) = (
         request.envelope_path.as_deref(),
@@ -665,11 +723,127 @@ fn execute_request(path: &Path) -> Result<serde_json::Value, String> {
             let changed = recover(&request.root, request.yes)?;
             Ok(success_result("recovered", changed))
         }
+        "verify" => verify_installation(&request.root),
         _ => Err(format!(
             "unsupported installer request operation: {}",
             request.operation
         )),
     }
+}
+
+fn verify_installation(root: &Path) -> Result<serde_json::Value, String> {
+    let state_dir = root.join(".processkit");
+    if state_dir
+        .symlink_metadata()
+        .map_err(|error| format!("installer state directory: {error}"))?
+        .file_type()
+        .is_symlink()
+    {
+        return Err("installer state directory must not be a symlink".into());
+    }
+    let state_path = state_dir.join("state.json");
+    ensure_regular_file(root, &state_path, "installer state")?;
+    let state: InstallationState = serde_json::from_slice(
+        &fs::read(&state_path).map_err(|error| format!("installer state: {error}"))?,
+    )
+    .map_err(|error| format!("invalid installer state: {error}"))?;
+    validate_installation_state(&state)?;
+
+    let mut findings = Vec::new();
+    for owned in &state.owned_paths {
+        let target = root.join(&owned.path);
+        if has_symlink_ancestor(root, &owned.path)? {
+            findings.push(serde_json::json!({
+                "code": "symlink-drift",
+                "path": owned.path,
+                "message": "managed path or ancestor is a symlink",
+            }));
+            continue;
+        }
+        let metadata = match target.symlink_metadata() {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                findings.push(serde_json::json!({
+                    "code": "missing-managed-path",
+                    "path": owned.path,
+                    "message": "managed path is missing",
+                }));
+                continue;
+            }
+            Err(error) => return Err(format!("managed path metadata: {error}")),
+        };
+        if metadata.file_type().is_symlink() || !metadata.is_file() {
+            findings.push(serde_json::json!({
+                "code": "non-regular-managed-path",
+                "path": owned.path,
+                "message": "managed path is not a regular file",
+            }));
+            continue;
+        }
+        let actual = digest(&target)?;
+        if actual != owned.installed_sha256 {
+            findings.push(serde_json::json!({
+                "code": "managed-path-drift",
+                "path": owned.path,
+                "message": "managed path digest differs from installed provenance",
+                "expectedSha256": owned.installed_sha256,
+                "actualSha256": actual,
+            }));
+        }
+    }
+    let transaction_dir = state_dir.join("transactions");
+    if transaction_dir.is_dir()
+        && fs::read_dir(&transaction_dir)
+            .map_err(|error| error.to_string())?
+            .any(|entry| entry.is_ok())
+    {
+        findings.push(serde_json::json!({
+            "code": "incomplete-transaction",
+            "path": ".processkit/transactions",
+            "message": "recovery is required before the installation is verified",
+        }));
+    }
+    Ok(serde_json::json!({
+        "apiVersion": API_VERSION,
+        "status": if findings.is_empty() { "verified" } else { "drifted" },
+        "checked": state.owned_paths.len(),
+        "changes": [],
+        "conflicts": [],
+        "warnings": [],
+        "errors": findings,
+        "provenance": {
+            "release": state.release,
+            "profiles": state.profiles,
+            "harnesses": state.harnesses,
+            "stateSha256": digest(&state_path)?,
+        }
+    }))
+}
+
+fn validate_installation_state(state: &InstallationState) -> Result<(), String> {
+    if state.api_version != API_VERSION {
+        return Err("unsupported installer state version".into());
+    }
+    if state.release.name.trim().is_empty()
+        || semver::Version::parse(state.release.version.trim_start_matches('v')).is_err()
+        || !valid_sha256(&state.release.manifest_sha256)
+    {
+        return Err("installer state has invalid release provenance".into());
+    }
+    let mut paths = HashSet::new();
+    for owned in &state.owned_paths {
+        if !safe_relative(&owned.path)
+            || !paths.insert(owned.path.as_str())
+            || !valid_sha256(&owned.installed_sha256)
+            || !matches!(
+                owned.ownership.as_str(),
+                "managed-three-way" | "managed-keys" | "shared"
+            )
+        {
+            return Err("installer state contains an invalid owned path".into());
+        }
+    }
+    Ok(())
 }
 
 fn extract_verified_release(
@@ -1562,6 +1736,9 @@ fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
     }
     let _lock = acquire_lock(root, "uninstall")?;
     let state_path = root.join(".processkit/state.json");
+    if !state_path.exists() {
+        return Ok(0);
+    }
     let mut state: InstallationState = serde_json::from_slice(
         &fs::read(&state_path).map_err(|error| format!("installer state: {error}"))?,
     )
@@ -1751,6 +1928,8 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
         desired_by_path.insert(change.destination.clone(), change);
     }
     let mut replacements = Vec::new();
+    let mut removals = Vec::new();
+    let mut preserved_stale = Vec::new();
     for owned in old
         .owned_paths
         .iter()
@@ -1760,23 +1939,38 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
         if !safe_relative(&owned.path)
             || has_symlink_ancestor(root, &owned.path)?
             || !target.is_file()
-            || digest(&target)? != owned.installed_sha256
         {
             return Err(format!(
                 "update conflict: managed file was changed or missing: {}",
                 owned.path
             ));
         }
+        let current_sha256 = digest(&target)?;
+        let current_is_baseline = current_sha256 == owned.installed_sha256;
         match desired_by_path.remove(&owned.path) {
-            Some(change) if change.source_sha256 != owned.installed_sha256 => {
-                replacements.push(change)
+            Some(change) if current_is_baseline => {
+                if change.source_sha256 != owned.installed_sha256 {
+                    replacements.push(change);
+                }
             }
-            Some(_) => {}
-            None => {
+            Some(change) if change.source_sha256 == owned.installed_sha256 => {
+                // The user changed this path while upstream did not. Preserve
+                // the user version and retain the baseline for future
+                // three-way comparisons.
+            }
+            Some(_) => {
                 return Err(format!(
-                    "update requires explicit removal policy: {}",
+                    "update conflict: user and release both changed managed file: {}",
                     owned.path
-                ))
+                ));
+            }
+            None if current_is_baseline => {
+                removals.push(owned.path.clone());
+            }
+            None => {
+                // Upstream removed the path, but the user changed it. Preserve
+                // the file and relinquish installer ownership.
+                preserved_stale.push(owned.path.clone());
             }
         }
     }
@@ -1791,7 +1985,7 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
             ));
         }
     }
-    let changed = replacements.len() + additions.len();
+    let changed = replacements.len() + additions.len() + removals.len();
     let mut pending = Vec::new();
     for change in replacements.iter().chain(additions.iter()) {
         if digest(&change.source)? != change.source_sha256 {
@@ -1822,6 +2016,30 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
             content: None,
         });
     }
+    for path in &removals {
+        let owned = old
+            .owned_paths
+            .iter()
+            .find(|owned| owned.path == *path)
+            .ok_or("removal path has no ownership state")?;
+        pending.push(PendingAction {
+            action: TransactionAction {
+                kind: "remove".into(),
+                target: owned.path.clone(),
+                old_sha256: Some(owned.installed_sha256.clone()),
+                new_sha256: None,
+                staged_path: None,
+                backup_path: None,
+                created_parents: Vec::new(),
+                ownership: owned.ownership.clone(),
+                applied: false,
+            },
+            source: None,
+            content: None,
+        });
+    }
+    old.owned_paths
+        .retain(|owned| !removals.contains(&owned.path) && !preserved_stale.contains(&owned.path));
     for owned in &mut old.owned_paths {
         if let Some(change) = replacements
             .iter()

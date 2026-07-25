@@ -8,7 +8,9 @@
       "const": "processkit.projectious.work/installer/v1alpha1"
     },
     "operation": {
-      "enum": ["plan", "install", "update", "uninstall", "recover"]
+      "enum": [
+        "plan", "install", "update", "verify", "uninstall", "recover"
+      ]
     },
     "root": {"type": "string", "minLength": 1},
     "distributionPath": {"type": "string", "minLength": 1},
@@ -43,6 +45,23 @@
             ]
           }
         ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {"enum": ["verify", "uninstall", "recover"]}
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {"required": ["distributionPath"]},
+            {"required": ["envelopePath"]},
+            {"required": ["signaturePath"]},
+            {"required": ["trustStorePath"]}
+          ]
+        }
       }
     }
   ]
