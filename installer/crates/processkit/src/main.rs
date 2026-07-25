@@ -71,6 +71,17 @@ enum Command {
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
+    /// Update unchanged managed files from a verified release.
+    Update {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long)]
+        distribution: PathBuf,
+        #[arg(long)]
+        yes: bool,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
 }
 
 #[derive(Clone, Copy, ValueEnum)]
@@ -398,6 +409,19 @@ fn main() {
         Command::Uninstall { root, yes, json } => match uninstall(&root, yes) {
             Ok(removed) if json => println!("{{\"removed\":{removed}}}"),
             Ok(removed) => println!("removed {removed} owned file(s)"),
+            Err(error) => {
+                eprintln!("processkit: {error}");
+                std::process::exit(3);
+            }
+        },
+        Command::Update {
+            root,
+            distribution,
+            yes,
+            json,
+        } => match update(&root, &distribution, yes) {
+            Ok(updated) if json => println!("{{\"updated\":{updated}}}"),
+            Ok(updated) => println!("updated {updated} managed file(s)"),
             Err(error) => {
                 eprintln!("processkit: {error}");
                 std::process::exit(3);
@@ -871,6 +895,135 @@ fn uninstall(root: &Path, yes: bool) -> Result<usize, String> {
         fs::remove_file(&state_path).map_err(|error| error.to_string())?;
     }
     Ok(removable.len())
+}
+
+fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> {
+    if !yes {
+        return Err("update requires --yes after reviewing a plan".into());
+    }
+    let state_path = root.join(".processkit/state.json");
+    let mut old: InstallationState = serde_json::from_slice(
+        &fs::read(&state_path).map_err(|error| format!("installer state: {error}"))?,
+    )
+    .map_err(|error| format!("invalid installer state: {error}"))?;
+    if old.api_version != API_VERSION {
+        return Err("unsupported installer state version".into());
+    }
+    let virtual_root = root
+        .join(".processkit/.staging")
+        .join(format!("update-plan-{}", std::process::id()));
+    let desired = plan(
+        &virtual_root,
+        distribution,
+        old.profiles.clone(),
+        old.harnesses.clone(),
+    )?;
+    if desired.status != "planned" {
+        return Err("new release cannot be planned safely".into());
+    }
+    let mut desired_by_path = std::collections::BTreeMap::new();
+    for change in desired
+        .changes
+        .into_iter()
+        .filter(|change| change.ownership == "managed-three-way")
+    {
+        desired_by_path.insert(change.destination.clone(), change);
+    }
+    let mut replacements = Vec::new();
+    for owned in old
+        .owned_paths
+        .iter()
+        .filter(|path| path.ownership == "managed-three-way")
+    {
+        let target = root.join(&owned.path);
+        if !safe_relative(&owned.path)
+            || has_symlink_ancestor(root, &owned.path)?
+            || !target.is_file()
+            || digest(&target)? != owned.installed_sha256
+        {
+            return Err(format!(
+                "update conflict: managed file was changed or missing: {}",
+                owned.path
+            ));
+        }
+        match desired_by_path.remove(&owned.path) {
+            Some(change) if change.source_sha256 != owned.installed_sha256 => {
+                replacements.push(change)
+            }
+            Some(_) => {}
+            None => {
+                return Err(format!(
+                    "update requires explicit removal policy: {}",
+                    owned.path
+                ))
+            }
+        }
+    }
+    let additions: Vec<Change> = desired_by_path.into_values().collect();
+    for change in &additions {
+        if root.join(&change.destination).exists()
+            || has_symlink_ancestor(root, &change.destination)?
+        {
+            return Err(format!(
+                "update conflict: target exists: {}",
+                change.destination
+            ));
+        }
+    }
+    let staging = root
+        .join(".processkit/.staging")
+        .join(format!("update-{}", std::process::id()));
+    fs::create_dir_all(&staging).map_err(|error| error.to_string())?;
+    let mut changed = 0;
+    for change in replacements.iter().chain(additions.iter()) {
+        if digest(&change.source)? != change.source_sha256 {
+            return Err("release source changed during update".into());
+        }
+        let staged = staging.join(&change.destination);
+        if let Some(parent) = staged.parent() {
+            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        fs::copy(&change.source, &staged).map_err(|error| error.to_string())?;
+        let target = root.join(&change.destination);
+        if let Some(parent) = target.parent() {
+            fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+        }
+        fs::rename(&staged, &target).map_err(|error| error.to_string())?;
+        changed += 1;
+    }
+    for owned in &mut old.owned_paths {
+        if let Some(change) = replacements
+            .iter()
+            .find(|change| change.destination == owned.path)
+        {
+            owned.installed_sha256 = change.source_sha256.clone();
+            owned.component = change.component.clone();
+            owned.operation = change.operation.clone();
+        }
+    }
+    for change in &additions {
+        old.owned_paths.push(OwnedPath {
+            path: change.destination.clone(),
+            component: change.component.clone(),
+            operation: change.operation.clone(),
+            ownership: change.ownership.clone(),
+            installed_sha256: change.source_sha256.clone(),
+        });
+    }
+    let new_state = InstallationState {
+        api_version: API_VERSION.into(),
+        release: StateRelease {
+            name: desired.distribution.name,
+            version: desired.distribution.version,
+            manifest_sha256: desired.distribution.manifest_sha256,
+        },
+        profiles: old.profiles,
+        harnesses: old.harnesses,
+        owned_paths: old.owned_paths,
+    };
+    write_json_atomic(&state_path, &new_state)?;
+    let _ = fs::remove_dir_all(staging);
+    Ok(changed)
 }
 
 fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
