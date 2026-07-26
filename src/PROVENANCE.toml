@@ -7,7 +7,7 @@
 [source]
 project = "processkit"
 upstream = "https://github.com/projectious-work/processkit.git"
-generated_at = "2026-07-26T08:54:49Z"
+generated_at = "2026-07-26T16:01:07Z"
 generated_for_tag = "v1.0.0-alpha.2"
 
 [files]

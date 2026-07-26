@@ -31,6 +31,12 @@
           "installedSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
         }
       }
+    },
+    "managedAdapters": {
+      "type": "array",
+      "items": {
+        "$ref": "managed-adapter-state.schema.json"
+      }
     }
   }
 }
