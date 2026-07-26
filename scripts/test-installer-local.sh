@@ -23,6 +23,7 @@ cargo clippy --offline --locked \
 cargo test --offline --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml"
 "$REPO_ROOT/scripts/test-release-trust-local.sh"
 "$REPO_ROOT/scripts/test-installer-pilot-local.sh"
+"$REPO_ROOT/scripts/test-compatibility-local.sh"
 uv run --offline --with pytest --with pyyaml --with jsonschema \
     pytest "$REPO_ROOT/tests/test_verify_installer_contract.py"
 uv run --offline "$REPO_ROOT/scripts/smoke-test-package.py" \

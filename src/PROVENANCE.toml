@@ -7,7 +7,7 @@
 [source]
 project = "processkit"
 upstream = "https://github.com/projectious-work/processkit.git"
-generated_at = "2026-07-26T16:01:07Z"
+generated_at = "2026-07-26T16:13:38Z"
 generated_for_tag = "v1.0.0-alpha.2"
 
 [files]
@@ -18,6 +18,8 @@ generated_for_tag = "v1.0.0-alpha.2"
 ".processkit/installer/adapters/codex.yaml" = "v1.0.0-alpha.2"
 ".processkit/installer/catalogs/mcp.yaml" = "v1.0.0-alpha.2"
 ".processkit/installer/compatibility/README.md" = "v1.0.0-alpha.2"
+".processkit/installer/compatibility/v0.27.1.yaml" = "v1.0.0-alpha.2"
+".processkit/installer/compatibility/v0.28.4.yaml" = "v1.0.0-alpha.2"
 ".processkit/installer/distribution.yaml" = "v1.0.0-alpha.2"
 ".processkit/installer/operations.yaml" = "v1.0.0-alpha.2"
 ".processkit/installer/ownership-matrix.yaml" = "v1.0.0-alpha.2"

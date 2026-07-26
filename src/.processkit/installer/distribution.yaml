@@ -35,4 +35,6 @@ spec:
   harnessAdapters:
     codex: .processkit/installer/adapters/codex.yaml
     claude: .processkit/installer/adapters/claude.yaml
-  compatibility: []
+  compatibility:
+    - .processkit/installer/compatibility/v0.27.1.yaml
+    - .processkit/installer/compatibility/v0.28.4.yaml

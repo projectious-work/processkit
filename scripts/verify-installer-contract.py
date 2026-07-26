@@ -71,6 +71,9 @@ def validate(release_root: Path) -> list[str]:
         )
         jsonschema.validate(distribution, schema)
         jsonschema.validate(descriptor, descriptor_schema)
+        compatibility_schema = json.loads(
+            (base / "schemas/compatibility.schema.json").read_text()
+        )
     except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
         return [f"invalid installer contract: {exc}"]
 
@@ -159,6 +162,35 @@ def validate(release_root: Path) -> list[str]:
             destination = adapter_data.get("destination")
             if not isinstance(destination, str) or not _safe_relative(destination):
                 failures.append(f"unsafe adapter destination: {adapter}")
+    compatibility_ids: set[str] = set()
+    compatibility_versions: set[str] = set()
+    for manifest_path in spec.get("compatibility", []):
+        if not isinstance(manifest_path, str) or not _safe_relative(manifest_path):
+            failures.append(f"unsafe compatibility manifest: {manifest_path!r}")
+            continue
+        path = release_root / manifest_path
+        if not path.is_file():
+            failures.append(f"compatibility manifest is missing: {manifest_path}")
+            continue
+        try:
+            manifest = yaml.safe_load(path.read_text())
+            jsonschema.validate(manifest, compatibility_schema)
+        except (OSError, yaml.YAMLError, jsonschema.ValidationError) as exc:
+            failures.append(f"invalid compatibility manifest {manifest_path}: {exc}")
+            continue
+        ident = manifest["id"]
+        version = manifest["source"]["releaseVersion"]
+        if ident in compatibility_ids or version in compatibility_versions:
+            failures.append(f"duplicate compatibility identity: {ident} / {version}")
+        compatibility_ids.add(ident)
+        compatibility_versions.add(version)
+        anchors = manifest["detection"]["anchors"]
+        anchor_paths = [anchor["path"] for anchor in anchors]
+        if len(anchor_paths) != len(set(anchor_paths)):
+            failures.append(f"duplicate compatibility anchor in {ident}")
+        for anchor in anchors:
+            if not _safe_relative(anchor["path"]):
+                failures.append(f"unsafe compatibility anchor in {ident}")
     return failures
 
 

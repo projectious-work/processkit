@@ -69,3 +69,6 @@ processkit verify-release \
 Both verifiers bind the exact envelope bytes, Ed25519 key identity, archive
 filename, semantic version, archive SHA-256, installer target, and installer
 SHA-256.
+
+Legacy trees can be inspected independently before installation. See
+[v0 to v1 compatibility inspection](v1-v0-compatibility.md).
