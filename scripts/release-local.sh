@@ -16,6 +16,7 @@ SIGNATURE="$REPO_ROOT/dist/processkit-$VERSION.release.sig"
 TARGET="$(rustc -vV | awk '/^host:/ {print $2}')"
 INSTALLER="$REPO_ROOT/dist/processkit-$VERSION-$TARGET"
 
+"$REPO_ROOT/scripts/check-release-version-local.sh" "$VERSION"
 "$REPO_ROOT/scripts/test-installer-local.sh"
 "$REPO_ROOT/scripts/build-installer-local.sh" "$VERSION" "$TARGET"
 "$REPO_ROOT/scripts/build-release-tarball.sh" "$VERSION"

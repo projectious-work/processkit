@@ -2,6 +2,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export CARGO_NET_OFFLINE=true
 if ! command -v cc >/dev/null; then
     export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER="$REPO_ROOT/scripts/zig-cc-local.sh"
     export ZIG_GLOBAL_CACHE_DIR="${TMPDIR:-/tmp}/processkit-zig-global"
@@ -76,7 +77,8 @@ if "$REPO_ROOT/scripts/verify-release-local.sh" \
 fi
 printf 'native installer fixture\n' >"$INSTALLER"
 
-cargo run --quiet --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml" -- \
+cargo run --quiet --offline --locked \
+    --manifest-path "$REPO_ROOT/installer/Cargo.toml" -- \
     verify-release \
     --envelope "$ENVELOPE" \
     --signature "$SIGNATURE" \
@@ -111,7 +113,7 @@ jq -n \
       profiles: ["managed"]
     }' >"$TEST_ROOT/request.json"
 SIGNED_RESULT="$(
-    cargo run --quiet --locked \
+    cargo run --quiet --offline --locked \
         --manifest-path "$REPO_ROOT/installer/Cargo.toml" -- \
         execute --request "$TEST_ROOT/request.json"
 )"
@@ -121,7 +123,7 @@ jq -e '.status == "planned"' <<<"$SIGNED_RESULT" >/dev/null || {
 }
 
 printf 'tampered\n' >>"$ENVELOPE"
-if cargo run --quiet --locked --manifest-path \
+if cargo run --quiet --offline --locked --manifest-path \
     "$REPO_ROOT/installer/Cargo.toml" -- verify-release \
     --envelope "$ENVELOPE" \
     --signature "$SIGNATURE" \

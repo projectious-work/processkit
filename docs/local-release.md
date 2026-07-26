@@ -22,22 +22,24 @@ the compromised public key from local trust stores.
 ## Validate and create a release
 
 ```sh
-scripts/release-local.sh v1.0.0-alpha.3 \
+scripts/release-local.sh v1.0.0-alpha.2 \
   "$HOME/.config/processkit/keys/release.pem" \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
 
 The command runs the complete local validation suite, builds a reproducible
 archive, creates an integrity envelope, signs it with Ed25519, and verifies the
-result. It produces archive, checksum, release JSON, and signature files under
-`dist/`.
+result. It produces the archive, native installer executable, checksum
+sidecars, release JSON, and signature under `dist/`. The executable is built
+for the current Rust host target. Repeat `build-installer-local.sh` on each
+supported host target before publishing a multi-platform release.
 
 ## Verify after copying
 
 ```sh
 scripts/verify-release-local.sh \
-  dist/processkit-v1.0.0-alpha.3.release.json \
-  dist/processkit-v1.0.0-alpha.3.release.sig \
+  dist/processkit-v1.0.0-alpha.2.release.json \
+  dist/processkit-v1.0.0-alpha.2.release.sig \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
 
@@ -59,10 +61,11 @@ installer also verifies releases against the versioned JSON trust store:
 
 ```sh
 processkit verify-release \
-  --envelope dist/processkit-v1.0.0-alpha.3.release.json \
-  --signature dist/processkit-v1.0.0-alpha.3.release.sig \
+  --envelope dist/processkit-v1.0.0-alpha.2.release.json \
+  --signature dist/processkit-v1.0.0-alpha.2.release.sig \
   --trust-store "$HOME/.config/processkit/trust-store.json"
 ```
 
 Both verifiers bind the exact envelope bytes, Ed25519 key identity, archive
-filename, semantic version, and archive SHA-256.
+filename, semantic version, archive SHA-256, installer target, and installer
+SHA-256.

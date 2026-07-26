@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export UV_OFFLINE=1
+export CARGO_NET_OFFLINE=true
 
 if ! command -v cc >/dev/null; then
     export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER="$REPO_ROOT/scripts/zig-cc-local.sh"
@@ -16,9 +17,10 @@ if ! command -v cc >/dev/null; then
 fi
 
 cargo fmt --check --manifest-path "$REPO_ROOT/installer/Cargo.toml"
-cargo clippy --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml" \
+cargo clippy --offline --locked \
+    --manifest-path "$REPO_ROOT/installer/Cargo.toml" \
     --all-targets -- -D warnings
-cargo test --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml"
+cargo test --offline --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml"
 "$REPO_ROOT/scripts/test-release-trust-local.sh"
 "$REPO_ROOT/scripts/test-installer-pilot-local.sh"
 uv run --offline --with pytest --with pyyaml --with jsonschema \
