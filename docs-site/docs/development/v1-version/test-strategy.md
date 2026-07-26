@@ -26,7 +26,8 @@ The v1.0 test strategy must prove:
 - pk-doctor catches deliberately invalid entities and every actionable
   finding has an executable or formally recognized disposition
 - docs and examples remain buildable
-- aibox integration works as an adapter, not as the only system test
+- downstream integrations can consume the published contracts without
+  becoming release prerequisites
 
 ## Automated Layers
 
@@ -41,7 +42,7 @@ The v1.0 test strategy must prove:
 | pk-doctor adversarial tests | Require every expected finding, validate remediation tools against the gateway catalog, execute remediations, and require a clean recheck. |
 | Package smoke tests | Install processkit from the local tree or release tarball into a temporary fixture project without aibox. |
 | Docs tests | Build Docusaurus and verify links to generated reference pages. |
-| Adapter tests | Run a small aibox install/apply workflow to prove integration, but keep it outside the core correctness suite. |
+| Downstream adapter tests | Consumers may run their own integration suites against a signed processkit release; their results are informative and non-blocking for processkit. |
 
 ## Fixture Projects
 
@@ -90,8 +91,9 @@ The final gate should include:
 - pk-doctor adversarial and remediation fixtures green after executing their
   declared closure paths
 - package smoke tests green from release artifact
-- aibox adapter test green for a pinned `v1.0.0-rc.*`
+- signed archive and native installer verify and install without network
+  access or an external project manager
 - no known index/schema/migration blocker
 
 This keeps the RFC's first-ART proof while removing the current hard
-dependency on manual aibox experimentation.
+dependency on manual downstream experimentation.

@@ -17,11 +17,14 @@ VERSION="v1.0.0-alpha.0"
 ARCHIVE="$TEST_ROOT/processkit-$VERSION.tar.gz"
 ENVELOPE="$TEST_ROOT/processkit-$VERSION.release.json"
 SIGNATURE="$TEST_ROOT/processkit-$VERSION.release.sig"
+INSTALLER="$TEST_ROOT/processkit-$VERSION-test-target"
 
 "$REPO_ROOT/scripts/processkit-keygen-local.sh" "$PRIVATE_KEY" "$PUBLIC_KEY" \
     >/dev/null
 printf 'signed release fixture\n' >"$ARCHIVE"
+printf 'native installer fixture\n' >"$INSTALLER"
 ARCHIVE_SHA="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
+INSTALLER_SHA="$(sha256sum "$INSTALLER" | awk '{print $1}')"
 printf '%s  %s\n' "$ARCHIVE_SHA" "$(basename "$ARCHIVE")" \
     >"$ARCHIVE.sha256"
 KEY_ID="$(
@@ -45,18 +48,34 @@ jq -n --sort-keys \
     --arg version "$VERSION" \
     --arg file "$(basename "$ARCHIVE")" \
     --arg sha256 "$ARCHIVE_SHA" \
+    --arg installer_file "$(basename "$INSTALLER")" \
+    --arg installer_sha256 "$INSTALLER_SHA" \
     --arg key_id "$KEY_ID" \
     '{
       apiVersion: "processkit.projectious.work/local-release/v1alpha1",
       kind: "LocalRelease",
       release: {name: "processkit", version: $version},
       archive: {file: $file, sha256: $sha256},
+      installer: {
+        file: $installer_file,
+        sha256: $installer_sha256,
+        target: "test-target"
+      },
       signing: {algorithm: "Ed25519", keyId: $key_id}
     }' >"$ENVELOPE"
 "$REPO_ROOT/scripts/sign-release-local.sh" \
     "$ENVELOPE" "$PRIVATE_KEY" "$SIGNATURE" >/dev/null
 "$REPO_ROOT/scripts/verify-release-local.sh" \
     "$ENVELOPE" "$SIGNATURE" "$TEST_ROOT" >/dev/null
+
+printf 'tampered\n' >>"$INSTALLER"
+if "$REPO_ROOT/scripts/verify-release-local.sh" \
+    "$ENVELOPE" "$SIGNATURE" "$TEST_ROOT" >/dev/null 2>&1; then
+    echo "error: shell verifier accepted a tampered installer asset" >&2
+    exit 1
+fi
+printf 'native installer fixture\n' >"$INSTALLER"
+
 cargo run --quiet --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml" -- \
     verify-release \
     --envelope "$ENVELOPE" \

@@ -251,6 +251,7 @@ struct DistributionInfo {
     manifest_sha256: String,
 }
 #[derive(Serialize, Ord, PartialOrd, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
 struct Change {
     destination: String,
     component: String,

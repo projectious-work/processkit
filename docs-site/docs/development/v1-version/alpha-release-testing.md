@@ -12,10 +12,8 @@ The first test release is an explicit prerelease such as
 `v1.x-pre-release`, validated there, and tagged there.
 
 Prereleases never become the implicit `latest` version. `latest` remains the
-highest stable release, currently from the supported v0 line. This prevents
-existing aibox projects from crossing a major-version boundary without an
-explicit pin. The matching aibox proposal is tracked in
-[aibox issue #133](https://github.com/projectious-work/aibox/issues/133).
+highest stable release, currently from the supported v0 line. Downstream
+installers must opt in to an exact prerelease.
 
 ## Pre-tag Gate
 
@@ -27,37 +25,40 @@ uv run scripts/smoke-test-servers.py
 uv run scripts/smoke-test-package.py
 npm --prefix docs-site run build
 uv run scripts/generate-mcp-manifest.py --check
+scripts/test-installer-local.sh
 ```
 
 Also run `pk-doctor` and the release audit. The release build must validate
 the committed MCP manifest and must not rewrite tracked release metadata.
 
-## aibox Pilot
+## Standalone Pilot
 
-Use a disposable aibox project and pin the exact prerelease:
+Create a local signing key once, then build the complete release set:
 
-```toml
-[processkit]
-source = "https://github.com/projectious-work/processkit.git"
-version = "v1.0.0-alpha.2"
+```sh
+scripts/processkit-keygen-local.sh release.pem release.pub.pem
+scripts/release-local.sh \
+  v1.0.0-alpha.2 release.pem release.pub.pem
 ```
 
-Then:
+The signed envelope binds the archive, native installer executable, target
+triple, version, and trusted key. Verify it independently:
 
-1. run the aibox sync/apply operation for its v1 development line
-2. confirm the lock file records the exact prerelease
-3. confirm all processkit MCP servers and gateway tools are merged
-4. run the v0-to-v1 migration planner before executing it
-5. run `pk-doctor`
-6. create and transition a WorkItem, Scope, Capability, and Skill
-7. create a claim and a Risk
-8. query by the Record, Actor, Capability, and Skill interfaces
-9. export and validate an OKF v0.1 bundle
-10. rebuild the container and repeat the read-only checks
+```sh
+scripts/verify-release-local.sh \
+  dist/processkit-v1.0.0-alpha.2.release.json \
+  dist/processkit-v1.0.0-alpha.2.release.sig \
+  release.pub.pem
+```
 
-Do not use `latest`, a floating branch name, or a moved tag for this pilot.
-Record any aibox adapter failure against the exact processkit and aibox
-versions.
+Run the native executable against a disposable project through its opaque
+request contract. The local installer suite covers install, verify, update,
+recovery, user-drift handling, and uninstall. It neither invokes aibox nor
+uses GitHub Actions.
+
+An aibox pilot may consume the exact signed prerelease afterward. That is a
+downstream compatibility check and never blocks or defines processkit
+release correctness.
 
 ## Promotion
 

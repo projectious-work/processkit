@@ -15,7 +15,7 @@
       "operation": "copy/v1",
       "ownership": "managed-three-way",
       "kind": "create",
-      "source_sha256": "565b24bc77ebeee74f70f6c608e099956666c3589ed85146fcea7e77d9f25356"
+      "sourceSha256": "565b24bc77ebeee74f70f6c608e099956666c3589ed85146fcea7e77d9f25356"
     }
   ],
   "conflicts": [],
