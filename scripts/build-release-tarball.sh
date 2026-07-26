@@ -106,6 +106,13 @@ if ! PROCESSKIT_VERSION="$VERSION" uv run --offline \
     exit 1
 fi
 
+echo "checking MCP preauth specs" >&2
+if ! uv run --offline \
+        "$REPO_ROOT/scripts/generate-mcp-preauth.py" --check; then
+    echo "error: MCP preauth specs are stale; regenerate before tagging" >&2
+    exit 1
+fi
+
 echo "checking installer contract" >&2
 if ! uv run --offline "$REPO_ROOT/scripts/verify-installer-contract.py" \
         "$SRC_DIR"; then
