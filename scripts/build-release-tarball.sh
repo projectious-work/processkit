@@ -46,6 +46,17 @@ STAGING_PARENT="$(mktemp -d)"
 STAGING_DIR="$STAGING_PARENT/processkit-$VERSION"
 TARBALL="$DIST_DIR/processkit-$VERSION.tar.gz"
 CHECKSUM="$TARBALL.sha256"
+export UV_OFFLINE=1
+
+if ! command -v cc >/dev/null; then
+    RUST_TARGET="$(rustc -vV | awk '/^host:/ {print $2}')"
+    LINKER_VARIABLE="CARGO_TARGET_$(
+        tr '[:lower:]-' '[:upper:]_' <<<"$RUST_TARGET"
+    )_LINKER"
+    export "$LINKER_VARIABLE"="$REPO_ROOT/scripts/zig-cc-local.sh"
+    export ZIG_GLOBAL_CACHE_DIR="${TMPDIR:-/tmp}/processkit-zig-global"
+    export ZIG_LOCAL_CACHE_DIR="${TMPDIR:-/tmp}/processkit-zig-local"
+fi
 
 cleanup() {
     rm -rf "$STAGING_PARENT"
