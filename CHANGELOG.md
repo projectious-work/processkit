@@ -42,6 +42,10 @@ aibox.
 
 ### Added
 
+- Added a required signed installer-asset matrix with unique target/file
+  identities, byte sizes, and digest verification.
+- Added signed archive-root, release-descriptor, and provenance bindings with
+  extraction-time verification.
 - Added v1 lifecycle MCP servers for Capability, Proposition/Risk, and
   package-backed Skill entities, including schema validation, interface
   indexing, lifecycle events, and gateway exposure.

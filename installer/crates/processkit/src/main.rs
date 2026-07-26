@@ -322,8 +322,10 @@ struct LocalReleaseEnvelope {
     kind: String,
     release: LocalReleaseIdentity,
     archive: LocalReleaseArchive,
+    descriptor: LocalReleaseBoundFile,
+    provenance: LocalReleaseProvenance,
     signing: LocalReleaseSigning,
-    installer: Option<LocalReleaseInstaller>,
+    installer_assets: Vec<LocalReleaseInstallerAsset>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -336,6 +338,23 @@ struct LocalReleaseIdentity {
 struct LocalReleaseArchive {
     file: String,
     sha256: String,
+    size: u64,
+    #[serde(rename = "topLevelDirectory")]
+    top_level_directory: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LocalReleaseBoundFile {
+    file: String,
+    sha256: String,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+struct LocalReleaseProvenance {
+    file: String,
+    sha256: String,
+    generated_for_tag: String,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -346,10 +365,11 @@ struct LocalReleaseSigning {
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct LocalReleaseInstaller {
+struct LocalReleaseInstallerAsset {
     file: String,
     sha256: String,
     target: String,
+    size: u64,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -376,6 +396,13 @@ struct VerifiedReleaseEvidence {
     version: String,
     archive: String,
     archive_sha256: String,
+    archive_top_level_directory: String,
+    descriptor_file: String,
+    descriptor_sha256: String,
+    provenance_file: String,
+    provenance_sha256: String,
+    provenance_generated_for_tag: String,
+    installer_asset_count: usize,
     key_id: String,
 }
 #[derive(Deserialize)]
@@ -1167,6 +1194,30 @@ fn extract_verified_release(
     let root = temporary
         .path()
         .join(top_level.ok_or("release archive contains no entries")?);
+    if root.file_name().and_then(|value| value.to_str())
+        != Some(evidence.archive_top_level_directory.as_str())
+    {
+        return Err("release archive top-level directory mismatch".into());
+    }
+    let descriptor_path = root.join(&evidence.descriptor_file);
+    ensure_regular_file(&root, &descriptor_path, "bound release descriptor")?;
+    if digest(&descriptor_path)? != evidence.descriptor_sha256 {
+        return Err("bound release descriptor digest mismatch".into());
+    }
+    let provenance_path = root.join(&evidence.provenance_file);
+    ensure_regular_file(&root, &provenance_path, "bound release provenance")?;
+    if digest(&provenance_path)? != evidence.provenance_sha256 {
+        return Err("bound release provenance digest mismatch".into());
+    }
+    let provenance = fs::read_to_string(&provenance_path)
+        .map_err(|error| format!("bound release provenance: {error}"))?;
+    let expected_tag = format!(
+        "generated_for_tag = \"{}\"",
+        evidence.provenance_generated_for_tag
+    );
+    if !provenance.lines().any(|line| line.trim() == expected_tag) {
+        return Err("bound release provenance tag mismatch".into());
+    }
     verified_release(&root)?;
     Ok((temporary, root))
 }
@@ -1204,9 +1255,25 @@ fn verify_local_release(
         || envelope.archive.file.contains('/')
         || envelope.archive.file != format!("processkit-{}.tar.gz", envelope.release.version)
         || !valid_sha256(&envelope.archive.sha256)
+        || envelope.archive.size == 0
+        || envelope.archive.top_level_directory
+            != format!("processkit-{}", envelope.release.version)
+        || !safe_relative(&envelope.archive.top_level_directory)
+        || envelope.archive.top_level_directory.contains('/')
+        || !safe_relative(&envelope.descriptor.file)
+        || !safe_relative(&envelope.provenance.file)
+        || !valid_sha256(&envelope.descriptor.sha256)
+        || !valid_sha256(&envelope.provenance.sha256)
+        || envelope.provenance.generated_for_tag != envelope.release.version
         || !valid_sha256(&envelope.signing.key_id)
     {
         return Err("local release envelope contains an unsafe field".into());
+    }
+    if envelope.descriptor.file != ".processkit/installer/release-descriptor.json"
+        || envelope.provenance.file != "PROVENANCE.toml"
+        || envelope.installer_assets.is_empty()
+    {
+        return Err("local release envelope has an incomplete release identity".into());
     }
 
     let trust_bytes =
@@ -1258,19 +1325,47 @@ fn verify_local_release(
         .ok_or("release envelope has no parent directory")?;
     let archive_path = envelope_root.join(&envelope.archive.file);
     ensure_regular_file(envelope_root, &archive_path, "release archive")?;
+    if fs::metadata(&archive_path)
+        .map_err(|error| format!("release archive metadata: {error}"))?
+        .len()
+        != envelope.archive.size
+    {
+        return Err("release archive size mismatch".into());
+    }
     if digest(&archive_path)? != envelope.archive.sha256 {
         return Err("release archive digest mismatch".into());
     }
-    if let Some(installer) = &envelope.installer {
+    let mut targets = BTreeSet::new();
+    let mut files = BTreeSet::new();
+    for installer in &envelope.installer_assets {
         if !safe_relative(&installer.file)
             || installer.file.contains('/')
             || !valid_sha256(&installer.sha256)
-            || installer.target.trim().is_empty()
+            || installer.size == 0
+            || installer.target.is_empty()
+            || !installer
+                .target
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.'))
+            || installer.file
+                != format!(
+                    "processkit-{}-{}",
+                    envelope.release.version, installer.target
+                )
+            || !targets.insert(installer.target.as_str())
+            || !files.insert(installer.file.as_str())
         {
             return Err("local release envelope contains unsafe installer evidence".into());
         }
         let installer_path = envelope_root.join(&installer.file);
         ensure_regular_file(envelope_root, &installer_path, "installer executable")?;
+        if fs::metadata(&installer_path)
+            .map_err(|error| format!("installer executable metadata: {error}"))?
+            .len()
+            != installer.size
+        {
+            return Err("installer executable size mismatch".into());
+        }
         if digest(&installer_path)? != installer.sha256 {
             return Err("installer executable digest mismatch".into());
         }
@@ -1281,6 +1376,13 @@ fn verify_local_release(
         version: envelope.release.version,
         archive: envelope.archive.file,
         archive_sha256: envelope.archive.sha256,
+        archive_top_level_directory: envelope.archive.top_level_directory,
+        descriptor_file: envelope.descriptor.file,
+        descriptor_sha256: envelope.descriptor.sha256,
+        provenance_file: envelope.provenance.file,
+        provenance_sha256: envelope.provenance.sha256,
+        provenance_generated_for_tag: envelope.provenance.generated_for_tag,
+        installer_asset_count: envelope.installer_assets.len(),
         key_id: envelope.signing.key_id,
     })
 }

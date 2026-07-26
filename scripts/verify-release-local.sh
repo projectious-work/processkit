@@ -57,15 +57,25 @@ jq -e '
   and .release.name == "processkit"
   and (.release.version | type == "string" and length > 0)
   and (.archive.sha256 | test("^[a-f0-9]{64}$"))
+  and (.archive.size | type == "number" and . > 0)
+  and (.archive.topLevelDirectory | type == "string" and length > 0)
+  and (.descriptor.file == ".processkit/installer/release-descriptor.json")
+  and (.descriptor.sha256 | test("^[a-f0-9]{64}$"))
+  and (.provenance.file == "PROVENANCE.toml")
+  and (.provenance.sha256 | test("^[a-f0-9]{64}$"))
+  and (.provenance.generatedForTag == .release.version)
   and .signing.algorithm == "Ed25519"
-  and (
-    (.installer | not)
-    or (
-      (.installer.file | type == "string" and length > 0)
-      and (.installer.sha256 | test("^[a-f0-9]{64}$"))
-      and (.installer.target | type == "string" and length > 0)
-    )
+  and (.installerAssets | type == "array" and length > 0)
+  and all(.installerAssets[];
+    (.file | type == "string" and length > 0)
+    and (.sha256 | test("^[a-f0-9]{64}$"))
+    and (.target | test("^[A-Za-z0-9_.-]+$"))
+    and (.size | type == "number" and . > 0)
   )
+  and ([.installerAssets[].file] | unique | length)
+      == (.installerAssets | length)
+  and ([.installerAssets[].target] | unique | length)
+      == (.installerAssets | length)
 ' "$ENVELOPE" >/dev/null || {
     echo "error: invalid local release envelope" >&2
     exit 1
@@ -87,9 +97,57 @@ VERSION="$(jq -er '.release.version' "$ENVELOPE")"
     echo "error: unsafe archive filename in release envelope" >&2
     exit 1
 }
-ACTUAL="$(sha256sum "$(dirname "$ENVELOPE")/$ARCHIVE" | awk '{print $1}')"
+[[ "$(jq -er '.archive.topLevelDirectory' "$ENVELOPE")" == \
+    "processkit-$VERSION" ]] || {
+    echo "error: archive root and release version disagree" >&2
+    exit 1
+}
+ARCHIVE_PATH="$(dirname "$ENVELOPE")/$ARCHIVE"
+[[ "$(stat -c %s "$ARCHIVE_PATH")" == \
+    "$(jq -er '.archive.size' "$ENVELOPE")" ]] || {
+    echo "error: release archive size mismatch" >&2
+    exit 1
+}
+ACTUAL="$(sha256sum "$ARCHIVE_PATH" | awk '{print $1}')"
 [[ "$ACTUAL" == "$EXPECTED" ]] || {
     echo "error: release archive digest mismatch" >&2
+    exit 1
+}
+ARCHIVE_ROOT="$(jq -er '.archive.topLevelDirectory' "$ENVELOPE")"
+if tar -tzf "$ARCHIVE_PATH" |
+    awk -v root="$ARCHIVE_ROOT/" '
+      $0 != substr(root, 1, length(root) - 1) &&
+      index($0, root) != 1 { exit 1 }
+    ' >/dev/null; then
+    :
+else
+    echo "error: release archive contains an unexpected top-level path" >&2
+    exit 1
+fi
+DESCRIPTOR_FILE="$(jq -er '.descriptor.file' "$ENVELOPE")"
+DESCRIPTOR_EXPECTED="$(jq -er '.descriptor.sha256' "$ENVELOPE")"
+DESCRIPTOR_ACTUAL="$(
+    tar -xOzf "$ARCHIVE_PATH" "$ARCHIVE_ROOT/$DESCRIPTOR_FILE" |
+        sha256sum | awk '{print $1}'
+)"
+[[ "$DESCRIPTOR_ACTUAL" == "$DESCRIPTOR_EXPECTED" ]] || {
+    echo "error: bound release descriptor digest mismatch" >&2
+    exit 1
+}
+PROVENANCE_FILE="$(jq -er '.provenance.file' "$ENVELOPE")"
+PROVENANCE_EXPECTED="$(jq -er '.provenance.sha256' "$ENVELOPE")"
+PROVENANCE_ACTUAL="$(
+    tar -xOzf "$ARCHIVE_PATH" "$ARCHIVE_ROOT/$PROVENANCE_FILE" |
+        sha256sum | awk '{print $1}'
+)"
+[[ "$PROVENANCE_ACTUAL" == "$PROVENANCE_EXPECTED" ]] || {
+    echo "error: bound release provenance digest mismatch" >&2
+    exit 1
+}
+GENERATED_FOR_TAG="$(jq -er '.provenance.generatedForTag' "$ENVELOPE")"
+tar -xOzf "$ARCHIVE_PATH" "$ARCHIVE_ROOT/$PROVENANCE_FILE" |
+    grep -Fx "generated_for_tag = \"$GENERATED_FOR_TAG\"" >/dev/null || {
+    echo "error: bound release provenance tag mismatch" >&2
     exit 1
 }
 CHECKSUM="$(dirname "$ENVELOPE")/$ARCHIVE.sha256"
@@ -99,14 +157,16 @@ CHECKSUM="$(dirname "$ENVELOPE")/$ARCHIVE.sha256"
     sha256sum -c "$(basename "$CHECKSUM")" >/dev/null
 )
 
-if jq -e 'has("installer")' "$ENVELOPE" >/dev/null; then
-    INSTALLER="$(jq -er '.installer.file' "$ENVELOPE")"
-    INSTALLER_EXPECTED="$(jq -er '.installer.sha256' "$ENVELOPE")"
+while IFS= read -r asset; do
+    INSTALLER="$(jq -er '.file' <<<"$asset")"
+    INSTALLER_EXPECTED="$(jq -er '.sha256' <<<"$asset")"
+    INSTALLER_TARGET="$(jq -er '.target' <<<"$asset")"
+    INSTALLER_SIZE="$(jq -er '.size' <<<"$asset")"
     [[ "$INSTALLER" != */* && "$INSTALLER" != *\\* ]] || {
         echo "error: unsafe installer filename in release envelope" >&2
         exit 1
     }
-    [[ "$INSTALLER" == "processkit-$VERSION-"* ]] || {
+    [[ "$INSTALLER" == "processkit-$VERSION-$INSTALLER_TARGET" ]] || {
         echo "error: installer filename and release version disagree" >&2
         exit 1
     }
@@ -115,11 +175,15 @@ if jq -e 'has("installer")' "$ENVELOPE" >/dev/null; then
         echo "error: installer asset missing: $INSTALLER" >&2
         exit 1
     }
+    [[ "$(stat -c %s "$INSTALLER_PATH")" == "$INSTALLER_SIZE" ]] || {
+        echo "error: installer asset size mismatch" >&2
+        exit 1
+    }
     INSTALLER_ACTUAL="$(sha256sum "$INSTALLER_PATH" | awk '{print $1}')"
     [[ "$INSTALLER_ACTUAL" == "$INSTALLER_EXPECTED" ]] || {
         echo "error: installer asset digest mismatch" >&2
         exit 1
     }
-fi
+done < <(jq -c '.installerAssets[]' "$ENVELOPE")
 
 echo "verified local release: $VERSION"
