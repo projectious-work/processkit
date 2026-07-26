@@ -22,11 +22,14 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import shutil
+import subprocess
 import sys
 import tarfile
 import tempfile
 from pathlib import Path
+from pathlib import PurePosixPath
 from types import ModuleType
 
 
@@ -36,6 +39,9 @@ REQUIRED_PATHS = (
     "AGENTS.md",
     "INDEX.md",
     "PROVENANCE.toml",
+    ".processkit/installer/distribution.yaml",
+    ".processkit/installer/release-descriptor.json",
+    ".processkit/installer/schemas/distribution.schema.json",
     "context/.processkit-mcp-manifest.json",
     "context/schemas",
     "context/schemas/src/registry.yaml",
@@ -54,6 +60,11 @@ REQUIRED_PATHS = (
     "context/skills/processkit/skill-management/mcp/server.py",
     "context/skills/processkit/okf-compatibility/mcp/server.py",
 )
+MAX_ARCHIVE_MEMBERS = 10_000
+MAX_ARCHIVE_MEMBER_BYTES = 64 * 1024 * 1024
+MAX_ARCHIVE_TOTAL_BYTES = 256 * 1024 * 1024
+MAX_ARCHIVE_PATH_LENGTH = 1_024
+MAX_ARCHIVE_PATH_DEPTH = 32
 
 
 def _load_module(name: str, path: Path) -> ModuleType:
@@ -84,12 +95,40 @@ def _extract_archive(archive: Path, destination: Path) -> Path:
         members = bundle.getmembers()
         if not members:
             raise RuntimeError(f"archive is empty: {archive}")
+        if len(members) > MAX_ARCHIVE_MEMBERS:
+            raise RuntimeError("archive has too many members")
         destination_resolved = destination.resolve()
+        seen: set[str] = set()
+        total_size = 0
         for member in members:
-            if member.issym() or member.islnk():
+            path = PurePosixPath(member.name)
+            if (
+                not member.name
+                or "\\" in member.name
+                or len(member.name) > MAX_ARCHIVE_PATH_LENGTH
+                or len(path.parts) > MAX_ARCHIVE_PATH_DEPTH
+                or path.is_absolute()
+                or ".." in path.parts
+            ):
+                raise RuntimeError(f"unsafe archive member: {member.name}")
+            normalized = str(path)
+            if normalized in seen:
+                raise RuntimeError(f"duplicate archive member: {member.name}")
+            seen.add(normalized)
+            if member.issym() or member.islnk() or not (
+                member.isfile() or member.isdir()
+            ):
                 raise RuntimeError(
-                    f"archive links are not supported: {member.name}"
+                    f"archive member type is not supported: {member.name}"
                 )
+            if member.isfile():
+                if member.size > MAX_ARCHIVE_MEMBER_BYTES:
+                    raise RuntimeError(
+                        f"archive member exceeds size limit: {member.name}"
+                    )
+                total_size += member.size
+                if total_size > MAX_ARCHIVE_TOTAL_BYTES:
+                    raise RuntimeError("archive exceeds total size limit")
             target = (destination / member.name).resolve()
             if (
                 destination_resolved not in target.parents
@@ -101,11 +140,7 @@ def _extract_archive(archive: Path, destination: Path) -> Path:
         else:
             bundle.extractall(destination)
 
-    top_level = {
-        Path(member.name).parts[0]
-        for member in members
-        if member.name
-    }
+    top_level = {PurePosixPath(member.name).parts[0] for member in members}
     if len(top_level) != 1:
         raise RuntimeError(
             "package archive must contain one top-level directory"
@@ -134,8 +169,75 @@ def _validate_layout(distribution_root: Path) -> None:
         rendered = "\n".join(f"  - {failure}" for failure in failures)
         raise RuntimeError(f"staged MCP metadata is invalid:\n{rendered}")
 
+    installer_validator = _load_module(
+        "verify_installer_contract",
+        REPO_ROOT / "scripts" / "verify-installer-contract.py",
+    )
+    installer_failures = installer_validator.validate(distribution_root)
+    if installer_failures:
+        rendered = "\n".join(f"  - {failure}" for failure in installer_failures)
+        raise RuntimeError(f"staged installer contract is invalid:\n{rendered}")
 
-def run(release_root: Path | None, archive: Path | None) -> None:
+
+def _run_installer_planner(
+    planner_source: Path,
+    distribution_root: Path,
+    workspace: Path,
+) -> None:
+    """Exercise the Rust planner against the exact extracted artifact."""
+    manifest = planner_source / "Cargo.toml"
+    if not manifest.is_file():
+        raise RuntimeError(
+            f"installer planner workspace is missing Cargo.toml: {planner_source}"
+        )
+    project_root = workspace / "installer-project"
+    project_root.mkdir()
+    command = [
+        "cargo",
+        "run",
+        "--quiet",
+        "--locked",
+        "--manifest-path",
+        str(manifest),
+        "--",
+        "plan",
+        "--root",
+        str(project_root),
+        "--distribution",
+        str(distribution_root),
+        "--profile",
+        "managed",
+        "--dry-run",
+        "--json",
+    ]
+    completed = subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode:
+        raise RuntimeError(
+            "installer planner failed against extracted artifact:\n"
+            f"{completed.stderr}"
+        )
+    try:
+        plan = json.loads(completed.stdout)
+    except json.JSONDecodeError as error:
+        raise RuntimeError(
+            f"installer planner did not emit JSON: {error}"
+        ) from error
+    if plan.get("status") != "planned":
+        raise RuntimeError(f"installer planner rejected extracted artifact: {plan}")
+    if any(project_root.iterdir()):
+        raise RuntimeError("installer planner mutated its disposable project")
+
+
+def run(
+    release_root: Path | None,
+    archive: Path | None,
+    planner_source: Path | None = None,
+) -> None:
     workspace = Path(tempfile.mkdtemp(prefix="processkit-package-smoke-"))
     try:
         if archive is None:
@@ -146,6 +248,10 @@ def run(release_root: Path | None, archive: Path | None) -> None:
         extracted.mkdir()
         distribution_root = _extract_archive(archive.resolve(), extracted)
         _validate_layout(distribution_root)
+        if planner_source is not None:
+            _run_installer_planner(
+                planner_source.resolve(), distribution_root, workspace
+            )
 
         generator = _load_module(
             "processkit_schema_generation",
@@ -184,8 +290,16 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="existing processkit release archive to extract and test",
     )
+    parser.add_argument(
+        "--planner-source",
+        type=Path,
+        help=(
+            "Rust installer workspace used to plan against the extracted "
+            "artifact (release gate only)"
+        ),
+    )
     args = parser.parse_args(argv)
-    run(args.release_root, args.archive)
+    run(args.release_root, args.archive, args.planner_source)
     return 0
 
 

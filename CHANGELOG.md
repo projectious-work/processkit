@@ -5,10 +5,50 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v1.0.0-alpha.2] - 2026-07-25
+
+v1.0.0-alpha.2 is a standalone installer and local-release alpha. It
+establishes processkit as the upstream contract: aibox may consume the
+release, but processkit build, verification, and acceptance do not require
+aibox.
+
+### Added
+
+- Added a native Rust installer with opaque request/result contracts for
+  plan, install, update, verify, recover, and uninstall operations.
+- Added transactional ownership state, three-way managed-file updates,
+  user-drift preservation, recovery journals, and repeatable uninstall.
+- Added local Ed25519 release signing and trust-store verification for the
+  archive and the platform-specific installer executable.
+- Added local-only build, test, release, and tamper-validation scripts with
+  no GitHub Actions or hosted-CI dependency.
+
+### Changed
+
+- Bound the installer executable version, distribution version, signed
+  envelope, and release archive to the same v1 alpha version.
+- Made aibox an optional downstream integration consumer rather than a
+  processkit release prerequisite.
+
+### Verification
+
+- `scripts/test-installer-local.sh`
+- `scripts/build-installer-local.sh v1.0.0-alpha.2`
+- `scripts/release-local.sh v1.0.0-alpha.2 <private-key> <public-key>`
+
+---
+
 ## [Unreleased]
 
 ### Added
 
+- Added a locally built Hugo Extended and Docsy documentation site modeled on
+  kubeclaw, with projectious-work branding, a pinned local toolchain, link and
+  privacy gates, and a local `gh-pages` publication script.
+- Added a required signed installer-asset matrix with unique target/file
+  identities, byte sizes, and digest verification.
+- Added signed archive-root, release-descriptor, and provenance bindings with
+  extraction-time verification.
 - Added v1 lifecycle MCP servers for Capability, Proposition/Risk, and
   package-backed Skill entities, including schema validation, interface
   indexing, lifecycle events, and gateway exposure.
@@ -40,6 +80,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Migrated the maintained documentation corpus from Docusaurus to Hugo content
+  and removed the Docusaurus runtime. Documentation builds and publication do
+  not use GitHub Actions or workflow files.
 - Canonicalized Scope writes as `Container(kind=scope)` while preserving the
   public Scope API and date-only inputs.
 - Projected package `SKILL.md` manifests into the v1 index instead of

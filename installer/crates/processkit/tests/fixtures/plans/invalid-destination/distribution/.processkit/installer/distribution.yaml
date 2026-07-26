@@ -1,0 +1,18 @@
+apiVersion: processkit.projectious.work/distribution/v1alpha1
+kind: Distribution
+metadata:
+  name: fixture-processkit
+  version: 0.0.0-test
+spec:
+  installer:
+    protocol: processkit.projectious.work/installer/v1alpha1
+  components:
+    - id: payload
+      source:
+        include: [payload/**]
+      destination: ../escape
+      operation: copy/v1
+      ownership: managed-three-way
+  profiles:
+    managed:
+      include: [payload]

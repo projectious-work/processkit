@@ -150,7 +150,7 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Documentation](docs-site/docs/intro.md)
+- [Documentation](docs-site/content/en/docs/_index.md)
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
@@ -176,7 +176,7 @@ latest command metadata drift fixes.
 Common local checks:
 
 ```sh
-npm --prefix docs-site run build
+scripts/check-docs-local.sh
 uv run scripts/generate-v1-schemas.py --check
 uv run scripts/smoke-test-servers.py
 uv run scripts/smoke-test-package.py
@@ -196,5 +196,9 @@ Release packaging is guarded by:
 
 ```sh
 scripts/check-src-context-drift.sh --release-deliverable
-scripts/build-release-tarball.sh vX.Y.Z
+scripts/test-installer-local.sh
+scripts/release-local.sh vX.Y.Z <private-key.pem> <public-key.pem>
 ```
+
+See [Local release operation](docs-site/content/en/docs/installer/local-release.md)
+for the agent-first, human-operable signing and verification workflow.

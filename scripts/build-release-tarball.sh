@@ -46,6 +46,18 @@ STAGING_PARENT="$(mktemp -d)"
 STAGING_DIR="$STAGING_PARENT/processkit-$VERSION"
 TARBALL="$DIST_DIR/processkit-$VERSION.tar.gz"
 CHECKSUM="$TARBALL.sha256"
+export UV_OFFLINE=1
+export CARGO_NET_OFFLINE=true
+
+if ! command -v cc >/dev/null; then
+    RUST_TARGET="$(rustc -vV | awk '/^host:/ {print $2}')"
+    LINKER_VARIABLE="CARGO_TARGET_$(
+        tr '[:lower:]-' '[:upper:]_' <<<"$RUST_TARGET"
+    )_LINKER"
+    export "$LINKER_VARIABLE"="$REPO_ROOT/scripts/zig-cc-local.sh"
+    export ZIG_GLOBAL_CACHE_DIR="${TMPDIR:-/tmp}/processkit-zig-global"
+    export ZIG_LOCAL_CACHE_DIR="${TMPDIR:-/tmp}/processkit-zig-local"
+fi
 
 cleanup() {
     rm -rf "$STAGING_PARENT"
@@ -56,6 +68,8 @@ if [[ ! -d "$SRC_DIR" ]]; then
     echo "error: $SRC_DIR not found — must run from a processkit checkout" >&2
     exit 1
 fi
+
+"$REPO_ROOT/scripts/check-release-version-local.sh" "$VERSION"
 
 # A release archive is only useful when its changelog names the exact version.
 # Keep this guard before staging so a missing or stale entry cannot reach a
@@ -86,8 +100,23 @@ mkdir -p "$STAGING_DIR"
 
 # Verify rather than mutate tracked release metadata during a build.
 echo "checking MCP-config manifest" >&2
-if ! PROCESSKIT_VERSION="$VERSION" uv run "$REPO_ROOT/scripts/generate-mcp-manifest.py" --check; then
+if ! PROCESSKIT_VERSION="$VERSION" uv run --offline \
+        "$REPO_ROOT/scripts/generate-mcp-manifest.py" --check; then
     echo "error: MCP manifest is stale; regenerate and commit it before tagging" >&2
+    exit 1
+fi
+
+echo "checking installer contract" >&2
+if ! uv run --offline "$REPO_ROOT/scripts/verify-installer-contract.py" \
+        "$SRC_DIR"; then
+    echo "error: installer contract is invalid or incomplete." >&2
+    exit 1
+fi
+
+echo "testing installer planner" >&2
+if ! cargo test --offline --locked \
+        --manifest-path "$REPO_ROOT/installer/Cargo.toml"; then
+    echo "error: installer planner tests failed." >&2
     exit 1
 fi
 
@@ -104,7 +133,9 @@ if ! "$REPO_ROOT/scripts/check-src-context-drift.sh" --release-deliverable; then
 fi
 
 echo "running release audit: src/context deliverable" >&2
-if ! uv run --script "$REPO_ROOT/context/skills/processkit/release-audit/scripts/release_audit.py" --tree=src-context; then
+if ! uv run --offline --script \
+        "$REPO_ROOT/context/skills/processkit/release-audit/scripts/release_audit.py" \
+        --tree=src-context; then
     echo "" >&2
     echo "error: release audit failed for src/context/." >&2
     exit 1
@@ -161,8 +192,17 @@ if ! "$REPO_ROOT/scripts/validate-release-mcp-preauth.py" \
     exit 1
 fi
 
+if ! uv run --offline "$REPO_ROOT/scripts/verify-installer-contract.py" \
+        "$ARTIFACT_CHECK_PARENT/processkit-$VERSION"; then
+    echo "" >&2
+    echo "error: release artifact guard failed — installer contract is stale." >&2
+    exit 1
+fi
+
 echo "running release artifact gate: disposable-project acceptance" >&2
-if ! uv run "$REPO_ROOT/scripts/smoke-test-package.py" --archive "$TARBALL"; then
+if ! uv run --offline "$REPO_ROOT/scripts/smoke-test-package.py" \
+        --archive "$TARBALL" \
+        --planner-source "$REPO_ROOT/installer"; then
     echo "" >&2
     echo "error: release artifact gate failed — disposable-project acceptance failed." >&2
     exit 1
@@ -177,5 +217,4 @@ echo
 echo "built:"
 ls -lh "$TARBALL" "$CHECKSUM"
 echo
-echo "to upload as a release asset:"
-echo "    gh release upload $VERSION $TARBALL $CHECKSUM"
+echo "publication is separate; sign and verify with scripts/release-local.sh"

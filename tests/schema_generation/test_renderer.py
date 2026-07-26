@@ -25,32 +25,16 @@ def _load_module(name: str, path: Path):
 
 
 generation = _load_module("schema_generation_test", MODULE_PATH)
+REGISTRY_KINDS = list(
+    yaml.safe_load((SCHEMAS_ROOT / "src/registry.yaml").read_text())["kinds"]
+)
 
 
 def test_committed_generation_is_current() -> None:
     result = generation.regenerate_schemas(SCHEMAS_ROOT, check=True)
     assert result == {
         "rebuilt": [],
-        "unchanged": [
-            "workitem",
-            "decisionrecord",
-            "binding",
-            "logentry",
-            "artifact",
-            "gate",
-            "proposition",
-            "risk",
-            "actor",
-            "role",
-            "capability",
-            "skill",
-            "container",
-            "scope",
-            "command",
-            "event",
-            "teammember",
-            "migration",
-        ],
+        "unchanged": REGISTRY_KINDS,
         "errors": {},
     }
 
@@ -77,26 +61,7 @@ def test_full_generation_is_deterministic(tmp_path: Path) -> None:
     second_bytes = {
         path.name: path.read_bytes() for path in sorted(tmp_path.glob("*.yaml"))
     }
-    assert first["rebuilt"] == [
-        "workitem",
-        "decisionrecord",
-        "binding",
-        "logentry",
-        "artifact",
-        "gate",
-        "proposition",
-        "risk",
-        "actor",
-        "role",
-        "capability",
-        "skill",
-        "container",
-        "scope",
-        "command",
-        "event",
-        "teammember",
-        "migration",
-    ]
+    assert first["rebuilt"] == REGISTRY_KINDS
     assert second["rebuilt"] == []
     assert first_bytes == second_bytes
 

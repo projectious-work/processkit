@@ -28,6 +28,73 @@ alpha_concepts:
   - Risk
   - Scope
   - Migration
+beta_concepts:
+  terminology:
+    - State
+    - Transition
+    - StateMachine
+    - Lifecycle
+    - Constraint
+    - Guard
+    - Identity
+    - Versioning
+    - Ownership
+    - Immutability
+    - Schema
+    - Composition
+    - Inheritance
+    - Uniqueness
+    - Interface
+    - ValidationMode
+    - Provenance
+    - Visibility
+    - Cardinality
+  primitives:
+    - Actor
+    - Artifact
+    - Binding
+    - Capability
+    - Channel
+    - Command
+    - Container
+    - Event
+    - Gate
+    - Location
+    - Note
+    - Outcome
+    - Policy
+    - Proposition
+    - Queue
+    - Record
+    - Recurrence
+    - Resource
+    - Role
+    - Skill
+    - Specification
+    - WorkItem
+  discriminators:
+    - Risk
+    - Belief
+    - WorldFact
+    - WSJFEstimate
+    - Assumption
+    - Scope
+    - Hierarchy
+    - Position
+  compositions:
+    - TeamMember
+    - DecisionRecord
+    - LogEntry
+    - Migration
+    - ProcessSpecification
+    - GoalSpecification
+    - RoleSpecification
+    - GateSpecification
+    - SchemaSpecification
+    - ScheduleSpecification
+    - TestSpecification
+    - ChannelSpecification
+    - QueueSpecification
 kinds:
   workitem:
     source: primitives/workitem.yaml
@@ -93,3 +160,96 @@ kinds:
   migration:
     source: compositions/migration.yaml
     output: migration.yaml
+  channel:
+    source: primitives/channel.yaml
+    output: channel.yaml
+  location:
+    source: primitives/location.yaml
+    output: location.yaml
+  note:
+    source: primitives/note.yaml
+    output: note.yaml
+  outcome:
+    source: primitives/outcome.yaml
+    output: outcome.yaml
+  policy:
+    source: primitives/policy.yaml
+    output: policy.yaml
+  queue:
+    source: primitives/queue.yaml
+    output: queue.yaml
+  record:
+    source: primitives/record-kind.yaml
+    output: record-kind.yaml
+  recurrence:
+    source: primitives/recurrence.yaml
+    output: recurrence.yaml
+  resource:
+    source: primitives/resource.yaml
+    output: resource.yaml
+  specification:
+    source: primitives/specification.yaml
+    output: specification.yaml
+  belief:
+    class: discriminator
+    parent: proposition
+    discriminator: {field: kind, value: belief}
+    source: discriminators/belief.yaml
+    output: proposition-belief.yaml
+  worldfact:
+    class: discriminator
+    parent: proposition
+    discriminator: {field: kind, value: world-fact}
+    source: discriminators/worldfact.yaml
+    output: proposition-worldfact.yaml
+  wsjfestimate:
+    class: discriminator
+    parent: proposition
+    discriminator: {field: kind, value: wsjf-estimate}
+    source: discriminators/wsjfestimate.yaml
+    output: proposition-wsjf-estimate.yaml
+  assumption:
+    class: discriminator
+    parent: proposition
+    discriminator: {field: kind, value: assumption}
+    source: discriminators/assumption.yaml
+    output: proposition-assumption.yaml
+  hierarchy:
+    class: discriminator
+    parent: binding
+    discriminator: {field: type, value: hierarchy}
+    source: discriminators/hierarchy.yaml
+    output: binding-hierarchy.yaml
+  position:
+    class: discriminator
+    parent: binding
+    discriminator: {field: type, value: position}
+    source: discriminators/position.yaml
+    output: binding-position.yaml
+  processspecification:
+    source: compositions/processspecification.yaml
+    output: processspecification.yaml
+  goalspecification:
+    source: compositions/goalspecification.yaml
+    output: goalspecification.yaml
+  rolespecification:
+    source: compositions/rolespecification.yaml
+    output: rolespecification.yaml
+  gatespecification:
+    source: compositions/gatespecification.yaml
+    output: gatespecification.yaml
+  schemaspecification:
+    source: compositions/schemaspecification.yaml
+    output: schemaspecification.yaml
+  schedulespecification:
+    source: compositions/schedulespecification.yaml
+    output: schedulespecification.yaml
+  testspecification:
+    source: compositions/testspecification.yaml
+    output: testspecification.yaml
+  channelspecification:
+    source: compositions/channelspecification.yaml
+    output: channelspecification.yaml
+  queuespecification:
+    source: compositions/queuespecification.yaml
+    output: queuespecification.yaml

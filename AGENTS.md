@@ -189,14 +189,14 @@ session until the gateway lifecycle is proven stable.
 ## Setup
 
 ```sh
-npm --prefix docs-site install && npm --prefix docs-site run build
+scripts/setup-docs-local.sh && scripts/check-docs-local.sh
 uv run scripts/smoke-test-servers.py
 ```
 
 <!-- pk-managed:pk-commands BEGIN -->
 <!-- pk-commands BEGIN -->
 <!--
-build: "npm --prefix docs-site run build"
+build: "scripts/build-docs-local.sh"
 test: "uv run scripts/smoke-test-servers.py"
 lint: ""
 fmt: ""

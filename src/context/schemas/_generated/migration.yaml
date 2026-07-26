@@ -140,3 +140,9 @@ spec:
     - required:
       - from_version
       - to_version
+  known_kinds:
+  - source-upgrade
+  - schema-extension
+  - data-fix
+  - runtime
+  - content
