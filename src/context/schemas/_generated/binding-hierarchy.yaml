@@ -2,9 +2,9 @@
 apiVersion: processkit.projectious.work/v2
 kind: Schema
 metadata:
-  id: SCHEMA-binding
+  id: SCHEMA-binding-hierarchy
   target_kind: Binding
-  version: 2.0.0-alpha.1
+  version: 1.0.0-beta.1
   created: 2026-04-07 00:00:00+00:00
   updated: 2026-04-22 00:00:00+00:00
 spec:
@@ -16,21 +16,7 @@ spec:
   generation:
     source: context/schemas/src
     format: processkit-schema-source-v1
-  description: "A scoped, temporal, attribute-bearing relationship between two entities.\
-    \ The junction-table pattern promoted to a primitive (DEC-023). Use a Binding\
-    \ when a relationship has scope, time, or its own attributes; otherwise prefer\
-    \ a frontmatter cross-reference. Bindings are descriptive \u2014 there is no\
-    \ enforcement attached.\nv1.1.0 change (DEC-20260422_0234-LoyalComet): added\
-    \ conditional validation for type='model-assignment' bindings, enumerating the\
-    \ fields used by the 8-layer resolution precedence.\nv2.0.0 model routing change\
-    \ (DEC-20260503_1424-ShinyBear, DEC-20260503_1424-WiseBird, DEC-20260503_1829-LoyalComet):\
-    \ default model-assignment bindings from Roles and TeamMembers target Artifact(kind=model-profile)\
-    \ entities. Profiles expand to concrete Artifact(kind=model-spec) candidates\
-    \ after runtime access gates are applied. Direct model-spec targets remain valid\
-    \ for explicit pins, project overrides, and compatibility. model-recommender\
-    \ JSON is a projection/cache, not a canonical binding target.\nv2.0.0 change:\
-    \ Binding type is a closed vocabulary declared in spec.known_types. Forks extend\
-    \ the vocabulary through schema-extension migrations rather than ad hoc values.\n"
+  description: A canonical parent-child relationship.
   id_prefix: BIND
   state_machine: null
   default_directory: context/bindings
@@ -73,6 +59,7 @@ spec:
         description: 'Closed v2 binding type declared in spec.known_types.
 
           '
+        const: hierarchy
       subject:
         type: string
         description: ID of the entity on the from side of the relationship.
@@ -357,3 +344,7 @@ spec:
               rationale:
                 type: string
                 description: Why this TeamMember was placed in this slot.
+  parent: Binding
+  discriminator:
+    field: type
+    value: hierarchy

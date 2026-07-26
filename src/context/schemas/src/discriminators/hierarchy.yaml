@@ -1,0 +1,13 @@
+extends: ../primitives/binding.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-binding-hierarchy, target_kind: Binding, version: 1.0.0-beta.1}
+spec:
+  parent: Binding
+  discriminator: {field: type, value: hierarchy}
+  description: A canonical parent-child relationship.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value:
+        type: {const: hierarchy}

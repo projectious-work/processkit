@@ -2,9 +2,9 @@
 apiVersion: processkit.projectious.work/v2
 kind: Schema
 metadata:
-  id: SCHEMA-proposition
+  id: SCHEMA-proposition-worldfact
   target_kind: Proposition
-  version: 1.0.0-alpha.1
+  version: 1.0.0-beta.1
   created: 2026-07-22 00:00:00+00:00
 spec:
   interfaces:
@@ -15,11 +15,7 @@ spec:
   generation:
     source: context/schemas/src
     format: processkit-schema-source-v1
-  description: 'A claim about the world, work, risk, belief, forecast, estimate,
-    or assumption. Discriminator variants refine the epistemic contract while preserving
-    one Proposition identity and query surface.
-
-    '
+  description: An externally grounded factual proposition.
   id_prefix: PROP
   state_machine: null
   default_directory: context/propositions
@@ -36,6 +32,7 @@ spec:
     required:
     - kind
     - statement
+    - source
     additionalProperties: true
     properties:
       kind:
@@ -48,6 +45,7 @@ spec:
         - wsjf-estimate
         - assumption
         description: Proposition discriminator.
+        const: world-fact
       statement:
         type: string
         minLength: 1
@@ -98,3 +96,12 @@ spec:
         - string
         - 'null'
         pattern: ^PROP-[a-zA-Z0-9_-]+$
+      observed_at:
+        type:
+        - string
+        - 'null'
+        format: date-time
+  parent: Proposition
+  discriminator:
+    field: kind
+    value: world-fact

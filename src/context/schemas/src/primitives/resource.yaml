@@ -1,0 +1,21 @@
+extends: [../fragments/entity.yaml, ../fragments/versioned.yaml]
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-resource, target_kind: Resource, version: 1.0.0-beta.1}
+spec:
+  description: A consumed, allocated, or governed asset or capacity.
+  id_prefix: RES
+  state_machine: null
+  default_directory: context/resources
+  known_kinds: [budget, compute, environment, credential, material, tool]
+  spec_schema:
+    type: object
+    required: [name, kind]
+    additionalProperties: true
+    properties:
+      name: {type: string, minLength: 1}
+      kind:
+        type: string
+        enum: [budget, compute, environment, credential, material, tool]
+      capacity: {}
+      owner: {type: [string, "null"]}

@@ -2,9 +2,9 @@
 apiVersion: processkit.projectious.work/v2
 kind: Schema
 metadata:
-  id: SCHEMA-proposition
+  id: SCHEMA-proposition-assumption
   target_kind: Proposition
-  version: 1.0.0-alpha.1
+  version: 1.0.0-beta.1
   created: 2026-07-22 00:00:00+00:00
 spec:
   interfaces:
@@ -15,11 +15,7 @@ spec:
   generation:
     source: context/schemas/src
     format: processkit-schema-source-v1
-  description: 'A claim about the world, work, risk, belief, forecast, estimate,
-    or assumption. Discriminator variants refine the epistemic contract while preserving
-    one Proposition identity and query surface.
-
-    '
+  description: A premise accepted temporarily to enable action.
   id_prefix: PROP
   state_machine: null
   default_directory: context/propositions
@@ -48,6 +44,7 @@ spec:
         - wsjf-estimate
         - assumption
         description: Proposition discriminator.
+        const: assumption
       statement:
         type: string
         minLength: 1
@@ -98,3 +95,16 @@ spec:
         - string
         - 'null'
         pattern: ^PROP-[a-zA-Z0-9_-]+$
+      validation_due:
+        type:
+        - string
+        - 'null'
+        format: date-time
+      validation_method:
+        type:
+        - string
+        - 'null'
+  parent: Proposition
+  discriminator:
+    field: kind
+    value: assumption

@@ -24,6 +24,23 @@ Coverage is counted by ontology category:
 The alpha's 18 generated contracts are the first dependency-complete slice of
 this target.
 
+## Implementation Status
+
+The beta inventory is now frozen in
+`src/context/schemas/src/registry.yaml` and contains exactly 62 unique
+concepts:
+
+- all 19 foundational terminology concepts
+- all 22 atomic primitives
+- the 8 selected discriminators
+- the 13 selected compositions
+
+The executable portion produces 43 generated schema contracts. The difference
+between 62 concepts and 43 schemas is intentional: terminology concepts are
+reusable schema and lifecycle mechanics rather than independently persisted
+entity kinds. A contract test enforces the four category counts, uniqueness,
+and presence of every generated output.
+
 ## Selected Discriminators
 
 The beta discriminator set is:
@@ -77,4 +94,4 @@ Beta promotion requires:
 - OKF export and import conformance
 - at least one end-to-end process cycle using the beta model
 - deterministic generation, fixture, package, docs, and release-audit checks
-  passing in CI
+  passing through the local release gate
