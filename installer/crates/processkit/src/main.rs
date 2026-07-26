@@ -2099,10 +2099,21 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
             ));
         }
     }
+    let installer_created_adapters: HashSet<String> = old
+        .owned_paths
+        .iter()
+        .filter(|path| {
+            path.ownership == "managed-keys" && path.operation == "managed-keys-create/v1"
+        })
+        .map(|path| path.path.clone())
+        .collect();
     let adapter_changes = adapter_actions(root, distribution, &old.harnesses, true)?;
     old.owned_paths
         .retain(|path| path.ownership != "managed-keys");
-    for (action, owned) in adapter_changes {
+    for (action, mut owned) in adapter_changes {
+        if installer_created_adapters.contains(&owned.path) {
+            owned.operation = "managed-keys-create/v1".into();
+        }
         pending.push(action);
         old.owned_paths.push(owned);
     }
