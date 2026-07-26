@@ -42,6 +42,9 @@ aibox.
 
 ### Added
 
+- Added a locally built Hugo Extended and Docsy documentation site modeled on
+  kubeclaw, with projectious-work branding, a pinned local toolchain, link and
+  privacy gates, and a local `gh-pages` publication script.
 - Added a required signed installer-asset matrix with unique target/file
   identities, byte sizes, and digest verification.
 - Added signed archive-root, release-descriptor, and provenance bindings with
@@ -77,6 +80,9 @@ aibox.
 
 ### Changed
 
+- Migrated the maintained documentation corpus from Docusaurus to Hugo content
+  and removed the Docusaurus runtime. Documentation builds and publication do
+  not use GitHub Actions or workflow files.
 - Canonicalized Scope writes as `Container(kind=scope)` while preserving the
   public Scope API and date-only inputs.
 - Projected package `SKILL.md` manifests into the v1 index instead of

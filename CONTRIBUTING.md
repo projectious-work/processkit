@@ -92,8 +92,8 @@ the `mcp` CLI's `dev` command, etc.).
    package tier, add it to `src/.processkit/packages/managed.yaml` (or
    higher).
 6. Update `src/context/skills/INDEX.md` if appropriate.
-7. Add the skill to `docs-site/sidebars.js` under the right catalog
-   page if it deserves a docs entry.
+7. Add the skill to the appropriate page under
+   `docs-site/content/en/docs/skills/` if it deserves a docs entry.
 
 ## Adding a new primitive
 
@@ -108,7 +108,7 @@ the `mcp` CLI's `dev` command, etc.).
 5. Add a management skill at `src/skills/<kind>-management/` (Layer 1–4
    depending on dependencies).
 6. Optionally ship an MCP server (`mcp/server.py`).
-7. Update `docs-site/docs/primitives/overview.md`.
+7. Update `docs-site/content/en/docs/primitives/overview.md`.
 
 ## Adding a new MCP server
 
@@ -119,7 +119,8 @@ the `mcp` CLI's `dev` command, etc.).
 4. Register tools with `@server.tool()` decorators.
 5. Add `mcp-config.json` and `README.md`.
 6. Extend `scripts/smoke-test-servers.py` to exercise the new tools.
-7. Add a section to `docs-site/docs/mcp-servers/overview.md`.
+7. Add a section to
+   `docs-site/content/en/docs/mcp-servers/overview.md`.
 
 ### Foundation dependencies
 
@@ -213,11 +214,12 @@ To release a new tag:
    Publication is deliberately separate from release creation and trust.
 9. **Build and review the documentation locally:**
    ```bash
-   npm --prefix docs-site run build
-   npm --prefix docs-site run serve
+   scripts/check-docs-local.sh
+   scripts/serve-docs-local.sh
    ```
-   Do not add GitHub Actions or a GitHub Pages dependency to the release
-   path.
+   Do not add GitHub Actions or workflow files. The local publish script
+   pushes prebuilt output to the `gh-pages` branch; GitHub Pages does not
+   build the site.
 
 ## Backlog and tracked work
 
