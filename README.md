@@ -1,31 +1,51 @@
 # processkit
 
-**Provider-neutral process memory, skills, and MCP tools for agentic
-software projects.**
+**A provider-neutral process and project-memory layer for agentic software
+projects.**
 
-processkit gives AI coding agents a structured project context they can
-read and write through validated tools instead of ad hoc Markdown,
-untracked scratch files, or provider-specific conventions.
+processkit gives coding agents a shared, versioned project state they can read
+and change through validated tools. Work, decisions, migrations, and audit
+events remain explicit instead of disappearing into prompts, scratch files,
+or provider-specific conventions.
 
-It ships as a versioned content and runtime layer that can be used
-directly with MCP-capable harnesses, installed manually into an existing
-repository, or wired by an external environment manager.
+> **Maturity: usable project in active development; pre-1.0.**
+> Current prereleases support end-to-end local installation and validated MCP
+> workflows, but contracts may still change between prereleases. Pin exact
+> versions, read the release notes before updating, and test upgrades against
+> a disposable copy of your project.
 
-## Highlights
+## See the process, not just the prompt
 
-- **140 skills** for software delivery, product work, research,
-  documentation, data, design, devops, and processkit operations.
-- **25 MCP server entry points** for validated reads, writes, discovery,
-  routing, release checks, and gateway access.
-- **16 project-memory schemas** covering WorkItems, Decisions,
-  Artifacts, Notes, Logs, Migrations, Actors, Roles, Bindings, Scopes,
-  Gates, Discussions, and related primitives.
-- **5 package tiers** so projects can choose a small bootstrap context
-  or a fuller managed workspace.
-- **One-process MCP gateway** for low-memory environments, plus
-  per-skill MCP servers for granular compatibility.
-- **Provider-neutral by design**: Claude, Codex, OpenCode, Hermes, Aider,
-  and other harnesses are integration targets, not dependencies.
+A minimal processkit workflow creates a typed WorkItem, moves it through a
+validated state transition, and reads back the resulting state and event:
+
+```text
+create_workitem(
+  title="Add release verification",
+  type="story",
+  priority="high"
+)
+transition_workitem(id="<returned-id>", to_state="in-progress")
+get_workitem(id="<returned-id>")
+events_for_subject(subject="<returned-id>")
+```
+
+These are MCP tool calls, so the same workflow is available to any configured
+MCP client. Invalid transitions are rejected before the entity changes, while
+successful transitions write both the new state and an auditable LogEntry.
+The extracted-package smoke test executes this workflow in a disposable
+project and verifies the resulting entities and events:
+[`scripts/smoke-test-package.py`](scripts/smoke-test-package.py).
+
+## Capability status
+
+| Surface | Implemented now | Compatibility | Planned or stabilizing |
+| --- | --- | --- | --- |
+| MCP runtime | One-process gateway and per-skill servers | Aggregate server retained for older integrations | Additional harness-specific transport validation |
+| Project memory | Validated entities, state transitions, indexing, events, migrations | Explicit v0-to-v1 compatibility manifests | Further v1 vocabulary stabilization |
+| Installer | Local `plan`, `install`, `update`, `verify`, recovery, and conservative `uninstall` | Selected v0 layouts detected from explicit evidence | More platform release assets and successive prerelease upgrade coverage |
+| Harness projections | Canonical MCP catalog with Codex and Claude adapters | Existing user-owned configuration is preserved or reported as a conflict | Broader first-class harness acceptance |
+| Packages and profiles | Release-owned distribution manifest and managed profile | Manual archive copying remains documented for older releases | Profile contract stabilization before v1 GA |
 
 ## Why processkit?
 
@@ -56,10 +76,29 @@ the same reliable process surface.
 | Packaging | Minimal, managed, product, research, and software context packages |
 | Docs and checks | Documentation source, smoke tests, release audit helpers, drift checks, and tarball packaging scripts |
 
-## Manual Use
+## Standalone installation
 
-Download a release tarball and copy the shipped context into your
-project:
+The v1 prerelease includes a local standalone installer. Download the release
+archive and its matching installer asset, verify the published checksums and
+trust material, then plan before applying:
+
+```sh
+processkit plan --root . --profile managed --harness codex
+processkit install --root . --profile managed --harness codex
+processkit verify --root .
+```
+
+Updates are three-way reconciled against target-side provenance; user changes
+are preserved or surfaced as conflicts. Uninstall removes only unchanged paths
+whose ownership processkit can prove. See the
+[installer contract](docs-site/content/en/docs/installer/contract.md),
+[local release and verification workflow](docs-site/content/en/docs/installer/local-release.md),
+and [threat model](docs-site/content/en/docs/installer/threat-model.md).
+
+### Manual compatibility path
+
+Older v0 releases do not contain the standalone installer. Their manual,
+version-pinned archive path remains:
 
 ```sh
 curl -L \
@@ -162,14 +201,18 @@ otherwise, the project maintainers intend the MIT License in this
 repository to apply retroactively to all historical commits, tags, and
 release artifacts for this repository.
 
-## Status
+## Current release facts
 
-processkit is currently pre-1.0. Breaking changes can still land in
-minor releases, and release notes call them out explicitly.
+The repository is on the v1 prerelease line. Counts such as skill, schema, and
+tool totals are generated release facts rather than maturity claims; run the
+package smoke test to print the current extracted-release tool count. Exact
+support and compatibility changes are recorded in the
+[changelog](CHANGELOG.md) and each GitHub release.
 
-`v0.27.1` is the current patch release. It keeps the v2 deliverable
-boundary, clears derived-project doctor warnings, and includes the
-latest command metadata drift fixes.
+processkit's operating-model direction and architectural boundaries are owned
+by the project maintainer. AI agents assist with research, implementation,
+testing, and documentation under the repository's review, decision-record,
+and local release gates.
 
 ## Development
 
