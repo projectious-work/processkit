@@ -34,6 +34,16 @@
         "algorithm": {"const": "Ed25519"},
         "keyId": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
       }
+    },
+    "installer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "sha256", "target"],
+      "properties": {
+        "file": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "target": {"type": "string", "minLength": 1}
+      }
     }
   }
 }

@@ -14,12 +14,74 @@
         "uninstalled", "recovered", "verified", "drifted"
       ]
     },
-    "changes": {"type": "array"},
-    "conflicts": {"type": "array"},
-    "warnings": {"type": "array"},
-    "errors": {"type": "array"},
+    "changes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/change"}
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/problem"}
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/problem"}
+    },
+    "errors": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/problem"}
+    },
     "state": {"type": "object"},
     "checked": {"type": "integer", "minimum": 0},
     "provenance": {"type": "object"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "change": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["count"],
+          "properties": {"count": {"type": "integer", "minimum": 0}},
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "component", "destination", "kind", "operation",
+            "ownership", "sourceSha256"
+          ],
+          "properties": {
+            "component": {"type": "string"},
+            "destination": {"type": "string"},
+            "kind": {"type": "string"},
+            "operation": {"type": "string"},
+            "ownership": {"type": "string"},
+            "sourceSha256": {
+              "type": ["string", "null"],
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "problem": {
+      "type": "object",
+      "required": ["code", "message", "path"],
+      "properties": {
+        "actualSha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "code": {"type": "string"},
+        "expectedSha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "message": {"type": "string"},
+        "path": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
   }
 }

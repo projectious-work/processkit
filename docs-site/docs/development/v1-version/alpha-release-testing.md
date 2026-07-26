@@ -8,7 +8,7 @@ description: Publish and consume an explicit v1 prerelease safely.
 ## Release Policy
 
 The first test release is an explicit prerelease such as
-`v1.0.0-alpha.1`. It is merged from `v1.x-dev` into
+`v1.0.0-alpha.2`. It is merged from `v1.x-dev` into
 `v1.x-pre-release`, validated there, and tagged there.
 
 Prereleases never become the implicit `latest` version. `latest` remains the
@@ -39,7 +39,7 @@ Use a disposable aibox project and pin the exact prerelease:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v1.0.0-alpha.1"
+version = "v1.0.0-alpha.2"
 ```
 
 Then:

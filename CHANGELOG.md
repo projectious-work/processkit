@@ -5,6 +5,39 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v1.0.0-alpha.2] - 2026-07-25
+
+v1.0.0-alpha.2 is a standalone installer and local-release alpha. It
+establishes processkit as the upstream contract: aibox may consume the
+release, but processkit build, verification, and acceptance do not require
+aibox.
+
+### Added
+
+- Added a native Rust installer with opaque request/result contracts for
+  plan, install, update, verify, recover, and uninstall operations.
+- Added transactional ownership state, three-way managed-file updates,
+  user-drift preservation, recovery journals, and repeatable uninstall.
+- Added local Ed25519 release signing and trust-store verification for the
+  archive and the platform-specific installer executable.
+- Added local-only build, test, release, and tamper-validation scripts with
+  no GitHub Actions or hosted-CI dependency.
+
+### Changed
+
+- Bound the installer executable version, distribution version, signed
+  envelope, and release archive to the same v1 alpha version.
+- Made aibox an optional downstream integration consumer rather than a
+  processkit release prerequisite.
+
+### Verification
+
+- `scripts/test-installer-local.sh`
+- `scripts/build-installer-local.sh v1.0.0-alpha.2`
+- `scripts/release-local.sh v1.0.0-alpha.2 <private-key> <public-key>`
+
+---
+
 ## [Unreleased]
 
 ### Added

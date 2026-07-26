@@ -14,7 +14,11 @@ use std::path::{Component, Path, PathBuf};
 const API_VERSION: &str = "processkit.projectious.work/installer/v1alpha1";
 
 #[derive(Parser)]
-#[command(name = "processkit", about = "Manifest-driven processkit installer")]
+#[command(
+    name = "processkit",
+    version,
+    about = "Manifest-driven processkit installer"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Command,
@@ -273,6 +277,7 @@ struct LocalReleaseEnvelope {
     release: LocalReleaseIdentity,
     archive: LocalReleaseArchive,
     signing: LocalReleaseSigning,
+    installer: Option<LocalReleaseInstaller>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -292,6 +297,13 @@ struct LocalReleaseArchive {
 struct LocalReleaseSigning {
     algorithm: String,
     key_id: String,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LocalReleaseInstaller {
+    file: String,
+    sha256: String,
+    target: String,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -1012,6 +1024,20 @@ fn verify_local_release(
     ensure_regular_file(envelope_root, &archive_path, "release archive")?;
     if digest(&archive_path)? != envelope.archive.sha256 {
         return Err("release archive digest mismatch".into());
+    }
+    if let Some(installer) = &envelope.installer {
+        if !safe_relative(&installer.file)
+            || installer.file.contains('/')
+            || !valid_sha256(&installer.sha256)
+            || installer.target.trim().is_empty()
+        {
+            return Err("local release envelope contains unsafe installer evidence".into());
+        }
+        let installer_path = envelope_root.join(&installer.file);
+        ensure_regular_file(envelope_root, &installer_path, "installer executable")?;
+        if digest(&installer_path)? != installer.sha256 {
+            return Err("installer executable digest mismatch".into());
+        }
     }
     Ok(VerifiedReleaseEvidence {
         api_version: API_VERSION,

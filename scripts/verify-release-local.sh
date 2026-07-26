@@ -58,6 +58,14 @@ jq -e '
   and (.release.version | type == "string" and length > 0)
   and (.archive.sha256 | test("^[a-f0-9]{64}$"))
   and .signing.algorithm == "Ed25519"
+  and (
+    (.installer | not)
+    or (
+      (.installer.file | type == "string" and length > 0)
+      and (.installer.sha256 | test("^[a-f0-9]{64}$"))
+      and (.installer.target | type == "string" and length > 0)
+    )
+  )
 ' "$ENVELOPE" >/dev/null || {
     echo "error: invalid local release envelope" >&2
     exit 1
@@ -90,4 +98,28 @@ CHECKSUM="$(dirname "$ENVELOPE")/$ARCHIVE.sha256"
     cd "$(dirname "$ENVELOPE")"
     sha256sum -c "$(basename "$CHECKSUM")" >/dev/null
 )
+
+if jq -e 'has("installer")' "$ENVELOPE" >/dev/null; then
+    INSTALLER="$(jq -er '.installer.file' "$ENVELOPE")"
+    INSTALLER_EXPECTED="$(jq -er '.installer.sha256' "$ENVELOPE")"
+    [[ "$INSTALLER" != */* && "$INSTALLER" != *\\* ]] || {
+        echo "error: unsafe installer filename in release envelope" >&2
+        exit 1
+    }
+    [[ "$INSTALLER" == "processkit-$VERSION-"* ]] || {
+        echo "error: installer filename and release version disagree" >&2
+        exit 1
+    }
+    INSTALLER_PATH="$(dirname "$ENVELOPE")/$INSTALLER"
+    [[ -f "$INSTALLER_PATH" ]] || {
+        echo "error: installer asset missing: $INSTALLER" >&2
+        exit 1
+    }
+    INSTALLER_ACTUAL="$(sha256sum "$INSTALLER_PATH" | awk '{print $1}')"
+    [[ "$INSTALLER_ACTUAL" == "$INSTALLER_EXPECTED" ]] || {
+        echo "error: installer asset digest mismatch" >&2
+        exit 1
+    }
+fi
+
 echo "verified local release: $VERSION"
