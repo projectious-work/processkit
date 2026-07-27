@@ -25,7 +25,12 @@ fn copy_tree(source: &std::path::Path, target: &std::path::Path) {
 fn set_fixture_release(distribution: &std::path::Path, version: &str, payload: Option<&str>) {
     let manifest = distribution.join(".processkit/installer/distribution.yaml");
     let mut text = std::fs::read_to_string(&manifest).unwrap();
-    text = text.replace("version: 0.0.0-test", &format!("version: {version}"));
+    let version_line = text
+        .lines()
+        .find(|line| line.starts_with("  version: "))
+        .expect("fixture manifest has metadata version")
+        .to_string();
+    text = text.replacen(&version_line, &format!("  version: {version}"), 1);
     if let Some(payload) = payload {
         std::fs::write(distribution.join("payload/hello.txt"), payload).unwrap();
     } else {
@@ -50,6 +55,41 @@ fn set_fixture_release(distribution: &std::path::Path, version: &str, payload: O
     let mut value: Value = serde_json::from_slice(&std::fs::read(&descriptor).unwrap()).unwrap();
     value["distribution"]["manifestSha256"] = Value::String(manifest_sha256);
     std::fs::write(descriptor, serde_json::to_vec_pretty(&value).unwrap()).unwrap();
+}
+
+fn install_fixture(root: &std::path::Path, distribution: &std::path::Path) {
+    let output = Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args([
+            "install",
+            "--root",
+            root.to_str().unwrap(),
+            "--distribution",
+            distribution.to_str().unwrap(),
+            "--profile",
+            "managed",
+            "--yes",
+        ])
+        .output()
+        .expect("install command starts");
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+fn update_fixture(root: &std::path::Path, distribution: &std::path::Path) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_processkit"))
+        .args([
+            "update",
+            "--root",
+            root.to_str().unwrap(),
+            "--distribution",
+            distribution.to_str().unwrap(),
+            "--yes",
+        ])
+        .output()
+        .expect("update command starts")
 }
 
 fn plan(name: &str) -> std::process::Output {
@@ -386,4 +426,77 @@ fn update_reconciles_replace_preserve_and_stale_removal() {
     assert!(state["ownedPaths"].as_array().unwrap().is_empty());
     std::fs::remove_dir_all(root).unwrap();
     std::fs::remove_dir_all(release).unwrap();
+}
+
+#[test]
+fn prerelease_upgrade_succeeds_and_downgrade_is_non_mutating() {
+    let case = fixture("empty");
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("project");
+    let release = temp.path().join("distribution");
+    std::fs::create_dir_all(&root).unwrap();
+    copy_tree(&case.join("distribution"), &release);
+
+    set_fixture_release(&release, "1.0.0-alpha.1", Some("alpha one\n"));
+    install_fixture(&root, &release);
+
+    set_fixture_release(&release, "1.0.0-alpha.2", Some("alpha two\n"));
+    let upgrade = update_fixture(&root, &release);
+    assert!(
+        upgrade.status.success(),
+        "{}",
+        String::from_utf8_lossy(&upgrade.stderr)
+    );
+    let upgraded_state = std::fs::read(root.join(".processkit/state.json")).unwrap();
+    let state: Value = serde_json::from_slice(&upgraded_state).unwrap();
+    assert_eq!(state["release"]["version"], "1.0.0-alpha.2");
+    assert_eq!(
+        std::fs::read_to_string(root.join("payload/hello.txt")).unwrap(),
+        "alpha two\n"
+    );
+
+    let upgraded_payload = std::fs::read(root.join("payload/hello.txt")).unwrap();
+    set_fixture_release(&release, "1.0.0-alpha.1", Some("downgrade payload\n"));
+    let downgrade = update_fixture(&root, &release);
+    assert!(!downgrade.status.success());
+    assert!(
+        String::from_utf8_lossy(&downgrade.stderr).contains("update refused a release downgrade")
+    );
+    assert_eq!(
+        std::fs::read(root.join(".processkit/state.json")).unwrap(),
+        upgraded_state
+    );
+    assert_eq!(
+        std::fs::read(root.join("payload/hello.txt")).unwrap(),
+        upgraded_payload
+    );
+}
+
+#[test]
+fn same_version_manifest_equivocation_is_non_mutating() {
+    let case = fixture("empty");
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("project");
+    let release = temp.path().join("distribution");
+    std::fs::create_dir_all(&root).unwrap();
+    copy_tree(&case.join("distribution"), &release);
+
+    set_fixture_release(&release, "1.0.0-alpha.2", Some("trusted alpha two\n"));
+    install_fixture(&root, &release);
+    let installed_state = std::fs::read(root.join(".processkit/state.json")).unwrap();
+    let installed_payload = std::fs::read(root.join("payload/hello.txt")).unwrap();
+
+    set_fixture_release(&release, "1.0.0-alpha.2", None);
+    let equivocation = update_fixture(&root, &release);
+    assert!(!equivocation.status.success());
+    assert!(String::from_utf8_lossy(&equivocation.stderr)
+        .contains("update refused same-version release equivocation"));
+    assert_eq!(
+        std::fs::read(root.join(".processkit/state.json")).unwrap(),
+        installed_state
+    );
+    assert_eq!(
+        std::fs::read(root.join("payload/hello.txt")).unwrap(),
+        installed_payload
+    );
 }
