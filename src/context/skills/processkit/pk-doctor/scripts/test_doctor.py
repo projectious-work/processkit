@@ -901,6 +901,46 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 7b: alpha Scope uses its Container discriminator schema
+# ---------------------------------------------------------------------------
+print("\n[7b] schema_filename — alpha Scope discriminator")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    generated = root / "context" / "schemas" / "_generated"
+    generated.mkdir(parents=True)
+    source = _SCHEMAS_SRC / "_generated" / "container-scope.yaml"
+    if source.is_file():
+        (generated / "container-scope.yaml").write_text(
+            source.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    (root / "context" / "scopes").mkdir(parents=True)
+    (root / "context" / "scopes" / "SCOPE-20260724_1200-AlphaScope.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Container
+            metadata:
+              id: SCOPE-20260724_1200-AlphaScope
+              created: '2026-07-24T12:00:00+00:00'
+            spec:
+              name: Alpha scope
+              kind: scope
+              scope_type: release
+              state: planned
+            ---
+            """),
+        encoding="utf-8",
+    )
+    stub = root / ".doctor-logentry.json"
+    result = _run_doctor(root, "--category=schema_filename", stub_path=stub)
+    check(
+        "alpha Container Scope validates with discriminator schema",
+        result.returncode == 0 and "schema.invalid" not in result.stdout,
+        result.stdout[-400:],
+    )
+
+# ---------------------------------------------------------------------------
 # Test 8: derived-project schema_filename fallback (HappyReef)
 # Ensures pk-doctor walks entity files even when the dogfood
 # `src/context/schemas/` tree is absent — the bug that hid all

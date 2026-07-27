@@ -1,7 +1,7 @@
 ---
 name: okf-compatibility
 description: >
-  Export processkit entities as conformant Open Knowledge Format bundles.
+  Import, export, and validate conformant Open Knowledge Format bundles.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
@@ -14,6 +14,7 @@ metadata:
       primitives: []
       mcp_tools:
         - export_okf_bundle
+        - import_okf_bundle
         - validate_okf_bundle
 ---
 
@@ -33,11 +34,14 @@ processkit extension keys. Typed references are retained in extension
 frontmatter and rendered as ordinary Markdown links for generic consumers.
 
 Use `validate_okf_bundle` to check the v0.1 core contract and internal links.
+Use `import_okf_bundle(..., dry_run=True)` to validate and plan a lossless
+processkit producer-profile import. Apply only after the plan is clean; import
+refuses existing target IDs rather than overwriting canonical entities.
 
 ## Gotchas
 
-- **Do not treat export as round-trip canonical storage.** It is a boundary
-  projection and may be intentionally lossy.
+- **Do not assume generic OKF bundles are lossless.** Round-trip import
+  requires the processkit producer-profile extensions.
 - **Do not overwrite a prior export.** Choose a new directory so bundles are
   reviewable and reproducible.
 - **Do not hide processkit identity.** Extension keys preserve stable IDs,
@@ -49,4 +53,5 @@ Use `validate_okf_bundle` to check the v0.1 core contract and internal links.
 OKF v0.1 requires UTF-8 Markdown with YAML frontmatter containing `type`.
 processkit's producer profile additionally emits title, description,
 timestamp, tags, `processkit_id`, `processkit_kind`,
-`processkit_interfaces`, and `processkit_relations` when available.
+`processkit_interfaces`, `processkit_relations`, canonical spec/body,
+timestamps, and labels when available.

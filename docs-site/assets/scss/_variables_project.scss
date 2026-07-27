@@ -1,0 +1,48 @@
+// projectious.work brand tokens mapped to Bootstrap and Docsy.
+// Source: github.com/projectious-work/brand, brand/tokens/variables.css.
+$brand-primary: #1d3352;
+$brand-primary-light: #2b4d78;
+$brand-primary-dark: #132440;
+$brand-accent: #e05232;
+$brand-accent-light: #ea7558;
+$brand-accent-dark: #b84228;
+$brand-secondary: #546a82;
+
+$primary: $brand-primary;
+$secondary: $brand-secondary;
+$info: $brand-primary-light;
+$warning: $brand-accent;
+$dark: $brand-primary-dark;
+$light: #f8f9fb;
+
+$body-color: #142438;
+$headings-color: $brand-primary;
+$link-color: #3a5a82;
+$link-hover-color: $brand-accent-dark;
+$border-color: #dadce0;
+
+$enable-dark-mode: true;
+$body-bg-dark: #0e1720;
+$body-color-dark: #c5daf0;
+$body-secondary-bg-dark: #131e2b;
+$headings-color-dark: #c5daf0;
+$link-color-dark: #8aacc8;
+$link-hover-color-dark: $brand-accent-light;
+$border-color-dark: rgba(255, 255, 255, 0.08);
+
+$font-family-sans-serif: "Source Sans 3", system-ui, sans-serif;
+$font-family-monospace: "IBM Plex Mono", ui-monospace, monospace;
+$headings-font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+$td-enable-google-fonts: false;
+$font-size-base: 1rem;
+$line-height-base: 1.65;
+
+$border-radius-sm: 3px;
+$border-radius: 6px;
+$border-radius-lg: 9px;
+$border-radius-xl: 13px;
+
+$td-navbar-bg-color: $brand-primary-dark;
+$td-navbar-border-bottom: 3px solid $brand-accent;
+$td-sidebar-bg-color: transparent;
+$td-sidebar-border-color: $border-color;

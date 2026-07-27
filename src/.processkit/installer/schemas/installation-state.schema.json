@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "release", "profiles", "harnesses", "ownedPaths"],
+  "properties": {
+    "apiVersion": {"const": "processkit.projectious.work/installer/v1alpha1"},
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "manifestSha256"],
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "manifestSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "profiles": {"type": "array", "items": {"type": "string"}},
+    "harnesses": {"type": "array", "items": {"type": "string"}},
+    "ownedPaths": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "component", "operation", "ownership", "installedSha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "component": {"type": "string"},
+          "operation": {"type": "string"},
+          "ownership": {"type": "string"},
+          "installedSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "managedAdapters": {
+      "type": "array",
+      "items": {
+        "$ref": "managed-adapter-state.schema.json"
+      }
+    }
+  }
+}

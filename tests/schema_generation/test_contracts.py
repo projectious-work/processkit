@@ -9,6 +9,25 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMAS = ROOT / "src/context/schemas/_generated"
+REGISTRY = yaml.safe_load(
+    (ROOT / "src/context/schemas/src/registry.yaml").read_text()
+)
+
+
+def test_beta_inventory_is_dependency_closed_and_exact() -> None:
+    inventory = REGISTRY["beta_concepts"]
+    assert {key: len(value) for key, value in inventory.items()} == {
+        "terminology": 19,
+        "primitives": 22,
+        "discriminators": 8,
+        "compositions": 13,
+    }
+    concepts = [concept for values in inventory.values() for concept in values]
+    assert len(concepts) == 62
+    assert len(set(concepts)) == 62
+    assert len(REGISTRY["kinds"]) == 43
+    for kind in REGISTRY["kinds"].values():
+        assert (SCHEMAS / kind["output"]).is_file()
 FIXTURE = ROOT / "tests/fixtures/alpha-project"
 
 
@@ -191,6 +210,34 @@ def test_required_fields_and_closed_vocabularies_reject_invalid_data() -> None:
                 "timestamp": "not-a-date-time",
             },
         )
+    finally:
+        sys.path.remove(str(library))
+
+
+def test_runtime_loader_resolves_beta_discriminator_output_names() -> None:
+    library = ROOT / "src/context/skills/_lib"
+    sys.path.insert(0, str(library))
+    try:
+        from processkit import schema
+
+        schema.load_schema.cache_clear()
+        world_fact = schema.load_schema(
+            "Proposition",
+            SCHEMAS.parent,
+            "world-fact",
+        )
+        assert world_fact["discriminator"] == {
+            "field": "kind",
+            "value": "world-fact",
+        }
+        errors = schema.validate_spec(
+            "Proposition",
+            {
+                "kind": "world-fact",
+                "statement": "A source is required.",
+            },
+        )
+        assert errors
     finally:
         sys.path.remove(str(library))
 

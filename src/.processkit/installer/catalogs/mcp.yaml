@@ -1,0 +1,14 @@
+apiVersion: processkit.projectious.work/installer/v1alpha1
+kind: McpCatalog
+source_of_truth:
+  manifest: context/.processkit-mcp-manifest.json
+  preauth: context/skills/processkit/skill-gate/assets/preauth.json
+servers:
+  - id: processkit-gateway
+    command: uv
+    args:
+      - run
+      - --script
+      - context/skills/processkit/processkit-gateway/mcp/server.py
+    env:
+      PROCESSKIT_MCP_MODE: gateway

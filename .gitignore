@@ -86,3 +86,6 @@ context/private/
 
 .agents/skills/
 .codex/hooks.json
+
+# Rust build output for the installer workspace.
+installer/target/

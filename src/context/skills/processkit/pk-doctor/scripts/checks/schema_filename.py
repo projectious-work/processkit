@@ -123,6 +123,30 @@ def _load_schema(schemas_dir: Path, kind: str) -> dict | None:
         return None
 
 
+def _schema_for_entity(
+    schemas_dir: Path | None,
+    directory_kind: str,
+    frontmatter: dict,
+) -> dict | None:
+    """Select a discriminator schema when a v1 entity shares a directory.
+
+    Alpha Scope entities live in context/scopes as kind Container with
+    spec.kind scope. The legacy v2 Scope schema uses that directory too,
+    so choosing only by directory rejects valid alpha scopes.
+    """
+    if schemas_dir is None:
+        return None
+    spec = frontmatter.get("spec", {})
+    if (
+        directory_kind == "scope"
+        and frontmatter.get("kind") == "Container"
+        and isinstance(spec, dict)
+        and spec.get("kind") == "scope"
+    ):
+        return _load_schema(schemas_dir, "container-scope")
+    return _load_schema(schemas_dir, directory_kind)
+
+
 def _parse_frontmatter(path: Path) -> tuple[dict | None, str | None]:
     """Return (frontmatter_dict, parse_error_msg_or_None)."""
     try:
@@ -305,7 +329,6 @@ def run(ctx) -> list[CheckResult]:
 
     walked_count = 0
     for kind, kind_dir in KIND_TO_DIR.items():
-        schema = _load_schema(schemas_dir, kind) if schemas_dir else None
         # Even without a schema we still want to walk the entity files
         # so the filename/id, filename-date, and actor-id checks fire
         # (those don't need spec_schema). Skip only the schema-validation
@@ -315,12 +338,6 @@ def run(ctx) -> list[CheckResult]:
             continue
         # Cache allowed role IDs per kind (actor only, cheap to compute).
         allowed_role_ids: list[str] = []
-        if schema:
-            schema_spec = schema.get("spec", {})
-            allowed_role_ids = (
-                schema_spec.get("role_actor_ids")
-                or schema.get("x-allowed-role-ids", [])
-            )
         for path in _iter_entity_files(ctx_root, kind_dir, since_files):
             walked_count += 1
             fm, parse_err = _parse_frontmatter(path)
@@ -334,6 +351,15 @@ def run(ctx) -> list[CheckResult]:
                     entity_ref=str(rel),
                 ))
                 continue
+
+            schema = _schema_for_entity(schemas_dir, kind, fm)
+            allowed_role_ids: list[str] = []
+            if schema:
+                schema_spec = schema.get("spec", {})
+                allowed_role_ids = (
+                    schema_spec.get("role_actor_ids")
+                    or schema.get("x-allowed-role-ids", [])
+                )
 
             md = fm.get("metadata", {}) if isinstance(fm, dict) else {}
             meta_id = md.get("id") if isinstance(md, dict) else None

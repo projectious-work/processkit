@@ -1,0 +1,17 @@
+extends: ../primitives/specification.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-schemaspecification, target_kind: SchemaSpecification, version: 1.0.0-beta.1}
+spec:
+  description: A specification of schema source, interfaces, and validation.
+  id_prefix: SCHEMASPEC
+  default_directory: context/specifications/schemas
+  spec_schema:
+    required: {__merge: concat, value: [target_kind, validation_mode]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: schema}
+        target_kind: {type: string, minLength: 1}
+        interfaces: {type: array, items: {type: string}}
+        validation_mode: {type: string, enum: [strict, tolerant]}

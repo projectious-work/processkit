@@ -92,8 +92,8 @@ the `mcp` CLI's `dev` command, etc.).
    package tier, add it to `src/.processkit/packages/managed.yaml` (or
    higher).
 6. Update `src/context/skills/INDEX.md` if appropriate.
-7. Add the skill to `docs-site/sidebars.js` under the right catalog
-   page if it deserves a docs entry.
+7. Add the skill to the appropriate page under
+   `docs-site/content/en/docs/skills/` if it deserves a docs entry.
 
 ## Adding a new primitive
 
@@ -108,7 +108,7 @@ the `mcp` CLI's `dev` command, etc.).
 5. Add a management skill at `src/skills/<kind>-management/` (Layer 1–4
    depending on dependencies).
 6. Optionally ship an MCP server (`mcp/server.py`).
-7. Update `docs-site/docs/primitives/overview.md`.
+7. Update `docs-site/content/en/docs/primitives/overview.md`.
 
 ## Adding a new MCP server
 
@@ -119,7 +119,8 @@ the `mcp` CLI's `dev` command, etc.).
 4. Register tools with `@server.tool()` decorators.
 5. Add `mcp-config.json` and `README.md`.
 6. Extend `scripts/smoke-test-servers.py` to exercise the new tools.
-7. Add a section to `docs-site/docs/mcp-servers/overview.md`.
+7. Add a section to
+   `docs-site/content/en/docs/mcp-servers/overview.md`.
 
 ### Foundation dependencies
 
@@ -197,24 +198,28 @@ To release a new tag:
 3. Update `docs-site` if user-visible changes shipped
 4. Run `uv run scripts/smoke-test-servers.py` and confirm green
 5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
-6. `git tag -a vX.Y.Z -m "..."`
-7. `git push origin main && git push origin vX.Y.Z`
-8. **Build and upload the release-asset tarball:**
+6. Generate a local release key once, outside the repository:
    ```bash
-   scripts/build-release-tarball.sh vX.Y.Z
-   gh release upload vX.Y.Z \
-       dist/processkit-vX.Y.Z.tar.gz \
-       dist/processkit-vX.Y.Z.tar.gz.sha256
+   scripts/processkit-keygen-local.sh \
+       "$HOME/.config/processkit/keys/release.pem" \
+       "$HOME/.config/processkit/trust.d/release.pub.pem"
    ```
-   This is the preferred consumption path for aibox (DEC-025); aibox
-   falls back to a git fetch if the asset is missing.
+7. Build, test, sign, and verify the complete release locally:
+   ```bash
+   scripts/release-local.sh vX.Y.Z \
+       "$HOME/.config/processkit/keys/release.pem" \
+       "$HOME/.config/processkit/trust.d/release.pub.pem"
+   ```
+8. Copy the verified files from `dist/` to the chosen publication location.
+   Publication is deliberately separate from release creation and trust.
 9. **Build and review the documentation locally:**
    ```bash
-   npm --prefix docs-site run build
-   npm --prefix docs-site run serve
+   scripts/check-docs-local.sh
+   scripts/serve-docs-local.sh
    ```
-   Do not add GitHub Actions or a GitHub Pages dependency to the release
-   path.
+   Do not add GitHub Actions or workflow files. The local publish script
+   pushes prebuilt output to the `gh-pages` branch; GitHub Pages does not
+   build the site.
 
 ## Backlog and tracked work
 
