@@ -44,6 +44,11 @@ spec:
   - time-window
   - hierarchy
   - position
+  - provenance-link
+  - correlation
+  - dependency
+  - ownership-link
+  - related-to
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
