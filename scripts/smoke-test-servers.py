@@ -293,6 +293,7 @@ def run(distribution_root: Path | str | None = None):
         assert "create_proposition" in gateway.server._tool_manager._tools
         assert "create_skill" in gateway.server._tool_manager._tools
         assert "export_okf_bundle" in gateway.server._tool_manager._tools
+        assert "import_okf_bundle" in gateway.server._tool_manager._tools
         assert "plan_v0_to_v1_migration" in gateway.server._tool_manager._tools
         gateway_health = get_tool(gateway, "gateway_health")()
         assert gateway_health["ok"] is True
@@ -1239,6 +1240,16 @@ def run(distribution_root: Path | str | None = None):
         assert validate_okf(
             bundle_dir=".processkit/exports/smoke-okf"
         )["valid"] is True
+        import_okf = get_tool(okf, "import_okf_bundle")
+        import_plan = import_okf(
+            bundle_dir=".processkit/exports/smoke-okf",
+            dry_run=True,
+        )
+        assert import_plan["ok"] is False
+        assert all(
+            "target entity already exists" in error["error"]
+            for error in import_plan["errors"]
+        )
 
         # Systemic self-attribution guard (BACK-20260421_0209-*).
         # Every entity-mutating MCP tool must pass actor=<subject-id> to its

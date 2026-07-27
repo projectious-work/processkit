@@ -6521,6 +6521,45 @@
     {
       "annotations": {
         "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "okf-compatibility"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Import a lossless processkit producer-profile OKF v0.1 bundle.",
+      "name": "import_okf_bundle",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "bundle_dir": {
+            "title": "Bundle Dir",
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "bundle_dir"
+        ],
+        "title": "import_okf_bundleArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/okf-compatibility/mcp/server.py",
+      "source_skill": "okf-compatibility",
+      "source_tool": "import_okf_bundle",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
         "readOnlyHint": true
