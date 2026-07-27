@@ -41,3 +41,10 @@ For the first integration increment, aibox should:
 The readiness signal for removing the provisional adapter is a tagged
 processkit prerelease containing this protocol and a passing
 `scripts/test-installer-local.sh` result on both repositories.
+
+For M5, pin the immutable `v1.0.0-alpha.3` release, not a branch or moving
+reference. The aibox consumer test must download the archive, release
+envelope, signature, public key, and matching native installer from that
+GitHub release, verify the signed envelope, then exercise the opaque request
+contract. Keep the v0 compatibility bridge enabled; this prerelease is an
+explicit project opt-in and does not change the default processkit line.

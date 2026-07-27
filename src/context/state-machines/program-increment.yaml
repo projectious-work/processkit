@@ -1,0 +1,12 @@
+apiVersion: processkit.projectious.work/v2
+kind: StateMachine
+metadata: {id: SM-program-increment, name: program-increment, version: 1.0.0-alpha.3}
+spec:
+  initial: planned
+  terminal: [completed, cancelled]
+  states:
+    planned: {transitions: [{to: active}, {to: cancelled}]}
+    active: {transitions: [{to: inspecting}, {to: cancelled}]}
+    inspecting: {transitions: [{to: completed}, {to: active}, {to: cancelled}]}
+    completed: {transitions: []}
+    cancelled: {transitions: []}

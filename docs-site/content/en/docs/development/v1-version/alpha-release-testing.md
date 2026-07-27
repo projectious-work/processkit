@@ -7,8 +7,8 @@ description: Publish and consume an explicit v1 prerelease safely.
 
 ## Release Policy
 
-The first test release is an explicit prerelease such as
-`v1.0.0-alpha.2`. It is merged from `v1.x-dev` into
+The current test release is the explicit prerelease
+`v1.0.0-alpha.3`. It is merged from `v1.x-dev` into
 `v1.x-pre-release`, validated there, and tagged there.
 
 Prereleases never become the implicit `latest` version. `latest` remains the
@@ -38,7 +38,7 @@ Create a local signing key once, then build the complete release set:
 ```sh
 scripts/processkit-keygen-local.sh release.pem release.pub.pem
 scripts/release-local.sh \
-  v1.0.0-alpha.2 release.pem release.pub.pem
+  v1.0.0-alpha.3 release.pem release.pub.pem
 ```
 
 The signed envelope binds the archive, native installer executable, target
@@ -46,8 +46,8 @@ triple, version, and trusted key. Verify it independently:
 
 ```sh
 scripts/verify-release-local.sh \
-  dist/processkit-v1.0.0-alpha.2.release.json \
-  dist/processkit-v1.0.0-alpha.2.release.sig \
+  dist/processkit-v1.0.0-alpha.3.release.json \
+  dist/processkit-v1.0.0-alpha.3.release.sig \
   release.pub.pem
 ```
 
@@ -62,6 +62,6 @@ release correctness.
 
 ## Promotion
 
-Promote to `alpha.2` only from a new merge into `v1.x-pre-release`. Alpha
-tags are immutable. Beta begins only after the alpha gate is green and the
-planned ontology expansion remains within the recorded 60–70 percent target.
+Promote to `alpha.3` only from a new merge into `v1.x-pre-release`. Alpha
+tags are immutable. The supported v0 line remains the default until the
+complete ontology and final CLI have passed joint processkit/aibox testing.

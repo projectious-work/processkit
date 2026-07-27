@@ -1,0 +1,19 @@
+extends: ../primitives/record-kind.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-measurement, target_kind: Measurement, version: 1.0.0-alpha.3}
+spec:
+  description: A recorded metric observation with provenance.
+  id_prefix: MEASURE
+  default_directory: context/measurements
+  spec_schema:
+    required: {__merge: concat, value: [metric, value, observed_at]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: measurement}
+        metric: {type: string, minLength: 1}
+        value: {type: [number, string, boolean]}
+        unit: {type: [string, "null"]}
+        observed_at: {type: string, format: date-time}
+        provenance: {type: array, items: {type: string}}

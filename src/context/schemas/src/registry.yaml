@@ -95,6 +95,36 @@ beta_concepts:
     - TestSpecification
     - ChannelSpecification
     - QueueSpecification
+completion_concepts:
+  discriminators:
+    - GeographicRegion
+    - Site
+    - Coordinate
+    - LogicalRegion
+    - Timezone
+    - Disposition
+    - Portfolio
+    - ValueStream
+    - ART
+    - Team
+    - Project
+    - ProvenanceLink
+    - Correlation
+    - Dependency
+    - OwnershipLink
+    - RelatedTo
+  compositions:
+    - Measurement
+    - Archive
+    - Service
+    - WorkItemTemplate
+    - ScopePlan
+    - Roadmap
+    - ProgramIncrement
+    - Iteration
+    - Release
+    - Discussion
+    - EvaluationRun
 kinds:
   workitem:
     source: primitives/workitem.yaml
@@ -253,3 +283,132 @@ kinds:
   queuespecification:
     source: compositions/queuespecification.yaml
     output: queuespecification.yaml
+  geographicregion:
+    class: discriminator
+    parent: location
+    discriminator: {field: kind, value: geographic-region}
+    source: discriminators/geographicregion.yaml
+    output: location-geographic-region.yaml
+  site:
+    class: discriminator
+    parent: location
+    discriminator: {field: kind, value: site}
+    source: discriminators/site.yaml
+    output: location-site.yaml
+  coordinate:
+    class: discriminator
+    parent: location
+    discriminator: {field: kind, value: coordinate}
+    source: discriminators/coordinate.yaml
+    output: location-coordinate.yaml
+  logicalregion:
+    class: discriminator
+    parent: location
+    discriminator: {field: kind, value: logical-region}
+    source: discriminators/logicalregion.yaml
+    output: location-logical-region.yaml
+  timezone:
+    class: discriminator
+    parent: location
+    discriminator: {field: kind, value: timezone}
+    source: discriminators/timezone.yaml
+    output: location-timezone.yaml
+  disposition:
+    class: discriminator
+    parent: capability
+    discriminator: {field: kind, value: disposition}
+    source: discriminators/disposition.yaml
+    output: capability-disposition.yaml
+  portfolio:
+    class: discriminator
+    parent: container
+    discriminator: {field: kind, value: portfolio}
+    source: discriminators/portfolio.yaml
+    output: container-portfolio.yaml
+  valuestream:
+    class: discriminator
+    parent: container
+    discriminator: {field: kind, value: value-stream}
+    source: discriminators/valuestream.yaml
+    output: container-value-stream.yaml
+  art:
+    class: discriminator
+    parent: container
+    discriminator: {field: kind, value: art}
+    source: discriminators/art.yaml
+    output: container-art.yaml
+  team:
+    class: discriminator
+    parent: container
+    discriminator: {field: kind, value: team}
+    source: discriminators/team.yaml
+    output: container-team.yaml
+  project:
+    class: discriminator
+    parent: container
+    discriminator: {field: kind, value: project}
+    source: discriminators/project.yaml
+    output: container-project.yaml
+  provenancelink:
+    class: discriminator
+    parent: binding
+    discriminator: {field: type, value: provenance-link}
+    source: discriminators/provenancelink.yaml
+    output: binding-provenance-link.yaml
+  correlation:
+    class: discriminator
+    parent: binding
+    discriminator: {field: type, value: correlation}
+    source: discriminators/correlation.yaml
+    output: binding-correlation.yaml
+  dependency:
+    class: discriminator
+    parent: binding
+    discriminator: {field: type, value: dependency}
+    source: discriminators/dependency.yaml
+    output: binding-dependency.yaml
+  ownershiplink:
+    class: discriminator
+    parent: binding
+    discriminator: {field: type, value: ownership-link}
+    source: discriminators/ownershiplink.yaml
+    output: binding-ownership-link.yaml
+  relatedto:
+    class: discriminator
+    parent: binding
+    discriminator: {field: type, value: related-to}
+    source: discriminators/relatedto.yaml
+    output: binding-related-to.yaml
+  measurement:
+    source: compositions/measurement.yaml
+    output: measurement.yaml
+  archive:
+    source: compositions/archive.yaml
+    output: archive.yaml
+  service:
+    source: compositions/service.yaml
+    output: service.yaml
+  workitemtemplate:
+    source: compositions/workitemtemplate.yaml
+    output: workitemtemplate.yaml
+  scopeplan:
+    source: compositions/scopeplan.yaml
+    output: scopeplan.yaml
+  roadmap:
+    source: compositions/roadmap.yaml
+    output: roadmap.yaml
+  programincrement:
+    source: compositions/programincrement.yaml
+    output: programincrement.yaml
+  iteration:
+    source: compositions/iteration.yaml
+    output: iteration.yaml
+  release:
+    source: compositions/release.yaml
+    output: release.yaml
+  discussion:
+    source: compositions/discussion.yaml
+    output: discussion.yaml
+  evaluationrun:
+    source: compositions/evaluationrun.yaml
+    output: evaluationrun.yaml

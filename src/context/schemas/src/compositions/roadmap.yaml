@@ -1,0 +1,16 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-roadmap, target_kind: Roadmap, version: 1.0.0-alpha.3}
+spec:
+  description: Sequenced goals and milestones within a container.
+  id_prefix: ROADMAP
+  default_directory: context/roadmaps
+  spec_schema:
+    required: {__merge: concat, value: [goals]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: roadmap}
+        goals: {type: array, minItems: 1, items: {type: string}}
+        milestones: {type: array, items: {type: string}}

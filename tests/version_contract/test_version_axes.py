@@ -14,7 +14,7 @@ import processkit  # noqa: E402
 
 
 def test_product_and_entity_api_versions_are_independent() -> None:
-    assert processkit.__version__ == "1.0.0-alpha.2"
+    assert processkit.__version__ == "1.0.0-alpha.3"
     assert processkit.API_VERSION == "processkit.projectious.work/v2"
 
     registry = yaml.safe_load(

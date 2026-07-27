@@ -1,0 +1,12 @@
+apiVersion: processkit.projectious.work/v2
+kind: StateMachine
+metadata: {id: SM-evaluation-run, name: evaluation-run, version: 1.0.0-alpha.3}
+spec:
+  initial: planned
+  terminal: [passed, failed, cancelled]
+  states:
+    planned: {transitions: [{to: running}, {to: cancelled}]}
+    running: {transitions: [{to: passed}, {to: failed}, {to: cancelled}]}
+    passed: {transitions: []}
+    failed: {transitions: []}
+    cancelled: {transitions: []}

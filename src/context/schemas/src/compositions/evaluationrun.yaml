@@ -1,0 +1,21 @@
+extends: ../primitives/record-kind.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-evaluationrun, target_kind: EvaluationRun, version: 1.0.0-alpha.3}
+spec:
+  description: A test execution with command, events, measurements, and evidence.
+  id_prefix: EVALRUN
+  state_machine: evaluation-run
+  default_directory: context/evaluation-runs
+  spec_schema:
+    required: {__merge: concat, value: [state, command, test_specification]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: evaluation-run}
+        state: {type: string, enum: [planned, running, passed, failed, cancelled]}
+        command: {type: string, minLength: 1}
+        test_specification: {type: string, minLength: 1}
+        events: {type: array, items: {type: string}}
+        measurements: {type: array, items: {type: string}}
+        artifacts: {type: array, items: {type: string}}

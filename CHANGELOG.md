@@ -5,6 +5,40 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v1.0.0-alpha.3] - 2026-07-27
+
+v1.0.0-alpha.3 completes the planned v1 ontology and provides the exact,
+immutable prerelease contract required by the aibox M5 consumer pilot. The
+supported v0 line remains the default release.
+
+### Added
+
+- Added the remaining 27 ontology concepts, reaching 89 concepts and 70
+  generated schema kinds, with lifecycle state machines for program
+  increments, iterations, releases, and evaluation runs.
+- Added generic ontology-management MCP operations with validation, indexing,
+  lifecycle transitions, and event-log side effects.
+- Added explicit v0 kind dispositions, a 20-scenario conformance corpus, and
+  expanded first-ART Portfolio-to-Team and ProgramIncrement acceptance.
+- Added exact harness-adapter mutations to non-mutating installer plans and
+  Codex/Claude managed-key lifecycle parity coverage.
+
+### Changed
+
+- Made unknown v0 entity kinds a migration-plan error instead of silently
+  assigning an implicit disposition.
+- Defined `v1.0.0-alpha.3` as an exact-pin opt-in for aibox while retaining
+  the v0 compatibility bridge and stable default.
+
+### Verification
+
+- `uv run scripts/smoke-test-servers.py`
+- `scripts/test-installer-local.sh`
+- `scripts/test-installer-pilot-local.sh`
+- `uv run --with pytest --with jsonschema --with pyyaml pytest -q`
+
+---
+
 ## [v1.0.0-alpha.2] - 2026-07-25
 
 v1.0.0-alpha.2 is a standalone installer and local-release alpha. It
