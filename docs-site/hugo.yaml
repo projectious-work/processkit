@@ -1,0 +1,111 @@
+baseURL: "https://projectious-work.github.io/processkit/"
+title: processkit
+description: "Provider-neutral process primitives, skills, and MCP tools for AI-assisted work — the released v0.x line."
+theme: [docsy]
+enableRobotsTXT: true
+enableGitInfo: true
+enableEmoji: true
+
+defaultContentLanguage: en
+defaultContentLanguageInSubdir: false
+contentDir: content/en
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+    parser:
+      attribute:
+        block: true
+        title: true
+  highlight:
+    noClasses: false
+  tableOfContents:
+    endLevel: 4
+
+outputs:
+  home: [HTML, RSS]
+  page: [HTML, markdown]
+  section: [HTML, RSS, print, markdown]
+
+# processkit convention: any directory named `private/` anywhere under a
+# context tree is user-private and must never be published. The docs tree
+# carries the same rule so a stray private/ subtree cannot leak into a build.
+# This is the rule docs/reference/privacy.md tells consumers to apply.
+ignoreFiles:
+  - "/private/"
+
+params:
+  hugoMinVersion: "0.157.0"
+  productionURL: "https://projectious-work.github.io/processkit/"
+  offlineSearch: true
+  offlineSearchSummaryLength: 200
+  offlineSearchMaxResults: 25
+  # processkit publishes two release lines to one GitHub Pages site. This
+  # released v0.x line owns the site root and is the default landing
+  # documentation; the v1.0 preview line publishes under /v1.x/.
+  #
+  # `docs_deploy_path` is the subdirectory this branch's build owns on the
+  # gh-pages branch, relative to `productionURL`. It is empty here because
+  # this line publishes to the root. scripts/publish-docs-gh-pages.sh reads
+  # it so both branches can carry an identical script.
+  version: "v0.x"
+  release_line: "v0.x"
+  docs_deploy_path: ""
+  version_menu: "Release line"
+  version_menu_pagelinks: false
+  versions:
+    - name: "**Release lines**"
+    - version: "v0.x"
+      kind: latest
+      url: "https://projectious-work.github.io/processkit/"
+    - version: "v1.x (preview)"
+      url: "https://projectious-work.github.io/processkit/v1.x/"
+  ui:
+    navbar_logo: true
+    navbar_theme: dark
+    showLightDarkModeMenu: true
+    sidebar_menu_compact: true
+    sidebar_menu_foldable: true
+    sidebar_search_disable: false
+    feedback:
+      enable: false
+  links:
+    user:
+      - name: GitHub
+        url: "https://github.com/projectious-work/processkit"
+        icon: "fa-brands fa-github"
+        desc: Source code and issue tracker
+  copyright:
+    authors: "Projectious"
+    from_year: 2026
+
+menu:
+  main:
+    - name: Documentation
+      weight: 10
+      url: "/docs/"
+    - name: GitHub
+      weight: 20
+      url: "https://github.com/projectious-work/processkit"
+      pre: "<i class='fa-brands fa-github' aria-hidden='true'></i>"
+
+module:
+  replacements:
+    - "github.com/FortAwesome/Font-Awesome -> ../node_modules/@fortawesome/fontawesome-free"
+    - "github.com/twbs/bootstrap -> ../node_modules/bootstrap"
+  mounts:
+    - source: assets
+      target: assets
+    - source: static
+      target: static
+    - source: node_modules/bootstrap
+      target: assets/vendor/bootstrap
+    - source: node_modules/@fortawesome/fontawesome-free
+      target: assets/vendor/Font-Awesome
+    - source: node_modules/@fortawesome/fontawesome-free/webfonts
+      target: static/webfonts
+
+taxonomies:
+  tag: tags
+  category: categories

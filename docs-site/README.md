@@ -1,62 +1,56 @@
-# processkit docs-site
+# processkit documentation site
 
-The user-facing documentation for processkit, built with
-[Docusaurus 3](https://docusaurus.io/).
+The user-facing processkit documentation is built with Hugo Extended and
+Docsy. The structure and local operating model follow
+`projectious-work/kubeclaw`; visual tokens and assets follow
+`projectious-work/brand`.
 
-## Local development
+No GitHub Actions workflow or hosted documentation builder is used.
 
-```bash
-cd docs-site
-npm install           # first time only
-npm run start         # localhost:3000
+## Local setup
+
+Run the one-time setup from the repository root:
+
+```sh
+scripts/setup-docs-local.sh
 ```
 
-## Build
+The script installs a checksum-pinned Hugo Extended binary under
+`docs-site/.tools/`, checks out the pinned Docsy submodule, and installs
+the locked frontend assets.
 
-```bash
-npm run build         # outputs to build/
-npm run serve         # serve the built site locally
+## Local build and preview
+
+```sh
+scripts/check-docs-local.sh
+scripts/serve-docs-local.sh
 ```
 
-## Publish Locally
+The generated site is written to `docs-site/public/`. Once setup is
+complete, build and validation do not download dependencies.
 
-The documentation is published to
-[GitHub Pages](https://projectious-work.github.io/processkit/) from a local
-build. The repository does not use GitHub Actions.
+## Local publication
 
-```bash
+```sh
 scripts/publish-docs-gh-pages.sh
 ```
 
+This builds the site locally, creates a temporary `git worktree`, commits
+the prebuilt output, and pushes the `gh-pages` branch. GitHub Pages serves
+those files; it does not build them.
+
+Set `DOCS_VERSION=v1.0.0-beta.1` to publish beneath a versioned path.
+
 ## Structure
 
-```
+```text
 docs-site/
-├── docs/                    ← Markdown content
-│   ├── intro.md
-│   ├── getting-started/
-│   ├── primitives/
-│   ├── skills/
-│   │   └── catalog/         ← per-category skill listings
-│   ├── packages/
-│   ├── processes/
-│   ├── mcp-servers/
-│   └── reference/
-├── src/
-│   └── css/custom.css
-├── static/
-├── docusaurus.config.js
-├── sidebars.js
-└── package.json
+├── assets/                 # projectious brand SCSS and processkit mark
+├── content/en/             # canonical publishable Markdown
+├── layouts/                # Docsy overrides and Markdown render hooks
+├── static/                 # favicons and static assets
+├── themes/docsy/           # pinned Git submodule
+├── hugo.yaml
+├── package.json
+└── package-lock.json
 ```
-
-## Content conventions
-
-- **Overview pages** introduce a section and link to the authoritative
-  source files in the repo (`src/context/schemas/`,
-  `src/context/skills/FORMAT.md`, etc.). This keeps the docs in sync
-  with the source and avoids duplication.
-- **Catalog pages** under `skills/catalog/` describe the skills in each
-  category and should describe processkit as a standalone project first.
-- **Reference pages** are deep technical documentation — apiVersion policy,
-  ID formats, migration guide.
