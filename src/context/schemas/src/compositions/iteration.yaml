@@ -1,0 +1,20 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-iteration, target_kind: Iteration, version: 1.0.0-alpha.3}
+spec:
+  description: A cadence container for committed work and review evidence.
+  id_prefix: ITER
+  state_machine: iteration
+  default_directory: context/iterations
+  spec_schema:
+    required: {__merge: concat, value: [state, starts_at, ends_at]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: iteration}
+        state: {type: string, enum: [planned, active, reviewing, completed, cancelled]}
+        starts_at: {type: string, format: date-time}
+        ends_at: {type: string, format: date-time}
+        committed_work: {type: array, items: {type: string}}
+        review_evidence: {type: array, items: {type: string}}

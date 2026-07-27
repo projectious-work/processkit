@@ -9,6 +9,55 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 SCHEMAS = ROOT / "src/context/schemas/_generated"
+REGISTRY = yaml.safe_load(
+    (ROOT / "src/context/schemas/src/registry.yaml").read_text()
+)
+
+
+def test_beta_inventory_is_dependency_closed_and_exact() -> None:
+    inventory = REGISTRY["beta_concepts"]
+    assert {key: len(value) for key, value in inventory.items()} == {
+        "terminology": 19,
+        "primitives": 22,
+        "discriminators": 8,
+        "compositions": 13,
+    }
+    concepts = [concept for values in inventory.values() for concept in values]
+    assert len(concepts) == 62
+    assert len(set(concepts)) == 62
+    assert len(REGISTRY["kinds"]) == 70
+    for kind in REGISTRY["kinds"].values():
+        assert (SCHEMAS / kind["output"]).is_file()
+
+
+def test_alpha3_inventory_completes_the_89_concept_target() -> None:
+    beta = REGISTRY["beta_concepts"]
+    completion = REGISTRY["completion_concepts"]
+    assert {key: len(value) for key, value in completion.items()} == {
+        "discriminators": 16,
+        "compositions": 11,
+    }
+    concepts = [
+        concept
+        for inventory in (beta, completion)
+        for values in inventory.values()
+        for concept in values
+    ]
+    assert len(concepts) == 89
+    assert len(set(concepts)) == 89
+    assert len(REGISTRY["kinds"]) == 70
+
+
+def test_all_alpha3_generated_outputs_are_draft_2020_12_contracts() -> None:
+    for name, entry in REGISTRY["kinds"].items():
+        document = yaml.safe_load((SCHEMAS / entry["output"]).read_text())
+        schema = document["spec"]["spec_schema"]
+        jsonschema.Draft202012Validator.check_schema(schema)
+        discriminator = entry.get("discriminator")
+        if discriminator:
+            field = discriminator["field"]
+            value = discriminator["value"]
+            assert schema["properties"][field]["const"] == value, name
 FIXTURE = ROOT / "tests/fixtures/alpha-project"
 
 
@@ -191,6 +240,34 @@ def test_required_fields_and_closed_vocabularies_reject_invalid_data() -> None:
                 "timestamp": "not-a-date-time",
             },
         )
+    finally:
+        sys.path.remove(str(library))
+
+
+def test_runtime_loader_resolves_beta_discriminator_output_names() -> None:
+    library = ROOT / "src/context/skills/_lib"
+    sys.path.insert(0, str(library))
+    try:
+        from processkit import schema
+
+        schema.load_schema.cache_clear()
+        world_fact = schema.load_schema(
+            "Proposition",
+            SCHEMAS.parent,
+            "world-fact",
+        )
+        assert world_fact["discriminator"] == {
+            "field": "kind",
+            "value": "world-fact",
+        }
+        errors = schema.validate_spec(
+            "Proposition",
+            {
+                "kind": "world-fact",
+                "statement": "A source is required.",
+            },
+        )
+        assert errors
     finally:
         sys.path.remove(str(library))
 

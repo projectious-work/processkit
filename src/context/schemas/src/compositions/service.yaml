@@ -1,0 +1,18 @@
+extends: ../primitives/capability.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-service, target_kind: Service, version: 1.0.0-alpha.3}
+spec:
+  description: A provided capability with interface, owner, SLOs, and resources.
+  id_prefix: SERVICE
+  default_directory: context/services
+  spec_schema:
+    required: {__merge: concat, value: [interface, owner]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: service}
+        interface: {type: string, minLength: 1}
+        owner: {type: string, minLength: 1}
+        slos: {type: array, items: {type: string}}
+        resources: {type: array, items: {type: string}}

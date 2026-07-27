@@ -1,0 +1,20 @@
+apiVersion: processkit.projectious.work/installer/v1alpha1
+kind: CompatibilityManifest
+id: v0-release-0-28-4
+source:
+  project: processkit
+  releaseVersion: v0.28.4
+detection:
+  mode: exact-release
+  anchors:
+    - path: PROVENANCE.toml
+      sha256: 8b0ebdf81db3cd6afc2e8923d480b587e5d48f52acbdfe63dcc4893e0cc03a8b
+    - path: .processkit/FORMAT.md
+      sha256: 67de236b87d2cdfb2ffe2abe3d828617f9ed9878bb1315fba926906bc86d4ade
+    - path: .processkit/INDEX.md
+      sha256: 63e7b68ee1abec1d07b228639363c6b070728d4726d8063d4ef861734ae2b2aa
+    - path: context/.processkit-mcp-manifest.json
+      sha256: 776d919073a26220e523a3afe0ef72dde0eb4da768b484718bf18e5339ca0410
+migration:
+  disposition: evidence-only
+  reason: Exact release identity only; inspect corpus migration before fresh install.

@@ -1,0 +1,15 @@
+extends: ../primitives/proposition.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-proposition-worldfact, target_kind: Proposition, version: 1.0.0-beta.1}
+spec:
+  parent: Proposition
+  discriminator: {field: kind, value: world-fact}
+  description: An externally grounded factual proposition.
+  spec_schema:
+    required: {__merge: concat, value: [source]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: world-fact}
+        observed_at: {type: [string, "null"], format: date-time}

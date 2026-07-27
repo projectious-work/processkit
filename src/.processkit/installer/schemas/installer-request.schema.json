@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "operation", "root"],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/installer/v1alpha1"
+    },
+    "operation": {
+      "enum": [
+        "plan", "install", "update", "verify", "uninstall", "recover"
+      ]
+    },
+    "root": {"type": "string", "minLength": 1},
+    "distributionPath": {"type": "string", "minLength": 1},
+    "envelopePath": {"type": "string", "minLength": 1},
+    "signaturePath": {"type": "string", "minLength": 1},
+    "trustStorePath": {"type": "string", "minLength": 1},
+    "profiles": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "harnesses": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "yes": {"type": "boolean", "default": false}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "operation": {"enum": ["plan", "install", "update"]}
+        }
+      },
+      "then": {
+        "oneOf": [
+          {"required": ["distributionPath"]},
+          {
+            "required": [
+              "envelopePath", "signaturePath", "trustStorePath"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {"enum": ["verify", "uninstall", "recover"]}
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {"required": ["distributionPath"]},
+            {"required": ["envelopePath"]},
+            {"required": ["signaturePath"]},
+            {"required": ["trustStorePath"]}
+          ]
+        }
+      }
+    }
+  ]
+}

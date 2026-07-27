@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "processkit-ontology-management": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--script",
+        "context/skills/processkit/ontology-management/mcp/server.py"
+      ],
+      "env": {}
+    }
+  }
+}

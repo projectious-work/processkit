@@ -21,6 +21,33 @@ spec:
   default_directory: context/logs
   append_only: true
   known_event_types:
+    - archive.created
+    - archive.updated
+    - evaluationrun.created
+    - evaluationrun.transitioned
+    - evaluationrun.updated
+    - iteration.created
+    - iteration.transitioned
+    - iteration.updated
+    - location.created
+    - container.created
+    - location.updated
+    - measurement.created
+    - measurement.updated
+    - programincrement.created
+    - programincrement.transitioned
+    - programincrement.updated
+    - release.created
+    - release.transitioned
+    - release.updated
+    - roadmap.created
+    - roadmap.updated
+    - scopeplan.created
+    - scopeplan.updated
+    - service.created
+    - service.updated
+    - workitemtemplate.created
+    - workitemtemplate.updated
     - actor.created
     - actor.deactivated
     - actor.updated

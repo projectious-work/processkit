@@ -48,6 +48,10 @@ def load_schema(
             r"(?<!^)(?=[A-Z])", "-", discriminator
         ).lower()
         names.append(f"{kind.lower()}-{discriminator_name}.yaml")
+        compact_discriminator = discriminator_name.replace("-", "")
+        compact_name = f"{kind.lower()}-{compact_discriminator}.yaml"
+        if compact_name not in names:
+            names.append(compact_name)
     names.append(f"{kind.lower()}.yaml")
     kebab = _re.sub(r"(?<!^)(?=[A-Z])", "-", kind).lower()
     if f"{kebab}.yaml" not in names:

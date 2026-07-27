@@ -1,0 +1,12 @@
+{
+  "$schema": ".processkit/installer/schemas/release-descriptor.schema.json",
+  "apiVersion": "processkit.projectious.work/installer/v1alpha1",
+  "kind": "ReleaseDescriptor",
+  "distribution": {
+    "manifest": ".processkit/installer/distribution.yaml",
+    "manifestSha256": "0df59d9d16715d8ce25c6b2c3d96e32a1600e901cb014ead53074e66e87530d6",
+    "protocol": "processkit.projectious.work/installer/v1alpha1"
+  },
+  "installer": {"requires": ">=0.1.0 <0.2.0"},
+  "asset": {"layout": "single-top-level-directory"}
+}

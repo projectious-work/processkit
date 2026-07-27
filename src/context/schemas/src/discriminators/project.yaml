@@ -1,0 +1,12 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-container-project, target_kind: Container, version: 1.0.0-alpha.3}
+spec:
+  parent: Container
+  discriminator: {field: kind, value: project}
+  description: A bounded initiative, repository, or product effort.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value: {kind: {const: project}}

@@ -1,0 +1,19 @@
+extends: [../fragments/entity.yaml, ../fragments/versioned.yaml]
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-outcome, target_kind: Outcome, version: 1.0.0-beta.1}
+spec:
+  interfaces: {__merge: concat, value: [Record]}
+  description: A result, effect, delivery state, or measured consequence.
+  id_prefix: OUT
+  state_machine: null
+  default_directory: context/outcomes
+  known_kinds: [result, effect, delivery, metric-result]
+  spec_schema:
+    type: object
+    required: [name, kind]
+    additionalProperties: true
+    properties:
+      name: {type: string, minLength: 1}
+      kind: {type: string, enum: [result, effect, delivery, metric-result]}
+      evidence: {type: array, items: {type: string}}

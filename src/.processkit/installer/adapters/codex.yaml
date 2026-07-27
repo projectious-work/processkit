@@ -1,0 +1,7 @@
+apiVersion: processkit.projectious.work/installer/v1alpha1
+kind: HarnessAdapter
+id: codex
+format: json
+destination: .mcp.json
+ownership: managed-keys
+catalog: .processkit/installer/catalogs/mcp.yaml

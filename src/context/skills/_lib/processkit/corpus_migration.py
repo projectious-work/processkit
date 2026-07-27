@@ -14,6 +14,24 @@ class CorpusMigrationError(ValueError):
     """Raised when a migration plan is stale or cannot be applied safely."""
 
 
+# Every canonical v0 entity family has an explicit v1 disposition. Identity
+# mappings still matter: they prove that the kind was reviewed and prevent an
+# unknown future kind from being silently relabelled as v2.
+V0_KIND_DISPOSITIONS: dict[str, dict[str, str]] = {
+    kind: {"action": "identity", "target_kind": kind}
+    for kind in (
+        "Actor", "Artifact", "Binding", "Capability", "Category",
+        "Constraint", "DecisionRecord", "Discussion", "Gate", "LogEntry",
+        "Migration", "Note", "Role", "RoleSlot", "TeamMember", "WorkItem",
+    )
+}
+V0_KIND_DISPOSITIONS["Scope"] = {
+    "action": "transform",
+    "target_kind": "Container",
+    "discriminator": "scope",
+}
+
+
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -40,6 +58,11 @@ def _normalize_datetime(value: Any) -> Any:
 
 def _transform(ent: entity.Entity) -> tuple[entity.Entity, list[str]]:
     changes: list[str] = []
+    disposition = V0_KIND_DISPOSITIONS.get(ent.kind)
+    if disposition is None:
+        raise CorpusMigrationError(
+            f"no explicit v0-to-v1 disposition for kind {ent.kind!r}"
+        )
     if ent.apiVersion != API_VERSION:
         ent.apiVersion = API_VERSION
         changes.append("apiVersion")
@@ -87,7 +110,12 @@ def plan_v0_to_v1(
             errors.append({"path": relative, "error": str(exc)})
             continue
         before_fields = _field_count(ent.to_dict())
-        transformed, changes = _transform(ent)
+        source_kind = ent.kind
+        try:
+            transformed, changes = _transform(ent)
+        except CorpusMigrationError as exc:
+            errors.append({"path": relative, "error": str(exc)})
+            continue
         if not changes:
             continue
         validation_errors = schema.validate_spec(
@@ -110,6 +138,10 @@ def plan_v0_to_v1(
             "source_field_count": before_fields,
             "target_field_count": after_fields,
             "field_loss_count": max(0, before_fields - after_fields),
+            "disposition": V0_KIND_DISPOSITIONS.get(
+                source_kind,
+                {"action": "reject"},
+            ),
         })
     tree_hash = _sha256("\n".join(source_hashes).encode("utf-8"))
     plan_material = {
@@ -119,6 +151,7 @@ def plan_v0_to_v1(
         "source_tree_sha256": tree_hash,
         "operations": operations,
         "errors": errors,
+        "kind_dispositions": V0_KIND_DISPOSITIONS,
     }
     plan_id = f"v0-v1-{_sha256(json.dumps(plan_material, sort_keys=True).encode())[:16]}"
     total_source = sum(item["source_field_count"] for item in operations)
