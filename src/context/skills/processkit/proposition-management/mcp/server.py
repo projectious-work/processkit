@@ -7,7 +7,7 @@
 #   "jsonschema>=4.0",
 # ]
 # ///
-"""Claim and risk tools for the processkit v1 Proposition contract."""
+"""Tools for the processkit v1 Proposition discriminator contracts."""
 from __future__ import annotations
 
 import os
@@ -38,7 +38,14 @@ from processkit import config, entity, ids, index, log, paths, schema  # noqa: E
 
 server = FastMCP("processkit-proposition-management")
 
-_KINDS = {"claim", "risk"}
+_KINDS = {
+    "assumption",
+    "belief",
+    "claim",
+    "risk",
+    "world-fact",
+    "wsjf-estimate",
+}
 _FIELDS = {
     "statement",
     "status",
@@ -60,6 +67,13 @@ _FIELDS = {
     "affected_entities",
     "review_at",
     "realized_at",
+    "rationale",
+    "observed_at",
+    "cost_of_delay",
+    "job_size",
+    "score",
+    "validation_due",
+    "validation_method",
 }
 
 
@@ -130,8 +144,15 @@ def create_proposition(
     contingency: str | None = None,
     affected_entities: list[str] | None = None,
     review_at: str | None = None,
+    rationale: str | None = None,
+    observed_at: str | None = None,
+    cost_of_delay: float | None = None,
+    job_size: float | None = None,
+    score: float | None = None,
+    validation_due: str | None = None,
+    validation_method: str | None = None,
 ) -> dict:
-    """Create a claim or Risk discriminator under one Proposition kind."""
+    """Create a Proposition using a generated discriminator contract."""
     if kind not in _KINDS:
         return {"error": f"kind must be one of {sorted(_KINDS)}"}
     root = paths.find_project_root()
@@ -166,6 +187,13 @@ def create_proposition(
         "contingency": contingency,
         "affected_entities": affected_entities,
         "review_at": review_at,
+        "rationale": rationale,
+        "observed_at": observed_at,
+        "cost_of_delay": cost_of_delay,
+        "job_size": job_size,
+        "score": score,
+        "validation_due": validation_due,
+        "validation_method": validation_method,
     }
     for field, value in values.items():
         if value is not None:
@@ -232,6 +260,13 @@ def update_proposition(
     affected_entities: list[str] | None = None,
     review_at: str | None = None,
     realized_at: str | None = None,
+    rationale: str | None = None,
+    observed_at: str | None = None,
+    cost_of_delay: float | None = None,
+    job_size: float | None = None,
+    score: float | None = None,
+    validation_due: str | None = None,
+    validation_method: str | None = None,
 ) -> dict:
     """Update a Proposition while preserving its discriminator."""
     root = paths.find_project_root()

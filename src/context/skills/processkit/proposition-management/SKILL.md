@@ -1,7 +1,8 @@
 ---
 name: proposition-management
 description: >
-  Record and maintain claims and risks through the Proposition interface.
+  Record claims, risks, beliefs, world facts, WSJF estimates, and assumptions
+  through the Proposition interface.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
@@ -28,15 +29,16 @@ metadata:
 
 ## Intro
 
-Proposition management records claims and risks without splitting each
-epistemic variant into a false top-level entity kind.
+Proposition management records epistemic and prioritization statements without
+splitting each variant into a false top-level entity kind.
 
 ## Overview
 
-Use `create_proposition(kind="claim", ...)` for an ordinary claim and
-`kind="risk"` with likelihood and impact for a Risk discriminator. Read and
-query through the shared Proposition interface. Updates revalidate the
-selected discriminator overlay and preserve one `PROP-` identity.
+Use `create_proposition(kind="claim", ...)` for an ordinary claim. Generated
+overlays additionally support `risk`, `belief`, `world-fact`,
+`wsjf-estimate`, and `assumption`. Read and query every variant through the
+shared Proposition interface. Updates revalidate the selected discriminator
+overlay and preserve one `PROP-` identity.
 
 ## Gotchas
 
@@ -54,9 +56,9 @@ selected discriminator overlay and preserve one `PROP-` identity.
 ## Full reference
 
 Claims accept status, confidence, ownership, evidence, scope, source, validity,
-and supersession metadata. Risks add likelihood, probability, impact,
-risk-status, response, mitigation, contingency, affected entities, and review
-or realization timestamps.
+and supersession metadata. Risks add likelihood and impact fields; beliefs add
+rationale; world facts require a source; WSJF estimates require cost of delay
+and job size; assumptions add validation timing and method.
 
 Anti-patterns:
 

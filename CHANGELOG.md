@@ -60,6 +60,9 @@ aibox.
 - Added a release-tested alpha workflow covering TeamMember role assignment,
   Scope, Capability, Proposition, Risk, Skill, migration, interface queries,
   and OKF export from the staged package.
+- Activated the generated Belief, WorldFact, WSJFEstimate, and Assumption
+  Proposition discriminator contracts through MCP create, update, and query
+  operations.
 - Added v0 reconciliation and explicit aibox alpha-pilot documentation.
 - Expanded the v1 generated-schema alpha slice with Artifact and Gate.
 - Added interface-aware indexing and the `query_by_interface` MCP tool for
