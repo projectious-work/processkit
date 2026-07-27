@@ -1,523 +1,99 @@
-<!doctype html>
-<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-development/ontology-reference" data-has-hydrated="false">
-<head>
-<meta charset="UTF-8">
-<meta name="generator" content="Docusaurus v3.9.2">
-<title data-rh="true">Ontology Reference | processkit</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://projectious-work.github.io/processkit/docs/development/ontology-reference"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Ontology Reference | processkit"><meta data-rh="true" name="description" content="T/P/D/C ontology baseline for processkit v1.0."><meta data-rh="true" property="og:description" content="T/P/D/C ontology baseline for processkit v1.0."><link data-rh="true" rel="icon" href="/processkit/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://projectious-work.github.io/processkit/docs/development/ontology-reference"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/ontology-reference" hreflang="en"><link data-rh="true" rel="alternate" href="https://projectious-work.github.io/processkit/docs/development/ontology-reference" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Ontology Reference","item":"https://projectious-work.github.io/processkit/docs/development/ontology-reference"}]}</script><link rel="stylesheet" href="/processkit/assets/css/styles.c0aa031c.css">
-<script src="/processkit/assets/js/runtime~main.95aabb41.js" defer="defer"></script>
-<script src="/processkit/assets/js/main.ca1728cd.js" defer="defer"></script>
-</head>
-<body class="navigation-with-keyboard">
-<svg style="display: none;"><defs>
-<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
-</defs></svg>
-<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/processkit/"><b class="navbar__title text--truncate">processkit</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/processkit/docs/">Docs</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_g3eP systemToggleIcon_QzmC"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/processkit/docs/"><span title="Introduction" class="linkLabel_WmDU">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/processkit/docs/development/"><span title="Development" class="categoryLinkLabel_W154">Development</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/"><span title="Development" class="linkLabel_WmDU">Development</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/product-specification"><span title="Product Specification" class="linkLabel_WmDU">Product Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/architecture-specification"><span title="Architecture Specification" class="linkLabel_WmDU">Architecture Specification</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/processkit/docs/development/ontology-reference"><span title="Ontology Reference" class="linkLabel_WmDU">Ontology Reference</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/tooling-architecture"><span title="Tooling Architecture" class="linkLabel_WmDU">Tooling Architecture</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/test-strategy"><span title="Test Strategy" class="linkLabel_WmDU">Test Strategy</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/alpha-scope"><span title="Alpha Scope" class="linkLabel_WmDU">Alpha Scope</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/landscape-note"><span title="Landscape Note" class="linkLabel_WmDU">Landscape Note</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/development/acceptance-gate"><span title="Acceptance Gate" class="linkLabel_WmDU">Acceptance Gate</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/processkit/docs/development/analysis/"><span title="Analysis" class="categoryLinkLabel_W154">Analysis</span></a></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/processkit/docs/getting-started/overview"><span title="Getting Started" class="categoryLinkLabel_W154">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/overview"><span title="Overview" class="linkLabel_WmDU">Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/installing"><span title="Installing" class="linkLabel_WmDU">Installing</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/processkit/docs/getting-started/first-entity"><span title="Your First Entity" class="linkLabel_WmDU">Your First Entity</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/primitives/overview"><span title="Primitives" class="categoryLinkLabel_W154">Primitives</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/skills/overview"><span title="Skills" class="categoryLinkLabel_W154">Skills</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/packages/overview"><span title="Packages" class="categoryLinkLabel_W154">Packages</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/processes/overview"><span title="Processes" class="categoryLinkLabel_W154">Processes</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/mcp-servers/overview"><span title="MCP Servers" class="categoryLinkLabel_W154">MCP Servers</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_byQd menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/processkit/docs/reference/apiversion-policy"><span title="Reference" class="categoryLinkLabel_W154">Reference</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/processkit/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Development</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Ontology Reference</span></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Ontology Reference</h1></header>
-<p><code>processkit-v1.0-rfc-draft.md</code> is the leading document for the v1.0
+<!doctype html><html itemscope itemtype=http://schema.org/WebPage lang=en class=no-js data-theme-init><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=color-scheme content="light dark"><meta name=theme-color media="(prefers-color-scheme: light)" content="#ffffff"><meta name=theme-color media="(prefers-color-scheme: dark)" content="#000000"><style>html{background:Canvas;color:CanvasText}@media(prefers-color-scheme:dark){html{background:#0b0d12;color:#e6e6e6}}html[data-theme-init] *{transition:none!important}</style><script>(function(){const t="td-color-theme",n=localStorage.getItem(t);let e=n||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");e==="auto"&&(e=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),document.documentElement.setAttribute("data-bs-theme",e)})()</script><link rel=alternate type=text/markdown href=https://projectious-work.github.io/processkit/docs/development/ontology-reference/index.md><meta name=robots content="index, follow"><link rel=icon href=/processkit/favicons/favicon.83f191eea4b354ee271a690fe74b51b3.ico sizes=any><link rel=icon href=/processkit/favicons/favicon.9e0ed0dc0fe4fdebb76284ced382326f.svg type=image/svg+xml><link rel=icon href=/processkit/favicons/favicon-16x16.31a7821f6a4776192d0a9c2547ba7bb2.png type=image/png sizes=16x16><link rel=icon href=/processkit/favicons/favicon-32x32.3addb4ef259b6a195c5c23331cab1627.png type=image/png sizes=32x32><link rel=icon href=/processkit/favicons/favicon-48x48.f1870bbc147126a3069dca35a0263181.png type=image/png sizes=48x48><link rel=icon href=/processkit/favicons/icon-128x128.417e6cd5a08c0491e3728634e8d0646f.png type=image/png sizes=128x128><link rel=icon href=/processkit/favicons/icon-256x256.d0f7179f697cd4770f074f81d58c4768.png type=image/png sizes=256x256><link rel=apple-touch-icon href=/processkit/favicons/apple-touch-icon-180x180.b540070a4d1eacc1329b6a4de5ab1262.png sizes=180x180><title>Ontology Reference | processkit</title><meta name=description content="T/P/D/C ontology baseline for processkit v1.0."><meta property="og:url" content="https://projectious-work.github.io/processkit/docs/development/ontology-reference/"><meta property="og:site_name" content="processkit"><meta property="og:title" content="Ontology Reference"><meta property="og:description" content="T/P/D/C ontology baseline for processkit v1.0."><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="article:section" content="docs"><meta property="article:modified_time" content="2026-07-27T23:14:01+02:00"><meta itemprop=name content="Ontology Reference"><meta itemprop=description content="T/P/D/C ontology baseline for processkit v1.0."><meta itemprop=dateModified content="2026-07-27T23:14:01+02:00"><meta itemprop=wordCount content="1341"><meta name=twitter:card content="summary"><meta name=twitter:title content="Ontology Reference"><meta name=twitter:description content="T/P/D/C ontology baseline for processkit v1.0."><link rel=preload href=/processkit/scss/main.min.ac74f60210e77c1468d1e6bbee34cc99d54ca911906f6f69b5c468d4a2e1d545.css as=style integrity="sha256-rHT2AhDnfBRo0ea77jTMmdVMqRGQb29ptcRo1KLh1UU=" crossorigin=anonymous><link href=/processkit/scss/main.min.ac74f60210e77c1468d1e6bbee34cc99d54ca911906f6f69b5c468d4a2e1d545.css rel=stylesheet integrity="sha256-rHT2AhDnfBRo0ea77jTMmdVMqRGQb29ptcRo1KLh1UU=" crossorigin=anonymous><script src=https://code.jquery.com/jquery-3.7.1.min.js integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin=anonymous></script><script defer src=https://unpkg.com/lunr@2.3.9/lunr.min.js integrity=sha384-203J0SNzyqHby3iU6hzvzltrWi/M41wOP5Gu+BiJMz5nwKykbkUx8Kp7iti0Lpli crossorigin=anonymous></script><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel=stylesheet><meta name=theme-color content="#132440"></head><body class=td-page><header><nav class="td-navbar js-navbar-scroll" data-bs-theme=dark><div class="td-navbar-container container-fluid flex-column flex-md-row"><a class=navbar-brand href=/processkit/><span class="navbar-brand__logo navbar-logo"><svg viewBox="0 0 40 40" role="img" aria-labelledby="processkitMarkTitle" class="processkit-mark"><title id="processkitMarkTitle">processkit</title><circle class="processkit-mark__disc" cx="20" cy="20" r="17.6"/><g class="processkit-mark__loop" fill="none" stroke-width="3.6" stroke-linecap="round"><path d="M25.91 27.56a9.6 9.6.0 01-8.23 1.75"/><path d="M14.91 28.14A9.6 9.6.0 0110.45 21"/><path d="M10.61 18a9.6 9.6.0 014.59-6.31"/><path d="M18 10.61A9.6 9.6.0 0122.32 10.68"/></g><path class="processkit-mark__head" d="M22.309 13.657l1.949-5.355L27.96 14.63z"/><circle class="processkit-mark__node" cx="29.48" cy="21.5" r="3.4"/></svg></span><span class=navbar-brand__name>processkit</span></a><div class="td-navbar__main td-navbar-nav-scroll td-navbar-nav-scroll--indicator" id=main_navbar><div class="scroll-indicator scroll-left"></div><ul class=navbar-nav><li class=nav-item><a class=nav-link href=/processkit/docs/><span>Documentation</span></a></li><li class=nav-item><a class=nav-link href=https://github.com/projectious-work/processkit target=_blank rel=noopener><i class='fa-brands fa-github' aria-hidden=true></i><span>GitHub</span></a></li><li class="nav-item td-navbar__version-menu"><div class="td-version-menu dropdown"><a class="nav-link dropdown-toggle td-version-menu__title" href=# role=button data-bs-toggle=dropdown aria-haspopup=true aria-expanded=false><span class=td-version-menu__title-text>Release line</span></a><ul class=dropdown-menu><li><span class="dropdown-item disabled dropdown-item-text"><strong>Release lines</strong></span></li><li><a class="dropdown-item active dropdown-item-latest" aria-current=page href=https://projectious-work.github.io/processkit>v0.x</a></li><li><a class=dropdown-item href=https://projectious-work.github.io/processkit/v1.x>v1.x (preview)</a></li></ul></div></li><li class="nav-item td-navbar__light-dark-menu"><div class="td-light-dark-menu dropdown"><svg class="d-none"><symbol id="check2" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5.0 010 .708l-7 7a.5.5.0 01-.708.0l-3.5-3.5a.5.5.0 11.708-.708L6.5 10.293l6.646-6.647a.5.5.0 01.708.0z"/></symbol><symbol id="circle-half" viewBox="0 0 16 16"><path d="M8 15A7 7 0 108 1v14zm0 1A8 8 0 118 0a8 8 0 010 16z"/></symbol><symbol id="moon-stars-fill" viewBox="0 0 16 16"><path d="M6 .278a.768.768.0 01.08.858 7.208 7.208.0 00-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527.0 1.04-.055 1.533-.16a.787.787.0 01.81.316.733.733.0 01-.031.893A8.349 8.349.0 018.344 16C3.734 16 0 12.286.0 7.71.0 4.266 2.114 1.312 5.124.06A.752.752.0 016 .278z"/><path d="M10.794 3.148a.217.217.0 01.412.0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217.0 010 .412l-1.162.387A1.734 1.734.0 0011.593 7.69l-.387 1.162a.217.217.0 01-.412.0l-.387-1.162A1.734 1.734.0 009.31 6.593l-1.162-.387a.217.217.0 010-.412l1.162-.387a1.734 1.734.0 001.097-1.097l.387-1.162zM13.863.099a.145.145.0 01.274.0l.258.774c.115.346.386.617.732.732l.774.258a.145.145.0 010 .274l-.774.258a1.156 1.156.0 00-.732.732l-.258.774a.145.145.0 01-.274.0l-.258-.774a1.156 1.156.0 00-.732-.732l-.774-.258a.145.145.0 010-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/></symbol><symbol id="sun-fill" viewBox="0 0 16 16"><path d="M8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.5.5.0 01.5.5v2a.5.5.0 01-1 0v-2A.5.5.0 018 0zm0 13a.5.5.0 01.5.5v2a.5.5.0 01-1 0v-2A.5.5.0 018 13zm8-5a.5.5.0 01-.5.5h-2a.5.5.0 010-1h2a.5.5.0 01.5.5zM3 8a.5.5.0 01-.5.5h-2a.5.5.0 010-1h2A.5.5.0 013 8zm10.657-5.657a.5.5.0 010 .707l-1.414 1.415a.5.5.0 11-.707-.708l1.414-1.414a.5.5.0 01.707.0zm-9.193 9.193a.5.5.0 010 .707L3.05 13.657a.5.5.0 01-.707-.707l1.414-1.414a.5.5.0 01.707.0zm9.193 2.121a.5.5.0 01-.707.0l-1.414-1.414a.5.5.0 01.707-.707l1.414 1.414a.5.5.0 010 .707zM4.464 4.465a.5.5.0 01-.707.0L2.343 3.05a.5.5.0 11.707-.707l1.414 1.414a.5.5.0 010 .708z"/></symbol></svg>
+<button class="btn btn-link nav-link dropdown-toggle d-flex align-items-center" id=bd-theme type=button aria-expanded=false data-bs-toggle=dropdown aria-label="Toggle theme (auto)">
+<svg class="bi my-1 theme-icon-active"><use href="#circle-half"/></svg></button><ul class=dropdown-menu aria-labelledby=bd-theme><li><button type=button class="dropdown-item d-flex align-items-center" data-bs-theme-value=light aria-pressed=false>
+<svg class="bi me-2 opacity-50"><use href="#sun-fill"/></svg>
+Light
+<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li><li><button type=button class="dropdown-item d-flex align-items-center" data-bs-theme-value=dark aria-pressed=false>
+<svg class="bi me-2 opacity-50"><use href="#moon-stars-fill"/></svg>
+Dark
+<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li><li><button type=button class="dropdown-item d-flex align-items-center active" data-bs-theme-value=auto aria-pressed=true>
+<svg class="bi me-2 opacity-50"><use href="#circle-half"/></svg>
+Auto
+<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li></ul></div></li></ul><div class="scroll-indicator scroll-right"></div></div><div class="td-navbar__search d-none d-lg-block"><div class="td-search td-search--offline"><div class=td-search__icon></div><input type=search name=q class="td-search__input form-control" placeholder='Search this site…' aria-label='Search this site…' autocomplete=off data-offline-search-index-json-src=/processkit/offline-search-index.648c1c38acc5110bd11cb31e95344856.json data-offline-search-base-href=/ data-offline-search-max-results=25></div></div></div></nav></header><div class="container-fluid td-outer"><div class=td-main data-bs-spy=scroll data-bs-target=.td-toc data-bs-root-margin="0px 0px -10%"><div class="row flex-xl-nowrap"><aside class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none"><div id=td-sidebar-menu class=td-sidebar__inner><form class="td-sidebar__search d-flex align-items-center"><div class="td-search td-search--offline"><div class=td-search__icon></div><input type=search name=q class="td-search__input form-control" placeholder='Search this site…' aria-label='Search this site…' autocomplete=off data-offline-search-index-json-src=/processkit/offline-search-index.648c1c38acc5110bd11cb31e95344856.json data-offline-search-base-href=/ data-offline-search-max-results=25></div><button class="btn btn-link td-sidebar__toggle" type=button data-bs-toggle=collapse data-bs-target=#td-section-nav aria-controls=td-section-nav aria-expanded=false aria-label="Toggle section navigation"></button></form><nav class="td-sidebar-nav collapse foldable-nav" id=td-section-nav><ul class="td-sidebar-nav__section pe-md-3 ul-0"><li class="td-sidebar-nav__section-title td-sidebar-nav__section with-child active-path" id=m-processkitdocs-li><a href=/processkit/docs/ class="align-left ps-0 td-sidebar-link td-sidebar-link__section tree-root" id=m-processkitdocs><span>Introduction</span></a><ul class=ul-1><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsreferenceapiversion-policy-li><input type=checkbox id=m-processkitdocsreferenceapiversion-policy-check>
+<label for=m-processkitdocsreferenceapiversion-policy-check><a href=/processkit/docs/reference/apiversion-policy/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsreferenceapiversion-policy><span>apiVersion Policy</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsgetting-startedoverview-li><input type=checkbox id=m-processkitdocsgetting-startedoverview-check>
+<label for=m-processkitdocsgetting-startedoverview-check><a href=/processkit/docs/getting-started/overview/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsgetting-startedoverview><span>Overview</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsmcp-serversoverview-li><input type=checkbox id=m-processkitdocsmcp-serversoverview-check>
+<label for=m-processkitdocsmcp-serversoverview-check><a href=/processkit/docs/mcp-servers/overview/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsmcp-serversoverview><span>Overview</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocspackagesoverview-li><input type=checkbox id=m-processkitdocspackagesoverview-check>
+<label for=m-processkitdocspackagesoverview-check><a href=/processkit/docs/packages/overview/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocspackagesoverview><span>Overview</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesoverview-li><input type=checkbox id=m-processkitdocsprimitivesoverview-check>
+<label for=m-processkitdocsprimitivesoverview-check><a href=/processkit/docs/primitives/overview/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesoverview><span>Overview</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprocessesoverview-li><input type=checkbox id=m-processkitdocsprocessesoverview-check>
+<label for=m-processkitdocsprocessesoverview-check><a href=/processkit/docs/processes/overview/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprocessesoverview><span>Overview</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillsoverview-li><input type=checkbox id=m-processkitdocsskillsoverview-check>
+<label for=m-processkitdocsskillsoverview-check><a href=/processkit/docs/skills/overview/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillsoverview><span>Overview</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesformat-li><input type=checkbox id=m-processkitdocsprimitivesformat-check>
+<label for=m-processkitdocsprimitivesformat-check><a href=/processkit/docs/primitives/format/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesformat><span>Entity File Format</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsmcp-serversharness-compatibility-li><input type=checkbox id=m-processkitdocsmcp-serversharness-compatibility-check>
+<label for=m-processkitdocsmcp-serversharness-compatibility-check><a href=/processkit/docs/mcp-servers/harness-compatibility/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsmcp-serversharness-compatibility><span>Harness Compatibility</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsreferenceid-formats-li><input type=checkbox id=m-processkitdocsreferenceid-formats-check>
+<label for=m-processkitdocsreferenceid-formats-check><a href=/processkit/docs/reference/id-formats/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsreferenceid-formats><span>ID Formats</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsgetting-startedinstalling-li><input type=checkbox id=m-processkitdocsgetting-startedinstalling-check>
+<label for=m-processkitdocsgetting-startedinstalling-check><a href=/processkit/docs/getting-started/installing/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsgetting-startedinstalling><span>Installing</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocspackagesminimal-li><input type=checkbox id=m-processkitdocspackagesminimal-check>
+<label for=m-processkitdocspackagesminimal-check><a href=/processkit/docs/packages/minimal/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocspackagesminimal><span>minimal</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogprocess-li><input type=checkbox id=m-processkitdocsskillscatalogprocess-check>
+<label for=m-processkitdocsskillscatalogprocess-check><a href=/processkit/docs/skills/catalog/process/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogprocess><span>Process Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillsformat-li><input type=checkbox id=m-processkitdocsskillsformat-check>
+<label for=m-processkitdocsskillsformat-check><a href=/processkit/docs/skills/format/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillsformat><span>Skill Package Format</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocspackagesmanaged-li><input type=checkbox id=m-processkitdocspackagesmanaged-check>
+<label for=m-processkitdocspackagesmanaged-check><a href=/processkit/docs/packages/managed/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocspackagesmanaged><span>managed</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillshierarchy-li><input type=checkbox id=m-processkitdocsskillshierarchy-check>
+<label for=m-processkitdocsskillshierarchy-check><a href=/processkit/docs/skills/hierarchy/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillshierarchy><span>Skill Hierarchy</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesstate-machines-li><input type=checkbox id=m-processkitdocsprimitivesstate-machines-check>
+<label for=m-processkitdocsprimitivesstate-machines-check><a href=/processkit/docs/primitives/state-machines/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesstate-machines><span>State Machines</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsreferencemigration-li><input type=checkbox id=m-processkitdocsreferencemigration-check>
+<label for=m-processkitdocsreferencemigration-check><a href=/processkit/docs/reference/migration/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsreferencemigration><span>Version Migration</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsgetting-startedfirst-entity-li><input type=checkbox id=m-processkitdocsgetting-startedfirst-entity-check>
+<label for=m-processkitdocsgetting-startedfirst-entity-check><a href=/processkit/docs/getting-started/first-entity/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsgetting-startedfirst-entity><span>Your First Entity</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscataloglanguage-li><input type=checkbox id=m-processkitdocsskillscataloglanguage-check>
+<label for=m-processkitdocsskillscataloglanguage-check><a href=/processkit/docs/skills/catalog/language/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscataloglanguage><span>Language Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsreferenceprivacy-li><input type=checkbox id=m-processkitdocsreferenceprivacy-check>
+<label for=m-processkitdocsreferenceprivacy-check><a href=/processkit/docs/reference/privacy/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsreferenceprivacy><span>Privacy Tiers</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesrelationships-li><input type=checkbox id=m-processkitdocsprimitivesrelationships-check>
+<label for=m-processkitdocsprimitivesrelationships-check><a href=/processkit/docs/primitives/relationships/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesrelationships><span>Relationships</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocspackagessoftware-li><input type=checkbox id=m-processkitdocspackagessoftware-check>
+<label for=m-processkitdocspackagessoftware-check><a href=/processkit/docs/packages/software/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocspackagessoftware><span>software</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscataloginfrastructure-li><input type=checkbox id=m-processkitdocsskillscataloginfrastructure-check>
+<label for=m-processkitdocsskillscataloginfrastructure-check><a href=/processkit/docs/skills/catalog/infrastructure/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscataloginfrastructure><span>Infrastructure Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocspackagesresearch-li><input type=checkbox id=m-processkitdocspackagesresearch-check>
+<label for=m-processkitdocspackagesresearch-check><a href=/processkit/docs/packages/research/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocspackagesresearch><span>research</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsreferencev2-contracts-li><input type=checkbox id=m-processkitdocsreferencev2-contracts-check>
+<label for=m-processkitdocsreferencev2-contracts-check><a href=/processkit/docs/reference/v2-contracts/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsreferencev2-contracts><span>v2 Contracts</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogarchitecture-li><input type=checkbox id=m-processkitdocsskillscatalogarchitecture-check>
+<label for=m-processkitdocsskillscatalogarchitecture-check><a href=/processkit/docs/skills/catalog/architecture/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogarchitecture><span>Architecture Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocspackagesproduct-li><input type=checkbox id=m-processkitdocspackagesproduct-check>
+<label for=m-processkitdocspackagesproduct-check><a href=/processkit/docs/packages/product/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocspackagesproduct><span>product</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogdesign-li><input type=checkbox id=m-processkitdocsskillscatalogdesign-check>
+<label for=m-processkitdocsskillscatalogdesign-check><a href=/processkit/docs/skills/catalog/design/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogdesign><span>Design & Visual Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogdata-li><input type=checkbox id=m-processkitdocsskillscatalogdata-check>
+<label for=m-processkitdocsskillscatalogdata-check><a href=/processkit/docs/skills/catalog/data/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogdata><span>Data & Analytics Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogai-ml-li><input type=checkbox id=m-processkitdocsskillscatalogai-ml-check>
+<label for=m-processkitdocsskillscatalogai-ml-check><a href=/processkit/docs/skills/catalog/ai-ml/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogai-ml><span>AI & ML Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogapi-li><input type=checkbox id=m-processkitdocsskillscatalogapi-check>
+<label for=m-processkitdocsskillscatalogapi-check><a href=/processkit/docs/skills/catalog/api/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogapi><span>API & Integration Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section with-child active-path" id=m-processkitdocsdevelopment-li><input type=checkbox id=m-processkitdocsdevelopment-check checked>
+<label for=m-processkitdocsdevelopment-check><a href=/processkit/docs/development/ class="align-left ps-0 td-sidebar-link td-sidebar-link__section" id=m-processkitdocsdevelopment><span>Development</span></a></label><ul class="ul-2 foldable"><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentproduct-specification-li><input type=checkbox id=m-processkitdocsdevelopmentproduct-specification-check>
+<label for=m-processkitdocsdevelopmentproduct-specification-check><a href=/processkit/docs/development/product-specification/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentproduct-specification><span>Product Specification</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentarchitecture-specification-li><input type=checkbox id=m-processkitdocsdevelopmentarchitecture-specification-check>
+<label for=m-processkitdocsdevelopmentarchitecture-specification-check><a href=/processkit/docs/development/architecture-specification/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentarchitecture-specification><span>Architecture Specification</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child active-path" id=m-processkitdocsdevelopmentontology-reference-li><input type=checkbox id=m-processkitdocsdevelopmentontology-reference-check checked>
+<label for=m-processkitdocsdevelopmentontology-reference-check><a href=/processkit/docs/development/ontology-reference/ class="align-left ps-0 active td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentontology-reference><span class=td-sidebar-nav-active-item>Ontology Reference</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmenttooling-architecture-li><input type=checkbox id=m-processkitdocsdevelopmenttooling-architecture-check>
+<label for=m-processkitdocsdevelopmenttooling-architecture-check><a href=/processkit/docs/development/tooling-architecture/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmenttooling-architecture><span>Tooling Architecture</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmenttest-strategy-li><input type=checkbox id=m-processkitdocsdevelopmenttest-strategy-check>
+<label for=m-processkitdocsdevelopmenttest-strategy-check><a href=/processkit/docs/development/test-strategy/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmenttest-strategy><span>Test Strategy</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentalpha-scope-li><input type=checkbox id=m-processkitdocsdevelopmentalpha-scope-check>
+<label for=m-processkitdocsdevelopmentalpha-scope-check><a href=/processkit/docs/development/alpha-scope/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentalpha-scope><span>Alpha Scope</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentlandscape-note-li><input type=checkbox id=m-processkitdocsdevelopmentlandscape-note-check>
+<label for=m-processkitdocsdevelopmentlandscape-note-check><a href=/processkit/docs/development/landscape-note/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentlandscape-note><span>Landscape Note</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentacceptance-gate-li><input type=checkbox id=m-processkitdocsdevelopmentacceptance-gate-check>
+<label for=m-processkitdocsdevelopmentacceptance-gate-check><a href=/processkit/docs/development/acceptance-gate/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentacceptance-gate><span>Acceptance Gate</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section with-child" id=m-processkitdocsdevelopmentanalysis-li><input type=checkbox id=m-processkitdocsdevelopmentanalysis-check>
+<label for=m-processkitdocsdevelopmentanalysis-check><a href=/processkit/docs/development/analysis/ class="align-left ps-0 td-sidebar-link td-sidebar-link__section" id=m-processkitdocsdevelopmentanalysis><span>Analysis Archive</span></a></label><ul class="ul-3 foldable"><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentanalysisbase-context-li><input type=checkbox id=m-processkitdocsdevelopmentanalysisbase-context-check>
+<label for=m-processkitdocsdevelopmentanalysisbase-context-check><a href=/processkit/docs/development/analysis/base-context/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentanalysisbase-context><span>processkit v1.0 Base Context</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentanalysisconcept-mapping-briefing-analysis-li><input type=checkbox id=m-processkitdocsdevelopmentanalysisconcept-mapping-briefing-analysis-check>
+<label for=m-processkitdocsdevelopmentanalysisconcept-mapping-briefing-analysis-check><a href=/processkit/docs/development/analysis/concept-mapping-briefing-analysis/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentanalysisconcept-mapping-briefing-analysis><span>Concept Mapping Briefing Analysis</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentanalysisprocesskit-v1-rfc-analysis-li><input type=checkbox id=m-processkitdocsdevelopmentanalysisprocesskit-v1-rfc-analysis-check>
+<label for=m-processkitdocsdevelopmentanalysisprocesskit-v1-rfc-analysis-check><a href=/processkit/docs/development/analysis/processkit-v1-rfc-analysis/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentanalysisprocesskit-v1-rfc-analysis><span>processkit v1.0 RFC Analysis</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentanalysisokf-compatibility-analysis-li><input type=checkbox id=m-processkitdocsdevelopmentanalysisokf-compatibility-analysis-check>
+<label for=m-processkitdocsdevelopmentanalysisokf-compatibility-analysis-check><a href=/processkit/docs/development/analysis/okf-compatibility-analysis/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentanalysisokf-compatibility-analysis><span>OKF Compatibility Analysis</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsdevelopmentanalysisprocesskit-v1-start-assessment-li><input type=checkbox id=m-processkitdocsdevelopmentanalysisprocesskit-v1-start-assessment-check>
+<label for=m-processkitdocsdevelopmentanalysisprocesskit-v1-start-assessment-check><a href=/processkit/docs/development/analysis/processkit-v1-start-assessment/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsdevelopmentanalysisprocesskit-v1-start-assessment><span>processkit v1.0 Start Assessment</span></a></label></li></ul></li></ul></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesworkitem-li><input type=checkbox id=m-processkitdocsprimitivesworkitem-check>
+<label for=m-processkitdocsprimitivesworkitem-check><a href=/processkit/docs/primitives/workitem/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesworkitem><span>WorkItem</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitiveslogentry-li><input type=checkbox id=m-processkitdocsprimitiveslogentry-check>
+<label for=m-processkitdocsprimitiveslogentry-check><a href=/processkit/docs/primitives/logentry/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitiveslogentry><span>LogEntry</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogsecurity-li><input type=checkbox id=m-processkitdocsskillscatalogsecurity-check>
+<label for=m-processkitdocsskillscatalogsecurity-check><a href=/processkit/docs/skills/catalog/security/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogsecurity><span>Security Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesdecisionrecord-li><input type=checkbox id=m-processkitdocsprimitivesdecisionrecord-check>
+<label for=m-processkitdocsprimitivesdecisionrecord-check><a href=/processkit/docs/primitives/decisionrecord/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesdecisionrecord><span>DecisionRecord</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogobservability-li><input type=checkbox id=m-processkitdocsskillscatalogobservability-check>
+<label for=m-processkitdocsskillscatalogobservability-check><a href=/processkit/docs/skills/catalog/observability/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogobservability><span>Observability Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesartifact-li><input type=checkbox id=m-processkitdocsprimitivesartifact-check>
+<label for=m-processkitdocsprimitivesartifact-check><a href=/processkit/docs/primitives/artifact/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesartifact><span>Artifact</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogdatabase-li><input type=checkbox id=m-processkitdocsskillscatalogdatabase-check>
+<label for=m-processkitdocsskillscatalogdatabase-check><a href=/processkit/docs/skills/catalog/database/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogdatabase><span>Database Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesnote-li><input type=checkbox id=m-processkitdocsprimitivesnote-check>
+<label for=m-processkitdocsprimitivesnote-check><a href=/processkit/docs/primitives/note/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesnote><span>Note</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesactor-li><input type=checkbox id=m-processkitdocsprimitivesactor-check>
+<label for=m-processkitdocsprimitivesactor-check><a href=/processkit/docs/primitives/actor/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesactor><span>Actor</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesrole-li><input type=checkbox id=m-processkitdocsprimitivesrole-check>
+<label for=m-processkitdocsprimitivesrole-check><a href=/processkit/docs/primitives/role/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesrole><span>Role</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesbinding-li><input type=checkbox id=m-processkitdocsprimitivesbinding-check>
+<label for=m-processkitdocsprimitivesbinding-check><a href=/processkit/docs/primitives/binding/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesbinding><span>Binding</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesscope-li><input type=checkbox id=m-processkitdocsprimitivesscope-check>
+<label for=m-processkitdocsprimitivesscope-check><a href=/processkit/docs/primitives/scope/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesscope><span>Scope</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesdiscussion-li><input type=checkbox id=m-processkitdocsprimitivesdiscussion-check>
+<label for=m-processkitdocsprimitivesdiscussion-check><a href=/processkit/docs/primitives/discussion/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesdiscussion><span>Discussion</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesgate-li><input type=checkbox id=m-processkitdocsprimitivesgate-check>
+<label for=m-processkitdocsprimitivesgate-check><a href=/processkit/docs/primitives/gate/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesgate><span>Gate</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesmigration-li><input type=checkbox id=m-processkitdocsprimitivesmigration-check>
+<label for=m-processkitdocsprimitivesmigration-check><a href=/processkit/docs/primitives/migration/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesmigration><span>Migration</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesschedule-li><input type=checkbox id=m-processkitdocsprimitivesschedule-check>
+<label for=m-processkitdocsprimitivesschedule-check><a href=/processkit/docs/primitives/schedule/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesschedule><span>Schedule</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesconstraint-li><input type=checkbox id=m-processkitdocsprimitivesconstraint-check>
+<label for=m-processkitdocsprimitivesconstraint-check><a href=/processkit/docs/primitives/constraint/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesconstraint><span>Constraint</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivescategory-li><input type=checkbox id=m-processkitdocsprimitivescategory-check>
+<label for=m-processkitdocsprimitivescategory-check><a href=/processkit/docs/primitives/category/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivescategory><span>Category</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivescross-reference-li><input type=checkbox id=m-processkitdocsprimitivescross-reference-check>
+<label for=m-processkitdocsprimitivescross-reference-check><a href=/processkit/docs/primitives/cross-reference/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivescross-reference><span>CrossReference</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivescontext-entity-li><input type=checkbox id=m-processkitdocsprimitivescontext-entity-check>
+<label for=m-processkitdocsprimitivescontext-entity-check><a href=/processkit/docs/primitives/context-entity/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivescontext-entity><span>Context</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesprocess-entity-li><input type=checkbox id=m-processkitdocsprimitivesprocess-entity-check>
+<label for=m-processkitdocsprimitivesprocess-entity-check><a href=/processkit/docs/primitives/process-entity/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesprocess-entity><span>Process</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsprimitivesstatemachine-li><input type=checkbox id=m-processkitdocsprimitivesstatemachine-check>
+<label for=m-processkitdocsprimitivesstatemachine-check><a href=/processkit/docs/primitives/statemachine/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsprimitivesstatemachine><span>StateMachine</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogframework-li><input type=checkbox id=m-processkitdocsskillscatalogframework-check>
+<label for=m-processkitdocsskillscatalogframework-check><a href=/processkit/docs/skills/catalog/framework/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogframework><span>Framework & SEO Skills</span></a></label></li><li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child" id=m-processkitdocsskillscatalogperformance-li><input type=checkbox id=m-processkitdocsskillscatalogperformance-check>
+<label for=m-processkitdocsskillscatalogperformance-check><a href=/processkit/docs/skills/catalog/performance/ class="align-left ps-0 td-sidebar-link td-sidebar-link__page" id=m-processkitdocsskillscatalogperformance><span>Performance Skills</span></a></label></li></ul></li></ul></nav></div></aside><aside class=td-sidebar-toc><div class="td-page-meta ms-2 pb-1 pt-2 mb-0"><a href=/processkit/docs/development/ontology-reference/index.md class=td-page-meta__markdown><i class="fa-brands fa-markdown fa-fw"></i> View Markdown</a>
+<a id=print href=/processkit/_print/docs/development/><i class="fa-solid fa-print fa-fw"></i> Print entire section</a></div><div class=td-toc data-proofer-ignore><div class=td-toc-title><span class=td-toc-title__text>On this page</span>
+<a class=td-toc-title__link title="Top of page" href=#></a></div><nav id=TableOfContents><ul><li><a href=#tpdc-classes>T/P/D/C Classes</a></li><li><a href=#counts>Counts</a></li><li><a href=#full-working-inventory>Full Working Inventory</a><ul><li><a href=#t-foundational-concepts>T: Foundational Concepts</a></li><li><a href=#p-atomic-primitives>P: Atomic Primitives</a></li><li><a href=#d-discriminator-variants>D: Discriminator Variants</a></li><li><a href=#c-compositions>C: Compositions</a></li></ul></li></ul></nav></div></aside><main class="col-12 col-md-9 col-xl-8 ps-md-5" role=main><div class=pk-release-banner role=note><span class=pk-release-banner__tag>v0.x</span>
+<span class=pk-release-banner__text>This is the <strong>released v0.x line</strong> — the version that ships
+in release tarballs and is dogfooded in this repository. The v1.0 rebuild
+is documented separately in the
+<a href=https://projectious-work.github.io/processkit/v1.x/>v1.x preview</a>.</span></div><nav aria-label=breadcrumb class=td-breadcrumbs><ol class=breadcrumb><li class=breadcrumb-item><a href=/processkit/docs/>Introduction</a></li><li class=breadcrumb-item><a href=/processkit/docs/development/>Development</a></li><li class="breadcrumb-item active" aria-current=page>Ontology Reference</li></ol></nav><div class=td-content><h1>Ontology Reference</h1><div class=lead>T/P/D/C ontology baseline for processkit v1.0.</div><header class=article-meta></header><p><code>processkit-v1.0-rfc-draft.md</code> is the leading document for the v1.0
 ontology. When older analysis conflicts with this page, the RFC and this
-page win.</p>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="tpdc-classes">T/P/D/C Classes<a href="#tpdc-classes" class="hash-link" aria-label="Direct link to T/P/D/C Classes" title="Direct link to T/P/D/C Classes" translate="no">​</a></h2>
-<p>The RFC names four implementation classes. If a note says <code>TCDP</code>, read it
-as the same four classes, with the RFC&#x27;s canonical order written as
-<code>T/P/D/C</code>.</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>Class</th><th>Meaning</th><th>Description</th></tr></thead><tbody><tr><td><code>T</code></td><td>Terminology / foundational fragment</td><td>A concept, slot, or meta-mechanic that has no independent entity lifecycle. T concepts are reused in schemas, state machines, constraints, and generated fragments.</td></tr><tr><td><code>P</code></td><td>Primitive</td><td>An atomic persistent entity kind with its own schema, lifecycle, ID policy, validation contract, and storage path. P concepts can be composed into C concepts.</td></tr><tr><td><code>D</code></td><td>Discriminator</td><td>A typed variant of a parent primitive, usually represented by <code>kind:</code> or an equivalent closed enum. D concepts inherit the parent schema and lifecycle.</td></tr><tr><td><code>C</code></td><td>Composition</td><td>A named kind assembled from primitives plus T fragments. C concepts can have their own lifecycle, but their schema is built from composed parts.</td></tr></tbody></table>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="counts">Counts<a href="#counts" class="hash-link" aria-label="Direct link to Counts" title="Direct link to Counts" translate="no">​</a></h2>
-<p>The v1.0 target is 89 ontology concepts.</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>Class</th><th style="text-align:right">Count</th><th>Rule</th></tr></thead><tbody><tr><td><code>T</code></td><td style="text-align:right">19</td><td>Reusable vocabulary and schema mechanics; no independent persistence.</td></tr><tr><td><code>P</code></td><td style="text-align:right">22</td><td>Atomic persisted entity families with schemas and state machines.</td></tr><tr><td><code>D</code></td><td style="text-align:right">24</td><td>Parent-primitive variants with inherited lifecycle.</td></tr><tr><td><code>C</code></td><td style="text-align:right">24</td><td>Generated composed kinds assembled from P and T parts.</td></tr><tr><td><strong>Total</strong></td><td style="text-align:right"><strong>89</strong></td><td>The RFC count is the release target.</td></tr></tbody></table>
-<h2 class="anchor anchorTargetStickyNavbar_Vzrq" id="full-working-inventory">Full Working Inventory<a href="#full-working-inventory" class="hash-link" aria-label="Direct link to Full Working Inventory" title="Direct link to Full Working Inventory" translate="no">​</a></h2>
-<p>This inventory makes the RFC&#x27;s count concrete for implementation
+page win.</p><h2 id=tpdc-classes>T/P/D/C Classes</h2><p>The RFC names four implementation classes. If a note says <code>TCDP</code>, read it
+as the same four classes, with the RFC&rsquo;s canonical order written as
+<code>T/P/D/C</code>.</p><table><thead><tr><th>Class</th><th>Meaning</th><th>Description</th></tr></thead><tbody><tr><td><code>T</code></td><td>Terminology / foundational fragment</td><td>A concept, slot, or meta-mechanic that has no independent entity lifecycle. T concepts are reused in schemas, state machines, constraints, and generated fragments.</td></tr><tr><td><code>P</code></td><td>Primitive</td><td>An atomic persistent entity kind with its own schema, lifecycle, ID policy, validation contract, and storage path. P concepts can be composed into C concepts.</td></tr><tr><td><code>D</code></td><td>Discriminator</td><td>A typed variant of a parent primitive, usually represented by <code>kind:</code> or an equivalent closed enum. D concepts inherit the parent schema and lifecycle.</td></tr><tr><td><code>C</code></td><td>Composition</td><td>A named kind assembled from primitives plus T fragments. C concepts can have their own lifecycle, but their schema is built from composed parts.</td></tr></tbody></table><h2 id=counts>Counts</h2><p>The v1.0 target is 89 ontology concepts.</p><table><thead><tr><th>Class</th><th style=text-align:right>Count</th><th>Rule</th></tr></thead><tbody><tr><td><code>T</code></td><td style=text-align:right>19</td><td>Reusable vocabulary and schema mechanics; no independent persistence.</td></tr><tr><td><code>P</code></td><td style=text-align:right>22</td><td>Atomic persisted entity families with schemas and state machines.</td></tr><tr><td><code>D</code></td><td style=text-align:right>24</td><td>Parent-primitive variants with inherited lifecycle.</td></tr><tr><td><code>C</code></td><td style=text-align:right>24</td><td>Generated composed kinds assembled from P and T parts.</td></tr><tr><td><strong>Total</strong></td><td style=text-align:right><strong>89</strong></td><td>The RFC count is the release target.</td></tr></tbody></table><h2 id=full-working-inventory>Full Working Inventory</h2><p>This inventory makes the RFC&rsquo;s count concrete for implementation
 planning. It preserves the RFC settlements: <code>Location</code> and <code>Skill</code> are
 primitives, <code>Service</code> and <code>TeamMember</code> are compositions, <code>Position</code> is a
 role-slot Binding discriminator, and <code>Hierarchy</code> is a named
-parent-child Binding discriminator.</p>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="t-foundational-concepts">T: Foundational Concepts<a href="#t-foundational-concepts" class="hash-link" aria-label="Direct link to T: Foundational Concepts" title="Direct link to T: Foundational Concepts" translate="no">​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>Concept</th><th>Description</th></tr></thead><tbody><tr><td>State</td><td>A named condition within a lifecycle, such as <code>open</code>, <code>accepted</code>, <code>done</code>, or <code>archived</code>.</td></tr><tr><td>Transition</td><td>A valid movement between states, including required actors, guards, and event emission.</td></tr><tr><td>StateMachine</td><td>The complete lifecycle graph for a kind, discriminator, or composition.</td></tr><tr><td>Lifecycle</td><td>The operational meaning of a state machine, including terminal states and audit expectations.</td></tr><tr><td>Constraint</td><td>A rule that restricts valid data, links, transitions, or composition.</td></tr><tr><td>Guard</td><td>A precondition checked before a transition, command, or write-side tool action runs.</td></tr><tr><td>Identity</td><td>The stable identity contract for an entity, including ID format, aliases, and lookup rules.</td></tr><tr><td>Versioning</td><td>The version contract for schemas, entities, generated files, and release artifacts.</td></tr><tr><td>Ownership</td><td>The accountable actor, role, or team responsible for an entity or process surface.</td></tr><tr><td>Immutability</td><td>The rule that some evidence, event, hash, or historical decision must not be rewritten.</td></tr><tr><td>Schema</td><td>The structured validation contract for an entity or fragment.</td></tr><tr><td>Composition</td><td>The build-time assembly of fragments and primitives into a generated runtime schema.</td></tr><tr><td>Inheritance</td><td>The explicit reuse of a parent schema or fragment by a child composition.</td></tr><tr><td>Uniqueness</td><td>A rule that one value, relation, or role-slot can exist only once in a defined scope.</td></tr><tr><td>Interface</td><td>A shared query surface declared by schemas, such as <code>Record</code> or <code>Versioned</code>.</td></tr><tr><td>ValidationMode</td><td>The per-kind mode that decides whether validation is strict or tolerant during migration.</td></tr><tr><td>Provenance</td><td>The source and transformation trail for content, decisions, generated schemas, and migrations.</td></tr><tr><td>Visibility</td><td>The audience and disclosure boundary for an entity or generated export.</td></tr><tr><td>Cardinality</td><td>The allowed count for fields, relations, owners, children, or bindings.</td></tr></tbody></table>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="p-atomic-primitives">P: Atomic Primitives<a href="#p-atomic-primitives" class="hash-link" aria-label="Direct link to P: Atomic Primitives" title="Direct link to P: Atomic Primitives" translate="no">​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>Primitive</th><th>Description</th></tr></thead><tbody><tr><td>Actor</td><td>A human, agent, service account, organization, or other participant that can own, perform, or be assigned work.</td></tr><tr><td>Artifact</td><td>A durable evidence object such as a design, report, release note, analysis, fixture, or generated output.</td></tr><tr><td>Binding</td><td>A typed relation between entities, actors, roles, containers, or claims.</td></tr><tr><td>Capability</td><td>A durable ability or capacity that an actor, system, role, or service can provide.</td></tr><tr><td>Channel</td><td>A communication or handoff surface, including chat, queue-like inboxes, issue streams, and runtime buses.</td></tr><tr><td>Command</td><td>An intended action issued by a human, agent, hook, or process.</td></tr><tr><td>Container</td><td>A structural grouping boundary such as a portfolio, ART, team, project, scope, or repository area.</td></tr><tr><td>Event</td><td>A recorded occurrence in the system, including transitions, tool calls, releases, and external signals.</td></tr><tr><td>Gate</td><td>A decision or policy checkpoint that must pass before a process can continue.</td></tr><tr><td>Location</td><td>A spatial, site, coordinate, logical-region, or timezone anchor.</td></tr><tr><td>Note</td><td>Captured knowledge that may be fleeting, promoted, linked, or archived.</td></tr><tr><td>Outcome</td><td>A result, effect, delivery state, metric result, or observed consequence.</td></tr><tr><td>Policy</td><td>A governing rule, standard, permission, or organizational constraint.</td></tr><tr><td>Proposition</td><td>A claim about the world, work, risk, belief, forecast, or estimate.</td></tr><tr><td>Queue</td><td>An ordered or claimable work intake, handoff, or processing surface.</td></tr><tr><td>Record</td><td>A durable process record family for decisions, logs, measurements, approvals, and historical evidence.</td></tr><tr><td>Recurrence</td><td>A repeating schedule, cadence, ritual, or trigger rule.</td></tr><tr><td>Resource</td><td>A consumed or governed asset, including budget, compute, environment, credential, material, or tool capacity.</td></tr><tr><td>Role</td><td>A reusable responsibility bundle that can be assigned to actors or team members.</td></tr><tr><td>Skill</td><td>A first-class processkit capability package with its own schema, lifecycle, triggers, and tooling.</td></tr><tr><td>Specification</td><td>A formal description of a schema, process, role, gate, service, goal, schedule, channel, queue, or test.</td></tr><tr><td>WorkItem</td><td>A unit of requested or planned work with acceptance criteria, state, and evidence.</td></tr></tbody></table>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="d-discriminator-variants">D: Discriminator Variants<a href="#d-discriminator-variants" class="hash-link" aria-label="Direct link to D: Discriminator Variants" title="Direct link to D: Discriminator Variants" translate="no">​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>Discriminator</th><th>Parent</th><th>Description</th></tr></thead><tbody><tr><td>Risk</td><td>Proposition</td><td>A claim about uncertainty, impact, probability, mitigation, and ownership.</td></tr><tr><td>Belief</td><td>Proposition</td><td>A held assumption or judgment that may need evidence or revision.</td></tr><tr><td>WorldFact</td><td>Proposition</td><td>A factual claim treated as externally true until contradicted.</td></tr><tr><td>WSJFEstimate</td><td>Proposition</td><td>A weighted shortest-job-first estimate or related prioritization claim.</td></tr><tr><td>Assumption</td><td>Proposition</td><td>A premise accepted temporarily to enable planning or execution.</td></tr><tr><td>GeographicRegion</td><td>Location</td><td>A country, region, market, jurisdiction, or other broad geographic area.</td></tr><tr><td>Site</td><td>Location</td><td>A physical office, facility, datacenter, or operating site.</td></tr><tr><td>Coordinate</td><td>Location</td><td>A precise coordinate or geospatial point.</td></tr><tr><td>LogicalRegion</td><td>Location</td><td>A logical deployment, business, data, or governance region.</td></tr><tr><td>Timezone</td><td>Location</td><td>A timezone anchor for schedules, teams, or operational windows.</td></tr><tr><td>Disposition</td><td>Capability</td><td>A tendency, affordance, or BFO-style disposition exposed as capability vocabulary.</td></tr><tr><td>Portfolio</td><td>Container</td><td>A strategic investment or governance container above programs and ARTs.</td></tr><tr><td>ValueStream</td><td>Container</td><td>A flow of value across products, teams, systems, and delivery steps.</td></tr><tr><td>ART</td><td>Container</td><td>An Agile Release Train or equivalent multi-team delivery container.</td></tr><tr><td>Team</td><td>Container</td><td>A small delivery or operating group.</td></tr><tr><td>Project</td><td>Container</td><td>A bounded initiative, repository, product effort, or implementation scope.</td></tr><tr><td>Scope</td><td>Container</td><td>A bounded area of authority, work, release, or applicability.</td></tr><tr><td>Hierarchy</td><td>Binding</td><td>A named parent-child relation used as the canonical hierarchy anchor.</td></tr><tr><td>Position</td><td>Binding</td><td>A role-slot relation with nullable subject until a TeamMember or Actor fills it.</td></tr><tr><td>ProvenanceLink</td><td>Binding</td><td>A relation from a derived entity to its source, import, generator, or evidence.</td></tr><tr><td>Correlation</td><td>Binding</td><td>A relation stating that two entities refer to related or equivalent concerns.</td></tr><tr><td>Dependency</td><td>Binding</td><td>A relation stating that one entity depends on another.</td></tr><tr><td>OwnershipLink</td><td>Binding</td><td>A relation assigning accountability or stewardship.</td></tr><tr><td>RelatedTo</td><td>Binding</td><td>A low-specificity relation used only when no stronger binding type applies.</td></tr></tbody></table>
-<h3 class="anchor anchorTargetStickyNavbar_Vzrq" id="c-compositions">C: Compositions<a href="#c-compositions" class="hash-link" aria-label="Direct link to C: Compositions" title="Direct link to C: Compositions" translate="no">​</a></h3>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<table><thead><tr><th>Composition</th><th>Description</th></tr></thead><tbody><tr><td>TeamMember</td><td><code>C(Actor + calendar + capabilities + persona + skill-list + journal)</code>.</td></tr><tr><td>DecisionRecord</td><td><code>C(Record + Proposition + alternatives + consequences + lifecycle)</code>.</td></tr><tr><td>LogEntry</td><td><code>C(Record + Event + immutable timestamp + actor + subject)</code>.</td></tr><tr><td>Measurement</td><td><code>C(Record + metric definition + observed value + provenance)</code>.</td></tr><tr><td>Archive</td><td><code>C(Record + retention policy + source hash + location)</code>.</td></tr><tr><td>ProcessSpecification</td><td><code>C(Specification + states + transitions + guards + commands)</code>.</td></tr><tr><td>GoalSpecification</td><td><code>C(Specification + desired outcomes + measures + owners)</code>.</td></tr><tr><td>Service</td><td><code>S(Capability)/C</code>: a provided capability with interface, owner, SLOs, and resources.</td></tr><tr><td>RoleSpecification</td><td><code>C(Specification + responsibilities + authority + expected skills)</code>.</td></tr><tr><td>GateSpecification</td><td><code>C(Specification + policy + required evidence + pass/fail semantics)</code>.</td></tr><tr><td>SchemaSpecification</td><td><code>C(Specification + YAML schema + interfaces + validation mode)</code>.</td></tr><tr><td>ScheduleSpecification</td><td><code>C(Specification + recurrence + timezone + calendar constraints)</code>.</td></tr><tr><td>TestSpecification</td><td><code>C(Specification + fixture + expected result + acceptance signal)</code>.</td></tr><tr><td>ChannelSpecification</td><td><code>C(Specification + channel protocol + participants + retention rules)</code>.</td></tr><tr><td>QueueSpecification</td><td><code>C(Specification + queue discipline + claim rules + retry policy)</code>.</td></tr><tr><td>WorkItemTemplate</td><td><code>C(WorkItem + reusable acceptance criteria + default bindings)</code>.</td></tr><tr><td>Migration</td><td><code>C(Command + Event + source schema + target schema + validation evidence)</code>.</td></tr><tr><td>ScopePlan</td><td><code>C(Container + WorkItem set + owners + acceptance gate)</code>.</td></tr><tr><td>Roadmap</td><td><code>C(Container + GoalSpecification + sequencing + milestones)</code>.</td></tr><tr><td>ProgramIncrement</td><td><code>C(Container + cadence + objectives + risks + demo evidence)</code>.</td></tr><tr><td>Iteration</td><td><code>C(Container + cadence + committed work + review evidence)</code>.</td></tr><tr><td>Release</td><td><code>C(Container + Gate + Artifact bundle + provenance + versioning)</code>.</td></tr><tr><td>Discussion</td><td><code>C(Record + Channel + Proposition thread + outcome capture)</code>.</td></tr><tr><td>EvaluationRun</td><td><code>C(Command + TestSpecification + Event + Measurement + Artifact evidence)</code>.</td></tr></tbody></table></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_WFHX"><a href="https://github.com/projectious-work/processkit/tree/main/docs-site/docs/development/ontology-reference.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/processkit/docs/development/architecture-specification"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Architecture Specification</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/processkit/docs/development/tooling-architecture"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Tooling Architecture</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#tpdc-classes" class="table-of-contents__link toc-highlight">T/P/D/C Classes</a></li><li><a href="#counts" class="table-of-contents__link toc-highlight">Counts</a></li><li><a href="#full-working-inventory" class="table-of-contents__link toc-highlight">Full Working Inventory</a><ul><li><a href="#t-foundational-concepts" class="table-of-contents__link toc-highlight">T: Foundational Concepts</a></li><li><a href="#p-atomic-primitives" class="table-of-contents__link toc-highlight">P: Atomic Primitives</a></li><li><a href="#d-discriminator-variants" class="table-of-contents__link toc-highlight">D: Discriminator Variants</a></li><li><a href="#c-compositions" class="table-of-contents__link toc-highlight">C: Compositions</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/getting-started/overview">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/primitives/overview">Primitives</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/skills/overview">Skills</a></li><li class="footer__item"><a class="footer__link-item" href="/processkit/docs/packages/overview">Packages</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Project</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/projectious-work/processkit" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li><li class="footer__item"><a href="https://github.com/projectious-work/processkit/releases" target="_blank" rel="noopener noreferrer" class="footer__link-item">Releases<svg width="13.5" height="13.5" aria-label="(opens in new tab)" class="iconExternalLink_nPIU"><use href="#theme-svg-external-link"></use></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">© 2026 projectious.work</div></div></div></footer></div>
-</body>
-</html>
+parent-child Binding discriminator.</p><h3 id=t-foundational-concepts>T: Foundational Concepts</h3><table><thead><tr><th>Concept</th><th>Description</th></tr></thead><tbody><tr><td>State</td><td>A named condition within a lifecycle, such as <code>open</code>, <code>accepted</code>, <code>done</code>, or <code>archived</code>.</td></tr><tr><td>Transition</td><td>A valid movement between states, including required actors, guards, and event emission.</td></tr><tr><td>StateMachine</td><td>The complete lifecycle graph for a kind, discriminator, or composition.</td></tr><tr><td>Lifecycle</td><td>The operational meaning of a state machine, including terminal states and audit expectations.</td></tr><tr><td>Constraint</td><td>A rule that restricts valid data, links, transitions, or composition.</td></tr><tr><td>Guard</td><td>A precondition checked before a transition, command, or write-side tool action runs.</td></tr><tr><td>Identity</td><td>The stable identity contract for an entity, including ID format, aliases, and lookup rules.</td></tr><tr><td>Versioning</td><td>The version contract for schemas, entities, generated files, and release artifacts.</td></tr><tr><td>Ownership</td><td>The accountable actor, role, or team responsible for an entity or process surface.</td></tr><tr><td>Immutability</td><td>The rule that some evidence, event, hash, or historical decision must not be rewritten.</td></tr><tr><td>Schema</td><td>The structured validation contract for an entity or fragment.</td></tr><tr><td>Composition</td><td>The build-time assembly of fragments and primitives into a generated runtime schema.</td></tr><tr><td>Inheritance</td><td>The explicit reuse of a parent schema or fragment by a child composition.</td></tr><tr><td>Uniqueness</td><td>A rule that one value, relation, or role-slot can exist only once in a defined scope.</td></tr><tr><td>Interface</td><td>A shared query surface declared by schemas, such as <code>Record</code> or <code>Versioned</code>.</td></tr><tr><td>ValidationMode</td><td>The per-kind mode that decides whether validation is strict or tolerant during migration.</td></tr><tr><td>Provenance</td><td>The source and transformation trail for content, decisions, generated schemas, and migrations.</td></tr><tr><td>Visibility</td><td>The audience and disclosure boundary for an entity or generated export.</td></tr><tr><td>Cardinality</td><td>The allowed count for fields, relations, owners, children, or bindings.</td></tr></tbody></table><h3 id=p-atomic-primitives>P: Atomic Primitives</h3><table><thead><tr><th>Primitive</th><th>Description</th></tr></thead><tbody><tr><td>Actor</td><td>A human, agent, service account, organization, or other participant that can own, perform, or be assigned work.</td></tr><tr><td>Artifact</td><td>A durable evidence object such as a design, report, release note, analysis, fixture, or generated output.</td></tr><tr><td>Binding</td><td>A typed relation between entities, actors, roles, containers, or claims.</td></tr><tr><td>Capability</td><td>A durable ability or capacity that an actor, system, role, or service can provide.</td></tr><tr><td>Channel</td><td>A communication or handoff surface, including chat, queue-like inboxes, issue streams, and runtime buses.</td></tr><tr><td>Command</td><td>An intended action issued by a human, agent, hook, or process.</td></tr><tr><td>Container</td><td>A structural grouping boundary such as a portfolio, ART, team, project, scope, or repository area.</td></tr><tr><td>Event</td><td>A recorded occurrence in the system, including transitions, tool calls, releases, and external signals.</td></tr><tr><td>Gate</td><td>A decision or policy checkpoint that must pass before a process can continue.</td></tr><tr><td>Location</td><td>A spatial, site, coordinate, logical-region, or timezone anchor.</td></tr><tr><td>Note</td><td>Captured knowledge that may be fleeting, promoted, linked, or archived.</td></tr><tr><td>Outcome</td><td>A result, effect, delivery state, metric result, or observed consequence.</td></tr><tr><td>Policy</td><td>A governing rule, standard, permission, or organizational constraint.</td></tr><tr><td>Proposition</td><td>A claim about the world, work, risk, belief, forecast, or estimate.</td></tr><tr><td>Queue</td><td>An ordered or claimable work intake, handoff, or processing surface.</td></tr><tr><td>Record</td><td>A durable process record family for decisions, logs, measurements, approvals, and historical evidence.</td></tr><tr><td>Recurrence</td><td>A repeating schedule, cadence, ritual, or trigger rule.</td></tr><tr><td>Resource</td><td>A consumed or governed asset, including budget, compute, environment, credential, material, or tool capacity.</td></tr><tr><td>Role</td><td>A reusable responsibility bundle that can be assigned to actors or team members.</td></tr><tr><td>Skill</td><td>A first-class processkit capability package with its own schema, lifecycle, triggers, and tooling.</td></tr><tr><td>Specification</td><td>A formal description of a schema, process, role, gate, service, goal, schedule, channel, queue, or test.</td></tr><tr><td>WorkItem</td><td>A unit of requested or planned work with acceptance criteria, state, and evidence.</td></tr></tbody></table><h3 id=d-discriminator-variants>D: Discriminator Variants</h3><table><thead><tr><th>Discriminator</th><th>Parent</th><th>Description</th></tr></thead><tbody><tr><td>Risk</td><td>Proposition</td><td>A claim about uncertainty, impact, probability, mitigation, and ownership.</td></tr><tr><td>Belief</td><td>Proposition</td><td>A held assumption or judgment that may need evidence or revision.</td></tr><tr><td>WorldFact</td><td>Proposition</td><td>A factual claim treated as externally true until contradicted.</td></tr><tr><td>WSJFEstimate</td><td>Proposition</td><td>A weighted shortest-job-first estimate or related prioritization claim.</td></tr><tr><td>Assumption</td><td>Proposition</td><td>A premise accepted temporarily to enable planning or execution.</td></tr><tr><td>GeographicRegion</td><td>Location</td><td>A country, region, market, jurisdiction, or other broad geographic area.</td></tr><tr><td>Site</td><td>Location</td><td>A physical office, facility, datacenter, or operating site.</td></tr><tr><td>Coordinate</td><td>Location</td><td>A precise coordinate or geospatial point.</td></tr><tr><td>LogicalRegion</td><td>Location</td><td>A logical deployment, business, data, or governance region.</td></tr><tr><td>Timezone</td><td>Location</td><td>A timezone anchor for schedules, teams, or operational windows.</td></tr><tr><td>Disposition</td><td>Capability</td><td>A tendency, affordance, or BFO-style disposition exposed as capability vocabulary.</td></tr><tr><td>Portfolio</td><td>Container</td><td>A strategic investment or governance container above programs and ARTs.</td></tr><tr><td>ValueStream</td><td>Container</td><td>A flow of value across products, teams, systems, and delivery steps.</td></tr><tr><td>ART</td><td>Container</td><td>An Agile Release Train or equivalent multi-team delivery container.</td></tr><tr><td>Team</td><td>Container</td><td>A small delivery or operating group.</td></tr><tr><td>Project</td><td>Container</td><td>A bounded initiative, repository, product effort, or implementation scope.</td></tr><tr><td>Scope</td><td>Container</td><td>A bounded area of authority, work, release, or applicability.</td></tr><tr><td>Hierarchy</td><td>Binding</td><td>A named parent-child relation used as the canonical hierarchy anchor.</td></tr><tr><td>Position</td><td>Binding</td><td>A role-slot relation with nullable subject until a TeamMember or Actor fills it.</td></tr><tr><td>ProvenanceLink</td><td>Binding</td><td>A relation from a derived entity to its source, import, generator, or evidence.</td></tr><tr><td>Correlation</td><td>Binding</td><td>A relation stating that two entities refer to related or equivalent concerns.</td></tr><tr><td>Dependency</td><td>Binding</td><td>A relation stating that one entity depends on another.</td></tr><tr><td>OwnershipLink</td><td>Binding</td><td>A relation assigning accountability or stewardship.</td></tr><tr><td>RelatedTo</td><td>Binding</td><td>A low-specificity relation used only when no stronger binding type applies.</td></tr></tbody></table><h3 id=c-compositions>C: Compositions</h3><table><thead><tr><th>Composition</th><th>Description</th></tr></thead><tbody><tr><td>TeamMember</td><td><code>C(Actor + calendar + capabilities + persona + skill-list + journal)</code>.</td></tr><tr><td>DecisionRecord</td><td><code>C(Record + Proposition + alternatives + consequences + lifecycle)</code>.</td></tr><tr><td>LogEntry</td><td><code>C(Record + Event + immutable timestamp + actor + subject)</code>.</td></tr><tr><td>Measurement</td><td><code>C(Record + metric definition + observed value + provenance)</code>.</td></tr><tr><td>Archive</td><td><code>C(Record + retention policy + source hash + location)</code>.</td></tr><tr><td>ProcessSpecification</td><td><code>C(Specification + states + transitions + guards + commands)</code>.</td></tr><tr><td>GoalSpecification</td><td><code>C(Specification + desired outcomes + measures + owners)</code>.</td></tr><tr><td>Service</td><td><code>S(Capability)/C</code>: a provided capability with interface, owner, SLOs, and resources.</td></tr><tr><td>RoleSpecification</td><td><code>C(Specification + responsibilities + authority + expected skills)</code>.</td></tr><tr><td>GateSpecification</td><td><code>C(Specification + policy + required evidence + pass/fail semantics)</code>.</td></tr><tr><td>SchemaSpecification</td><td><code>C(Specification + YAML schema + interfaces + validation mode)</code>.</td></tr><tr><td>ScheduleSpecification</td><td><code>C(Specification + recurrence + timezone + calendar constraints)</code>.</td></tr><tr><td>TestSpecification</td><td><code>C(Specification + fixture + expected result + acceptance signal)</code>.</td></tr><tr><td>ChannelSpecification</td><td><code>C(Specification + channel protocol + participants + retention rules)</code>.</td></tr><tr><td>QueueSpecification</td><td><code>C(Specification + queue discipline + claim rules + retry policy)</code>.</td></tr><tr><td>WorkItemTemplate</td><td><code>C(WorkItem + reusable acceptance criteria + default bindings)</code>.</td></tr><tr><td>Migration</td><td><code>C(Command + Event + source schema + target schema + validation evidence)</code>.</td></tr><tr><td>ScopePlan</td><td><code>C(Container + WorkItem set + owners + acceptance gate)</code>.</td></tr><tr><td>Roadmap</td><td><code>C(Container + GoalSpecification + sequencing + milestones)</code>.</td></tr><tr><td>ProgramIncrement</td><td><code>C(Container + cadence + objectives + risks + demo evidence)</code>.</td></tr><tr><td>Iteration</td><td><code>C(Container + cadence + committed work + review evidence)</code>.</td></tr><tr><td>Release</td><td><code>C(Container + Gate + Artifact bundle + provenance + versioning)</code>.</td></tr><tr><td>Discussion</td><td><code>C(Record + Channel + Proposition thread + outcome capture)</code>.</td></tr><tr><td>EvaluationRun</td><td><code>C(Command + TestSpecification + Event + Measurement + Artifact evidence)</code>.</td></tr></tbody></table></div></main></div></div><footer class="td-footer row d-print-none"><div class=container-fluid><div class="row mx-md-2"><div class="td-footer__left col-6 col-sm-4 order-sm-1"><ul class=td-footer__links-list><li class=td-footer__links-item data-bs-toggle=tooltip title=GitHub aria-label=GitHub><a href=https://github.com/projectious-work/processkit aria-label=GitHub target=_blank rel=noopener><i class="fa-brands fa-github"></i></a></li></ul></div><div class="td-footer__right col-6 col-sm-4 order-sm-3"></div><div class="td-footer__center col-12 col-sm-4 py-2 order-sm-2"><span class=td-footer__copyright>&copy;
+2026&ndash;2026
+<span class=td-footer__authors>Projectious</span></span><span class=td-footer__all_rights_reserved>All Rights Reserved</span></div></div></div></footer></div><script src=/processkit/js/main.min.65d702cee0bf35691ed701b78b7b713d03be4a9f1f184f95e8049d065c07bc57.js integrity="sha256-ZdcCzuC/NWke1wG3i3txPQO+Sp8fGE+V6ASdBlwHvFc=" crossorigin=anonymous></script><script defer src=/processkit/js/click-to-copy.min.24576ff9fe9f85bb1948ecae52ce227cafce53757a3ad52301f2a79260f6b97d.js integrity="sha256-JFdv+f6fhbsZSOyuUs4ifK/OU3V6OtUjAfKnkmD2uX0=" crossorigin=anonymous></script><script src=/processkit/js/tabpane-persist.js></script></body></html>

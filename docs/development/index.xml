@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Development on processkit</title><link>https://projectious-work.github.io/processkit/docs/development/</link><description>Recent content in Development on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/docs/development/index.xml" rel="self" type="application/rss+xml"/><item><title>Product Specification</title><link>https://projectious-work.github.io/processkit/docs/development/product-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/development/product-specification/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;processkit v1.0 provides a durable process substrate for agentic
+software projects. It gives humans and AI agents a shared project memory
+with typed work, decisions, discussions, artifacts, roles, skills,
+gates, bindings, and event history.&lt;/p&gt;
+&lt;p&gt;The product is not an agent runtime. It is the process and memory layer
+that agent runtimes, coding agents, and human maintainers can use to
+coordinate work safely.&lt;/p&gt;
+&lt;h2 id="primary-users"&gt;Primary Users&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Project owners who want inspectable, durable AI-assisted project
+memory.&lt;/li&gt;
+&lt;li&gt;Maintainers who need decisions, work, artifacts, and migrations to be
+traceable.&lt;/li&gt;
+&lt;li&gt;AI coding agents that need reliable task context and write-safe MCP
+tools.&lt;/li&gt;
+&lt;li&gt;Agent runtime integrators that need a provider-neutral process layer.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="problems-to-solve"&gt;Problems To Solve&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Agent sessions lose project context across turns and tools.&lt;/li&gt;
+&lt;li&gt;Important decisions and rationale are buried in chat.&lt;/li&gt;
+&lt;li&gt;Work state, review state, and acceptance criteria are not consistently
+queryable.&lt;/li&gt;
+&lt;li&gt;Multi-agent teams need roles, skills, handoffs, gates, and logs.&lt;/li&gt;
+&lt;li&gt;Markdown knowledge is readable but often lacks lifecycle semantics.&lt;/li&gt;
+&lt;li&gt;Service-owned metadata systems are less portable than git-backed
+files.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="product-goals"&gt;Product Goals&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Keep project memory file-backed, git-native, and human-inspectable.&lt;/li&gt;
+&lt;li&gt;Make process writes happen through validated MCP tools.&lt;/li&gt;
+&lt;li&gt;Support typed entities, state machines, and relation queries.&lt;/li&gt;
+&lt;li&gt;Implement the RFC&amp;rsquo;s 89-concept T/P/D/C ontology target.&lt;/li&gt;
+&lt;li&gt;Preserve auditability through structured event logs.&lt;/li&gt;
+&lt;li&gt;Support provider-neutral roles, team members, model routing, and
+skills.&lt;/li&gt;
+&lt;li&gt;Export and ingest OKF bundles without weakening canonical semantics.&lt;/li&gt;
+&lt;li&gt;Integrate with external agent runtimes instead of replacing them.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="non-goals"&gt;Non-Goals&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Build a general agent runtime.&lt;/li&gt;
+&lt;li&gt;Build a vector database.&lt;/li&gt;
+&lt;li&gt;Build a general data catalog.&lt;/li&gt;
+&lt;li&gt;Make OKF the canonical internal model.&lt;/li&gt;
+&lt;li&gt;Replace GitHub, issue trackers, CI, or code review systems.&lt;/li&gt;
+&lt;li&gt;Optimize for synthetic coding-agent benchmarks as the product goal.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="core-workflows"&gt;Core Workflows&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;Capture work as typed WorkItems with acceptance criteria.&lt;/li&gt;
+&lt;li&gt;Record decisions with context, alternatives, rationale, and
+consequences.&lt;/li&gt;
+&lt;li&gt;Attach artifacts and supporting analysis to work and decisions.&lt;/li&gt;
+&lt;li&gt;Route tasks to roles, team members, skills, and model classes.&lt;/li&gt;
+&lt;li&gt;Apply gates for approval, policy, evaluation, and release checks.&lt;/li&gt;
+&lt;li&gt;Query by interface rather than forcing agents to guess concrete
+entity kinds.&lt;/li&gt;
+&lt;li&gt;Preserve process evidence in structured LogEntries.&lt;/li&gt;
+&lt;li&gt;Export selected knowledge as OKF for open exchange.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id="success-criteria"&gt;Success Criteria&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;A maintainer can understand project state from files and docs without
+replaying chat history.&lt;/li&gt;
+&lt;li&gt;An agent can create, transition, and query process entities through MCP
+tools without hand-editing canonical context files.&lt;/li&gt;
+&lt;li&gt;A real project cycle can run through the v1.0 alpha model.&lt;/li&gt;
+&lt;li&gt;Automated fixture tests cover schema generation, MCP contracts,
+indexing, migrations, and pk-doctor before manual dogfood begins.&lt;/li&gt;
+&lt;li&gt;OKF export produces a conformant bundle for public consumption.&lt;/li&gt;
+&lt;li&gt;Existing v0.x evidence can migrate or be explicitly preserved.&lt;/li&gt;
+&lt;/ul&gt;</description></item><item><title>Architecture Specification</title><link>https://projectious-work.github.io/processkit/docs/development/architecture-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/development/architecture-specification/</guid><description>&lt;h2 id="system-role"&gt;System Role&lt;/h2&gt;
+&lt;p&gt;processkit v1.0 is a provider-neutral process and memory substrate. It
+stores canonical project entities in git-backed files and exposes safe
+read/write behavior through MCP servers.&lt;/p&gt;
+&lt;p&gt;Agent runtimes are consumers. processkit provides context, process
+state, governance, and memory; it does not own the agent loop.&lt;/p&gt;
+&lt;h2 id="canonical-model"&gt;Canonical Model&lt;/h2&gt;
+&lt;p&gt;The v1.0 ontology follows the RFC&amp;rsquo;s T/P/D/C framing:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;T&lt;/code&gt;: terminology and shared fragments without their own lifecycle&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;P&lt;/code&gt;: persistent primitives with schema and lifecycle&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;D&lt;/code&gt;: discriminator variants of primitives&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;C&lt;/code&gt;: compositions of primitives and terminology fragments&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The full RFC target is 89 concepts. The alpha should implement only a
+small proven subset before expanding. The detailed inventory is captured
+in &lt;a href="https://projectious-work.github.io/processkit/docs/development/ontology-reference/"&gt;Ontology Reference&lt;/a&gt;
+.&lt;/p&gt;</description></item><item><title>Ontology Reference</title><link>https://projectious-work.github.io/processkit/docs/development/ontology-reference/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/development/ontology-reference/</guid><description>&lt;p&gt;&lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt; is the leading document for the v1.0
+ontology. When older analysis conflicts with this page, the RFC and this
+page win.&lt;/p&gt;
+&lt;h2 id="tpdc-classes"&gt;T/P/D/C Classes&lt;/h2&gt;
+&lt;p&gt;The RFC names four implementation classes. If a note says &lt;code&gt;TCDP&lt;/code&gt;, read it
+as the same four classes, with the RFC&amp;rsquo;s canonical order written as
+&lt;code&gt;T/P/D/C&lt;/code&gt;.&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Class&lt;/th&gt;
+ &lt;th&gt;Meaning&lt;/th&gt;
+ &lt;th&gt;Description&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;T&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Terminology / foundational fragment&lt;/td&gt;
+ &lt;td&gt;A concept, slot, or meta-mechanic that has no independent entity lifecycle. T concepts are reused in schemas, state machines, constraints, and generated fragments.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;P&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Primitive&lt;/td&gt;
+ &lt;td&gt;An atomic persistent entity kind with its own schema, lifecycle, ID policy, validation contract, and storage path. P concepts can be composed into C concepts.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;D&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Discriminator&lt;/td&gt;
+ &lt;td&gt;A typed variant of a parent primitive, usually represented by &lt;code&gt;kind:&lt;/code&gt; or an equivalent closed enum. D concepts inherit the parent schema and lifecycle.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;C&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Composition&lt;/td&gt;
+ &lt;td&gt;A named kind assembled from primitives plus T fragments. C concepts can have their own lifecycle, but their schema is built from composed parts.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="counts"&gt;Counts&lt;/h2&gt;
+&lt;p&gt;The v1.0 target is 89 ontology concepts.&lt;/p&gt;</description></item><item><title>Tooling Architecture</title><link>https://projectious-work.github.io/processkit/docs/development/tooling-architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/development/tooling-architecture/</guid><description>&lt;p&gt;The v1.0 tooling architecture follows the RFC: schemas are generated
+from Jinja + YAML sources, writes flow through MCP tools, and indexes are
+extended rather than replaced.&lt;/p&gt;
+&lt;h2 id="mcp-server-shape"&gt;MCP Server Shape&lt;/h2&gt;
+&lt;p&gt;MCP is the stable runtime contract for agents and harnesses. Files remain
+human-inspectable, but canonical mutations happen through tools.&lt;/p&gt;
+&lt;p&gt;The v1.0 server surface should include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;a processkit gateway that exposes the common read/write surface&lt;/li&gt;
+&lt;li&gt;per-domain management tools for work, decisions, records, gates,
+discussions, roles, bindings, migrations, and skills&lt;/li&gt;
+&lt;li&gt;an index-management surface for reads, search, relation traversal, and
+interface queries&lt;/li&gt;
+&lt;li&gt;a schema-management surface with &lt;code&gt;regenerate_schemas&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;a doctor/audit surface for validation, drift, and release readiness&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The gateway can aggregate tools for harness convenience, but tool
+ownership should remain domain-specific so validation and lifecycle rules
+stay close to the schema they enforce.&lt;/p&gt;</description></item><item><title>Test Strategy</title><link>https://projectious-work.github.io/processkit/docs/development/test-strategy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/development/test-strategy/</guid><description>&lt;p&gt;The current exploratory strategy is to install processkit into a new
+aibox project and try workflows manually. That remains useful as a human
+dogfood check, but it is not enough for v1.0. It is not automated, it
+makes aibox a hard dependency, and it cannot prove release-gate criteria
+repeatably.&lt;/p&gt;
+&lt;h2 id="test-goals"&gt;Test Goals&lt;/h2&gt;
+&lt;p&gt;The v1.0 test strategy must prove:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;schema generation is deterministic&lt;/li&gt;
+&lt;li&gt;generated schemas validate real and adversarial fixtures correctly&lt;/li&gt;
+&lt;li&gt;MCP tools match their Python signatures and JSON Schemas&lt;/li&gt;
+&lt;li&gt;writes enforce state machines, guards, validation modes, and event logs&lt;/li&gt;
+&lt;li&gt;index reads match canonical files after creates, transitions, and
+migrations&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;query_by_interface&lt;/code&gt; returns complete mixed-kind results&lt;/li&gt;
+&lt;li&gt;migration tools preserve data within the RFC gate limits&lt;/li&gt;
+&lt;li&gt;pk-doctor catches deliberately invalid entities&lt;/li&gt;
+&lt;li&gt;docs and examples remain buildable&lt;/li&gt;
+&lt;li&gt;aibox integration works as an adapter, not as the only system test&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="automated-layers"&gt;Automated Layers&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Layer&lt;/th&gt;
+ &lt;th&gt;Purpose&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Schema unit tests&lt;/td&gt;
+ &lt;td&gt;Render Jinja + YAML fragments, compare &lt;code&gt;_generated&lt;/code&gt; output to golden files, and verify merge strategies.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Schema contract tests&lt;/td&gt;
+ &lt;td&gt;Validate generated draft-2020-12 schemas against valid and invalid entity fixtures.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;MCP contract tests&lt;/td&gt;
+ &lt;td&gt;Check every tool signature against its JSON Schema and run typed request/response fixtures.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;State-machine tests&lt;/td&gt;
+ &lt;td&gt;Exercise valid and invalid transitions, guard failures, terminal states, and emitted events.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Index tests&lt;/td&gt;
+ &lt;td&gt;Create and mutate fixture entities, then assert search, relation traversal, backlinks, and interface grouping.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Migration tests&lt;/td&gt;
+ &lt;td&gt;Run v0.x fixture corpora through migration adapters and assert field-loss, orphan, and hash-immutability gates.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;pk-doctor adversarial tests&lt;/td&gt;
+ &lt;td&gt;Feed deliberately invalid fixtures and require every expected finding with no blocking false positives.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Package smoke tests&lt;/td&gt;
+ &lt;td&gt;Install processkit from the local tree or release tarball into a temporary fixture project without aibox.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Docs tests&lt;/td&gt;
+ &lt;td&gt;Build the Hugo site and verify links to generated reference pages.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Adapter tests&lt;/td&gt;
+ &lt;td&gt;Run a small aibox install/apply workflow to prove integration, but keep it outside the core correctness suite.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="fixture-projects"&gt;Fixture Projects&lt;/h2&gt;
+&lt;p&gt;Use local fixture projects under the test tree:&lt;/p&gt;</description></item><item><title>Alpha Scope</title><link>https://projectious-work.github.io/processkit/docs/development/alpha-scope/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/development/alpha-scope/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;The alpha proves that the v1.0 model improves real agentic project work
+before the project implements the full 89-concept ontology.&lt;/p&gt;
+&lt;p&gt;The alpha is a vertical slice, not a miniature final release.&lt;/p&gt;
+&lt;h2 id="scope"&gt;Scope&lt;/h2&gt;
+&lt;p&gt;Implement 10-15 high-value concepts covering:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;WorkItem&lt;/li&gt;
+&lt;li&gt;DecisionRecord&lt;/li&gt;
+&lt;li&gt;Artifact&lt;/li&gt;
+&lt;li&gt;Discussion&lt;/li&gt;
+&lt;li&gt;Note&lt;/li&gt;
+&lt;li&gt;LogEntry&lt;/li&gt;
+&lt;li&gt;Binding&lt;/li&gt;
+&lt;li&gt;Gate&lt;/li&gt;
+&lt;li&gt;Role&lt;/li&gt;
+&lt;li&gt;TeamMember&lt;/li&gt;
+&lt;li&gt;Skill&lt;/li&gt;
+&lt;li&gt;Capability&lt;/li&gt;
+&lt;li&gt;Proposition or Risk&lt;/li&gt;
+&lt;li&gt;Scope&lt;/li&gt;
+&lt;li&gt;Migration&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The exact list may change if implementation evidence shows a better
+slice, but it must cover work, decisions, artifacts, relations, gates,
+roles, skills, and event history.&lt;/p&gt;</description></item><item><title>Landscape Note</title><link>https://projectious-work.github.io/processkit/docs/development/landscape-note/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/development/landscape-note/</guid><description>&lt;h2 id="positioning"&gt;Positioning&lt;/h2&gt;
+&lt;p&gt;processkit v1.0 is not trying to replace agent runtimes, memory
+databases, coding agents, or data catalogs. It should be the process
+substrate those systems can use.&lt;/p&gt;
+&lt;p&gt;Its strongest position is:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;provider-neutral process memory and governance for agentic software
+projects.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="adjacent-areas"&gt;Adjacent Areas&lt;/h2&gt;
+&lt;h3 id="okf"&gt;OKF&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf" rel="noopener"&gt;OKF&lt;/a&gt;
+
+validates markdown plus YAML frontmatter as an agent-readable exchange
+format. processkit should support OKF import/export, generated indexes,
+and permissive boundary consumption.&lt;/p&gt;
+&lt;p&gt;processkit should not copy OKF&amp;rsquo;s path IDs, untyped links, or prose-only
+logs as canonical semantics.&lt;/p&gt;</description></item><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/docs/development/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/development/acceptance-gate/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;The acceptance gate keeps the v1.0 rebuild measurable. The RFC&amp;rsquo;s
+81-criterion gate is authoritative for final cutover; the staged lists
+below are working summaries for alpha-first execution.&lt;/p&gt;
+&lt;h2 id="rfc-cutover-gate"&gt;RFC Cutover Gate&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Phase&lt;/th&gt;
+ &lt;th style="text-align: right"&gt;Criteria&lt;/th&gt;
+ &lt;th style="text-align: right"&gt;Strict&lt;/th&gt;
+ &lt;th style="text-align: right"&gt;Soft&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;P0 - Pre-conditions&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;5&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;5&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;0&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;O1 - Ontology completeness&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;11&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;9&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;2&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;T2 - Tooling parity&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;12&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;9&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;3&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;C3 - Corpus migration&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;10&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;10&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;0&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;S4 - Skills and agents&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;8&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;8&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;0&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;A5 - First-ART validation&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;18&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;18&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;0&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;G6 - Cutover decision point&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;8&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;8&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;0&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;R7 - Post-cutover stabilisation&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;9&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;8&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;1&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;strong&gt;Total&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;&lt;strong&gt;81&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;&lt;strong&gt;75&lt;/strong&gt;&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;A5 is the proof phase: model a real ART end to end and run one full PI
+cycle through planning, execution, demo, and inspect-and-adapt.&lt;/p&gt;</description></item></channel></rss>
