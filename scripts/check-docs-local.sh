@@ -12,7 +12,15 @@ if [[ -d "$REPO_ROOT/.github/workflows" ]] &&
 fi
 
 "$REPO_ROOT/scripts/build-docs-local.sh"
+
+# The base path differs per release line (root on v0.x-dev, /v1.x/ on
+# v1.x-dev), so derive it from the site's own baseURL rather than assuming.
+BASE_PATH="$(sed -n 's|^baseURL:[[:space:]]*"https\?://[^/]*\(/.*\)"[[:space:]]*$|\1|p' \
+    "$SITE_ROOT/hugo.yaml" | head -n 1)"
+BASE_PATH="${BASE_PATH:-/}"
+
 python3 "$REPO_ROOT/scripts/check-docs-links-local.py" \
+    --base-path "$BASE_PATH" \
     "$SITE_ROOT/public"
 
 if [[ -f "$SITE_ROOT/docusaurus.config.js" ||
