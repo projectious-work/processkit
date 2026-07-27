@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Analysis Archive on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/</link><description>Recent content in Analysis Archive on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/index.xml" rel="self" type="application/rss+xml"/><item><title>Concept Mapping Briefing Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/concept-mapping-briefing-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/concept-mapping-briefing-analysis/</guid><description>&lt;h1 id="concept-mapping-briefing-analysis"&gt;Concept Mapping Briefing Analysis&lt;/h1&gt;
+&lt;p&gt;Source: &lt;code&gt;concept-mapping-2026-05-16.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Analyzed: 2026-07-04&lt;/p&gt;
+&lt;p&gt;Supersession note: &lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt; is now the guiding
+briefing for processkit v1.0. Where this analysis conflicts with the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/"&gt;processkit v1.0 RFC analysis&lt;/a&gt;
+, the
+RFC analysis wins. Keep this file as historical interpretation of the
+earlier concept-mapping input, not as current implementation guidance.&lt;/p&gt;
+&lt;p&gt;The filename dates the briefing to 2026-05-16, but the document itself
+continues through Round 17 on 2026-05-20. Treat it as a mid-May design
+snapshot, roughly six to seven weeks old as of this analysis.&lt;/p&gt;</description></item><item><title>OKF Compatibility Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/okf-compatibility-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/okf-compatibility-analysis/</guid><description>&lt;h1 id="okf-compatibility-analysis"&gt;OKF Compatibility Analysis&lt;/h1&gt;
+&lt;p&gt;Source:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Google Cloud announcement, &amp;ldquo;Introducing the Open Knowledge Format&amp;rdquo;,
+published 2026-06-12&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;GoogleCloudPlatform/knowledge-catalog&lt;/code&gt; &lt;code&gt;okf/SPEC.md&lt;/code&gt;, v0.1 draft,
+inspected at &lt;code&gt;d44368c15e38e7c92481c5992e4f9b5b421a801d&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Analyzed: 2026-07-04&lt;/p&gt;
+&lt;h2 id="recommendation"&gt;Recommendation&lt;/h2&gt;
+&lt;p&gt;processkit v1.0 should support OKF as an import/export and publication
+profile, but should not make OKF the canonical internal format.&lt;/p&gt;
+&lt;p&gt;In practical terms:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Yes: emit conformant OKF bundles from selected processkit knowledge.&lt;/li&gt;
+&lt;li&gt;Yes: ingest OKF bundles into processkit as external knowledge sources.&lt;/li&gt;
+&lt;li&gt;Yes: preserve OKF-compatible affordances in v1.0 schema design where
+they do not weaken processkit semantics.&lt;/li&gt;
+&lt;li&gt;No: do not require the whole repository or canonical &lt;code&gt;context/&lt;/code&gt; tree
+to be an OKF bundle.&lt;/li&gt;
+&lt;li&gt;No: do not replace processkit entity IDs, typed relations, lifecycle
+states, validation modes, event logs, or interface-aware queries with
+OKF&amp;rsquo;s permissive markdown conventions.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This gives us interoperability without losing the benefits that make
+processkit more than an LLM wiki.&lt;/p&gt;</description></item><item><title>processkit v1.0 Base Context</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/base-context/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/base-context/</guid><description>&lt;h1 id="processkit-v10-base-context"&gt;processkit v1.0 Base Context&lt;/h1&gt;
+&lt;p&gt;Created: 2026-07-04&lt;/p&gt;
+&lt;p&gt;This historical base context was created for the processkit v1.0 redesign.
+It was built from the earlier &lt;code&gt;projectious-work/processkit&lt;/code&gt; repository,
+cloned locally at:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Source URL: &lt;a href="https://github.com/projectious-work/processkit" rel="noopener"&gt;https://github.com/projectious-work/processkit&lt;/a&gt;
+&lt;/li&gt;
+&lt;li&gt;Analyzed commit: &lt;code&gt;6a9a175f95c42dd76e23488feca42e3d05526b98&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Local clone: &lt;code&gt;/tmp/processkit-original&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The goal is to preserve the proven v0.x product target while creating a
+clean basis for processkit v1.0 improvement briefings.&lt;/p&gt;
+&lt;h2 id="current-guiding-briefing"&gt;Current Guiding Briefing&lt;/h2&gt;
+&lt;p&gt;The current guiding briefing is &lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt;, analyzed
+in the &lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/"&gt;processkit v1.0 RFC analysis&lt;/a&gt;
+.&lt;/p&gt;</description></item><item><title>processkit v1.0 RFC Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/</guid><description>&lt;h1 id="processkit-v10-rfc-analysis"&gt;processkit v1.0 RFC Analysis&lt;/h1&gt;
+&lt;p&gt;Source: &lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Analyzed: 2026-07-04&lt;/p&gt;
+&lt;p&gt;Status for this project: guiding briefing. Where this RFC conflicts with
+&lt;code&gt;concept-mapping-2026-05-16.md&lt;/code&gt; or
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/concept-mapping-briefing-analysis/"&gt;concept-mapping-briefing-analysis.md&lt;/a&gt;
+,
+this RFC wins.&lt;/p&gt;
+&lt;h2 id="executive-read"&gt;Executive Read&lt;/h2&gt;
+&lt;p&gt;The RFC turns the earlier concept-mapping work into an implementation
+and release proposal. It is no longer just an ontology discussion. It
+asks upstream processkit maintainers to host a full v1.0 greenfield
+rebuild on a parallel &lt;code&gt;v1.0&lt;/code&gt; branch while &lt;code&gt;main&lt;/code&gt; continues v0.x
+maintenance.&lt;/p&gt;</description></item><item><title>processkit v1.0 Start Assessment</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-start-assessment/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-start-assessment/</guid><description>&lt;h1 id="processkit-v10-start-assessment"&gt;processkit v1.0 Start Assessment&lt;/h1&gt;
+&lt;p&gt;Analyzed: 2026-07-04&lt;/p&gt;
+&lt;p&gt;Sources considered:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/"&gt;processkit v1.0 RFC Analysis&lt;/a&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/concept-mapping-briefing-analysis/"&gt;Concept Mapping Briefing Analysis&lt;/a&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/okf-compatibility-analysis/"&gt;OKF Compatibility Analysis&lt;/a&gt;
+&lt;/li&gt;
+&lt;li&gt;Google OKF announcement and v0.1 specification&lt;/li&gt;
+&lt;li&gt;External survey of adjacent agent, memory, metadata, and coding-agent
+projects&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="judgement"&gt;Judgement&lt;/h2&gt;
+&lt;p&gt;The v1.0 plan is good enough to start, but not as an unconstrained
+9-12 month greenfield rebuild.&lt;/p&gt;
+&lt;p&gt;Start a &lt;code&gt;v1.0&lt;/code&gt; branch now, but run it as a narrow alpha first:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;prove a small vertical slice before implementing the full ontology&lt;/li&gt;
+&lt;li&gt;keep processkit&amp;rsquo;s canonical semantics stricter than OKF&lt;/li&gt;
+&lt;li&gt;position processkit as process memory and governance, not as another
+agent runtime&lt;/li&gt;
+&lt;li&gt;integrate with external runtimes instead of rebuilding them&lt;/li&gt;
+&lt;li&gt;add OKF import/export as a boundary compatibility feature&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The plan&amp;rsquo;s direction is strong. Its main risk is scope, not concept.&lt;/p&gt;</description></item></channel></rss>
