@@ -1629,6 +1629,40 @@ def run(distribution_root: Path | str | None = None):
         )
         print("derived-project pk-doctor: PASSED")
 
+        # First-ART release-candidate acceptance matrix. These assertions bind
+        # the broad smoke scenario to the v1 A5 proof rather than treating its
+        # individual tool calls as unrelated checks.
+        first_art_acceptance = {
+            "planning": all([
+                "id" in proc,
+                len(proc["children"]) == 2,
+                "id" in alpha_risk,
+                member_link.get("ok") is True,
+                "id" in tw,
+                "id" in budget,
+            ]),
+            "execution": all([
+                t.get("to_state") == "in-progress",
+                t_archive_review.get("to_state") == "review",
+                t_archive_done.get("to_state") == "done",
+                good_eval.get("outcome") == "passed",
+            ]),
+            "evidence": all([
+                "id" in d,
+                "id" in a_doc,
+                okf_result["ok"] is True,
+                doctor_run.returncode == 0,
+            ]),
+            "inspect_and_adapt": all([
+                completed.get("ok") is True,
+                td.get("to_state") == "resolved",
+                td2.get("to_state") == "active",
+                len(_ev_transitioned) >= 1,
+            ]),
+        }
+        assert all(first_art_acceptance.values()), first_art_acceptance
+        print("first-ART RC acceptance:", first_art_acceptance)
+
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
