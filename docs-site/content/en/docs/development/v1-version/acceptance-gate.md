@@ -28,6 +28,12 @@ below are working summaries for alpha-first execution.
 A5 is the proof phase: model a real ART end to end and run one full PI
 cycle through planning, execution, demo, and inspect-and-adapt.
 
+The local release-candidate proof is executable through
+`uv run scripts/smoke-test-servers.py`. Its final `first-ART RC acceptance`
+matrix binds the production-shaped scenario to planning, execution, evidence,
+and inspect-and-adapt outcomes. Package smoke runs the same matrix against the
+staged release tree.
+
 ## Detailed RFC Criteria
 
 The detailed list below expands the RFC gate into checkable criteria for

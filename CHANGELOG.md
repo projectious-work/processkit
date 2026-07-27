@@ -59,6 +59,9 @@ aibox.
   stable processkit identity, interfaces, and typed relation extensions.
 - Added lossless processkit producer-profile OKF import with dry-run planning,
   schema checks, collision refusal, index updates, and adversarial fixtures.
+- Added an executable first-ART release-candidate acceptance matrix covering
+  planning, execution, evidence, and inspect-and-adapt through shipped MCP
+  tools.
 - Added a release-tested alpha workflow covering TeamMember role assignment,
   Scope, Capability, Proposition, Risk, Skill, migration, interface queries,
   and OKF export from the staged package.
