@@ -214,6 +214,34 @@ def test_required_fields_and_closed_vocabularies_reject_invalid_data() -> None:
         sys.path.remove(str(library))
 
 
+def test_runtime_loader_resolves_beta_discriminator_output_names() -> None:
+    library = ROOT / "src/context/skills/_lib"
+    sys.path.insert(0, str(library))
+    try:
+        from processkit import schema
+
+        schema.load_schema.cache_clear()
+        world_fact = schema.load_schema(
+            "Proposition",
+            SCHEMAS.parent,
+            "world-fact",
+        )
+        assert world_fact["discriminator"] == {
+            "field": "kind",
+            "value": "world-fact",
+        }
+        errors = schema.validate_spec(
+            "Proposition",
+            {
+                "kind": "world-fact",
+                "statement": "A source is required.",
+            },
+        )
+        assert errors
+    finally:
+        sys.path.remove(str(library))
+
+
 def test_skill_package_manifest_projects_to_generated_contract() -> None:
     library = ROOT / "src/context/skills/_lib"
     sys.path.insert(0, str(library))

@@ -57,3 +57,73 @@ def test_claim_and_risk_share_proposition_interface(
     risks = server.query_propositions(kind="risk")
     assert [row["id"] for row in risks] == [risk["id"]]
     assert risk["event_logged"] is True
+
+
+def test_beta_discriminators_validate_update_and_query(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    server = _load_server()
+    project = tmp_path / "project"
+    (project / "context").mkdir(parents=True)
+    shutil.copytree(
+        ROOT / "src/context/schemas",
+        project / "context/schemas",
+    )
+    monkeypatch.chdir(project)
+    server.schema.load_schema.cache_clear()
+
+    created = {
+        "belief": server.create_proposition(
+            statement="The beta model is understandable.",
+            kind="belief",
+            rationale="The alpha workflow completed without ambiguity.",
+        ),
+        "world-fact": server.create_proposition(
+            statement="The alpha release archive validates locally.",
+            kind="world-fact",
+            source="scripts/test-release-trust-local.sh",
+            observed_at="2026-07-27T05:00:00Z",
+        ),
+        "wsjf-estimate": server.create_proposition(
+            statement="Activate beta Proposition discriminators first.",
+            kind="wsjf-estimate",
+            cost_of_delay=13,
+            job_size=3,
+            score=4.33,
+        ),
+        "assumption": server.create_proposition(
+            statement="Downstream consumers accept additive MCP arguments.",
+            kind="assumption",
+            validation_due="2026-08-03T00:00:00Z",
+            validation_method="Run the staged-package smoke suite.",
+        ),
+    }
+    assert all("error" not in result for result in created.values())
+
+    invalid_world_fact = server.create_proposition(
+        statement="This fact has no source.",
+        kind="world-fact",
+    )
+    assert invalid_world_fact["error"] == "schema validation failed"
+    invalid_wsjf = server.create_proposition(
+        statement="This estimate has no job size.",
+        kind="wsjf-estimate",
+        cost_of_delay=8,
+    )
+    assert invalid_wsjf["error"] == "schema validation failed"
+
+    updated = server.update_proposition(
+        created["assumption"]["id"],
+        validation_method="Verify in two independent fixture projects.",
+    )
+    assert updated["updated"] == ["validation_method"]
+    assumption = server.get_proposition(created["assumption"]["id"])
+    assert (
+        assumption["spec"]["validation_method"]
+        == "Verify in two independent fixture projects."
+    )
+
+    for kind, result in created.items():
+        rows = server.query_propositions(kind=kind)
+        assert [row["id"] for row in rows] == [result["id"]]

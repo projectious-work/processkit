@@ -6615,7 +6615,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Create a claim or Risk discriminator under one Proposition kind.",
+      "description": "Create a Proposition using a generated discriminator contract.",
       "name": "create_proposition",
       "output_schema": null,
       "parameters": {
@@ -6659,6 +6659,18 @@
             "default": null,
             "title": "Contingency"
           },
+          "cost_of_delay": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Of Delay"
+          },
           "evidence": {
             "anyOf": [
               {
@@ -6685,6 +6697,18 @@
             ],
             "default": null,
             "title": "Impact"
+          },
+          "job_size": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Job Size"
           },
           "kind": {
             "default": "claim",
@@ -6715,6 +6739,18 @@
             "default": null,
             "title": "Mitigation"
           },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
           "owner": {
             "anyOf": [
               {
@@ -6738,6 +6774,18 @@
             ],
             "default": null,
             "title": "Probability"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rationale"
           },
           "response": {
             "anyOf": [
@@ -6787,6 +6835,18 @@
             "default": null,
             "title": "Scope"
           },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Score"
+          },
           "source": {
             "anyOf": [
               {
@@ -6814,6 +6874,30 @@
             ],
             "default": null,
             "title": "Status"
+          },
+          "validation_due": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validation Due"
+          },
+          "validation_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validation Method"
           }
         },
         "required": [
@@ -6990,6 +7074,18 @@
             "default": null,
             "title": "Contingency"
           },
+          "cost_of_delay": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Of Delay"
+          },
           "evidence": {
             "anyOf": [
               {
@@ -7021,6 +7117,18 @@
             "default": null,
             "title": "Impact"
           },
+          "job_size": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Job Size"
+          },
           "likelihood": {
             "anyOf": [
               {
@@ -7045,6 +7153,18 @@
             "default": null,
             "title": "Mitigation"
           },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
           "owner": {
             "anyOf": [
               {
@@ -7068,6 +7188,18 @@
             ],
             "default": null,
             "title": "Probability"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rationale"
           },
           "realized_at": {
             "anyOf": [
@@ -7128,6 +7260,18 @@
             ],
             "default": null,
             "title": "Scope"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Score"
           },
           "source": {
             "anyOf": [
@@ -7200,6 +7344,30 @@
             ],
             "default": null,
             "title": "Valid Until"
+          },
+          "validation_due": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validation Due"
+          },
+          "validation_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validation Method"
           }
         },
         "required": [
