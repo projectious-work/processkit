@@ -57,6 +57,8 @@ aibox.
   and a recovery journal.
 - Added OKF v0.1 export and validation as an explicit boundary profile, with
   stable processkit identity, interfaces, and typed relation extensions.
+- Added lossless processkit producer-profile OKF import with dry-run planning,
+  schema checks, collision refusal, index updates, and adversarial fixtures.
 - Added a release-tested alpha workflow covering TeamMember role assignment,
   Scope, Capability, Proposition, Risk, Skill, migration, interface queries,
   and OKF export from the staged package.
