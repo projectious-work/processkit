@@ -25,9 +25,39 @@ def test_beta_inventory_is_dependency_closed_and_exact() -> None:
     concepts = [concept for values in inventory.values() for concept in values]
     assert len(concepts) == 62
     assert len(set(concepts)) == 62
-    assert len(REGISTRY["kinds"]) == 43
+    assert len(REGISTRY["kinds"]) == 70
     for kind in REGISTRY["kinds"].values():
         assert (SCHEMAS / kind["output"]).is_file()
+
+
+def test_alpha3_inventory_completes_the_89_concept_target() -> None:
+    beta = REGISTRY["beta_concepts"]
+    completion = REGISTRY["completion_concepts"]
+    assert {key: len(value) for key, value in completion.items()} == {
+        "discriminators": 16,
+        "compositions": 11,
+    }
+    concepts = [
+        concept
+        for inventory in (beta, completion)
+        for values in inventory.values()
+        for concept in values
+    ]
+    assert len(concepts) == 89
+    assert len(set(concepts)) == 89
+    assert len(REGISTRY["kinds"]) == 70
+
+
+def test_all_alpha3_generated_outputs_are_draft_2020_12_contracts() -> None:
+    for name, entry in REGISTRY["kinds"].items():
+        document = yaml.safe_load((SCHEMAS / entry["output"]).read_text())
+        schema = document["spec"]["spec_schema"]
+        jsonschema.Draft202012Validator.check_schema(schema)
+        discriminator = entry.get("discriminator")
+        if discriminator:
+            field = discriminator["field"]
+            value = discriminator["value"]
+            assert schema["properties"][field]["const"] == value, name
 FIXTURE = ROOT / "tests/fixtures/alpha-project"
 
 

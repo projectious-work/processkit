@@ -69,3 +69,38 @@ def test_execute_rejects_changed_source(tmp_path: Path) -> None:
     scope.write_text(scope.read_text() + "\nchanged\n", encoding="utf-8")
     with pytest.raises(corpus_migration.CorpusMigrationError):
         corpus_migration.execute_v0_to_v1(project, plan)
+
+
+def test_every_supported_v0_kind_has_an_explicit_disposition() -> None:
+    expected = {
+        "Actor", "Artifact", "Binding", "Capability", "Category",
+        "Constraint", "DecisionRecord", "Discussion", "Gate", "LogEntry",
+        "Migration", "Note", "Role", "RoleSlot", "Scope", "TeamMember",
+        "WorkItem",
+    }
+    assert set(corpus_migration.V0_KIND_DISPOSITIONS) == expected
+    assert corpus_migration.V0_KIND_DISPOSITIONS["Scope"] == {
+        "action": "transform",
+        "target_kind": "Container",
+        "discriminator": "scope",
+    }
+
+
+def test_unknown_v0_kind_is_rejected_in_the_plan(tmp_path: Path) -> None:
+    project = _project(tmp_path)
+    unknown = project / "context" / "unknown"
+    unknown.mkdir()
+    (unknown / "UNKNOWN-alpha.md").write_text(
+        "---\n"
+        "apiVersion: processkit.projectious.work/v1\n"
+        "kind: UnknownLegacy\n"
+        "metadata: {id: UNKNOWN-alpha, created: 2026-07-27T00:00:00Z}\n"
+        "spec: {value: retained}\n"
+        "---\n",
+        encoding="utf-8",
+    )
+    plan = corpus_migration.plan_v0_to_v1(project)
+    assert any(
+        "no explicit v0-to-v1 disposition" in item["error"]
+        for item in plan["errors"]
+    )

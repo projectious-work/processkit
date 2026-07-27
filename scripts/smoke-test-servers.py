@@ -258,8 +258,80 @@ def run(distribution_root: Path | str | None = None):
         capability = import_server("capability-management")
         proposition = import_server("proposition-management")
         skill_mgmt = import_server("skill-management")
+        ontology = import_server("ontology-management")
         okf = import_server("okf-compatibility")
         team = import_server("team-manager")
+
+        create_ontology = get_tool(ontology, "create_ontology_entity")
+        transition_ontology = get_tool(
+            ontology, "transition_ontology_entity"
+        )
+        timezone_entity = create_ontology(
+            kind="Location",
+            id="LOC-alpha3-timezone",
+            spec={
+                "name": "Berlin delivery timezone",
+                "kind": "timezone",
+                "value": "Europe/Berlin",
+            },
+        )
+        assert timezone_entity["id"] == "LOC-alpha3-timezone"
+        art_containers = {}
+        for container_id, container_kind, container_name in (
+            ("CONT-alpha3-portfolio", "portfolio", "Alpha.3 Portfolio"),
+            ("CONT-alpha3-value-stream", "value-stream", "Delivery Value Stream"),
+            ("CONT-alpha3-art", "art", "Processkit ART"),
+            ("CONT-alpha3-team", "team", "Processkit Team"),
+        ):
+            art_containers[container_kind] = create_ontology(
+                kind="Container",
+                id=container_id,
+                spec={"name": container_name, "kind": container_kind},
+            )
+            assert art_containers[container_kind]["id"] == container_id
+        create_binding = get_tool(bind, "create_binding")
+        art_hierarchy = [
+            create_binding(
+                type="hierarchy",
+                subject="CONT-alpha3-value-stream",
+                target="CONT-alpha3-portfolio",
+                description="Value stream belongs to portfolio.",
+            ),
+            create_binding(
+                type="hierarchy",
+                subject="CONT-alpha3-art",
+                target="CONT-alpha3-value-stream",
+                description="ART delivers through value stream.",
+            ),
+            create_binding(
+                type="hierarchy",
+                subject="CONT-alpha3-team",
+                target="CONT-alpha3-art",
+                description="Team belongs to ART.",
+            ),
+        ]
+        assert all("id" in item for item in art_hierarchy)
+        pi_entity = create_ontology(
+            kind="ProgramIncrement",
+            id="PI-alpha3-proof",
+            spec={
+                "name": "Alpha.3 proof PI",
+                "kind": "program-increment",
+                "state": "planned",
+                "starts_at": "2026-07-27T00:00:00Z",
+                "ends_at": "2026-08-10T00:00:00Z",
+                "objectives": [],
+                "risks": [],
+                "iterations": [],
+            },
+        )
+        assert pi_entity["id"] == "PI-alpha3-proof"
+        pi_active = transition_ontology(
+            kind="ProgramIncrement",
+            id="PI-alpha3-proof",
+            to_state="active",
+        )
+        assert pi_active["to_state"] == "active"
 
         schema_contract = get_tool(
             schema_mgmt, "get_schema_contract"
@@ -1246,10 +1318,11 @@ def run(distribution_root: Path | str | None = None):
             dry_run=True,
         )
         assert import_plan["ok"] is False
-        assert all(
-            "target entity already exists" in error["error"]
-            for error in import_plan["errors"]
-        )
+        import_unexpected = [
+            error for error in import_plan["errors"]
+            if "exists" not in error["error"]
+        ]
+        assert not import_unexpected, import_unexpected
 
         # Systemic self-attribution guard (BACK-20260421_0209-*).
         # Every entity-mutating MCP tool must pass actor=<subject-id> to its
@@ -1634,6 +1707,10 @@ def run(distribution_root: Path | str | None = None):
         # individual tool calls as unrelated checks.
         first_art_acceptance = {
             "planning": all([
+                len(art_containers) == 4,
+                all("id" in item for item in art_hierarchy),
+                pi_entity.get("id") == "PI-alpha3-proof",
+                pi_active.get("to_state") == "active",
                 "id" in proc,
                 len(proc["children"]) == 2,
                 "id" in alpha_risk,

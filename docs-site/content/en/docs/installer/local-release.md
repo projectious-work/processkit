@@ -22,7 +22,7 @@ the compromised public key from local trust stores.
 ## Validate and create a release
 
 ```sh
-scripts/release-local.sh v1.0.0-alpha.2 \
+scripts/release-local.sh v1.0.0-alpha.3 \
   "$HOME/.config/processkit/keys/release.pem" \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
@@ -39,8 +39,8 @@ one unique entry per target after building each executable locally.
 
 ```sh
 scripts/verify-release-local.sh \
-  dist/processkit-v1.0.0-alpha.2.release.json \
-  dist/processkit-v1.0.0-alpha.2.release.sig \
+  dist/processkit-v1.0.0-alpha.3.release.json \
+  dist/processkit-v1.0.0-alpha.3.release.sig \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
 
@@ -62,8 +62,8 @@ installer also verifies releases against the versioned JSON trust store:
 
 ```sh
 processkit verify-release \
-  --envelope dist/processkit-v1.0.0-alpha.2.release.json \
-  --signature dist/processkit-v1.0.0-alpha.2.release.sig \
+  --envelope dist/processkit-v1.0.0-alpha.3.release.json \
+  --signature dist/processkit-v1.0.0-alpha.3.release.sig \
   --trust-store "$HOME/.config/processkit/trust-store.json"
 ```
 

@@ -1,0 +1,16 @@
+extends: ../primitives/workitem.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-workitemtemplate, target_kind: WorkItemTemplate, version: 1.0.0-alpha.3}
+spec:
+  description: Reusable work defaults and acceptance criteria.
+  id_prefix: WITEMPLATE
+  default_directory: context/templates/workitems
+  spec_schema:
+    required: {__merge: concat, value: [template_name]}
+    properties:
+      __merge: name-merge
+      value:
+        template_name: {type: string, minLength: 1}
+        acceptance_criteria: {type: array, items: {type: string}}
+        default_bindings: {type: array, items: {type: string}}

@@ -1545,6 +1545,20 @@ fn plan(
             }
         }
     }
+    // Harness projections are mutations too. Include their exact target,
+    // ownership, operation, and resulting digest in the non-mutating plan
+    // instead of discovering them only during install.
+    for (pending, owned, _) in adapter_actions(root, &release_root, &harnesses, false)? {
+        changes.push(Change {
+            destination: owned.path,
+            component: owned.component,
+            operation: owned.operation,
+            ownership: owned.ownership,
+            kind: pending.action.kind,
+            source_sha256: owned.installed_sha256,
+            source: PathBuf::new(),
+        });
+    }
     let mut destinations = HashSet::new();
     for change in &changes {
         if !destinations.insert(change.destination.as_str()) {
@@ -1848,7 +1862,11 @@ fn install(
     let mut pending = Vec::new();
     let mut owned_paths = Vec::new();
     for change in &plan.changes {
-        if change.kind == "create" {
+        // Harness adapter changes are represented in the public plan, but
+        // adapter_actions builds their in-memory content and ownership state.
+        // Do not enqueue them a second time as file-backed distribution
+        // components.
+        if change.kind == "create" && change.ownership != "managed-keys" {
             pending.push(PendingAction {
                 action: TransactionAction {
                     kind: "create".into(),
@@ -2760,7 +2778,7 @@ fn has_symlink_ancestor(root: &Path, destination: &str) -> Result<bool, String> 
 
 #[cfg(test)]
 mod tests {
-    use super::safe_relative;
+    use super::{safe_relative, InstallerRequest};
     #[test]
     fn rejects_escaping_paths() {
         assert!(safe_relative("context/skills"));
@@ -2768,5 +2786,23 @@ mod tests {
         assert!(!safe_relative("/context"));
         assert!(!safe_relative("context\\skills"));
         assert!(!safe_relative(""));
+        assert!(!safe_relative("context//skills"));
+        assert!(!safe_relative("context/./skills"));
+        assert!(!safe_relative("context/\0skills"));
+    }
+
+    #[test]
+    fn request_contract_rejects_unmodelled_secret_inputs() {
+        let request = br#"{
+          "apiVersion":"processkit.projectious.work/installer/v1alpha1",
+          "operation":"plan",
+          "root":".",
+          "secret":"must-not-enter-results-or-state"
+        }"#;
+        let error = match serde_json::from_slice::<InstallerRequest>(request) {
+            Ok(_) => panic!("unknown secret-bearing fields must be rejected"),
+            Err(error) => error,
+        };
+        assert!(error.to_string().contains("unknown field"));
     }
 }

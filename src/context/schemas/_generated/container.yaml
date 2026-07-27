@@ -21,6 +21,16 @@ spec:
   default_directory: context/containers
   known_kinds:
   - scope
+  - portfolio
+  - value-stream
+  - art
+  - team
+  - project
+  - scope-plan
+  - roadmap
+  - program-increment
+  - iteration
+  - release
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
@@ -33,6 +43,16 @@ spec:
         type: string
         enum:
         - scope
+        - portfolio
+        - value-stream
+        - art
+        - team
+        - project
+        - scope-plan
+        - roadmap
+        - program-increment
+        - iteration
+        - release
       name:
         type: string
         minLength: 1

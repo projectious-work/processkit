@@ -1,0 +1,17 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-scopeplan, target_kind: ScopePlan, version: 1.0.0-alpha.3}
+spec:
+  description: A bounded scope with work, owners, and acceptance gates.
+  id_prefix: SCOPEPLAN
+  default_directory: context/plans/scopes
+  spec_schema:
+    required: {__merge: concat, value: [workitems, owners]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: scope-plan}
+        workitems: {type: array, items: {type: string}}
+        owners: {type: array, minItems: 1, items: {type: string}}
+        acceptance_gates: {type: array, items: {type: string}}

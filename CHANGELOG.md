@@ -5,7 +5,41 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [v1.0.0-alpha.2] - 2026-07-27
+## [v1.0.0-alpha.3] - 2026-07-27
+
+v1.0.0-alpha.3 completes the planned v1 ontology and provides the exact,
+immutable prerelease contract required by the aibox M5 consumer pilot. The
+supported v0 line remains the default release.
+
+### Added
+
+- Added the remaining 27 ontology concepts, reaching 89 concepts and 70
+  generated schema kinds, with lifecycle state machines for program
+  increments, iterations, releases, and evaluation runs.
+- Added generic ontology-management MCP operations with validation, indexing,
+  lifecycle transitions, and event-log side effects.
+- Added explicit v0 kind dispositions, a 20-scenario conformance corpus, and
+  expanded first-ART Portfolio-to-Team and ProgramIncrement acceptance.
+- Added exact harness-adapter mutations to non-mutating installer plans and
+  Codex/Claude managed-key lifecycle parity coverage.
+
+### Changed
+
+- Made unknown v0 entity kinds a migration-plan error instead of silently
+  assigning an implicit disposition.
+- Defined `v1.0.0-alpha.3` as an exact-pin opt-in for aibox while retaining
+  the v0 compatibility bridge and stable default.
+
+### Verification
+
+- `uv run scripts/smoke-test-servers.py`
+- `scripts/test-installer-local.sh`
+- `scripts/test-installer-pilot-local.sh`
+- `uv run --with pytest --with jsonschema --with pyyaml pytest -q`
+
+---
+
+## [v1.0.0-alpha.2] - 2026-07-25
 
 v1.0.0-alpha.2 is a standalone installer and local-release alpha. It
 establishes processkit as the upstream contract: aibox may consume the
@@ -22,18 +56,6 @@ aibox.
   archive and the platform-specific installer executable.
 - Added local-only build, test, release, and tamper-validation scripts with
   no GitHub Actions or hosted-CI dependency.
-- Added a locally built Hugo Extended and Docsy documentation site with a
-  pinned toolchain, link and privacy gates, and local publication tooling.
-- Added signed installer-asset, archive-root, release-descriptor, provenance,
-  and payload-digest bindings.
-- Added deterministic MCP preauthorization generation from the shipped
-  gateway and granular server catalogs.
-- Added lossless processkit producer-profile OKF import with dry-run planning,
-  schema checks, collision refusal, index updates, and adversarial fixtures.
-- Added an executable first-ART release-candidate acceptance matrix covering
-  planning, execution, evidence, and inspect-and-adapt.
-- Activated the generated Belief, WorldFact, WSJFEstimate, and Assumption
-  Proposition discriminators through MCP create, update, and query operations.
 
 ### Changed
 
@@ -41,15 +63,6 @@ aibox.
   envelope, and release archive to the same v1 alpha version.
 - Made aibox an optional downstream integration consumer rather than a
   processkit release prerequisite.
-- Migrated the maintained documentation corpus from Docusaurus to Hugo and
-  Docsy without introducing a hosted-CI dependency.
-
-### Fixed
-
-- Preserved installer-created harness adapter ownership across unchanged
-  updates so a later uninstall removes the owned adapter file.
-- Rejected prerelease downgrades and same-version manifest equivocation
-  without mutating managed state or payloads.
 
 ### Verification
 
@@ -61,16 +74,15 @@ aibox.
 
 ## [Unreleased]
 
----
-
-## [v1.0.0-alpha.1] - 2026-07-23
-
-v1.0.0-alpha.1 is the first opt-in prerelease of the processkit v1 line.
-Stable consumers remain on the supported v0 line; alpha consumers must pin
-this exact version.
-
 ### Added
 
+- Added a locally built Hugo Extended and Docsy documentation site modeled on
+  kubeclaw, with projectious-work branding, a pinned local toolchain, link and
+  privacy gates, and a local `gh-pages` publication script.
+- Added a required signed installer-asset matrix with unique target/file
+  identities, byte sizes, and digest verification.
+- Added signed archive-root, release-descriptor, and provenance bindings with
+  extraction-time verification.
 - Added v1 lifecycle MCP servers for Capability, Proposition/Risk, and
   package-backed Skill entities, including schema validation, interface
   indexing, lifecycle events, and gateway exposure.
@@ -79,9 +91,17 @@ this exact version.
   and a recovery journal.
 - Added OKF v0.1 export and validation as an explicit boundary profile, with
   stable processkit identity, interfaces, and typed relation extensions.
+- Added lossless processkit producer-profile OKF import with dry-run planning,
+  schema checks, collision refusal, index updates, and adversarial fixtures.
+- Added an executable first-ART release-candidate acceptance matrix covering
+  planning, execution, evidence, and inspect-and-adapt through shipped MCP
+  tools.
 - Added a release-tested alpha workflow covering TeamMember role assignment,
   Scope, Capability, Proposition, Risk, Skill, migration, interface queries,
   and OKF export from the staged package.
+- Activated the generated Belief, WorldFact, WSJFEstimate, and Assumption
+  Proposition discriminator contracts through MCP create, update, and query
+  operations.
 - Added v0 reconciliation and explicit aibox alpha-pilot documentation.
 - Expanded the v1 generated-schema alpha slice with Artifact and Gate.
 - Added interface-aware indexing and the `query_by_interface` MCP tool for
@@ -102,6 +122,9 @@ this exact version.
 
 ### Changed
 
+- Migrated the maintained documentation corpus from Docusaurus to Hugo content
+  and removed the Docusaurus runtime. Documentation builds and publication do
+  not use GitHub Actions or workflow files.
 - Canonicalized Scope writes as `Container(kind=scope)` while preserving the
   public Scope API and date-only inputs.
 - Projected package `SKILL.md` manifests into the v1 index instead of

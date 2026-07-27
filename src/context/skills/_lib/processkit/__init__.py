@@ -18,7 +18,7 @@ The public modules are:
 See `src/lib/README.md` for the import strategy from MCP server scripts.
 """
 
-__version__ = "1.0.0-alpha.2"
+__version__ = "1.0.0-alpha.3"
 
 API_VERSION = "processkit.projectious.work/v2"
 
