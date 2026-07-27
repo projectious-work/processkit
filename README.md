@@ -1,18 +1,55 @@
+<div align="center">
+
+<img src="docs-site/static/logo/processkit-light.svg" alt="processkit" width="96" height="96">
+
 # processkit
 
-**A provider-neutral process and project-memory layer for agentic software
-projects.**
+**A provider-neutral process and project-memory layer for agentic software projects.**
+
+[![Status: pre-1.0](https://img.shields.io/badge/status-pre--1.0-E05232)](https://github.com/projectious-work/processkit/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1d3352)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-projectious--work.github.io-1d3352)](https://projectious-work.github.io/processkit/)
+
+</div>
+
+---
+
+> [!NOTE]
+> **You are on the `v1.x-dev` branch — the v1.0 line, currently in prerelease.**
+>
+> Current prereleases support end-to-end local installation and validated MCP
+> workflows, but contracts may still change between prereleases. Pin exact
+> versions, read the release notes before updating, and test upgrades against
+> a disposable copy of your project.
+>
+> The released line is `v0.x`. Documentation for the two lines is published
+> separately: the [v0.x docs](https://projectious-work.github.io/processkit/)
+> are the default, and the
+> [v1.x preview](https://projectious-work.github.io/processkit/v1.x/) tracks
+> this branch.
+
+---
+
+## What this is
+
+AI coding agents are good at writing code and bad at remembering why. Ask one to
+resume work after a context reset and it re-derives decisions that were already
+made, re-opens questions that were already settled, and writes its findings into
+whatever scratch file it invented that session.
 
 processkit gives coding agents a shared, versioned project state they can read
 and change through validated tools. Work, decisions, migrations, and audit
 events remain explicit instead of disappearing into prompts, scratch files,
 or provider-specific conventions.
 
-> **Maturity: usable project in active development; pre-1.0.**
-> Current prereleases support end-to-end local installation and validated MCP
-> workflows, but contracts may still change between prereleases. Pin exact
-> versions, read the release notes before updating, and test upgrades against
-> a disposable copy of your project.
+## What this is not
+
+- Not a harness, and not a replacement for one. processkit gives any harness the
+  same process surface; it does not run models or manage conversations.
+- Not stable yet. Pre-1.0 means contracts can change between prereleases.
+- Not a dependency on aibox. aibox can install and wire processkit for you, but
+  processkit is the standalone source of the schemas, skills, packages, and MCP
+  runtime.
 
 ## See the process, not just the prompt
 
@@ -189,17 +226,28 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Documentation](docs-site/content/en/docs/_index.md)
+Full documentation lives at
+**[projectious-work.github.io/processkit](https://projectious-work.github.io/processkit/)**
+— the v0.x line at the root, this v1.0 preview line under
+[`/v1.x/`](https://projectious-work.github.io/processkit/v1.x/).
+
+| Section | Contents |
+|---------|----------|
+| [Getting Started](https://projectious-work.github.io/processkit/v1.x/docs/getting-started/overview/) | Manual and managed install paths, first entity |
+| [Installer](https://projectious-work.github.io/processkit/v1.x/docs/installer/) | Contract, local release, threat model, v0 compatibility |
+| [Primitives](https://projectious-work.github.io/processkit/v1.x/docs/primitives/overview/) | The entity model, formats, state machines, relationships |
+| [Skills](https://projectious-work.github.io/processkit/v1.x/docs/skills/overview/) | Skill package format, hierarchy, and the full catalog |
+| [Packages](https://projectious-work.github.io/processkit/v1.x/docs/packages/overview/) | The five tiers, from minimal bootstrap to managed workspace |
+| [MCP Servers](https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/overview/) | Gateway, daemon, stdio-proxy, aggregate, per-skill layouts |
+| [Reference](https://projectious-work.github.io/processkit/v1.x/docs/reference/v2-contracts/) | apiVersion policy, ID formats, migration, privacy, v2 contracts |
+| [Development](https://projectious-work.github.io/processkit/v1.x/docs/development/) | The v0 prototype line and the v1.0 rebuild, planned in the open |
+
+Build and preview locally with `./scripts/serve-docs-local.sh` (Hugo + Docsy,
+port 1313); validate with `./scripts/check-docs-local.sh`.
+
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
-
-## License
-
-processkit is distributed under the MIT License. Unless a file states
-otherwise, the project maintainers intend the MIT License in this
-repository to apply retroactively to all historical commits, tags, and
-release artifacts for this repository.
 
 ## Current release facts
 
@@ -245,3 +293,12 @@ scripts/release-local.sh vX.Y.Z <private-key.pem> <public-key.pem>
 
 See [Local release operation](docs-site/content/en/docs/installer/local-release.md)
 for the agent-first, human-operable signing and verification workflow.
+
+## License
+
+[MIT](LICENSE). Unless a file states otherwise, the project maintainers intend
+the MIT License in this repository to apply retroactively to all historical
+commits, tags, and release artifacts for this repository.
+
+Brand and design system © [projectious.work](https://github.com/projectious-work/brand).
+The processkit mark is derived from that system.
