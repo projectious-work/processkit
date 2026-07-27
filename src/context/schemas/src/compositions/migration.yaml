@@ -16,6 +16,7 @@ spec:
   id_prefix: MIG
   state_machine: migration
   default_directory: context/migrations
+  known_kinds: [source-upgrade, schema-extension, data-fix, runtime, content]
   spec_schema:
     required:
       __merge: replace

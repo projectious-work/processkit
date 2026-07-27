@@ -4,9 +4,10 @@
 # dependencies = [
 #   "mcp[cli]>=1.0",
 #   "pyyaml>=6.0",
+#   "jsonschema>=4.0",
 # ]
 # ///
-"""Open Knowledge Format v0.1 export and validation tools."""
+"""Open Knowledge Format v0.1 import, export, and validation tools."""
 from __future__ import annotations
 
 import os
@@ -35,7 +36,7 @@ sys.path.insert(0, str(_find_lib()))
 from mcp.server.fastmcp import FastMCP  # noqa: E402
 from mcp.types import ToolAnnotations  # noqa: E402
 
-from processkit import entity, log, paths, schema  # noqa: E402
+from processkit import entity, index, log, paths, schema  # noqa: E402
 from processkit.frontmatter import FrontmatterError, parse, render  # noqa: E402
 
 server = FastMCP("processkit-okf-compatibility")
@@ -140,6 +141,11 @@ def export_okf_bundle(
                 ent.kind,
                 discriminator=schema.discriminator_for_kind(ent.kind, ent.spec),
             ),
+            "processkit_spec": ent.spec,
+            "processkit_body": ent.body,
+            "processkit_created": str(ent.created),
+            "processkit_updated": str(ent.updated) if ent.updated else None,
+            "processkit_labels": ent.labels,
         }
         description = _description(ent)
         if description:
@@ -264,6 +270,184 @@ def validate_okf_bundle(bundle_dir: str) -> dict:
             "errors": [{"error": f"bundle directory not found: {bundle}"}],
         }
     return _validate(bundle)
+
+
+def _producer_documents(bundle: Path) -> tuple[list[dict[str, Any]], list[dict]]:
+    documents: list[dict[str, Any]] = []
+    errors: list[dict] = []
+    seen_ids: set[str] = set()
+    for path in sorted((bundle / "concepts").rglob("*.md")):
+        relative = str(path.relative_to(bundle))
+        try:
+            frontmatter, _body = parse(path.read_text(encoding="utf-8"))
+        except (OSError, FrontmatterError) as exc:
+            errors.append({"path": relative, "error": str(exc)})
+            continue
+        proposition_id = frontmatter.get("processkit_id")
+        kind = frontmatter.get("processkit_kind")
+        spec = frontmatter.get("processkit_spec")
+        if not isinstance(proposition_id, str) or not _ID_TOKEN.fullmatch(
+            proposition_id
+        ):
+            errors.append({
+                "path": relative,
+                "error": "producer profile requires a valid processkit_id",
+            })
+            continue
+        if proposition_id in seen_ids:
+            errors.append({
+                "path": relative,
+                "error": f"duplicate processkit_id: {proposition_id}",
+            })
+            continue
+        seen_ids.add(proposition_id)
+        if not isinstance(kind, str) or not kind:
+            errors.append({
+                "path": relative,
+                "error": "producer profile requires processkit_kind",
+            })
+            continue
+        expected_type = f"processkit.{_slug_kind(kind)}"
+        if frontmatter.get("type") != expected_type:
+            errors.append({
+                "path": relative,
+                "error": (
+                    f"type {frontmatter.get('type')!r} does not match "
+                    f"processkit_kind {kind!r}"
+                ),
+            })
+            continue
+        if not isinstance(spec, dict):
+            errors.append({
+                "path": relative,
+                "error": "producer profile requires mapping processkit_spec",
+            })
+            continue
+        spec_errors = schema.validate_spec(kind, spec)
+        if spec_errors:
+            errors.append({
+                "path": relative,
+                "error": "processkit_spec failed schema validation",
+                "details": spec_errors,
+            })
+            continue
+        documents.append({
+            "path": path,
+            "id": proposition_id,
+            "kind": kind,
+            "spec": spec,
+            "body": str(frontmatter.get("processkit_body") or ""),
+            "created": frontmatter.get("processkit_created"),
+            "updated": frontmatter.get("processkit_updated"),
+            "labels": frontmatter.get("processkit_labels"),
+        })
+    return documents, errors
+
+
+@server.tool(annotations=ToolAnnotations(
+    readOnlyHint=False,
+    destructiveHint=False,
+    idempotentHint=False,
+    openWorldHint=False,
+))
+def import_okf_bundle(
+    bundle_dir: str,
+    dry_run: bool = False,
+) -> dict:
+    """Import a lossless processkit producer-profile OKF v0.1 bundle."""
+    root = paths.find_project_root()
+    try:
+        bundle = _safe_output(root, bundle_dir)
+    except ValueError as exc:
+        return {"ok": False, "errors": [{"error": str(exc)}]}
+    if not bundle.is_dir():
+        return {
+            "ok": False,
+            "errors": [{"error": f"bundle directory not found: {bundle}"}],
+        }
+    validation = _validate(bundle)
+    documents, errors = _producer_documents(bundle)
+    if not validation["valid"]:
+        errors.extend(validation["errors"])
+
+    planned: list[dict[str, str]] = []
+    for document in documents:
+        target = paths.entity_path(
+            document["kind"],
+            document["id"],
+            created_at=document["created"],
+            root=root,
+            state=document["spec"].get("state"),
+        )
+        if target.exists():
+            errors.append({
+                "path": str(document["path"].relative_to(bundle)),
+                "error": f"target entity already exists: {target}",
+            })
+        planned.append({
+            "id": document["id"],
+            "kind": document["kind"],
+            "target": str(target),
+        })
+        document["target"] = target
+    if errors:
+        return {
+            "ok": False,
+            "dry_run": dry_run,
+            "planned": planned,
+            "errors": errors,
+        }
+    if dry_run:
+        return {
+            "ok": True,
+            "dry_run": True,
+            "planned": planned,
+            "imported": [],
+            "errors": [],
+        }
+
+    db = index.open_db()
+    imported: list[str] = []
+    try:
+        for document in documents:
+            labels = document["labels"]
+            ent = entity.new(
+                document["kind"],
+                document["id"],
+                document["spec"],
+                labels=labels if isinstance(labels, dict) else None,
+                body=document["body"],
+            )
+            if document["created"]:
+                ent.metadata["created"] = document["created"]
+            if document["updated"]:
+                ent.metadata["updated"] = document["updated"]
+            ent.write(document["target"], touch_updated=False)
+            index.upsert_entity(db, ent)
+            imported.append(document["id"])
+    finally:
+        db.close()
+    event_id = log.log_side_effect(
+        "Artifact",
+        "okf-import",
+        "okf.bundle-imported",
+        f"Imported {len(imported)} entities from OKF v0.1",
+        root=root,
+        actor="processkit-okf-compatibility",
+        details={
+            "bundle_dir": str(bundle.relative_to(root)),
+            "entity_count": len(imported),
+        },
+    )
+    return {
+        "ok": True,
+        "dry_run": False,
+        "planned": planned,
+        "imported": imported,
+        "errors": [],
+        "event_logged": event_id is not None,
+        "event_id": event_id,
+    }
 
 
 if __name__ == "__main__":

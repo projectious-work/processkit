@@ -25,6 +25,10 @@ spec:
   known_kinds:
   - claim
   - risk
+  - belief
+  - world-fact
+  - wsjf-estimate
+  - assumption
   spec_schema:
     $schema: https://json-schema.org/draft/2020-12/schema
     type: object
@@ -40,6 +44,10 @@ spec:
         enum:
         - claim
         - risk
+        - belief
+        - world-fact
+        - wsjf-estimate
+        - assumption
         description: Proposition discriminator.
         const: risk
       statement:

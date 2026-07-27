@@ -1,0 +1,15 @@
+{{- $destination := .Destination -}}
+{{- $parsed := urls.Parse $destination -}}
+{{- if and (not $parsed.IsAbs) (not (hasPrefix $destination "#")) -}}
+  {{- with .Page.GetPage $parsed.Path -}}
+    {{- $destination = .RelPermalink -}}
+    {{- with $parsed.Fragment -}}
+      {{- $destination = printf "%s#%s" $destination . -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+<a href="{{ $destination | safeURL }}"
+  {{- with .Title }} title="{{ . }}"{{ end -}}
+  {{- if $parsed.IsAbs }} rel="noopener"{{ end -}}>
+  {{- .Text | safeHTML -}}
+</a>

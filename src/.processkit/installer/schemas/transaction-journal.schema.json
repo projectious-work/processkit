@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion", "transactionId", "operation", "phase",
+    "oldStateSha256", "newStateSha256", "actions"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/installer/v1alpha1"
+    },
+    "transactionId": {"type": "string", "minLength": 8},
+    "operation": {"enum": ["install", "update", "uninstall"]},
+    "phase": {
+      "enum": ["prepared", "applying", "state-written", "committed"]
+    },
+    "oldStateSha256": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "newStateSha256": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "transaction-action.schema.json"
+      }
+    }
+  }
+}

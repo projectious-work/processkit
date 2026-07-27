@@ -1,0 +1,40 @@
+apiVersion: processkit.projectious.work/distribution/v1alpha1
+kind: Distribution
+metadata:
+  name: processkit
+  version: 1.0.0-alpha.2
+spec:
+  installer:
+    protocol: processkit.projectious.work/installer/v1alpha1
+    requires: ">=0.1.0 <0.2.0"
+    capabilities:
+      - copy/v1
+      - preserve-user/v1
+  variables:
+    schema: .processkit/installer/schemas/variables.schema.json
+  components:
+    - id: context
+      source:
+        include: [context/**]
+      destination: .
+      operation: copy/v1
+      ownership: managed-three-way
+    - id: agents-contract
+      source:
+        file: AGENTS.md
+      destination: AGENTS.md
+      operation: preserve-user/v1
+      ownership: shared
+  profiles:
+    minimal:
+      include: [context]
+    managed:
+      include: [context, agents-contract]
+  catalogs:
+    mcp: .processkit/installer/catalogs/mcp.yaml
+  harnessAdapters:
+    codex: .processkit/installer/adapters/codex.yaml
+    claude: .processkit/installer/adapters/claude.yaml
+  compatibility:
+    - .processkit/installer/compatibility/v0.27.1.yaml
+    - .processkit/installer/compatibility/v0.28.4.yaml

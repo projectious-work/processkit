@@ -6521,6 +6521,45 @@
     {
       "annotations": {
         "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false
+      },
+      "collision_sources": [
+        "okf-compatibility"
+      ],
+      "collision_status": "unique",
+      "deduplicated": false,
+      "description": "Import a lossless processkit producer-profile OKF v0.1 bundle.",
+      "name": "import_okf_bundle",
+      "output_schema": null,
+      "parameters": {
+        "properties": {
+          "bundle_dir": {
+            "title": "Bundle Dir",
+            "type": "string"
+          },
+          "dry_run": {
+            "default": false,
+            "title": "Dry Run",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "bundle_dir"
+        ],
+        "title": "import_okf_bundleArguments",
+        "type": "object"
+      },
+      "permission_class": "guarded-write",
+      "source_server_path": "processkit/okf-compatibility/mcp/server.py",
+      "source_skill": "okf-compatibility",
+      "source_tool": "import_okf_bundle",
+      "title": null
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
         "readOnlyHint": true
@@ -6615,7 +6654,7 @@
       ],
       "collision_status": "unique",
       "deduplicated": false,
-      "description": "Create a claim or Risk discriminator under one Proposition kind.",
+      "description": "Create a Proposition using a generated discriminator contract.",
       "name": "create_proposition",
       "output_schema": null,
       "parameters": {
@@ -6659,6 +6698,18 @@
             "default": null,
             "title": "Contingency"
           },
+          "cost_of_delay": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Of Delay"
+          },
           "evidence": {
             "anyOf": [
               {
@@ -6685,6 +6736,18 @@
             ],
             "default": null,
             "title": "Impact"
+          },
+          "job_size": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Job Size"
           },
           "kind": {
             "default": "claim",
@@ -6715,6 +6778,18 @@
             "default": null,
             "title": "Mitigation"
           },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
           "owner": {
             "anyOf": [
               {
@@ -6738,6 +6813,18 @@
             ],
             "default": null,
             "title": "Probability"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rationale"
           },
           "response": {
             "anyOf": [
@@ -6787,6 +6874,18 @@
             "default": null,
             "title": "Scope"
           },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Score"
+          },
           "source": {
             "anyOf": [
               {
@@ -6814,6 +6913,30 @@
             ],
             "default": null,
             "title": "Status"
+          },
+          "validation_due": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validation Due"
+          },
+          "validation_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validation Method"
           }
         },
         "required": [
@@ -6990,6 +7113,18 @@
             "default": null,
             "title": "Contingency"
           },
+          "cost_of_delay": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Cost Of Delay"
+          },
           "evidence": {
             "anyOf": [
               {
@@ -7021,6 +7156,18 @@
             "default": null,
             "title": "Impact"
           },
+          "job_size": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Job Size"
+          },
           "likelihood": {
             "anyOf": [
               {
@@ -7045,6 +7192,18 @@
             "default": null,
             "title": "Mitigation"
           },
+          "observed_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Observed At"
+          },
           "owner": {
             "anyOf": [
               {
@@ -7068,6 +7227,18 @@
             ],
             "default": null,
             "title": "Probability"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Rationale"
           },
           "realized_at": {
             "anyOf": [
@@ -7128,6 +7299,18 @@
             ],
             "default": null,
             "title": "Scope"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Score"
           },
           "source": {
             "anyOf": [
@@ -7200,6 +7383,30 @@
             ],
             "default": null,
             "title": "Valid Until"
+          },
+          "validation_due": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validation Due"
+          },
+          "validation_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Validation Method"
           }
         },
         "required": [

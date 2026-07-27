@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import os
+import subprocess
 import sys
 import tempfile
 import shutil
@@ -292,6 +293,7 @@ def run(distribution_root: Path | str | None = None):
         assert "create_proposition" in gateway.server._tool_manager._tools
         assert "create_skill" in gateway.server._tool_manager._tools
         assert "export_okf_bundle" in gateway.server._tool_manager._tools
+        assert "import_okf_bundle" in gateway.server._tool_manager._tools
         assert "plan_v0_to_v1_migration" in gateway.server._tool_manager._tools
         gateway_health = get_tool(gateway, "gateway_health")()
         assert gateway_health["ok"] is True
@@ -1238,6 +1240,16 @@ def run(distribution_root: Path | str | None = None):
         assert validate_okf(
             bundle_dir=".processkit/exports/smoke-okf"
         )["valid"] is True
+        import_okf = get_tool(okf, "import_okf_bundle")
+        import_plan = import_okf(
+            bundle_dir=".processkit/exports/smoke-okf",
+            dry_run=True,
+        )
+        assert import_plan["ok"] is False
+        assert all(
+            "target entity already exists" in error["error"]
+            for error in import_plan["errors"]
+        )
 
         # Systemic self-attribution guard (BACK-20260421_0209-*).
         # Every entity-mutating MCP tool must pass actor=<subject-id> to its
@@ -1585,6 +1597,71 @@ def run(distribution_root: Path | str | None = None):
             "callable reload_schemas with correct shape."
         )
         # End BraveBird guard.
+
+        # Release gate: the package must also be healthy from the consumer
+        # project's point of view after the full alpha lifecycle smoke.
+        doctor = (
+            CONTEXT_ROOT
+            / "skills"
+            / "processkit"
+            / "pk-doctor"
+            / "scripts"
+            / "doctor.py"
+        )
+        doctor_run = subprocess.run(
+            [
+                "uv",
+                "run",
+                "--script",
+                str(doctor),
+                "--category=schema_vocabulary,v2_contracts,drift,"
+                "team_consistency",
+            ],
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert doctor_run.returncode == 0, (
+            "derived-project pk-doctor failed after the package smoke:\n"
+            f"stdout:\n{doctor_run.stdout}\n"
+            f"stderr:\n{doctor_run.stderr}"
+        )
+        print("derived-project pk-doctor: PASSED")
+
+        # First-ART release-candidate acceptance matrix. These assertions bind
+        # the broad smoke scenario to the v1 A5 proof rather than treating its
+        # individual tool calls as unrelated checks.
+        first_art_acceptance = {
+            "planning": all([
+                "id" in proc,
+                len(proc["children"]) == 2,
+                "id" in alpha_risk,
+                member_link.get("ok") is True,
+                "id" in tw,
+                "id" in budget,
+            ]),
+            "execution": all([
+                t.get("to_state") == "in-progress",
+                t_archive_review.get("to_state") == "review",
+                t_archive_done.get("to_state") == "done",
+                good_eval.get("outcome") == "passed",
+            ]),
+            "evidence": all([
+                "id" in d,
+                "id" in a_doc,
+                okf_result["ok"] is True,
+                doctor_run.returncode == 0,
+            ]),
+            "inspect_and_adapt": all([
+                completed.get("ok") is True,
+                td.get("to_state") == "resolved",
+                td2.get("to_state") == "active",
+                len(_ev_transitioned) >= 1,
+            ]),
+        }
+        assert all(first_art_acceptance.values()), first_art_acceptance
+        print("first-ART RC acceptance:", first_art_acceptance)
 
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:
