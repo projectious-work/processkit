@@ -1,19 +1,55 @@
+<div align="center">
+
+<img src="docs-site/static/logo/processkit-light.svg" alt="processkit" width="96" height="96">
+
 # processkit
 
-> **Lifecycle: Stable.** Maintained by projectious-work for teams building
-> provider-neutral agent workflows. Support and security reports: see
-> [SECURITY.md](SECURITY.md).
+**Provider-neutral process memory, skills, and MCP tools for agentic software projects.**
 
-**Provider-neutral process memory, skills, and MCP tools for agentic
-software projects.**
+[![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-1d3352)](SECURITY.md)
+[![Status: pre-1.0](https://img.shields.io/badge/status-pre--1.0-E05232)](https://github.com/projectious-work/processkit/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1d3352)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-projectious--work.github.io-1d3352)](https://projectious-work.github.io/processkit/)
 
-processkit gives AI coding agents a structured project context they can
-read and write through validated tools instead of ad hoc Markdown,
-untracked scratch files, or provider-specific conventions.
+</div>
 
-It ships as a versioned content and runtime layer that can be used
-directly with MCP-capable harnesses, installed manually into an existing
-repository, or wired by an external environment manager.
+---
+
+> [!NOTE]
+> **This is the released `v0.x` line** — the version that ships in release
+> tarballs and is dogfooded in this repository. Maintained by projectious-work
+> for teams building provider-neutral agent workflows; support and security
+> reports go through [SECURITY.md](SECURITY.md).
+>
+> processkit is pre-1.0: breaking changes can still land in minor releases, and
+> the release notes call them out explicitly. The v1.0 rebuild is developed on
+> `v1.x-dev` and documented separately in the
+> [v1.x preview](https://projectious-work.github.io/processkit/v1.x/).
+
+---
+
+## What this is
+
+AI coding agents are good at writing code and bad at remembering why. Ask one to
+resume work after a context reset and it re-derives decisions that were already
+made, re-opens questions that were already settled, and writes its findings into
+whatever scratch file it invented that session.
+
+processkit gives AI coding agents a structured project context they read and
+write through validated tools instead of ad hoc Markdown, untracked scratch
+files, or provider-specific conventions. It ships as a versioned content and
+runtime layer usable directly with MCP-capable harnesses, installed manually
+into an existing repository, or wired by an external environment manager.
+
+## What this is not
+
+- Not a harness, and not a replacement for one. processkit gives any harness the
+  same process surface; it does not run models or manage conversations.
+- Not stable in the semver sense yet. Pre-1.0 means minor releases can break
+  you — read the changelog before upgrading.
+- Not a dependency on aibox. aibox can install and wire processkit for you, but
+  processkit is the standalone source of the schemas, skills, packages, and MCP
+  runtime.
 
 ## Highlights
 
@@ -67,13 +103,13 @@ project:
 
 ```sh
 curl -L \
-  https://github.com/projectious-work/processkit/releases/download/v0.27.2/processkit-v0.27.2.tar.gz \
-  -o processkit-v0.27.2.tar.gz
-tar -xzf processkit-v0.27.2.tar.gz
+  https://github.com/projectious-work/processkit/releases/download/v0.28.4/processkit-v0.28.4.tar.gz \
+  -o processkit-v0.28.4.tar.gz
+tar -xzf processkit-v0.28.4.tar.gz
 
-cp -a processkit-v0.27.2/context ./context
-cp -a processkit-v0.27.2/.processkit ./.processkit
-cp processkit-v0.27.2/AGENTS.md ./AGENTS.md
+cp -a processkit-v0.28.4/context ./context
+cp -a processkit-v0.28.4/.processkit ./.processkit
+cp processkit-v0.28.4/AGENTS.md ./AGENTS.md
 ```
 
 Then point your harness at the gateway MCP server. For stdio-based MCP:
@@ -143,7 +179,7 @@ processkit automatically for devcontainers:
 ```toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.27.2"
+version = "v0.28.4"
 
 [context]
 packages = ["managed"]
@@ -154,24 +190,43 @@ standalone source of the schemas, skills, packages, and MCP runtime.
 
 ## Documentation
 
-- [Documentation](https://projectious-work.github.io/processkit/docs/)
+Full documentation lives at
+**[projectious-work.github.io/processkit](https://projectious-work.github.io/processkit/)**
+— this released v0.x line at the root, the v1.0 preview under
+[`/v1.x/`](https://projectious-work.github.io/processkit/v1.x/).
+
+| Section | Contents |
+|---------|----------|
+| [Getting Started](https://projectious-work.github.io/processkit/docs/getting-started/overview/) | Manual and managed install paths, first entity |
+| [Primitives](https://projectious-work.github.io/processkit/docs/primitives/overview/) | The entity model, formats, state machines, relationships |
+| [Skills](https://projectious-work.github.io/processkit/docs/skills/overview/) | Skill package format, hierarchy, and the full catalog |
+| [Packages](https://projectious-work.github.io/processkit/docs/packages/overview/) | The five tiers, from minimal bootstrap to managed workspace |
+| [MCP Servers](https://projectious-work.github.io/processkit/docs/mcp-servers/overview/) | Gateway, daemon, stdio-proxy, aggregate, per-skill layouts |
+| [Reference](https://projectious-work.github.io/processkit/docs/reference/v2-contracts/) | apiVersion policy, ID formats, migration, privacy, v2 contracts |
+| [Development](https://projectious-work.github.io/processkit/docs/development/) | Planning documents for the v1.0 rebuild |
+
+Preview locally with `./scripts/serve-docs-local.sh` (Hugo + Docsy, port 1313);
+validate with `./scripts/check-docs-local.sh`.
+
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
 
 ## License
 
-processkit is distributed under the MIT License. Unless a file states
-otherwise, the project maintainers intend the MIT License in this
-repository to apply retroactively to all historical commits, tags, and
-release artifacts for this repository.
+[MIT](LICENSE). Unless a file states otherwise, the project maintainers intend
+the MIT License in this repository to apply retroactively to all historical
+commits, tags, and release artifacts for this repository.
+
+Brand and design system © [projectious.work](https://github.com/projectious-work/brand).
+The processkit mark is derived from that system.
 
 ## Status
 
 processkit is currently pre-1.0. Breaking changes can still land in
 minor releases, and release notes call them out explicitly.
 
-`v0.27.2` is the current patch release. It keeps the v2 deliverable
+`v0.28.4` is the current patch release. It keeps the v2 deliverable
 boundary and closes derived-project doctor remediation and policy
 false-positive gaps.
 
@@ -180,7 +235,7 @@ false-positive gaps.
 Common local checks:
 
 ```sh
-npm --prefix docs-site run build
+./scripts/check-docs-local.sh
 uv run scripts/smoke-test-servers.py
 ```
 
