@@ -149,6 +149,12 @@ def _kind(path: Path) -> str:
     return str(fm.get("kind") or "")
 
 
+def _binding_type(path: Path) -> str:
+    fm = _load_frontmatter(path) or {}
+    spec = fm.get("spec") if isinstance(fm.get("spec"), dict) else {}
+    return str(spec.get("type") or "")
+
+
 def _datetime_token(path: Path, prefix: str) -> str:
     if not path.stem.startswith(prefix + "-"):
         return ""
@@ -303,7 +309,15 @@ def _migration_briefings(repo_root: Path) -> list[CheckResult]:
             "archive old CLI migration briefings or move them outside the "
             "Migration entity lifecycle tree"
         ),
-        extra={"sample": _sample(briefings, repo_root)},
+        fix_mcp_tool="run_pk_doctor",
+        extra={
+            "sample": _sample(briefings, repo_root),
+            "fix_mcp_args": {
+                "check": "entity_storage_hygiene",
+                "fix": "entity_storage_hygiene",
+                "yes": True,
+            },
+        },
     )]
 
 
@@ -399,6 +413,12 @@ def _layout_checks(repo_root: Path) -> list[CheckResult]:
             if dirname == "migrations" and _CLI_MIGRATION_RE.match(path.name):
                 continue
             style = _filename_style(path.stem, prefix)
+            if (
+                dirname == "bindings"
+                and style == "datetime_wordpair"
+                and _binding_type(path) == "role-slot-fill"
+            ):
+                continue
             styles.setdefault(style, []).append(path)
         if styles["placeholder_time"]:
             results.append(CheckResult(
@@ -447,8 +467,10 @@ def _layout_checks(repo_root: Path) -> list[CheckResult]:
                     f"filename policies ({len(styles['other'])})"
                 ),
                 suggested_fix=(
-                    "create and apply a data-fix Migration that normalizes "
-                    "filenames and references to the canonical policy"
+                    "use migration-management.normalize_migration_filename "
+                    "with a canonical MIG-YYYYMMDD_HHMM-WordPair target ID; "
+                    "it updates mutable references and preserves append-only "
+                    "historical records"
                 ),
                 extra={"sample": _sample(styles["other"], repo_root)},
             ))

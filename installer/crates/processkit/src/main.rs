@@ -13,6 +13,7 @@ mod compatibility;
 mod contract;
 mod error;
 mod filesystem;
+mod output;
 mod planner;
 mod release;
 mod request;
@@ -26,8 +27,9 @@ use filesystem::{
     digest, ensure_non_symlink_directory, ensure_regular_file,
     safe_relative,
 };
+use output::pretty_json;
 use planner::{plan, Change};
-use release::{verified_release, VerifiedRelease};
+use release::verified_release;
 use request::execute_request;
 use signed_release::verify_local_release;
 use state::{
@@ -238,6 +240,16 @@ impl Drop for OperationLock {
     }
 }
 
+fn print_json_or_exit<T: Serialize>(value: &T) {
+    match pretty_json(value) {
+        Ok(rendered) => println!("{rendered}"),
+        Err(error) => {
+            eprintln!("processkit: {error}");
+            std::process::exit(error.exit_code());
+        }
+    }
+}
+
 fn main() {
     let cli = Cli::parse();
     match cli.command {
@@ -253,7 +265,7 @@ fn main() {
             let _ = dry_run;
             match plan(&root, &distribution, profile, harness) {
                 Ok(plan) if json || matches!(format, OutputFormat::Json) => {
-                    println!("{}", serde_json::to_string_pretty(&plan).unwrap())
+                    print_json_or_exit(&plan)
                 }
                 Ok(plan) => {
                     println!(
@@ -281,7 +293,7 @@ fn main() {
             yes,
             json,
         } => match install(&root, &distribution, profile, harness, yes) {
-            Ok(state) if json => println!("{}", serde_json::to_string_pretty(&state).unwrap()),
+            Ok(state) if json => print_json_or_exit(&state),
             Ok(state) => println!("installed {} {}", state.release.name, state.release.version),
             Err(error) => {
                 eprintln!("processkit: {error}");
@@ -331,9 +343,7 @@ fn main() {
             trust_store,
             json,
         } => match verify_local_release(&envelope, &signature, &trust_store) {
-            Ok(evidence) if json => {
-                println!("{}", serde_json::to_string_pretty(&evidence).unwrap())
-            }
+            Ok(evidence) if json => print_json_or_exit(&evidence),
             Ok(evidence) => println!(
                 "verified local release {} with key {}",
                 evidence.version, evidence.key_id
@@ -346,7 +356,7 @@ fn main() {
         Command::Verify { root, json } => match verify_installation(&root) {
             Ok(result) => {
                 if json {
-                    println!("{}", serde_json::to_string_pretty(&result).unwrap());
+                    print_json_or_exit(&result);
                 } else {
                     println!(
                         "{}: {} checked path(s), {} drift finding(s)",
@@ -371,7 +381,7 @@ fn main() {
         } => match inspect_compatibility(&root, &distribution) {
             Ok(result) => {
                 if json {
-                    println!("{}", serde_json::to_string_pretty(&result).unwrap());
+                    print_json_or_exit(&result);
                 } else {
                     println!("{}", result["status"].as_str().unwrap_or("not-detected"));
                 }
@@ -382,7 +392,7 @@ fn main() {
             }
         },
         Command::Execute { request } => match execute_request(&request) {
-            Ok(result) => println!("{}", serde_json::to_string_pretty(&result).unwrap()),
+            Ok(result) => print_json_or_exit(&result),
             Err(error) => {
                 println!(
                     "{}",
@@ -1358,12 +1368,12 @@ fn clear_stale_lock_for_recovery(root: &Path) -> Result<(), String> {
 
 fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), String> {
     let parent = path.parent().ok_or("state path has no parent")?;
+    let file_name = path
+        .file_name()
+        .ok_or("state path has no file name")?
+        .to_string_lossy();
     create_private_dir(parent)?;
-    let temporary = parent.join(format!(
-        ".{}.tmp-{}",
-        path.file_name().unwrap().to_string_lossy(),
-        std::process::id()
-    ));
+    let temporary = parent.join(format!(".{}.tmp-{}", file_name, std::process::id()));
     let bytes = serde_json::to_vec_pretty(value).map_err(|error| error.to_string())?;
     let mut options = OpenOptions::new();
     options.write(true).create_new(true);

@@ -18,6 +18,7 @@ declared in metadata.
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 import yaml
 
@@ -29,13 +30,13 @@ def _parse_frontmatter(path: Path) -> dict | None:
         text = path.read_text(encoding="utf-8")
     except OSError:
         return None
-    if not text.startswith("---"):
+    if not text.startswith("---\n"):
         return None
-    parts = text.split("---", 2)
-    if len(parts) < 3:
+    closing = re.search(r"^---[ \t]*$", text[4:], re.MULTILINE)
+    if closing is None:
         return None
     try:
-        data = yaml.safe_load(parts[1])
+        data = yaml.safe_load(text[4:4 + closing.start()])
     except yaml.YAMLError:
         return None
     return data if isinstance(data, dict) else None

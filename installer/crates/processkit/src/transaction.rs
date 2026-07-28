@@ -62,10 +62,14 @@ pub(super) fn execute_transaction(
     let state_dir = root.join(".processkit");
     let transaction = transaction_id(operation);
     let transactions = state_dir.join("transactions");
-    ensure_non_symlink_directory(
-        &transactions,
-        "transaction journal directory",
-    )?;
+    if transactions.exists() {
+        ensure_non_symlink_directory(
+            &transactions,
+            "transaction journal directory",
+        )?;
+    } else {
+        create_private_dir(&transactions)?;
+    }
     let staging_root = state_dir.join(".staging");
     if staging_root.exists() {
         ensure_non_symlink_directory(
@@ -329,8 +333,10 @@ pub(super) fn validate_recovery_journal(
             "create" => {
                 action.old_sha256.is_none()
                     && action.new_sha256.is_some()
-                    && action.staged_path.as_deref()
+                    && (action.staged_path.as_deref()
                         == Some(staged.as_str())
+                        || (action.applied
+                            && action.staged_path.is_none()))
                     && action.backup_path.is_none()
             }
             "replace" => {
