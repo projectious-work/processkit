@@ -3,8 +3,6 @@ weight: 25
 title: "Category"
 ---
 
-# Category
-
 A classification axis with a closed set of allowed values — priority
 levels, bug severity tiers, product areas. Use Category when the valid
 values are defined and enforced; use freeform labels for open-ended

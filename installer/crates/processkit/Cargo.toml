@@ -1,9 +1,9 @@
 [package]
 name = "processkit"
-version = "1.0.0-alpha.3"
+version = "1.0.0-alpha.4"
 edition = "2021"
 license = "MIT"
-description = "Manifest-driven processkit installer planner"
+description = "Native lifecycle CLI for processkit projects"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }

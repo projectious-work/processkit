@@ -3,8 +3,6 @@ title: Product Specification
 description: Product definition for processkit v1.0.
 ---
 
-# Product Specification
-
 ## Purpose
 
 processkit v1.0 provides a durable process substrate for agentic

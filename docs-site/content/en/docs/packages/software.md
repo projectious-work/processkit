@@ -3,8 +3,6 @@ weight: 4
 title: "software"
 ---
 
-# software
-
 **Intended for:** software engineering teams building production systems.
 **Extends:** `managed`
 

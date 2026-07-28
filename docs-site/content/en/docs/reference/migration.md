@@ -3,8 +3,6 @@ weight: 3
 title: "Version Migration"
 ---
 
-# Version Migration
-
 processkit is distributed as versioned releases. Upgrading pinned
 versions is deliberate: processkit does not silently rewrite a consuming
 project's context. A version bump should produce a `Migration` document

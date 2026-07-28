@@ -16,10 +16,19 @@ class Links(HTMLParser):
         self.has_h1 = False
         self.has_main = False
         self.images_without_alt = 0
+        # Hugo emits an `aliases:` entry as a bare meta-refresh stub with no
+        # <main> and no <h1>. Those are redirects, not pages, so the landmark
+        # and heading checks do not apply to them.
+        self.is_alias_redirect = False
 
     def handle_starttag(
         self, tag: str, attrs: list[tuple[str, str | None]]
     ) -> None:
+        if tag == "meta" and any(
+            name == "http-equiv" and (value or "").lower() == "refresh"
+            for name, value in attrs
+        ):
+            self.is_alias_redirect = True
         if tag == "h1":
             self.has_h1 = True
         if tag == "main":
@@ -71,7 +80,7 @@ def main() -> int:
         links = Links()
         links.feed(page.read_text(encoding="utf-8"))
         relative_page = page.relative_to(public)
-        if relative_page.name != "404.html":
+        if relative_page.name != "404.html" and not links.is_alias_redirect:
             if not links.has_main:
                 failures.append(f"{relative_page}: missing main landmark")
             if not links.has_h1:

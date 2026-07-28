@@ -3,8 +3,6 @@ weight: 12
 title: "DecisionRecord"
 ---
 
-# DecisionRecord
-
 A significant choice — architectural, product, or process — recorded with
 its context, rationale, and alternatives. The ADR (Architecture Decision
 Record) pattern as a first-class entity.

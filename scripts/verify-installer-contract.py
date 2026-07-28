@@ -1,7 +1,11 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["pyyaml>=6.0", "jsonschema>=4.0"]
+# dependencies = [
+#   "pyyaml>=6.0",
+#   "jsonschema>=4.0",
+#   "tomli>=2.0; python_version < '3.11'",
+# ]
 # ///
 """Validate the release-owned installer contract without mutating it."""
 
@@ -15,6 +19,10 @@ import sys
 
 import jsonschema
 import yaml
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10
+    import tomli as tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,7 +30,7 @@ CONTRACT = Path(".processkit/installer")
 REQUIRED = (
     "distribution.yaml", "release-descriptor.json", "operations.yaml",
     "ownership-matrix.yaml", "catalogs/mcp.yaml", "adapters/codex.yaml",
-    "adapters/claude.yaml",
+    "adapters/claude.yaml", "runtime/python-uv.json",
 )
 SCHEMAS = (
     "distribution", "release-descriptor", "installer-request",
@@ -30,7 +38,7 @@ SCHEMAS = (
     "installation-state", "compatibility", "variables",
     "local-release-envelope", "local-trust-store",
     "transaction-action", "transaction-journal",
-    "recovery-result", "managed-adapter-state",
+    "recovery-result", "managed-adapter-state", "python-runtime-policy",
 )
 
 
@@ -45,6 +53,127 @@ def _normalized_relative(value: str) -> str | None:
     if not _safe_relative(value):
         return None
     return PurePosixPath(value).as_posix()
+
+
+def _canonical_json(value: object) -> bytes:
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+
+
+def _pep723_payload(path: Path) -> str | None:
+    in_block = False
+    block: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not in_block:
+            if stripped == "# /// script":
+                in_block = True
+            continue
+        if stripped == "# ///":
+            return "\n".join(block) + "\n" if block else None
+        if not line.startswith("#"):
+            return None
+        content = line[1:]
+        block.append(content[1:] if content.startswith(" ") else content)
+    return None
+
+
+def _validate_runtime_policy(
+    release_root: Path,
+    runtime_policy: dict,
+) -> list[str]:
+    failures: list[str] = []
+    servers = runtime_policy.get("servers", [])
+    entries = {
+        server.get("path"): server
+        for server in servers
+        if isinstance(server, dict) and isinstance(server.get("path"), str)
+    }
+    if len(entries) != len(servers):
+        failures.append("runtime policy has duplicate or invalid server paths")
+        return failures
+    shipped_paths = sorted(
+        path.relative_to(release_root).as_posix()
+        for path in (
+            release_root / "context" / "skills"
+        ).glob("*/*/mcp/server.py")
+    )
+    if sorted(entries) != shipped_paths:
+        failures.append("runtime policy server inventory differs from release")
+    expected_profiles: dict[str, dict] = {}
+    for relative, entry in entries.items():
+        if not _safe_relative(relative):
+            failures.append(f"unsafe runtime policy server path: {relative!r}")
+            continue
+        path = release_root / relative
+        if not path.is_file():
+            failures.append(f"runtime policy server is missing: {relative}")
+            continue
+        payload = _pep723_payload(path)
+        if payload is None:
+            failures.append(f"invalid PEP 723 header: {relative}")
+            continue
+        try:
+            metadata = tomllib.loads(payload)
+        except tomllib.TOMLDecodeError:
+            failures.append(f"invalid PEP 723 header: {relative}")
+            continue
+        requires_python = metadata.get("requires-python")
+        dependencies = metadata.get("dependencies")
+        if not isinstance(requires_python, str) or not requires_python:
+            failures.append(f"invalid PEP 723 metadata: {relative}")
+            continue
+        if not isinstance(dependencies, list) or not all(
+            isinstance(item, str) and item for item in dependencies
+        ):
+            failures.append(f"invalid PEP 723 metadata: {relative}")
+            continue
+        actual_profile_data = {
+            "requiresPython": requires_python,
+            "dependencies": sorted(dependencies),
+        }
+        actual_header = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+        if entry.get("headerSha256") != actual_header:
+            failures.append(f"runtime policy header digest differs: {relative}")
+        profile_data = {
+            "requiresPython": entry.get("requiresPython"),
+            "dependencies": entry.get("dependencies"),
+        }
+        if profile_data != actual_profile_data:
+            failures.append(f"runtime policy profile data differs: {relative}")
+        profile_sha256 = hashlib.sha256(
+            _canonical_json(actual_profile_data)
+        ).hexdigest()
+        if entry.get("profileSha256") != profile_sha256:
+            failures.append(f"runtime policy profile digest differs: {relative}")
+        profile = expected_profiles.setdefault(
+            profile_sha256,
+            {
+                "sha256": profile_sha256,
+                **actual_profile_data,
+                "serverPaths": [],
+            },
+        )
+        profile["serverPaths"].append(relative)
+    expected = sorted(
+        expected_profiles.values(),
+        key=lambda profile: profile["sha256"],
+    )
+    if runtime_policy.get("dependencyProfiles") != expected:
+        failures.append("runtime policy dependency profiles are inconsistent")
+    core = {
+        key: value
+        for key, value in runtime_policy.items()
+        if key != "aggregateSha256"
+    }
+    aggregate = hashlib.sha256(_canonical_json(core)).hexdigest()
+    if runtime_policy.get("aggregateSha256") != aggregate:
+        failures.append("runtime policy aggregate digest differs")
+    return failures
 
 
 def validate(release_root: Path) -> list[str]:
@@ -74,10 +203,18 @@ def validate(release_root: Path) -> list[str]:
         compatibility_schema = json.loads(
             (base / "schemas/compatibility.schema.json").read_text()
         )
+        runtime_policy = json.loads(
+            (base / "runtime/python-uv.json").read_text()
+        )
+        runtime_schema = json.loads(
+            (base / "schemas/python-runtime-policy.schema.json").read_text()
+        )
+        jsonschema.validate(runtime_policy, runtime_schema)
     except (OSError, ValueError, yaml.YAMLError, jsonschema.ValidationError) as exc:
         return [f"invalid installer contract: {exc}"]
 
     spec = distribution["spec"]
+    failures.extend(_validate_runtime_policy(release_root, runtime_policy))
     operations = yaml.safe_load((base / "operations.yaml").read_text())
     ownership = yaml.safe_load((base / "ownership-matrix.yaml").read_text())
     catalog = yaml.safe_load((base / "catalogs/mcp.yaml").read_text())
@@ -132,6 +269,32 @@ def validate(release_root: Path) -> list[str]:
         unknown = set(profile.get("include", [])) - component_ids
         if unknown:
             failures.append(f"profile {name} references unknown components: {sorted(unknown)}")
+    runtime_components = [
+        component
+        for component in spec["components"]
+        if component.get("id") == "python-runtime-policy"
+    ]
+    if len(runtime_components) != 1:
+        failures.append("distribution must define one python-runtime-policy component")
+    else:
+        runtime_component = runtime_components[0]
+        if runtime_component.get("source", {}).get("file") != (
+            ".processkit/installer/runtime/python-uv.json"
+        ):
+            failures.append("python-runtime-policy source is incorrect")
+        if runtime_component.get("destination") != (
+            ".processkit/runtime/python-uv.json"
+        ):
+            failures.append("python-runtime-policy destination is incorrect")
+        if runtime_component.get("operation") != "copy/v1":
+            failures.append("python-runtime-policy operation is incorrect")
+        if runtime_component.get("ownership") != "managed-three-way":
+            failures.append("python-runtime-policy ownership is incorrect")
+        for name, profile in spec["profiles"].items():
+            if "python-runtime-policy" not in profile.get("include", []):
+                failures.append(
+                    f"profile {name} omits python-runtime-policy"
+                )
     manifest = descriptor["distribution"].get("manifest")
     if not isinstance(manifest, str) or not _safe_relative(manifest):
         failures.append("descriptor manifest path is unsafe")

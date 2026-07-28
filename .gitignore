@@ -89,3 +89,8 @@ context/private/
 
 # Rust build output for the installer workspace.
 installer/target/
+
+.latex-cache/
+
+# Local integration-test sandboxes may contain generated credentials.
+tmp/

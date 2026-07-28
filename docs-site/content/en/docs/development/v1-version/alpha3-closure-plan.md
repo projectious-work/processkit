@@ -3,8 +3,6 @@ title: Alpha.3 Closure Plan
 description: Feature-completion gates for the final pre-cutover alpha.
 ---
 
-# Alpha.3 Closure Plan
-
 `v1.0.0-alpha.3` is the feature-complete pre-cutover target. It does not
 authorize a merge to `main`; v0.x remains the stable line until the owner
 accepts the final ontology, migration, CLI, and aibox evidence.

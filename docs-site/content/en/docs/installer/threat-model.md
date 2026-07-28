@@ -1,4 +1,6 @@
-# v1 installer threat model
+---
+
+---
 
 The installer treats an archive, descriptor, manifest, catalog, adapter, and
 target filesystem as untrusted until validated. It must reject absolute or

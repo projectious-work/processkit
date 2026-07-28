@@ -3,8 +3,6 @@ weight: 13
 title: "Database Skills"
 ---
 
-# Database Skills
-
 Skills for SQL, data modeling, NoSQL patterns, and schema migrations.
 
 ---

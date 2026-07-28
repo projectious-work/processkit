@@ -3,8 +3,6 @@ weight: 28
 title: "Process"
 ---
 
-# Process
-
 Legacy v1 declarative workflow definition. In the
 SmoothTiger/SmoothRiver v2 direction, processkit no longer presents
 `Process` as a first-class shipped entity surface. Use a

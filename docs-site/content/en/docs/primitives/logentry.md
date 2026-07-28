@@ -3,8 +3,6 @@ weight: 11
 title: "LogEntry"
 ---
 
-# LogEntry
-
 An immutable, append-only record of something that happened. The audit
 trail primitive — never updated or deleted after creation.
 

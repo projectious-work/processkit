@@ -3,8 +3,6 @@ weight: 23
 title: "Schedule"
 ---
 
-# Schedule
-
 Legacy v1 time-based trigger or recurring cadence. In the
 SmoothTiger/SmoothRiver v2 direction, processkit no longer presents
 `Schedule` as a first-class shipped entity surface. Use

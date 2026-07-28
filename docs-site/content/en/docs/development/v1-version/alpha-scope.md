@@ -3,8 +3,6 @@ title: Alpha Scope
 description: First buildable vertical slice for processkit v1.0.
 ---
 
-# Alpha Scope
-
 ## Purpose
 
 The alpha proves that the v1.0 model improves real agentic project work

@@ -1,6 +1,6 @@
 {
   "aggregate_sha256": "d3fe84e97cfe0e59dfb9ab016d4071e9d654c7b149b83c8d4fd0b5dc00f049c8",
-  "generated_at": "2026-07-27T11:54:12Z",
+  "generated_at": "2026-07-28T20:30:03Z",
   "per_gateway": [
     {
       "path": "context/skills/processkit/processkit-gateway/mcp/mcp-config.json",
@@ -34,7 +34,7 @@
     },
     {
       "path": "context/skills/processkit/capability-management/mcp/server.py",
-      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+      "sha256": "ca50450412fe6873c59de66f4bbb792a2ea4054dfee880dbff988d55a04157c8"
     },
     {
       "path": "context/skills/processkit/context-archiving/mcp/server.py",
@@ -82,11 +82,11 @@
     },
     {
       "path": "context/skills/processkit/okf-compatibility/mcp/server.py",
-      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+      "sha256": "ca50450412fe6873c59de66f4bbb792a2ea4054dfee880dbff988d55a04157c8"
     },
     {
       "path": "context/skills/processkit/ontology-management/mcp/server.py",
-      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+      "sha256": "ca50450412fe6873c59de66f4bbb792a2ea4054dfee880dbff988d55a04157c8"
     },
     {
       "path": "context/skills/processkit/pk-doctor/mcp/server.py",
@@ -98,7 +98,7 @@
     },
     {
       "path": "context/skills/processkit/proposition-management/mcp/server.py",
-      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+      "sha256": "ca50450412fe6873c59de66f4bbb792a2ea4054dfee880dbff988d55a04157c8"
     },
     {
       "path": "context/skills/processkit/release-audit/mcp/server.py",
@@ -114,7 +114,7 @@
     },
     {
       "path": "context/skills/processkit/schema-management/mcp/server.py",
-      "sha256": "227a1ec949df39d814a0c4d6314723738995d9252c715e5653c8d152a3ef314b"
+      "sha256": "c76df42a08c3134262474a177711cf30f4db74356c2a0fb4c1684a552eaef2bc"
     },
     {
       "path": "context/skills/processkit/scope-management/mcp/server.py",
@@ -134,11 +134,11 @@
     },
     {
       "path": "context/skills/processkit/skill-management/mcp/server.py",
-      "sha256": "221f3168ecb64e5325f4ea52af9b818595440e4f71393ec3c3836947ad431a30"
+      "sha256": "ca50450412fe6873c59de66f4bbb792a2ea4054dfee880dbff988d55a04157c8"
     },
     {
       "path": "context/skills/processkit/supply-chain-audit/mcp/server.py",
-      "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
+      "sha256": "f68d5e1eea0e8f07880a37d931a2223173a1260344799b3c4832a8859df69e63"
     },
     {
       "path": "context/skills/processkit/task-router/mcp/server.py",
@@ -283,6 +283,6 @@
       "sha256": "a4ae7e26a980aeebed953f3cc2e761cde6dd8692fb033c81c9e3c8927e8b5898"
     }
   ],
-  "processkit_version": "v1.0.0-alpha.3",
+  "processkit_version": "v1.0.0-alpha.4",
   "version": 1
 }

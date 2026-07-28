@@ -1,4 +1,6 @@
-# v0 to v1 compatibility inspection
+---
+
+---
 
 The v1 installer identifies legacy processkit evidence without consulting
 aibox, harness, devcontainer, or MCP configuration files.

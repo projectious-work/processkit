@@ -3,8 +3,6 @@ weight: 2
 title: "minimal"
 ---
 
-# minimal
-
 **Intended for:** solo developers and small side projects.
 **Extends:** — (the base tier)
 

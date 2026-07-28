@@ -3,8 +3,6 @@ weight: 27
 title: "Context"
 ---
 
-# Context
-
 A structured narrative document for long-lived ambient knowledge —
 owner identity, working style, team relationships, grooming reports,
 situational briefings. The value lives in the Markdown body.
