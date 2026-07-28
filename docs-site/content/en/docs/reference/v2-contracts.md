@@ -3,8 +3,6 @@ weight: 5
 title: "v2 Contracts"
 ---
 
-# v2 Contracts
-
 SmoothTiger/SmoothRiver v2 keeps durable facts in existing entity
 primitives and uses projection skills for runtime files. The source of
 truth remains processkit context; generated files are checked against

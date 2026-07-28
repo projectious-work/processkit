@@ -3,8 +3,6 @@ weight: 4
 title: "Relationships"
 ---
 
-# Relationships — Cross-References and Bindings
-
 processkit expresses relationships between entities two ways:
 
 1. **Cross-references** — lightweight fields in frontmatter

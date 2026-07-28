@@ -3,8 +3,6 @@ weight: 2
 title: "Process Skills"
 ---
 
-# Process Skills
-
 Skills for managing project workflows, team coordination, and operational
 processes. Most process-primitive skills have an accompanying MCP server
 that enforces schema validation and state-machine rules.

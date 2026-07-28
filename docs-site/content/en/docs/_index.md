@@ -1,10 +1,7 @@
 ---
 weight: 1
 title: "Introduction"
-slug: /
 ---
-
-# processkit
 
 **processkit is a provider-neutral process layer for AI-assisted
 software projects.**
@@ -67,15 +64,15 @@ MCP configuration, and supervise a gateway daemon in a devcontainer.
 
 ## Where to go next
 
-- [Getting Started](./getting-started/overview) explains the manual and
+- [Getting Started](./getting-started/) explains the manual and
   managed install paths.
-- [MCP Servers](./mcp-servers/overview) explains gateway, daemon,
+- [MCP Servers](./mcp-servers/) explains gateway, daemon,
   stdio-proxy, aggregate, and per-skill layouts.
-- [Primitives](./primitives/overview) explains the project-memory
+- [Primitives](./primitives/) explains the project-memory
   entity model.
-- [Skills](./skills/overview) explains the skill package format and
+- [Skills](./skills/) explains the skill package format and
   catalog.
-- [Packages](./packages/overview) explains the five package tiers.
+- [Packages](./packages/) explains the five package tiers.
 - [v2 Contracts](./reference/v2-contracts) explains the current
   deliverable boundary and demoted legacy primitives.
 

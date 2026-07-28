@@ -3,8 +3,6 @@ title: v1.0 Version
 description: Planning hub for the processkit v1.0 rebuild.
 ---
 
-# v1.0 Version
-
 The v1.0 version is the planned greenfield rebuild described by
 `processkit-v1.0-rfc-draft.md`. It keeps the processkit product promise
 but replaces the current v0 ontology and tooling internals with an

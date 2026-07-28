@@ -233,13 +233,13 @@ Full documentation lives at
 
 | Section | Contents |
 |---------|----------|
-| [Getting Started](https://projectious-work.github.io/processkit/v1.x/docs/getting-started/overview/) | Manual and managed install paths, first entity |
+| [Getting Started](https://projectious-work.github.io/processkit/v1.x/docs/getting-started/) | Manual and managed install paths, first entity |
 | [Installer](https://projectious-work.github.io/processkit/v1.x/docs/installer/) | Contract, local release, threat model, v0 compatibility |
-| [Primitives](https://projectious-work.github.io/processkit/v1.x/docs/primitives/overview/) | The entity model, formats, state machines, relationships |
-| [Skills](https://projectious-work.github.io/processkit/v1.x/docs/skills/overview/) | Skill package format, hierarchy, and the full catalog |
-| [Packages](https://projectious-work.github.io/processkit/v1.x/docs/packages/overview/) | The five tiers, from minimal bootstrap to managed workspace |
-| [MCP Servers](https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/overview/) | Gateway, daemon, stdio-proxy, aggregate, per-skill layouts |
-| [Reference](https://projectious-work.github.io/processkit/v1.x/docs/reference/v2-contracts/) | apiVersion policy, ID formats, migration, privacy, v2 contracts |
+| [Primitives](https://projectious-work.github.io/processkit/v1.x/docs/primitives/) | The entity model, formats, state machines, relationships |
+| [Skills](https://projectious-work.github.io/processkit/v1.x/docs/skills/) | Skill package format, hierarchy, and the full catalog |
+| [Packages](https://projectious-work.github.io/processkit/v1.x/docs/packages/) | The five tiers, from minimal bootstrap to managed workspace |
+| [MCP Servers](https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/) | Gateway, daemon, stdio-proxy, aggregate, per-skill layouts |
+| [Reference](https://projectious-work.github.io/processkit/v1.x/docs/reference/) | apiVersion policy, ID formats, migration, privacy, v2 contracts |
 | [Development](https://projectious-work.github.io/processkit/v1.x/docs/development/) | The v0 prototype line and the v1.0 rebuild, planned in the open |
 
 Build and preview locally with `./scripts/serve-docs-local.sh` (Hugo + Docsy,
@@ -293,6 +293,17 @@ scripts/release-local.sh vX.Y.Z <private-key.pem> <public-key.pem>
 
 See [Local release operation](docs-site/content/en/docs/installer/local-release.md)
 for the agent-first, human-operable signing and verification workflow.
+
+## Contributing
+
+Issues and pull requests are welcome. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md) for the branch model, the skill and
+primitive checklists, and the release procedure — and note that this
+repository runs its checks locally rather than in CI, so a PR should say which
+ones you ran.
+
+By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+Security issues go through [SECURITY.md](SECURITY.md), not the issue tracker.
 
 ## License
 

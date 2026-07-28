@@ -3,8 +3,6 @@ weight: 10
 title: "WorkItem"
 ---
 
-# WorkItem
-
 A unit of work — task, story, bug, epic, spike, or chore. The primary
 work-tracking primitive in processkit.
 

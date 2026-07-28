@@ -1,0 +1,126 @@
+{{/*
+  Project override of Docsy's navbar-version-selector.
+
+  Docsy renders one flat list. processkit needs two levels: a release *line*
+  (v0.x, v1.x), and under each line the individual releases published from it.
+
+  Config shape in hugo.yaml — a `releases` list on any entry turns it into a
+  submenu, and entries without one still render exactly as Docsy renders them,
+  so the flat form keeps working:
+
+    versions:
+      - name: "**Release lines**"          # heading, no url
+      - version: "v0.x"
+        kind: latest
+        url: ".../processkit/"
+        releases:
+          - version: "v0.28.4"
+            kind: current                  # the build currently at the line URL
+            url: ".../processkit/"
+
+  Only releases published from now on need listing; there is no back-fill of
+  historic tags. A release snapshot is deployed with
+  `DOCS_VERSION=<tag> scripts/publish-docs-gh-pages.sh`, which puts it at
+  `/<tag>/` — a path the root publish preserves.
+
+  Submenus open on hover, on keyboard focus, and on click, so the menu works
+  with a pointer, a keyboard, and on touch.
+*/ -}}
+
+{{ $menuName := .Site.Params.version_menu -}}
+{{ $path := "" -}}
+{{ if .Site.Params.version_menu_pagelinks -}}
+  {{ $path = .Page.RelPermalink -}}
+{{ end -}}
+{{ $baseURL := strings.TrimSuffix "/" $.Site.BaseURL -}}
+
+<div class="td-version-menu dropdown">
+  <a class="nav-link dropdown-toggle td-version-menu__title" href="#" role="button"
+    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <span class="td-version-menu__title-text">{{ $menuName }}</span>
+  </a>
+
+  <ul class="dropdown-menu">
+    {{ range .Site.Params.versions -}}
+      {{ $url := strings.TrimSuffix "/" (.url | default "") -}}
+      {{ $name := .name | default .version -}}
+      {{ $releases := .releases -}}
+      {{ $isSeparator := eq .name "---" -}}
+      {{ $isHeading := and (not $url) (not $releases) -}}
+      {{/* A line is active when it is this build, or when one of its releases is. */ -}}
+      {{ $isActive := or (eq .version $.Site.Params.version) (eq $baseURL $url) -}}
+
+      <li>
+        {{ if $isSeparator -}}
+          <hr class="dropdown-divider">
+
+        {{ else if $isHeading -}}
+          <span class="dropdown-item disabled dropdown-item-text">
+            {{- $name | markdownify -}}
+          </span>
+
+        {{ else if $releases -}}
+          {{/* Two-level entry: the line itself, plus its releases. */ -}}
+          <div class="pk-version-line{{ if $isActive }} pk-version-line--active{{ end }}">
+            <a class="dropdown-item pk-version-line__toggle
+                {{- if $isActive }} active{{ end }}
+                {{- with .kind }} dropdown-item-{{ . }}{{ end }}"
+              {{- if $isActive }} aria-current="page"{{ end }}
+              href="{{ $url }}{{ with $path }}{{ . }}{{ end }}"
+              aria-haspopup="true" aria-expanded="false">
+              {{- $name | markdownify -}}
+              <span class="pk-version-line__caret" aria-hidden="true"></span>
+            </a>
+            <ul class="pk-version-line__releases">
+              {{ range $releases -}}
+                {{ $rUrl := strings.TrimSuffix "/" (.url | default "") -}}
+                {{ $rActive := and $isActive (eq .kind "current") -}}
+                <li>
+                  <a class="dropdown-item pk-version-release
+                      {{- if $rActive }} active{{ end }}"
+                    {{- if $rActive }} aria-current="page"{{ end }}
+                    href="{{ $rUrl }}{{ with $path }}{{ . }}{{ end }}">
+                    {{- .version -}}
+                    {{ if eq .kind "current" }}<span class="pk-version-release__badge">current</span>{{ end }}
+                  </a>
+                </li>
+              {{ end -}}
+            </ul>
+          </div>
+
+        {{ else -}}
+          {{/* Single-level entry — Docsy's original behaviour. */ -}}
+          <a class="dropdown-item
+              {{- if $isActive }} active{{ end }}
+              {{- with .kind }} dropdown-item-{{ . }}{{ end }}"
+            {{- if $isActive }} aria-current="page"{{ end }}
+            href="{{ $url }}{{ with $path }}{{ . }}{{ end }}">
+            {{- $name | markdownify -}}
+          </a>
+        {{ end -}}
+      </li>
+    {{ end -}}
+  </ul>
+</div>
+
+<script>
+  // Submenus already open on :hover and :focus-within via CSS. This adds an
+  // explicit click toggle so touch devices — which fire neither reliably —
+  // can reach the releases without navigating away to the line first.
+  (function () {
+    document.querySelectorAll(".pk-version-line__toggle").forEach(function (toggle) {
+      toggle.addEventListener("click", function (event) {
+        var line = toggle.closest(".pk-version-line");
+        if (!line) return;
+        var open = line.classList.contains("pk-version-line--open");
+        if (!open) {
+          // First activation reveals the releases rather than following the
+          // link; a second click on the same item navigates to the line.
+          event.preventDefault();
+          line.classList.add("pk-version-line--open");
+          toggle.setAttribute("aria-expanded", "true");
+        }
+      });
+    });
+  })();
+</script>

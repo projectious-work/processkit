@@ -3,8 +3,6 @@ weight: 14
 title: "Note"
 ---
 
-# Note
-
 A Zettelkasten capture layer for ideas, observations, and references.
 Notes exist on a spectrum from raw capture (fleeting) to permanent
 knowledge (insight).

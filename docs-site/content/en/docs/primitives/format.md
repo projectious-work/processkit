@@ -3,8 +3,6 @@ weight: 2
 title: "Entity File Format"
 ---
 
-# Entity File Format
-
 Every processkit primitive entity is stored as a Markdown file with a
 YAML frontmatter block. The format is inspired by Kubernetes objects —
 stable, versioned, and easy to parse.

@@ -3,8 +3,6 @@ title: v0 Reconciliation
 description: Controlled carry-over from the supported v0 line into v1.
 ---
 
-# v0 Reconciliation
-
 ## Baseline
 
 The v1 line forked from `v0.27.1`. Reconciliation therefore compares the

@@ -3,8 +3,6 @@ title: v0 Prototype
 description: Status and origin of the current processkit prototype line.
 ---
 
-# v0 Prototype
-
 The current project is the v0 prototype line of processkit. It is usable
 and dogfooded, but it is not the final v1.0 architecture. It proves the
 product shape: git-backed process memory, skills, state machines, MCP

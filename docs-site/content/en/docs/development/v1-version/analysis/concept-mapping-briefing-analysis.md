@@ -3,8 +3,6 @@ title: Concept Mapping Briefing Analysis
 description: Historical concept-mapping analysis for processkit v1.0.
 ---
 
-# Concept Mapping Briefing Analysis
-
 Source: `concept-mapping-2026-05-16.md`
 
 Analyzed: 2026-07-04

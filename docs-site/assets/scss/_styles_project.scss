@@ -273,11 +273,13 @@ figcaption,
   }
 }
 
-// processkit mark: a midnight disc holding a segmented process loop — four
-// discrete states, an arrowhead for direction of travel, and the accent node
-// marking the current checkpoint. Colours are driven by custom properties so
-// the inlined SVG follows the colour mode. The loop is stroked rather than
-// filled, so it takes `stroke`, not `fill`.
+// processkit mark: a midnight disc holding a "P" whose bowl is an open process
+// loop, broken by the accent node marking the current checkpoint. Colours are
+// driven by custom properties so the inlined SVG follows the colour mode. The
+// stem and bowl are stroked rather than filled, so they take `stroke`.
+//
+// The node keeps accent step 9 — it is a graphic element, not a text-bearing
+// surface, so the `accentSolid` substitution does not apply to it.
 .processkit-mark {
   &__disc {
     fill: var(--pk-mark-disc);
@@ -285,10 +287,6 @@ figcaption,
 
   &__loop {
     stroke: var(--pk-mark-loop);
-  }
-
-  &__head {
-    fill: var(--pk-mark-loop);
   }
 
   &__node {
@@ -308,15 +306,12 @@ $pj-code-string: $brand-accent-light; // #ea7558 -- 5.76:1
 $pj-code-identifier: $midnight-dark-12; // #c5daf0 -- 11.74:1
 $pj-code-operator: $slate-dark-11; // #97a8b8 -- 6.90:1
 
-// DEVIATION from the brand syntax theme, which specifies slate-8 for comments.
-// Read against the dark scale (as the rest of the syntax spec must be, since
-// slate-11 operators and midnight-11 keywords are only legible in dark), that
-// is #5a6a78 -- 3.02:1 on the midnight-2 code surface, below the WCAG AA 4.5:1
-// floor for 13px text. No brand step sits between slate-10 (3.78:1) and
-// slate-11 (6.90:1, already used for operators), so this is the lowest point
-// on the slate ramp that clears AA while staying clearly dimmer than
-// operators. Reported upstream: projectious-work/brand.
-$pj-code-comment: #72889d; // 4.59:1
+// Comments use the brand's dedicated `code-comment` syntax token rather than a
+// scale step: the digital-experience sheet notes that steps 8-10 are border and
+// solid-fill roles, and the nearest of them (slate-8, #5a6a78) measures 3.02:1
+// on the midnight-2 code surface -- below the WCAG AA 4.5:1 floor for 13px
+// text. This was a local deviation until the brand adopted the token upstream.
+$pj-code-comment: #72889d; // brand `code-comment`, 4.59:1
 
 :root,
 [data-bs-theme="light"],
@@ -555,10 +550,13 @@ kbd {
     color var(--pj-duration-standard) var(--pj-ease-out);
 }
 
+// Solid accent controls carrying white text use the brand's `accentSolid`
+// (#cc4528, 4.72:1), not the identity accent step 9 -- white on step 9 is
+// 3.87:1, below the AA 4.5:1 floor for normal-size text.
 .td-cta-buttons .btn-primary,
 .btn-accent {
-  background-color: $orange-9;
-  border-color: $orange-9;
+  background-color: $brand-accent-solid;
+  border-color: $brand-accent-solid;
   color: #ffffff;
 
   &:hover,
@@ -753,6 +751,81 @@ kbd {
 }
 
 // -----------------------------------------------------------------------------
+// Version menu — two levels: release line, then the releases under it
+// -----------------------------------------------------------------------------
+// Companion to the navbar-version-selector override. Submenus open on hover,
+// on keyboard focus anywhere inside the line, and on an explicit click
+// (`--open`, set by the partial's script) so touch devices are covered too.
+.pk-version-line {
+  &__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  // A caret that rotates when the line is expanded.
+  &__caret {
+    flex-shrink: 0;
+    width: 0;
+    height: 0;
+    border-top: 0.3rem solid transparent;
+    border-bottom: 0.3rem solid transparent;
+    border-left: 0.34rem solid currentColor;
+    opacity: 0.55;
+    transition: transform var(--pj-duration-micro) var(--pj-ease-out);
+  }
+
+  &__releases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--pj-duration-expand) var(--pj-ease-out);
+  }
+
+  &:hover,
+  &:focus-within,
+  &--open {
+    .pk-version-line__releases {
+      // Generous enough for the release counts these lines will realistically
+      // carry; overflow scrolls rather than clipping.
+      max-height: 22rem;
+      overflow-y: auto;
+    }
+
+    .pk-version-line__caret {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.pk-version-release {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  // Indent under the line, and sit on a faintly recessed surface so the two
+  // levels read as nested rather than as one long list.
+  padding-left: 2rem;
+  font-size: 0.875rem;
+  background-color: var(--pj-surface-subtle);
+
+  &__badge {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--pj-text-muted);
+  }
+
+  &.active .pk-version-release__badge {
+    color: inherit;
+    opacity: 0.75;
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Release-line banner
 // -----------------------------------------------------------------------------
 // Rendered at the top of every docs page via the version-banner override, so
@@ -773,9 +846,11 @@ kbd {
   line-height: 1.5;
   color: var(--bs-body-color);
 
-  // Step 11 over step 2 rather than white over step 9: white on orange-9 is
-  // 3.87:1, below AA for an 11px label. This pairing flips correctly in both
-  // modes (4.61:1 light, 7.83:1 dark).
+  // Step 11 over step 2 rather than white over the accent. White on accent
+  // step 9 is 3.87:1 — the shortfall the brand's `accentSolid` token exists to
+  // fix — and even `accentSolid` at 4.72:1 is thin for an 11px uppercase
+  // label. This pairing flips correctly in both modes (4.61:1 light,
+  // 7.83:1 dark).
   &__tag {
     flex-shrink: 0;
     font-family: $font-family-sans-serif;

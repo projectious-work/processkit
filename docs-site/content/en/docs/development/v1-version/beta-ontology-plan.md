@@ -3,8 +3,6 @@ title: Beta Ontology Plan
 description: Dependency-aware target for processkit v1.0 beta coverage.
 ---
 
-# Beta Ontology Plan
-
 ## Target
 
 The beta target is 62 of the ontology's 89 concepts, or 69.7%. This keeps the

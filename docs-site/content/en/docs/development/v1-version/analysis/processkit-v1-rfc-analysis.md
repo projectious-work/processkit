@@ -3,8 +3,6 @@ title: processkit v1.0 RFC Analysis
 description: Analysis of the guiding RFC for the processkit v1.0 redesign.
 ---
 
-# processkit v1.0 RFC Analysis
-
 Source: `processkit-v1.0-rfc-draft.md`
 
 Analyzed: 2026-07-04

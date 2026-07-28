@@ -3,8 +3,6 @@ weight: 6
 title: "Architecture Skills"
 ---
 
-# Architecture Skills
-
 Skills for software architecture, design patterns, and system design.
 
 ---

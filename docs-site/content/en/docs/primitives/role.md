@@ -3,8 +3,6 @@ weight: 16
 title: "Role"
 ---
 
-# Role
-
 A named set of responsibilities. Roles are descriptive — they document
 who is expected to do what, but do not enforce access control.
 

@@ -3,8 +3,6 @@ weight: 2
 title: "ID Formats"
 ---
 
-# ID Formats
-
 Entity IDs in processkit have the shape `<PREFIX>-<id-body>`. The prefix
 is determined by the primitive kind and is not configurable. The id-body
 has two independent configuration axes: **format** and **slug**.

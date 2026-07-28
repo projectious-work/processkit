@@ -3,8 +3,6 @@ weight: 4
 title: "Privacy Tiers"
 ---
 
-# Privacy Tiers
-
 processkit recognizes three privacy tiers for entities under `context/`.
 The tier is declared via an optional `privacy:` field in `metadata` and
 enforced by directory layout + a `.gitignore` rule.

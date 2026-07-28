@@ -5,8 +5,6 @@ weight: 60
 description: Standalone installation, trust, compatibility, and integrations.
 ---
 
-# Installer and releases
-
 The v1 standalone installer makes processkit independently installable,
 updatable, verifiable, and removable. Release policy is carried by the
 signed processkit distribution rather than hard-coded into downstream

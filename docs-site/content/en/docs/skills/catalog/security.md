@@ -3,8 +3,6 @@ weight: 11
 title: "Security Skills"
 ---
 
-# Security Skills
-
 Skills for application security, authentication, and threat analysis.
 
 ---

@@ -1,9 +1,11 @@
 ---
-weight: 1
-title: "Overview"
+title: "Skills"
+linkTitle: "Skills"
+weight: 40
+description: "The skill package format, the category hierarchy, and the shipped catalog."
+aliases:
+  - "/docs/skills/overview/"
 ---
-
-# Skills — Overview
 
 A **skill** in processkit is a directory containing agent instructions,
 examples, assets, and optionally a Python MCP server. Skills are how processkit

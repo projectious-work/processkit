@@ -3,8 +3,6 @@ weight: 15
 title: "Actor"
 ---
 
-# Actor
-
 A participant in the project — human, AI agent, or automated service.
 Actors are assigned to WorkItems, named in DecisionRecords, and bound
 to Roles.
