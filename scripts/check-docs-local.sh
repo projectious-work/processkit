@@ -22,6 +22,7 @@ BASE_PATH="${BASE_PATH:-/}"
 python3 "$REPO_ROOT/scripts/check-docs-links-local.py" \
     --base-path "$BASE_PATH" \
     "$SITE_ROOT/public"
+python3 "$REPO_ROOT/scripts/check-docs-contrast.py" "$SITE_ROOT/public"
 
 if [[ -f "$SITE_ROOT/docusaurus.config.js" ||
     -f "$SITE_ROOT/sidebars.js" ]]; then

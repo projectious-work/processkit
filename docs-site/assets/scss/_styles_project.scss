@@ -313,12 +313,18 @@ $pj-code-operator: $slate-dark-11; // #97a8b8 -- 6.90:1
 // text. This was a local deviation until the brand adopted the token upstream.
 $pj-code-comment: #72889d; // brand `code-comment`, 4.59:1
 
-:root,
-[data-bs-theme="light"],
-[data-bs-theme="dark"] {
-  --td-pre-bg: #{$pj-code-bg};
-}
-
+// `--td-pre-bg` is deliberately NOT overridden here. It looks like the knob for
+// "the code surface", but Docsy spends it on three different things:
+//
+//   .td-content p code, li > code, table code   background + `color: inherit`
+//   .td-content pre                             the block surface
+//   .tab-body                                   tabbed panel surface
+//
+// Forcing it to the always-dark block colour therefore painted inline code and
+// tab bodies dark while their text stayed on the body colour, which is near
+// black in light mode — dark text on a dark field, unreadable. The block
+// surface is set directly below instead, and inline code and tab bodies keep
+// Docsy's mode-aware value.
 .td-content,
 .td-content .highlight,
 body {
@@ -471,6 +477,18 @@ body {
 }
 
 // Inline code follows the surrounding surface, not the dark block treatment.
+//
+// Docsy styles content inline code through `.td-content p code`,
+// `.td-content li > code`, and `.td-content table code` — all (0,1,1). A bare
+// `:not(pre) > code` is (0,0,2) and loses to every one of them, so the brand
+// treatment silently never reached the places it matters most. Matching those
+// selectors here wins on source order, since project styles load after the
+// theme. `:not(pre) > code` stays for inline code outside `.td-content`.
+.td-content p code,
+.td-content li > code,
+.td-content table code,
+.td-content dd code,
+.td-content dt code,
 :not(pre) > code {
   font-family: $font-family-monospace;
   font-size: 0.8125rem;
@@ -712,6 +730,15 @@ kbd {
     font-family: $font-family-sans-serif;
     font-weight: 600;
   }
+
+  // Docsy sets its own colour on the active entry through
+  // `#TableOfContents a.active`, an ID selector the `a` rule above cannot
+  // reach. Its value measures 3.83:1 in dark mode, below AA. Restate it on a
+  // selector of equal weight.
+  #TableOfContents a.active {
+    color: var(--pj-midnight-11);
+    font-weight: 600;
+  }
 }
 
 .td-breadcrumbs {
@@ -810,6 +837,10 @@ kbd {
   padding-left: 2rem;
   font-size: 0.875rem;
   background-color: var(--pj-surface-subtle);
+  // Stated rather than inherited. Every dark-on-dark defect on this site has
+  // come from a rule setting a background and leaving the text colour to
+  // whatever an ancestor supplied.
+  color: var(--bs-body-color);
 
   &__badge {
     font-size: 0.625rem;
