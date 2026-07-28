@@ -2,8 +2,6 @@
 title: Framework & SEO Skills
 ---
 
-# Framework & SEO Skills
-
 Skills for specific frameworks and search engine optimization.
 
 ---

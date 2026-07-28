@@ -2,8 +2,6 @@
 title: Performance Skills
 ---
 
-# Performance Skills
-
 Skills for performance analysis, optimization, and load testing.
 
 ---

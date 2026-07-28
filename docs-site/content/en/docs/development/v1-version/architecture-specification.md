@@ -3,8 +3,6 @@ title: Architecture Specification
 description: Architectural direction for processkit v1.0.
 ---
 
-# Architecture Specification
-
 ## System Role
 
 processkit v1.0 is a provider-neutral process and memory substrate. It

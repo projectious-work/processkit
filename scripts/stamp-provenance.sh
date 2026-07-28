@@ -137,7 +137,7 @@ mapfile -t FILES < <(
         ! -path "$PROVENANCE_FILE" \
         ! -name '*.pyc' \
         ! -path '*/__pycache__/*' \
-        | sort
+        | LC_ALL=C sort
 )
 
 for f in "${FILES[@]}"; do

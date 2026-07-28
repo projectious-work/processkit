@@ -3,8 +3,6 @@ weight: 3
 title: "State Machines"
 ---
 
-# State Machines
-
 Primitives with lifecycle (WorkItem, DecisionRecord, Scope, Discussion)
 are governed by state machines. processkit ships default machines that
 projects can override.

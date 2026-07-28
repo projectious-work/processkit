@@ -1,0 +1,53 @@
+{{/*
+  Project override of Docsy's version-banner.
+
+  processkit publishes two release lines to one GitHub Pages site: the released
+  v0.x line at the root and the v1.0 preview under /v1.x/. Docsy calls this
+  partial at the top of every docs page, which makes it the right place to say
+  which line the reader is on — a search result can drop someone deep into
+  either tree with no other cue.
+
+  The banner text is keyed off `params.release_line`, so both branches carry
+  the same file and only hugo.yaml differs.
+*/ -}}
+
+{{- $line := .Site.Params.release_line | default .Site.Params.version -}}
+{{- $latest := .Site.Params.url_latest_version -}}
+
+{{ if eq $line "v1.x" -}}
+  <div class="pk-release-banner" role="note">
+    <span class="pk-release-banner__tag">Preview</span>
+    <span class="pk-release-banner__text">
+      This is the <strong>v1.0 preview line</strong>. It documents a rebuild
+      that is still in alpha — schemas, tool names, and package contents change
+      without notice, and nothing here is covered by a stability guarantee.
+      {{ with $latest }}For the released line, see the
+        <a href="{{ . | safeURL }}">v0.x documentation</a>.{{ end }}
+    </span>
+  </div>
+{{ else -}}
+  <div class="pk-release-banner" role="note">
+    <span class="pk-release-banner__tag">v0.x</span>
+    <span class="pk-release-banner__text">
+      This is the <strong>released v0.x line</strong> — the version that ships
+      in release tarballs and is dogfooded in this repository. The v1.0 rebuild
+      is documented separately in the
+      <a href="{{ "v1.x/" | absURL }}">v1.x preview</a>.
+    </span>
+  </div>
+{{ end -}}
+
+{{ if .Site.Params.archived_version -}}
+  {{ $color := "primary" -}}
+  {{ $latest_version := .Site.Params.url_latest_version -}}
+  {{ $current_version := .Site.Params.version -}}
+  <div class="pageinfo pageinfo-{{ $color }}">
+    {{ with $current_version }}<p>Version {{ . | markdownify }} of the
+      documentation is no longer actively maintained. The site that you are
+      currently viewing is an archived snapshot.
+      {{ with $latest_version }}For up-to-date documentation, see the
+        <a href="{{ $latest_version | safeURL }}" target="_blank">latest version</a>.</p>
+      {{ end -}}
+    {{ end -}}
+  </div>
+{{ end -}}

@@ -3,8 +3,6 @@ title: Tooling Architecture
 description: MCP, schema, and index architecture for processkit v1.0.
 ---
 
-# Tooling Architecture
-
 The v1.0 tooling architecture follows the RFC: schemas are generated
 from Jinja + YAML sources, writes flow through MCP tools, and indexes are
 extended rather than replaced.

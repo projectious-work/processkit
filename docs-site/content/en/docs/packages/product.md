@@ -3,8 +3,6 @@ weight: 6
 title: "product"
 ---
 
-# product
-
 **Intended for:** end-to-end product development teams.
 **Extends:** `software`
 

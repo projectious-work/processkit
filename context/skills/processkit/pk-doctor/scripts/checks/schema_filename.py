@@ -125,13 +125,13 @@ def _parse_frontmatter(path: Path) -> tuple[dict | None, str | None]:
         text = path.read_text(encoding="utf-8")
     except OSError as e:
         return None, f"unreadable: {e}"
-    if not text.startswith("---"):
+    if not text.startswith("---\n"):
         return None, "no YAML frontmatter"
-    parts = text.split("---", 2)
-    if len(parts) < 3:
+    closing = re.search(r"^---[ \t]*$", text[4:], re.MULTILINE)
+    if closing is None:
         return None, "unterminated YAML frontmatter"
     try:
-        data = yaml.safe_load(parts[1])
+        data = yaml.safe_load(text[4:4 + closing.start()])
     except yaml.YAMLError as e:
         return None, f"YAML parse error: {e}"
     if not isinstance(data, dict):

@@ -1,4 +1,6 @@
-# processkit on Claude Code — harness reference
+---
+
+---
 
 This document captures how processkit surfaces itself inside the Claude
 Code harness: which payloads land at session start vs. each turn, which

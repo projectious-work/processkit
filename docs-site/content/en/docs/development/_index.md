@@ -1,9 +1,8 @@
 ---
 title: Development
 description: Active planning documents for processkit evolution.
+weight: 10
 ---
-
-# Development
 
 This section is the open planning area for processkit evolution. It
 separates the current v0 prototype from the planned processkit v1.0

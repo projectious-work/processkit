@@ -3,8 +3,6 @@ weight: 4
 title: "Language Skills"
 ---
 
-# Language Skills
-
 Language-specific conventions, patterns, and best practices.
 
 ---

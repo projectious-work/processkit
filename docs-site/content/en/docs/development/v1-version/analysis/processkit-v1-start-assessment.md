@@ -3,8 +3,6 @@ title: processkit v1.0 Start Assessment
 description: Scope and risk assessment for starting the v1.0 redesign.
 ---
 
-# processkit v1.0 Start Assessment
-
 Analyzed: 2026-07-04
 
 Sources considered:

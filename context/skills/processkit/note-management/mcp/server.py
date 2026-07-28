@@ -228,12 +228,14 @@ def capture_inbox_item(
     ent = _load_note(root, created["id"])
     if ent is None:
         return {"error": f"created note {created['id']!r} could not be reloaded"}
-    ent.spec["inbox"] = {
+    inbox = {
         "status": "captured",
         "injection_mode": injection_mode,
-        "channel": channel,
         "captured_at": _now_iso(),
     }
+    if channel is not None:
+        inbox["channel"] = channel
+    ent.spec["inbox"] = inbox
     if target_workitem:
         ent.spec["inbox"]["target_workitem"] = target_workitem
     _write_and_index(ent)

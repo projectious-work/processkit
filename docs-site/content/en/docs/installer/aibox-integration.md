@@ -1,4 +1,6 @@
-# aibox v1 installer integration
+---
+
+---
 
 aibox should treat processkit as an opaque local executable. It creates a
 versioned JSON request, invokes `processkit execute --request <path>`, parses

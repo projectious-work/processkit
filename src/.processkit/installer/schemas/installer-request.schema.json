@@ -29,6 +29,11 @@
     },
     "yes": {"type": "boolean", "default": false}
   },
+  "dependentRequired": {
+    "envelopePath": ["signaturePath", "trustStorePath"],
+    "signaturePath": ["envelopePath", "trustStorePath"],
+    "trustStorePath": ["envelopePath", "signaturePath"]
+  },
   "allOf": [
     {
       "if": {
@@ -61,6 +66,21 @@
             {"required": ["signaturePath"]},
             {"required": ["trustStorePath"]}
           ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "operation": {
+            "enum": ["install", "update", "uninstall", "recover"]
+          }
+        }
+      },
+      "then": {
+        "required": ["yes"],
+        "properties": {
+          "yes": {"const": true}
         }
       }
     }

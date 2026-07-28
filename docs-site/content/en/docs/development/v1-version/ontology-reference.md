@@ -3,8 +3,6 @@ title: Ontology Reference
 description: T/P/D/C ontology baseline for processkit v1.0.
 ---
 
-# Ontology Reference
-
 `processkit-v1.0-rfc-draft.md` is the leading document for the v1.0
 ontology. When older analysis conflicts with this page, the RFC and this
 page win.

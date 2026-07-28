@@ -33,6 +33,7 @@ LEGACY_BLOCK_MARKERS = {
     "pk-commands": ("<!-- pk-commands BEGIN -->", "<!-- pk-commands END -->"),
 }
 COMMAND_KEYS = ("build", "test", "lint", "fmt", "typecheck")
+PROJECT_LOCAL_MANAGED_BLOCKS = {"pk-commands"}
 POINTER_FILES = (
     Path("CLAUDE.md"),
     Path("CODEX.md"),
@@ -336,6 +337,8 @@ def _managed_block_findings(
     reference_path, reference_text = reference
     reference_blocks = _managed_blocks(reference_text)
     for block_id in sorted(set(blocks) & set(reference_blocks)):
+        if block_id in PROJECT_LOCAL_MANAGED_BLOCKS:
+            continue
         local_hash = hashlib.sha256(
             _normalize_block(blocks[block_id]).encode("utf-8")
         ).hexdigest()

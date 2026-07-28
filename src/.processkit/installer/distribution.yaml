@@ -2,7 +2,7 @@ apiVersion: processkit.projectious.work/distribution/v1alpha1
 kind: Distribution
 metadata:
   name: processkit
-  version: 1.0.0-alpha.3
+  version: 1.0.0-alpha.4
 spec:
   installer:
     protocol: processkit.projectious.work/installer/v1alpha1
@@ -25,11 +25,17 @@ spec:
       destination: AGENTS.md
       operation: preserve-user/v1
       ownership: shared
+    - id: python-runtime-policy
+      source:
+        file: .processkit/installer/runtime/python-uv.json
+      destination: .processkit/runtime/python-uv.json
+      operation: copy/v1
+      ownership: managed-three-way
   profiles:
     minimal:
-      include: [context]
+      include: [context, python-runtime-policy]
     managed:
-      include: [context, agents-contract]
+      include: [context, agents-contract, python-runtime-policy]
   catalogs:
     mcp: .processkit/installer/catalogs/mcp.yaml
   harnessAdapters:

@@ -74,6 +74,16 @@ def _write_log_entry(path: Path, *, entity_id: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def test_archive_policy_includes_terminal_migrations():
+    server = _load_server()
+    policy = server.describe_archive_policy()
+
+    assert policy["defaults"]["Migration"] == {
+        "states": ["applied", "rejected"],
+        "older_than_days": 30,
+    }
+
+
 def test_create_archive_removes_hot_file_and_keeps_index_row(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "AGENTS.md").write_text("# test\n", encoding="utf-8")

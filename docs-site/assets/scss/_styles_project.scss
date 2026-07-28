@@ -1,81 +1,967 @@
-// projectious.work brand surface rules for processkit.
+// =============================================================================
+// projectious.work brand — Docsy surface styles
+// =============================================================================
+// Companion to _variables_project.scss. Everything here implements a rule that
+// Bootstrap variables alone cannot express: the per-step type scale, the
+// always-dark code surface, mode-aware chrome, and the logo lockup.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Palette as custom properties
+// -----------------------------------------------------------------------------
+// Exposed so shortcodes, layouts, and one-off page styles can reach brand steps
+// without importing SCSS.
 :root,
 [data-bs-theme="light"] {
-  --pj-primary: #1d3352;
-  --pj-primary-dark: #132440;
-  --pj-accent: #e05232;
-  --pj-surface-subtle: #f0f3f8;
-  --pj-border: #dadce0;
+  --pj-midnight-1: #{$midnight-1};
+  --pj-midnight-2: #{$midnight-2};
+  --pj-midnight-3: #{$midnight-3};
+  --pj-midnight-6: #{$midnight-6};
+  --pj-midnight-7: #{$midnight-7};
+  --pj-midnight-9: #{$midnight-9};
+  --pj-midnight-11: #{$midnight-11};
+  --pj-midnight-12: #{$midnight-12};
+
+  --pj-orange-1: #{$orange-1};
+  --pj-orange-2: #{$orange-2};
+  --pj-orange-3: #{$orange-3};
+  --pj-orange-9: #{$orange-9};
+  --pj-orange-10: #{$orange-10};
+  --pj-orange-11: #{$orange-11};
+
+  --pj-slate-2: #{$slate-2};
+  --pj-slate-4: #{$slate-4};
+  --pj-slate-7: #{$slate-7};
+  --pj-slate-8: #{$slate-8};
+  --pj-slate-9: #{$slate-9};
+  --pj-slate-11: #{$slate-11};
+  --pj-slate-12: #{$slate-12};
+
+  --pj-surface: #ffffff;
+  --pj-surface-subtle: #{$midnight-1};
+  --pj-border: #{$slate-4};
+  --pj-text-muted: #{$slate-9};
+
+  // Motion (tokens/variables.css)
+  --pj-duration-micro: 100ms;
+  --pj-duration-standard: 200ms;
+  --pj-duration-expand: 300ms;
+  --pj-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --pj-ease-in: cubic-bezier(0.32, 0, 0.67, 0);
+
+  // The processkit mark renders on light surfaces here.
+  --pk-mark-disc: #{$midnight-9};
+  --pk-mark-loop: #ffffff;
+  --pk-mark-node: #{$orange-9};
 }
 
 [data-bs-theme="dark"] {
-  --pj-primary: #8aacc8;
-  --pj-primary-dark: #0e1720;
-  --pj-accent: #ea7558;
-  --pj-surface-subtle: #1a2b3e;
+  --pj-midnight-1: #{$midnight-dark-1};
+  --pj-midnight-2: #{$midnight-dark-2};
+  --pj-midnight-3: #{$midnight-dark-3};
+  --pj-midnight-6: #{$midnight-dark-6};
+  --pj-midnight-7: #{$midnight-dark-7};
+  --pj-midnight-9: #{$midnight-dark-9};
+  --pj-midnight-11: #{$midnight-dark-11};
+  --pj-midnight-12: #{$midnight-dark-12};
+
+  --pj-orange-1: #{$orange-dark-1};
+  --pj-orange-2: #{$orange-dark-2};
+  --pj-orange-3: #{$orange-dark-3};
+  --pj-orange-9: #{$orange-dark-9};
+  --pj-orange-10: #{$orange-dark-10};
+  --pj-orange-11: #{$orange-dark-11};
+
+  --pj-slate-2: #{$slate-dark-2};
+  --pj-slate-4: #{$slate-dark-4};
+  --pj-slate-7: #{$slate-dark-7};
+  --pj-slate-8: #{$slate-dark-8};
+  --pj-slate-9: #{$slate-dark-9};
+  --pj-slate-11: #{$slate-dark-11};
+  --pj-slate-12: #{$slate-dark-12};
+
+  --pj-surface: #{$midnight-dark-2};
+  --pj-surface-subtle: #{$midnight-dark-3};
   --pj-border: rgba(255, 255, 255, 0.08);
+  --pj-text-muted: #{$slate-dark-11};
+
+  // On dark pages the mark inverts: the disc carries the light value and the
+  // loop is knocked out of it. The accent node is constant across modes.
+  --pk-mark-disc: #6b8db2;
+  --pk-mark-loop: #{$brand-primary-dark};
+  --pk-mark-node: #{$orange-9};
 }
 
+// -----------------------------------------------------------------------------
+// Typography scale
+// -----------------------------------------------------------------------------
+// Display 48/800/1.1 · H1 36/700/1.15 · H2 28/700/1.2 · H3 22/600/1.25
+// H4 18/600/1.3 · H5 15/600/1.35 · Body L 16/400/1.65 · Caption 12/400/1.5
+// Overline 11/600/1.3 uppercase 0.08em · Code 13/400/1.6
+// Letter-spacing tightens to -0.3px above 20px.
 body {
   font-family: $font-family-sans-serif;
-  line-height: 1.65;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6,
-.navbar-brand, .btn, .td-cover__title {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
+.navbar-brand,
+.td-cover__title,
+.btn,
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5,
+.display-6 {
   font-family: $headings-font-family;
 }
 
+h1,
+.h1 {
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+}
+
+h2,
+.h2 {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+
+h3,
+.h3 {
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+}
+
+h4,
+.h4 {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+h5,
+.h5 {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+h6,
+.h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pj-text-muted);
+}
+
+.td-cover__title,
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5,
+.display-6 {
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+}
+
+.lead {
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+small,
+.small,
+figcaption,
+.td-page-meta {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+// Overline — brand label style, used for eyebrow text.
+.pj-overline {
+  font-family: $font-family-sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pj-text-muted);
+}
+
+// Documentation prose stays inside the brand's 1100px measure. The surrounding
+// Docsy chrome (sidebar + TOC) keeps the full viewport.
+.td-content {
+  max-width: 1100px;
+
+  > p,
+  > ul,
+  > ol,
+  > dl,
+  > blockquote {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Navbar — midnight surface in both modes, accent rule beneath
+// -----------------------------------------------------------------------------
 .td-navbar {
+  background-color: $brand-primary-dark !important;
   border-bottom: 3px solid $brand-accent;
+  box-shadow: none;
+
+  // Brand rule: no pure #fff as text -- midnight-12 from the dark scale.
+  .nav-link,
+  .navbar-brand,
+  .navbar-brand__name {
+    font-family: $headings-font-family;
+    font-weight: 600;
+    color: $slate-dark-11; // 6.36:1 on the midnight navbar
+  }
+
+  .navbar-brand__name {
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: $midnight-dark-12;
+  }
+
+  .nav-link {
+    transition: color var(--pj-duration-standard) var(--pj-ease-out);
+
+    &:hover,
+    &:focus {
+      color: $midnight-dark-12;
+    }
+
+    &.active {
+      color: $midnight-dark-12;
+      box-shadow: inset 0 -2px 0 $brand-accent;
+    }
+  }
+
+  .navbar-brand__logo svg {
+    height: 2.25rem;
+    width: 2.25rem;
+  }
+
+  // On the midnight navbar the mark always uses its dark-surface variant.
+  .processkit-mark {
+    --pk-mark-disc: #6b8db2;
+    --pk-mark-loop: #{$brand-primary-dark};
+    --pk-mark-node: #{$orange-9};
+  }
 }
 
-.navbar-brand__logo svg {
-  height: 2.25rem;
-  width: 2.25rem;
+// processkit mark: a midnight disc holding a "P" whose bowl is an open process
+// loop, broken by the accent node marking the current checkpoint. Colours are
+// driven by custom properties so the inlined SVG follows the colour mode. The
+// stem and bowl are stroked rather than filled, so they take `stroke`.
+//
+// The node keeps accent step 9 — it is a graphic element, not a text-bearing
+// surface, so the `accentSolid` substitution does not apply to it.
+.processkit-mark {
+  &__disc {
+    fill: var(--pk-mark-disc);
+  }
+
+  &__loop {
+    stroke: var(--pk-mark-loop);
+  }
+
+  &__node {
+    fill: var(--pk-mark-node);
+  }
 }
 
-.td-cover-block {
-  background:
-    linear-gradient(135deg, rgba(19, 36, 64, 0.98), rgba(29, 51, 82, 0.92)),
-    radial-gradient(circle at 88% 18%, rgba(224, 82, 50, 0.28), transparent 36%);
+// -----------------------------------------------------------------------------
+// Code — always dark, in both colour modes
+// -----------------------------------------------------------------------------
+// Brand rule: "Code blocks are always dark regardless of mode."
+// Surface is midnight-2 from the dark scale; syntax colours come from the
+// digital-experience syntax theme.
+$pj-code-bg: $midnight-dark-2;
+$pj-code-keyword: $midnight-dark-11; // #8aacc8 -- 7.06:1
+$pj-code-string: $brand-accent-light; // #ea7558 -- 5.76:1
+$pj-code-identifier: $midnight-dark-12; // #c5daf0 -- 11.74:1
+$pj-code-operator: $slate-dark-11; // #97a8b8 -- 6.90:1
+
+// Comments use the brand's dedicated `code-comment` syntax token rather than a
+// scale step: the digital-experience sheet notes that steps 8-10 are border and
+// solid-fill roles, and the nearest of them (slate-8, #5a6a78) measures 3.02:1
+// on the midnight-2 code surface -- below the WCAG AA 4.5:1 floor for 13px
+// text. This was a local deviation until the brand adopted the token upstream.
+$pj-code-comment: #72889d; // brand `code-comment`, 4.59:1
+
+// `--td-pre-bg` is deliberately NOT overridden here. It looks like the knob for
+// "the code surface", but Docsy spends it on three different things:
+//
+//   .td-content p code, li > code, table code   background + `color: inherit`
+//   .td-content pre                             the block surface
+//   .tab-body                                   tabbed panel surface
+//
+// Forcing it to the always-dark block colour therefore painted inline code and
+// tab bodies dark while their text stayed on the body colour, which is near
+// black in light mode — dark text on a dark field, unreadable. The block
+// surface is set directly below instead, and inline code and tab bodies keep
+// Docsy's mode-aware value.
+.td-content,
+.td-content .highlight,
+body {
+  pre,
+  pre.chroma,
+  .highlight pre {
+    background-color: $pj-code-bg;
+    color: $pj-code-identifier;
+    font-family: $font-family-monospace;
+    font-size: $code-font-size;
+    line-height: 1.6;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: $border-radius;
+    padding: 1rem 1.125rem;
+  }
 }
 
-.td-content pre,
-.td-content .highlight pre {
-  background: #131e2b;
-  color: #c5daf0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.highlight,
+.chroma {
+  background-color: $pj-code-bg;
   border-radius: $border-radius;
+  color: $pj-code-identifier;
+
+  code {
+    background-color: transparent;
+    color: inherit;
+  }
+
+  // Comments
+  .c,
+  .ch,
+  .cm,
+  .cp,
+  .cpf,
+  .c1,
+  .cs {
+    color: $pj-code-comment;
+    font-style: italic;
+  }
+
+  // Keywords
+  .k,
+  .kc,
+  .kd,
+  .kn,
+  .kp,
+  .kr,
+  .kt,
+  .nt,
+  .na {
+    color: $pj-code-keyword;
+    font-weight: 500;
+  }
+
+  // Identifiers
+  .n,
+  .nb,
+  .nc,
+  .nd,
+  .ni,
+  .ne,
+  .nf,
+  .nl,
+  .nn,
+  .nx,
+  .py,
+  .nv,
+  .no,
+  .bp,
+  .vc,
+  .vg,
+  .vi {
+    color: $pj-code-identifier;
+  }
+
+  // Strings
+  .s,
+  .sa,
+  .sb,
+  .sc,
+  .dl,
+  .sd,
+  .s2,
+  .se,
+  .sh,
+  .si,
+  .sx,
+  .sr,
+  .s1,
+  .ss {
+    color: $pj-code-string;
+  }
+
+  // Numbers
+  .m,
+  .mb,
+  .mf,
+  .mh,
+  .mi,
+  .il,
+  .mo {
+    color: $orange-dark-11;
+  }
+
+  // Operators and punctuation
+  .o,
+  .ow,
+  .p {
+    color: $pj-code-operator;
+  }
+
+  // Generic / diff / shell-session tokens
+  .gp {
+    color: $pj-code-comment;
+  }
+
+  .go {
+    color: $pj-code-operator;
+  }
+
+  .gd {
+    color: $orange-dark-11;
+  }
+
+  .gi {
+    color: #7fc0aa;
+  }
+
+  .ge {
+    font-style: italic;
+  }
+
+  .gs {
+    font-weight: 600;
+  }
+
+  .err {
+    color: $orange-dark-10;
+  }
+
+  // Line numbers
+  .ln,
+  .lnt {
+    color: $pj-code-comment;
+  }
+
+  .hl {
+    background-color: rgba(138, 172, 200, 0.12);
+  }
+}
+
+// Inline code follows the surrounding surface, not the dark block treatment.
+//
+// Docsy styles content inline code through `.td-content p code`,
+// `.td-content li > code`, and `.td-content table code` — all (0,1,1). A bare
+// `:not(pre) > code` is (0,0,2) and loses to every one of them, so the brand
+// treatment silently never reached the places it matters most. Matching those
+// selectors here wins on source order, since project styles load after the
+// theme. `:not(pre) > code` stays for inline code outside `.td-content`.
+.td-content p code,
+.td-content li > code,
+.td-content table code,
+.td-content dd code,
+.td-content dt code,
+:not(pre) > code {
   font-family: $font-family-monospace;
   font-size: 0.8125rem;
-  line-height: 1.6;
-}
-
-:not(pre) > code {
-  background: var(--pj-surface-subtle);
-  color: var(--pj-accent);
-  border-radius: $border-radius-sm;
   padding: 0.125rem 0.375rem;
+  border-radius: $border-radius-sm;
+  background-color: var(--pj-midnight-2);
+  color: var(--pj-orange-11);
 }
 
-.td-content table {
+kbd {
+  font-family: $font-family-monospace;
+  font-size: 0.8125rem;
+  border-radius: $border-radius-sm;
+}
+
+// -----------------------------------------------------------------------------
+// Callouts — Info / Success / Warning / Danger
+// -----------------------------------------------------------------------------
+.alert {
+  border-radius: $border-radius;
+  border-width: 0 0 0 4px;
+  font-weight: 400;
+  padding: 0.875rem 1rem;
+
+  .alert-heading {
+    font-family: $headings-font-family;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 0.25rem;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Tables — API-reference pattern
+// -----------------------------------------------------------------------------
+.td-content table:not(.table-borderless) {
   border: 1px solid var(--pj-border);
   border-radius: $border-radius;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-size: 0.9375rem;
+
+  thead th {
+    font-family: $font-family-sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--pj-text-muted);
+    background-color: var(--pj-surface-subtle);
+    border-bottom: 1px solid var(--pj-border);
+  }
+
+  td,
+  th {
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+// Wide tables must scroll inside their own container, never the page.
+.td-content .table-responsive,
+.td-content table {
+  max-width: 100%;
+}
+
+// -----------------------------------------------------------------------------
+// Buttons — accent carries the primary call to action
+// -----------------------------------------------------------------------------
+.btn {
+  font-family: $headings-font-family;
+  font-weight: 600;
+  border-radius: $border-radius;
+  transition: background-color var(--pj-duration-standard) var(--pj-ease-out),
+    border-color var(--pj-duration-standard) var(--pj-ease-out),
+    color var(--pj-duration-standard) var(--pj-ease-out);
+}
+
+// Solid accent controls carrying white text use the brand's `accentSolid`
+// (#cc4528, 4.72:1), not the identity accent step 9 -- white on step 9 is
+// 3.87:1, below the AA 4.5:1 floor for normal-size text.
+.td-cta-buttons .btn-primary,
+.btn-accent {
+  background-color: $brand-accent-solid;
+  border-color: $brand-accent-solid;
+  color: #ffffff;
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: $brand-accent-dark;
+    border-color: $brand-accent-dark;
+    color: #ffffff;
+  }
+}
+
+.td-cta-buttons .btn-secondary {
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+
+  &:hover,
+  &:focus {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: #ffffff;
+  }
+}
+
+// Focus ring — 2px, midnight at 15% alpha (brand form rule).
+:focus-visible {
+  outline: 2px solid rgba($midnight-9, 0.6);
+  outline-offset: 2px;
+}
+
+[data-bs-theme="dark"] :focus-visible {
+  outline-color: rgba($midnight-dark-11, 0.8);
+}
+
+// -----------------------------------------------------------------------------
+// Text on dark surfaces
+// -----------------------------------------------------------------------------
+// `$headings-color` is midnight-9 so headings read correctly on light pages.
+// On midnight surfaces that same value is invisible (#1d3352 on #1d3352 is a
+// 1.00:1 contrast ratio), so every dark surface must restate its text colours.
+// Brand rule: no pure #fff as text -- use midnight-12 from the dark scale,
+// which measures 8.9:1 to 10.8:1 against these backgrounds.
+.td-cover-block,
+.td-overlay--dark,
+.td-box--dark,
+.td-box--primary,
+.td-footer {
+  --bs-body-color: #{$midnight-dark-12};
+  --bs-heading-color: #{$midnight-dark-12};
+  --bs-emphasis-color: #{$midnight-dark-12};
+  --bs-secondary-color: #{$slate-dark-11};
+  color: $midnight-dark-12;
+
+  h1, h2, h3, h4, h5, h6,
+  .h1, .h2, .h3, .h4, .h5, .h6,
+  .display-1, .display-2, .display-3,
+  .display-4, .display-5, .display-6,
+  .td-cover__title,
+  p,
+  li,
+  dt,
+  dd {
+    color: $midnight-dark-12;
+  }
+
+  .lead {
+    color: $slate-dark-11; // 5.2:1 -- supporting copy, still AA
+  }
+
+  a:not(.btn) {
+    color: $midnight-dark-11;
+
+    &:hover,
+    &:focus {
+      color: $orange-dark-10; // accent-light, 5.3:1 on midnight
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Landing page blocks
+// -----------------------------------------------------------------------------
+.td-cover-block {
+  background:
+    linear-gradient(135deg, rgba(19, 36, 64, 0.97), rgba(29, 51, 82, 0.92)),
+    radial-gradient(circle at 88% 18%, rgba(224, 82, 50, 0.26), transparent 36%);
+}
+
+.td-cover__title,
+.td-cover-block .display-1 {
+  max-width: 16ch;
+  margin-inline: auto;
+}
+
+.td-box--primary {
+  background-color: $brand-primary;
+}
+
+// Light surface -- inherits the page's normal text colours.
+.td-box--secondary {
+  background-color: var(--pj-midnight-2);
+  color: var(--bs-body-color);
+}
+
+.td-box--primary,
+.td-box--secondary {
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow;
+}
+
+// Feature icons pick up the accent.
+.td-box .h4 > i,
+.td-box .feature-icon {
+  color: $orange-9;
+}
+
+// -----------------------------------------------------------------------------
+// Sidebar, table of contents, breadcrumbs, footer
+// -----------------------------------------------------------------------------
+.td-sidebar-nav {
+  font-size: 0.9375rem;
+
+  a {
+    color: var(--pj-slate-11);
+    border-radius: $border-radius-sm;
+    transition: color var(--pj-duration-micro) var(--pj-ease-out);
+
+    &:hover {
+      color: var(--pj-orange-10);
+    }
+  }
+
+  // Section links resolve through the `a` rule above, but page links do not:
+  // Docsy styles them with `.td-sidebar-nav .td-sidebar-link__page`, which is
+  // (0,2,0) and outranks it. Left alone, every leaf entry in the tree takes
+  // `--bs-body-color` — a variable this project deliberately reassigns on dark
+  // surfaces, and one Bootstrap rewrites per colour mode. Two different
+  // sources deciding the colour of one tree is how the sidebar ends up
+  // unreadable when either of them moves.
+  //
+  // State it once, at matching weight, for both kinds of entry.
+  .td-sidebar-link__page,
+  .td-sidebar-link__section {
+    color: var(--pj-slate-11);
+  }
+
+  .td-sidebar-link__page:hover,
+  .td-sidebar-link__section:hover {
+    color: var(--pj-orange-10);
+  }
+
+  .td-sidebar-link.active,
+  a.active,
+  .td-sidebar-link__page.active,
+  .td-sidebar-link__section.active {
+    font-weight: 600;
+    color: var(--pj-midnight-11);
+  }
+
+  // The active leaf's label is wrapped in its own span; keep it on the anchor
+  // colour rather than letting anything reassign it.
+  .td-sidebar-nav-active-item {
+    color: inherit;
+  }
+}
+
+.td-toc {
+  font-size: 0.875rem;
+  border-left: 1px solid var(--pj-border);
+
+  a {
+    color: var(--pj-text-muted);
+
+    &:hover {
+      color: var(--pj-orange-10);
+    }
+  }
+
+  #TableOfContents > ul > li > a,
+  .td-toc__title {
+    font-family: $font-family-sans-serif;
+    font-weight: 600;
+  }
+
+  // Docsy sets its own colour on the active entry through
+  // `#TableOfContents a.active`, an ID selector the `a` rule above cannot
+  // reach. Its value measures 3.83:1 in dark mode, below AA. Restate it on a
+  // selector of equal weight.
+  #TableOfContents a.active {
+    color: var(--pj-midnight-11);
+    font-weight: 600;
+  }
+}
+
+.td-breadcrumbs {
+  font-size: 0.8125rem;
+
+  .breadcrumb-item,
+  .breadcrumb-item a {
+    color: var(--pj-text-muted);
+  }
 }
 
 .td-footer {
   background-color: $brand-primary-dark;
+
+  // Text colours come from the dark-surface rule above.
+  a {
+    color: $midnight-dark-12;
+
+    &:hover {
+      color: $orange-dark-10;
+    }
+  }
 }
 
-:focus-visible {
-  outline: 2px solid $brand-accent;
-  outline-offset: 2px;
+// -----------------------------------------------------------------------------
+// Search
+// -----------------------------------------------------------------------------
+.td-search input,
+.td-search__input {
+  border-radius: $border-radius;
+  font-size: 0.8125rem;
 }
 
+.td-offline-search-results {
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-lg;
+}
+
+// -----------------------------------------------------------------------------
+// Version menu — two levels: release line, then the releases under it
+// -----------------------------------------------------------------------------
+// Companion to the navbar-version-selector override. Submenus open on hover,
+// on keyboard focus anywhere inside the line, and on an explicit click
+// (`--open`, set by the partial's script) so touch devices are covered too.
+.pk-version-line {
+  &__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  // A caret that rotates when the line is expanded.
+  &__caret {
+    flex-shrink: 0;
+    width: 0;
+    height: 0;
+    border-top: 0.3rem solid transparent;
+    border-bottom: 0.3rem solid transparent;
+    border-left: 0.34rem solid currentColor;
+    opacity: 0.55;
+    transition: transform var(--pj-duration-micro) var(--pj-ease-out);
+  }
+
+  &__releases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--pj-duration-expand) var(--pj-ease-out);
+  }
+
+  &:hover,
+  &:focus-within,
+  &--open {
+    .pk-version-line__releases {
+      // Generous enough for the release counts these lines will realistically
+      // carry; overflow scrolls rather than clipping.
+      max-height: 22rem;
+      overflow-y: auto;
+    }
+
+    .pk-version-line__caret {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.pk-version-release {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  // Indent under the line, and sit on a faintly recessed surface so the two
+  // levels read as nested rather than as one long list.
+  padding-left: 2rem;
+  font-size: 0.875rem;
+  background-color: var(--pj-surface-subtle);
+  // Stated rather than inherited. Every dark-on-dark defect on this site has
+  // come from a rule setting a background and leaving the text colour to
+  // whatever an ancestor supplied.
+  color: var(--bs-body-color);
+
+  &__badge {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--pj-text-muted);
+  }
+
+  &.active .pk-version-release__badge {
+    color: inherit;
+    opacity: 0.75;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Release-line banner
+// -----------------------------------------------------------------------------
+// Rendered at the top of every docs page via the version-banner override, so
+// a reader who lands deep in the tree from a search result still learns which
+// release line they are reading. Uses the accent as an attention colour, per
+// the brand's error/highlight treatment (orange-9 rule on an orange-1 field).
+.pk-release-banner {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--pj-orange-9);
+  border-radius: $border-radius;
+  background-color: var(--pj-orange-2);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+
+  // Step 11 over step 2 rather than white over the accent. White on accent
+  // step 9 is 3.87:1 — the shortfall the brand's `accentSolid` token exists to
+  // fix — and even `accentSolid` at 4.72:1 is thin for an 11px uppercase
+  // label. This pairing flips correctly in both modes (4.61:1 light,
+  // 7.83:1 dark).
+  &__tag {
+    flex-shrink: 0;
+    font-family: $font-family-sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--pj-orange-2);
+    background-color: var(--pj-orange-11);
+    border-radius: $border-radius-sm;
+    padding: 0.125rem 0.5rem;
+  }
+
+  &__text {
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+
+  a {
+    color: var(--pj-orange-11);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--pj-orange-10);
+    }
+  }
+}
+
+[data-bs-theme="dark"] .pk-release-banner a {
+  color: var(--pj-orange-11);
+}
+
+// Landing-page variant sits on the dark cover, so it restates its colours.
+.td-cover-block .pk-release-banner {
+  display: inline-flex;
+  margin: 0 auto 1.5rem;
+  background-color: rgba(224, 82, 50, 0.14);
+  border-left-color: $orange-9;
+  color: $midnight-dark-12;
+  text-align: left;
+
+  a {
+    color: $orange-dark-10;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Motion
+// -----------------------------------------------------------------------------
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }

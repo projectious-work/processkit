@@ -3,8 +3,6 @@ weight: 7
 title: "Design & Visual Skills"
 ---
 
-# Design & Visual Skills
-
 Skills for frontend development, visual design, and creative production.
 
 ---

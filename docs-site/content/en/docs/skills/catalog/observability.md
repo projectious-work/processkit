@@ -3,8 +3,6 @@ weight: 12
 title: "Observability Skills"
 ---
 
-# Observability Skills
-
 Skills for logging, monitoring, tracing, and alerting in production systems.
 
 ---
