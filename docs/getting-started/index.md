@@ -1,4 +1,8 @@
-# Overview
+# Getting Started
+
+> Install processkit by hand from a release archive or through a managed installer, then create your first entity.
+
+---
 
 LLMS index: [llms.txt](/processkit/llms.txt)
 
@@ -62,9 +66,16 @@ manually.
 
 ## Learning path
 
-1. Read [Primitives → Overview](../primitives/overview) to understand
+1. Read [Primitives → Overview](../primitives/) to understand
    the durable entity model.
 2. Read [Primitives → Format](../primitives/format) to learn the entity file shape.
-3. Read [Skills → Overview](../skills/overview) to learn what skills do.
-4. Pick a package ([Packages → Overview](../packages/overview)).
+3. Read [Skills → Overview](../skills/) to learn what skills do.
+4. Pick a package ([Packages → Overview](../packages/)).
 5. Create your [first entity](./first-entity).
+
+---
+
+Section pages:
+
+- [Installing](/processkit/docs/getting-started/installing/)
+- [Your First Entity](/processkit/docs/getting-started/first-entity/)

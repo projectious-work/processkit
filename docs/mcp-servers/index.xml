@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>MCP Servers on processkit</title><link>https://projectious-work.github.io/processkit/docs/mcp-servers/</link><description>Recent content in MCP Servers on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/docs/mcp-servers/index.xml" rel="self" type="application/rss+xml"/><item><title>Harness Compatibility</title><link>https://projectious-work.github.io/processkit/docs/mcp-servers/harness-compatibility/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/mcp-servers/harness-compatibility/</guid><description>&lt;p&gt;processkit&amp;rsquo;s MCP servers are provider-neutral Python programs. They do
+not require aibox at runtime. aibox can install processkit, merge MCP
+configuration, pre-authorize processkit tools where a harness supports
+that, and supervise a managed devcontainer. Those are convenience and
+lifecycle features; they are not a processkit dependency.&lt;/p&gt;
+&lt;p&gt;For a direct install, point the harness at the desired server command
+inside the installed &lt;code&gt;context/skills&lt;/code&gt; tree. The recommended one-process
+entry point is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-json" data-lang="json"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;mcpServers&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;processkit-gateway&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;command&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;uv&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;args&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;run&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;context/skills/processkit/processkit-gateway/mcp/server.py&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;],&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;env&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;PROCESSKIT_MCP_MODE&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;gateway&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="current-modes"&gt;Current modes&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Mode&lt;/th&gt;
+ &lt;th&gt;Use when&lt;/th&gt;
+ &lt;th&gt;Harness impact&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Per-skill servers&lt;/td&gt;
+ &lt;td&gt;You need fine-grained tool registration or the broadest compatibility.&lt;/td&gt;
+ &lt;td&gt;The harness launches one stdio process per registered skill.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;aggregate-mcp&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;You already use the legacy aggregate server.&lt;/td&gt;
+ &lt;td&gt;One stdio process, compatibility name, no daemon behavior.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;processkit-gateway&lt;/code&gt; stdio&lt;/td&gt;
+ &lt;td&gt;You want the provider-neutral gateway surface now.&lt;/td&gt;
+ &lt;td&gt;One stdio process, eager tool import, richer gateway metadata.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Daemon plus stdio proxy&lt;/td&gt;
+ &lt;td&gt;You want a long-lived daemon with lightweight harness proxies.&lt;/td&gt;
+ &lt;td&gt;One shared daemon plus one lightweight stdio proxy per harness.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The current gateway command is equivalent to:&lt;/p&gt;</description></item></channel></rss>

@@ -1,4 +1,8 @@
-# Overview
+# Primitives
+
+> The project-memory entity model — the shape of a WorkItem, a DecisionRecord, an Artifact, and the rest of the durable record.
+
+---
 
 LLMS index: [llms.txt](/processkit/llms.txt)
 
@@ -89,3 +93,30 @@ write-path validation.
 - [Format](./format) — the `apiVersion/kind/metadata/spec` contract.
 - [State Machines](./state-machines) — default machines and how to override.
 - [Relationships](./relationships) — cross-references and Bindings.
+
+---
+
+Section pages:
+
+- [Entity File Format](/processkit/docs/primitives/format/)
+- [State Machines](/processkit/docs/primitives/state-machines/)
+- [Relationships](/processkit/docs/primitives/relationships/)
+- [WorkItem](/processkit/docs/primitives/workitem/)
+- [LogEntry](/processkit/docs/primitives/logentry/)
+- [DecisionRecord](/processkit/docs/primitives/decisionrecord/)
+- [Artifact](/processkit/docs/primitives/artifact/)
+- [Note](/processkit/docs/primitives/note/)
+- [Actor](/processkit/docs/primitives/actor/)
+- [Role](/processkit/docs/primitives/role/)
+- [Binding](/processkit/docs/primitives/binding/)
+- [Scope](/processkit/docs/primitives/scope/)
+- [Discussion](/processkit/docs/primitives/discussion/)
+- [Gate](/processkit/docs/primitives/gate/)
+- [Migration](/processkit/docs/primitives/migration/)
+- [Schedule](/processkit/docs/primitives/schedule/)
+- [Constraint](/processkit/docs/primitives/constraint/)
+- [Category](/processkit/docs/primitives/category/)
+- [CrossReference](/processkit/docs/primitives/cross-reference/)
+- [Context](/processkit/docs/primitives/context-entity/)
+- [Process](/processkit/docs/primitives/process-entity/)
+- [StateMachine](/processkit/docs/primitives/statemachine/)

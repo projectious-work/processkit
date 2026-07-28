@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Reference on processkit</title><link>https://projectious-work.github.io/processkit/docs/reference/</link><description>Recent content in Reference on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/docs/reference/index.xml" rel="self" type="application/rss+xml"/><item><title>apiVersion Policy</title><link>https://projectious-work.github.io/processkit/docs/reference/apiversion-policy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/reference/apiversion-policy/</guid><description>&lt;p&gt;processkit uses a Kubernetes-style &lt;code&gt;apiVersion&lt;/code&gt; field on every entity:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nt"&gt;apiVersion&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;processkit.projectious.work/v1&lt;/span&gt;&lt;span class="w"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="the-group"&gt;The group&lt;/h2&gt;
+&lt;p&gt;The group &lt;code&gt;processkit.projectious.work&lt;/code&gt; is a reverse-DNS name anchored on
+the owning organization (&lt;code&gt;projectious.work&lt;/code&gt;) with &lt;code&gt;processkit&lt;/code&gt; as a
+subcomponent. This prevents name collisions if other organizations fork
+or publish compatible primitives under their own domains.&lt;/p&gt;
+&lt;p&gt;The form &lt;code&gt;&amp;lt;reverse-dns-group&amp;gt;/&amp;lt;version&amp;gt;&lt;/code&gt; is the Kubernetes-idiomatic
+shape — exactly one slash. Tools that split on &lt;code&gt;/&lt;/code&gt; expect exactly two
+parts.&lt;/p&gt;
+&lt;h2 id="evolution-rules"&gt;Evolution rules&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;apiVersion&lt;/th&gt;
+ &lt;th&gt;Status&lt;/th&gt;
+ &lt;th&gt;Meaning&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;processkit.projectious.work/v1&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;current v0.x entity format&lt;/td&gt;
+ &lt;td&gt;Initial public entity version&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;processkit.projectious.work/v1beta1&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;not used&lt;/td&gt;
+ &lt;td&gt;Reserved&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;processkit.projectious.work/v2&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;planned&lt;/td&gt;
+ &lt;td&gt;Breaking contract with explicit migration required&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id="non-breaking-changes-stay-at-v1"&gt;Non-breaking changes (stay at v1)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Adding new optional fields to schemas&lt;/li&gt;
+&lt;li&gt;Adding new primitive kinds&lt;/li&gt;
+&lt;li&gt;Adding new states to a state machine&lt;/li&gt;
+&lt;li&gt;Adding new skills&lt;/li&gt;
+&lt;li&gt;Adding new packages&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id="breaking-changes-require-v2"&gt;Breaking changes (require v2)&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;Removing or renaming existing fields&lt;/li&gt;
+&lt;li&gt;Changing the type or meaning of existing fields&lt;/li&gt;
+&lt;li&gt;Removing states from a state machine (stranding existing entities)&lt;/li&gt;
+&lt;li&gt;Removing primitive kinds&lt;/li&gt;
+&lt;li&gt;Changing the semantics of &lt;code&gt;metadata.id&lt;/code&gt;, &lt;code&gt;metadata.created&lt;/code&gt;, or other cross-cutting fields&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="migration-between-versions"&gt;Migration between versions&lt;/h2&gt;
+&lt;p&gt;The SmoothTiger/SmoothRiver v2 direction is a &lt;strong&gt;no-shim&lt;/strong&gt; contract:
+v2 schemas and index semantics become authoritative, and processkit does
+not add hidden dual-read or permissive validation paths for v1 data.
+Existing v1 contexts remain a migration source, not a long-term
+compatibility target.&lt;/p&gt;</description></item><item><title>ID Formats</title><link>https://projectious-work.github.io/processkit/docs/reference/id-formats/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/reference/id-formats/</guid><description>&lt;p&gt;Entity IDs in processkit have the shape &lt;code&gt;&amp;lt;PREFIX&amp;gt;-&amp;lt;id-body&amp;gt;&lt;/code&gt;. The prefix
+is determined by the primitive kind and is not configurable. The id-body
+has two independent configuration axes: &lt;strong&gt;format&lt;/strong&gt; and &lt;strong&gt;slug&lt;/strong&gt;.&lt;/p&gt;
+&lt;h2 id="configuration"&gt;Configuration&lt;/h2&gt;
+&lt;p&gt;In the consuming project&amp;rsquo;s &lt;code&gt;aibox.toml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-toml" data-lang="toml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="nx"&gt;context&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;id_format&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;word&amp;#34;&lt;/span&gt; &lt;span class="c"&gt;# word | uuid&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nx"&gt;id_slug&lt;/span&gt; &lt;span class="p"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt; &lt;span class="c"&gt;# true | false&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="the-four-combinations"&gt;The four combinations&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;&lt;code&gt;id_format&lt;/code&gt;&lt;/th&gt;
+ &lt;th&gt;&lt;code&gt;id_slug&lt;/code&gt;&lt;/th&gt;
+ &lt;th&gt;Example&lt;/th&gt;
+ &lt;th&gt;Notes&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;word&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;BACK-calm-fox&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Default. Short, memorable, solo-friendly&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;word&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;BACK-calm-fox-add-lint&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Memorable + descriptive for prose contexts&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;uuid&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;false&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;BACK-550e8400-e29b-41d4&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Uniqueness guarantees for large teams&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;uuid&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;true&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;BACK-550e8400-add-lint&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;UUID + readable context&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="prefix-registry"&gt;Prefix registry&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Primitive&lt;/th&gt;
+ &lt;th&gt;Prefix&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;WorkItem&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;BACK&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;LogEntry&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;LOG&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;DecisionRecord&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;DEC&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Migration&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;MIG&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Artifact&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;ART&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Note&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;NOTE&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Actor&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;ACTOR&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Role&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;ROLE&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Binding&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;BIND&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Scope&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;SCOPE&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Category&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;CAT&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;CrossReference&lt;/td&gt;
+ &lt;td&gt;—&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Gate&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;GATE&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Schedule&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;SCHED&lt;/code&gt; (legacy v1)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Constraint&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;CONST&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Context&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;CTX&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Discussion&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;DISC&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Process&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;PROC&lt;/code&gt; (legacy v1)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;StateMachine&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;SM&lt;/code&gt; (legacy v1)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;code&gt;Metric&lt;/code&gt;, &lt;code&gt;Model&lt;/code&gt;, &lt;code&gt;Process&lt;/code&gt;, &lt;code&gt;Schedule&lt;/code&gt;, and &lt;code&gt;StateMachine&lt;/code&gt; do not
+reserve first-class primitive prefixes in the v2 contract. The legacy
+prefixes remain documented so existing v1 contexts can be migrated and
+read correctly.&lt;/p&gt;</description></item><item><title>Version Migration</title><link>https://projectious-work.github.io/processkit/docs/reference/migration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/reference/migration/</guid><description>&lt;p&gt;processkit is distributed as versioned releases. Upgrading pinned
+versions is deliberate: processkit does not silently rewrite a consuming
+project&amp;rsquo;s context. A version bump should produce a &lt;code&gt;Migration&lt;/code&gt; document
+under &lt;code&gt;context/migrations/pending/&lt;/code&gt; that the user and agent work through
+together.&lt;/p&gt;
+&lt;h2 id="the-model"&gt;The model&lt;/h2&gt;
+&lt;p&gt;processkit ships a generic diff script (&lt;code&gt;scripts/processkit-diff.sh&lt;/code&gt;) that
+compares two tagged versions of any processkit-compatible source — upstream
+processkit, a company fork like &lt;code&gt;processkit-acme&lt;/code&gt;, or any other downstream.
+The script reads &lt;code&gt;src/PROVENANCE.toml&lt;/code&gt; at each tag (a single file mapping
+every shipped file to the tag in which it last changed) and emits a
+structured diff: added, removed, changed, unchanged.&lt;/p&gt;</description></item><item><title>Privacy Tiers</title><link>https://projectious-work.github.io/processkit/docs/reference/privacy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/reference/privacy/</guid><description>&lt;p&gt;processkit recognizes three privacy tiers for entities under &lt;code&gt;context/&lt;/code&gt;.
+The tier is declared via an optional &lt;code&gt;privacy:&lt;/code&gt; field in &lt;code&gt;metadata&lt;/code&gt; and
+enforced by directory layout + a &lt;code&gt;.gitignore&lt;/code&gt; rule.&lt;/p&gt;
+&lt;h2 id="the-three-tiers"&gt;The three tiers&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Tier&lt;/th&gt;
+ &lt;th&gt;Default?&lt;/th&gt;
+ &lt;th&gt;Git status&lt;/th&gt;
+ &lt;th&gt;Typical use&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;public&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;tracked&lt;/td&gt;
+ &lt;td&gt;identity.md, README, public roadmap&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;project-private&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;strong&gt;yes&lt;/strong&gt; (default if omitted)&lt;/td&gt;
+ &lt;td&gt;tracked&lt;/td&gt;
+ &lt;td&gt;workitems, decisions, logs, working-style.md&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;user-private&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;no&lt;/td&gt;
+ &lt;td&gt;NOT tracked&lt;/td&gt;
+ &lt;td&gt;team-and-relationships.md, personal scratch notes&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Most entities omit the field entirely and inherit &lt;code&gt;project-private&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>v2 Contracts</title><link>https://projectious-work.github.io/processkit/docs/reference/v2-contracts/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/reference/v2-contracts/</guid><description>&lt;p&gt;SmoothTiger/SmoothRiver v2 keeps durable facts in existing entity
+primitives and uses projection skills for runtime files. The source of
+truth remains processkit context; generated files are checked against
+that source.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Metric&lt;/code&gt;, &lt;code&gt;Model&lt;/code&gt;, &lt;code&gt;Process&lt;/code&gt;, &lt;code&gt;Schedule&lt;/code&gt;, and &lt;code&gt;StateMachine&lt;/code&gt; are legacy
+v1 migration-source kinds, not shipped v2 entity primitives. Model
+selection uses model-recommender roster/configuration data. Process
+definitions are Artifacts plus process-instance WorkItems. Schedule
+semantics use &lt;code&gt;Binding(type=time-window)&lt;/code&gt;. Runtime state-machine YAML
+files remain implementation contracts, not user-authored StateMachine
+entities.&lt;/p&gt;</description></item></channel></rss>

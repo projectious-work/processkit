@@ -1,4 +1,8 @@
-# Overview
+# Processes
+
+> Process templates that sequence skills into a repeatable workflow.
+
+---
 
 LLMS index: [llms.txt](/processkit/llms.txt)
 

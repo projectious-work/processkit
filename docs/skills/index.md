@@ -1,4 +1,8 @@
-# Overview
+# Skills
+
+> The skill package format, the category hierarchy, and the shipped catalog.
+
+---
 
 LLMS index: [llms.txt](/processkit/llms.txt)
 
@@ -113,3 +117,11 @@ metadata from the SQLite index.
 - [Format](./format) — the full skill package format specification
 - [Hierarchy](./hierarchy) — the layered skill graph (`uses:` relationships)
 - [Catalog → Process](./catalog/process) — start browsing skills by category
+
+---
+
+Section pages:
+
+- [Skill Package Format](/processkit/docs/skills/format/)
+- [Skill Hierarchy](/processkit/docs/skills/hierarchy/)
+- [Catalog](/processkit/docs/skills/catalog/): Every shipped skill, grouped by category.

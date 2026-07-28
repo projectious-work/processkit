@@ -1,12 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" role="img" aria-labelledby="processkitMarkTitle" class="processkit-mark">
   <title id="processkitMarkTitle">processkit</title>
   <circle cx="20" cy="20" r="17.6" fill="#ffffff"/>
-  <g fill="none" stroke="#132440" stroke-width="3.6" stroke-linecap="round">
-    <path d="M25.91,27.56 A9.6,9.6 0 0 1 17.68,29.31"/>
-    <path d="M14.91,28.14 A9.6,9.6 0 0 1 10.45,21.00"/>
-    <path d="M10.61,18.00 A9.6,9.6 0 0 1 15.20,11.69"/>
-    <path d="M18.00,10.61 A9.6,9.6 0 0 1 22.32,10.68"/>
+  <g fill="none" stroke="#132440" stroke-width="3.4" stroke-linecap="round">
+    <path d="M15.2,8.4 L15.2,31.0"/>
+    <path d="M15.2,8.4 A8.0,7.4 0 0 1 22.45,12.67"/>
+    <path d="M22.45,18.93 A8.0,7.4 0 0 1 15.2,23.2"/>
   </g>
-  <path d="M22.309,13.657 L24.258,8.302 L27.96,14.63 Z" fill="#132440"/>
-  <circle cx="29.48" cy="21.50" r="3.4" fill="#132440"/>
+  <circle cx="23.2" cy="15.8" r="3.3" fill="#132440"/>
 </svg>

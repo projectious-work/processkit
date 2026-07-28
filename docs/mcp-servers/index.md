@@ -1,4 +1,8 @@
-# Overview
+# MCP Servers
+
+> The gateway, per-skill servers, and the legacy aggregate bridge — plus what each harness supports.
+
+---
 
 LLMS index: [llms.txt](/processkit/llms.txt)
 
@@ -240,3 +244,9 @@ processkit tool calls and use `find_skill` when a processkit skill might
 apply. Entity reads go through `index-management`; entity writes go
 through the owning management server. If a state change is not already
 logged by the MCP write tool, append a LogEntry with `event-log`.
+
+---
+
+Section pages:
+
+- [Harness Compatibility](/processkit/docs/mcp-servers/harness-compatibility/)

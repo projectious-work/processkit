@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Packages on processkit</title><link>https://projectious-work.github.io/processkit/docs/packages/</link><description>Recent content in Packages on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/docs/packages/index.xml" rel="self" type="application/rss+xml"/><item><title>minimal</title><link>https://projectious-work.github.io/processkit/docs/packages/minimal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/packages/minimal/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; solo developers and small side projects.
+&lt;strong&gt;Extends:&lt;/strong&gt; — (the base tier)&lt;/p&gt;
+&lt;p&gt;The lightest footprint package. Just enough structure to track work and
+debug effectively — no roles, no scopes, no governance artifacts.&lt;/p&gt;
+&lt;h2 id="included-skills"&gt;Included skills&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;event-log&lt;/code&gt; — foundation: probabilistic append-only event log&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;actor-profile&lt;/code&gt; — basic Actor entities&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;workitem-management&lt;/code&gt; — WorkItem creation and transitions&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;git-workflow&lt;/code&gt; — branch/commit/PR conventions&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;debugging&lt;/code&gt; — systematic debug workflow&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;testing-strategy&lt;/code&gt; — unit vs integration vs E2E guidance&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;error-handling&lt;/code&gt; — cross-language patterns&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="when-to-upgrade"&gt;When to upgrade&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;You&amp;rsquo;re joining a team → &lt;code&gt;managed&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;You need formal decision records, scopes, and process artifacts → &lt;code&gt;managed&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;You&amp;rsquo;re building production software → &lt;code&gt;software&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;You&amp;rsquo;re doing data/ML work → &lt;code&gt;research&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;You need the kitchen sink → &lt;code&gt;product&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="source"&gt;Source&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/projectious-work/processkit/blob/main/src/packages/minimal.yaml" rel="noopener"&gt;&lt;code&gt;src/packages/minimal.yaml&lt;/code&gt;&lt;/a&gt;
+&lt;/p&gt;</description></item><item><title>managed</title><link>https://projectious-work.github.io/processkit/docs/packages/managed/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/packages/managed/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; small teams with a shared backlog and process cadences.
+&lt;strong&gt;Extends:&lt;/strong&gt; &lt;code&gt;minimal&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The recommended default. Adds roles, decisions, scopes, and all lightweight
+process artifacts (standups, retros, session handovers) on top of minimal.&lt;/p&gt;
+&lt;h2 id="what-managed-adds-on-top-of-minimal"&gt;What managed adds on top of minimal&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Process primitives and cross-cutting process skills:&lt;/strong&gt;
+&lt;code&gt;role-management&lt;/code&gt;, &lt;code&gt;decision-record&lt;/code&gt;, &lt;code&gt;scope-management&lt;/code&gt;,
+&lt;code&gt;category-management&lt;/code&gt;, &lt;code&gt;cross-reference-management&lt;/code&gt;, &lt;code&gt;binding-management&lt;/code&gt;,
+&lt;code&gt;process-management&lt;/code&gt;, &lt;code&gt;state-machine-management&lt;/code&gt;, &lt;code&gt;gate-management&lt;/code&gt;,
+&lt;code&gt;schedule-management&lt;/code&gt;, &lt;code&gt;constraint-management&lt;/code&gt;, &lt;code&gt;discussion-management&lt;/code&gt;,
+&lt;code&gt;metrics-management&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;process-management&lt;/code&gt;, &lt;code&gt;schedule-management&lt;/code&gt;, and &lt;code&gt;state-machine-management&lt;/code&gt;
+are included for legacy v1 migration guidance. They are not first-class
+v2 primitive authoring surfaces.&lt;/p&gt;</description></item><item><title>software</title><link>https://projectious-work.github.io/processkit/docs/packages/software/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/packages/software/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; software engineering teams building production systems.
+&lt;strong&gt;Extends:&lt;/strong&gt; &lt;code&gt;managed&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The &amp;ldquo;serious software team&amp;rdquo; tier. Adds architecture, API, database,
+infrastructure, security, observability, and performance skills on top of
+managed.&lt;/p&gt;
+&lt;h2 id="highlights"&gt;Highlights&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Architecture:&lt;/strong&gt; &lt;code&gt;software-architecture&lt;/code&gt;, &lt;code&gt;system-design&lt;/code&gt;,
+&lt;code&gt;domain-driven-design&lt;/code&gt;, &lt;code&gt;event-driven-architecture&lt;/code&gt;, &lt;code&gt;concurrency-patterns&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;API:&lt;/strong&gt; &lt;code&gt;api-design&lt;/code&gt;, &lt;code&gt;graphql-patterns&lt;/code&gt;, &lt;code&gt;grpc-protobuf&lt;/code&gt;, &lt;code&gt;webhook-integration&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Database:&lt;/strong&gt; &lt;code&gt;database-modeling&lt;/code&gt;, &lt;code&gt;database-migration&lt;/code&gt;, &lt;code&gt;sql-patterns&lt;/code&gt;,
+&lt;code&gt;sql-style-guide&lt;/code&gt;, &lt;code&gt;nosql-patterns&lt;/code&gt;, &lt;code&gt;caching-strategies&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Infrastructure:&lt;/strong&gt; &lt;code&gt;ci-cd-setup&lt;/code&gt;, &lt;code&gt;container-orchestration&lt;/code&gt;,
+&lt;code&gt;dockerfile-review&lt;/code&gt;, &lt;code&gt;kubernetes-basics&lt;/code&gt;, &lt;code&gt;terraform-basics&lt;/code&gt;,
+&lt;code&gt;linux-administration&lt;/code&gt;, &lt;code&gt;dns-networking&lt;/code&gt;, &lt;code&gt;shell-scripting&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Security:&lt;/strong&gt; &lt;code&gt;auth-patterns&lt;/code&gt;, &lt;code&gt;secret-management&lt;/code&gt;, &lt;code&gt;secure-coding&lt;/code&gt;,
+&lt;code&gt;threat-modeling&lt;/code&gt;, &lt;code&gt;dependency-audit&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Observability:&lt;/strong&gt; &lt;code&gt;logging-strategy&lt;/code&gt;, &lt;code&gt;metrics-monitoring&lt;/code&gt;,
+&lt;code&gt;alerting-oncall&lt;/code&gt;, &lt;code&gt;distributed-tracing&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Performance:&lt;/strong&gt; &lt;code&gt;performance-profiling&lt;/code&gt;, &lt;code&gt;load-testing&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="when-to-upgrade"&gt;When to upgrade&lt;/h2&gt;
+&lt;p&gt;Only if you also need design, mobile, frontend framework skills → &lt;code&gt;product&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>research</title><link>https://projectious-work.github.io/processkit/docs/packages/research/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/packages/research/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; research teams, data science projects, ML engineering.
+&lt;strong&gt;Extends:&lt;/strong&gt; &lt;code&gt;managed&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Managed plus data, ML, AI, and research-documentation skills.&lt;/p&gt;
+&lt;h2 id="highlights"&gt;Highlights&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Data:&lt;/strong&gt; &lt;code&gt;data-science&lt;/code&gt;, &lt;code&gt;data-pipeline&lt;/code&gt;, &lt;code&gt;data-quality&lt;/code&gt;,
+&lt;code&gt;data-visualization&lt;/code&gt;, &lt;code&gt;feature-engineering&lt;/code&gt;, &lt;code&gt;pandas-polars&lt;/code&gt;,
+&lt;code&gt;database-modeling&lt;/code&gt;, &lt;code&gt;sql-patterns&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;AI/ML:&lt;/strong&gt; &lt;code&gt;ai-fundamentals&lt;/code&gt;, &lt;code&gt;ml-pipeline&lt;/code&gt;, &lt;code&gt;prompt-engineering&lt;/code&gt;,
+&lt;code&gt;llm-evaluation&lt;/code&gt;, &lt;code&gt;embedding-vectordb&lt;/code&gt;, &lt;code&gt;rag-engineering&lt;/code&gt;, &lt;code&gt;code-generation&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Research authoring:&lt;/strong&gt; &lt;code&gt;latex-authoring&lt;/code&gt;, &lt;code&gt;documentation&lt;/code&gt;,
+&lt;code&gt;infographics&lt;/code&gt;, &lt;code&gt;excalidraw&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Infrastructure bits research projects touch:&lt;/strong&gt; &lt;code&gt;shell-scripting&lt;/code&gt;,
+&lt;code&gt;container-orchestration&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="source"&gt;Source&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/projectious-work/processkit/blob/main/src/packages/research.yaml" rel="noopener"&gt;&lt;code&gt;src/packages/research.yaml&lt;/code&gt;&lt;/a&gt;
+&lt;/p&gt;</description></item><item><title>product</title><link>https://projectious-work.github.io/processkit/docs/packages/product/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/packages/product/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; end-to-end product development teams.
+&lt;strong&gt;Extends:&lt;/strong&gt; &lt;code&gt;software&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;The most comprehensive tier. Software plus design, mobile, framework,
+and product-specific skills. Use when engineering, design, research, and
+operations all live in the same repository.&lt;/p&gt;
+&lt;h2 id="what-product-adds-on-top-of-software"&gt;What product adds on top of software&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Design:&lt;/strong&gt; &lt;code&gt;frontend-design&lt;/code&gt;, &lt;code&gt;mobile-app-design&lt;/code&gt;, &lt;code&gt;logo-design&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Framework:&lt;/strong&gt; &lt;code&gt;fastapi-patterns&lt;/code&gt;, &lt;code&gt;tailwind&lt;/code&gt;, &lt;code&gt;typescript-patterns&lt;/code&gt;,
+&lt;code&gt;flutter-development&lt;/code&gt;, &lt;code&gt;reflex-python&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Data subset:&lt;/strong&gt; &lt;code&gt;data-visualization&lt;/code&gt;, &lt;code&gt;feature-engineering&lt;/code&gt;,
+&lt;code&gt;ai-fundamentals&lt;/code&gt;, &lt;code&gt;prompt-engineering&lt;/code&gt;, &lt;code&gt;llm-evaluation&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Language conventions:&lt;/strong&gt; &lt;code&gt;python-best-practices&lt;/code&gt;, &lt;code&gt;rust-conventions&lt;/code&gt;,
+&lt;code&gt;go-conventions&lt;/code&gt;, &lt;code&gt;java-patterns&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Documentation:&lt;/strong&gt; &lt;code&gt;latex-authoring&lt;/code&gt;, &lt;code&gt;excalidraw&lt;/code&gt;, &lt;code&gt;infographics&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Product ops:&lt;/strong&gt; &lt;code&gt;seo-optimization&lt;/code&gt;, &lt;code&gt;agent-management&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="when-not-to-use-product"&gt;When NOT to use product&lt;/h2&gt;
+&lt;p&gt;If you don&amp;rsquo;t actually need design, mobile, or framework skills — stick
+with &lt;code&gt;software&lt;/code&gt;. The product tier is large and expecting every team to
+manage it is false economy.&lt;/p&gt;</description></item></channel></rss>

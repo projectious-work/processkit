@@ -65,15 +65,15 @@ MCP configuration, and supervise a gateway daemon in a devcontainer.
 
 ## Where to go next
 
-- [Getting Started](./getting-started/overview) explains the manual and
+- [Getting Started](./getting-started/) explains the manual and
   managed install paths.
-- [MCP Servers](./mcp-servers/overview) explains gateway, daemon,
+- [MCP Servers](./mcp-servers/) explains gateway, daemon,
   stdio-proxy, aggregate, and per-skill layouts.
-- [Primitives](./primitives/overview) explains the project-memory
+- [Primitives](./primitives/) explains the project-memory
   entity model.
-- [Skills](./skills/overview) explains the skill package format and
+- [Skills](./skills/) explains the skill package format and
   catalog.
-- [Packages](./packages/overview) explains the five package tiers.
+- [Packages](./packages/) explains the five package tiers.
 - [v2 Contracts](./reference/v2-contracts) explains the current
   deliverable boundary and demoted legacy primitives.
 
@@ -92,60 +92,11 @@ release checks into executable gates.
 
 Section pages:
 
-- [apiVersion Policy](/processkit/docs/reference/apiversion-policy/)
-- [Overview](/processkit/docs/getting-started/overview/)
-- [Overview](/processkit/docs/mcp-servers/overview/)
-- [Overview](/processkit/docs/packages/overview/)
-- [Overview](/processkit/docs/primitives/overview/)
-- [Overview](/processkit/docs/processes/overview/)
-- [Overview](/processkit/docs/skills/overview/)
-- [Entity File Format](/processkit/docs/primitives/format/)
-- [Harness Compatibility](/processkit/docs/mcp-servers/harness-compatibility/)
-- [ID Formats](/processkit/docs/reference/id-formats/)
-- [Installing](/processkit/docs/getting-started/installing/)
-- [minimal](/processkit/docs/packages/minimal/)
-- [Process Skills](/processkit/docs/skills/catalog/process/)
-- [Skill Package Format](/processkit/docs/skills/format/)
-- [managed](/processkit/docs/packages/managed/)
-- [Skill Hierarchy](/processkit/docs/skills/hierarchy/)
-- [State Machines](/processkit/docs/primitives/state-machines/)
-- [Version Migration](/processkit/docs/reference/migration/)
-- [Your First Entity](/processkit/docs/getting-started/first-entity/)
-- [Language Skills](/processkit/docs/skills/catalog/language/)
-- [Privacy Tiers](/processkit/docs/reference/privacy/)
-- [Relationships](/processkit/docs/primitives/relationships/)
-- [software](/processkit/docs/packages/software/)
-- [Infrastructure Skills](/processkit/docs/skills/catalog/infrastructure/)
-- [research](/processkit/docs/packages/research/)
-- [v2 Contracts](/processkit/docs/reference/v2-contracts/)
-- [Architecture Skills](/processkit/docs/skills/catalog/architecture/)
-- [product](/processkit/docs/packages/product/)
-- [Design & Visual Skills](/processkit/docs/skills/catalog/design/)
-- [Data & Analytics Skills](/processkit/docs/skills/catalog/data/)
-- [AI & ML Skills](/processkit/docs/skills/catalog/ai-ml/)
-- [API & Integration Skills](/processkit/docs/skills/catalog/api/)
 - [Development](/processkit/docs/development/): Active planning documents for processkit v1.0.
-- [WorkItem](/processkit/docs/primitives/workitem/)
-- [LogEntry](/processkit/docs/primitives/logentry/)
-- [Security Skills](/processkit/docs/skills/catalog/security/)
-- [DecisionRecord](/processkit/docs/primitives/decisionrecord/)
-- [Observability Skills](/processkit/docs/skills/catalog/observability/)
-- [Artifact](/processkit/docs/primitives/artifact/)
-- [Database Skills](/processkit/docs/skills/catalog/database/)
-- [Note](/processkit/docs/primitives/note/)
-- [Actor](/processkit/docs/primitives/actor/)
-- [Role](/processkit/docs/primitives/role/)
-- [Binding](/processkit/docs/primitives/binding/)
-- [Scope](/processkit/docs/primitives/scope/)
-- [Discussion](/processkit/docs/primitives/discussion/)
-- [Gate](/processkit/docs/primitives/gate/)
-- [Migration](/processkit/docs/primitives/migration/)
-- [Schedule](/processkit/docs/primitives/schedule/)
-- [Constraint](/processkit/docs/primitives/constraint/)
-- [Category](/processkit/docs/primitives/category/)
-- [CrossReference](/processkit/docs/primitives/cross-reference/)
-- [Context](/processkit/docs/primitives/context-entity/)
-- [Process](/processkit/docs/primitives/process-entity/)
-- [StateMachine](/processkit/docs/primitives/statemachine/)
-- [Framework & SEO Skills](/processkit/docs/skills/catalog/framework/)
-- [Performance Skills](/processkit/docs/skills/catalog/performance/)
+- [Getting Started](/processkit/docs/getting-started/): Install processkit by hand from a release archive or through a managed installer, then create your first entity.
+- [Primitives](/processkit/docs/primitives/): The project-memory entity model — the shape of a WorkItem, a DecisionRecord, an Artifact, and the rest of the durable record.
+- [Skills](/processkit/docs/skills/): The skill package format, the category hierarchy, and the shipped catalog.
+- [Packages](/processkit/docs/packages/): The package tiers, from a minimal bootstrap context to a fully managed workspace.
+- [Processes](/processkit/docs/processes/): Process templates that sequence skills into a repeatable workflow.
+- [MCP Servers](/processkit/docs/mcp-servers/): The gateway, per-skill servers, and the legacy aggregate bridge — plus what each harness supports.
+- [Reference](/processkit/docs/reference/): apiVersion policy, ID formats, the migration guide, privacy conventions, and the v2 deliverable boundary.

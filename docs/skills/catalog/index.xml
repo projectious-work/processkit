@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Catalog on processkit</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/</link><description>Recent content in Catalog on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/docs/skills/catalog/index.xml" rel="self" type="application/rss+xml"/><item><title>Process Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/process/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/process/</guid><description>&lt;p&gt;Skills for managing project workflows, team coordination, and operational
+processes. Most process-primitive skills have an accompanying MCP server
+that enforces schema validation and state-machine rules.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="workitem-management"&gt;workitem-management&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Creates, transitions, and queries WorkItems — the task-tracking
+primitive in processkit. Use when managing backlog items, updating
+work item state, or querying items by status, owner, or priority.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; When the user asks to create a ticket, update a work item,
+query the backlog, or track progress on a task.
+&lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;create_workitem&lt;/code&gt;, &lt;code&gt;transition_workitem&lt;/code&gt;, &lt;code&gt;query_workitems&lt;/code&gt;,
+&lt;code&gt;get_workitem&lt;/code&gt;, &lt;code&gt;link_workitems&lt;/code&gt;
+&lt;strong&gt;Layers:&lt;/strong&gt; Layer 2 (depends on &lt;code&gt;event-log&lt;/code&gt;, &lt;code&gt;actor-profile&lt;/code&gt;)&lt;/p&gt;</description></item><item><title>Language Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/language/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/language/</guid><description>&lt;p&gt;Language-specific conventions, patterns, and best practices.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="python-best-practices"&gt;python-best-practices&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Python conventions and patterns &amp;ndash; typing, testing, project layout, tooling. Use when writing or reviewing Python code.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; When the user is working with Python code and asks about conventions, project structure, typing, testing, or says &amp;ldquo;how should I structure this Python project?&amp;rdquo;.
+&lt;strong&gt;Tools:&lt;/strong&gt; None
+&lt;strong&gt;References:&lt;/strong&gt; None&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Project layout: &lt;code&gt;src/&lt;/code&gt; layout with &lt;code&gt;pyproject.toml&lt;/code&gt;, use &lt;code&gt;uv&lt;/code&gt; for dependency management&lt;/li&gt;
+&lt;li&gt;Type hints on all public function signatures with &lt;code&gt;from __future__ import annotations&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Testing with pytest: fixtures, parametrize, test naming &lt;code&gt;test_&amp;lt;function&amp;gt;_&amp;lt;scenario&amp;gt;_&amp;lt;expected&amp;gt;&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Code style: &lt;code&gt;ruff format&lt;/code&gt; and &lt;code&gt;ruff check&lt;/code&gt;, prefer dataclasses/Pydantic over dicts, pathlib over os.path&lt;/li&gt;
+&lt;li&gt;Error handling: raise specific exceptions, custom exception classes, never bare &lt;code&gt;except:&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;details&gt;&lt;summary&gt;Example usage&lt;/summary&gt;
+&lt;p&gt;User asks to set up a new Python project. The agent creates &lt;code&gt;pyproject.toml&lt;/code&gt; with project metadata and dependencies, &lt;code&gt;src/&lt;/code&gt; layout, &lt;code&gt;tests/&lt;/code&gt; directory, &lt;code&gt;ruff&lt;/code&gt; config, and basic &lt;code&gt;__init__.py&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Infrastructure Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/infrastructure/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/infrastructure/</guid><description>&lt;p&gt;Skills for containers, orchestration, networking, system administration, and CI/CD.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="dockerfile-review"&gt;dockerfile-review&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Dockerfile best practices review &amp;ndash; layer optimization, caching, security, image size. Use when writing or reviewing Dockerfiles.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; When the user asks to review a Dockerfile, optimize an image, or says &amp;ldquo;why is my image so big?&amp;rdquo;, &amp;ldquo;is this Dockerfile correct?&amp;rdquo;, or &amp;ldquo;help me with Docker&amp;rdquo;.
+&lt;strong&gt;Tools:&lt;/strong&gt; None
+&lt;strong&gt;References:&lt;/strong&gt; None&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Layer optimization: combine related &lt;code&gt;RUN&lt;/code&gt; commands, order from least to most frequently changing&lt;/li&gt;
+&lt;li&gt;Caching: copy dependency manifests first, install, then copy source&lt;/li&gt;
+&lt;li&gt;Security: don&amp;rsquo;t run as root, never &lt;code&gt;COPY&lt;/code&gt; secrets, pin base images with digest, remove package caches&lt;/li&gt;
+&lt;li&gt;Size reduction: slim/alpine base images, multi-stage builds, &lt;code&gt;--no-install-recommends&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Correctness: use &lt;code&gt;COPY&lt;/code&gt; over &lt;code&gt;ADD&lt;/code&gt;, set &lt;code&gt;WORKDIR&lt;/code&gt; instead of &lt;code&gt;cd&lt;/code&gt;, exec form for &lt;code&gt;CMD&lt;/code&gt;/&lt;code&gt;ENTRYPOINT&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;details&gt;&lt;summary&gt;Example usage&lt;/summary&gt;
+&lt;p&gt;User says &amp;ldquo;Review my Dockerfile.&amp;rdquo; The agent reads it and identifies that dependency installation and source copy are in the same layer (cache-busting), apt lists aren&amp;rsquo;t cleaned up, and the container runs as root. Provides specific fixes for each issue.&lt;/p&gt;</description></item><item><title>Architecture Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/architecture/</guid><description>&lt;p&gt;Skills for software architecture, design patterns, and system design.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="software-architecture"&gt;software-architecture&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Analyzes codebases for architectural patterns and quality. Use when designing systems, creating ADRs, reviewing structure, or generating architecture diagrams.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Designing systems, creating ADRs, reviewing code structure, generating C4 diagrams, applying SOLID/DRY/KISS principles
+&lt;strong&gt;Tools:&lt;/strong&gt; None
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;patterns.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Analyze existing architecture by mapping module organization, dependency directions, and identifying violations (circular deps, layer skipping, leaky abstractions)&lt;/li&gt;
+&lt;li&gt;Suggest architecture patterns matched to project type (layered, hexagonal, modular monolith, microservices, pipe-and-filter, event-driven)&lt;/li&gt;
+&lt;li&gt;Create Architecture Decision Records (ADRs) with context, decision, and consequences&lt;/li&gt;
+&lt;li&gt;Review code for architectural violations: god modules, tight coupling, missing boundaries&lt;/li&gt;
+&lt;li&gt;Generate C4 diagrams (System Context, Container, Component) using Mermaid syntax&lt;/li&gt;
+&lt;/ul&gt;
+&lt;details&gt;&lt;summary&gt;Example usage&lt;/summary&gt;
+&lt;p&gt;&amp;ldquo;Review this project&amp;rsquo;s architecture&amp;rdquo; &amp;ndash; Maps the dependency graph, identifies that controllers directly import database models (layer violation), suggests introducing a service layer with repository traits, and provides a C4 Level 3 component diagram of the proposed structure.&lt;/p&gt;</description></item><item><title>Design &amp; Visual Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/design/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/design/</guid><description>&lt;p&gt;Skills for frontend development, visual design, and creative production.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="excalidraw"&gt;excalidraw&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Generates Excalidraw diagrams programmatically as JSON. Use when creating architecture diagrams, flowcharts, or hand-drawn-style visuals for documentation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Creating architecture diagrams, flowcharts, system diagrams, or hand-drawn-style visuals for documentation
+&lt;strong&gt;Tools:&lt;/strong&gt; None
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;json-schema.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Generate Excalidraw JSON files with proper structure (elements, appState, version 2 format)&lt;/li&gt;
+&lt;li&gt;Create element types: rectangles, ellipses, diamonds, lines, arrows, text, with configurable styles&lt;/li&gt;
+&lt;li&gt;Bind text labels to shapes for labeled diagrams&lt;/li&gt;
+&lt;li&gt;Follow layout guidelines: grid alignment (multiples of 20), consistent spacing, readable font sizes&lt;/li&gt;
+&lt;li&gt;Apply a semantic color palette (primary, secondary, success, warning, danger, neutral)&lt;/li&gt;
+&lt;li&gt;Produce architecture diagrams, flowcharts, and sequence-style diagrams&lt;/li&gt;
+&lt;li&gt;Embed in documentation as &lt;code&gt;.excalidraw&lt;/code&gt;, SVG, or PNG&lt;/li&gt;
+&lt;/ul&gt;
+&lt;details&gt;&lt;summary&gt;Example usage&lt;/summary&gt;
+&lt;p&gt;&amp;ldquo;Create an architecture diagram for a web app with React frontend, Node API, and PostgreSQL&amp;rdquo; &amp;ndash; Generates Excalidraw JSON with three labeled rectangles arranged left-to-right, connected by arrows labeled &amp;ldquo;HTTP/REST&amp;rdquo; and &amp;ldquo;SQL&amp;rdquo;, using blue for frontend, green for API, yellow for database.&lt;/p&gt;</description></item><item><title>Data &amp; Analytics Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/data/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/data/</guid><description>&lt;p&gt;Skills for data science, data engineering, and analytics workflows.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="data-science"&gt;data-science&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Data analysis workflow from import through modeling and communication. Covers tidy data, EDA, statistical reasoning, and visualization. Use when analyzing datasets, building statistical models, exploring data, or communicating findings.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Analyzing datasets, exploring data, building statistical models, creating visualizations, cleaning messy data, communicating findings
+&lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;Bash(python:*) Bash(jupyter:*) Read Write&lt;/code&gt;
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;tidy-data-principles.md&lt;/code&gt;, &lt;code&gt;statistical-methods.md&lt;/code&gt;, &lt;code&gt;visualization-guidelines.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Import and clean data: inspect shape/dtypes/nulls, handle missing data explicitly, parse dates, validate assumptions&lt;/li&gt;
+&lt;li&gt;Reshape data to tidy form (one variable per column, one observation per row) using melt/pivot&lt;/li&gt;
+&lt;li&gt;Conduct exploratory data analysis: univariate distributions, bivariate relationships, outlier detection, groupby aggregations&lt;/li&gt;
+&lt;li&gt;Apply statistical reasoning: state the question first, check assumptions, report effect sizes alongside p-values, use confidence intervals&lt;/li&gt;
+&lt;li&gt;Perform feature selection: remove zero-variance features, handle multicollinearity, use domain knowledge then data-driven methods&lt;/li&gt;
+&lt;li&gt;Follow model selection workflow: start simple (baseline), add complexity only when justified, use cross-validation, document decisions&lt;/li&gt;
+&lt;li&gt;Visualize with best practices: titles, axis labels, colorblind-friendly palettes, annotations, publication-quality export&lt;/li&gt;
+&lt;li&gt;Communicate results: lead with findings, plain language, show uncertainty, include actionable &amp;ldquo;so what&amp;rdquo;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;details&gt;&lt;summary&gt;Example usage&lt;/summary&gt;
+&lt;p&gt;&amp;ldquo;I have a CSV of customer transactions. Help me understand churn patterns.&amp;rdquo; &amp;ndash; Loads the CSV, prints shape/dtypes/nulls, creates tidy time-series per customer, runs EDA with churn-rate distributions and cohort analysis, tests whether usage frequency differs between churned/retained groups (t-test with effect size), and produces annotated visualizations summarizing the key drivers.&lt;/p&gt;</description></item><item><title>AI &amp; ML Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/ai-ml/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/ai-ml/</guid><description>&lt;p&gt;Skills for AI/ML development, RAG pipelines, prompt engineering, and model evaluation.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="ai-fundamentals"&gt;ai-fundamentals&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Core ML/AI concepts including model types, training pipelines, evaluation metrics, and neural network architectures. Use when explaining AI concepts, choosing model approaches, designing ML solutions, or reviewing AI-related code.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Explaining ML/AI concepts, choosing model architectures, designing training pipelines, selecting evaluation metrics, debugging model performance (overfitting, leakage, class imbalance)
+&lt;strong&gt;Tools:&lt;/strong&gt; None
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;ml-concepts.md&lt;/code&gt;, &lt;code&gt;math-foundations.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Classify problems by learning paradigm: supervised, unsupervised, reinforcement, self-supervised&lt;/li&gt;
+&lt;li&gt;Match model types to problems: linear models for baselines, tree-based (XGBoost/LightGBM) for tabular data, neural networks for unstructured data, probabilistic models for uncertainty&lt;/li&gt;
+&lt;li&gt;Design correct training pipelines: data prep, train/val/test split before preprocessing, feature engineering, training, hyperparameter tuning, regularization, final evaluation&lt;/li&gt;
+&lt;li&gt;Select evaluation metrics by task: F1/AUC-ROC for classification, RMSE/MAE for regression, NDCG/MAP for ranking, BLEU/ROUGE for generation&lt;/li&gt;
+&lt;li&gt;Understand neural network architectures: MLP, CNN, RNN/LSTM, Transformer, GAN, VAE, diffusion models&lt;/li&gt;
+&lt;li&gt;Explain modern LLM concepts: attention, tokenization, pre-training + fine-tuning, RLHF, prompting strategies, scaling laws&lt;/li&gt;
+&lt;li&gt;Identify common pitfalls: data leakage, overfitting, underfitting, class imbalance, distribution shift, metric mismatch&lt;/li&gt;
+&lt;/ul&gt;
+&lt;details&gt;&lt;summary&gt;Example usage&lt;/summary&gt;
+&lt;p&gt;&amp;ldquo;Choose an approach for tabular customer churn prediction&amp;rdquo; &amp;ndash; With 50K labeled rows of structured data, recommends gradient-boosted trees (XGBoost/LightGBM) with stratified k-fold cross-validation for the imbalanced target. Reports F1 and AUC-ROC. Baselines with logistic regression first, only considers neural approaches if tree models plateau.&lt;/p&gt;</description></item><item><title>API &amp; Integration Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/api/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/api/</guid><description>&lt;p&gt;Skills for API design, protocol patterns, and system integration.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="api-design"&gt;api-design&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;REST API design including resource naming, HTTP methods, status codes, pagination, versioning, and OpenAPI specs. Use when designing APIs, reviewing API contracts, or writing OpenAPI/Swagger documentation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Designing a new REST API or extending an existing one, reviewing API contracts, writing OpenAPI/Swagger docs, choosing pagination or versioning strategies, defining error response formats.
+&lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;Bash&lt;/code&gt; &lt;code&gt;Read&lt;/code&gt; &lt;code&gt;Write&lt;/code&gt;
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;rest-conventions.md&lt;/code&gt;, &lt;code&gt;openapi-patterns.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;</description></item><item><title>Security Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/security/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/security/</guid><description>&lt;p&gt;Skills for application security, authentication, and threat analysis.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="dependency-audit"&gt;dependency-audit&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Audits project dependencies for vulnerabilities and outdated packages. Use when checking security posture or planning dependency updates.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Checking dependencies, auditing security, updating packages, verifying dependency health before a release.
+&lt;strong&gt;Tools:&lt;/strong&gt; None
+&lt;strong&gt;References:&lt;/strong&gt; None&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Multi-ecosystem audit tool selection (cargo audit, pip-audit, npm audit, govulncheck)&lt;/li&gt;
+&lt;li&gt;Severity-based triage: critical/high (fix immediately), medium (this sprint), low (when convenient)&lt;/li&gt;
+&lt;li&gt;Update strategy: one dependency at a time, full test suite after each, changelog review&lt;/li&gt;
+&lt;li&gt;Outdated package detection (cargo outdated, pip list &amp;ndash;outdated, npm outdated)&lt;/li&gt;
+&lt;li&gt;Ongoing maintenance: monthly reviews, Dependabot/Renovate automation, pinned version documentation&lt;/li&gt;
+&lt;/ul&gt;
+&lt;details&gt;&lt;summary&gt;Example usage&lt;/summary&gt;
+&lt;p&gt;User asks &amp;ldquo;Are my dependencies secure?&amp;rdquo; The agent runs the appropriate audit tool for the project&amp;rsquo;s package manager, summarizes findings by severity, and recommends specific version bumps for vulnerable packages. Flags any dependencies with no maintained alternatives.&lt;/p&gt;</description></item><item><title>Observability Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/observability/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/observability/</guid><description>&lt;p&gt;Skills for logging, monitoring, tracing, and alerting in production systems.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="logging-strategy"&gt;logging-strategy&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Structured logging strategy including log levels, correlation IDs, context propagation, and PII avoidance. Use when designing logging, reviewing log statements, or setting up log aggregation.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Designing a logging approach, reviewing existing log statements, setting up log aggregation (ELK, Loki, CloudWatch), adding correlation IDs, deciding what to log and what to avoid.
+&lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;Bash&lt;/code&gt; &lt;code&gt;Read&lt;/code&gt; &lt;code&gt;Write&lt;/code&gt;
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;structured-logging.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;</description></item><item><title>Database Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/database/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/database/</guid><description>&lt;p&gt;Skills for SQL, data modeling, NoSQL patterns, and schema migrations.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="sql-patterns"&gt;sql-patterns&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;SQL query patterns, schema design, and optimization. Joins, CTEs, window functions, indexing, and anti-patterns. Use when writing SQL queries, designing schemas, optimizing database performance, or reviewing database code.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Writing or optimizing SQL queries (joins, CTEs, window functions), designing or reviewing schemas, analyzing EXPLAIN plans, choosing indexing strategies, fixing slow queries, implementing pagination or analytical queries.
+&lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;Bash&lt;/code&gt; &lt;code&gt;Read&lt;/code&gt; &lt;code&gt;Write&lt;/code&gt;
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;query-patterns.md&lt;/code&gt;, &lt;code&gt;schema-design.md&lt;/code&gt;&lt;/p&gt;</description></item><item><title>Framework &amp; SEO Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/framework/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/framework/</guid><description>&lt;p&gt;Skills for specific frameworks and search engine optimization.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="reflex-python"&gt;reflex-python&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Reflex Python web framework for building full-stack apps in pure Python. Components, state management, and deployment. Use when building Reflex apps, designing component hierarchies, or managing app state.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; When building web apps with Reflex, designing components, managing state, routing, or creating full-stack Python web applications.
+&lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;Bash(reflex:*)&lt;/code&gt; &lt;code&gt;Bash(python:*)&lt;/code&gt; &lt;code&gt;Read&lt;/code&gt; &lt;code&gt;Write&lt;/code&gt;
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;component-reference.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;App structure: initialization, entry points, page decorators, file-based routing, configuration&lt;/li&gt;
+&lt;li&gt;Component system: layout (box, flex, grid), display (text, heading, image), input (input, select, checkbox), feedback (alert, toast, spinner)&lt;/li&gt;
+&lt;li&gt;State management with &lt;code&gt;rx.State&lt;/code&gt; classes, typed vars, event handlers, computed vars, and substates&lt;/li&gt;
+&lt;li&gt;Event handling: on_click, on_change, two-way binding, background tasks, event chaining&lt;/li&gt;
+&lt;li&gt;Styling with Radix UI design tokens, responsive props, light/dark themes&lt;/li&gt;
+&lt;li&gt;Routing with dynamic segments, programmatic navigation, on_load events, and 404 handling&lt;/li&gt;
+&lt;li&gt;Database integration via built-in SQLModel with automatic migrations&lt;/li&gt;
+&lt;li&gt;Deployment to Reflex Cloud or self-hosted via Docker&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;??? example &amp;ldquo;Example usage&amp;rdquo;
+&lt;strong&gt;Build a todo app:&lt;/strong&gt; Defines a &lt;code&gt;TodoState&lt;/code&gt; with a list of todos and input field, creates event handlers for add/delete/toggle, builds UI with &lt;code&gt;rx.input&lt;/code&gt;, &lt;code&gt;rx.button&lt;/code&gt;, and &lt;code&gt;rx.foreach(TodoState.todos, render_todo)&lt;/code&gt; to render the list dynamically.&lt;/p&gt;</description></item><item><title>Performance Skills</title><link>https://projectious-work.github.io/processkit/docs/skills/catalog/performance/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/docs/skills/catalog/performance/</guid><description>&lt;p&gt;Skills for performance analysis, optimization, and load testing.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id="performance-profiling"&gt;performance-profiling&lt;/h3&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Performance analysis methodology and profiling techniques for CPU, memory, and I/O. Flame graphs, benchmarking, and regression detection. Use when optimizing performance, profiling bottlenecks, or reviewing performance-critical code.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; When identifying bottlenecks, profiling CPU/memory/I/O, interpreting flame graphs, setting up benchmarks, or optimizing slow code paths.
+&lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;Bash&lt;/code&gt; &lt;code&gt;Read&lt;/code&gt; &lt;code&gt;Write&lt;/code&gt;
+&lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;profiling-tools.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Key capabilities:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Follow the full performance analysis cycle: Identify, Measure, Profile, Optimize, Verify&lt;/li&gt;
+&lt;li&gt;CPU profiling with sampling profilers and flame graph generation&lt;/li&gt;
+&lt;li&gt;Memory profiling to detect leaks, allocation pressure, and unbounded growth&lt;/li&gt;
+&lt;li&gt;I/O profiling for disk, network, and database bottlenecks (N+1 queries, connection pooling, slow queries)&lt;/li&gt;
+&lt;li&gt;Benchmarking with statistical significance and regression detection&lt;/li&gt;
+&lt;li&gt;Flame graph interpretation: reading X-axis (alphabetical, not time), Y-axis (stack depth), and differential flame graphs&lt;/li&gt;
+&lt;li&gt;Common optimization patterns: algorithmic improvements, batching, caching, pooling, lazy evaluation, data layout&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;??? example &amp;ldquo;Example usage&amp;rdquo;
+&lt;strong&gt;Slow API endpoint:&lt;/strong&gt; Measures end-to-end latency, profiles the handler, discovers 80% of time spent in 47 sequential database queries (N+1 problem). Rewrites as a single JOIN query, reducing response time from 3 seconds to 120ms.&lt;/p&gt;</description></item></channel></rss>
