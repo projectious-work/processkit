@@ -1,9 +1,7 @@
 //! Compatibility evidence inspection for legacy projects.
 
 use crate::contract::API_VERSION;
-use crate::filesystem::{
-    digest, ensure_regular_file, safe_relative, valid_sha256,
-};
+use crate::filesystem::{digest, ensure_regular_file, safe_relative, valid_sha256};
 use crate::release::verified_release;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;

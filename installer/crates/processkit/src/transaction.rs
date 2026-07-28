@@ -2,9 +2,7 @@
 
 use super::{create_private_dir, has_symlink_ancestor, write_json_atomic};
 use crate::contract::API_VERSION;
-use crate::filesystem::{
-    digest, ensure_non_symlink_directory, safe_relative, valid_sha256,
-};
+use crate::filesystem::{digest, ensure_non_symlink_directory, safe_relative, valid_sha256};
 use crate::state::InstallationState;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -63,19 +61,13 @@ pub(super) fn execute_transaction(
     let transaction = transaction_id(operation);
     let transactions = state_dir.join("transactions");
     if transactions.exists() {
-        ensure_non_symlink_directory(
-            &transactions,
-            "transaction journal directory",
-        )?;
+        ensure_non_symlink_directory(&transactions, "transaction journal directory")?;
     } else {
         create_private_dir(&transactions)?;
     }
     let staging_root = state_dir.join(".staging");
     if staging_root.exists() {
-        ensure_non_symlink_directory(
-            &staging_root,
-            "transaction staging directory",
-        )?;
+        ensure_non_symlink_directory(&staging_root, "transaction staging directory")?;
     } else {
         create_private_dir(&staging_root)?;
     }
@@ -276,10 +268,7 @@ pub(super) fn rollback_journal(root: &Path, journal: &Journal) -> Result<(), Str
     Ok(())
 }
 
-pub(super) fn validate_recovery_journal(
-    root: &Path,
-    journal: &Journal,
-) -> Result<(), String> {
+pub(super) fn validate_recovery_journal(root: &Path, journal: &Journal) -> Result<(), String> {
     if !matches!(
         journal.operation.as_str(),
         "install" | "update" | "uninstall"
@@ -300,8 +289,7 @@ pub(super) fn validate_recovery_journal(
             return Err("transaction journal has an invalid state digest".into());
         }
     }
-    let staging_prefix =
-        format!(".processkit/.staging/{}", journal.transaction_id);
+    let staging_prefix = format!(".processkit/.staging/{}", journal.transaction_id);
     for action in &journal.actions {
         if !safe_relative(&action.target)
             || has_symlink_ancestor(root, &action.target)?
@@ -313,46 +301,35 @@ pub(super) fn validate_recovery_journal(
         {
             return Err("transaction journal has an unsafe action".into());
         }
-        for digest_value in [
-            action.old_sha256.as_deref(),
-            action.new_sha256.as_deref(),
-        ]
-        .into_iter()
-        .flatten()
+        for digest_value in [action.old_sha256.as_deref(), action.new_sha256.as_deref()]
+            .into_iter()
+            .flatten()
         {
             if !valid_sha256(digest_value) {
-                return Err(
-                    "transaction journal has an invalid action digest".into(),
-                );
+                return Err("transaction journal has an invalid action digest".into());
             }
         }
         let staged = format!("{staging_prefix}/new/{}", action.target);
-        let backup =
-            format!("{staging_prefix}/backup/{}", action.target);
+        let backup = format!("{staging_prefix}/backup/{}", action.target);
         let shape_is_valid = match action.kind.as_str() {
             "create" => {
                 action.old_sha256.is_none()
                     && action.new_sha256.is_some()
-                    && (action.staged_path.as_deref()
-                        == Some(staged.as_str())
-                        || (action.applied
-                            && action.staged_path.is_none()))
+                    && (action.staged_path.as_deref() == Some(staged.as_str())
+                        || (action.applied && action.staged_path.is_none()))
                     && action.backup_path.is_none()
             }
             "replace" => {
                 action.old_sha256.is_some()
                     && action.new_sha256.is_some()
-                    && action.staged_path.as_deref()
-                        == Some(staged.as_str())
-                    && action.backup_path.as_deref()
-                        == Some(backup.as_str())
+                    && action.staged_path.as_deref() == Some(staged.as_str())
+                    && action.backup_path.as_deref() == Some(backup.as_str())
             }
             "remove" => {
                 action.old_sha256.is_some()
                     && action.new_sha256.is_none()
                     && action.staged_path.is_none()
-                    && action.backup_path.as_deref()
-                        == Some(backup.as_str())
+                    && action.backup_path.as_deref() == Some(backup.as_str())
             }
             _ => false,
         };
@@ -389,12 +366,8 @@ mod tests {
             target: "../outside".into(),
             old_sha256: Some(digest.clone()),
             new_sha256: Some(digest),
-            staged_path: Some(
-                ".processkit/.staging/update-1/new/../outside".into(),
-            ),
-            backup_path: Some(
-                ".processkit/.staging/update-1/backup/../outside".into(),
-            ),
+            staged_path: Some(".processkit/.staging/update-1/new/../outside".into()),
+            backup_path: Some(".processkit/.staging/update-1/backup/../outside".into()),
             created_parents: Vec::new(),
             ownership: "managed-three-way".into(),
             applied: true,
@@ -414,12 +387,8 @@ mod tests {
             target: "payload/file".into(),
             old_sha256: Some(digest.clone()),
             new_sha256: Some(digest),
-            staged_path: Some(
-                ".processkit/.staging/update-1/new/../outside".into(),
-            ),
-            backup_path: Some(
-                ".processkit/.staging/update-1/backup/payload/file".into(),
-            ),
+            staged_path: Some(".processkit/.staging/update-1/new/../outside".into()),
+            backup_path: Some(".processkit/.staging/update-1/backup/payload/file".into()),
             created_parents: Vec::new(),
             ownership: "managed-three-way".into(),
             applied: true,
@@ -443,10 +412,7 @@ mod tests {
 
         assert_eq!(
             execute_transaction(root.path(), "update", Vec::new(), None),
-            Err(
-                "transaction staging directory must be a non-symlink directory"
-                    .into()
-            )
+            Err("transaction staging directory must be a non-symlink directory".into())
         );
     }
 }

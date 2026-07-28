@@ -10,10 +10,7 @@ pub(crate) fn safe_relative(value: &str) -> bool {
         && !value.contains('\\')
         && !value.contains('\0')
         && !path.is_absolute()
-        && (value == "."
-            || value
-                .split('/')
-                .all(|part| !part.is_empty() && part != "."))
+        && (value == "." || value.split('/').all(|part| !part.is_empty() && part != "."))
         && !path.components().any(|component| {
             matches!(
                 component,
@@ -27,11 +24,7 @@ pub(crate) fn digest(path: &Path) -> Result<String, String> {
     Ok(format!("{:x}", Sha256::digest(bytes)))
 }
 
-pub(crate) fn ensure_regular_file(
-    root: &Path,
-    path: &Path,
-    label: &str,
-) -> Result<(), String> {
+pub(crate) fn ensure_regular_file(root: &Path, path: &Path, label: &str) -> Result<(), String> {
     let relative = path
         .strip_prefix(root)
         .map_err(|_| format!("{label} escaped release root"))?;
@@ -47,17 +40,12 @@ pub(crate) fn ensure_regular_file(
     Ok(())
 }
 
-pub(crate) fn ensure_non_symlink_directory(
-    path: &Path,
-    label: &str,
-) -> Result<(), String> {
+pub(crate) fn ensure_non_symlink_directory(path: &Path, label: &str) -> Result<(), String> {
     let metadata = path
         .symlink_metadata()
         .map_err(|error| format!("{label}: {error}"))?;
     if metadata.file_type().is_symlink() || !metadata.is_dir() {
-        return Err(format!(
-            "{label} must be a non-symlink directory"
-        ));
+        return Err(format!("{label} must be a non-symlink directory"));
     }
     Ok(())
 }

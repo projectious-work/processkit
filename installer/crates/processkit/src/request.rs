@@ -28,18 +28,12 @@ struct InstallerRequest {
     yes: bool,
 }
 
-pub(super) fn execute_request(
-    path: &Path,
-) -> Result<serde_json::Value, InstallerError> {
-    let bytes = fs::read(path).map_err(|error| {
-        InstallerError::request_read(format!("installer request: {error}"))
+pub(super) fn execute_request(path: &Path) -> Result<serde_json::Value, InstallerError> {
+    let bytes = fs::read(path)
+        .map_err(|error| InstallerError::request_read(format!("installer request: {error}")))?;
+    let request: InstallerRequest = serde_json::from_slice(&bytes).map_err(|error| {
+        InstallerError::request_decode(format!("installer request JSON: {error}"))
     })?;
-    let request: InstallerRequest = serde_json::from_slice(&bytes)
-        .map_err(|error| {
-            InstallerError::request_decode(format!(
-                "installer request JSON: {error}"
-            ))
-        })?;
     if request.api_version != API_VERSION {
         return Err(InstallerError::request_validation(
             "unsupported installer request API version".into(),
@@ -55,8 +49,7 @@ pub(super) fn execute_request(
     .count();
     if !matches!(signed_input_count, 0 | 3) {
         return Err(InstallerError::request_validation(
-            "signed release input requires envelope, signature, and trust store"
-                .into(),
+            "signed release input requires envelope, signature, and trust store".into(),
         ));
     }
     if signed_input_count == 3 && request.distribution_path.is_some() {
@@ -88,9 +81,7 @@ pub(super) fn execute_request(
         .or(request.distribution_path.as_deref());
     let distribution = || {
         distribution_path.ok_or_else(|| {
-            InstallerError::request_validation(
-                "operation requires release input".into(),
-            )
+            InstallerError::request_validation("operation requires release input".into())
         })
     };
     match request.operation.as_str() {
@@ -103,9 +94,7 @@ pub(super) fn execute_request(
             )
             .map_err(InstallerError::operation)?;
             serde_json::to_value(result)
-                .map_err(|error| {
-                    InstallerError::serialization(error.to_string())
-                })
+                .map_err(|error| InstallerError::serialization(error.to_string()))
         }
         "install" => {
             let state = install(
@@ -127,28 +116,20 @@ pub(super) fn execute_request(
             }))
         }
         "update" => {
-            let changed = update(
-                &request.root,
-                distribution()?,
-                request.yes,
-            )
-            .map_err(InstallerError::operation)?;
+            let changed = update(&request.root, distribution()?, request.yes)
+                .map_err(InstallerError::operation)?;
             Ok(success_result("updated", changed))
         }
         "uninstall" => {
-            let changed = uninstall(&request.root, request.yes)
-                .map_err(InstallerError::operation)?;
+            let changed =
+                uninstall(&request.root, request.yes).map_err(InstallerError::operation)?;
             Ok(success_result("uninstalled", changed))
         }
         "recover" => {
-            let changed = recover(&request.root, request.yes)
-                .map_err(InstallerError::operation)?;
+            let changed = recover(&request.root, request.yes).map_err(InstallerError::operation)?;
             Ok(success_result("recovered", changed))
         }
-        "verify" => {
-            verify_installation(&request.root)
-                .map_err(InstallerError::operation)
-        }
+        "verify" => verify_installation(&request.root).map_err(InstallerError::operation),
         _ => Err(InstallerError::request_validation(format!(
             "unsupported installer request operation: {}",
             request.operation

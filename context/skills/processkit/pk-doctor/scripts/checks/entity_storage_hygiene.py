@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 import shutil
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -87,6 +88,7 @@ def _rel(repo_root: Path, path: Path) -> str:
         return str(path)
 
 
+@lru_cache(maxsize=None)
 def _load_frontmatter(path: Path) -> dict[str, Any] | None:
     try:
         text = path.read_text(encoding="utf-8")

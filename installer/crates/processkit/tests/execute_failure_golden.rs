@@ -3,8 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-const API_VERSION: &str =
-    "processkit.projectious.work/installer/v1alpha1";
+const API_VERSION: &str = "processkit.projectious.work/installer/v1alpha1";
 
 fn run_case(name: &str) -> (std::process::Output, Value, Value) {
     let case = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -18,8 +17,7 @@ fn run_case(name: &str) -> (std::process::Output, Value, Value) {
     let actual = serde_json::from_slice(&output.stdout)
         .expect("execute failure output must be one JSON object");
     let expected = serde_json::from_slice(
-        &fs::read(case.join("expected.json"))
-            .expect("execute failure expected fixture"),
+        &fs::read(case.join("expected.json")).expect("execute failure expected fixture"),
     )
     .expect("valid expected JSON");
     (output, actual, expected)

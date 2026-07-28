@@ -2,7 +2,7 @@ apiVersion: processkit.projectious.work/distribution/v1alpha1
 kind: Distribution
 metadata:
   name: processkit
-  version: 1.0.0-alpha.3
+  version: 1.0.0-alpha.4
 spec:
   installer:
     protocol: processkit.projectious.work/installer/v1alpha1
