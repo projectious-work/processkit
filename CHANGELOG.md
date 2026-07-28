@@ -5,6 +5,47 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v1.0.0-alpha.4] - 2026-07-28
+
+v1.0.0-alpha.4 reconciles the v1 shipped content boundary, hardens lifecycle
+commands, and completes the documentation foundation for continued alpha
+evaluation. The supported v0 line remains the default release.
+
+### Added
+
+- Added managed content synchronization for v1 schema, runtime, skill, and
+  installer surfaces, with explicit migration evidence.
+- Added lifecycle command coverage for capability, proposition, risk, and
+  skill inspection and transitions.
+- Added the Hugo and Docsy documentation foundation, version navigation, and
+  independently styled v0 and v1 documentation lines.
+
+### Changed
+
+- Reconciled the dogfood and shipped v1 content boundaries while retaining
+  consumer-only release assets under `src/context`.
+- Hardened lifecycle CLI validation, exit behavior, and machine-readable
+  responses.
+- Improved documentation branding, navigation hierarchy, and dark-theme
+  contrast.
+
+### Fixed
+
+- Fixed unresolved live-tree skill dependencies in the release audit.
+- Fixed `pk-doctor` supply-chain workspace detection and repeated
+  frontmatter parsing so the full release gate completes reliably.
+
+### Verification
+
+- `uv run scripts/smoke-test-servers.py`
+- Release audit over both `context` and `src/context`.
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --no-log`
+- `scripts/test-installer-local.sh`
+- `scripts/test-installer-pilot-local.sh`
+- `scripts/build-release-tarball.sh v1.0.0-alpha.4`
+
+---
+
 ## [v1.0.0-alpha.3] - 2026-07-27
 
 v1.0.0-alpha.3 completes the planned v1 ontology and provides the exact,

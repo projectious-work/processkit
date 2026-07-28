@@ -50,6 +50,7 @@ _SKIP_DIRS = {
     "node_modules",
     "dist",
     "build",
+    "target",
     ".pytest_cache",
     ".mypy_cache",
     "__pycache__",

@@ -21,24 +21,20 @@ mod signed_release;
 mod state;
 mod transaction;
 
-use contract::API_VERSION;
 use compatibility::inspect_compatibility;
-use filesystem::{
-    digest, ensure_non_symlink_directory, ensure_regular_file,
-    safe_relative,
-};
+use contract::API_VERSION;
+use filesystem::{digest, ensure_non_symlink_directory, ensure_regular_file, safe_relative};
 use output::pretty_json;
 use planner::{plan, Change};
 use release::verified_release;
 use request::execute_request;
 use signed_release::verify_local_release;
 use state::{
-    validate_installation_state, InstallationState, ManagedAdapterState,
-    OwnedPath, StateRelease,
+    validate_installation_state, InstallationState, ManagedAdapterState, OwnedPath, StateRelease,
 };
 use transaction::{
-    execute_transaction, rollback_journal, validate_recovery_journal,
-    Journal, PendingAction, TransactionAction,
+    execute_transaction, rollback_journal, validate_recovery_journal, Journal, PendingAction,
+    TransactionAction,
 };
 
 #[derive(Parser)]
@@ -411,7 +407,6 @@ fn main() {
     }
 }
 
-
 fn verify_installation(root: &Path) -> Result<serde_json::Value, String> {
     let state_dir = root.join(".processkit");
     if state_dir
@@ -500,7 +495,6 @@ fn verify_installation(root: &Path) -> Result<serde_json::Value, String> {
         }
     }))
 }
-
 
 fn install(
     root: &Path,
@@ -750,10 +744,7 @@ fn recover(root: &Path, yes: bool) -> Result<usize, String> {
     let state_dir = root.join(".processkit");
     let transactions = state_dir.join("transactions");
     match transactions.symlink_metadata() {
-        Ok(_) => ensure_non_symlink_directory(
-            &transactions,
-            "transaction journal directory",
-        )?,
+        Ok(_) => ensure_non_symlink_directory(&transactions, "transaction journal directory")?,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
             return Ok(0);
         }
@@ -763,10 +754,7 @@ fn recover(root: &Path, yes: bool) -> Result<usize, String> {
     }
     let staging_root = state_dir.join(".staging");
     if staging_root.exists() {
-        ensure_non_symlink_directory(
-            &staging_root,
-            "transaction staging directory",
-        )?;
+        ensure_non_symlink_directory(&staging_root, "transaction staging directory")?;
     }
     let mut recovered = 0;
     for entry in fs::read_dir(&transactions).map_err(|error| error.to_string())? {
@@ -810,8 +798,7 @@ fn recover(root: &Path, yes: bool) -> Result<usize, String> {
         let state_is_old = state_sha256 == journal.old_state_sha256;
         if journal.phase == "committed" || state_is_new {
             fs::remove_file(&journal_path).map_err(|error| error.to_string())?;
-            let _ =
-                fs::remove_dir_all(staging_root.join(transaction));
+            let _ = fs::remove_dir_all(staging_root.join(transaction));
             recovered += 1;
             continue;
         }
@@ -1318,19 +1305,14 @@ fn validate_operation_root(root: &Path) -> Result<(), String> {
     if state_dir.exists()
         && state_dir
             .symlink_metadata()
-            .map_err(|error| {
-                format!("installer state directory: {error}")
-            })?
+            .map_err(|error| format!("installer state directory: {error}"))?
             .file_type()
             .is_symlink()
     {
-        return Err(
-            "installer state directory must not be a symlink".into(),
-        );
+        return Err("installer state directory must not be a symlink".into());
     }
     Ok(())
 }
-
 
 fn acquire_lock(root: &Path, operation: &str) -> Result<OperationLock, String> {
     let state_dir = root.join(".processkit");
@@ -1446,5 +1428,4 @@ mod tests {
         assert!(!safe_relative("context/./skills"));
         assert!(!safe_relative("context/\0skills"));
     }
-
 }

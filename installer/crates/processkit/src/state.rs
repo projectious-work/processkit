@@ -53,17 +53,12 @@ pub(super) struct ManagedAdapterState {
     pub(super) created_mcp_servers: bool,
 }
 
-pub(super) fn validate_installation_state(
-    state: &InstallationState,
-) -> Result<(), String> {
+pub(super) fn validate_installation_state(state: &InstallationState) -> Result<(), String> {
     if state.api_version != API_VERSION {
         return Err("unsupported installer state version".into());
     }
     if state.release.name.trim().is_empty()
-        || semver::Version::parse(
-            state.release.version.trim_start_matches('v'),
-        )
-        .is_err()
+        || semver::Version::parse(state.release.version.trim_start_matches('v')).is_err()
         || !valid_sha256(&state.release.manifest_sha256)
     {
         return Err("installer state has invalid release provenance".into());
@@ -78,9 +73,7 @@ pub(super) fn validate_installation_state(
                 "managed-three-way" | "managed-keys" | "shared"
             )
         {
-            return Err(
-                "installer state contains an invalid owned path".into(),
-            );
+            return Err("installer state contains an invalid owned path".into());
         }
     }
     let mut adapter_paths = HashSet::new();
@@ -91,14 +84,10 @@ pub(super) fn validate_installation_state(
             || !adapter_paths.insert(adapter.path.as_str())
             || !valid_sha256(&adapter.catalog_sha256)
             || adapter.managed_keys.iter().any(|(key, digest)| {
-                key.is_empty()
-                    || key.chars().any(char::is_control)
-                    || !valid_sha256(digest)
+                key.is_empty() || key.chars().any(char::is_control) || !valid_sha256(digest)
             })
         {
-            return Err(
-                "installer state contains an invalid managed adapter".into(),
-            );
+            return Err("installer state contains an invalid managed adapter".into());
         }
     }
     Ok(())

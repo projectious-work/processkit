@@ -1,9 +1,7 @@
 //! Verification of signed local release metadata and bound assets.
 
 use crate::contract::API_VERSION;
-use crate::filesystem::{
-    digest, ensure_regular_file, safe_relative, valid_sha256,
-};
+use crate::filesystem::{digest, ensure_regular_file, safe_relative, valid_sha256};
 use crate::release::verified_release;
 use ed25519_dalek::pkcs8::{DecodePublicKey, EncodePublicKey};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
@@ -220,27 +218,22 @@ pub(super) fn verify_local_release(
     signature_path: &Path,
     trust_store_path: &Path,
 ) -> Result<VerifiedReleaseEvidence, String> {
-    let envelope_bytes = fs::read(envelope_path)
-        .map_err(|error| format!("release envelope: {error}"))?;
-    let envelope: LocalReleaseEnvelope =
-        serde_json::from_slice(&envelope_bytes)
-            .map_err(|error| format!("release envelope JSON: {error}"))?;
-    if envelope.api_version
-        != "processkit.projectious.work/local-release/v1alpha1"
+    let envelope_bytes =
+        fs::read(envelope_path).map_err(|error| format!("release envelope: {error}"))?;
+    let envelope: LocalReleaseEnvelope = serde_json::from_slice(&envelope_bytes)
+        .map_err(|error| format!("release envelope JSON: {error}"))?;
+    if envelope.api_version != "processkit.projectious.work/local-release/v1alpha1"
         || envelope.kind != "LocalRelease"
         || envelope.release.name != "processkit"
         || envelope.signing.algorithm != "Ed25519"
     {
         return Err("unsupported local release envelope".into());
     }
-    semver::Version::parse(
-        envelope.release.version.trim_start_matches('v'),
-    )
-    .map_err(|error| format!("release version is not semantic: {error}"))?;
+    semver::Version::parse(envelope.release.version.trim_start_matches('v'))
+        .map_err(|error| format!("release version is not semantic: {error}"))?;
     if !safe_relative(&envelope.archive.file)
         || envelope.archive.file.contains('/')
-        || envelope.archive.file
-            != format!("processkit-{}.tar.gz", envelope.release.version)
+        || envelope.archive.file != format!("processkit-{}.tar.gz", envelope.release.version)
         || !valid_sha256(&envelope.archive.sha256)
         || envelope.archive.size == 0
         || envelope.archive.top_level_directory
@@ -251,29 +244,23 @@ pub(super) fn verify_local_release(
         || !safe_relative(&envelope.provenance.file)
         || !valid_sha256(&envelope.descriptor.sha256)
         || !valid_sha256(&envelope.provenance.sha256)
-        || envelope.provenance.generated_for_tag
-            != envelope.release.version
+        || envelope.provenance.generated_for_tag != envelope.release.version
         || !valid_sha256(&envelope.signing.key_id)
     {
         return Err("local release envelope contains an unsafe field".into());
     }
-    if envelope.descriptor.file
-        != ".processkit/installer/release-descriptor.json"
+    if envelope.descriptor.file != ".processkit/installer/release-descriptor.json"
         || envelope.provenance.file != "PROVENANCE.toml"
         || envelope.installer_assets.is_empty()
     {
-        return Err(
-            "local release envelope has an incomplete release identity"
-                .into(),
-        );
+        return Err("local release envelope has an incomplete release identity".into());
     }
 
-    let trust_bytes = fs::read(trust_store_path)
-        .map_err(|error| format!("local trust store: {error}"))?;
+    let trust_bytes =
+        fs::read(trust_store_path).map_err(|error| format!("local trust store: {error}"))?;
     let trust: LocalTrustStore = serde_json::from_slice(&trust_bytes)
         .map_err(|error| format!("local trust store JSON: {error}"))?;
-    if trust.api_version
-        != "processkit.projectious.work/local-trust/v1alpha1"
+    if trust.api_version != "processkit.projectious.work/local-trust/v1alpha1"
         || trust.kind != "TrustStore"
     {
         return Err("unsupported local trust store".into());
@@ -286,9 +273,7 @@ pub(super) fn verify_local_release(
                 && key.algorithm == "Ed25519"
                 && key.status == "active"
         })
-        .ok_or(
-            "release signing key is not active in the local trust store",
-        )?;
+        .ok_or("release signing key is not active in the local trust store")?;
     if !safe_relative(&trusted.public_key_file) {
         return Err("local trust store contains an unsafe key path".into());
     }
@@ -297,8 +282,8 @@ pub(super) fn verify_local_release(
         .ok_or("local trust store has no parent directory")?;
     let key_path = trust_root.join(&trusted.public_key_file);
     ensure_regular_file(trust_root, &key_path, "trusted public key")?;
-    let key_pem = fs::read_to_string(&key_path)
-        .map_err(|error| format!("trusted public key: {error}"))?;
+    let key_pem =
+        fs::read_to_string(&key_path).map_err(|error| format!("trusted public key: {error}"))?;
     let key = VerifyingKey::from_public_key_pem(&key_pem)
         .map_err(|error| format!("trusted public key: {error}"))?;
     let der = key
@@ -306,13 +291,10 @@ pub(super) fn verify_local_release(
         .map_err(|error| format!("trusted public key DER: {error}"))?;
     let actual_key_id = format!("{:x}", Sha256::digest(der.as_bytes()));
     if actual_key_id != envelope.signing.key_id {
-        return Err(
-            "trusted public key ID does not match the release envelope"
-                .into(),
-        );
+        return Err("trusted public key ID does not match the release envelope".into());
     }
-    let signature_bytes = fs::read(signature_path)
-        .map_err(|error| format!("release signature: {error}"))?;
+    let signature_bytes =
+        fs::read(signature_path).map_err(|error| format!("release signature: {error}"))?;
     let signature = Signature::from_slice(&signature_bytes)
         .map_err(|error| format!("release signature: {error}"))?;
     key.verify(&envelope_bytes, &signature)
@@ -341,10 +323,10 @@ pub(super) fn verify_local_release(
             || !valid_sha256(&installer.sha256)
             || installer.size == 0
             || installer.target.is_empty()
-            || !installer.target.bytes().all(|byte| {
-                byte.is_ascii_alphanumeric()
-                    || matches!(byte, b'-' | b'_' | b'.')
-            })
+            || !installer
+                .target
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.'))
             || installer.file
                 != format!(
                     "processkit-{}-{}",
@@ -353,21 +335,12 @@ pub(super) fn verify_local_release(
             || !targets.insert(installer.target.as_str())
             || !files.insert(installer.file.as_str())
         {
-            return Err(
-                "local release envelope contains unsafe installer evidence"
-                    .into(),
-            );
+            return Err("local release envelope contains unsafe installer evidence".into());
         }
         let installer_path = envelope_root.join(&installer.file);
-        ensure_regular_file(
-            envelope_root,
-            &installer_path,
-            "installer executable",
-        )?;
+        ensure_regular_file(envelope_root, &installer_path, "installer executable")?;
         if fs::metadata(&installer_path)
-            .map_err(|error| {
-                format!("installer executable metadata: {error}")
-            })?
+            .map_err(|error| format!("installer executable metadata: {error}"))?
             .len()
             != installer.size
         {
@@ -388,9 +361,7 @@ pub(super) fn verify_local_release(
         descriptor_sha256: envelope.descriptor.sha256,
         provenance_file: envelope.provenance.file,
         provenance_sha256: envelope.provenance.sha256,
-        provenance_generated_for_tag: envelope
-            .provenance
-            .generated_for_tag,
+        provenance_generated_for_tag: envelope.provenance.generated_for_tag,
         installer_asset_count: envelope.installer_assets.len(),
         key_id: envelope.signing.key_id,
     })
