@@ -1,0 +1,52 @@
+name: Bug report
+description: Something in processkit behaves differently from what the docs say.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing. If this is a security issue, please use
+        [private reporting](https://github.com/projectious-work/processkit/security/advisories/new)
+        instead — see [SECURITY.md](../../SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: processkit version
+      description: The release tag, or the commit if you are running from a checkout.
+      placeholder: v0.28.4
+    validations:
+      required: true
+  - type: dropdown
+    id: line
+    attributes:
+      label: Release line
+      options:
+        - "v0.x (released)"
+        - "v1.x (prerelease)"
+    validations:
+      required: true
+  - type: input
+    id: harness
+    attributes:
+      label: Agent harness
+      description: Which MCP client was driving processkit, if any.
+      placeholder: Claude Code / Codex CLI / none, called the server directly
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: Quote the documentation or contract you are going by, if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: Include the tool call or command, and the error verbatim.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: The shortest path from a fresh project to the failure.
