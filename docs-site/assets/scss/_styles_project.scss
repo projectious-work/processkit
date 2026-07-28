@@ -706,10 +706,37 @@ kbd {
     }
   }
 
+  // Section links resolve through the `a` rule above, but page links do not:
+  // Docsy styles them with `.td-sidebar-nav .td-sidebar-link__page`, which is
+  // (0,2,0) and outranks it. Left alone, every leaf entry in the tree takes
+  // `--bs-body-color` — a variable this project deliberately reassigns on dark
+  // surfaces, and one Bootstrap rewrites per colour mode. Two different
+  // sources deciding the colour of one tree is how the sidebar ends up
+  // unreadable when either of them moves.
+  //
+  // State it once, at matching weight, for both kinds of entry.
+  .td-sidebar-link__page,
+  .td-sidebar-link__section {
+    color: var(--pj-slate-11);
+  }
+
+  .td-sidebar-link__page:hover,
+  .td-sidebar-link__section:hover {
+    color: var(--pj-orange-10);
+  }
+
   .td-sidebar-link.active,
-  a.active {
+  a.active,
+  .td-sidebar-link__page.active,
+  .td-sidebar-link__section.active {
     font-weight: 600;
     color: var(--pj-midnight-11);
+  }
+
+  // The active leaf's label is wrapped in its own span; keep it on the anchor
+  // colour rather than letting anything reassign it.
+  .td-sidebar-nav-active-item {
+    color: inherit;
   }
 }
 
