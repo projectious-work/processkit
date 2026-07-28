@@ -1,4 +1,37 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Installer and releases on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/</link><description>Recent content in Installer and releases on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/installer/index.xml" rel="self" type="application/rss+xml"/><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</guid><description>&lt;p&gt;aibox should treat processkit as an opaque local executable. It creates a
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Installer and releases on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/</link><description>Recent content in Installer and releases on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/installer/index.xml" rel="self" type="application/rss+xml"/><item><title>CLI and automation interfaces</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli/</guid><description>&lt;p&gt;processkit has two deliberately separate command interfaces. Human lifecycle
+commands optimize for reviewable output and safe project operation. The
+machine interface uses a versioned JSON request and result contract for aibox
+and other automation.&lt;/p&gt;
+&lt;h2 id="current-v1-alpha-commands"&gt;Current v1 alpha commands&lt;/h2&gt;
+&lt;p&gt;The current prerelease supports:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit plan
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit install
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit update
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit verify
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit verify-release
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit inspect-compatibility
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit recover
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit uninstall
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit execute --request request.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;plan&lt;/code&gt;, &lt;code&gt;install&lt;/code&gt;, &lt;code&gt;update&lt;/code&gt;, and compatibility inspection currently require an
+explicit local release directory through &lt;code&gt;--distribution&lt;/code&gt;. Mutating commands
+also require &lt;code&gt;--yes&lt;/code&gt;. This makes the alpha suitable for offline use and for
+callers that already acquire and verify an exact release.&lt;/p&gt;</description></item><item><title>Python MCP runtime contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</guid><description>&lt;p&gt;Python is an intentional processkit runtime dependency. It implements the MCP
+servers; it is not required by the Model Context Protocol itself. The native
+Rust CLI owns installation and lifecycle safety and will provide diagnostics
+and optional process supervision without reimplementing MCP behavior.&lt;/p&gt;
+&lt;h2 id="current-alpha-requirements"&gt;Current alpha requirements&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Python 3.10 or newer must be discoverable by &lt;code&gt;uv&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;uv&lt;/code&gt; must support PEP 723 script metadata.&lt;/li&gt;
+&lt;li&gt;The installed gateway script and processkit shared Python library must be
+readable from the selected project root.&lt;/li&gt;
+&lt;li&gt;The first dependency resolution may require network access.&lt;/li&gt;
+&lt;li&gt;Direct &lt;code&gt;uv run&lt;/code&gt; startup remains a supported compatibility and development
+interface.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Every shipped MCP entry point declares its Python constraint and dependencies
+in a PEP 723 block. The gateway currently declares:&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</guid><description>&lt;p&gt;aibox should treat processkit as an opaque local executable. It creates a
 versioned JSON request, invokes &lt;code&gt;processkit execute --request &amp;lt;path&amp;gt;&lt;/code&gt;, parses
 the single JSON result, and does not duplicate processkit ownership policy.&lt;/p&gt;
 &lt;p&gt;The producer integration checkpoint is the schema bundle under

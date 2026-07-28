@@ -841,7 +841,25 @@ manage it is false economy.&lt;/p&gt;</description></item><item><title>Design &a
 &lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Designing a new REST API or extending an existing one, reviewing API contracts, writing OpenAPI/Swagger docs, choosing pagination or versioning strategies, defining error response formats.
 &lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;Bash&lt;/code&gt; &lt;code&gt;Read&lt;/code&gt; &lt;code&gt;Write&lt;/code&gt;
 &lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;rest-conventions.md&lt;/code&gt;, &lt;code&gt;openapi-patterns.md&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;Key capabilities:&lt;/p&gt;</description></item><item><title>WorkItem</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</guid><description>&lt;p&gt;A unit of work — task, story, bug, epic, spike, or chore. The primary
+&lt;p&gt;Key capabilities:&lt;/p&gt;</description></item><item><title>CLI and automation interfaces</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli/</guid><description>&lt;p&gt;processkit has two deliberately separate command interfaces. Human lifecycle
+commands optimize for reviewable output and safe project operation. The
+machine interface uses a versioned JSON request and result contract for aibox
+and other automation.&lt;/p&gt;
+&lt;h2 id="current-v1-alpha-commands"&gt;Current v1 alpha commands&lt;/h2&gt;
+&lt;p&gt;The current prerelease supports:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit plan
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit install
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit update
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit verify
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit verify-release
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit inspect-compatibility
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit recover
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit uninstall
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit execute --request request.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;plan&lt;/code&gt;, &lt;code&gt;install&lt;/code&gt;, &lt;code&gt;update&lt;/code&gt;, and compatibility inspection currently require an
+explicit local release directory through &lt;code&gt;--distribution&lt;/code&gt;. Mutating commands
+also require &lt;code&gt;--yes&lt;/code&gt;. This makes the alpha suitable for offline use and for
+callers that already acquire and verify an exact release.&lt;/p&gt;</description></item><item><title>WorkItem</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</guid><description>&lt;p&gt;A unit of work — task, story, bug, epic, spike, or chore. The primary
 work-tracking primitive in processkit.&lt;/p&gt;
 &lt;table&gt;
  &lt;thead&gt;
@@ -2262,7 +2280,22 @@ result in one call.&lt;/li&gt;
 the process.&lt;/li&gt;
 &lt;li&gt;Attach gates to concrete v2 surfaces via &lt;code&gt;workitem-gate&lt;/code&gt; or
 &lt;code&gt;scope-gate&lt;/code&gt; Bindings. Legacy &lt;code&gt;process-gate&lt;/code&gt; Bindings are migration-only.&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>Migration</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/migration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/migration/</guid><description>&lt;p&gt;A pending, in-progress, or applied transition between two upstream
+&lt;/ul&gt;</description></item><item><title>Python MCP runtime contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</guid><description>&lt;p&gt;Python is an intentional processkit runtime dependency. It implements the MCP
+servers; it is not required by the Model Context Protocol itself. The native
+Rust CLI owns installation and lifecycle safety and will provide diagnostics
+and optional process supervision without reimplementing MCP behavior.&lt;/p&gt;
+&lt;h2 id="current-alpha-requirements"&gt;Current alpha requirements&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Python 3.10 or newer must be discoverable by &lt;code&gt;uv&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;uv&lt;/code&gt; must support PEP 723 script metadata.&lt;/li&gt;
+&lt;li&gt;The installed gateway script and processkit shared Python library must be
+readable from the selected project root.&lt;/li&gt;
+&lt;li&gt;The first dependency resolution may require network access.&lt;/li&gt;
+&lt;li&gt;Direct &lt;code&gt;uv run&lt;/code&gt; startup remains a supported compatibility and development
+interface.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Every shipped MCP entry point declares its Python constraint and dependencies
+in a PEP 723 block. The gateway currently declares:&lt;/p&gt;</description></item><item><title>Migration</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/migration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/migration/</guid><description>&lt;p&gt;A pending, in-progress, or applied transition between two upstream
 processkit versions. Migrations are generated by &lt;code&gt;aibox sync&lt;/code&gt; and
 represent the delta an agent must apply to bring the project&amp;rsquo;s
 &lt;code&gt;context/&lt;/code&gt; up to date.&lt;/p&gt;

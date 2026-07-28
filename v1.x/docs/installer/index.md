@@ -14,6 +14,8 @@ signed processkit distribution rather than hard-coded into downstream
 tools.
 
 - [Installer contract](./contract/)
+- [CLI and automation interfaces](./cli/)
+- [Python MCP runtime contract](./runtime/)
 - [Local release production](./local-release/)
 - [Threat model](./threat-model/)
 - [v0 compatibility](./v0-compatibility/)
@@ -23,6 +25,8 @@ tools.
 
 Section pages:
 
+- [CLI and automation interfaces](/processkit/v1.x/docs/installer/cli/): Human lifecycle commands and the stable automation protocol.
+- [Python MCP runtime contract](/processkit/v1.x/docs/installer/runtime/): Supported Python, uv, dependency, cache, and transport behavior.
 - [](/processkit/v1.x/docs/installer/aibox-integration/)
 - [](/processkit/v1.x/docs/installer/contract/)
 - [](/processkit/v1.x/docs/installer/local-release/)
