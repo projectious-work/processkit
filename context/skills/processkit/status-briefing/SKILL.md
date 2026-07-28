@@ -1,12 +1,12 @@
 ---
 name: status-briefing
 description: |
-  Generates a concise status briefing from project context after resolving active migrations by default — synthesizing current state, open decisions, key risks, and today's priority actions into a focused session-start orientation. Use at the start of a session when asked for a briefing, "what's the state of things", "catch me up", "pk-resume", or "what should I focus on today." Info-only mode is opt-in.
+  Generates a concise status briefing after session-start reconciliation — synthesizing current state, open decisions, key risks, and today's priority actions. Use at session start, for "pk-resume", a briefing, catch-up, or today's focus.
 metadata:
   processkit:
     apiVersion: processkit.projectious.work/v2
     id: SKILL-status-briefing
-    version: "1.0.0"
+    version: "1.1.0"
     created: 2026-04-08T00:00:00Z
     category: processkit
     layer: 4
@@ -17,14 +17,12 @@ metadata:
         purpose: Pull current project state when generating the today's priorities section.
       - skill: workitem-management
         purpose: Query in-progress and next-up WorkItems for the today's priorities section.
-      - skill: migration-management
-        purpose: Resolve pending and in-progress migrations before normal work.
-      - skill: pk-doctor
-        purpose: Include current repository health in the session-start briefing.
+      - skill: project-reconciliation
+        purpose: Reconcile the session-start migration and health queues and inventory repository collaboration state.
     commands:
       - name: pk-resume
         args: ""
-        description: "Resolve active migrations, then generate a session-start orientation"
+        description: "Run session-start reconciliation, then generate a session-start orientation"
 ---
 
 # Status Briefing
@@ -35,10 +33,10 @@ A status briefing is a single-screen orientation that a person or
 agent reads at the start of a session to immediately know what
 matters today. It distills project context, backlog state, open
 decisions, and upcoming deadlines into a focused, actionable
-summary. Before writing the briefing, `/pk-resume` resolves active
-migration work by default so the user does not need a second "please
-resolve migrations" turn. The reader should be ready to start working
-within three minutes of reading it.
+summary. Before writing the briefing, `/pk-resume` runs
+`pk-reconcile session-start` so the user does not need separate requests to
+resolve migrations, check health, and inspect GitHub state. The reader should
+be ready to start working within three minutes of reading it.
 
 ## Overview
 
@@ -49,69 +47,22 @@ Pull from these sources in order, weighting by freshness:
 ```
 1. session.handover LogEntry  — most recent; weight by age (see below)
 2. Active interlocutor — current speaker via team-manager, if configured
-3. Migrations (pending + in-progress) — upgrade work via migration-management
-4. Repository health — `run_pk_doctor()` severity totals, action totals,
-   and top actionable findings
+3. Session-start reconciliation — migration results, pk-doctor totals and
+   action totals, plus GitHub issue and pull-request inventory
 5. WorkItems (in_progress + blocked)  — current state via workitem-management
 6. session.standup LogEntries — last 1-3 entries since last handover
 7. git log --oneline -5       — recent commits
-8. GitHub collaboration state — open issues and PRs when available
-9. DecisionRecords (proposed) — open decisions needing attention
-10. Any time-sensitive flags  — deadlines, blockers, scheduled events
+8. DecisionRecords (proposed) — open decisions needing attention
+9. Any time-sensitive flags  — deadlines, blockers, scheduled events
 ```
 
-For the repository-health source, call the direct `run_pk_doctor` MCP
-tool. Consume both `totals` and `action_totals`; severity downgrade is
-not a valid resolution. A clean session start means there are no
-unresolved findings with `action_required: true`, or every actionable
-finding has an explicit disposition: fixed, migrated, archived, linked
-to a tracking item, deferred with a reason, or accepted as a policy
-exception. Include only severity totals, action totals, and the
-highest-priority actionable findings in the briefing. If
-`run_pk_doctor` is not available while `pk-doctor` is enabled or routed,
-surface that as an MCP configuration defect; do not silently fall back
-to a local script path unless the user explicitly asks for an
-implementation-level workaround.
-
-For the migrations source, remediation is the default. Query
-pending and in-progress migrations before writing the briefing:
-
-1. If there are no active migrations, include no migration section unless
-   the user asked for full detail.
-2. If migrations are active and the user did not explicitly ask for
-   info-only/report-only/dry-run/no-fix behavior, resolve them before
-   the briefing. Use migration-management MCP tools rather than moving
-   files by hand.
-3. Continue or apply unambiguous migrations whose metadata and body make
-   the intended change clear and whose checks pass.
-4. Reject malformed no-op or empty-baseline migrations when the defect is
-   explicit and the rejection reason is clear.
-5. Ask the user before applying or rejecting any migration that changes
-   policy, deletes data, has unclear intent, conflicts with local work,
-   or needs a product/domain decision.
-6. After resolving, re-query migrations and include the final active
-   count plus any blocked items in the briefing.
-
-If the user explicitly says "info only", "dry run", "report only",
-"check only", "no fixes", or equivalent, do not resolve migrations.
-In that mode, surface pending/in-progress migrations before normal
-priorities and state the concrete next action for each one.
-
-For the GitHub collaboration source, first confirm the working directory
-is inside a git repository and has a GitHub remote. If `gh` is installed
-and authenticated, gather:
-
-```
-gh issue list --state open --limit 20 \
-  --json number,title,labels,assignees,updatedAt,url
-gh pr list --state open --limit 20 \
-  --json number,title,isDraft,reviewDecision,headRefName,updatedAt,url
-```
-
-Optionally add `gh pr status` when the user asks for review state or
-when PR ownership is important. If `gh` is unavailable, unauthenticated,
-or network access fails, include a short note that GitHub state could not
-be checked and continue from local/processkit state.
+Run `pk-reconcile session-start` before reading the remaining sources. It
+resolves unambiguous migrations and safe health findings, then returns the
+pk-doctor severity/action totals and GitHub issue/PR inventory. It does not
+close issues or merge pull requests at session start; report those candidates
+and invoke `pk-reconcile all` only when the user requests full reconciliation.
+For `info-only`, `dry-run`, `report-only`, `check-only`, or `no fixes`, invoke
+the reconciliation skill in report-only mode and include its next actions.
 
 **Handover staleness rule** — before using the most recent `session.handover`
 entry, check `details.session_date` and weight accordingly:

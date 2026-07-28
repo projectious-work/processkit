@@ -2526,6 +2526,44 @@ with tempfile.TemporaryDirectory() as tmp:
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
+    submodule = root / "vendor" / "theme"
+    submodule.mkdir(parents=True)
+    (submodule / ".git").write_text(
+        "gitdir: ../../../.git/modules/vendor/theme\n",
+        encoding="utf-8",
+    )
+    (submodule / "package.json").write_text(
+        '{"name": "vendored-theme"}\n',
+        encoding="utf-8",
+    )
+    findings = _supply_chain_run({"repo_root": root, "since_files": None})
+    missing = [
+        item for item in findings
+        if item.id == "supply_chain.missing-lockfile"
+    ]
+    check("21d: git submodule manifests are skipped", not missing)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    member = root / "installer" / "crates" / "processkit"
+    member.mkdir(parents=True)
+    (root / "installer" / "Cargo.lock").write_text(
+        "# workspace lockfile\n",
+        encoding="utf-8",
+    )
+    (member / "Cargo.toml").write_text(
+        "[package]\nname = \"processkit\"\nversion = \"1.0.0\"\n",
+        encoding="utf-8",
+    )
+    findings = _supply_chain_run({"repo_root": root, "since_files": None})
+    missing = [
+        item for item in findings
+        if item.id == "supply_chain.missing-lockfile"
+    ]
+    check("21e: workspace Cargo.lock covers member crate", not missing)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
     policy = root / ".processkit"
     policy.mkdir()
     (policy / "supply-chain-policy.yaml").write_text(
@@ -2583,14 +2621,14 @@ with tempfile.TemporaryDirectory() as tmp:
 
     core_findings = _supply_chain_run({"repo_root": root, "since_files": None})
     ids = {item.id for item in core_findings}
-    check("21d: denied license emits ERROR", "supply_chain.denied-license" in ids)
-    check("21e: review license emits WARN", "supply_chain.review-license" in ids)
-    check("21f: unknown license emits WARN", "supply_chain.unknown-license" in ids)
-    check("21g: skipped scanner is WARN", "supply_chain.scanner-skipped" in ids)
-    check("21h: high severity vulnerability emits ERROR", "supply_chain.high-or-critical-vulnerability" in ids)
-    check("21i: outdated signal remains advisory", "supply_chain.advisory-outdated" in ids)
-    check("21j: supplier quality remains advisory", "supply_chain.advisory-supplier-quality" in ids)
-    check("21k: sbom files are reported", "supply_chain.sbom-found" in ids)
+    check("21f: denied license emits ERROR", "supply_chain.denied-license" in ids)
+    check("21g: review license emits WARN", "supply_chain.review-license" in ids)
+    check("21h: unknown license emits WARN", "supply_chain.unknown-license" in ids)
+    check("21i: skipped scanner is WARN", "supply_chain.scanner-skipped" in ids)
+    check("21j: high severity vulnerability emits ERROR", "supply_chain.high-or-critical-vulnerability" in ids)
+    check("21k: outdated signal remains advisory", "supply_chain.advisory-outdated" in ids)
+    check("21l: supplier quality remains advisory", "supply_chain.advisory-supplier-quality" in ids)
+    check("21m: sbom files are reported", "supply_chain.sbom-found" in ids)
 
 # ---------------------------------------------------------------------------
 # Test 22: sensitive_data — deterministic findings plus briefing

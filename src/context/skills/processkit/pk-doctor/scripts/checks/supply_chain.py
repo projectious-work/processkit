@@ -179,15 +179,42 @@ def _iter_files(root: Path, names: set[str]) -> list[Path]:
         return found
 
     for dirpath, dirnames, filenames in os.walk(root):
+        current = Path(dirpath)
         dirnames[:] = [
             d
             for d in dirnames
             if d not in _SKIP_DIRS and not d.startswith(".")
+            and not (current / d / ".git").exists()
         ]
         for filename in filenames:
             if _normalize(filename) in wanted:
                 found.append(Path(dirpath) / filename)
     return sorted(found)
+
+
+def _has_lockfile(
+    manifest: Path,
+    lockfiles: set[str],
+    repo_root: Path,
+    *,
+    search_ancestors: bool = False,
+) -> bool:
+    """Return whether a manifest is covered by a nearby lockfile.
+
+    Cargo workspaces commonly keep one lockfile above member crates. Other
+    ecosystems retain the stricter same-directory rule because an unrelated
+    ancestor lockfile does not necessarily cover a nested application.
+    """
+    directories = [manifest.parent]
+    if search_ancestors:
+        directories.extend(
+            parent
+            for parent in manifest.parent.parents
+            if parent == repo_root or repo_root in parent.parents
+        )
+    return any((directory / lock).is_file()
+               for directory in directories
+               for lock in lockfiles)
 
 
 def _collect_inventory(
@@ -211,7 +238,12 @@ def _collect_inventory(
         for manifest_name in rule["manifests"]:
             for manifest in manifest_index.get(manifest_name, []):
                 counts[family] = counts.get(family, 0) + 1
-                if not any((manifest.parent / lock).exists() for lock in rule["lockfiles"]):
+                if not _has_lockfile(
+                    manifest,
+                    rule["lockfiles"],
+                    repo_root,
+                    search_ancestors=family == "Rust",
+                ):
                     missing.append((manifest, family))
 
     pyproject_paths = manifest_index.get("pyproject.toml", [])
