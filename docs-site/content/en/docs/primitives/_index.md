@@ -1,6 +1,10 @@
 ---
-title: "Overview"
-weight: 1
+title: "Primitives"
+linkTitle: "Primitives"
+weight: 30
+description: "The project-memory entity model — the shape of a WorkItem, a DecisionRecord, an Artifact, and the rest of the durable record."
+aliases:
+  - "/docs/primitives/overview/"
 ---
 
 processkit provides a compact set of process primitives as universal

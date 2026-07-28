@@ -1,6 +1,10 @@
 ---
-title: "Overview"
-weight: 1
+title: "Skills"
+linkTitle: "Skills"
+weight: 40
+description: "The skill package format, the category hierarchy, and the shipped catalog."
+aliases:
+  - "/docs/skills/overview/"
 ---
 
 A **skill** in processkit is a directory containing agent instructions,

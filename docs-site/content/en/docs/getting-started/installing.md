@@ -107,7 +107,7 @@ The shipped tiers are:
 - `research` — data, ML, and research-heavy workflows.
 - `product` — product, design, frontend, and product-ops workflows.
 
-See [Packages](../packages/overview) for details.
+See [Packages](../packages/) for details.
 
 ## Verify
 

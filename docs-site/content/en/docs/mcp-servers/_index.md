@@ -1,6 +1,10 @@
 ---
-title: "Overview"
-weight: 1
+title: "MCP Servers"
+linkTitle: "MCP Servers"
+weight: 70
+description: "The gateway, per-skill servers, and the legacy aggregate bridge — plus what each harness supports."
+aliases:
+  - "/docs/mcp-servers/overview/"
 ---
 
 processkit skills ship **Python MCP servers** that give agents

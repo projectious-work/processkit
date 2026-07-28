@@ -197,12 +197,12 @@ Full documentation lives at
 
 | Section | Contents |
 |---------|----------|
-| [Getting Started](https://projectious-work.github.io/processkit/docs/getting-started/overview/) | Manual and managed install paths, first entity |
-| [Primitives](https://projectious-work.github.io/processkit/docs/primitives/overview/) | The entity model, formats, state machines, relationships |
-| [Skills](https://projectious-work.github.io/processkit/docs/skills/overview/) | Skill package format, hierarchy, and the full catalog |
-| [Packages](https://projectious-work.github.io/processkit/docs/packages/overview/) | The five tiers, from minimal bootstrap to managed workspace |
-| [MCP Servers](https://projectious-work.github.io/processkit/docs/mcp-servers/overview/) | Gateway, daemon, stdio-proxy, aggregate, per-skill layouts |
-| [Reference](https://projectious-work.github.io/processkit/docs/reference/v2-contracts/) | apiVersion policy, ID formats, migration, privacy, v2 contracts |
+| [Getting Started](https://projectious-work.github.io/processkit/docs/getting-started/) | Manual and managed install paths, first entity |
+| [Primitives](https://projectious-work.github.io/processkit/docs/primitives/) | The entity model, formats, state machines, relationships |
+| [Skills](https://projectious-work.github.io/processkit/docs/skills/) | Skill package format, hierarchy, and the full catalog |
+| [Packages](https://projectious-work.github.io/processkit/docs/packages/) | The five tiers, from minimal bootstrap to managed workspace |
+| [MCP Servers](https://projectious-work.github.io/processkit/docs/mcp-servers/) | Gateway, daemon, stdio-proxy, aggregate, per-skill layouts |
+| [Reference](https://projectious-work.github.io/processkit/docs/reference/) | apiVersion policy, ID formats, migration, privacy, v2 contracts |
 | [Development](https://projectious-work.github.io/processkit/docs/development/) | Planning documents for the v1.0 rebuild |
 
 Preview locally with `./scripts/serve-docs-local.sh` (Hugo + Docsy, port 1313);
@@ -211,6 +211,17 @@ validate with `./scripts/check-docs-local.sh`.
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 - [License](LICENSE)
+
+## Contributing
+
+Issues and pull requests are welcome. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md) for the branch model, the skill and
+primitive checklists, and the release procedure — and note that this
+repository runs its checks locally rather than in CI, so a PR should say which
+ones you ran.
+
+By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
+Security issues go through [SECURITY.md](SECURITY.md), not the issue tracker.
 
 ## License
 
