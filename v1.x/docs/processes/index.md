@@ -1,10 +1,12 @@
-# Overview
+# Processes
+
+> Process templates that sequence skills into a repeatable workflow.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
-
-# Processes — Overview
 
 A v1 **Process** was a declarative workflow definition: a sequence of
 steps, roles, gates, and definition of done. In the

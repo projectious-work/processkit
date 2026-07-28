@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Artifact
-
 A completed deliverable — document, dataset, build, diagram, URL,
 runbook, slide deck, or any other produced output. A catalogue record,
 not a work-tracking entity.

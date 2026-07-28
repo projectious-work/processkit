@@ -1,10 +1,12 @@
-# Overview
+# Packages
+
+> The package tiers, from a minimal bootstrap context to a fully managed workspace.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
-
-# Packages — Overview
 
 Packages are opinionated bundles of skills. Pick one tier as your
 starting point, then add or remove skills through your installer or local
@@ -116,3 +118,13 @@ processkit packages are content, not environment machinery:
 - **Independent release cadence.** Content (skills, primitives) changes
   more frequently than infrastructure. Keeping packages in processkit
   lets users update process content without changing their harness.
+
+---
+
+Section pages:
+
+- [minimal](/processkit/v1.x/docs/packages/minimal/)
+- [managed](/processkit/v1.x/docs/packages/managed/)
+- [software](/processkit/v1.x/docs/packages/software/)
+- [research](/processkit/v1.x/docs/packages/research/)
+- [product](/processkit/v1.x/docs/packages/product/)

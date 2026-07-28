@@ -1,10 +1,12 @@
-# Overview
+# Primitives
+
+> The project-memory entity model — the shape of a WorkItem, a DecisionRecord, an Artifact, and the rest of the durable record.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
-
-# Primitives — Overview
 
 processkit provides a compact set of process primitives as universal
 building blocks. The v2 direction keeps durable project facts in the
@@ -91,3 +93,30 @@ write-path validation.
 - [Format](./format) — the `apiVersion/kind/metadata/spec` contract.
 - [State Machines](./state-machines) — default machines and how to override.
 - [Relationships](./relationships) — cross-references and Bindings.
+
+---
+
+Section pages:
+
+- [Entity File Format](/processkit/v1.x/docs/primitives/format/)
+- [State Machines](/processkit/v1.x/docs/primitives/state-machines/)
+- [Relationships](/processkit/v1.x/docs/primitives/relationships/)
+- [WorkItem](/processkit/v1.x/docs/primitives/workitem/)
+- [LogEntry](/processkit/v1.x/docs/primitives/logentry/)
+- [DecisionRecord](/processkit/v1.x/docs/primitives/decisionrecord/)
+- [Artifact](/processkit/v1.x/docs/primitives/artifact/)
+- [Note](/processkit/v1.x/docs/primitives/note/)
+- [Actor](/processkit/v1.x/docs/primitives/actor/)
+- [Role](/processkit/v1.x/docs/primitives/role/)
+- [Binding](/processkit/v1.x/docs/primitives/binding/)
+- [Scope](/processkit/v1.x/docs/primitives/scope/)
+- [Discussion](/processkit/v1.x/docs/primitives/discussion/)
+- [Gate](/processkit/v1.x/docs/primitives/gate/)
+- [Migration](/processkit/v1.x/docs/primitives/migration/)
+- [Schedule](/processkit/v1.x/docs/primitives/schedule/)
+- [Constraint](/processkit/v1.x/docs/primitives/constraint/)
+- [Category](/processkit/v1.x/docs/primitives/category/)
+- [CrossReference](/processkit/v1.x/docs/primitives/cross-reference/)
+- [Context](/processkit/v1.x/docs/primitives/context-entity/)
+- [Process](/processkit/v1.x/docs/primitives/process-entity/)
+- [StateMachine](/processkit/v1.x/docs/primitives/statemachine/)

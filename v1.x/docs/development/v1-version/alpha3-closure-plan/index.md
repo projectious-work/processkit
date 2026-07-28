@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Alpha.3 Closure Plan
-
 `v1.0.0-alpha.3` is the feature-complete pre-cutover target. It does not
 authorize a merge to `main`; v0.x remains the stable line until the owner
 accepts the final ontology, migration, CLI, and aibox evidence.

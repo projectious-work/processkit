@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Your First Entity
-
 Create your first WorkItem and see how processkit's entity format works.
 
 ## Prerequisites
@@ -101,7 +99,7 @@ automatically.
 
 ## Next
 
-- Explore the [primitives](../primitives/overview) to see the durable
+- Explore the [primitives](../primitives/) to see the durable
   entity model.
-- Browse the [skill catalog](../skills/overview) to see what else the
+- Browse the [skill catalog](../skills/) to see what else the
   agent can do.

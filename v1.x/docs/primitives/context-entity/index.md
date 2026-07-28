@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Context
-
 A structured narrative document for long-lived ambient knowledge —
 owner identity, working style, team relationships, grooming reports,
 situational briefings. The value lives in the Markdown body.

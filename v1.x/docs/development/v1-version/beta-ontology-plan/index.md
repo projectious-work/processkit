@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Beta Ontology Plan
-
 ## Target
 
 The beta target is 62 of the ontology's 89 concepts, or 69.7%. This keeps the

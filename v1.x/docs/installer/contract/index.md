@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# v1 installer contract
-
 The standalone installer consumes only a release directory or verified archive
 explicitly supplied by its caller. It has no built-in release URL, package
 layout, MCP inventory, or harness policy.

@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# processkit v1.0 Start Assessment
-
 Analyzed: 2026-07-04
 
 Sources considered:

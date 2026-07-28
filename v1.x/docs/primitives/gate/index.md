@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Gate
-
 A validation checkpoint in a process. Gates define what must be true
 before work can proceed. Evaluation results are LogEntries —
 `gate.passed`, `gate.failed`, or `gate.waived`.

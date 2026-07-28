@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Category
-
 A classification axis with a closed set of allowed values — priority
 levels, bug severity tiers, product areas. Use Category when the valid
 values are defined and enforced; use freeform labels for open-ended

@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Product Specification
-
 ## Purpose
 
 processkit v1.0 provides a durable process substrate for agentic

@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Observability Skills
-
 Skills for logging, monitoring, tracing, and alerting in production systems.
 
 ---

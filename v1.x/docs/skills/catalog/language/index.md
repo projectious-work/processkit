@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Language Skills
-
 Language-specific conventions, patterns, and best practices.
 
 ---

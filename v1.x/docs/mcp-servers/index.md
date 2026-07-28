@@ -1,10 +1,12 @@
-# Overview
+# MCP Servers
+
+> The gateway, per-skill servers, and the legacy aggregate bridge — plus what each harness supports.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
-
-# MCP Servers — Overview
 
 processkit skills ship **Python MCP servers** that give agents
 mechanical correctness on top of probabilistic reasoning. For entity
@@ -242,3 +244,10 @@ processkit tool calls and use `find_skill` when a processkit skill might
 apply. Entity reads go through `index-management`; entity writes go
 through the owning management server. If a state change is not already
 logged by the MCP write tool, append a LogEntry with `event-log`.
+
+---
+
+Section pages:
+
+- [Harness Compatibility](/processkit/v1.x/docs/mcp-servers/harness-compatibility/)
+- [](/processkit/v1.x/docs/mcp-servers/claude-code/)

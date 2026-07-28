@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Development
-
 This section is the open planning area for processkit evolution. It
 separates the current v0 prototype from the planned processkit v1.0
 rebuild so readers can distinguish shipped behavior from future design.

@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Scope
-
 A bounded container for work — sprint, milestone, quarter, release, or
 project. Scopes give WorkItems, Processes, and Constraints a shared
 time and goal boundary.

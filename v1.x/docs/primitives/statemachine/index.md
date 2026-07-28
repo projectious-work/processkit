@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# StateMachine
-
 Legacy v1 state/transition graph entity. In the SmoothTiger/SmoothRiver
 v2 direction, processkit no longer presents `StateMachine` as a
 first-class shipped entity surface. State machines still exist as

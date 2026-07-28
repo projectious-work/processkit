@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Data & Analytics Skills
-
 Skills for data science, data engineering, and analytics workflows.
 
 ---

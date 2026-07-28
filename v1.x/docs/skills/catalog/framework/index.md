@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Framework & SEO Skills
-
 Skills for specific frameworks and search engine optimization.
 
 ---

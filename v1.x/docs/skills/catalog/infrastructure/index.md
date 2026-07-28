@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Infrastructure Skills
-
 Skills for containers, orchestration, networking, system administration, and CI/CD.
 
 ---

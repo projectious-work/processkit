@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# aibox v1 installer integration
-
 aibox should treat processkit as an opaque local executable. It creates a
 versioned JSON request, invokes `processkit execute --request <path>`, parses
 the single JSON result, and does not duplicate processkit ownership policy.

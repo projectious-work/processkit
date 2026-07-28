@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Local release operation
-
 The v1 release path is local, agent-first, and human-operable. It does not
 require GitHub Actions, a hosted CI service, or a publication provider.
 Agents and humans invoke the same repository scripts.

@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Architecture Skills
-
 Skills for software architecture, design patterns, and system design.
 
 ---

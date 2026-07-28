@@ -1,10 +1,12 @@
-# Overview
+# Skills
+
+> The skill package format, the category hierarchy, and the shipped catalog.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
-
-# Skills — Overview
 
 A **skill** in processkit is a directory containing agent instructions,
 examples, assets, and optionally a Python MCP server. Skills are how processkit
@@ -115,3 +117,11 @@ metadata from the SQLite index.
 - [Format](./format) — the full skill package format specification
 - [Hierarchy](./hierarchy) — the layered skill graph (`uses:` relationships)
 - [Catalog → Process](./catalog/process) — start browsing skills by category
+
+---
+
+Section pages:
+
+- [Skill Package Format](/processkit/v1.x/docs/skills/format/)
+- [Skill Hierarchy](/processkit/v1.x/docs/skills/hierarchy/)
+- [Catalog](/processkit/v1.x/docs/skills/catalog/): Every shipped skill, grouped by category.

@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# v0 Reconciliation
-
 ## Baseline
 
 The v1 line forked from `v0.27.1`. Reconciliation therefore compares the

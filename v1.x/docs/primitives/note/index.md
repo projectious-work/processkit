@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Note
-
 A Zettelkasten capture layer for ideas, observations, and references.
 Notes exist on a spectrum from raw capture (fleeting) to permanent
 knowledge (insight).

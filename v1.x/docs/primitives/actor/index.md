@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Actor
-
 A participant in the project — human, AI agent, or automated service.
 Actors are assigned to WorkItems, named in DecisionRecords, and bound
 to Roles.

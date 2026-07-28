@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Discussion
-
 A structured, multi-turn conversation exploring an open question.
 Discussions capture the back-and-forth of deliberation and produce
 (or fail to produce) DecisionRecords as outcomes.

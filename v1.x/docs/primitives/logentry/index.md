@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# LogEntry
-
 An immutable, append-only record of something that happened. The audit
 trail primitive — never updated or deleted after creation.
 

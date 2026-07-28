@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Skill Package Format
-
 This page summarizes the skill package format. The authoritative source is
 [`src/context/skills/FORMAT.md`](https://github.com/projectious-work/processkit/blob/main/src/context/skills/FORMAT.md)
 in the processkit repo.

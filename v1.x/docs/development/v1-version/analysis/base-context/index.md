@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# processkit v1.0 Base Context
-
 Created: 2026-07-04
 
 This historical base context was created for the processkit v1.0 redesign.

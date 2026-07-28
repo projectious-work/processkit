@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Version Migration
-
 processkit is distributed as versioned releases. Upgrading pinned
 versions is deliberate: processkit does not silently rewrite a consuming
 project's context. A version bump should produce a `Migration` document

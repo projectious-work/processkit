@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Architecture Specification
-
 ## System Role
 
 processkit v1.0 is a provider-neutral process and memory substrate. It

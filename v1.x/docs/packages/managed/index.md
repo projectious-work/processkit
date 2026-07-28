@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# managed
-
 **Intended for:** small teams with a shared backlog and process cadences.
 **Extends:** `minimal`
 

@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Landscape Note
-
 ## Positioning
 
 processkit v1.0 is not trying to replace agent runtimes, memory

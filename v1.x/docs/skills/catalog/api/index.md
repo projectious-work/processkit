@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# API & Integration Skills
-
 Skills for API design, protocol patterns, and system integration.
 
 ---

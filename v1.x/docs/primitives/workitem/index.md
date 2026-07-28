@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# WorkItem
-
 A unit of work — task, story, bug, epic, spike, or chore. The primary
 work-tracking primitive in processkit.
 

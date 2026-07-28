@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# software
-
 **Intended for:** software engineering teams building production systems.
 **Extends:** `managed`
 

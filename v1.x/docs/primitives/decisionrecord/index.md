@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# DecisionRecord
-
 A significant choice — architectural, product, or process — recorded with
 its context, rationale, and alternatives. The ADR (Architecture Decision
 Record) pattern as a first-class entity.

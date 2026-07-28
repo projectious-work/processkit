@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Installing
-
 processkit is distributed as versioned GitHub releases. Each release
 contains a tarball with the shipped `context/`, `.processkit/`, and
 agent entrypoint files. You can install those files manually or let a
@@ -110,7 +108,7 @@ The shipped tiers are:
 - `research` — data, ML, and research-heavy workflows.
 - `product` — product, design, frontend, and product-ops workflows.
 
-See [Packages](../packages/overview) for details.
+See [Packages](../packages/) for details.
 
 ## Verify
 

@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Binding
-
 A scoped or time-bounded relationship between two entities — the
 junction-table pattern promoted to a first-class primitive. Use when a
 relationship has scope, time, or its own attributes; use a frontmatter

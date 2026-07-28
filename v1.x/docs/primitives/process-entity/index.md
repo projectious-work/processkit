@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Process
-
 Legacy v1 declarative workflow definition. In the
 SmoothTiger/SmoothRiver v2 direction, processkit no longer presents
 `Process` as a first-class shipped entity surface. Use a

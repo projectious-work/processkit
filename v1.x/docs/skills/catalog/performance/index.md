@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Performance Skills
-
 Skills for performance analysis, optimization, and load testing.
 
 ---

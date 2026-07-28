@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Skill Hierarchy
-
 Process-primitive skills form a strict layered DAG. A skill's `spec.uses`
 field may only reference skills in **lower** layers. Cycles are validation
 errors.

@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# OKF Compatibility Analysis
-
 Source:
 
 - Google Cloud announcement, "Introducing the Open Knowledge Format",

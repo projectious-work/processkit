@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Role
-
 A named set of responsibilities. Roles are descriptive — they document
 who is expected to do what, but do not enforce access control.
 

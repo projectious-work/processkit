@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Analysis Archive
-
 These documents preserve the reasoning that led to the current v1.0
 planning set.
 

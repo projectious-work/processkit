@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# ID Formats
-
 Entity IDs in processkit have the shape `<PREFIX>-<id-body>`. The prefix
 is determined by the primitive kind and is not configurable. The id-body
 has two independent configuration axes: **format** and **slug**.

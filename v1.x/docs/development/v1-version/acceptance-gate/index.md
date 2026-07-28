@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Acceptance Gate
-
 ## Purpose
 
 The acceptance gate keeps the v1.0 rebuild measurable. The RFC's

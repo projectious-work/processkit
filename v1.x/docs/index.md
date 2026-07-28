@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# processkit
-
 **processkit is a provider-neutral process layer for AI-assisted
 software projects.**
 
@@ -67,15 +65,15 @@ MCP configuration, and supervise a gateway daemon in a devcontainer.
 
 ## Where to go next
 
-- [Getting Started](./getting-started/overview) explains the manual and
+- [Getting Started](./getting-started/) explains the manual and
   managed install paths.
-- [MCP Servers](./mcp-servers/overview) explains gateway, daemon,
+- [MCP Servers](./mcp-servers/) explains gateway, daemon,
   stdio-proxy, aggregate, and per-skill layouts.
-- [Primitives](./primitives/overview) explains the project-memory
+- [Primitives](./primitives/) explains the project-memory
   entity model.
-- [Skills](./skills/overview) explains the skill package format and
+- [Skills](./skills/) explains the skill package format and
   catalog.
-- [Packages](./packages/overview) explains the five package tiers.
+- [Packages](./packages/) explains the five package tiers.
 - [v2 Contracts](./reference/v2-contracts) explains the current
   deliverable boundary and demoted legacy primitives.
 
@@ -94,62 +92,12 @@ release checks into executable gates.
 
 Section pages:
 
-- [apiVersion Policy](/processkit/v1.x/docs/reference/apiversion-policy/)
-- [Overview](/processkit/v1.x/docs/getting-started/overview/)
-- [Overview](/processkit/v1.x/docs/mcp-servers/overview/)
-- [Overview](/processkit/v1.x/docs/packages/overview/)
-- [Overview](/processkit/v1.x/docs/primitives/overview/)
-- [Overview](/processkit/v1.x/docs/processes/overview/)
-- [Overview](/processkit/v1.x/docs/skills/overview/)
-- [Entity File Format](/processkit/v1.x/docs/primitives/format/)
-- [Harness Compatibility](/processkit/v1.x/docs/mcp-servers/harness-compatibility/)
-- [ID Formats](/processkit/v1.x/docs/reference/id-formats/)
-- [Installing](/processkit/v1.x/docs/getting-started/installing/)
-- [minimal](/processkit/v1.x/docs/packages/minimal/)
-- [Process Skills](/processkit/v1.x/docs/skills/catalog/process/)
-- [Skill Package Format](/processkit/v1.x/docs/skills/format/)
-- [managed](/processkit/v1.x/docs/packages/managed/)
-- [Skill Hierarchy](/processkit/v1.x/docs/skills/hierarchy/)
-- [State Machines](/processkit/v1.x/docs/primitives/state-machines/)
-- [Version Migration](/processkit/v1.x/docs/reference/migration/)
-- [Your First Entity](/processkit/v1.x/docs/getting-started/first-entity/)
-- [Language Skills](/processkit/v1.x/docs/skills/catalog/language/)
-- [Privacy Tiers](/processkit/v1.x/docs/reference/privacy/)
-- [Relationships](/processkit/v1.x/docs/primitives/relationships/)
-- [software](/processkit/v1.x/docs/packages/software/)
-- [Infrastructure Skills](/processkit/v1.x/docs/skills/catalog/infrastructure/)
-- [research](/processkit/v1.x/docs/packages/research/)
-- [v2 Contracts](/processkit/v1.x/docs/reference/v2-contracts/)
-- [Architecture Skills](/processkit/v1.x/docs/skills/catalog/architecture/)
-- [product](/processkit/v1.x/docs/packages/product/)
-- [Design & Visual Skills](/processkit/v1.x/docs/skills/catalog/design/)
-- [Data & Analytics Skills](/processkit/v1.x/docs/skills/catalog/data/)
-- [AI & ML Skills](/processkit/v1.x/docs/skills/catalog/ai-ml/)
-- [API & Integration Skills](/processkit/v1.x/docs/skills/catalog/api/)
-- [WorkItem](/processkit/v1.x/docs/primitives/workitem/)
-- [LogEntry](/processkit/v1.x/docs/primitives/logentry/)
-- [Security Skills](/processkit/v1.x/docs/skills/catalog/security/)
-- [DecisionRecord](/processkit/v1.x/docs/primitives/decisionrecord/)
-- [Observability Skills](/processkit/v1.x/docs/skills/catalog/observability/)
-- [Artifact](/processkit/v1.x/docs/primitives/artifact/)
-- [Database Skills](/processkit/v1.x/docs/skills/catalog/database/)
-- [Note](/processkit/v1.x/docs/primitives/note/)
-- [Actor](/processkit/v1.x/docs/primitives/actor/)
-- [Role](/processkit/v1.x/docs/primitives/role/)
-- [Binding](/processkit/v1.x/docs/primitives/binding/)
-- [Scope](/processkit/v1.x/docs/primitives/scope/)
-- [Discussion](/processkit/v1.x/docs/primitives/discussion/)
-- [Gate](/processkit/v1.x/docs/primitives/gate/)
-- [Migration](/processkit/v1.x/docs/primitives/migration/)
-- [Schedule](/processkit/v1.x/docs/primitives/schedule/)
-- [Constraint](/processkit/v1.x/docs/primitives/constraint/)
-- [Category](/processkit/v1.x/docs/primitives/category/)
-- [CrossReference](/processkit/v1.x/docs/primitives/cross-reference/)
-- [Context](/processkit/v1.x/docs/primitives/context-entity/)
-- [Process](/processkit/v1.x/docs/primitives/process-entity/)
-- [StateMachine](/processkit/v1.x/docs/primitives/statemachine/)
-- [Installer and releases](/processkit/v1.x/docs/installer/): Standalone installation, trust, compatibility, and integrations.
-- [](/processkit/v1.x/docs/mcp-servers/claude-code/)
 - [Development](/processkit/v1.x/docs/development/): Active planning documents for processkit evolution.
-- [Framework & SEO Skills](/processkit/v1.x/docs/skills/catalog/framework/)
-- [Performance Skills](/processkit/v1.x/docs/skills/catalog/performance/)
+- [Getting Started](/processkit/v1.x/docs/getting-started/): Install processkit by hand from a release archive or through a managed installer, then create your first entity.
+- [Primitives](/processkit/v1.x/docs/primitives/): The project-memory entity model — the shape of a WorkItem, a DecisionRecord, an Artifact, and the rest of the durable record.
+- [Skills](/processkit/v1.x/docs/skills/): The skill package format, the category hierarchy, and the shipped catalog.
+- [Packages](/processkit/v1.x/docs/packages/): The package tiers, from a minimal bootstrap context to a fully managed workspace.
+- [Processes](/processkit/v1.x/docs/processes/): Process templates that sequence skills into a repeatable workflow.
+- [Installer and releases](/processkit/v1.x/docs/installer/): Standalone installation, trust, compatibility, and integrations.
+- [MCP Servers](/processkit/v1.x/docs/mcp-servers/): The gateway, per-skill servers, and the legacy aggregate bridge — plus what each harness supports.
+- [Reference](/processkit/v1.x/docs/reference/): apiVersion policy, ID formats, the migration guide, privacy conventions, and the v2 deliverable boundary.

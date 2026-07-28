@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Skills on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/</link><description>Recent content in Skills on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/skills/index.xml" rel="self" type="application/rss+xml"/><item><title>Skill Package Format</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/format/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/skills/format/</guid><description>&lt;p&gt;This page summarizes the skill package format. The authoritative source is
+&lt;a href="https://github.com/projectious-work/processkit/blob/main/src/context/skills/FORMAT.md" rel="noopener"&gt;&lt;code&gt;src/context/skills/FORMAT.md&lt;/code&gt;&lt;/a&gt;
+
+in the processkit repo.&lt;/p&gt;
+&lt;h2 id="directory-layout"&gt;Directory layout&lt;/h2&gt;
+&lt;pre tabindex="0"&gt;&lt;code&gt;src/context/skills/&amp;lt;category&amp;gt;/&amp;lt;skill-name&amp;gt;/
+ SKILL.md ← required — three-level agent instructions
+ INDEX.md ← optional — human-readable overview
+ examples/ ← recommended — example outputs
+ templates/ ← recommended — YAML frontmatter entity scaffolds
+ references/ ← optional — deep-dive reference material
+ mcp/ ← optional — Python MCP server
+ server.py
+ mcp-config.json
+ README.md
+&lt;/code&gt;&lt;/pre&gt;&lt;h2 id="required-frontmatter-fields"&gt;Required frontmatter fields&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Field&lt;/th&gt;
+ &lt;th&gt;Purpose&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;apiVersion&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Always &lt;code&gt;processkit.projectious.work/v1&lt;/code&gt; at v0.x.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;kind&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Always &lt;code&gt;Skill&lt;/code&gt;.&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;metadata.id&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;SKILL-&amp;lt;skill-name&amp;gt;&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;metadata.name&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Kebab-case; matches directory name&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;metadata.version&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Semver, independent of processkit release&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;metadata.created&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;ISO 8601 UTC&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;spec.description&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;One-sentence summary (shown in listings)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;spec.category&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;One of the registered categories&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;spec.layer&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Integer 0–4, or &lt;code&gt;null&lt;/code&gt; for non-process skills&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="optional-fields"&gt;Optional fields&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Field&lt;/th&gt;
+ &lt;th&gt;Purpose&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;spec.uses&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Skills this depends on (strictly lower layer for process skills)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;spec.provides&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;What the agent gains: primitive kinds, MCP tools, templates&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;spec.when_to_use&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;Trigger description for routing&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;&lt;code&gt;spec.replaces&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;ID of a skill this one overrides (for community forks)&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id="categories"&gt;Categories&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;process&lt;/code&gt;, &lt;code&gt;language&lt;/code&gt;, &lt;code&gt;framework&lt;/code&gt;, &lt;code&gt;infrastructure&lt;/code&gt;, &lt;code&gt;architecture&lt;/code&gt;,
+&lt;code&gt;design&lt;/code&gt;, &lt;code&gt;data&lt;/code&gt;, &lt;code&gt;ai&lt;/code&gt;, &lt;code&gt;api&lt;/code&gt;, &lt;code&gt;security&lt;/code&gt;, &lt;code&gt;observability&lt;/code&gt;, &lt;code&gt;database&lt;/code&gt;,
+&lt;code&gt;performance&lt;/code&gt;, &lt;code&gt;meta&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Skill Hierarchy</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/hierarchy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/skills/hierarchy/</guid><description>&lt;p&gt;Process-primitive skills form a strict layered DAG. A skill&amp;rsquo;s &lt;code&gt;spec.uses&lt;/code&gt;
+field may only reference skills in &lt;strong&gt;lower&lt;/strong&gt; layers. Cycles are validation
+errors.&lt;/p&gt;
+&lt;h2 id="the-layers"&gt;The layers&lt;/h2&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Layer&lt;/th&gt;
+ &lt;th&gt;Role&lt;/th&gt;
+ &lt;th&gt;Skills&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;0&lt;/td&gt;
+ &lt;td&gt;Foundation&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;index-management&lt;/code&gt;, &lt;code&gt;id-management&lt;/code&gt;, &lt;code&gt;event-log&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;1&lt;/td&gt;
+ &lt;td&gt;Primitive management&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;role-management&lt;/code&gt;, &lt;code&gt;actor-profile&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;2&lt;/td&gt;
+ &lt;td&gt;Core entities&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;workitem-management&lt;/code&gt;, &lt;code&gt;decision-record&lt;/code&gt;, &lt;code&gt;scope-management&lt;/code&gt;, &lt;code&gt;category-management&lt;/code&gt;, &lt;code&gt;cross-reference-management&lt;/code&gt;, &lt;code&gt;binding-management&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;3&lt;/td&gt;
+ &lt;td&gt;Workflow policy&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;gate-management&lt;/code&gt;, &lt;code&gt;constraint-management&lt;/code&gt;; legacy/migration guidance for &lt;code&gt;process-management&lt;/code&gt;, &lt;code&gt;state-machine-management&lt;/code&gt;, &lt;code&gt;schedule-management&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;4&lt;/td&gt;
+ &lt;td&gt;Cross-cutting&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;discussion-management&lt;/code&gt;, &lt;code&gt;metrics-management&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Layer 0 has three skills with one intra-layer edge.&lt;/strong&gt; &lt;code&gt;index-management&lt;/code&gt;
+and &lt;code&gt;id-management&lt;/code&gt; are the absolute foundation — they depend on nothing.
+&lt;code&gt;event-log&lt;/code&gt; is also Layer 0 but &lt;code&gt;uses: [index-management, id-management]&lt;/code&gt;,
+so it conceptually sits &amp;ldquo;atop&amp;rdquo; them. This is the only intra-layer edge in
+the entire hierarchy. The strict-downward rule applies to Layers 1+ unchanged.&lt;/p&gt;</description></item></channel></rss>

@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# AI & Machine Learning Skills
-
 Skills for AI/ML development, RAG pipelines, prompt engineering, and model evaluation.
 
 ---

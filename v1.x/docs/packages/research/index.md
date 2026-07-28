@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# research
-
 **Intended for:** research teams, data science projects, ML engineering.
 **Extends:** `managed`
 

@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# product
-
 **Intended for:** end-to-end product development teams.
 **Extends:** `software`
 

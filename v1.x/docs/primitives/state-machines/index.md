@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# State Machines
-
 Primitives with lifecycle (WorkItem, DecisionRecord, Scope, Discussion)
 are governed by state machines. processkit ships default machines that
 projects can override.

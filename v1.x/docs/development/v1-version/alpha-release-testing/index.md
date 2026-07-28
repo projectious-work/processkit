@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Alpha Release Testing
-
 ## Release Policy
 
 The current test release is the explicit prerelease

@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# processkit v1.0 RFC Analysis
-
 Source: `processkit-v1.0-rfc-draft.md`
 
 Analyzed: 2026-07-04

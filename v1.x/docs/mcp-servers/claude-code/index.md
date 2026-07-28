@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# processkit on Claude Code — harness reference
-
 This document captures how processkit surfaces itself inside the Claude
 Code harness: which payloads land at session start vs. each turn, which
 hooks fire, and which Claude Code settings we recommend for any

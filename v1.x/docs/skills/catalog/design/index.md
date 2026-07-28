@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Design & Visual Skills
-
 Skills for frontend development, visual design, and creative production.
 
 ---

@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Entity File Format
-
 Every processkit primitive entity is stored as a Markdown file with a
 YAML frontmatter block. The format is inspired by Kubernetes objects —
 stable, versioned, and easy to parse.

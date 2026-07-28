@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Security Skills
-
 Skills for application security, authentication, and threat analysis.
 
 ---

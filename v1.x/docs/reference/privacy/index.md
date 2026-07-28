@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Privacy Tiers
-
 processkit recognizes three privacy tiers for entities under `context/`.
 The tier is declared via an optional `privacy:` field in `metadata` and
 enforced by directory layout + a `.gitignore` rule.

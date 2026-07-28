@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Database Skills
-
 Skills for SQL, data modeling, NoSQL patterns, and schema migrations.
 
 ---

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>v1.0 Version on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/</link><description>Recent content in v1.0 Version on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/index.xml" rel="self" type="application/rss+xml"/><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;h1 id="acceptance-gate"&gt;Acceptance Gate&lt;/h1&gt;
-&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>v1.0 Version on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/</link><description>Recent content in v1.0 Version on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/index.xml" rel="self" type="application/rss+xml"/><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
 &lt;p&gt;The acceptance gate keeps the v1.0 rebuild measurable. The RFC&amp;rsquo;s
 81-criterion gate is authoritative for final cutover; the staged lists
 below are working summaries for alpha-first execution.&lt;/p&gt;
@@ -71,8 +70,7 @@ below are working summaries for alpha-first execution.&lt;/p&gt;
  &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;A5 is the proof phase: model a real ART end to end and run one full PI
-cycle through planning, execution, demo, and inspect-and-adapt.&lt;/p&gt;</description></item><item><title>Alpha Release Testing</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</guid><description>&lt;h1 id="alpha-release-testing"&gt;Alpha Release Testing&lt;/h1&gt;
-&lt;h2 id="release-policy"&gt;Release Policy&lt;/h2&gt;
+cycle through planning, execution, demo, and inspect-and-adapt.&lt;/p&gt;</description></item><item><title>Alpha Release Testing</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</guid><description>&lt;h2 id="release-policy"&gt;Release Policy&lt;/h2&gt;
 &lt;p&gt;The current test release is the explicit prerelease
 &lt;code&gt;v1.0.0-alpha.3&lt;/code&gt;. It is merged from &lt;code&gt;v1.x-dev&lt;/code&gt; into
 &lt;code&gt;v1.x-pre-release&lt;/code&gt;, validated there, and tagged there.&lt;/p&gt;
@@ -88,8 +86,7 @@ installers must opt in to an exact prerelease.&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;uv run scripts/generate-mcp-manifest.py --check
 &lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;scripts/test-installer-local.sh
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Also run &lt;code&gt;pk-doctor&lt;/code&gt; and the release audit. The release build must validate
-the committed MCP manifest and must not rewrite tracked release metadata.&lt;/p&gt;</description></item><item><title>Alpha Scope</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-scope/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-scope/</guid><description>&lt;h1 id="alpha-scope"&gt;Alpha Scope&lt;/h1&gt;
-&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+the committed MCP manifest and must not rewrite tracked release metadata.&lt;/p&gt;</description></item><item><title>Alpha Scope</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-scope/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-scope/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
 &lt;p&gt;The alpha proves that the v1.0 model improves real agentic project work
 before the project implements the full 89-concept ontology.&lt;/p&gt;
 &lt;p&gt;The alpha is a vertical slice, not a miniature final release.&lt;/p&gt;
@@ -114,16 +111,26 @@ before the project implements the full 89-concept ontology.&lt;/p&gt;
 &lt;p&gt;Four prerequisite parent concepts are required to model that slice honestly:
 &lt;code&gt;Actor&lt;/code&gt; for &lt;code&gt;TeamMember&lt;/code&gt;, &lt;code&gt;Container&lt;/code&gt; for &lt;code&gt;Scope&lt;/code&gt;, and &lt;code&gt;Command&lt;/code&gt; plus &lt;code&gt;Event&lt;/code&gt;
 for &lt;code&gt;Migration&lt;/code&gt;. The generated alpha contract therefore covers 18 of the
-ontology&amp;rsquo;s 89 concepts while preserving the 14-concept product scope.&lt;/p&gt;</description></item><item><title>Alpha.3 Closure Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha3-closure-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha3-closure-plan/</guid><description>&lt;h1 id="alpha3-closure-plan"&gt;Alpha.3 Closure Plan&lt;/h1&gt;
-&lt;p&gt;&lt;code&gt;v1.0.0-alpha.3&lt;/code&gt; is the feature-complete pre-cutover target. It does not
+ontology&amp;rsquo;s 89 concepts while preserving the 14-concept product scope.&lt;/p&gt;</description></item><item><title>Alpha.3 Closure Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha3-closure-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha3-closure-plan/</guid><description>&lt;p&gt;&lt;code&gt;v1.0.0-alpha.3&lt;/code&gt; is the feature-complete pre-cutover target. It does not
 authorize a merge to &lt;code&gt;main&lt;/code&gt;; v0.x remains the stable line until the owner
 accepts the final ontology, migration, CLI, and aibox evidence.&lt;/p&gt;
 &lt;p&gt;The machine-readable gate ledger is
 &lt;code&gt;docs-site/data/v1_alpha3_gates.yaml&lt;/code&gt;. It tracks all 81 original v1 criteria
 and all 15 installer criteria from issue #118. A criterion may be &lt;code&gt;met&lt;/code&gt;,
 &lt;code&gt;partial&lt;/code&gt;, &lt;code&gt;missing&lt;/code&gt;, &lt;code&gt;owner-review&lt;/code&gt;, or &lt;code&gt;deferred-post-cutover&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Alpha.3 closes the pre-cutover implementation work:&lt;/p&gt;</description></item><item><title>Architecture Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</guid><description>&lt;h1 id="architecture-specification"&gt;Architecture Specification&lt;/h1&gt;
-&lt;h2 id="system-role"&gt;System Role&lt;/h2&gt;
+&lt;p&gt;Alpha.3 closes the pre-cutover implementation work:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;complete the 89-concept ontology and 70 executable schema contracts;&lt;/li&gt;
+&lt;li&gt;provide operational MCP, index, transition, and event parity;&lt;/li&gt;
+&lt;li&gt;migrate representative manual-v0 and aibox-managed corpora;&lt;/li&gt;
+&lt;li&gt;execute the retained agent-scenario and first-ART suites;&lt;/li&gt;
+&lt;li&gt;finish installer planning, structured reconciliation, security, and
+Codex/Claude parity;&lt;/li&gt;
+&lt;li&gt;validate the exact release artifact in a bare aibox container; and&lt;/li&gt;
+&lt;li&gt;publish reproducible, signed, exact-pinnable release assets.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;The G6 owner decision and every R7 criterion remain outside alpha.3 because
+they require an actual cutover and post-cutover observation.&lt;/p&gt;</description></item><item><title>Architecture Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</guid><description>&lt;h2 id="system-role"&gt;System Role&lt;/h2&gt;
 &lt;p&gt;processkit v1.0 is a provider-neutral process and memory substrate. It
 stores canonical project entities in git-backed files and exposes safe
 read/write behavior through MCP servers.&lt;/p&gt;
@@ -140,8 +147,7 @@ state, governance, and memory; it does not own the agent loop.&lt;/p&gt;
 &lt;p&gt;The full RFC target is 89 concepts. The alpha should implement only a
 small proven subset before expanding. The detailed inventory is captured
 in &lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/"&gt;Ontology Reference&lt;/a&gt;
-.&lt;/p&gt;</description></item><item><title>Beta Ontology Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/beta-ontology-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/beta-ontology-plan/</guid><description>&lt;h1 id="beta-ontology-plan"&gt;Beta Ontology Plan&lt;/h1&gt;
-&lt;h2 id="target"&gt;Target&lt;/h2&gt;
+.&lt;/p&gt;</description></item><item><title>Beta Ontology Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/beta-ontology-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/beta-ontology-plan/</guid><description>&lt;h2 id="target"&gt;Target&lt;/h2&gt;
 &lt;p&gt;The beta target is 62 of the ontology&amp;rsquo;s 89 concepts, or 69.7%. This keeps the
 accepted goal inside the 60–70% range while leaving room to validate the model
 through real workflows before completing the long tail.&lt;/p&gt;
@@ -177,8 +183,11 @@ through real workflows before completing the long tail.&lt;/p&gt;
  &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;The alpha&amp;rsquo;s 18 generated contracts are the first dependency-complete slice of
-this target.&lt;/p&gt;</description></item><item><title>Branch Start Work Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/branch-start-work-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/branch-start-work-plan/</guid><description>&lt;h1 id="branch-start-work-plan"&gt;Branch Start Work Plan&lt;/h1&gt;
-&lt;p&gt;This plan turns the v1.0 documentation set into branch-start execution
+this target.&lt;/p&gt;
+&lt;h2 id="implementation-status"&gt;Implementation Status&lt;/h2&gt;
+&lt;p&gt;The beta inventory is now frozen in
+&lt;code&gt;src/context/schemas/src/registry.yaml&lt;/code&gt; and contains exactly 62 unique
+concepts:&lt;/p&gt;</description></item><item><title>Branch Start Work Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/branch-start-work-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/branch-start-work-plan/</guid><description>&lt;p&gt;This plan turns the v1.0 documentation set into branch-start execution
 work. Phase 0 and Phase 1 are intentionally concrete; later phases are
 rougher and should be refined as evidence arrives.&lt;/p&gt;
 &lt;h2 id="phase-0---branch-foundation"&gt;Phase 0 - Branch Foundation&lt;/h2&gt;
@@ -201,8 +210,7 @@ aibox or GitHub Actions.&lt;/li&gt;
 &lt;li&gt;Record any accepted deviations from the RFC before implementation
 starts.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Exit criteria:&lt;/p&gt;</description></item><item><title>Landscape Note</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/landscape-note/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/landscape-note/</guid><description>&lt;h1 id="landscape-note"&gt;Landscape Note&lt;/h1&gt;
-&lt;h2 id="positioning"&gt;Positioning&lt;/h2&gt;
+&lt;p&gt;Exit criteria:&lt;/p&gt;</description></item><item><title>Landscape Note</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/landscape-note/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/landscape-note/</guid><description>&lt;h2 id="positioning"&gt;Positioning&lt;/h2&gt;
 &lt;p&gt;processkit v1.0 is not trying to replace agent runtimes, memory
 databases, coding agents, or data catalogs. It should be the process
 substrate those systems can use.&lt;/p&gt;
@@ -219,8 +227,7 @@ validates markdown plus YAML frontmatter as an agent-readable exchange
 format. processkit should support OKF import/export, generated indexes,
 and permissive boundary consumption.&lt;/p&gt;
 &lt;p&gt;processkit should not copy OKF&amp;rsquo;s path IDs, untyped links, or prose-only
-logs as canonical semantics.&lt;/p&gt;</description></item><item><title>Ontology Reference</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/</guid><description>&lt;h1 id="ontology-reference"&gt;Ontology Reference&lt;/h1&gt;
-&lt;p&gt;&lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt; is the leading document for the v1.0
+logs as canonical semantics.&lt;/p&gt;</description></item><item><title>Ontology Reference</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/</guid><description>&lt;p&gt;&lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt; is the leading document for the v1.0
 ontology. When older analysis conflicts with this page, the RFC and this
 page win.&lt;/p&gt;
 &lt;h2 id="tpdc-classes"&gt;T/P/D/C Classes&lt;/h2&gt;
@@ -259,8 +266,7 @@ as the same four classes, with the RFC&amp;rsquo;s canonical order written as
  &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;h2 id="counts"&gt;Counts&lt;/h2&gt;
-&lt;p&gt;The v1.0 target is 89 ontology concepts.&lt;/p&gt;</description></item><item><title>Product Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/product-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/product-specification/</guid><description>&lt;h1 id="product-specification"&gt;Product Specification&lt;/h1&gt;
-&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+&lt;p&gt;The v1.0 target is 89 ontology concepts.&lt;/p&gt;</description></item><item><title>Product Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/product-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/product-specification/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
 &lt;p&gt;processkit v1.0 provides a durable process substrate for agentic
 software projects. It gives humans and AI agents a shared project memory
 with typed work, decisions, discussions, artifacts, roles, skills,
@@ -334,8 +340,7 @@ tools without hand-editing canonical context files.&lt;/li&gt;
 indexing, migrations, and pk-doctor before manual dogfood begins.&lt;/li&gt;
 &lt;li&gt;OKF export produces a conformant bundle for public consumption.&lt;/li&gt;
 &lt;li&gt;Existing v0.x evidence can migrate or be explicitly preserved.&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>Test Strategy</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/test-strategy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/test-strategy/</guid><description>&lt;h1 id="test-strategy"&gt;Test Strategy&lt;/h1&gt;
-&lt;p&gt;The current exploratory strategy is to install processkit into a new
+&lt;/ul&gt;</description></item><item><title>Test Strategy</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/test-strategy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/test-strategy/</guid><description>&lt;p&gt;The current exploratory strategy is to install processkit into a new
 aibox project and try workflows manually. That remains useful as a human
 dogfood check, but it is not enough for v1.0. It is not automated, it
 makes aibox a hard dependency, and it cannot prove release-gate criteria
@@ -409,8 +414,7 @@ becoming release prerequisites&lt;/li&gt;
  &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;h2 id="fixture-projects"&gt;Fixture Projects&lt;/h2&gt;
-&lt;p&gt;Use local fixture projects under the test tree:&lt;/p&gt;</description></item><item><title>Tooling Architecture</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/tooling-architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/tooling-architecture/</guid><description>&lt;h1 id="tooling-architecture"&gt;Tooling Architecture&lt;/h1&gt;
-&lt;p&gt;The v1.0 tooling architecture follows the RFC: schemas are generated
+&lt;p&gt;Use local fixture projects under the test tree:&lt;/p&gt;</description></item><item><title>Tooling Architecture</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/tooling-architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/tooling-architecture/</guid><description>&lt;p&gt;The v1.0 tooling architecture follows the RFC: schemas are generated
 from Jinja + YAML sources, writes flow through MCP tools, and indexes are
 extended rather than replaced.&lt;/p&gt;
 &lt;h2 id="mcp-server-shape"&gt;MCP Server Shape&lt;/h2&gt;
@@ -428,8 +432,7 @@ interface queries&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;The gateway can aggregate tools for harness convenience, but tool
 ownership should remain domain-specific so validation and lifecycle rules
-stay close to the schema they enforce.&lt;/p&gt;</description></item><item><title>v0 Reconciliation</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/v0-reconciliation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/v0-reconciliation/</guid><description>&lt;h1 id="v0-reconciliation"&gt;v0 Reconciliation&lt;/h1&gt;
-&lt;h2 id="baseline"&gt;Baseline&lt;/h2&gt;
+stay close to the schema they enforce.&lt;/p&gt;</description></item><item><title>v0 Reconciliation</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/v0-reconciliation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/v0-reconciliation/</guid><description>&lt;h2 id="baseline"&gt;Baseline&lt;/h2&gt;
 &lt;p&gt;The v1 line forked from &lt;code&gt;v0.27.1&lt;/code&gt;. Reconciliation therefore compares the
 current v1 work against the latest supported v0 release, currently
 &lt;code&gt;v0.28.3&lt;/code&gt;, rather than copying the v0 tree wholesale.&lt;/p&gt;

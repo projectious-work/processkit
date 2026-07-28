@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Constraint
-
 An explicit rule or limit the project must respect — budget ceiling,
 latency SLO, regulatory requirement, team capacity cap. Violations
 are LogEntries; constraints themselves do not change when violated.

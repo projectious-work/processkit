@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# apiVersion Policy
-
 processkit uses a Kubernetes-style `apiVersion` field on every entity:
 
 ```yaml

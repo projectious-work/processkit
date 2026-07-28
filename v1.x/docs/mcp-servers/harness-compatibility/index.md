@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Harness Compatibility
-
 processkit's MCP servers are provider-neutral Python programs. They do
 not require aibox at runtime. aibox can install processkit, merge MCP
 configuration, pre-authorize processkit tools where a harness supports

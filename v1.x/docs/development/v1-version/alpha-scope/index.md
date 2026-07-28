@@ -8,8 +8,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# Alpha Scope
-
 ## Purpose
 
 The alpha proves that the v1.0 model improves real agentic project work

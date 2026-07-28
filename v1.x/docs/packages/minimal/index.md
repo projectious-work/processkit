@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# minimal
-
 **Intended for:** solo developers and small side projects.
 **Extends:** — (the base tier)
 

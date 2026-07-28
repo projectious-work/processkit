@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# v2 Contracts
-
 SmoothTiger/SmoothRiver v2 keeps durable facts in existing entity
 primitives and uses projection skills for runtime files. The source of
 truth remains processkit context; generated files are checked against

@@ -4,8 +4,6 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-# v1 installer threat model
-
 The installer treats an archive, descriptor, manifest, catalog, adapter, and
 target filesystem as untrusted until validated. It must reject absolute or
 parent-traversal paths, archive links and path escapes, duplicate normalized
