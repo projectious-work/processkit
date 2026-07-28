@@ -11,6 +11,8 @@ signed processkit distribution rather than hard-coded into downstream
 tools.
 
 - [Installer contract](./contract/)
+- [CLI and automation interfaces](./cli/)
+- [Python MCP runtime contract](./runtime/)
 - [Local release production](./local-release/)
 - [Threat model](./threat-model/)
 - [v0 compatibility](./v0-compatibility/)

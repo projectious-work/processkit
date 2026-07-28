@@ -2,7 +2,7 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#   "mcp[cli]>=1.0",
+#   "mcp[cli]>=1.0,<2.0",
 #   "pyyaml>=6.0",
 #   "jsonschema>=4.0",
 #   "jinja2>=3.1",
@@ -41,6 +41,8 @@ REQUIRED_PATHS = (
     "PROVENANCE.toml",
     ".processkit/installer/distribution.yaml",
     ".processkit/installer/release-descriptor.json",
+    ".processkit/installer/runtime/python-uv.json",
+    ".processkit/installer/schemas/python-runtime-policy.schema.json",
     ".processkit/installer/schemas/distribution.schema.json",
     "context/.processkit-mcp-manifest.json",
     "context/schemas",

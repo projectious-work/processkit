@@ -28,6 +28,12 @@ jq -e '
     and .component == "harness-adapter:codex"
     and .ownership == "managed-keys"
   )
+  and any(.changes[];
+    .destination == ".processkit/runtime/python-uv.json"
+    and .component == "python-runtime-policy"
+    and .operation == "copy/v1"
+    and .ownership == "managed-three-way"
+  )
 ' "$RESULT" >/dev/null
 
 jq '.operation = "install" | .yes = true' "$REQUEST" >"$RESULT"
@@ -38,6 +44,16 @@ jq -e '.status == "installed"' "$RESULT" >/dev/null
 jq -e '
   .mcpServers["processkit-gateway"].env.PROCESSKIT_MCP_MODE == "gateway"
 ' "$PILOT_ROOT/.mcp.json" >/dev/null
+cmp \
+  "$REPO_ROOT/src/.processkit/installer/runtime/python-uv.json" \
+  "$PILOT_ROOT/.processkit/runtime/python-uv.json"
+jq -e '
+  any(.ownedPaths[];
+    .path == ".processkit/runtime/python-uv.json"
+    and .component == "python-runtime-policy"
+    and .ownership == "managed-three-way"
+  )
+' "$PILOT_ROOT/.processkit/state.json" >/dev/null
 
 jq -n \
     --arg root "$PILOT_ROOT" \
@@ -91,6 +107,10 @@ jq -n \
 jq -e '.status == "uninstalled"' "$RESULT" >/dev/null
 [[ ! -e "$PILOT_ROOT/.mcp.json" ]] || {
     echo "error: managed Codex adapter remained after uninstall" >&2
+    exit 1
+}
+[[ ! -e "$PILOT_ROOT/.processkit/runtime/python-uv.json" ]] || {
+    echo "error: managed Python runtime policy remained after uninstall" >&2
     exit 1
 }
 

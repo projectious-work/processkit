@@ -30,6 +30,29 @@
       "type": "array",
       "items": {"$ref": "#/$defs/problem"}
     },
+    "distribution": {
+      "type": "object",
+      "required": ["name", "version", "manifestSha256"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "manifestSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "selectedProfiles": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "harnesses": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
     "state": {"type": "object"},
     "checked": {"type": "integer", "minimum": 0},
     "provenance": {"type": "object"}

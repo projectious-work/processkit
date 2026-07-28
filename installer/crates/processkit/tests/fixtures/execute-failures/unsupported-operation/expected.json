@@ -1,0 +1,12 @@
+{
+  "apiVersion": "processkit.projectious.work/installer/v1alpha1",
+  "status": "invalid",
+  "changes": [],
+  "conflicts": [],
+  "warnings": [],
+  "errors": [{
+    "code": "request-failed",
+    "path": "",
+    "message": "unsupported installer request operation: not-an-operation"
+  }]
+}

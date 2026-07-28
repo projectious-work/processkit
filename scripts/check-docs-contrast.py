@@ -78,6 +78,60 @@ CASCADE = [
         ("html", set()), ("body", set()), ("div", {"td-toc"}),
         ("nav", {"TableOfContents"}), ("ul", set()), ("li", set()),
         ("a", {"active"})]),
+    # The sidebar tree: Docsy styles leaf entries and section entries through
+    # different selectors, so both are checked, at the depth the docs tree
+    # actually reaches.
+    ("sidebar section entry", 4.5, [
+        ("html", set()), ("body", {"td-page"}), ("aside", {"td-sidebar"}),
+        ("nav", {"td-sidebar-nav", "foldable-nav"}),
+        ("ul", {"td-sidebar-nav__section", "ul-0"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("label", set()),
+        ("a", {"td-sidebar-link", "td-sidebar-link__section"}),
+        ("span", set())]),
+    ("sidebar page entry, depth 2", 4.5, [
+        ("html", set()), ("body", {"td-page"}), ("aside", {"td-sidebar"}),
+        ("nav", {"td-sidebar-nav", "foldable-nav"}),
+        ("ul", {"td-sidebar-nav__section", "ul-0"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("ul", {"ul-1"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("ul", {"ul-2", "foldable"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section",
+                "without-child"}),
+        ("label", set()),
+        ("a", {"td-sidebar-link", "td-sidebar-link__page"}),
+        ("span", set())]),
+    ("sidebar page entry, depth 4", 4.5, [
+        ("html", set()), ("body", {"td-page"}), ("aside", {"td-sidebar"}),
+        ("nav", {"td-sidebar-nav", "foldable-nav"}),
+        ("ul", {"td-sidebar-nav__section", "ul-0"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("ul", {"ul-1"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("ul", {"ul-2", "foldable"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("ul", {"ul-3", "foldable"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("ul", {"ul-4", "foldable"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section",
+                "without-child"}),
+        ("label", set()),
+        ("a", {"td-sidebar-link", "td-sidebar-link__page"}),
+        ("span", set())]),
+    ("sidebar active leaf", 4.5, [
+        ("html", set()), ("body", {"td-page"}), ("aside", {"td-sidebar"}),
+        ("nav", {"td-sidebar-nav", "foldable-nav"}),
+        ("ul", {"td-sidebar-nav__section", "ul-0"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("ul", {"ul-1"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section"}),
+        ("ul", {"ul-2", "foldable"}),
+        ("li", {"td-sidebar-nav__section-title", "td-sidebar-nav__section",
+                "without-child", "active-path"}),
+        ("label", set()),
+        ("a", {"active", "td-sidebar-link", "td-sidebar-link__page"}),
+        ("span", {"td-sidebar-nav-active-item"})]),
     ("version menu release entry", 4.5, [
         ("html", set()), ("body", set()), ("div", {"td-version-menu"}),
         ("ul", {"dropdown-menu"}), ("li", set()),
@@ -265,6 +319,34 @@ def specificity(selector: str) -> tuple[int, int, int]:
     return ids, classes, tags
 
 
+def chain_properties(css: str, chain, base: dict[str, str]) -> dict[str, str]:
+    """Custom properties as seen by the innermost element of a chain.
+
+    Custom properties inherit, so a rule on any ancestor can reassign one for
+    everything inside it — `.td-cover-block { --bs-body-color: … }` in this
+    project, `.dropdown-menu` in Bootstrap. Resolving against the root-scoped
+    values alone misses that, and reassignment on an ancestor is precisely how
+    text ends up the wrong colour for its surface.
+    """
+    props = dict(base)
+    for depth in range(1, len(chain) + 1):
+        prefix = chain[:depth]
+        best: dict[str, tuple] = {}
+        for order, match in enumerate(RULE.finditer(css)):
+            for selector in match.group(1).split(","):
+                if selector_matches(selector, prefix) is not True:
+                    continue
+                spec = specificity(selector)
+                for name, value in re.findall(
+                        r"(--[\w-]+)\s*:\s*([^;}]+)", match.group(2)):
+                    key = (spec, order)
+                    if name not in best or key > best[name][0]:
+                        best[name] = (key, value.strip())
+        for name, (_, value) in best.items():
+            props[name] = value
+    return props
+
+
 def winning_declarations(css: str, chain):
     """The colour and background-color that win for one element."""
     best = {"color": None, "background-color": None}
@@ -316,15 +398,30 @@ def main() -> int:
                     f"({hexstr(fg)} on {hexstr(bg)})")
 
         for label, minimum, chain in CASCADE:
-            won = winning_declarations(css, chain)
-            fg_expr = won["color"]
-            bg_expr = won["background-color"]
-            # `inherit`, or nothing at all, means the value comes from an
-            # ancestor. For these elements that resolves to the page defaults.
-            fg = (body_colour if fg_expr in (None, "inherit")
-                  else resolve(fg_expr, props))
-            bg = (body_bg if bg_expr in (None, "inherit", "transparent")
-                  else resolve(bg_expr, props))
+            # `color` inherits and `background-color` does not, but what sits
+            # visually behind the text is the nearest ancestor that paints one.
+            # Text is often in a <span> while the colour is set on the <a> that
+            # contains it, so both have to be resolved by walking the chain
+            # outwards rather than by looking at the leaf alone.
+            fg_expr = bg_expr = None
+            for depth in range(len(chain), 0, -1):
+                won = winning_declarations(css, chain[:depth])
+                if fg_expr is None and won["color"] not in (None, "inherit"):
+                    fg_expr = won["color"]
+                if bg_expr is None and won["background-color"] not in (
+                        None, "inherit", "transparent", "none"):
+                    bg_expr = won["background-color"]
+                if fg_expr and bg_expr:
+                    break
+            # Resolve against the properties in force *at this element*, not
+            # just the root-scoped ones.
+            local = chain_properties(css, chain, props)
+            fg = (resolve("var(--bs-body-color)", local) if fg_expr is None
+                  else resolve(fg_expr, local))
+            bg = (resolve("var(--bs-body-bg)", local) if bg_expr is None
+                  else resolve(bg_expr, local))
+            fg = fg or body_colour
+            bg = bg or body_bg
             if fg is None or bg is None:
                 warnings.append(
                     f"{mode}: unresolved cascade for {label} "
