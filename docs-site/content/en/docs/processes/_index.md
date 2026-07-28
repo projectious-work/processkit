@@ -1,9 +1,11 @@
 ---
-weight: 1
-title: "Overview"
+title: "Processes"
+linkTitle: "Processes"
+weight: 55
+description: "Process templates that sequence skills into a repeatable workflow."
+aliases:
+  - "/docs/processes/overview/"
 ---
-
-# Processes — Overview
 
 A v1 **Process** was a declarative workflow definition: a sequence of
 steps, roles, gates, and definition of done. In the

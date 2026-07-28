@@ -3,8 +3,6 @@ weight: 2
 title: "Skill Package Format"
 ---
 
-# Skill Package Format
-
 This page summarizes the skill package format. The authoritative source is
 [`src/context/skills/FORMAT.md`](https://github.com/projectious-work/processkit/blob/main/src/context/skills/FORMAT.md)
 in the processkit repo.

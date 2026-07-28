@@ -3,8 +3,6 @@ weight: 26
 title: "CrossReference"
 ---
 
-# CrossReference
-
 A lightweight, frontmatter-embedded relationship between two entities.
 CrossReference is not a file — it is a convention for fields in the
 `spec` block of any entity.

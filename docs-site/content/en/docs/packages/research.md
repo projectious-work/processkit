@@ -3,8 +3,6 @@ weight: 5
 title: "research"
 ---
 
-# research
-
 **Intended for:** research teams, data science projects, ML engineering.
 **Extends:** `managed`
 

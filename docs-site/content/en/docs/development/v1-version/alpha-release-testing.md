@@ -3,8 +3,6 @@ title: Alpha Release Testing
 description: Publish and consume an explicit v1 prerelease safely.
 ---
 
-# Alpha Release Testing
-
 ## Release Policy
 
 The current test release is the explicit prerelease

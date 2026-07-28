@@ -3,8 +3,6 @@ title: Acceptance Gate
 description: Readiness criteria for processkit v1.0 stages.
 ---
 
-# Acceptance Gate
-
 ## Purpose
 
 The acceptance gate keeps the v1.0 rebuild measurable. The RFC's

@@ -1,9 +1,11 @@
 ---
-weight: 1
-title: "Overview"
+title: "Getting Started"
+linkTitle: "Getting Started"
+weight: 20
+description: "Install processkit by hand from a release archive or through a managed installer, then create your first entity."
+aliases:
+  - "/docs/getting-started/overview/"
 ---
-
-# Getting Started — Overview
 
 processkit is consumed by agent harnesses and project tooling. You can
 install it manually from a release tarball, or let an installer such as
@@ -63,9 +65,9 @@ manually.
 
 ## Learning path
 
-1. Read [Primitives → Overview](../primitives/overview) to understand
+1. Read [Primitives → Overview](../primitives/) to understand
    the durable entity model.
 2. Read [Primitives → Format](../primitives/format) to learn the entity file shape.
-3. Read [Skills → Overview](../skills/overview) to learn what skills do.
-4. Pick a package ([Packages → Overview](../packages/overview)).
+3. Read [Skills → Overview](../skills/) to learn what skills do.
+4. Pick a package ([Packages → Overview](../packages/)).
 5. Create your [first entity](./first-entity).

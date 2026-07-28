@@ -55,13 +55,31 @@ params:
   url_latest_version: "https://projectious-work.github.io/processkit/"
   version_menu: "Release line"
   version_menu_pagelinks: false
+  # Two-level menu: release line, then the releases published from it. A
+  # `releases` list turns an entry into a submenu (see the
+  # navbar-version-selector override). `kind: current` marks the release the
+  # line URL currently serves.
+  #
+  # Only releases published from here on are listed — historic tags are not
+  # back-filled. To add one, deploy a snapshot with
+  # `DOCS_VERSION=<tag> scripts/publish-docs-gh-pages.sh` (it lands at
+  # `/<tag>/`, which the root publish preserves), then move `kind: current`
+  # to the new entry and add the previous one below it.
   versions:
     - name: "**Release lines**"
     - version: "v0.x"
       kind: latest
       url: "https://projectious-work.github.io/processkit/"
+      releases:
+        - version: "v0.28.4"
+          kind: current
+          url: "https://projectious-work.github.io/processkit/"
     - version: "v1.x (preview)"
       url: "https://projectious-work.github.io/processkit/v1.x/"
+      releases:
+        - version: "v1.0.0-alpha.3"
+          kind: current
+          url: "https://projectious-work.github.io/processkit/v1.x/"
   ui:
     navbar_logo: true
     navbar_theme: dark

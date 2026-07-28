@@ -3,8 +3,6 @@ title: Analysis Archive
 description: Supporting analysis used to shape the processkit v1.0 plan.
 ---
 
-# Analysis Archive
-
 These documents preserve the reasoning that led to the current v1.0
 planning set.
 

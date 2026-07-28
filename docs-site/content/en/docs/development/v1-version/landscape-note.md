@@ -3,8 +3,6 @@ title: Landscape Note
 description: Adjacent projects and concepts processkit should learn from.
 ---
 
-# Landscape Note
-
 ## Positioning
 
 processkit v1.0 is not trying to replace agent runtimes, memory

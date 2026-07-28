@@ -3,8 +3,6 @@ weight: 17
 title: "Binding"
 ---
 
-# Binding
-
 A scoped or time-bounded relationship between two entities — the
 junction-table pattern promoted to a first-class primitive. Use when a
 relationship has scope, time, or its own attributes; use a frontmatter

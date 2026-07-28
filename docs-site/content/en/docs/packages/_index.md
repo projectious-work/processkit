@@ -1,9 +1,11 @@
 ---
-weight: 1
-title: "Overview"
+title: "Packages"
+linkTitle: "Packages"
+weight: 50
+description: "The package tiers, from a minimal bootstrap context to a fully managed workspace."
+aliases:
+  - "/docs/packages/overview/"
 ---
-
-# Packages — Overview
 
 Packages are opinionated bundles of skills. Pick one tier as your
 starting point, then add or remove skills through your installer or local

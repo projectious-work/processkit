@@ -3,8 +3,6 @@ title: processkit v1.0 Base Context
 description: Baseline context for the processkit v1.0 redesign.
 ---
 
-# processkit v1.0 Base Context
-
 Created: 2026-07-04
 
 This historical base context was created for the processkit v1.0 redesign.

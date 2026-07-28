@@ -3,8 +3,6 @@ weight: 1
 title: "apiVersion Policy"
 ---
 
-# apiVersion Policy
-
 processkit uses a Kubernetes-style `apiVersion` field on every entity:
 
 ```yaml

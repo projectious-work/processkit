@@ -3,8 +3,6 @@ title: OKF Compatibility Analysis
 description: Analysis of OKF as an import, export, and publication profile.
 ---
 
-# OKF Compatibility Analysis
-
 Source:
 
 - Google Cloud announcement, "Introducing the Open Knowledge Format",

@@ -1,9 +1,11 @@
 ---
-weight: 1
-title: "Overview"
+title: "MCP Servers"
+linkTitle: "MCP Servers"
+weight: 70
+description: "The gateway, per-skill servers, and the legacy aggregate bridge — plus what each harness supports."
+aliases:
+  - "/docs/mcp-servers/overview/"
 ---
-
-# MCP Servers — Overview
 
 processkit skills ship **Python MCP servers** that give agents
 mechanical correctness on top of probabilistic reasoning. For entity

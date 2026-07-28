@@ -3,8 +3,6 @@ weight: 3
 title: "managed"
 ---
 
-# managed
-
 **Intended for:** small teams with a shared backlog and process cadences.
 **Extends:** `minimal`
 
