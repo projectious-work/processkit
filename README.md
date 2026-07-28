@@ -115,13 +115,23 @@ the same reliable process surface.
 
 ## Standalone installation
 
-The v1 prerelease includes a local standalone installer. Download the release
-archive and its matching installer asset, verify the published checksums and
-trust material, then plan before applying:
+The v1 prerelease includes a local standalone installer. Download and extract
+the release archive, download its matching installer asset, and verify the
+published checksums and trust material. The current alpha requires the
+extracted release directory through `--distribution`:
 
 ```sh
-processkit plan --root . --profile managed --harness codex
-processkit install --root . --profile managed --harness codex
+processkit plan \
+  --root . \
+  --distribution /path/to/processkit-v1.0.0-alpha.3 \
+  --profile managed \
+  --harness codex
+processkit install \
+  --root . \
+  --distribution /path/to/processkit-v1.0.0-alpha.3 \
+  --profile managed \
+  --harness codex \
+  --yes
 processkit verify --root .
 ```
 
@@ -131,6 +141,11 @@ whose ownership processkit can prove. See the
 [installer contract](docs-site/content/en/docs/installer/contract.md),
 [local release and verification workflow](docs-site/content/en/docs/installer/local-release.md),
 and [threat model](docs-site/content/en/docs/installer/threat-model.md).
+
+`--distribution` is intentionally explicit for the alpha's offline and
+machine-facing contract. A future human-facing command will resolve an exact
+canonical release version, while `processkit execute --request <path>` remains
+the opaque, versioned integration boundary for aibox and other automation.
 
 ### Manual compatibility path
 

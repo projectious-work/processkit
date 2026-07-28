@@ -113,6 +113,13 @@ if ! uv run --offline \
     exit 1
 fi
 
+echo "checking Python runtime manifest" >&2
+if ! uv run --offline \
+        "$REPO_ROOT/scripts/generate-python-runtime-manifest.py" --check; then
+    echo "error: Python runtime manifest is stale; regenerate before tagging" >&2
+    exit 1
+fi
+
 echo "checking installer contract" >&2
 if ! uv run --offline "$REPO_ROOT/scripts/verify-installer-contract.py" \
         "$SRC_DIR"; then

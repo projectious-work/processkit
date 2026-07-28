@@ -224,7 +224,7 @@ fn recovery_removes_only_digest_matched_interrupted_files() {
           "operation":"install",
           "phase":"applying",
           "oldStateSha256":null,
-          "newStateSha256":"pending",
+          "newStateSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           "actions":[{
             "kind":"create",
             "path":"created.txt",
