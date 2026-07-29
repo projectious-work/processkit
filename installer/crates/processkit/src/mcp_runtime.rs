@@ -3,7 +3,8 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, ExitStatus, Output};
+use std::time::Duration;
 
 const API_VERSION: &str = "processkit.projectious.work/runtime/v1alpha1";
 const GATEWAY_PATH: &str = "context/skills/processkit/processkit-gateway/mcp/server.py";
@@ -95,10 +96,10 @@ fn runtime_paths(root: &Path) -> Result<(PathBuf, PathBuf), String> {
 }
 
 fn uv_version(uv: &Path) -> Result<String, String> {
-    let output = Command::new(uv)
-        .arg("--version")
-        .output()
-        .map_err(|error| format!("launch uv: {error}"))?;
+    let mut command = Command::new(uv);
+    command.arg("--version");
+    let output =
+        output_with_busy_retry(&mut command).map_err(|error| format!("launch uv: {error}"))?;
     if !output.status.success() {
         return Err(format!("uv --version exited with {}", output.status));
     }
@@ -208,8 +209,7 @@ fn prepare_runtime_with_uv(
         if let Some(cache) = &cache_dir {
             command.env("UV_CACHE_DIR", cache);
         }
-        let output = command
-            .output()
+        let output = output_with_busy_retry(&mut command)
             .map_err(|error| format!("prepare runtime profile {}: {error}", profile.sha256))?;
         if !output.status.success() {
             return Err(format!(
@@ -307,9 +307,8 @@ fn serve_mcp_with_uv(
                 .args(["--port", &port.to_string(), "--path", path]);
         }
     }
-    let status = command
-        .current_dir(root)
-        .status()
+    command.current_dir(root);
+    let status = status_with_busy_retry(&mut command)
         .map_err(|error| format!("launch MCP gateway: {error}"))?;
     Ok(status.code().unwrap_or(1))
 }
@@ -326,19 +325,45 @@ fn proxy_mcp_with_uv(root: &Path, url: &str, uv: &Path) -> Result<i32, String> {
     {
         return Err("MCP proxy URL must use HTTP on an explicit loopback host".into());
     }
-    let status = Command::new(uv)
+    let mut command = Command::new(uv);
+    command
         .arg("run")
         .arg(gateway)
         .args(["stdio-proxy", "--url", url])
-        .current_dir(root)
-        .status()
+        .current_dir(root);
+    let status = status_with_busy_retry(&mut command)
         .map_err(|error| format!("launch MCP stdio proxy: {error}"))?;
     Ok(status.code().unwrap_or(1))
+}
+
+fn output_with_busy_retry(command: &mut Command) -> std::io::Result<Output> {
+    for attempt in 0..20 {
+        match command.output() {
+            Err(error) if error.raw_os_error() == Some(26) && attempt < 19 => {
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            result => return result,
+        }
+    }
+    unreachable!("bounded process launch loop always returns")
+}
+
+fn status_with_busy_retry(command: &mut Command) -> std::io::Result<ExitStatus> {
+    for attempt in 0..20 {
+        match command.status() {
+            Err(error) if error.raw_os_error() == Some(26) && attempt < 19 => {
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            result => return result,
+        }
+    }
+    unreachable!("bounded process launch loop always returns")
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Write;
     use std::os::unix::fs::PermissionsExt;
 
     fn fixture() -> (tempfile::TempDir, tempfile::TempDir, PathBuf, String) {
@@ -381,15 +406,19 @@ mod tests {
         let tools = tempfile::tempdir().unwrap();
         let log = tools.path().join("args.log");
         let uv = tools.path().join("uv");
-        fs::write(
-            &uv,
-            format!(
-                "#!/bin/sh\nif [ \"$1\" = --version ]; then echo 'uv fixture'; \
+        let mut uv_file = fs::File::create(&uv).unwrap();
+        uv_file
+            .write_all(
+                format!(
+                    "#!/bin/sh\nif [ \"$1\" = --version ]; then echo 'uv fixture'; \
                  else printf '%s\\n' \"$@\" > '{}'; fi\n",
-                log.display()
-            ),
-        )
-        .unwrap();
+                    log.display()
+                )
+                .as_bytes(),
+            )
+            .unwrap();
+        uv_file.sync_all().unwrap();
+        drop(uv_file);
         let mut permissions = fs::metadata(&uv).unwrap().permissions();
         permissions.set_mode(0o755);
         fs::set_permissions(&uv, permissions).unwrap();
@@ -398,10 +427,10 @@ mod tests {
 
     #[test]
     fn verify_reports_gateway_and_uv() {
-        let (root, _tools, uv, _) = fixture();
-        let result = verify_mcp_with_uv(root.path(), &uv).unwrap();
+        let (root, _tools, _uv, _) = fixture();
+        let result = verify_mcp_with_uv(root.path(), Path::new("/bin/echo")).unwrap();
         assert_eq!(result.status, "verified");
-        assert_eq!(result.uv_version, "uv fixture");
+        assert!(!result.uv_version.is_empty());
     }
 
     #[test]

@@ -58,12 +58,27 @@ request contract. The local installer suite covers install, verify, update,
 recovery, user-drift handling, and uninstall. It neither invokes aibox nor
 uses GitHub Actions.
 
+The suite includes two complementary recovery signals:
+
+- the full shipped distribution completes install/update/uninstall lifecycle
+  acceptance; and
+- a compact signed-layout fixture sets
+  `PROCESSKIT_INSTALLER_FAIL_AFTER_ACTION=0`, proves exit 75 and a durable
+  journal, runs native recovery, verifies the exact old state and project-owned
+  file, retries the update, and verifies the new provenance.
+
+Run that focused acceptance independently with:
+
+```sh
+scripts/test-update-recovery-local.sh
+```
+
 An aibox pilot may consume the exact signed prerelease afterward. That is a
 downstream compatibility check and never blocks or defines processkit
 release correctness.
 
 ## Promotion
 
-Promote to `alpha.3` only from a new merge into `v1.x-pre-release`. Alpha
-tags are immutable. The supported v0 line remains the default until the
-complete ontology and final CLI have passed joint processkit/aibox testing.
+Promote the next alpha only from a new merge into `v1.x-pre-release`. Alpha
+tags are immutable. The supported v0 line remains the default until the final
+CLI and migration path have passed joint processkit/aibox testing.

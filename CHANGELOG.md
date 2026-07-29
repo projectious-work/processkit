@@ -21,6 +21,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
   defaults.
 - Add policy-bound Python dependency preparation and offline-readiness
   verification across every unique shipped dependency profile.
+- Add a release-gate acceptance test that interrupts a real update after its
+  first filesystem action, recovers the prior state, preserves project-owned
+  data, completes the update, and verifies final provenance.
 
 - Added an evidence-bound, resumable `scripts/maintain.sh` release
   orchestrator with semantic-version branch authority, phase-zero state and
