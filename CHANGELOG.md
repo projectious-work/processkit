@@ -16,6 +16,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Add deterministic multi-target release-envelope finalization so independently
   produced Linux and macOS assets can be collected into one signed matrix
   without claiming absent or duplicate targets.
+- Add native `processkit mcp verify`, `serve`, and `proxy` supervision for the
+  shipped Python gateway, with direct argument vectors and loopback-only HTTP
+  defaults.
 
 - Added an evidence-bound, resumable `scripts/maintain.sh` release
   orchestrator with semantic-version branch authority, phase-zero state and

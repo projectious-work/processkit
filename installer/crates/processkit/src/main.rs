@@ -13,6 +13,7 @@ mod compatibility;
 mod contract;
 mod error;
 mod filesystem;
+mod mcp_runtime;
 mod output;
 mod planner;
 mod release;
@@ -25,6 +26,7 @@ mod transaction;
 use compatibility::inspect_compatibility;
 use contract::API_VERSION;
 use filesystem::{digest, ensure_non_symlink_directory, ensure_regular_file, safe_relative};
+use mcp_runtime::{proxy_mcp, serve_mcp, verify_mcp, McpTransport};
 use output::pretty_json;
 use planner::{plan, Change};
 use release::verified_release;
@@ -152,6 +154,11 @@ enum Command {
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
+    /// Verify or supervise the shipped Python MCP gateway.
+    Mcp {
+        #[command(subcommand)]
+        command: McpCommand,
+    },
     /// Execute one versioned installer request and emit one result envelope.
     Execute {
         #[arg(long)]
@@ -163,6 +170,43 @@ enum Command {
 enum OutputFormat {
     Json,
     Human,
+}
+
+#[derive(Subcommand)]
+enum McpCommand {
+    /// Verify the gateway path and uv runtime without starting a server.
+    Verify {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
+    /// Run the Python gateway under native process supervision.
+    Serve {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long, value_enum, default_value_t = McpTransportArg::Stdio)]
+        transport: McpTransportArg,
+        #[arg(long, default_value = "127.0.0.1")]
+        host: String,
+        #[arg(long, default_value_t = 8000)]
+        port: u16,
+        #[arg(long, default_value = "/mcp")]
+        path: String,
+    },
+    /// Bridge stdio to a loopback streamable-HTTP gateway.
+    Proxy {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long)]
+        url: String,
+    },
+}
+
+#[derive(Clone, Copy, ValueEnum)]
+enum McpTransportArg {
+    Stdio,
+    StreamableHttp,
 }
 
 #[derive(Deserialize)]
@@ -430,6 +474,44 @@ fn main() {
                 }
                 std::process::exit(3);
             }
+        },
+        Command::Mcp { command } => match command {
+            McpCommand::Verify { root, json } => match verify_mcp(&root) {
+                Ok(result) if json => print_json_or_exit(&result),
+                Ok(result) => println!("{}", result.summary()),
+                Err(error) => {
+                    eprintln!("processkit: {error}");
+                    std::process::exit(3);
+                }
+            },
+            McpCommand::Serve {
+                root,
+                transport,
+                host,
+                port,
+                path,
+            } => {
+                let transport = match transport {
+                    McpTransportArg::Stdio => McpTransport::Stdio,
+                    McpTransportArg::StreamableHttp => McpTransport::StreamableHttp,
+                };
+                match serve_mcp(&root, transport, &host, port, &path) {
+                    Ok(0) => {}
+                    Ok(code) => std::process::exit(code),
+                    Err(error) => {
+                        eprintln!("processkit: {error}");
+                        std::process::exit(3);
+                    }
+                }
+            }
+            McpCommand::Proxy { root, url } => match proxy_mcp(&root, &url) {
+                Ok(0) => {}
+                Ok(code) => std::process::exit(code),
+                Err(error) => {
+                    eprintln!("processkit: {error}");
+                    std::process::exit(3);
+                }
+            },
         },
         Command::Execute { request } => match execute_request(&request) {
             Ok(result) => print_json_or_exit(&result),
