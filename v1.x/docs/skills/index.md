@@ -13,6 +13,11 @@ examples, assets, and optionally a Python MCP server. Skills are how processkit
 gives agents domain-specific intelligence — not just instructions, but the
 conventions, gotchas, and decision rules of a domain expert.
 
+The v1 installer copies skills from the producer payload into the consuming
+project's `context/` tree. They remain visible and locally reviewable; Rust
+does not compile them into the CLI, and Python remains the implementation
+language for skill MCP servers.
+
 ## Skill package layout
 
 ```
@@ -72,7 +77,10 @@ metadata:
 
 See [Skills → Format](./format) for the complete specification.
 
-## Current catalog (142 skills)
+## Catalog
+
+The exact catalog is release-generated and validated by the MCP manifest.
+Avoid using a static skill count as a maturity claim.
 
 | Category | Count | Examples |
 |---|---|---|

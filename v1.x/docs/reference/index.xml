@@ -237,4 +237,62 @@ selection uses model-recommender roster/configuration data. Process
 definitions are Artifacts plus process-instance WorkItems. Schedule
 semantics use &lt;code&gt;Binding(type=time-window)&lt;/code&gt;. Runtime state-machine YAML
 files remain implementation contracts, not user-authored StateMachine
-entities.&lt;/p&gt;</description></item></channel></rss>
+entities.&lt;/p&gt;</description></item><item><title>v1 Alpha Release Facts</title><link>https://projectious-work.github.io/processkit/v1.x/docs/reference/v1-alpha-release-facts/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/reference/v1-alpha-release-facts/</guid><description>&lt;p&gt;These facts describe the published &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt; release.&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Fact&lt;/th&gt;
+ &lt;th&gt;Value&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Release&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Status&lt;/td&gt;
+ &lt;td&gt;Exact-pin prerelease&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Release commit&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;a703afe714faf2b154b1c0f74b52829d067e5ca6&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Content archive&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;processkit-v1.0.0-alpha.4.tar.gz&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Native target&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;aarch64-unknown-linux-gnu&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Installer asset&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Signature&lt;/td&gt;
+ &lt;td&gt;Ed25519&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Public key ID&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;035a31564b52ca7c6e0b7b4c4a37b4fcf94fb3dd178d98473af8a9242dafdeee&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Gateway tool count in release acceptance&lt;/td&gt;
+ &lt;td&gt;199&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Installer protocol&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;processkit.projectious.work/installer/v1alpha1&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Entity API version&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;processkit.projectious.work/v2&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The release publishes seven assets: the content archive and checksum, native
+installer and checksum, signed JSON envelope, signature, and public key.&lt;/p&gt;
+&lt;h2 id="profiles"&gt;Profiles&lt;/h2&gt;
+&lt;p&gt;The distribution exposes these profiles:&lt;/p&gt;</description></item></channel></rss>

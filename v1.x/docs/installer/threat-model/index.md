@@ -1,8 +1,16 @@
-# 
+# Installer Threat Model
+
+> Trust boundaries and adversarial requirements for release and target inputs.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
+
+> **Alpha.4 status:** Traversal, symlink, forged-journal, signature, digest,
+> downgrade, same-version equivocation, and interruption paths have automated
+> coverage. The “before beta” items below remain open hardening targets.
 
 The installer treats an archive, descriptor, manifest, catalog, adapter, and
 target filesystem as untrusted until validated. It must reject absolute or

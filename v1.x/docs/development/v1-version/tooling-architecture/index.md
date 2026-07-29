@@ -8,6 +8,10 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](./issue-135-status.md).
+
 The v1.0 tooling architecture follows the RFC: schemas are generated
 from Jinja + YAML sources, writes flow through MCP tools, and indexes are
 extended rather than replaced.

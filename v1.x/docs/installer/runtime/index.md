@@ -10,8 +10,9 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 Python is an intentional processkit runtime dependency. It implements the MCP
 servers; it is not required by the Model Context Protocol itself. The native
-Rust CLI owns installation and lifecycle safety and will provide diagnostics
-and optional process supervision without reimplementing MCP behavior.
+Rust CLI owns installation and lifecycle safety. Native diagnostics and
+optional process supervision are planned and will not reimplement MCP
+behavior.
 
 ## Current alpha requirements
 

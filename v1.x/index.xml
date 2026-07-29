@@ -144,56 +144,10 @@ not require aibox at runtime. aibox can install processkit, merge MCP
 configuration, pre-authorize processkit tools where a harness supports
 that, and supervise a managed devcontainer. Those are convenience and
 lifecycle features; they are not a processkit dependency.&lt;/p&gt;
-&lt;p&gt;For a direct install, point the harness at the desired server command
-inside the installed &lt;code&gt;context/skills&lt;/code&gt; tree. The recommended one-process
-entry point is:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-json" data-lang="json"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;mcpServers&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;processkit-gateway&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;command&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;uv&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;args&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;run&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;context/skills/processkit/processkit-gateway/mcp/server.py&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;],&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;env&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;PROCESSKIT_MCP_MODE&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;gateway&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="current-modes"&gt;Current modes&lt;/h2&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th&gt;Mode&lt;/th&gt;
- &lt;th&gt;Use when&lt;/th&gt;
- &lt;th&gt;Harness impact&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td&gt;Per-skill servers&lt;/td&gt;
- &lt;td&gt;You need fine-grained tool registration or the broadest compatibility.&lt;/td&gt;
- &lt;td&gt;The harness launches one stdio process per registered skill.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;code&gt;aggregate-mcp&lt;/code&gt;&lt;/td&gt;
- &lt;td&gt;You already use the legacy aggregate server.&lt;/td&gt;
- &lt;td&gt;One stdio process, compatibility name, no daemon behavior.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;code&gt;processkit-gateway&lt;/code&gt; stdio&lt;/td&gt;
- &lt;td&gt;You want the provider-neutral gateway surface now.&lt;/td&gt;
- &lt;td&gt;One stdio process, eager tool import, richer gateway metadata.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Daemon plus stdio proxy&lt;/td&gt;
- &lt;td&gt;You want a long-lived daemon with lightweight harness proxies.&lt;/td&gt;
- &lt;td&gt;One shared daemon plus one lightweight stdio proxy per harness.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The current gateway command is equivalent to:&lt;/p&gt;</description></item><item><title>ID Formats</title><link>https://projectious-work.github.io/processkit/v1.x/docs/reference/id-formats/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/reference/id-formats/</guid><description>&lt;p&gt;Entity IDs in processkit have the shape &lt;code&gt;&amp;lt;PREFIX&amp;gt;-&amp;lt;id-body&amp;gt;&lt;/code&gt;. The prefix
+&lt;p&gt;The alpha.4 installer can project managed Codex and Claude configuration.
+It owns only declared processkit keys and preserves unrelated harness settings
+during install, update, and uninstall. Restart the harness after installation
+so it reloads the projection.&lt;/p&gt;</description></item><item><title>ID Formats</title><link>https://projectious-work.github.io/processkit/v1.x/docs/reference/id-formats/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/reference/id-formats/</guid><description>&lt;p&gt;Entity IDs in processkit have the shape &lt;code&gt;&amp;lt;PREFIX&amp;gt;-&amp;lt;id-body&amp;gt;&lt;/code&gt;. The prefix
 is determined by the primitive kind and is not configurable. The id-body
 has two independent configuration axes: &lt;strong&gt;format&lt;/strong&gt; and &lt;strong&gt;slug&lt;/strong&gt;.&lt;/p&gt;
 &lt;h2 id="configuration"&gt;Configuration&lt;/h2&gt;
@@ -328,21 +282,50 @@ has two independent configuration axes: &lt;strong&gt;format&lt;/strong&gt; and 
 &lt;p&gt;&lt;code&gt;Metric&lt;/code&gt;, &lt;code&gt;Model&lt;/code&gt;, &lt;code&gt;Process&lt;/code&gt;, &lt;code&gt;Schedule&lt;/code&gt;, and &lt;code&gt;StateMachine&lt;/code&gt; do not
 reserve first-class primitive prefixes in the v2 contract. The legacy
 prefixes remain documented so existing v1 contexts can be migrated and
-read correctly.&lt;/p&gt;</description></item><item><title>Installing</title><link>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/installing/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/installing/</guid><description>&lt;p&gt;processkit is distributed as versioned GitHub releases. Each release
-contains a tarball with the shipped &lt;code&gt;context/&lt;/code&gt;, &lt;code&gt;.processkit/&lt;/code&gt;, and
-agent entrypoint files. You can install those files manually or let a
-managed environment tool do it.&lt;/p&gt;
-&lt;h2 id="manual-install"&gt;Manual install&lt;/h2&gt;
-&lt;p&gt;Download and unpack the release tarball:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;curl -L &lt;span class="se"&gt;\
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; https://github.com/projectious-work/processkit/releases/download/v0.25.1/processkit-v0.25.1.tar.gz &lt;span class="se"&gt;\
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; -o processkit-v0.25.1.tar.gz
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;tar -xzf processkit-v0.25.1.tar.gz
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Copy the shipped files into your project:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;cp -a processkit-v0.25.1/context ./context
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;cp -a processkit-v0.25.1/.processkit ./.processkit
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;cp processkit-v0.25.1/AGENTS.md ./AGENTS.md
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then register the gateway with your harness. For stdio MCP:&lt;/p&gt;</description></item><item><title>minimal</title><link>https://projectious-work.github.io/processkit/v1.x/docs/packages/minimal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/packages/minimal/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; solo developers and small side projects.
+read correctly.&lt;/p&gt;</description></item><item><title>Installing</title><link>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/installing/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/installing/</guid><description>&lt;h2 id="v1-alpha"&gt;v1 alpha&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;v1.0.0-alpha.4&lt;/code&gt; is installed with the native Rust lifecycle CLI from an
+explicitly downloaded, signed release. The alpha does not yet have an online
+version resolver or one-command bootstrap installer.&lt;/p&gt;
+&lt;p&gt;Use the complete
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/getting-started/v1-alpha-tutorial/"&gt;v1 alpha installation and first-project tutorial&lt;/a&gt;
+.
+It verifies the signed envelope, checks both artifact digests, previews the
+plan, installs a selected profile, verifies managed state, and connects the
+Python MCP gateway.&lt;/p&gt;
+&lt;p&gt;The current command shape is:&lt;/p&gt;</description></item><item><title>Issue #135 Implementation Review</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/</guid><description>&lt;p&gt;This review compares
+&lt;a href="https://github.com/projectious-work/processkit/issues/135" rel="noopener"&gt;GitHub issue #135&lt;/a&gt;
+
+with &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;. It distinguishes shipped evidence from target design.&lt;/p&gt;
+&lt;h2 id="summary"&gt;Summary&lt;/h2&gt;
+&lt;p&gt;The corrected product boundary is established and the local lifecycle alpha
+is substantial. The Rust executable safely verifies and applies an explicitly
+provided release; Python remains the MCP runtime; release content remains
+visible. The alpha is not yet the complete standalone experience described by
+the issue.&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Outcome&lt;/th&gt;
+ &lt;th style="text-align: right"&gt;Assessment&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Implemented&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;7 requirement clusters&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Partial&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;5 requirement clusters&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Missing&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;4 requirement clusters&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Counts group related criteria so that large prose sections do not outweigh
+user journeys.&lt;/p&gt;</description></item><item><title>minimal</title><link>https://projectious-work.github.io/processkit/v1.x/docs/packages/minimal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/packages/minimal/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; solo developers and small side projects.
 &lt;strong&gt;Extends:&lt;/strong&gt; — (the base tier)&lt;/p&gt;
 &lt;p&gt;The lightest footprint package. Just enough structure to track work and
 debug effectively — no roles, no scopes, no governance artifacts.&lt;/p&gt;
@@ -472,7 +455,34 @@ in the processkit repo.&lt;/p&gt;
 &lt;h2 id="categories"&gt;Categories&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;process&lt;/code&gt;, &lt;code&gt;language&lt;/code&gt;, &lt;code&gt;framework&lt;/code&gt;, &lt;code&gt;infrastructure&lt;/code&gt;, &lt;code&gt;architecture&lt;/code&gt;,
 &lt;code&gt;design&lt;/code&gt;, &lt;code&gt;data&lt;/code&gt;, &lt;code&gt;ai&lt;/code&gt;, &lt;code&gt;api&lt;/code&gt;, &lt;code&gt;security&lt;/code&gt;, &lt;code&gt;observability&lt;/code&gt;, &lt;code&gt;database&lt;/code&gt;,
-&lt;code&gt;performance&lt;/code&gt;, &lt;code&gt;meta&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>managed</title><link>https://projectious-work.github.io/processkit/v1.x/docs/packages/managed/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/packages/managed/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; small teams with a shared backlog and process cadences.
+&lt;code&gt;performance&lt;/code&gt;, &lt;code&gt;meta&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Install and Use the v1 Alpha</title><link>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/v1-alpha-tutorial/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/v1-alpha-tutorial/</guid><description>&lt;p&gt;This tutorial installs the exact &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt; release into a new project.
+It uses the only native target currently published:
+&lt;code&gt;aarch64-unknown-linux-gnu&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id="1-check-prerequisites"&gt;1. Check prerequisites&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;uname -m
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;python3 --version
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;uv --version
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;git --version
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;jq --version
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Continue only when &lt;code&gt;uname -m&lt;/code&gt; reports &lt;code&gt;aarch64&lt;/code&gt; or &lt;code&gt;arm64&lt;/code&gt;. Python 3.10 or
+newer, &lt;code&gt;uv&lt;/code&gt;, Git, &lt;code&gt;curl&lt;/code&gt;, &lt;code&gt;tar&lt;/code&gt;, &lt;code&gt;sha256sum&lt;/code&gt;, and &lt;code&gt;jq&lt;/code&gt; are required.&lt;/p&gt;
+&lt;h2 id="2-download-the-exact-release"&gt;2. Download the exact release&lt;/h2&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;mkdir -p &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$PWD&lt;/span&gt;&lt;span class="s2"&gt;/.processkit-download/v1.0.0-alpha.4&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$PWD&lt;/span&gt;&lt;span class="s2"&gt;/.processkit-download/v1.0.0-alpha.4&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nv"&gt;release_url&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;https://github.com/projectious-work/processkit/releases/download/v1.0.0-alpha.4&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="k"&gt;for&lt;/span&gt; asset in &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; processkit-v1.0.0-alpha.4.tar.gz &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; processkit-v1.0.0-alpha.4.tar.gz.sha256 &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu.sha256 &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; processkit-v1.0.0-alpha.4.release.json &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; processkit-v1.0.0-alpha.4.release.sig &lt;span class="se"&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; processkit-v1.0.0-alpha.4.release.pub.pem
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="k"&gt;do&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; curl -fL &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$release_url&lt;/span&gt;&lt;span class="s2"&gt;/&lt;/span&gt;&lt;span class="nv"&gt;$asset&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt; -o &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$asset&lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="k"&gt;done&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The release is exact-pinned. Do not replace the tag with &lt;code&gt;latest&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>managed</title><link>https://projectious-work.github.io/processkit/v1.x/docs/packages/managed/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/packages/managed/</guid><description>&lt;p&gt;&lt;strong&gt;Intended for:&lt;/strong&gt; small teams with a shared backlog and process cadences.
 &lt;strong&gt;Extends:&lt;/strong&gt; &lt;code&gt;minimal&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;The recommended default. Adds roles, decisions, scopes, and all lightweight
 process artifacts (standups, retros, session handovers) on top of minimal.&lt;/p&gt;
@@ -562,41 +572,7 @@ compares two tagged versions of any processkit-compatible source — upstream
 processkit, a company fork like &lt;code&gt;processkit-acme&lt;/code&gt;, or any other downstream.
 The script reads &lt;code&gt;src/PROVENANCE.toml&lt;/code&gt; at each tag (a single file mapping
 every shipped file to the tag in which it last changed) and emits a
-structured diff: added, removed, changed, unchanged.&lt;/p&gt;</description></item><item><title>Your First Entity</title><link>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/first-entity/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/first-entity/</guid><description>&lt;p&gt;Create your first WorkItem and see how processkit&amp;rsquo;s entity format works.&lt;/p&gt;
-&lt;h2 id="prerequisites"&gt;Prerequisites&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;A project with processkit installed (see &lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/getting-started/installing/"&gt;Installing&lt;/a&gt;
-).&lt;/li&gt;
-&lt;li&gt;A package tier that includes &lt;code&gt;workitem-management&lt;/code&gt;; &lt;code&gt;minimal&lt;/code&gt; and
-higher tiers include it.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="creating-a-workitem-by-hand"&gt;Creating a WorkItem by hand&lt;/h2&gt;
-&lt;p&gt;Write a file at &lt;code&gt;context/workitems/BACK-first-task.md&lt;/code&gt;:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nn"&gt;---&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nt"&gt;apiVersion&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;processkit.projectious.work/v1&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nt"&gt;kind&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;WorkItem&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nt"&gt;metadata&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;id&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;BACK-first-task&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;created&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="ld"&gt;2026-04-06T10:00:00Z&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;labels&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;area&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;onboarding&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nt"&gt;spec&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;title&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;Try out processkit&amp;#34;&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;state&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;backlog&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;type&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;task&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;priority&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;medium&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="nt"&gt;description&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="s2"&gt;&amp;#34;Walk through the processkit docs and create a few entities.&amp;#34;&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="nn"&gt;---&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c"&gt;## Acceptance criteria&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;- &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;Read the primitives overview&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;- &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;Read the skills overview&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;- &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;Create this first WorkItem&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;- &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="w"&gt; &lt;/span&gt;&lt;span class="l"&gt;Transition it to in-progress, then done&lt;/span&gt;&lt;span class="w"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If your installer has a validation command, run it now. The file has the
-core &lt;code&gt;apiVersion&lt;/code&gt;, &lt;code&gt;kind&lt;/code&gt;, &lt;code&gt;metadata.id&lt;/code&gt;, and &lt;code&gt;spec&lt;/code&gt; fields expected by
-the WorkItem schema.&lt;/p&gt;</description></item><item><title>Language Skills</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/language/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/language/</guid><description>&lt;p&gt;Language-specific conventions, patterns, and best practices.&lt;/p&gt;
+structured diff: added, removed, changed, unchanged.&lt;/p&gt;</description></item><item><title>Language Skills</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/language/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/language/</guid><description>&lt;p&gt;Language-specific conventions, patterns, and best practices.&lt;/p&gt;
 &lt;hr&gt;
 &lt;h3 id="python-best-practices"&gt;python-best-practices&lt;/h3&gt;
 &lt;blockquote&gt;
@@ -688,7 +664,23 @@ managed.&lt;/p&gt;
 &lt;li&gt;&lt;strong&gt;Performance:&lt;/strong&gt; &lt;code&gt;performance-profiling&lt;/code&gt;, &lt;code&gt;load-testing&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id="when-to-upgrade"&gt;When to upgrade&lt;/h2&gt;
-&lt;p&gt;Only if you also need design, mobile, frontend framework skills → &lt;code&gt;product&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Infrastructure Skills</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/infrastructure/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/infrastructure/</guid><description>&lt;p&gt;Skills for containers, orchestration, networking, system administration, and CI/CD.&lt;/p&gt;
+&lt;p&gt;Only if you also need design, mobile, frontend framework skills → &lt;code&gt;product&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Your First Entity</title><link>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/first-entity/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/getting-started/first-entity/</guid><description>&lt;p&gt;Create the first WorkItem through processkit&amp;rsquo;s MCP tools. Do not hand-edit
+canonical entity files: the management tool validates the schema, applies the
+storage policy, and writes the audit event as one governed operation.&lt;/p&gt;
+&lt;h2 id="prerequisites"&gt;Prerequisites&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Complete the &lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/getting-started/v1-alpha-tutorial/"&gt;v1 alpha tutorial&lt;/a&gt;
+.&lt;/li&gt;
+&lt;li&gt;Start a new harness session after the installer writes its managed MCP
+projection.&lt;/li&gt;
+&lt;li&gt;Confirm the &lt;code&gt;processkit-gateway&lt;/code&gt; tools are visible.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id="create-a-workitem"&gt;Create a WorkItem&lt;/h2&gt;
+&lt;p&gt;Ask your MCP-capable agent:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Create a medium-priority task WorkItem titled &amp;ldquo;Evaluate processkit v1
+alpha&amp;rdquo; with acceptance criteria to verify installation, record one
+decision, and test an update plan.&lt;/p&gt;</description></item><item><title>Infrastructure Skills</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/infrastructure/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/infrastructure/</guid><description>&lt;p&gt;Skills for containers, orchestration, networking, system administration, and CI/CD.&lt;/p&gt;
 &lt;hr&gt;
 &lt;h3 id="dockerfile-review"&gt;dockerfile-review&lt;/h3&gt;
 &lt;blockquote&gt;
@@ -841,10 +833,30 @@ manage it is false economy.&lt;/p&gt;</description></item><item><title>Design &a
 &lt;p&gt;&lt;strong&gt;Triggers:&lt;/strong&gt; Designing a new REST API or extending an existing one, reviewing API contracts, writing OpenAPI/Swagger docs, choosing pagination or versioning strategies, defining error response formats.
 &lt;strong&gt;Tools:&lt;/strong&gt; &lt;code&gt;Bash&lt;/code&gt; &lt;code&gt;Read&lt;/code&gt; &lt;code&gt;Write&lt;/code&gt;
 &lt;strong&gt;References:&lt;/strong&gt; &lt;code&gt;rest-conventions.md&lt;/code&gt;, &lt;code&gt;openapi-patterns.md&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;Key capabilities:&lt;/p&gt;</description></item><item><title>CLI and automation interfaces</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli/</guid><description>&lt;p&gt;processkit has two deliberately separate command interfaces. Human lifecycle
+&lt;p&gt;Key capabilities:&lt;/p&gt;</description></item><item><title>Claude Code</title><link>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;v1 alpha note:&lt;/strong&gt; Install with &lt;code&gt;--harness claude&lt;/code&gt; to create the managed
+projection. The installer preserves unrelated Claude configuration. The
+direct &lt;code&gt;uv&lt;/code&gt; gateway remains the development and compatibility fallback.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This document captures how processkit surfaces itself inside the Claude
+Code harness: which payloads land at session start vs. each turn, which
+hooks fire, and which Claude Code settings we recommend for any
+processkit project.&lt;/p&gt;
+&lt;p&gt;WorkItem: BACK-20260509_1317-DaringRaven (issue #19). Companion file:
+&lt;a href="settings.example.json"&gt;&lt;code&gt;settings.example.json&lt;/code&gt;&lt;/a&gt;
+.&lt;/p&gt;
+&lt;h2 id="what-the-per-turn-hook-injects"&gt;What the per-turn hook injects&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;scripts/emit_compliance_contract.py&lt;/code&gt; runs as &lt;strong&gt;both&lt;/strong&gt; a &lt;code&gt;SessionStart&lt;/code&gt;
+and a &lt;code&gt;UserPromptSubmit&lt;/code&gt; hook (wired in
+&lt;code&gt;/workspace/.claude/settings.json&lt;/code&gt; under &lt;code&gt;hooks.SessionStart&lt;/code&gt; and
+&lt;code&gt;hooks.UserPromptSubmit&lt;/code&gt;). It now emits two different payloads:&lt;/p&gt;</description></item><item><title>CLI and automation interfaces</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli/</guid><description>&lt;p&gt;processkit has two deliberately separate command interfaces. Human lifecycle
 commands optimize for reviewable output and safe project operation. The
 machine interface uses a versioned JSON request and result contract for aibox
 and other automation.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Current release:&lt;/strong&gt; &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;. The command list in the first
+section is executable today. Commands in “Target human lifecycle” are not.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id="current-v1-alpha-commands"&gt;Current v1 alpha commands&lt;/h2&gt;
 &lt;p&gt;The current prerelease supports:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit plan
@@ -1622,7 +1634,75 @@ RBAC. Use &lt;code&gt;roles&lt;/code&gt; for assignment-suggestion only.&lt;/li&
 &lt;code&gt;active: false&lt;/code&gt;; it keeps the index consistent.&lt;/li&gt;
 &lt;li&gt;For scoped or time-bounded role assignments, use a &lt;strong&gt;Binding&lt;/strong&gt; instead
 of the &lt;code&gt;roles&lt;/code&gt; shortcut field.&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>Role</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/role/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/role/</guid><description>&lt;p&gt;A named set of responsibilities. Roles are descriptive — they document
+&lt;/ul&gt;</description></item><item><title>Installer Contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; Implemented for explicit local distributions and signed
+local releases. Canonical online release acquisition is not implemented.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The standalone installer consumes only a release directory or verified archive
+explicitly supplied by its caller. It has no built-in release URL, package
+layout, MCP inventory, or harness policy.&lt;/p&gt;
+&lt;p&gt;The release-owned contract is under &lt;code&gt;.processkit/installer/&lt;/code&gt;. Protocol
+&lt;code&gt;processkit.projectious.work/installer/v1alpha1&lt;/code&gt; supports deterministic
+planning plus transactional install, update, uninstall, and recovery.
+&lt;code&gt;copy/v1&lt;/code&gt; and &lt;code&gt;preserve-user/v1&lt;/code&gt; are the closed payload operations.&lt;/p&gt;</description></item><item><title>v1 Alpha Release Facts</title><link>https://projectious-work.github.io/processkit/v1.x/docs/reference/v1-alpha-release-facts/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/reference/v1-alpha-release-facts/</guid><description>&lt;p&gt;These facts describe the published &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt; release.&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Fact&lt;/th&gt;
+ &lt;th&gt;Value&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Release&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Status&lt;/td&gt;
+ &lt;td&gt;Exact-pin prerelease&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Release commit&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;a703afe714faf2b154b1c0f74b52829d067e5ca6&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Content archive&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;processkit-v1.0.0-alpha.4.tar.gz&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Native target&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;aarch64-unknown-linux-gnu&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Installer asset&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Signature&lt;/td&gt;
+ &lt;td&gt;Ed25519&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Public key ID&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;035a31564b52ca7c6e0b7b4c4a37b4fcf94fb3dd178d98473af8a9242dafdeee&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Gateway tool count in release acceptance&lt;/td&gt;
+ &lt;td&gt;199&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Installer protocol&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;processkit.projectious.work/installer/v1alpha1&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;Entity API version&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;processkit.projectious.work/v2&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;The release publishes seven assets: the content archive and checksum, native
+installer and checksum, signed JSON envelope, signature, and public key.&lt;/p&gt;
+&lt;h2 id="profiles"&gt;Profiles&lt;/h2&gt;
+&lt;p&gt;The distribution exposes these profiles:&lt;/p&gt;</description></item><item><title>Role</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/role/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/role/</guid><description>&lt;p&gt;A named set of responsibilities. Roles are descriptive — they document
 who is expected to do what, but do not enforce access control.&lt;/p&gt;
 &lt;table&gt;
  &lt;thead&gt;
@@ -2282,8 +2362,9 @@ the process.&lt;/li&gt;
 &lt;code&gt;scope-gate&lt;/code&gt; Bindings. Legacy &lt;code&gt;process-gate&lt;/code&gt; Bindings are migration-only.&lt;/li&gt;
 &lt;/ul&gt;</description></item><item><title>Python MCP runtime contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</guid><description>&lt;p&gt;Python is an intentional processkit runtime dependency. It implements the MCP
 servers; it is not required by the Model Context Protocol itself. The native
-Rust CLI owns installation and lifecycle safety and will provide diagnostics
-and optional process supervision without reimplementing MCP behavior.&lt;/p&gt;
+Rust CLI owns installation and lifecycle safety. Native diagnostics and
+optional process supervision are planned and will not reimplement MCP
+behavior.&lt;/p&gt;
 &lt;h2 id="current-alpha-requirements"&gt;Current alpha requirements&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;Python 3.10 or newer must be discoverable by &lt;code&gt;uv&lt;/code&gt;.&lt;/li&gt;
@@ -2994,32 +3075,7 @@ new workflow records as StateMachine entities.&lt;/p&gt;
 appropriate implementation contract and returns structured errors for
 invalid transitions. Project workflows should be expressed with
 WorkItems, Artifacts, Gates, and Bindings rather than new
-StateMachine records.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</guid><description>&lt;p&gt;aibox should treat processkit as an opaque local executable. It creates a
-versioned JSON request, invokes &lt;code&gt;processkit execute --request &amp;lt;path&amp;gt;&lt;/code&gt;, parses
-the single JSON result, and does not duplicate processkit ownership policy.&lt;/p&gt;
-&lt;p&gt;The producer integration checkpoint is the schema bundle under
-&lt;code&gt;src/.processkit/installer/schemas/&lt;/code&gt;, the executable built from &lt;code&gt;installer/&lt;/code&gt;,
-and these local gates:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;scripts/test-installer-local.sh
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;scripts/test-installer-pilot-local.sh
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The stable request fields are &lt;code&gt;apiVersion&lt;/code&gt;, &lt;code&gt;operation&lt;/code&gt;, &lt;code&gt;root&lt;/code&gt;,
-&lt;code&gt;distributionPath&lt;/code&gt;, &lt;code&gt;envelopePath&lt;/code&gt;, &lt;code&gt;signaturePath&lt;/code&gt;, &lt;code&gt;trustStorePath&lt;/code&gt;,
-&lt;code&gt;profiles&lt;/code&gt;, &lt;code&gt;harnesses&lt;/code&gt;, and &lt;code&gt;yes&lt;/code&gt;. Plan, install, and update accept either a
-development &lt;code&gt;distributionPath&lt;/code&gt; or the three signed-release paths. Production
-consumers use the signed-release form. Mutation operations require
-&lt;code&gt;yes: true&lt;/code&gt;.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</guid><description>&lt;p&gt;The standalone installer consumes only a release directory or verified archive
-explicitly supplied by its caller. It has no built-in release URL, package
-layout, MCP inventory, or harness policy.&lt;/p&gt;
-&lt;p&gt;The release-owned contract is under &lt;code&gt;.processkit/installer/&lt;/code&gt;. Protocol
-&lt;code&gt;processkit.projectious.work/installer/v1alpha1&lt;/code&gt; supports deterministic
-planning plus transactional install, update, uninstall, and recovery.
-&lt;code&gt;copy/v1&lt;/code&gt; and &lt;code&gt;preserve-user/v1&lt;/code&gt; are the closed payload operations.&lt;/p&gt;
-&lt;p&gt;Consumers invoke the opaque request/result boundary:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit execute --request installer-request.json
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The request selects an operation, arbitrary target root, release directory,
-profiles, harness intent, and explicit mutation acknowledgement. The command
-prints exactly one JSON result. A non-zero exit and &lt;code&gt;status: invalid&lt;/code&gt; indicate
-an unsuccessful request.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</guid><description>&lt;p&gt;The v1 release path is local, agent-first, and human-operable. It does not
+StateMachine records.&lt;/p&gt;</description></item><item><title>Local Release Production</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</guid><description>&lt;p&gt;The v1 release path is local, agent-first, and human-operable. It does not
 require GitHub Actions, a hosted CI service, or a publication provider.
 Agents and humans invoke the same repository scripts.&lt;/p&gt;
 &lt;h2 id="one-time-key-setup"&gt;One-time key setup&lt;/h2&gt;
@@ -3030,14 +3086,20 @@ the local trust store of every machine that installs official releases.&lt;/p&gt
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;&lt;span class="s2"&gt;/.config/processkit/trust.d/release.pub.pem&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Back up the private key securely. Losing it prevents producing a release under
 that identity. Disclosing it requires creating a new key identity and removing
-the compromised public key from local trust stores.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</guid><description>&lt;p&gt;The installer treats an archive, descriptor, manifest, catalog, adapter, and
+the compromised public key from local trust stores.&lt;/p&gt;</description></item><item><title>Installer Threat Model</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; Traversal, symlink, forged-journal, signature, digest,
+downgrade, same-version equivocation, and interruption paths have automated
+coverage. The “before beta” items below remain open hardening targets.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The installer treats an archive, descriptor, manifest, catalog, adapter, and
 target filesystem as untrusted until validated. It must reject absolute or
 parent-traversal paths, archive links and path escapes, duplicate normalized
 destinations, unsupported operations, unverified assets, and target symlink
-escapes. It must not execute release-supplied code.&lt;/p&gt;
-&lt;p&gt;Before beta, tests must cover archive size/count limits, TOCTOU and symlink
-races, interrupted application/recovery, malformed provenance, downgrade
-policy, MCP command-array injection, and secret redaction in plans and state.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/v0-compatibility/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/v0-compatibility/</guid><description>&lt;p&gt;The v1 installer identifies legacy processkit evidence without consulting
+escapes. It must not execute release-supplied code.&lt;/p&gt;</description></item><item><title>v0 Compatibility</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/v0-compatibility/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/v0-compatibility/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; Compatibility inspection is implemented and
+non-mutating. Native in-place migration is not supported.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The v1 installer identifies legacy processkit evidence without consulting
 aibox, harness, devcontainer, or MCP configuration files.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit inspect-compatibility &lt;span class="se"&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --root /path/to/legacy-tree &lt;span class="se"&gt;\
@@ -3046,125 +3108,47 @@ aibox, harness, devcontainer, or MCP configuration files.&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;An &lt;code&gt;exact-release&lt;/code&gt; result requires every immutable anchor in a shipped
 compatibility manifest to match. The beta manifests cover v0.27.1 and
 v0.28.4 release trees. A partial installed project may be classified only as
-&lt;code&gt;legacy-project-candidate&lt;/code&gt;; its exact version is never guessed.&lt;/p&gt;
-&lt;p&gt;Beta compatibility is read-only and evidence-only. Detection does not mutate
-the inspected tree and does not authorize an in-place install. For an exact
-release or candidate:&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</guid><description>&lt;p&gt;This document captures how processkit surfaces itself inside the Claude
-Code harness: which payloads land at session start vs. each turn, which
-hooks fire, and which Claude Code settings we recommend for any
-processkit project.&lt;/p&gt;
-&lt;p&gt;WorkItem: BACK-20260509_1317-DaringRaven (issue #19). Companion file:
-&lt;a href="settings.example.json"&gt;&lt;code&gt;settings.example.json&lt;/code&gt;&lt;/a&gt;
+&lt;code&gt;legacy-project-candidate&lt;/code&gt;; its exact version is never guessed.&lt;/p&gt;</description></item><item><title>aibox Integration</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; The opaque request/result protocol is implemented.
+Complete direct-CLI/aibox installed-state parity remains an acceptance
+requirement, so the v0 compatibility bridge stays enabled.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;aibox should treat processkit as an opaque local executable. It creates a
+versioned JSON request, invokes &lt;code&gt;processkit execute --request &amp;lt;path&amp;gt;&lt;/code&gt;, parses
+the single JSON result, and does not duplicate processkit ownership policy.&lt;/p&gt;
+&lt;p&gt;The producer integration checkpoint is the schema bundle under
+&lt;code&gt;src/.processkit/installer/schemas/&lt;/code&gt;, the executable built from &lt;code&gt;installer/&lt;/code&gt;,
+and these local gates:&lt;/p&gt;</description></item><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 review:&lt;/strong&gt; Ontology, schema generation, local installer lifecycle,
+signed release, extracted-package MCP smoke, and first-ART evidence are
+implemented. Four-platform native distribution, bootstrap installation,
+online release resolution, native doctor/MCP supervision, full dogfood
+update recovery, and v0-to-v1 migration remain GA blockers. See the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
 .&lt;/p&gt;
-&lt;h2 id="what-the-per-turn-hook-injects"&gt;What the per-turn hook injects&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;scripts/emit_compliance_contract.py&lt;/code&gt; runs as &lt;strong&gt;both&lt;/strong&gt; a &lt;code&gt;SessionStart&lt;/code&gt;
-and a &lt;code&gt;UserPromptSubmit&lt;/code&gt; hook (wired in
-&lt;code&gt;/workspace/.claude/settings.json&lt;/code&gt; under &lt;code&gt;hooks.SessionStart&lt;/code&gt; and
-&lt;code&gt;hooks.UserPromptSubmit&lt;/code&gt;). It now emits two different payloads:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;SessionStart&lt;/strong&gt; — the &lt;em&gt;full&lt;/em&gt; compliance contract from
-&lt;code&gt;context/skills/processkit/skill-gate/assets/compliance-contract.md&lt;/code&gt;
-(~78 lines: 6 sections covering session start, sub-agent dispatch,
-tool routing, entity writes, decisions, prohibitions). One-shot per
-session.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;UserPromptSubmit&lt;/strong&gt; — the &lt;em&gt;slim&lt;/em&gt; per-turn checklist (~14 lines):
-3 positive actions (acknowledge, route, find skill), 3 prohibitions
-(no hand-edit / no &lt;code&gt;ls&lt;/code&gt;/&lt;code&gt;grep&lt;/code&gt; / no &lt;code&gt;templates/&lt;/code&gt;), and a one-line
-pointer to the full contract. Runs on every prompt.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The single source of truth is still
-&lt;code&gt;compliance-contract.md&lt;/code&gt;. The slim payload is the block delimited by
-&lt;code&gt;&amp;lt;!-- BEGIN HOOK --&amp;gt;&lt;/code&gt; &amp;hellip; &lt;code&gt;&amp;lt;!-- END HOOK --&amp;gt;&lt;/code&gt; markers in that file —
-edit one file, both payloads update together. &lt;code&gt;_extract_hook_block()&lt;/code&gt;
-in &lt;code&gt;emit_compliance_contract.py&lt;/code&gt; does the slicing.&lt;/p&gt;</description></item><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
 &lt;p&gt;The acceptance gate keeps the v1.0 rebuild measurable. The RFC&amp;rsquo;s
 81-criterion gate is authoritative for final cutover; the staged lists
-below are working summaries for alpha-first execution.&lt;/p&gt;
-&lt;h2 id="rfc-cutover-gate"&gt;RFC Cutover Gate&lt;/h2&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th&gt;Phase&lt;/th&gt;
- &lt;th style="text-align: right"&gt;Criteria&lt;/th&gt;
- &lt;th style="text-align: right"&gt;Strict&lt;/th&gt;
- &lt;th style="text-align: right"&gt;Soft&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td&gt;P0 - Pre-conditions&lt;/td&gt;
- &lt;td style="text-align: right"&gt;5&lt;/td&gt;
- &lt;td style="text-align: right"&gt;5&lt;/td&gt;
- &lt;td style="text-align: right"&gt;0&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;O1 - Ontology completeness&lt;/td&gt;
- &lt;td style="text-align: right"&gt;11&lt;/td&gt;
- &lt;td style="text-align: right"&gt;9&lt;/td&gt;
- &lt;td style="text-align: right"&gt;2&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;T2 - Tooling parity&lt;/td&gt;
- &lt;td style="text-align: right"&gt;12&lt;/td&gt;
- &lt;td style="text-align: right"&gt;9&lt;/td&gt;
- &lt;td style="text-align: right"&gt;3&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;C3 - Corpus migration&lt;/td&gt;
- &lt;td style="text-align: right"&gt;10&lt;/td&gt;
- &lt;td style="text-align: right"&gt;10&lt;/td&gt;
- &lt;td style="text-align: right"&gt;0&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;S4 - Skills and agents&lt;/td&gt;
- &lt;td style="text-align: right"&gt;8&lt;/td&gt;
- &lt;td style="text-align: right"&gt;8&lt;/td&gt;
- &lt;td style="text-align: right"&gt;0&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;A5 - First-ART validation&lt;/td&gt;
- &lt;td style="text-align: right"&gt;18&lt;/td&gt;
- &lt;td style="text-align: right"&gt;18&lt;/td&gt;
- &lt;td style="text-align: right"&gt;0&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;G6 - Cutover decision point&lt;/td&gt;
- &lt;td style="text-align: right"&gt;8&lt;/td&gt;
- &lt;td style="text-align: right"&gt;8&lt;/td&gt;
- &lt;td style="text-align: right"&gt;0&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;R7 - Post-cutover stabilisation&lt;/td&gt;
- &lt;td style="text-align: right"&gt;9&lt;/td&gt;
- &lt;td style="text-align: right"&gt;8&lt;/td&gt;
- &lt;td style="text-align: right"&gt;1&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;strong&gt;Total&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: right"&gt;&lt;strong&gt;81&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: right"&gt;&lt;strong&gt;75&lt;/strong&gt;&lt;/td&gt;
- &lt;td style="text-align: right"&gt;&lt;strong&gt;6&lt;/strong&gt;&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;A5 is the proof phase: model a real ART end to end and run one full PI
-cycle through planning, execution, demo, and inspect-and-adapt.&lt;/p&gt;</description></item><item><title>Alpha Release Testing</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</guid><description>&lt;h2 id="release-policy"&gt;Release Policy&lt;/h2&gt;
+below are working summaries for alpha-first execution.&lt;/p&gt;</description></item><item><title>Alpha Release Testing</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="release-policy"&gt;Release Policy&lt;/h2&gt;
 &lt;p&gt;The current test release is the explicit prerelease
-&lt;code&gt;v1.0.0-alpha.3&lt;/code&gt;. It is merged from &lt;code&gt;v1.x-dev&lt;/code&gt; into
+&lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;. It is merged from &lt;code&gt;v1.x-dev&lt;/code&gt; into
 &lt;code&gt;v1.x-pre-release&lt;/code&gt;, validated there, and tagged there.&lt;/p&gt;
 &lt;p&gt;Prereleases never become the implicit &lt;code&gt;latest&lt;/code&gt; version. &lt;code&gt;latest&lt;/code&gt; remains the
 highest stable release, currently from the supported v0 line. Downstream
-installers must opt in to an exact prerelease.&lt;/p&gt;
-&lt;h2 id="pre-tag-gate"&gt;Pre-tag Gate&lt;/h2&gt;
-&lt;p&gt;Run from a clean &lt;code&gt;v1.x-pre-release&lt;/code&gt; worktree:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;uv run scripts/generate-v1-schemas.py --check
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;uv run scripts/smoke-test-servers.py
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;uv run scripts/smoke-test-package.py
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;scripts/check-docs-local.sh
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;uv run scripts/generate-mcp-manifest.py --check
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;scripts/test-installer-local.sh
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Also run &lt;code&gt;pk-doctor&lt;/code&gt; and the release audit. The release build must validate
-the committed MCP manifest and must not rewrite tracked release metadata.&lt;/p&gt;</description></item><item><title>Alpha Scope</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-scope/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-scope/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+installers must opt in to an exact prerelease.&lt;/p&gt;</description></item><item><title>Alpha Scope</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-scope/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-scope/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
 &lt;p&gt;The alpha proves that the v1.0 model improves real agentic project work
 before the project implements the full 89-concept ontology.&lt;/p&gt;
 &lt;p&gt;The alpha is a vertical slice, not a miniature final release.&lt;/p&gt;
@@ -3189,43 +3173,37 @@ before the project implements the full 89-concept ontology.&lt;/p&gt;
 &lt;p&gt;Four prerequisite parent concepts are required to model that slice honestly:
 &lt;code&gt;Actor&lt;/code&gt; for &lt;code&gt;TeamMember&lt;/code&gt;, &lt;code&gt;Container&lt;/code&gt; for &lt;code&gt;Scope&lt;/code&gt;, and &lt;code&gt;Command&lt;/code&gt; plus &lt;code&gt;Event&lt;/code&gt;
 for &lt;code&gt;Migration&lt;/code&gt;. The generated alpha contract therefore covers 18 of the
-ontology&amp;rsquo;s 89 concepts while preserving the 14-concept product scope.&lt;/p&gt;</description></item><item><title>Alpha.3 Closure Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha3-closure-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha3-closure-plan/</guid><description>&lt;p&gt;&lt;code&gt;v1.0.0-alpha.3&lt;/code&gt; is the feature-complete pre-cutover target. It does not
+ontology&amp;rsquo;s 89 concepts while preserving the 14-concept product scope.&lt;/p&gt;</description></item><item><title>Alpha.3 Closure Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha3-closure-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha3-closure-plan/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;v1.0.0-alpha.3&lt;/code&gt; was the feature-complete pre-cutover target. This historical
+plan did not
 authorize a merge to &lt;code&gt;main&lt;/code&gt;; v0.x remains the stable line until the owner
 accepts the final ontology, migration, CLI, and aibox evidence.&lt;/p&gt;
 &lt;p&gt;The machine-readable gate ledger is
 &lt;code&gt;docs-site/data/v1_alpha3_gates.yaml&lt;/code&gt;. It tracks all 81 original v1 criteria
 and all 15 installer criteria from issue #118. A criterion may be &lt;code&gt;met&lt;/code&gt;,
-&lt;code&gt;partial&lt;/code&gt;, &lt;code&gt;missing&lt;/code&gt;, &lt;code&gt;owner-review&lt;/code&gt;, or &lt;code&gt;deferred-post-cutover&lt;/code&gt;.&lt;/p&gt;
-&lt;p&gt;Alpha.3 closes the pre-cutover implementation work:&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;complete the 89-concept ontology and 70 executable schema contracts;&lt;/li&gt;
-&lt;li&gt;provide operational MCP, index, transition, and event parity;&lt;/li&gt;
-&lt;li&gt;migrate representative manual-v0 and aibox-managed corpora;&lt;/li&gt;
-&lt;li&gt;execute the retained agent-scenario and first-ART suites;&lt;/li&gt;
-&lt;li&gt;finish installer planning, structured reconciliation, security, and
-Codex/Claude parity;&lt;/li&gt;
-&lt;li&gt;validate the exact release artifact in a bare aibox container; and&lt;/li&gt;
-&lt;li&gt;publish reproducible, signed, exact-pinnable release assets.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;The G6 owner decision and every R7 criterion remain outside alpha.3 because
-they require an actual cutover and post-cutover observation.&lt;/p&gt;</description></item><item><title>Architecture Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</guid><description>&lt;h2 id="system-role"&gt;System Role&lt;/h2&gt;
+&lt;code&gt;partial&lt;/code&gt;, &lt;code&gt;missing&lt;/code&gt;, &lt;code&gt;owner-review&lt;/code&gt;, or &lt;code&gt;deferred-post-cutover&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Architecture Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; The Rust lifecycle/Python MCP boundary below is
+accepted and implemented for local release verification, planning, install,
+update, recovery, verification, and uninstall. Online release resolution,
+native runtime diagnostics, and Rust-supervised MCP are planned.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="system-role"&gt;System Role&lt;/h2&gt;
 &lt;p&gt;processkit v1.0 is a provider-neutral process and memory substrate. It
 stores canonical project entities in git-backed files and exposes safe
 read/write behavior through MCP servers.&lt;/p&gt;
 &lt;p&gt;Agent runtimes are consumers. processkit provides context, process
-state, governance, and memory; it does not own the agent loop.&lt;/p&gt;
-&lt;h2 id="canonical-model"&gt;Canonical Model&lt;/h2&gt;
-&lt;p&gt;The v1.0 ontology follows the RFC&amp;rsquo;s T/P/D/C framing:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;T&lt;/code&gt;: terminology and shared fragments without their own lifecycle&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;P&lt;/code&gt;: persistent primitives with schema and lifecycle&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;D&lt;/code&gt;: discriminator variants of primitives&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;C&lt;/code&gt;: compositions of primitives and terminology fragments&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The full RFC target is 89 concepts. The alpha should implement only a
-small proven subset before expanding. The detailed inventory is captured
-in &lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/"&gt;Ontology Reference&lt;/a&gt;
-.&lt;/p&gt;</description></item><item><title>Beta Ontology Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/beta-ontology-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/beta-ontology-plan/</guid><description>&lt;h2 id="target"&gt;Target&lt;/h2&gt;
+state, governance, and memory; it does not own the agent loop.&lt;/p&gt;</description></item><item><title>Beta Ontology Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/beta-ontology-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/beta-ontology-plan/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="target"&gt;Target&lt;/h2&gt;
 &lt;p&gt;The beta target is 62 of the ontology&amp;rsquo;s 89 concepts, or 69.7%. This keeps the
 accepted goal inside the 60–70% range while leaving room to validate the model
 through real workflows before completing the long tail.&lt;/p&gt;
@@ -3261,34 +3239,25 @@ through real workflows before completing the long tail.&lt;/p&gt;
  &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;The alpha&amp;rsquo;s 18 generated contracts are the first dependency-complete slice of
-this target.&lt;/p&gt;
-&lt;h2 id="implementation-status"&gt;Implementation Status&lt;/h2&gt;
-&lt;p&gt;The beta inventory is now frozen in
-&lt;code&gt;src/context/schemas/src/registry.yaml&lt;/code&gt; and contains exactly 62 unique
-concepts:&lt;/p&gt;</description></item><item><title>Branch Start Work Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/branch-start-work-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/branch-start-work-plan/</guid><description>&lt;p&gt;This plan turns the v1.0 documentation set into branch-start execution
+this target.&lt;/p&gt;</description></item><item><title>Branch Start Work Plan</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/branch-start-work-plan/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/branch-start-work-plan/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This plan turns the v1.0 documentation set into branch-start execution
 work. Phase 0 and Phase 1 are intentionally concrete; later phases are
 rougher and should be refined as evidence arrives.&lt;/p&gt;
 &lt;h2 id="phase-0---branch-foundation"&gt;Phase 0 - Branch Foundation&lt;/h2&gt;
 &lt;p&gt;Goal: make the &lt;code&gt;v1.0&lt;/code&gt; branch buildable, testable, and clearly separated
 from v0.x maintenance.&lt;/p&gt;
-&lt;p&gt;Backlog:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Freeze the branch contract and backport policy in docs.&lt;/li&gt;
-&lt;li&gt;Add a visible branch banner or README note explaining that &lt;code&gt;v1.0&lt;/code&gt; is
-the rebuild line.&lt;/li&gt;
-&lt;li&gt;Decide the initial source layout for &lt;code&gt;context/schemas/src/&lt;/code&gt;, &lt;code&gt;_generated/&lt;/code&gt;,
-schema renderer tests, and fixture projects.&lt;/li&gt;
-&lt;li&gt;Add a minimal fixture-project layout for &lt;code&gt;empty-project&lt;/code&gt;,
-&lt;code&gt;alpha-project&lt;/code&gt;, &lt;code&gt;migration-v0-project&lt;/code&gt;, &lt;code&gt;adversarial-project&lt;/code&gt;, and
-&lt;code&gt;art-project&lt;/code&gt;.&lt;/li&gt;
-&lt;li&gt;Define the command surface for schema rebuild, validation, MCP smoke,
-index rebuild, and docs build.&lt;/li&gt;
-&lt;li&gt;Establish manual local release-audit commands that do not depend on
-aibox or GitHub Actions.&lt;/li&gt;
-&lt;li&gt;Record any accepted deviations from the RFC before implementation
-starts.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Exit criteria:&lt;/p&gt;</description></item><item><title>Concept Mapping Briefing Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/concept-mapping-briefing-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/concept-mapping-briefing-analysis/</guid><description>&lt;p&gt;Source: &lt;code&gt;concept-mapping-2026-05-16.md&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Backlog:&lt;/p&gt;</description></item><item><title>Concept Mapping Briefing Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/concept-mapping-briefing-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/concept-mapping-briefing-analysis/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Source: &lt;code&gt;concept-mapping-2026-05-16.md&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;Analyzed: 2026-07-04&lt;/p&gt;
 &lt;p&gt;Supersession note: &lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt; is now the guiding
 briefing for processkit v1.0. Where this analysis conflicts with the
@@ -3319,7 +3288,13 @@ snapshot, roughly six to seven weeks old as of this analysis.&lt;/p&gt;</descrip
 &lt;li&gt;Deployment to Reflex Cloud or self-hosted via Docker&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;??? example &amp;ldquo;Example usage&amp;rdquo;
-&lt;strong&gt;Build a todo app:&lt;/strong&gt; Defines a &lt;code&gt;TodoState&lt;/code&gt; with a list of todos and input field, creates event handlers for add/delete/toggle, builds UI with &lt;code&gt;rx.input&lt;/code&gt;, &lt;code&gt;rx.button&lt;/code&gt;, and &lt;code&gt;rx.foreach(TodoState.todos, render_todo)&lt;/code&gt; to render the list dynamically.&lt;/p&gt;</description></item><item><title>Landscape Note</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/landscape-note/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/landscape-note/</guid><description>&lt;h2 id="positioning"&gt;Positioning&lt;/h2&gt;
+&lt;strong&gt;Build a todo app:&lt;/strong&gt; Defines a &lt;code&gt;TodoState&lt;/code&gt; with a list of todos and input field, creates event handlers for add/delete/toggle, builds UI with &lt;code&gt;rx.input&lt;/code&gt;, &lt;code&gt;rx.button&lt;/code&gt;, and &lt;code&gt;rx.foreach(TodoState.todos, render_todo)&lt;/code&gt; to render the list dynamically.&lt;/p&gt;</description></item><item><title>Landscape Note</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/landscape-note/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/landscape-note/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="positioning"&gt;Positioning&lt;/h2&gt;
 &lt;p&gt;processkit v1.0 is not trying to replace agent runtimes, memory
 databases, coding agents, or data catalogs. It should be the process
 substrate those systems can use.&lt;/p&gt;
@@ -3334,9 +3309,13 @@ projects.&lt;/p&gt;
 
 validates markdown plus YAML frontmatter as an agent-readable exchange
 format. processkit should support OKF import/export, generated indexes,
-and permissive boundary consumption.&lt;/p&gt;
-&lt;p&gt;processkit should not copy OKF&amp;rsquo;s path IDs, untyped links, or prose-only
-logs as canonical semantics.&lt;/p&gt;</description></item><item><title>OKF Compatibility Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/okf-compatibility-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/okf-compatibility-analysis/</guid><description>&lt;p&gt;Source:&lt;/p&gt;
+and permissive boundary consumption.&lt;/p&gt;</description></item><item><title>OKF Compatibility Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/okf-compatibility-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/okf-compatibility-analysis/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Source:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;Google Cloud announcement, &amp;ldquo;Introducing the Open Knowledge Format&amp;rdquo;,
 published 2026-06-12&lt;/li&gt;
@@ -3360,46 +3339,19 @@ states, validation modes, event logs, or interface-aware queries with
 OKF&amp;rsquo;s permissive markdown conventions.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;This gives us interoperability without losing the benefits that make
-processkit more than an LLM wiki.&lt;/p&gt;</description></item><item><title>Ontology Reference</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/</guid><description>&lt;p&gt;&lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt; is the leading document for the v1.0
+processkit more than an LLM wiki.&lt;/p&gt;</description></item><item><title>Ontology Reference</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/ontology-reference/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt; is the leading document for the v1.0
 ontology. When older analysis conflicts with this page, the RFC and this
 page win.&lt;/p&gt;
 &lt;h2 id="tpdc-classes"&gt;T/P/D/C Classes&lt;/h2&gt;
 &lt;p&gt;The RFC names four implementation classes. If a note says &lt;code&gt;TCDP&lt;/code&gt;, read it
 as the same four classes, with the RFC&amp;rsquo;s canonical order written as
-&lt;code&gt;T/P/D/C&lt;/code&gt;.&lt;/p&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th&gt;Class&lt;/th&gt;
- &lt;th&gt;Meaning&lt;/th&gt;
- &lt;th&gt;Description&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;code&gt;T&lt;/code&gt;&lt;/td&gt;
- &lt;td&gt;Terminology / foundational fragment&lt;/td&gt;
- &lt;td&gt;A concept, slot, or meta-mechanic that has no independent entity lifecycle. T concepts are reused in schemas, state machines, constraints, and generated fragments.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;code&gt;P&lt;/code&gt;&lt;/td&gt;
- &lt;td&gt;Primitive&lt;/td&gt;
- &lt;td&gt;An atomic persistent entity kind with its own schema, lifecycle, ID policy, validation contract, and storage path. P concepts can be composed into C concepts.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;code&gt;D&lt;/code&gt;&lt;/td&gt;
- &lt;td&gt;Discriminator&lt;/td&gt;
- &lt;td&gt;A typed variant of a parent primitive, usually represented by &lt;code&gt;kind:&lt;/code&gt; or an equivalent closed enum. D concepts inherit the parent schema and lifecycle.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;code&gt;C&lt;/code&gt;&lt;/td&gt;
- &lt;td&gt;Composition&lt;/td&gt;
- &lt;td&gt;A named kind assembled from primitives plus T fragments. C concepts can have their own lifecycle, but their schema is built from composed parts.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2 id="counts"&gt;Counts&lt;/h2&gt;
-&lt;p&gt;The v1.0 target is 89 ontology concepts.&lt;/p&gt;</description></item><item><title>Performance Skills</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/performance/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/performance/</guid><description>&lt;p&gt;Skills for performance analysis, optimization, and load testing.&lt;/p&gt;
+&lt;code&gt;T/P/D/C&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Performance Skills</title><link>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/performance/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/skills/catalog/performance/</guid><description>&lt;p&gt;Skills for performance analysis, optimization, and load testing.&lt;/p&gt;
 &lt;hr&gt;
 &lt;h3 id="performance-profiling"&gt;performance-profiling&lt;/h3&gt;
 &lt;blockquote&gt;
@@ -3419,7 +3371,13 @@ as the same four classes, with the RFC&amp;rsquo;s canonical order written as
 &lt;li&gt;Common optimization patterns: algorithmic improvements, batching, caching, pooling, lazy evaluation, data layout&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;??? example &amp;ldquo;Example usage&amp;rdquo;
-&lt;strong&gt;Slow API endpoint:&lt;/strong&gt; Measures end-to-end latency, profiles the handler, discovers 80% of time spent in 47 sequential database queries (N+1 problem). Rewrites as a single JOIN query, reducing response time from 3 seconds to 120ms.&lt;/p&gt;</description></item><item><title>processkit v1.0 Base Context</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/base-context/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/base-context/</guid><description>&lt;p&gt;Created: 2026-07-04&lt;/p&gt;
+&lt;strong&gt;Slow API endpoint:&lt;/strong&gt; Measures end-to-end latency, profiles the handler, discovers 80% of time spent in 47 sequential database queries (N+1 problem). Rewrites as a single JOIN query, reducing response time from 3 seconds to 120ms.&lt;/p&gt;</description></item><item><title>processkit v1.0 Base Context</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/base-context/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/base-context/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Created: 2026-07-04&lt;/p&gt;
 &lt;p&gt;This historical base context was created for the processkit v1.0 redesign.
 It was built from the earlier &lt;code&gt;projectious-work/processkit&lt;/code&gt; repository,
 cloned locally at:&lt;/p&gt;
@@ -3430,23 +3388,13 @@ cloned locally at:&lt;/p&gt;
 &lt;li&gt;Local clone: &lt;code&gt;/tmp/processkit-original&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;The goal is to preserve the proven v0.x product target while creating a
-clean basis for processkit v1.0 improvement briefings.&lt;/p&gt;
-&lt;h2 id="current-guiding-briefing"&gt;Current Guiding Briefing&lt;/h2&gt;
-&lt;p&gt;The current guiding briefing is &lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt;, analyzed
-in the &lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/"&gt;processkit v1.0 RFC analysis&lt;/a&gt;
+clean basis for processkit v1.0 improvement briefings.&lt;/p&gt;</description></item><item><title>processkit v1.0 RFC Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
 .&lt;/p&gt;
-&lt;p&gt;Conflict rule:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;preserve the stable product target captured in this base context&lt;/li&gt;
-&lt;li&gt;use the v1.0 RFC for ontology, branch, release, schema-composition,
-validation, indexing, and cutover-gate direction&lt;/li&gt;
-&lt;li&gt;treat &lt;code&gt;concept-mapping-2026-05-16.md&lt;/code&gt; as historical input where it
-agrees with the RFC, not as current guidance where it conflicts&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="current-repository-status"&gt;Current Repository Status&lt;/h2&gt;
-&lt;p&gt;At the time of this analysis, the workspace was a fresh
-aibox/processkit-derived project scaffold, not yet a rebuilt processkit
-source tree.&lt;/p&gt;</description></item><item><title>processkit v1.0 RFC Analysis</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-rfc-analysis/</guid><description>&lt;p&gt;Source: &lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Source: &lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;Analyzed: 2026-07-04&lt;/p&gt;
 &lt;p&gt;Status for this project: guiding briefing. Where this RFC conflicts with
 &lt;code&gt;concept-mapping-2026-05-16.md&lt;/code&gt; or
@@ -3458,11 +3406,13 @@ this RFC wins.&lt;/p&gt;
 and release proposal. It is no longer just an ontology discussion. It
 asks upstream processkit maintainers to host a full v1.0 greenfield
 rebuild on a parallel &lt;code&gt;v1.0&lt;/code&gt; branch while &lt;code&gt;main&lt;/code&gt; continues v0.x
-maintenance.&lt;/p&gt;
-&lt;p&gt;The product target from the base context remains intact: processkit is
-still provider-neutral process memory, skills, and MCP tooling for
-agentic software projects. The RFC changes the model and build plan used
-to reach that target.&lt;/p&gt;</description></item><item><title>processkit v1.0 Start Assessment</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-start-assessment/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-start-assessment/</guid><description>&lt;p&gt;Analyzed: 2026-07-04&lt;/p&gt;
+maintenance.&lt;/p&gt;</description></item><item><title>processkit v1.0 Start Assessment</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-start-assessment/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/analysis/processkit-v1-start-assessment/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Analyzed: 2026-07-04&lt;/p&gt;
 &lt;p&gt;Sources considered:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;processkit-v1.0-rfc-draft.md&lt;/code&gt;&lt;/li&gt;
@@ -3478,183 +3428,47 @@ projects&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id="judgement"&gt;Judgement&lt;/h2&gt;
 &lt;p&gt;The v1.0 plan is good enough to start, but not as an unconstrained
-9-12 month greenfield rebuild.&lt;/p&gt;
-&lt;p&gt;Start a &lt;code&gt;v1.0&lt;/code&gt; branch now, but run it as a narrow alpha first:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;prove a small vertical slice before implementing the full ontology&lt;/li&gt;
-&lt;li&gt;keep processkit&amp;rsquo;s canonical semantics stricter than OKF&lt;/li&gt;
-&lt;li&gt;position processkit as process memory and governance, not as another
-agent runtime&lt;/li&gt;
-&lt;li&gt;integrate with external runtimes instead of rebuilding them&lt;/li&gt;
-&lt;li&gt;add OKF import/export as a boundary compatibility feature&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The plan&amp;rsquo;s direction is strong. Its main risk is scope, not concept.&lt;/p&gt;</description></item><item><title>Product Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/product-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/product-specification/</guid><description>&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
+9-12 month greenfield rebuild.&lt;/p&gt;</description></item><item><title>Product Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/product-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/product-specification/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="purpose"&gt;Purpose&lt;/h2&gt;
 &lt;p&gt;processkit v1.0 provides a durable process substrate for agentic
 software projects. It gives humans and AI agents a shared project memory
 with typed work, decisions, discussions, artifacts, roles, skills,
 gates, bindings, and event history.&lt;/p&gt;
 &lt;p&gt;The product is not an agent runtime. It is the process and memory layer
 that agent runtimes, coding agents, and human maintainers can use to
-coordinate work safely.&lt;/p&gt;
-&lt;h2 id="primary-users"&gt;Primary Users&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Project owners who want inspectable, durable AI-assisted project
-memory.&lt;/li&gt;
-&lt;li&gt;Maintainers who need decisions, work, artifacts, and migrations to be
-traceable.&lt;/li&gt;
-&lt;li&gt;AI coding agents that need reliable task context and write-safe MCP
-tools.&lt;/li&gt;
-&lt;li&gt;Agent runtime integrators that need a provider-neutral process layer.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="problems-to-solve"&gt;Problems To Solve&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Agent sessions lose project context across turns and tools.&lt;/li&gt;
-&lt;li&gt;Important decisions and rationale are buried in chat.&lt;/li&gt;
-&lt;li&gt;Work state, review state, and acceptance criteria are not consistently
-queryable.&lt;/li&gt;
-&lt;li&gt;Multi-agent teams need roles, skills, handoffs, gates, and logs.&lt;/li&gt;
-&lt;li&gt;Markdown knowledge is readable but often lacks lifecycle semantics.&lt;/li&gt;
-&lt;li&gt;Service-owned metadata systems are less portable than git-backed
-files.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="product-goals"&gt;Product Goals&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Keep project memory file-backed, git-native, and human-inspectable.&lt;/li&gt;
-&lt;li&gt;Make process writes happen through validated MCP tools.&lt;/li&gt;
-&lt;li&gt;Support typed entities, state machines, and relation queries.&lt;/li&gt;
-&lt;li&gt;Implement the RFC&amp;rsquo;s 89-concept T/P/D/C ontology target.&lt;/li&gt;
-&lt;li&gt;Preserve auditability through structured event logs.&lt;/li&gt;
-&lt;li&gt;Support provider-neutral roles, team members, model routing, and
-skills.&lt;/li&gt;
-&lt;li&gt;Export and ingest OKF bundles without weakening canonical semantics.&lt;/li&gt;
-&lt;li&gt;Integrate with external agent runtimes instead of replacing them.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="non-goals"&gt;Non-Goals&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Build a general agent runtime.&lt;/li&gt;
-&lt;li&gt;Build a vector database.&lt;/li&gt;
-&lt;li&gt;Build a general data catalog.&lt;/li&gt;
-&lt;li&gt;Make OKF the canonical internal model.&lt;/li&gt;
-&lt;li&gt;Replace GitHub, issue trackers, CI, or code review systems.&lt;/li&gt;
-&lt;li&gt;Optimize for synthetic coding-agent benchmarks as the product goal.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="core-workflows"&gt;Core Workflows&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;Capture work as typed WorkItems with acceptance criteria.&lt;/li&gt;
-&lt;li&gt;Record decisions with context, alternatives, rationale, and
-consequences.&lt;/li&gt;
-&lt;li&gt;Attach artifacts and supporting analysis to work and decisions.&lt;/li&gt;
-&lt;li&gt;Route tasks to roles, team members, skills, and model classes.&lt;/li&gt;
-&lt;li&gt;Apply gates for approval, policy, evaluation, and release checks.&lt;/li&gt;
-&lt;li&gt;Query by interface rather than forcing agents to guess concrete
-entity kinds.&lt;/li&gt;
-&lt;li&gt;Preserve process evidence in structured LogEntries.&lt;/li&gt;
-&lt;li&gt;Export selected knowledge as OKF for open exchange.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id="success-criteria"&gt;Success Criteria&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;A maintainer can understand project state from files and docs without
-replaying chat history.&lt;/li&gt;
-&lt;li&gt;An agent can create, transition, and query process entities through MCP
-tools without hand-editing canonical context files.&lt;/li&gt;
-&lt;li&gt;A real project cycle can run through the v1.0 alpha model.&lt;/li&gt;
-&lt;li&gt;Automated fixture tests cover schema generation, MCP contracts,
-indexing, migrations, and pk-doctor before manual dogfood begins.&lt;/li&gt;
-&lt;li&gt;OKF export produces a conformant bundle for public consumption.&lt;/li&gt;
-&lt;li&gt;Existing v0.x evidence can migrate or be explicitly preserved.&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>Test Strategy</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/test-strategy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/test-strategy/</guid><description>&lt;p&gt;The current exploratory strategy is to install processkit into a new
+coordinate work safely.&lt;/p&gt;</description></item><item><title>Test Strategy</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/test-strategy/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/test-strategy/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The current exploratory strategy is to install processkit into a new
 aibox project and try workflows manually. That remains useful as a human
 dogfood check, but it is not enough for v1.0. It is not automated, it
 makes aibox a hard dependency, and it cannot prove release-gate criteria
-repeatably.&lt;/p&gt;
-&lt;h2 id="test-goals"&gt;Test Goals&lt;/h2&gt;
-&lt;p&gt;The v1.0 test strategy must prove:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;schema generation is deterministic&lt;/li&gt;
-&lt;li&gt;generated schemas validate real and adversarial fixtures correctly&lt;/li&gt;
-&lt;li&gt;MCP tools match their Python signatures and JSON Schemas&lt;/li&gt;
-&lt;li&gt;writes enforce state machines, guards, validation modes, and event logs&lt;/li&gt;
-&lt;li&gt;index reads match canonical files after creates, transitions, and
-migrations&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;query_by_interface&lt;/code&gt; returns complete mixed-kind results&lt;/li&gt;
-&lt;li&gt;migration tools preserve data within the RFC gate limits&lt;/li&gt;
-&lt;li&gt;pk-doctor catches deliberately invalid entities and every actionable
-finding has an executable or formally recognized disposition&lt;/li&gt;
-&lt;li&gt;docs and examples remain buildable&lt;/li&gt;
-&lt;li&gt;downstream integrations can consume the published contracts without
-becoming release prerequisites&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id="automated-layers"&gt;Automated Layers&lt;/h2&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th&gt;Layer&lt;/th&gt;
- &lt;th&gt;Purpose&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td&gt;Schema unit tests&lt;/td&gt;
- &lt;td&gt;Render Jinja + YAML fragments, compare &lt;code&gt;_generated&lt;/code&gt; output to golden files, and verify merge strategies.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Schema contract tests&lt;/td&gt;
- &lt;td&gt;Validate generated draft-2020-12 schemas against valid and invalid entity fixtures.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;MCP contract tests&lt;/td&gt;
- &lt;td&gt;Check every tool signature against its JSON Schema and run typed request/response fixtures.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;State-machine tests&lt;/td&gt;
- &lt;td&gt;Exercise valid and invalid transitions, guard failures, terminal states, and emitted events.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Index tests&lt;/td&gt;
- &lt;td&gt;Create and mutate fixture entities, then assert search, relation traversal, backlinks, and interface grouping.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Migration tests&lt;/td&gt;
- &lt;td&gt;Plan and execute v0.x fixture migrations; assert field-loss, orphan, source-hash, alias-resolution, and append-only gates.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;pk-doctor adversarial tests&lt;/td&gt;
- &lt;td&gt;Require every expected finding, validate remediation tools against the gateway catalog, execute remediations, and require a clean recheck.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Package smoke tests&lt;/td&gt;
- &lt;td&gt;Install processkit from the local tree or release tarball into a temporary fixture project without aibox.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Docs tests&lt;/td&gt;
- &lt;td&gt;Build Hugo/Docsy locally and verify generated links, private-content exclusion, and GitHub Pages output.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Downstream adapter tests&lt;/td&gt;
- &lt;td&gt;Consumers may run their own integration suites against a signed processkit release; their results are informative and non-blocking for processkit.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;h2 id="fixture-projects"&gt;Fixture Projects&lt;/h2&gt;
-&lt;p&gt;Use local fixture projects under the test tree:&lt;/p&gt;</description></item><item><title>Tooling Architecture</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/tooling-architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/tooling-architecture/</guid><description>&lt;p&gt;The v1.0 tooling architecture follows the RFC: schemas are generated
+repeatably.&lt;/p&gt;</description></item><item><title>Tooling Architecture</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/tooling-architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/tooling-architecture/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The v1.0 tooling architecture follows the RFC: schemas are generated
 from Jinja + YAML sources, writes flow through MCP tools, and indexes are
 extended rather than replaced.&lt;/p&gt;
 &lt;h2 id="mcp-server-shape"&gt;MCP Server Shape&lt;/h2&gt;
 &lt;p&gt;MCP is the stable runtime contract for agents and harnesses. Files remain
-human-inspectable, but canonical mutations happen through tools.&lt;/p&gt;
-&lt;p&gt;The v1.0 server surface should include:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;a processkit gateway that exposes the common read/write surface&lt;/li&gt;
-&lt;li&gt;per-domain management tools for work, decisions, records, gates,
-discussions, roles, bindings, migrations, and skills&lt;/li&gt;
-&lt;li&gt;an index-management surface for reads, search, relation traversal, and
-interface queries&lt;/li&gt;
-&lt;li&gt;a schema-management surface with &lt;code&gt;regenerate_schemas&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;a doctor/audit surface for validation, drift, and release readiness&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The gateway can aggregate tools for harness convenience, but tool
-ownership should remain domain-specific so validation and lifecycle rules
-stay close to the schema they enforce.&lt;/p&gt;</description></item><item><title>v0 Reconciliation</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/v0-reconciliation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/v0-reconciliation/</guid><description>&lt;h2 id="baseline"&gt;Baseline&lt;/h2&gt;
+human-inspectable, but canonical mutations happen through tools.&lt;/p&gt;</description></item><item><title>v0 Reconciliation</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/v0-reconciliation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/v0-reconciliation/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+planning. For shipped behavior and current gaps, use the
+&lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
+.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="baseline"&gt;Baseline&lt;/h2&gt;
 &lt;p&gt;The v1 line forked from &lt;code&gt;v0.27.1&lt;/code&gt;. Reconciliation therefore compares the
 current v1 work against the latest supported v0 release, currently
 &lt;code&gt;v0.28.3&lt;/code&gt;, rather than copying the v0 tree wholesale.&lt;/p&gt;

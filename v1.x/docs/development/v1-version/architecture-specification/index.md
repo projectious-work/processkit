@@ -8,6 +8,11 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
+> **Alpha.4 status:** The Rust lifecycle/Python MCP boundary below is
+> accepted and implemented for local release verification, planning, install,
+> update, recovery, verification, and uninstall. Online release resolution,
+> native runtime diagnostics, and Rust-supervised MCP are planned.
+
 ## System Role
 
 processkit v1.0 is a provider-neutral process and memory substrate. It
@@ -16,6 +21,29 @@ read/write behavior through MCP servers.
 
 Agent runtimes are consumers. processkit provides context, process
 state, governance, and memory; it does not own the agent loop.
+
+## Product Boundary
+
+The architecture is intentionally hybrid:
+
+| Surface | Ownership |
+| --- | --- |
+| Rust CLI | Release verification, deterministic plans, transactional filesystem mutation, recovery, and machine request/result envelopes |
+| Python MCP | Tool registration, entity validation, lifecycle transitions, routing, indexing, and process workflows |
+| Visible content | Skills, schemas, state machines, processes, templates, packages, and harness adapters |
+| Project state | Entities, configuration, local overrides, and audit history owned by each consuming project |
+
+There is no planned wholesale rewrite of MCP servers in Rust. A future Rust
+`mcp` command may supervise the installed Python gateway, but Python remains
+authoritative.
+
+The repository boundary is equally strict:
+
+- `context/` is processkit's installed dogfood consumer state.
+- `src/context/` is the producer-curated release deliverable.
+
+Dogfooding is acceptance evidence. It does not make the two trees redundant,
+and project-owned entities must never leak into the release payload.
 
 ## Canonical Model
 
@@ -26,9 +54,11 @@ The v1.0 ontology follows the RFC's T/P/D/C framing:
 - `D`: discriminator variants of primitives
 - `C`: compositions of primitives and terminology fragments
 
-The full RFC target is 89 concepts. The alpha should implement only a
-small proven subset before expanding. The detailed inventory is captured
-in [Ontology Reference](./ontology-reference.md).
+The RFC target is 89 concepts. Alpha.3 completed the planned ontology breadth;
+subsequent work is intentionally focused on lifecycle usability, trust,
+migration, runtime diagnostics, and proven user journeys rather than further
+default-ontology expansion. The detailed inventory is captured in
+[Ontology Reference](./ontology-reference.md).
 
 The product release version and entity API version are independent. The
 v1.0 release keeps `apiVersion: processkit.projectious.work/v2`; changing
@@ -133,6 +163,10 @@ processkit should provide examples and integration surfaces for:
 
 The stable contract should be MCP, files, schemas, and docs, not a
 framework-specific runtime dependency.
+
+In alpha.4, harnesses launch the Python gateway directly through `uv` or an
+installer-managed projection. Native `processkit doctor` and `processkit mcp`
+commands are target interfaces, not current commands.
 
 ## Testing Architecture
 

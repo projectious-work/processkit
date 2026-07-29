@@ -8,6 +8,10 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](./issue-135-status.md).
+
 ## Baseline
 
 The v1 line forked from `v0.27.1`. Reconciliation therefore compares the

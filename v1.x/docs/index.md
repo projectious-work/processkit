@@ -4,96 +4,67 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-**processkit is a provider-neutral process layer for AI-assisted
-software projects.**
+**processkit is a provider-neutral process and memory layer for
+AI-assisted projects.**
 
-It gives agents structured project memory, reusable domain skills, and
-validated MCP tools. The practical effect is simple: agents can read and
-write durable work items, decisions, notes, artifacts, migrations, and
-other project records through explicit contracts instead of loose files
-and provider-specific conventions.
+It keeps durable project state in Git-reviewable files, validates that state
+through schemas and lifecycle rules, and exposes project workflows through
+Python MCP servers.
 
-processkit is designed to be used directly by MCP-capable harnesses or
-installed by an environment manager. aibox is one supported managed
-installer, not a runtime dependency.
+## Release lines
 
-## What ships
+| Line | Status | Use |
+| --- | --- | --- |
+| v0.x | Stable and default | Existing projects and normal production use |
+| `v1.0.0-alpha.4` | Exact-pin prerelease | Evaluation of the native lifecycle CLI and v1 contracts |
 
-- **140 skills** across engineering, product, research, data, design,
-  documents, devops, and processkit operations.
-- **25 MCP server entry points** for entity management, search, routing,
-  release checks, projections, and gateway access.
-- **16 shipped project-memory schemas** for durable v2 entities such as
-  WorkItem, DecisionRecord, Artifact, Note, LogEntry, Migration, Actor,
-  Role, Binding, Scope, Gate, Discussion, and related primitives.
-- **5 package tiers**: `minimal`, `managed`, `software`, `research`,
-  and `product`.
-- **A provider-neutral MCP gateway** that can expose processkit through
-  one stdio server, one streamable HTTP daemon, or a stdio proxy.
+The v1 alpha is opt-in. It does not replace the supported v0 line, and it
+must not be selected through an unverified `latest` URL.
 
-## Design goals
+## v1 product boundary
 
-processkit separates process semantics from harness behavior:
+| Layer | Responsibility |
+| --- | --- |
+| Native Rust CLI | Verify releases; plan, install, update, recover, verify, and uninstall project content |
+| Python MCP runtime | Serve tools, validate entity operations, enforce transitions, route skills, and maintain the derived index |
+| Visible content | Skills, schemas, state machines, processes, adapters, and configuration remain reviewable files |
+| Project-owned state | WorkItems, Decisions, Artifacts, Notes, Logs, and local overrides belong to the consuming project |
 
-- The **schemas** define durable project memory.
-- The **skills** describe repeatable workflows and domain gotchas.
-- The **MCP tools** validate writes, enforce state transitions, and keep
-  the context searchable.
-- The **gateway** gives harnesses one processkit entry point without
-  knowing about Claude, Codex, OpenCode, Hermes, Aider, or any other
-  provider-specific runtime.
+Python is intentionally retained for MCP. The Rust CLI is the lifecycle and
+trust boundary, not a second MCP implementation.
 
-That split keeps processkit forkable, installable by hand, and usable by
-multiple harnesses. Integrations can automate install and lifecycle, but
-they do not own the processkit contracts.
+Within this repository, `context/` is processkit's own dogfood project state.
+`src/context/` is the producer-owned payload installed into other projects.
+They have different ownership and must not be merged.
 
-## How to use it
+## Start with v1
 
-The direct path is:
+The currently published native executable supports Linux ARM64 GNU systems.
+The CLI still requires an explicitly downloaded distribution directory; an
+online resolver and bootstrap installer are planned but not implemented.
 
-1. Download a release tarball from
-   [GitHub Releases](https://github.com/projectious-work/processkit/releases).
-2. Copy the shipped `context/`, `.processkit/`, and `AGENTS.md` files
-   into your project.
-3. Register `processkit-gateway` or selected per-skill MCP servers with
-   your harness.
-4. Ask the agent to use processkit tools for entity reads and writes.
+Follow the
+[v1 alpha installation and first-project tutorial](./getting-started/v1-alpha-tutorial/)
+for a verified, step-by-step installation.
 
-Managed installers can do those steps for you. For example, aibox can
-fetch a pinned processkit release, choose a package tier, write harness
-MCP configuration, and supervise a gateway daemon in a devcontainer.
+## Documentation map
 
-## Where to go next
-
-- [Getting Started](./getting-started/) explains the manual and
-  managed install paths.
-- [MCP Servers](./mcp-servers/) explains gateway, daemon,
-  stdio-proxy, aggregate, and per-skill layouts.
-- [Primitives](./primitives/) explains the project-memory
-  entity model.
-- [Skills](./skills/) explains the skill package format and
-  catalog.
-- [Packages](./packages/) explains the five package tiers.
-- [v2 Contracts](./reference/v2-contracts) explains the current
-  deliverable boundary and demoted legacy primitives.
-
-## Current status
-
-The current release line is pre-1.0. Breaking changes may still land in
-minor releases, and the changelog calls them out explicitly.
-
-`v0.25.0` is a breaking pre-1.0 release. It completes the
-SmoothTiger/SmoothRiver v2 deliverable boundary, adds the
-provider-neutral `processkit-gateway`, removes legacy first-class
-primitive schemas from the shipped `src/context/` surface, and turns the
-release checks into executable gates.
+- [Getting Started](./getting-started/) covers installation and first use.
+- [Installer](./installer/) documents trust, transactions, automation, and
+  runtime requirements.
+- [MCP Servers](./mcp-servers/) explains gateway and per-skill operation.
+- [Primitives](./primitives/) describes durable project entities.
+- [Skills](./skills/) describes reusable process knowledge.
+- [Packages](./packages/) describes installable content profiles.
+- [v1 implementation status](./development/v1-version/issue-135-status/)
+  maps issue #135 to alpha.4 evidence and remaining gaps.
 
 ---
 
 Section pages:
 
 - [Development](/processkit/v1.x/docs/development/): Active planning documents for processkit evolution.
-- [Getting Started](/processkit/v1.x/docs/getting-started/): Install processkit by hand from a release archive or through a managed installer, then create your first entity.
+- [Getting Started](/processkit/v1.x/docs/getting-started/): Install a verified processkit release and use its MCP tools.
 - [Primitives](/processkit/v1.x/docs/primitives/): The project-memory entity model — the shape of a WorkItem, a DecisionRecord, an Artifact, and the rest of the durable record.
 - [Skills](/processkit/v1.x/docs/skills/): The skill package format, the category hierarchy, and the shipped catalog.
 - [Packages](/processkit/v1.x/docs/packages/): The package tiers, from a minimal bootstrap context to a fully managed workspace.

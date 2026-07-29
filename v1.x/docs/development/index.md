@@ -27,4 +27,4 @@ Artifacts or Decisions through the processkit gateway.
 Section pages:
 
 - [v0 Prototype](/processkit/v1.x/docs/development/v0-prototype/): Status and origin of the current processkit prototype line.
-- [v1.0 Version](/processkit/v1.x/docs/development/v1-version/): Planning hub for the processkit v1.0 rebuild.
+- [v1.x Version](/processkit/v1.x/docs/development/v1-version/): Architecture, implementation status, and evidence for the processkit v1 line.

@@ -1,8 +1,15 @@
-# 
+# v0 Compatibility
+
+> Read-only evidence and migration boundary for v0 projects.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
+
+> **Alpha.4 status:** Compatibility inspection is implemented and
+> non-mutating. Native in-place migration is not supported.
 
 The v1 installer identifies legacy processkit evidence without consulting
 aibox, harness, devcontainer, or MCP configuration files.

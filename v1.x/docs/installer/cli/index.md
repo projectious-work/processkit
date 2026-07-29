@@ -13,6 +13,9 @@ commands optimize for reviewable output and safe project operation. The
 machine interface uses a versioned JSON request and result contract for aibox
 and other automation.
 
+> **Current release:** `v1.0.0-alpha.4`. The command list in the first
+> section is executable today. Commands in “Target human lifecycle” are not.
+
 ## Current v1 alpha commands
 
 The current prerelease supports:
@@ -39,7 +42,7 @@ For example:
 ```sh
 processkit plan \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.3 \
+  --distribution /path/to/processkit-v1.0.0-alpha.4 \
   --profile managed \
   --harness codex
 ```

@@ -18,6 +18,10 @@ the enforceable policy around the run.
 processkit still does not execute workflows. Agents, humans, schedulers,
 or CI systems perform the work and record progress through MCP tools.
 
+This remains true in v1 alpha: the Rust CLI owns release and filesystem
+lifecycle, while Python MCP tools and visible process definitions own domain
+workflow behavior.
+
 ## Shape
 
 Legacy v1 shape:

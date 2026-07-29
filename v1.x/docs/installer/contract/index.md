@@ -1,8 +1,15 @@
-# 
+# Installer Contract
+
+> Trust, ownership, transaction, and automation guarantees for the v1 lifecycle CLI.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
+
+> **Alpha.4 status:** Implemented for explicit local distributions and signed
+> local releases. Canonical online release acquisition is not implemented.
 
 The standalone installer consumes only a release directory or verified archive
 explicitly supplied by its caller. It has no built-in release URL, package
@@ -49,3 +56,8 @@ scripts/test-installer-local.sh
 It includes Rust formatting, Clippy, unit/integration tests, signature and
 tamper tests, an arbitrary-directory lifecycle pilot, contract validation,
 package smoke testing, and the derived-project health check.
+
+The implementation is split across focused release, request, planning,
+transaction, state, compatibility, output, and typed-error modules. A
+separate reusable Rust library crate and fully documented public API remain
+future refactoring work.

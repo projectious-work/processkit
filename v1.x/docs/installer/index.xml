@@ -2,6 +2,10 @@
 commands optimize for reviewable output and safe project operation. The
 machine interface uses a versioned JSON request and result contract for aibox
 and other automation.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Current release:&lt;/strong&gt; &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;. The command list in the first
+section is executable today. Commands in “Target human lifecycle” are not.&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id="current-v1-alpha-commands"&gt;Current v1 alpha commands&lt;/h2&gt;
 &lt;p&gt;The current prerelease supports:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit plan
@@ -16,10 +20,21 @@ and other automation.&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;plan&lt;/code&gt;, &lt;code&gt;install&lt;/code&gt;, &lt;code&gt;update&lt;/code&gt;, and compatibility inspection currently require an
 explicit local release directory through &lt;code&gt;--distribution&lt;/code&gt;. Mutating commands
 also require &lt;code&gt;--yes&lt;/code&gt;. This makes the alpha suitable for offline use and for
-callers that already acquire and verify an exact release.&lt;/p&gt;</description></item><item><title>Python MCP runtime contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</guid><description>&lt;p&gt;Python is an intentional processkit runtime dependency. It implements the MCP
+callers that already acquire and verify an exact release.&lt;/p&gt;</description></item><item><title>Installer Contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; Implemented for explicit local distributions and signed
+local releases. Canonical online release acquisition is not implemented.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The standalone installer consumes only a release directory or verified archive
+explicitly supplied by its caller. It has no built-in release URL, package
+layout, MCP inventory, or harness policy.&lt;/p&gt;
+&lt;p&gt;The release-owned contract is under &lt;code&gt;.processkit/installer/&lt;/code&gt;. Protocol
+&lt;code&gt;processkit.projectious.work/installer/v1alpha1&lt;/code&gt; supports deterministic
+planning plus transactional install, update, uninstall, and recovery.
+&lt;code&gt;copy/v1&lt;/code&gt; and &lt;code&gt;preserve-user/v1&lt;/code&gt; are the closed payload operations.&lt;/p&gt;</description></item><item><title>Python MCP runtime contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</guid><description>&lt;p&gt;Python is an intentional processkit runtime dependency. It implements the MCP
 servers; it is not required by the Model Context Protocol itself. The native
-Rust CLI owns installation and lifecycle safety and will provide diagnostics
-and optional process supervision without reimplementing MCP behavior.&lt;/p&gt;
+Rust CLI owns installation and lifecycle safety. Native diagnostics and
+optional process supervision are planned and will not reimplement MCP
+behavior.&lt;/p&gt;
 &lt;h2 id="current-alpha-requirements"&gt;Current alpha requirements&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;Python 3.10 or newer must be discoverable by &lt;code&gt;uv&lt;/code&gt;.&lt;/li&gt;
@@ -31,32 +46,7 @@ readable from the selected project root.&lt;/li&gt;
 interface.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Every shipped MCP entry point declares its Python constraint and dependencies
-in a PEP 723 block. The gateway currently declares:&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</guid><description>&lt;p&gt;aibox should treat processkit as an opaque local executable. It creates a
-versioned JSON request, invokes &lt;code&gt;processkit execute --request &amp;lt;path&amp;gt;&lt;/code&gt;, parses
-the single JSON result, and does not duplicate processkit ownership policy.&lt;/p&gt;
-&lt;p&gt;The producer integration checkpoint is the schema bundle under
-&lt;code&gt;src/.processkit/installer/schemas/&lt;/code&gt;, the executable built from &lt;code&gt;installer/&lt;/code&gt;,
-and these local gates:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;scripts/test-installer-local.sh
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;scripts/test-installer-pilot-local.sh
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The stable request fields are &lt;code&gt;apiVersion&lt;/code&gt;, &lt;code&gt;operation&lt;/code&gt;, &lt;code&gt;root&lt;/code&gt;,
-&lt;code&gt;distributionPath&lt;/code&gt;, &lt;code&gt;envelopePath&lt;/code&gt;, &lt;code&gt;signaturePath&lt;/code&gt;, &lt;code&gt;trustStorePath&lt;/code&gt;,
-&lt;code&gt;profiles&lt;/code&gt;, &lt;code&gt;harnesses&lt;/code&gt;, and &lt;code&gt;yes&lt;/code&gt;. Plan, install, and update accept either a
-development &lt;code&gt;distributionPath&lt;/code&gt; or the three signed-release paths. Production
-consumers use the signed-release form. Mutation operations require
-&lt;code&gt;yes: true&lt;/code&gt;.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</guid><description>&lt;p&gt;The standalone installer consumes only a release directory or verified archive
-explicitly supplied by its caller. It has no built-in release URL, package
-layout, MCP inventory, or harness policy.&lt;/p&gt;
-&lt;p&gt;The release-owned contract is under &lt;code&gt;.processkit/installer/&lt;/code&gt;. Protocol
-&lt;code&gt;processkit.projectious.work/installer/v1alpha1&lt;/code&gt; supports deterministic
-planning plus transactional install, update, uninstall, and recovery.
-&lt;code&gt;copy/v1&lt;/code&gt; and &lt;code&gt;preserve-user/v1&lt;/code&gt; are the closed payload operations.&lt;/p&gt;
-&lt;p&gt;Consumers invoke the opaque request/result boundary:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit execute --request installer-request.json
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The request selects an operation, arbitrary target root, release directory,
-profiles, harness intent, and explicit mutation acknowledgement. The command
-prints exactly one JSON result. A non-zero exit and &lt;code&gt;status: invalid&lt;/code&gt; indicate
-an unsuccessful request.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</guid><description>&lt;p&gt;The v1 release path is local, agent-first, and human-operable. It does not
+in a PEP 723 block. The gateway currently declares:&lt;/p&gt;</description></item><item><title>Local Release Production</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</guid><description>&lt;p&gt;The v1 release path is local, agent-first, and human-operable. It does not
 require GitHub Actions, a hosted CI service, or a publication provider.
 Agents and humans invoke the same repository scripts.&lt;/p&gt;
 &lt;h2 id="one-time-key-setup"&gt;One-time key setup&lt;/h2&gt;
@@ -67,14 +57,20 @@ the local trust store of every machine that installs official releases.&lt;/p&gt
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;&lt;span class="s2"&gt;/.config/processkit/trust.d/release.pub.pem&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Back up the private key securely. Losing it prevents producing a release under
 that identity. Disclosing it requires creating a new key identity and removing
-the compromised public key from local trust stores.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</guid><description>&lt;p&gt;The installer treats an archive, descriptor, manifest, catalog, adapter, and
+the compromised public key from local trust stores.&lt;/p&gt;</description></item><item><title>Installer Threat Model</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; Traversal, symlink, forged-journal, signature, digest,
+downgrade, same-version equivocation, and interruption paths have automated
+coverage. The “before beta” items below remain open hardening targets.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The installer treats an archive, descriptor, manifest, catalog, adapter, and
 target filesystem as untrusted until validated. It must reject absolute or
 parent-traversal paths, archive links and path escapes, duplicate normalized
 destinations, unsupported operations, unverified assets, and target symlink
-escapes. It must not execute release-supplied code.&lt;/p&gt;
-&lt;p&gt;Before beta, tests must cover archive size/count limits, TOCTOU and symlink
-races, interrupted application/recovery, malformed provenance, downgrade
-policy, MCP command-array injection, and secret redaction in plans and state.&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/v0-compatibility/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/v0-compatibility/</guid><description>&lt;p&gt;The v1 installer identifies legacy processkit evidence without consulting
+escapes. It must not execute release-supplied code.&lt;/p&gt;</description></item><item><title>v0 Compatibility</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/v0-compatibility/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/v0-compatibility/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; Compatibility inspection is implemented and
+non-mutating. Native in-place migration is not supported.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The v1 installer identifies legacy processkit evidence without consulting
 aibox, harness, devcontainer, or MCP configuration files.&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit inspect-compatibility &lt;span class="se"&gt;\
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; --root /path/to/legacy-tree &lt;span class="se"&gt;\
@@ -83,7 +79,14 @@ aibox, harness, devcontainer, or MCP configuration files.&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;An &lt;code&gt;exact-release&lt;/code&gt; result requires every immutable anchor in a shipped
 compatibility manifest to match. The beta manifests cover v0.27.1 and
 v0.28.4 release trees. A partial installed project may be classified only as
-&lt;code&gt;legacy-project-candidate&lt;/code&gt;; its exact version is never guessed.&lt;/p&gt;
-&lt;p&gt;Beta compatibility is read-only and evidence-only. Detection does not mutate
-the inspected tree and does not authorize an in-place install. For an exact
-release or candidate:&lt;/p&gt;</description></item></channel></rss>
+&lt;code&gt;legacy-project-candidate&lt;/code&gt;; its exact version is never guessed.&lt;/p&gt;</description></item><item><title>aibox Integration</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; The opaque request/result protocol is implemented.
+Complete direct-CLI/aibox installed-state parity remains an acceptance
+requirement, so the v0 compatibility bridge stays enabled.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;aibox should treat processkit as an opaque local executable. It creates a
+versioned JSON request, invokes &lt;code&gt;processkit execute --request &amp;lt;path&amp;gt;&lt;/code&gt;, parses
+the single JSON result, and does not duplicate processkit ownership policy.&lt;/p&gt;
+&lt;p&gt;The producer integration checkpoint is the schema bundle under
+&lt;code&gt;src/.processkit/installer/schemas/&lt;/code&gt;, the executable built from &lt;code&gt;installer/&lt;/code&gt;,
+and these local gates:&lt;/p&gt;</description></item></channel></rss>

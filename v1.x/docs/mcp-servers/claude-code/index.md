@@ -1,8 +1,16 @@
-# 
+# Claude Code
+
+> Claude Code hooks, MCP configuration, and processkit routing behavior.
+
+---
 
 LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
+
+> **v1 alpha note:** Install with `--harness claude` to create the managed
+> projection. The installer preserves unrelated Claude configuration. The
+> direct `uv` gateway remains the development and compatibility fallback.
 
 This document captures how processkit surfaces itself inside the Claude
 Code harness: which payloads land at session start vs. each turn, which

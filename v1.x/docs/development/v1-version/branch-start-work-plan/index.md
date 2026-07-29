@@ -8,6 +8,10 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](./issue-135-status.md).
+
 This plan turns the v1.0 documentation set into branch-start execution
 work. Phase 0 and Phase 1 are intentionally concrete; later phases are
 rougher and should be refined as evidence arrives.

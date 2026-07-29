@@ -8,6 +8,13 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
+> **Alpha.4 review:** Ontology, schema generation, local installer lifecycle,
+> signed release, extracted-package MCP smoke, and first-ART evidence are
+> implemented. Four-platform native distribution, bootstrap installation,
+> online release resolution, native doctor/MCP supervision, full dogfood
+> update recovery, and v0-to-v1 migration remain GA blockers. See the
+> [issue #135 implementation review](./issue-135-status.md).
+
 ## Purpose
 
 The acceptance gate keeps the v1.0 rebuild measurable. The RFC's

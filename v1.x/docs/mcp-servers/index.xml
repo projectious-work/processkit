@@ -3,56 +3,15 @@ not require aibox at runtime. aibox can install processkit, merge MCP
 configuration, pre-authorize processkit tools where a harness supports
 that, and supervise a managed devcontainer. Those are convenience and
 lifecycle features; they are not a processkit dependency.&lt;/p&gt;
-&lt;p&gt;For a direct install, point the harness at the desired server command
-inside the installed &lt;code&gt;context/skills&lt;/code&gt; tree. The recommended one-process
-entry point is:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-json" data-lang="json"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;mcpServers&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;processkit-gateway&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;command&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;uv&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;args&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;run&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;context/skills/processkit/processkit-gateway/mcp/server.py&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;],&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;env&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="nt"&gt;&amp;#34;PROCESSKIT_MCP_MODE&amp;#34;&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;&amp;#34;gateway&amp;#34;&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="p"&gt;}&lt;/span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="current-modes"&gt;Current modes&lt;/h2&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th&gt;Mode&lt;/th&gt;
- &lt;th&gt;Use when&lt;/th&gt;
- &lt;th&gt;Harness impact&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td&gt;Per-skill servers&lt;/td&gt;
- &lt;td&gt;You need fine-grained tool registration or the broadest compatibility.&lt;/td&gt;
- &lt;td&gt;The harness launches one stdio process per registered skill.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;code&gt;aggregate-mcp&lt;/code&gt;&lt;/td&gt;
- &lt;td&gt;You already use the legacy aggregate server.&lt;/td&gt;
- &lt;td&gt;One stdio process, compatibility name, no daemon behavior.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;&lt;code&gt;processkit-gateway&lt;/code&gt; stdio&lt;/td&gt;
- &lt;td&gt;You want the provider-neutral gateway surface now.&lt;/td&gt;
- &lt;td&gt;One stdio process, eager tool import, richer gateway metadata.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Daemon plus stdio proxy&lt;/td&gt;
- &lt;td&gt;You want a long-lived daemon with lightweight harness proxies.&lt;/td&gt;
- &lt;td&gt;One shared daemon plus one lightweight stdio proxy per harness.&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;The current gateway command is equivalent to:&lt;/p&gt;</description></item><item><title/><link>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</guid><description>&lt;p&gt;This document captures how processkit surfaces itself inside the Claude
+&lt;p&gt;The alpha.4 installer can project managed Codex and Claude configuration.
+It owns only declared processkit keys and preserves unrelated harness settings
+during install, update, and uninstall. Restart the harness after installation
+so it reloads the projection.&lt;/p&gt;</description></item><item><title>Claude Code</title><link>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;v1 alpha note:&lt;/strong&gt; Install with &lt;code&gt;--harness claude&lt;/code&gt; to create the managed
+projection. The installer preserves unrelated Claude configuration. The
+direct &lt;code&gt;uv&lt;/code&gt; gateway remains the development and compatibility fallback.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This document captures how processkit surfaces itself inside the Claude
 Code harness: which payloads land at session start vs. each turn, which
 hooks fire, and which Claude Code settings we recommend for any
 processkit project.&lt;/p&gt;
@@ -63,20 +22,4 @@ processkit project.&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;scripts/emit_compliance_contract.py&lt;/code&gt; runs as &lt;strong&gt;both&lt;/strong&gt; a &lt;code&gt;SessionStart&lt;/code&gt;
 and a &lt;code&gt;UserPromptSubmit&lt;/code&gt; hook (wired in
 &lt;code&gt;/workspace/.claude/settings.json&lt;/code&gt; under &lt;code&gt;hooks.SessionStart&lt;/code&gt; and
-&lt;code&gt;hooks.UserPromptSubmit&lt;/code&gt;). It now emits two different payloads:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;SessionStart&lt;/strong&gt; — the &lt;em&gt;full&lt;/em&gt; compliance contract from
-&lt;code&gt;context/skills/processkit/skill-gate/assets/compliance-contract.md&lt;/code&gt;
-(~78 lines: 6 sections covering session start, sub-agent dispatch,
-tool routing, entity writes, decisions, prohibitions). One-shot per
-session.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;UserPromptSubmit&lt;/strong&gt; — the &lt;em&gt;slim&lt;/em&gt; per-turn checklist (~14 lines):
-3 positive actions (acknowledge, route, find skill), 3 prohibitions
-(no hand-edit / no &lt;code&gt;ls&lt;/code&gt;/&lt;code&gt;grep&lt;/code&gt; / no &lt;code&gt;templates/&lt;/code&gt;), and a one-line
-pointer to the full contract. Runs on every prompt.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;The single source of truth is still
-&lt;code&gt;compliance-contract.md&lt;/code&gt;. The slim payload is the block delimited by
-&lt;code&gt;&amp;lt;!-- BEGIN HOOK --&amp;gt;&lt;/code&gt; &amp;hellip; &lt;code&gt;&amp;lt;!-- END HOOK --&amp;gt;&lt;/code&gt; markers in that file —
-edit one file, both payloads update together. &lt;code&gt;_extract_hook_block()&lt;/code&gt;
-in &lt;code&gt;emit_compliance_contract.py&lt;/code&gt; does the slicing.&lt;/p&gt;</description></item></channel></rss>
+&lt;code&gt;hooks.UserPromptSubmit&lt;/code&gt;). It now emits two different payloads:&lt;/p&gt;</description></item></channel></rss>

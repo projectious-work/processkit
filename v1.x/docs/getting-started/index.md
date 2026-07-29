@@ -1,6 +1,6 @@
 # Getting Started
 
-> Install processkit by hand from a release archive or through a managed installer, then create your first entity.
+> Install a verified processkit release and use its MCP tools.
 
 ---
 
@@ -8,74 +8,50 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-processkit is consumed by agent harnesses and project tooling. You can
-install it manually from a release tarball, or let an installer such as
-aibox do the copying and harness wiring for you.
+Choose the path that matches your release line:
 
-The minimal workflow is:
+- **v1 alpha:** use the native CLI and signed local-release envelope. Start
+  with the [v1 alpha tutorial](./v1-alpha-tutorial/).
+- **v0 stable:** retain the supported v0 installer or managed aibox workflow.
+  See [Installing](./installing/) for the compatibility path.
 
-1. Install a processkit release into your project's `context/` tree.
-2. Pick a package tier (`minimal`, `managed`, `software`, `research`,
-   or `product`).
-3. Register `processkit-gateway` with your MCP-capable harness.
-4. Use MCP tools for entity reads and writes instead of editing project
-   memory by hand.
+## What v1 installs
 
-See [Installing](./installing) for concrete commands.
+A v1 distribution contains visible, reviewable project content:
 
-## What gets installed
+- `context/skills/` and the Python MCP servers shipped with those skills;
+- `context/schemas/`, generated contracts, and state machines;
+- `.processkit/` profiles, installer contracts, and release metadata;
+- harness projections owned at individual managed keys; and
+- `AGENTS.md`, the provider-neutral agent entry point.
 
-A processkit release contains:
+The installer records managed ownership in `.processkit/state.json`. New
+project entities and local overrides remain owned by the consuming project.
 
-- `context/skills/` — the shipped skill catalog and per-skill MCP
-  servers.
-- `context/skills/_lib/processkit/` — shared Python runtime helpers used
-  by the MCP servers and gateway.
-- `context/schemas/` — the 16 shipped v2 project-memory schemas.
-- `context/state-machines/` — implementation contracts used by entity
-  management tools.
-- `.processkit/` — package tier metadata and release metadata.
-- `AGENTS.md` — a provider-neutral agent entry point.
+## Runtime requirements
 
-Your project then owns its local memory under directories such as
-`context/workitems/`, `context/decisions/`, `context/artifacts/`,
-`context/notes/`, and `context/logs/`.
+- Linux ARM64 GNU for the published alpha.4 native executable.
+- Python 3.10 or newer and `uv` for the Python MCP runtime.
+- Git and an MCP-capable harness for the normal agent workflow.
+- `curl`, `tar`, and `sha256sum` for the tutorial.
 
-## Managed install path
-
-Managed installers can add devcontainer lifecycle, harness config, and
-upgrade handling. aibox is the reference managed integration today: it
-can fetch a pinned processkit release, choose a package tier, write MCP
-config for the selected harness, and optionally supervise the gateway
-daemon.
-
-That is convenience infrastructure. The same installed processkit files
-can also be used directly by Claude Code, Codex, OpenCode, Hermes, Aider
-integrations, or a custom MCP client when those tools are configured
-manually.
-
-## Requirements
-
-- Python 3.10 or newer.
-- `uv`, used to run the Python MCP server scripts and resolve their
-  inline PEP 723 dependencies.
-- An MCP-capable harness if you want tool access. You can still read the
-  skills and schemas directly without MCP.
-- Docker or OrbStack only if your chosen environment manager uses a
-  devcontainer.
+Linux x86_64 and macOS native assets, a bootstrap installer, online release
+resolution, and native `processkit doctor`/`processkit mcp` commands are
+future work.
 
 ## Learning path
 
-1. Read [Primitives → Overview](../primitives/) to understand
-   the durable entity model.
-2. Read [Primitives → Format](../primitives/format) to learn the entity file shape.
-3. Read [Skills → Overview](../skills/) to learn what skills do.
-4. Pick a package ([Packages → Overview](../packages/)).
-5. Create your [first entity](./first-entity).
+1. Complete the [v1 alpha tutorial](./v1-alpha-tutorial/).
+2. Create [your first entity](./first-entity/) through MCP.
+3. Review [installer guarantees](../installer/contract/).
+4. Choose a [package profile](../packages/).
+5. Read the
+   [v1 implementation status](../development/v1-version/issue-135-status/).
 
 ---
 
 Section pages:
 
 - [Installing](/processkit/v1.x/docs/getting-started/installing/)
+- [Install and Use the v1 Alpha](/processkit/v1.x/docs/getting-started/v1-alpha-tutorial/): Verify, install, and use processkit v1.0.0-alpha.4 step by step.
 - [Your First Entity](/processkit/v1.x/docs/getting-started/first-entity/)

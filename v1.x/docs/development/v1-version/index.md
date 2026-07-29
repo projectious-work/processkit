@@ -1,6 +1,6 @@
-# v1.0 Version
+# v1.x Version
 
-> Planning hub for the processkit v1.0 rebuild.
+> Architecture, implementation status, and evidence for the processkit v1 line.
 
 ---
 
@@ -8,15 +8,31 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-The v1.0 version is the planned greenfield rebuild described by
-`processkit-v1.0-rfc-draft.md`. It keeps the processkit product promise
-but replaces the current v0 ontology and tooling internals with an
-89-concept T/P/D/C model, generated schemas, stronger MCP contracts, and
-automated validation.
+The v1 line is an active prerelease, not only a design proposal.
+`v1.0.0-alpha.4` supplies a native Rust lifecycle CLI, a signed release
+contract, generated schemas, and the Python MCP runtime as visible project
+content.
 
-This section is the working design package for the v1 development line.
+The RFC and planning pages in this section remain useful design history.
+Statements written as future requirements are not evidence that a feature is
+implemented. Use the implementation review for the current truth.
 
-## Core Documents
+## Current Status
+
+- [Issue #135 Implementation Review](./issue-135-status.md)
+- [Alpha.4 Release Facts](../../reference/v1-alpha-release-facts.md)
+- [Install and Use the v1 Alpha](../../getting-started/v1-alpha-tutorial.md)
+
+The fixed architecture is:
+
+- Rust owns release trust and project-content lifecycle.
+- Python remains the authoritative MCP implementation.
+- skills, schemas, processes, state machines, and entities remain files.
+- `context/` is dogfood consumer state; `src/context/` is the release
+  producer payload.
+- the supported v0 line remains the default while v1 is exact-pin alpha.
+
+## Design and Evidence Documents
 
 - [Product Specification](./product-specification.md)
 - [Architecture Specification](./architecture-specification.md)
@@ -30,6 +46,7 @@ This section is the working design package for the v1 development line.
 - [Branch Start Work Plan](./branch-start-work-plan.md)
 - [Landscape Note](./landscape-note.md)
 - [Acceptance Gate](./acceptance-gate.md)
+- [Issue #135 Implementation Review](./issue-135-status.md)
 
 ## Supporting Analysis
 
@@ -67,10 +84,22 @@ development-to-release-to-main pattern. Security fixes and dependency
 bumps may flow between lines when needed; feature work does not
 automatically backport.
 
+## Historical-page convention
+
+Every page below this section is reviewed against alpha.4, but several pages
+describe a target gate or the reasoning that preceded implementation. Treat
+the labels as follows:
+
+- **Implemented** means executable code and release evidence exist.
+- **Partial** means a safe subset exists and the remaining behavior is named.
+- **Planned** means the page is a design contract, not a supported command.
+- **Historical** means the page records an earlier alpha planning stage.
+
 ---
 
 Section pages:
 
+- [Issue #135 Implementation Review](/processkit/v1.x/docs/development/v1-version/issue-135-status/): Requirement-by-requirement review of the Rust CLI and Python MCP product briefing against v1.0.0-alpha.4.
 - [Acceptance Gate](/processkit/v1.x/docs/development/v1-version/acceptance-gate/): Readiness criteria for processkit v1.0 stages.
 - [Alpha Release Testing](/processkit/v1.x/docs/development/v1-version/alpha-release-testing/): Publish and consume an explicit v1 prerelease safely.
 - [Alpha Scope](/processkit/v1.x/docs/development/v1-version/alpha-scope/): First buildable vertical slice for processkit v1.0.
