@@ -26,7 +26,7 @@ mod transaction;
 use compatibility::inspect_compatibility;
 use contract::API_VERSION;
 use filesystem::{digest, ensure_non_symlink_directory, ensure_regular_file, safe_relative};
-use mcp_runtime::{proxy_mcp, serve_mcp, verify_mcp, McpTransport};
+use mcp_runtime::{prepare_runtime, proxy_mcp, serve_mcp, verify_mcp, McpTransport};
 use output::pretty_json;
 use planner::{plan, Change};
 use release::verified_release;
@@ -178,6 +178,18 @@ enum McpCommand {
     Verify {
         #[arg(long, default_value = ".")]
         root: PathBuf,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
+    /// Resolve dependency profiles or verify an existing cache offline.
+    Prepare {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long)]
+        cache_dir: Option<PathBuf>,
+        /// Prohibit network access and fail unless every profile is cached.
+        #[arg(long, action = ArgAction::SetTrue)]
+        offline: bool,
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
@@ -477,6 +489,19 @@ fn main() {
         },
         Command::Mcp { command } => match command {
             McpCommand::Verify { root, json } => match verify_mcp(&root) {
+                Ok(result) if json => print_json_or_exit(&result),
+                Ok(result) => println!("{}", result.summary()),
+                Err(error) => {
+                    eprintln!("processkit: {error}");
+                    std::process::exit(3);
+                }
+            },
+            McpCommand::Prepare {
+                root,
+                cache_dir,
+                offline,
+                json,
+            } => match prepare_runtime(&root, cache_dir.as_deref(), offline) {
                 Ok(result) if json => print_json_or_exit(&result),
                 Ok(result) => println!("{}", result.summary()),
                 Err(error) => {

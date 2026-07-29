@@ -1,12 +1,13 @@
 //! Native supervision for the shipped Python MCP gateway.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 const API_VERSION: &str = "processkit.projectious.work/runtime/v1alpha1";
 const GATEWAY_PATH: &str = "context/skills/processkit/processkit-gateway/mcp/server.py";
+const RUNTIME_POLICY_PATH: &str = ".processkit/runtime/python-uv.json";
 
 #[derive(Clone, Copy, Debug)]
 pub(super) enum McpTransport {
@@ -14,7 +15,7 @@ pub(super) enum McpTransport {
     StreamableHttp,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct McpVerification {
     api_version: &'static str,
@@ -32,6 +33,46 @@ impl McpVerification {
             "MCP runtime verified: {} ({})",
             self.gateway.display(),
             self.uv_version
+        )
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RuntimePolicy {
+    api_version: String,
+    kind: String,
+    aggregate_sha256: String,
+    dependency_profiles: Vec<DependencyProfile>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DependencyProfile {
+    sha256: String,
+    server_paths: Vec<String>,
+    dependencies: Vec<String>,
+    requires_python: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct RuntimePreparation {
+    api_version: &'static str,
+    kind: &'static str,
+    status: &'static str,
+    root: PathBuf,
+    policy_sha256: String,
+    profile_count: usize,
+    cache_dir: Option<PathBuf>,
+    errors: Vec<String>,
+}
+
+impl RuntimePreparation {
+    pub(super) fn summary(&self) -> String {
+        format!(
+            "{}: {} dependency profile(s), policy {}",
+            self.status, self.profile_count, self.policy_sha256
         )
     }
 }
@@ -85,6 +126,148 @@ fn verify_mcp_with_uv(root: &Path, uv: &Path) -> Result<McpVerification, String>
         uv_version: uv_version(uv)?,
         errors: Vec::new(),
     })
+}
+
+pub(super) fn prepare_runtime(
+    root: &Path,
+    cache_dir: Option<&Path>,
+    offline: bool,
+) -> Result<RuntimePreparation, String> {
+    prepare_runtime_with_uv(root, cache_dir, offline, Path::new("uv"))
+}
+
+fn prepare_runtime_with_uv(
+    root: &Path,
+    cache_dir: Option<&Path>,
+    offline: bool,
+    uv: &Path,
+) -> Result<RuntimePreparation, String> {
+    let (root, _) = runtime_paths(root)?;
+    let policy_path = root.join(RUNTIME_POLICY_PATH);
+    let metadata = fs::symlink_metadata(&policy_path)
+        .map_err(|error| format!("Python runtime policy: {error}"))?;
+    if !metadata.is_file() || metadata.file_type().is_symlink() {
+        return Err("Python runtime policy must be a regular, non-symlink file".into());
+    }
+    let policy_bytes =
+        fs::read(&policy_path).map_err(|error| format!("Python runtime policy: {error}"))?;
+    let policy: RuntimePolicy = serde_json::from_slice(&policy_bytes)
+        .map_err(|error| format!("Python runtime policy JSON: {error}"))?;
+    if policy.api_version != "processkit.projectious.work/python-runtime/v1alpha1"
+        || policy.kind != "PythonRuntimePolicy"
+        || !valid_digest(&policy.aggregate_sha256)
+        || policy.dependency_profiles.is_empty()
+    {
+        return Err("unsupported or incomplete Python runtime policy".into());
+    }
+
+    let cache_dir = prepare_cache(cache_dir, offline)?;
+    for profile in &policy.dependency_profiles {
+        if !valid_digest(&profile.sha256)
+            || profile.server_paths.is_empty()
+            || profile.dependencies.is_empty()
+            || profile.requires_python.is_empty()
+        {
+            return Err("Python runtime policy contains an invalid dependency profile".into());
+        }
+        for server_path in &profile.server_paths {
+            let relative = Path::new(server_path);
+            if relative.is_absolute()
+                || relative
+                    .components()
+                    .any(|part| !matches!(part, std::path::Component::Normal(_)))
+            {
+                return Err("Python runtime policy contains an unsafe server path".into());
+            }
+            let server = root.join(relative);
+            let metadata = fs::symlink_metadata(&server)
+                .map_err(|error| format!("runtime server {}: {error}", relative.display()))?;
+            if !metadata.is_file() || metadata.file_type().is_symlink() {
+                return Err(format!(
+                    "runtime server must be a regular file: {}",
+                    relative.display()
+                ));
+            }
+        }
+        let mut command = Command::new(uv);
+        command
+            .arg("run")
+            .arg("--no-project")
+            .args(["--python", &profile.requires_python]);
+        if offline {
+            command.arg("--offline");
+        }
+        for dependency in &profile.dependencies {
+            if dependency.is_empty() || dependency.contains(char::is_whitespace) {
+                return Err("Python runtime policy contains an unsafe dependency".into());
+            }
+            command.args(["--with", dependency]);
+        }
+        command.args(["python", "-c", "pass"]);
+        command.current_dir(&root);
+        if let Some(cache) = &cache_dir {
+            command.env("UV_CACHE_DIR", cache);
+        }
+        let output = command
+            .output()
+            .map_err(|error| format!("prepare runtime profile {}: {error}", profile.sha256))?;
+        if !output.status.success() {
+            return Err(format!(
+                "runtime profile {} is not {}: {}",
+                profile.sha256,
+                if offline { "offline-ready" } else { "prepared" },
+                redacted_line(&output.stderr)
+            ));
+        }
+    }
+    Ok(RuntimePreparation {
+        api_version: API_VERSION,
+        kind: "RuntimePreparation",
+        status: if offline { "offline-ready" } else { "prepared" },
+        root,
+        policy_sha256: policy.aggregate_sha256,
+        profile_count: policy.dependency_profiles.len(),
+        cache_dir,
+        errors: Vec::new(),
+    })
+}
+
+fn prepare_cache(cache_dir: Option<&Path>, offline: bool) -> Result<Option<PathBuf>, String> {
+    let Some(path) = cache_dir else {
+        return Ok(None);
+    };
+    if !path.is_absolute() {
+        return Err("runtime cache directory must be absolute".into());
+    }
+    if !offline {
+        fs::create_dir_all(path)
+            .map_err(|error| format!("create runtime cache directory: {error}"))?;
+    }
+    let metadata =
+        fs::symlink_metadata(path).map_err(|error| format!("runtime cache directory: {error}"))?;
+    if !metadata.is_dir() || metadata.file_type().is_symlink() {
+        return Err("runtime cache directory must be a non-symlink directory".into());
+    }
+    path.canonicalize()
+        .map(Some)
+        .map_err(|error| format!("runtime cache directory: {error}"))
+}
+
+fn valid_digest(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+}
+
+fn redacted_line(stderr: &[u8]) -> String {
+    String::from_utf8_lossy(stderr)
+        .lines()
+        .next()
+        .unwrap_or("no stderr")
+        .chars()
+        .take(240)
+        .collect()
 }
 
 pub(super) fn serve_mcp(
@@ -163,6 +346,37 @@ mod tests {
         let gateway = root.path().join(GATEWAY_PATH);
         fs::create_dir_all(gateway.parent().unwrap()).unwrap();
         fs::write(&gateway, "print('fixture')\n").unwrap();
+        let second = root.path().join("context/second.py");
+        fs::create_dir_all(second.parent().unwrap()).unwrap();
+        fs::write(&second, "print('fixture')\n").unwrap();
+        let policy = root.path().join(RUNTIME_POLICY_PATH);
+        fs::create_dir_all(policy.parent().unwrap()).unwrap();
+        fs::write(
+            &policy,
+            format!(
+                r#"{{
+                  "apiVersion": "processkit.projectious.work/python-runtime/v1alpha1",
+                  "kind": "PythonRuntimePolicy",
+                  "aggregateSha256": "{digest}",
+                  "dependencyProfiles": [
+                    {{
+                      "sha256": "{digest}",
+                      "serverPaths": ["{GATEWAY_PATH}"],
+                      "dependencies": ["mcp[cli]>=1.0,<2.0"],
+                      "requiresPython": ">=3.10"
+                    }},
+                    {{
+                      "sha256": "{digest}",
+                      "serverPaths": ["context/second.py"],
+                      "dependencies": ["pyyaml>=6.0"],
+                      "requiresPython": ">=3.10"
+                    }}
+                  ]
+                }}"#,
+                digest = "0".repeat(64)
+            ),
+        )
+        .unwrap();
 
         let tools = tempfile::tempdir().unwrap();
         let log = tools.path().join("args.log");
@@ -221,5 +435,22 @@ mod tests {
         )
         .unwrap_err();
         assert!(error.contains("loopback"));
+    }
+
+    #[test]
+    fn offline_preparation_checks_every_profile() {
+        let (root, _tools, uv, _) = fixture();
+        let cache = tempfile::tempdir().unwrap();
+        let result = prepare_runtime_with_uv(root.path(), Some(cache.path()), true, &uv).unwrap();
+        assert_eq!(result.status, "offline-ready");
+        assert_eq!(result.profile_count, 2);
+    }
+
+    #[test]
+    fn offline_preparation_requires_existing_cache() {
+        let (root, _tools, uv, _) = fixture();
+        let missing = root.path().join("missing-cache");
+        let error = prepare_runtime_with_uv(root.path(), Some(&missing), true, &uv).unwrap_err();
+        assert!(error.contains("runtime cache directory"));
     }
 }

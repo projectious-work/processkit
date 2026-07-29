@@ -47,8 +47,9 @@ generated exclusively from the MCP servers under the release's
 profile, and an aggregate digest. Installed projects receive it as
 `.processkit/runtime/python-uv.json`.
 
-The policy is declarative evidence, not a dependency lock. It deliberately
-does not claim resolved package versions or cold offline readiness.
+The policy is declarative evidence, not a dependency lock. Runtime preparation
+resolves each unique dependency profile against this policy but does not claim
+globally reproducible resolved versions.
 
 ## Dependency and cache behavior
 
@@ -59,10 +60,29 @@ content; normal MCP startup must not modify `context/`, `src/context/`, or
 tracked configuration.
 
 The current alpha uses compatible lower bounds rather than a fully locked
-runtime set. Consequently, a cold offline installation is not yet a supported
-guarantee. An offline run requires a cache prepared for the same platform,
-Python version, and dependency set. A later lifecycle command will make that
-preparation explicit and verify it before declaring a project offline-ready.
+runtime set. Consequently, a cold offline installation is not guaranteed.
+Prepare every unique dependency profile into the selected `uv` cache:
+
+```sh
+processkit mcp prepare --root .
+processkit mcp prepare --root . --cache-dir /absolute/cache/path
+```
+
+Then prove that the same policy is usable without network resolution:
+
+```sh
+processkit mcp prepare --root . --offline
+processkit mcp prepare --root . \
+  --cache-dir /absolute/cache/path \
+  --offline \
+  --json
+```
+
+Offline verification fails if the cache directory is absent, symlinked, or
+cannot satisfy any dependency profile. Preparation validates the installed
+policy identity, aggregate digest, profile digests, representative server
+paths, dependency strings, and Python constraints before invoking `uv`
+without a shell.
 
 ## Startup and transport
 
@@ -93,6 +113,8 @@ The `v1.x-dev` line also implements the native supervision interface:
 
 ```text
 processkit mcp verify
+processkit mcp prepare
+processkit mcp prepare --offline
 processkit mcp serve --transport stdio
 processkit mcp serve --transport streamable-http
 processkit mcp proxy --url http://127.0.0.1:8000/mcp
@@ -114,8 +136,7 @@ will add stable codes and actionable remediation for:
 - missing or incompatible `uv`;
 - unreadable gateway or shared-library paths;
 - invalid PEP 723 metadata;
-- unavailable or unwritable runtime cache;
-- dependency preparation failure;
+- unavailable, unsafe, or incomplete runtime cache;
 - gateway initialization or startup timeout;
 - invalid harness projection;
 - optional semantic-index degradation.

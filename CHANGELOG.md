@@ -19,6 +19,8 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Add native `processkit mcp verify`, `serve`, and `proxy` supervision for the
   shipped Python gateway, with direct argument vectors and loopback-only HTTP
   defaults.
+- Add policy-bound Python dependency preparation and offline-readiness
+  verification across every unique shipped dependency profile.
 
 - Added an evidence-bound, resumable `scripts/maintain.sh` release
   orchestrator with semantic-version branch authority, phase-zero state and
