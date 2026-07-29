@@ -82,7 +82,7 @@ project and verifies the resulting entities and events:
 
 | Surface | Implemented now | Compatibility | Planned or stabilizing |
 | --- | --- | --- | --- |
-| MCP runtime | Native verification/supervision, one-process gateway, and per-skill servers | Aggregate server retained for older integrations | Additional harness-specific transport validation |
+| MCP runtime | Native preparation/verification/supervision, one-process gateway, and per-skill servers | Aggregate server retained for older integrations | Additional harness-specific transport validation |
 | Project memory | Validated entities, state transitions, indexing, events, migrations | Explicit v0-to-v1 compatibility manifests | Further v1 vocabulary stabilization |
 | Installer | Local `plan`, `install`, `update`, `verify`, read-only `doctor`, recovery, and conservative `uninstall` | Selected v0 layouts detected from explicit evidence | More platform release assets and successive prerelease upgrade coverage |
 | Harness projections | Canonical MCP catalog with Codex and Claude adapters | Existing user-owned configuration is preserved or reported as a conflict | Broader first-class harness acceptance |
