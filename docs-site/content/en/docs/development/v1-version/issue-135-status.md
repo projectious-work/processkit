@@ -18,8 +18,8 @@ the issue.
 
 | Outcome | Assessment |
 | --- | ---: |
-| Implemented | 7 requirement clusters |
-| Partial | 8 requirement clusters |
+| Implemented | 8 requirement clusters |
+| Partial | 7 requirement clusters |
 | Missing | 1 requirement cluster |
 
 Counts group related criteria so that large prose sections do not outweigh
@@ -42,7 +42,7 @@ user journeys.
 | Python/`uv` runtime contract | **Mostly implemented** | Runtime policy, native diagnosis, dependency-profile preparation, and offline-readiness verification exist; resolved versions remain unlocked |
 | Native `processkit doctor` and `processkit mcp` | **Mostly implemented** | `v1.x-dev` provides typed read-only doctor plus native MCP verify/serve/proxy supervision; broader host and signal acceptance remains |
 | Extracted-release MCP acceptance | **Implemented** | Package smoke starts the staged gateway and exercises representative tools |
-| Repository dogfood update/recovery acceptance | **Partial** | Release boundary is checked; full disposable-repository update/interruption recovery is not yet a release gate |
+| Repository dogfood update/recovery acceptance | **Implemented** | The release gate combines the full-content lifecycle pilot with a deterministic real-process update interruption, rollback, user-data preservation, retry, and provenance verification |
 | v0 migration and aibox parity | **Partial** | Compatibility inspection and explicit dispositions exist; no in-place native migration or complete parity proof |
 | Harness projection ownership | **Implemented** | Codex and Claude adapters preserve unrelated keys and have lifecycle tests |
 | Stable/prerelease documentation story | **Partial** | Alpha.4 docs now separate v0 stable and v1 preview; generated facts and broader downstream validation remain |
@@ -74,8 +74,7 @@ user journeys.
 1. Publish and smoke-test Linux x86_64 and both macOS native assets.
 2. Publish a canonical trust root and resolve exact versions for human
    lifecycle commands without accepting a floating `latest`.
-3. Exercise dogfood update/recovery and v0 migration against disposable
-   repositories.
+3. Exercise v0 migration against disposable repositories.
 4. Demonstrate direct-CLI and aibox installed-state parity.
 5. Generate release facts and help snapshots as part of release validation.
 6. Finish the public Rust library boundary and API documentation.

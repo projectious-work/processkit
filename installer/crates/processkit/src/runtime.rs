@@ -4,7 +4,8 @@ use crate::filesystem::{ensure_non_symlink_directory, ensure_regular_file};
 use serde::Serialize;
 use serde_json::Value;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Output};
+use std::time::Duration;
 
 const RUNTIME_API_VERSION: &str = "processkit.projectious.work/runtime/v1alpha1";
 const DOCTOR_RELATIVE: &str = "context/skills/processkit/pk-doctor/scripts/doctor.py";
@@ -60,10 +61,19 @@ fn run_doctor_with_uv(
         .map_err(|error| format!("doctor root: {error}"))?;
     let doctor = root.join(DOCTOR_RELATIVE);
     ensure_regular_file(&root, &doctor, "doctor script")?;
+    if let Some(category) = category {
+        if category.is_empty()
+            || !category
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || b"_,-".contains(&byte))
+        {
+            return Err("doctor category contains unsupported characters".to_owned());
+        }
+    }
 
-    let probe = Command::new(uv)
-        .arg("--version")
-        .output()
+    let mut probe_command = Command::new(uv);
+    probe_command.arg("--version");
+    let probe = output_with_busy_retry(&mut probe_command)
         .map_err(|error| format!("uv is unavailable: {error}"))?;
     if !probe.status.success() {
         return Err(format!(
@@ -90,17 +100,9 @@ fn run_doctor_with_uv(
         .arg("--repo-root")
         .arg(&root);
     if let Some(category) = category {
-        if category.is_empty()
-            || !category
-                .bytes()
-                .all(|byte| byte.is_ascii_alphanumeric() || b"_,-".contains(&byte))
-        {
-            return Err("doctor category contains unsupported characters".to_owned());
-        }
         command.arg(format!("--category={category}"));
     }
-    let output = command
-        .output()
+    let output = output_with_busy_retry(&mut command)
         .map_err(|error| format!("failed to launch Python doctor: {error}"))?;
     if output.stdout.is_empty() {
         return Err(format!(
@@ -131,6 +133,18 @@ fn run_doctor_with_uv(
         doctor: payload,
         errors: Vec::new(),
     })
+}
+
+fn output_with_busy_retry(command: &mut Command) -> std::io::Result<Output> {
+    for attempt in 0..20 {
+        match command.output() {
+            Err(error) if error.raw_os_error() == Some(26) && attempt < 19 => {
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            result => return result,
+        }
+    }
+    unreachable!("bounded process launch loop always returns")
 }
 
 fn redacted_stderr(stderr: &[u8]) -> String {
