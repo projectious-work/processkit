@@ -5,6 +5,21 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## Unreleased
+
+### Added
+
+- Added an evidence-bound, resumable `scripts/maintain.sh` release
+  orchestrator with semantic-version branch authority, phase-zero state and
+  doctor reports, candidate-bound gate logs, required release notes,
+  documentation gates, guarded publication, and public verification.
+- Added a read-only native `processkit doctor` command that safely delegates
+  to the authoritative Python doctor and emits a versioned runtime result.
+- Added repository maintenance and support policies and linked them from the
+  GitHub landing page.
+
+---
+
 ## [v1.0.0-alpha.4] - 2026-07-28
 
 v1.0.0-alpha.4 reconciles the v1 shipped content boundary, hardens lifecycle

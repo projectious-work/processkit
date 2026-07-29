@@ -6,7 +6,7 @@
 
 **A provider-neutral process and project-memory layer for agentic software projects.**
 
-[![Status: pre-1.0](https://img.shields.io/badge/status-pre--1.0-E05232)](https://github.com/projectious-work/processkit/releases)
+[![Status: alpha project](https://img.shields.io/badge/status-alpha%20project-1d3352)](MAINTENANCE.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1d3352)](LICENSE)
 [![Docs](https://img.shields.io/badge/docs-projectious--work.github.io-1d3352)](https://projectious-work.github.io/processkit/)
 
@@ -15,12 +15,13 @@
 ---
 
 > [!NOTE]
-> **You are on the `v1.x-dev` branch — the v1.0 line, currently in prerelease.**
+> **Maturity:** alpha project — active development.
 >
-> Current prereleases support end-to-end local installation and validated MCP
-> workflows, but contracts may still change between prereleases. Pin exact
-> versions, read the release notes before updating, and test upgrades against
-> a disposable copy of your project.
+> The maintained v0.x line is the supported/default release. The independent
+> v1.x line supports end-to-end local installation and validated MCP workflows
+> as an exact-pin preview, but contracts may change between prereleases.
+> Linux ARM64 GNU is the only native v1 target currently published. See
+> [MAINTENANCE.md](MAINTENANCE.md) and [SECURITY.md](SECURITY.md).
 >
 > The released line is `v0.x`. Documentation for the two lines is published
 > separately: the [v0.x docs](https://projectious-work.github.io/processkit/)
@@ -83,7 +84,7 @@ project and verifies the resulting entities and events:
 | --- | --- | --- | --- |
 | MCP runtime | One-process gateway and per-skill servers | Aggregate server retained for older integrations | Additional harness-specific transport validation |
 | Project memory | Validated entities, state transitions, indexing, events, migrations | Explicit v0-to-v1 compatibility manifests | Further v1 vocabulary stabilization |
-| Installer | Local `plan`, `install`, `update`, `verify`, recovery, and conservative `uninstall` | Selected v0 layouts detected from explicit evidence | More platform release assets and successive prerelease upgrade coverage |
+| Installer | Local `plan`, `install`, `update`, `verify`, read-only `doctor`, recovery, and conservative `uninstall` | Selected v0 layouts detected from explicit evidence | More platform release assets and successive prerelease upgrade coverage |
 | Harness projections | Canonical MCP catalog with Codex and Claude adapters | Existing user-owned configuration is preserved or reported as a conflict | Broader first-class harness acceptance |
 | Packages and profiles | Release-owned distribution manifest and managed profile | Manual archive copying remains documented for older releases | Profile contract stabilization before v1 GA |
 
@@ -156,6 +157,36 @@ creation, MCP startup, first use, update, recovery, and uninstall, follow the
 machine-facing contract. A future human-facing command will resolve an exact
 canonical release version, while `processkit execute --request <path>` remains
 the opaque, versioned integration boundary for aibox and other automation.
+
+## Quick Start
+
+After installing and verifying an exact v1 distribution:
+
+```sh
+mkdir processkit-demo && cd processkit-demo
+git init
+
+processkit plan \
+  --root . \
+  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --profile managed \
+  --harness codex \
+  --format human
+
+processkit install \
+  --root . \
+  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --profile managed \
+  --harness codex \
+  --yes
+
+processkit verify --root .
+```
+
+Restart the selected harness, then ask it to create and read a WorkItem
+through processkit. The
+[v1 tutorial][v1-alpha-tutorial] covers signature verification, trust-store
+creation, first MCP use, updates, recovery, and uninstall.
 
 ### Manual compatibility path
 
@@ -329,6 +360,20 @@ ones you ran.
 
 By participating you agree to the [Code of Conduct](CODE_OF_CONDUCT.md).
 Security issues go through [SECURITY.md](SECURITY.md), not the issue tracker.
+
+## Maintenance and Support
+
+- [MAINTENANCE.md](MAINTENANCE.md) defines supported lines, branch authority,
+  and the evidence-bound release process.
+- [SUPPORT.md](SUPPORT.md) explains what to collect before requesting help.
+- [SECURITY.md](SECURITY.md) defines private vulnerability reporting and
+  support boundaries.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) sets community expectations.
+- [CONTRIBUTING.md](CONTRIBUTING.md) covers development and pull requests.
+
+All build, test, documentation, signing, and publication gates run locally.
+This repository does not use GitHub Actions. Maintainers release through
+`./scripts/maintain.sh release <version>`.
 
 ## License
 
