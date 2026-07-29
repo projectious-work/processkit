@@ -13,10 +13,15 @@ work, agents should use the MCP tools rather than hand-editing files:
 write tools validate schemas, enforce state machines, and append
 LogEntries where the server owns the side effect.
 
+This Python implementation is intentional in v1. The native Rust CLI owns
+release trust and content lifecycle; it does not replace the MCP servers.
+
 ## Status
 
-**Twenty-nine MCP server scripts ship** across processkit's primitive,
-workflow, projection, routing, gateway, guard, and devops skills. Most
+The exact server inventory is release-generated and validated by the MCP
+manifest. Alpha.4 release acceptance exposes **199 gateway tools**. Servers
+ship across processkit's primitive, workflow, projection, routing, gateway,
+guard, and devops skills. Most
 ship default `mcp-config.json` fragments. `aggregate-mcp` remains an
 alternate compatibility entry point and does not register itself by
 default; `context-archiving` also ships a server script without a
@@ -138,6 +143,9 @@ if __name__ == "__main__":
 Consumers need only Python ≥ 3.10 and `uv` — both already present in
 aibox containers. First run pays a small cost for `uv` to resolve and
 cache dependencies; subsequent runs are near-instant.
+
+Cold offline preparation is not yet a supported guarantee. See the
+[Python MCP runtime contract](../installer/runtime/).
 
 ## Transport
 

@@ -1,6 +1,12 @@
 ---
-
+title: "aibox Integration"
+description: "Consume the processkit v1 machine protocol without duplicating lifecycle policy."
+weight: 60
 ---
+
+> **Alpha.4 status:** The opaque request/result protocol is implemented.
+> Complete direct-CLI/aibox installed-state parity remains an acceptance
+> requirement, so the v0 compatibility bridge stays enabled.
 
 aibox should treat processkit as an opaque local executable. It creates a
 versioned JSON request, invokes `processkit execute --request <path>`, parses
@@ -44,7 +50,7 @@ The readiness signal for removing the provisional adapter is a tagged
 processkit prerelease containing this protocol and a passing
 `scripts/test-installer-local.sh` result on both repositories.
 
-For M5, pin the immutable `v1.0.0-alpha.3` release, not a branch or moving
+For M5, pin the immutable `v1.0.0-alpha.4` release, not a branch or moving
 reference. The aibox consumer test must download the archive, release
 envelope, signature, public key, and matching native installer from that
 GitHub release, verify the signed envelope, then exercise the opaque request

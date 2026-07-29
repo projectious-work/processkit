@@ -12,6 +12,11 @@ building blocks. The v2 direction keeps durable project facts in the
 entity layer and moves workflow definitions, schedules, runtime model
 data, and lifecycle implementation details to narrower surfaces.
 
+In the v1 release line, `apiVersion` remains
+`processkit.projectious.work/v2`. The product release version and entity API
+version are independent. Create and transition canonical entities through MCP
+management tools rather than hand-editing them.
+
 ## Shipped v2 entity schemas
 
 | Primitive         | Purpose                                                           | Prefix |

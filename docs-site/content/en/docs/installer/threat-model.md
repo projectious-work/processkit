@@ -1,6 +1,12 @@
 ---
-
+title: "Installer Threat Model"
+description: "Trust boundaries and adversarial requirements for release and target inputs."
+weight: 40
 ---
+
+> **Alpha.4 status:** Traversal, symlink, forged-journal, signature, digest,
+> downgrade, same-version equivocation, and interruption paths have automated
+> coverage. The “before beta” items below remain open hardening targets.
 
 The installer treats an archive, descriptor, manifest, catalog, adapter, and
 target filesystem as untrusted until validated. It must reject absolute or

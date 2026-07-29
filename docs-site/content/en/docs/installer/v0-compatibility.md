@@ -1,6 +1,11 @@
 ---
-
+title: "v0 Compatibility"
+description: "Read-only evidence and migration boundary for v0 projects."
+weight: 50
 ---
+
+> **Alpha.4 status:** Compatibility inspection is implemented and
+> non-mutating. Native in-place migration is not supported.
 
 The v1 installer identifies legacy processkit evidence without consulting
 aibox, harness, devcontainer, or MCP configuration files.

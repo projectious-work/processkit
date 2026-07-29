@@ -1,5 +1,7 @@
 ---
-
+title: "Local Release Production"
+description: "Build, sign, verify, and publish processkit releases without hosted CI."
+weight: 30
 ---
 
 The v1 release path is local, agent-first, and human-operable. It does not
@@ -24,7 +26,7 @@ the compromised public key from local trust stores.
 ## Validate and create a release
 
 ```sh
-scripts/release-local.sh v1.0.0-alpha.3 \
+scripts/release-local.sh v1.0.0-alpha.4 \
   "$HOME/.config/processkit/keys/release.pem" \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
@@ -37,12 +39,16 @@ contains a required `installerAssets` matrix. A local alpha or beta release
 contains the current Rust host target; later multi-platform releases can add
 one unique entry per target after building each executable locally.
 
+The published alpha.4 matrix contains only
+`aarch64-unknown-linux-gnu`. Linux x86_64 and macOS x86_64/ARM64 builds are
+not yet release assets.
+
 ## Verify after copying
 
 ```sh
 scripts/verify-release-local.sh \
-  dist/processkit-v1.0.0-alpha.3.release.json \
-  dist/processkit-v1.0.0-alpha.3.release.sig \
+  dist/processkit-v1.0.0-alpha.4.release.json \
+  dist/processkit-v1.0.0-alpha.4.release.sig \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
 
@@ -64,8 +70,8 @@ installer also verifies releases against the versioned JSON trust store:
 
 ```sh
 processkit verify-release \
-  --envelope dist/processkit-v1.0.0-alpha.3.release.json \
-  --signature dist/processkit-v1.0.0-alpha.3.release.sig \
+  --envelope dist/processkit-v1.0.0-alpha.4.release.json \
+  --signature dist/processkit-v1.0.0-alpha.4.release.sig \
   --trust-store "$HOME/.config/processkit/trust-store.json"
 ```
 

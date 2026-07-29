@@ -3,7 +3,12 @@ title: Alpha.3 Closure Plan
 description: Feature-completion gates for the final pre-cutover alpha.
 ---
 
-`v1.0.0-alpha.3` is the feature-complete pre-cutover target. It does not
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](./issue-135-status.md).
+
+`v1.0.0-alpha.3` was the feature-complete pre-cutover target. This historical
+plan did not
 authorize a merge to `main`; v0.x remains the stable line until the owner
 accepts the final ontology, migration, CLI, and aibox evidence.
 

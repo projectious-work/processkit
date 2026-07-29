@@ -27,6 +27,9 @@
 > are the default, and the
 > [v1.x preview](https://projectious-work.github.io/processkit/v1.x/) tracks
 > this branch.
+>
+> The current v1 release is `v1.0.0-alpha.4`. Its published native executable
+> supports Linux ARM64 GNU only.
 
 ---
 
@@ -84,6 +87,9 @@ project and verifies the resulting entities and events:
 | Harness projections | Canonical MCP catalog with Codex and Claude adapters | Existing user-owned configuration is preserved or reported as a conflict | Broader first-class harness acceptance |
 | Packages and profiles | Release-owned distribution manifest and managed profile | Manual archive copying remains documented for older releases | Profile contract stabilization before v1 GA |
 
+For the complete requirement review, see the
+[issue #135 implementation status][issue-135-status].
+
 ## Why processkit?
 
 Most agent setups start with prompts and loose files. That works until a
@@ -123,12 +129,12 @@ extracted release directory through `--distribution`:
 ```sh
 processkit plan \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.3 \
+  --distribution /path/to/processkit-v1.0.0-alpha.4 \
   --profile managed \
   --harness codex
 processkit install \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.3 \
+  --distribution /path/to/processkit-v1.0.0-alpha.4 \
   --profile managed \
   --harness codex \
   --yes
@@ -141,6 +147,10 @@ whose ownership processkit can prove. See the
 [installer contract](docs-site/content/en/docs/installer/contract.md),
 [local release and verification workflow](docs-site/content/en/docs/installer/local-release.md),
 and [threat model](docs-site/content/en/docs/installer/threat-model.md).
+
+For exact downloads, signature verification, local CLI installation, project
+creation, MCP startup, first use, update, recovery, and uninstall, follow the
+[step-by-step v1 alpha tutorial][v1-alpha-tutorial].
 
 `--distribution` is intentionally explicit for the alpha's offline and
 machine-facing contract. A future human-facing command will resolve an exact
@@ -328,3 +338,6 @@ commits, tags, and release artifacts for this repository.
 
 Brand and design system © [projectious.work](https://github.com/projectious-work/brand).
 The processkit mark is derived from that system.
+
+[issue-135-status]: docs-site/content/en/docs/development/v1-version/issue-135-status.md
+[v1-alpha-tutorial]: docs-site/content/en/docs/getting-started/v1-alpha-tutorial.md

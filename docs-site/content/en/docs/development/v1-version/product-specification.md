@@ -3,6 +3,10 @@ title: Product Specification
 description: Product definition for processkit v1.0.
 ---
 
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](./issue-135-status.md).
+
 ## Purpose
 
 processkit v1.0 provides a durable process substrate for agentic
