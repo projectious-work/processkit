@@ -23,8 +23,8 @@ the issue.
 | Outcome | Assessment |
 | --- | ---: |
 | Implemented | 7 requirement clusters |
-| Partial | 5 requirement clusters |
-| Missing | 4 requirement clusters |
+| Partial | 6 requirement clusters |
+| Missing | 3 requirement clusters |
 
 Counts group related criteria so that large prose sections do not outweigh
 user journeys.
@@ -44,7 +44,7 @@ user journeys.
 | Bootstrap installer | **Missing** | Users manually download and install the native executable |
 | Human exact-version online resolution | **Missing** | Human lifecycle commands still require `--distribution` |
 | Python/`uv` runtime contract | **Partial** | Runtime manifest and documentation exist; offline preparation and native diagnosis are incomplete |
-| Native `processkit doctor` and `processkit mcp` | **Missing** | `pk-doctor` and direct Python gateway operation exist, but no native command groups |
+| Native `processkit doctor` and `processkit mcp` | **Partial** | `v1.x-dev` adds read-only native doctor delegation with typed runtime envelope and tests; MCP supervision remains missing |
 | Extracted-release MCP acceptance | **Implemented** | Package smoke starts the staged gateway and exercises representative tools |
 | Repository dogfood update/recovery acceptance | **Partial** | Release boundary is checked; full disposable-repository update/interruption recovery is not yet a release gate |
 | v0 migration and aibox parity | **Partial** | Compatibility inspection and explicit dispositions exist; no in-place native migration or complete parity proof |

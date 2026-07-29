@@ -13,8 +13,10 @@ commands optimize for reviewable output and safe project operation. The
 machine interface uses a versioned JSON request and result contract for aibox
 and other automation.
 
-> **Current release:** `v1.0.0-alpha.4`. The command list in the first
-> section is executable today. Commands in “Target human lifecycle” are not.
+> **Release and development status:** `v1.0.0-alpha.4` supports the local
+> lifecycle commands below except `doctor`. The `v1.x-dev` line adds the
+> read-only native `doctor` wrapper for the next prerelease. Commands in
+> “Target human lifecycle” remain planned unless listed as current.
 
 ## Current v1 alpha commands
 
@@ -26,6 +28,7 @@ processkit install
 processkit update
 processkit verify
 processkit verify-release
+processkit doctor
 processkit inspect-compatibility
 processkit recover
 processkit uninstall
@@ -58,7 +61,6 @@ processkit plan
 processkit install
 processkit update
 processkit verify
-processkit doctor
 processkit inspect
 processkit migrate
 processkit recover

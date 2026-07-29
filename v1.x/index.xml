@@ -316,11 +316,11 @@ the issue.&lt;/p&gt;
  &lt;/tr&gt;
  &lt;tr&gt;
  &lt;td&gt;Partial&lt;/td&gt;
- &lt;td style="text-align: right"&gt;5 requirement clusters&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;6 requirement clusters&lt;/td&gt;
  &lt;/tr&gt;
  &lt;tr&gt;
  &lt;td&gt;Missing&lt;/td&gt;
- &lt;td style="text-align: right"&gt;4 requirement clusters&lt;/td&gt;
+ &lt;td style="text-align: right"&gt;3 requirement clusters&lt;/td&gt;
  &lt;/tr&gt;
  &lt;/tbody&gt;
 &lt;/table&gt;
@@ -854,24 +854,10 @@ commands optimize for reviewable output and safe project operation. The
 machine interface uses a versioned JSON request and result contract for aibox
 and other automation.&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Current release:&lt;/strong&gt; &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;. The command list in the first
-section is executable today. Commands in “Target human lifecycle” are not.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id="current-v1-alpha-commands"&gt;Current v1 alpha commands&lt;/h2&gt;
-&lt;p&gt;The current prerelease supports:&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit plan
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit install
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit update
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit verify
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit verify-release
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit inspect-compatibility
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit recover
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit uninstall
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;processkit execute --request request.json
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;plan&lt;/code&gt;, &lt;code&gt;install&lt;/code&gt;, &lt;code&gt;update&lt;/code&gt;, and compatibility inspection currently require an
-explicit local release directory through &lt;code&gt;--distribution&lt;/code&gt;. Mutating commands
-also require &lt;code&gt;--yes&lt;/code&gt;. This makes the alpha suitable for offline use and for
-callers that already acquire and verify an exact release.&lt;/p&gt;</description></item><item><title>WorkItem</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</guid><description>&lt;p&gt;A unit of work — task, story, bug, epic, spike, or chore. The primary
+&lt;p&gt;&lt;strong&gt;Release and development status:&lt;/strong&gt; &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt; supports the local
+lifecycle commands below except &lt;code&gt;doctor&lt;/code&gt;. The &lt;code&gt;v1.x-dev&lt;/code&gt; line adds the
+read-only native &lt;code&gt;doctor&lt;/code&gt; wrapper for the next prerelease. Commands in
+“Target human lifecycle” remain planned unless listed as current.&lt;/p&gt;</description></item><item><title>WorkItem</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</guid><description>&lt;p&gt;A unit of work — task, story, bug, epic, spike, or chore. The primary
 work-tracking primitive in processkit.&lt;/p&gt;
 &lt;table&gt;
  &lt;thead&gt;
@@ -3086,7 +3072,48 @@ the local trust store of every machine that installs official releases.&lt;/p&gt
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &lt;span class="s2"&gt;&amp;#34;&lt;/span&gt;&lt;span class="nv"&gt;$HOME&lt;/span&gt;&lt;span class="s2"&gt;/.config/processkit/trust.d/release.pub.pem&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Back up the private key securely. Losing it prevents producing a release under
 that identity. Disclosing it requires creating a new key identity and removing
-the compromised public key from local trust stores.&lt;/p&gt;</description></item><item><title>Installer Threat Model</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</guid><description>&lt;blockquote&gt;
+the compromised public key from local trust stores.&lt;/p&gt;</description></item><item><title>Evidence-bound Release Process</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/release-process/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/release-process/</guid><description>&lt;p&gt;Issue
+&lt;a href="https://github.com/projectious-work/processkit/issues/151" rel="noopener"&gt;#151&lt;/a&gt;
+
+defines the aibox-style release ritual adopted by processkit.&lt;/p&gt;
+&lt;h2 id="version-line-authority"&gt;Version-line authority&lt;/h2&gt;
+&lt;p&gt;The requested semantic version determines the only branch permitted to tag:&lt;/p&gt;
+&lt;table&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th&gt;Version&lt;/th&gt;
+ &lt;th&gt;Required branch&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody&gt;
+ &lt;tr&gt;
+ &lt;td&gt;stable v0&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;v0.x-release&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;v1 alpha, beta, or RC&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;v1.x-pre-release&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;tr&gt;
+ &lt;td&gt;stable v1&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;v1.x-release&lt;/code&gt;&lt;/td&gt;
+ &lt;/tr&gt;
+ &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Resolve the mapping without mutation:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;scripts/maintain.sh release-branch v1.0.0-alpha.5
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Promotion into protected branches happens through pull requests. Never
+force-push a release branch.&lt;/p&gt;
+&lt;h2 id="candidate-evidence"&gt;Candidate evidence&lt;/h2&gt;
+&lt;p&gt;Evidence belongs to an exact candidate:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;dist/release-evidence/&amp;lt;version&amp;gt;/&amp;lt;commit&amp;gt;/
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;├── binding.json
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;├── RELEASE-STATE.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;├── RELEASE-DOCTORS.md
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;├── logs/
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;└── &amp;lt;step&amp;gt;.passed
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The binding records version, commit, clean tree, branch, Rust, Python, &lt;code&gt;uv&lt;/code&gt;,
+and host target. A step marker is reused only within that binding.&lt;/p&gt;</description></item><item><title>Installer Threat Model</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/threat-model/</guid><description>&lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; Traversal, symlink, forged-journal, signature, digest,
 downgrade, same-version equivocation, and interruption paths have automated
 coverage. The “before beta” items below remain open hardening targets.&lt;/p&gt;

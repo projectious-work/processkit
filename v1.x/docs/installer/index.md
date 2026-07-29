@@ -23,6 +23,7 @@ assets, native runtime diagnosis, and MCP supervision remain planned.
 - [CLI and automation interfaces](./cli/)
 - [Python MCP runtime contract](./runtime/)
 - [Local release production](./local-release/)
+- [Evidence-bound release process](./release-process/)
 - [Threat model](./threat-model/)
 - [v0 compatibility](./v0-compatibility/)
 - [aibox consumer integration](./aibox-integration/)
@@ -37,6 +38,7 @@ Section pages:
 - [Installer Contract](/processkit/v1.x/docs/installer/contract/): Trust, ownership, transaction, and automation guarantees for the v1 lifecycle CLI.
 - [Python MCP runtime contract](/processkit/v1.x/docs/installer/runtime/): Supported Python, uv, dependency, cache, and transport behavior.
 - [Local Release Production](/processkit/v1.x/docs/installer/local-release/): Build, sign, verify, and publish processkit releases without hosted CI.
+- [Evidence-bound Release Process](/processkit/v1.x/docs/installer/release-process/): Repository-owned, resumable release orchestration for processkit maintainers.
 - [Installer Threat Model](/processkit/v1.x/docs/installer/threat-model/): Trust boundaries and adversarial requirements for release and target inputs.
 - [v0 Compatibility](/processkit/v1.x/docs/installer/v0-compatibility/): Read-only evidence and migration boundary for v0 projects.
 - [aibox Integration](/processkit/v1.x/docs/installer/aibox-integration/): Consume the processkit v1 machine protocol without duplicating lifecycle policy.

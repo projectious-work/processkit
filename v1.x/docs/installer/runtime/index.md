@@ -80,25 +80,38 @@ The gateway also supports streamable HTTP on loopback and a stdio proxy. A
 non-loopback HTTP listener requires an explicit deployment security layer;
 processkit does not expose it remotely by default.
 
-The target Rust interface is:
+The `v1.x-dev` line implements the first read-only native diagnostic:
+
+```sh
+processkit doctor --root . --json
+processkit doctor --root . --category drift
+```
+
+It validates the project root and doctor script, probes `uv`, launches the
+authoritative Python doctor without a shell, and wraps its structured result
+in `processkit.projectious.work/runtime/v1alpha1`. It intentionally exposes no
+fix flags.
+
+The remaining target Rust interface is:
 
 ```text
-processkit doctor
 processkit mcp verify
 processkit mcp serve --transport stdio
 processkit mcp serve --transport streamable-http
 processkit mcp proxy --url http://127.0.0.1:8000/mcp
 ```
 
-These commands are not part of the current alpha binary. When implemented,
+The `processkit mcp` commands are not part of the current alpha binary. When
+implemented,
 they will construct a direct `uv` argument vector without shell
 interpretation, scope the child to the selected project, preserve exit and
 signal behavior, and redact secrets from diagnostics.
 
 ## Diagnostic contract
 
-`processkit doctor` will report a stable code, severity, summary, and
-actionable remediation for:
+The native doctor currently preserves Python doctor findings and reports
+runtime launch failures without exposing fix behavior. Future static checks
+will add stable codes and actionable remediation for:
 
 - missing or unsupported Python;
 - missing or incompatible `uv`;
