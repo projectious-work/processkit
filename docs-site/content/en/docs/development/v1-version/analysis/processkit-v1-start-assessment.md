@@ -3,6 +3,10 @@ title: processkit v1.0 Start Assessment
 description: Scope and risk assessment for starting the v1.0 redesign.
 ---
 
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](../issue-135-status.md).
+
 Analyzed: 2026-07-04
 
 Sources considered:

@@ -11,6 +11,11 @@ Packages are opinionated bundles of skills. Pick one tier as your
 starting point, then add or remove skills through your installer or local
 package metadata when you need a narrower context.
 
+In v1 alpha, profiles are release-owned visible files. Select one with
+`processkit plan --profile <name>` and install the reviewed plan. The native
+installer records ownership; do not assemble a v1 profile by copying selected
+directories manually.
+
 ## The five tiers
 
 | Package    | Extends      | Best for                                                  |
@@ -49,16 +54,24 @@ minimal ── managed ── software ── product
 
 ## Using a package
 
-When installing manually, select a package by copying the shipped
-context and then enabling the tier through your own harness or installer
-configuration. Managed installers can expose this directly. For example,
-aibox uses:
+With the v1 CLI:
+
+```sh
+processkit plan \
+  --root . \
+  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --profile software \
+  --harness codex
+```
+
+Managed v0 installers can continue to expose package selection through their
+configuration. For example, aibox uses:
 
 ```toml
 # aibox.toml
 [processkit]
 source = "https://github.com/projectious-work/processkit.git"
-version = "v0.25.1"
+version = "v0.28.4"
 
 [context]
 packages = ["software"]

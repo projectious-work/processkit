@@ -3,6 +3,10 @@ title: Landscape Note
 description: Adjacent projects and concepts processkit should learn from.
 ---
 
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](./issue-135-status.md).
+
 ## Positioning
 
 processkit v1.0 is not trying to replace agent runtimes, memory

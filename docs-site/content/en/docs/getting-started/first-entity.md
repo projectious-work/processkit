@@ -1,104 +1,71 @@
 ---
-weight: 3
+weight: 4
 title: "Your First Entity"
 ---
 
-Create your first WorkItem and see how processkit's entity format works.
+Create the first WorkItem through processkit's MCP tools. Do not hand-edit
+canonical entity files: the management tool validates the schema, applies the
+storage policy, and writes the audit event as one governed operation.
 
 ## Prerequisites
 
-- A project with processkit installed (see [Installing](./installing)).
-- A package tier that includes `workitem-management`; `minimal` and
-  higher tiers include it.
+- Complete the [v1 alpha tutorial](./v1-alpha-tutorial/).
+- Start a new harness session after the installer writes its managed MCP
+  projection.
+- Confirm the `processkit-gateway` tools are visible.
 
-## Creating a WorkItem by hand
+## Create a WorkItem
 
-Write a file at `context/workitems/BACK-first-task.md`:
+Ask your MCP-capable agent:
 
-```yaml
----
-apiVersion: processkit.projectious.work/v1
-kind: WorkItem
-metadata:
-  id: BACK-first-task
-  created: 2026-04-06T10:00:00Z
-  labels:
-    area: onboarding
-spec:
-  title: "Try out processkit"
-  state: backlog
-  type: task
-  priority: medium
-  description: "Walk through the processkit docs and create a few entities."
----
+> Create a medium-priority task WorkItem titled "Evaluate processkit v1
+> alpha" with acceptance criteria to verify installation, record one
+> decision, and test an update plan.
 
-## Acceptance criteria
+The agent should route the request and call `create_workitem`. A successful
+response includes an ID and canonical path, for example:
 
-- [ ] Read the primitives overview
-- [ ] Read the skills overview
-- [ ] Create this first WorkItem
-- [ ] Transition it to in-progress, then done
+```text
+BACK-curious-quail
+context/workitems/2026/07/BACK-curious-quail.md
 ```
 
-If your installer has a validation command, run it now. The file has the
-core `apiVersion`, `kind`, `metadata.id`, and `spec` fields expected by
-the WorkItem schema.
+## Read and transition it
 
-## Transitioning
+Ask:
 
-When you start the task, update `spec.state`:
+> Read BACK-curious-quail through processkit, then transition it from backlog
+> to in-progress.
 
-```yaml
-spec:
-  state: in-progress
-  started_at: 2026-04-06T10:15:00Z
+The transition tool checks the WorkItem state machine and records its event.
+An invalid transition is rejected rather than silently changing the file.
+
+## Record and query a decision
+
+Ask:
+
+> Record the accepted decision that this project will evaluate
+> v1.0.0-alpha.4 in an isolated branch, link it to BACK-curious-quail, and
+> query both entities back.
+
+This exercises the core v1 user journey: governed write, relationship, audit
+event, and indexed read over visible project files.
+
+## Inspect the result
+
+The files remain readable in Git:
+
+```sh
+git status --short
+processkit verify --root .
 ```
 
-and ideally write a LogEntry to `context/logs/`:
-
-```yaml
----
-apiVersion: processkit.projectious.work/v1
-kind: LogEntry
-metadata:
-  id: LOG-started-first-task
-  created: 2026-04-06T10:15:00Z
-spec:
-  event_type: workitem.transitioned
-  timestamp: 2026-04-06T10:15:00Z
-  actor: ACTOR-you
-  subject: BACK-first-task
-  subject_kind: WorkItem
-  summary: "Started work on BACK-first-task"
-  details:
-    from_state: backlog
-    to_state: in-progress
----
-```
-
-When you finish the task, transition to `done` and write another LogEntry.
-
-## Doing this via an agent
-
-If you use an MCP-capable agent, ask:
-
-> "Create a WorkItem for the task 'Walk through the processkit onboarding'
-> and log its creation."
-
-The `workitem-management` skill tells the agent what shape to produce.
-The agent can call the `workitem-management` MCP server directly:
-
-```
-create_workitem(title="Walk through the processkit onboarding", type="task")
-→ BACK-calm-fox
-```
-
-and the server validates the schema, writes the file, and logs the event
-automatically.
+`processkit verify` checks installer-managed content. Domain MCP tools and
+`pk-doctor` check project entities; a native `processkit doctor` command is
+planned but is not part of alpha.4.
 
 ## Next
 
-- Explore the [primitives](../primitives/) to see the durable
-  entity model.
-- Browse the [skill catalog](../skills/) to see what else the
-  agent can do.
+- Review [MCP server operation](../mcp-servers/).
+- Learn the [entity model](../primitives/).
+- Read the [alpha.4 limitations](../development/v1-version/issue-135-status/).

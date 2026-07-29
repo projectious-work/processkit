@@ -3,6 +3,10 @@ title: Test Strategy
 description: Automated testing strategy for processkit v1.0.
 ---
 
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](./issue-135-status.md).
+
 The current exploratory strategy is to install processkit into a new
 aibox project and try workflows manually. That remains useful as a human
 dogfood check, but it is not enough for v1.0. It is not automated, it

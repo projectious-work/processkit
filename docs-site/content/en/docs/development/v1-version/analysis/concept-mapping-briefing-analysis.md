@@ -3,6 +3,10 @@ title: Concept Mapping Briefing Analysis
 description: Historical concept-mapping analysis for processkit v1.0.
 ---
 
+> **Alpha.4 documentation review:** This page records design or historical
+> planning. For shipped behavior and current gaps, use the
+> [issue #135 implementation review](../issue-135-status.md).
+
 Source: `concept-mapping-2026-05-16.md`
 
 Analyzed: 2026-07-04
