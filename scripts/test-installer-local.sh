@@ -22,6 +22,7 @@ cargo clippy --offline --locked \
     --all-targets -- -D warnings
 cargo test --offline --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml"
 "$REPO_ROOT/scripts/test-release-trust-local.sh"
+"$REPO_ROOT/scripts/test-bootstrap-local.sh"
 "$REPO_ROOT/scripts/test-installer-pilot-local.sh"
 "$REPO_ROOT/scripts/test-compatibility-local.sh"
 uv run --offline --with pytest --with pyyaml --with jsonschema \

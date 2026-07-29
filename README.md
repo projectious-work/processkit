@@ -153,6 +153,15 @@ For exact downloads, signature verification, local CLI installation, project
 creation, MCP startup, first use, update, recovery, and uninstall, follow the
 [step-by-step v1 alpha tutorial][v1-alpha-tutorial].
 
+For releases that publish your native target, the exact-version non-root
+bootstrap verifies the checksum, signed release envelope, and an independently
+trusted Ed25519 key fingerprint before installing:
+
+```sh
+scripts/install-processkit.sh v1.0.0-alpha.5 \
+  --key-sha256 <trusted-public-key-fingerprint>
+```
+
 `--distribution` is intentionally explicit for the alpha's offline and
 machine-facing contract. A future human-facing command will resolve an exact
 canonical release version, while `processkit execute --request <path>` remains

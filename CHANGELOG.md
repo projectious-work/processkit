@@ -9,6 +9,14 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Add an exact-version, non-root native bootstrap that verifies an
+  independently trusted Ed25519 key fingerprint, the signed release envelope,
+  checksum sidecar, asset digest, size, and native version smoke before an
+  atomic install.
+- Add deterministic multi-target release-envelope finalization so independently
+  produced Linux and macOS assets can be collected into one signed matrix
+  without claiming absent or duplicate targets.
+
 - Added an evidence-bound, resumable `scripts/maintain.sh` release
   orchestrator with semantic-version branch authority, phase-zero state and
   doctor reports, candidate-bound gate logs, required release notes,
