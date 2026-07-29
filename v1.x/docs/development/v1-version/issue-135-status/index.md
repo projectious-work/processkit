@@ -23,8 +23,8 @@ the issue.
 | Outcome | Assessment |
 | --- | ---: |
 | Implemented | 7 requirement clusters |
-| Partial | 6 requirement clusters |
-| Missing | 3 requirement clusters |
+| Partial | 8 requirement clusters |
+| Missing | 1 requirement cluster |
 
 Counts group related criteria so that large prose sections do not outweigh
 user journeys.
@@ -40,8 +40,8 @@ user journeys.
 | Opaque `execute --request` automation contract | **Implemented** | Versioned request/result schemas and golden fixtures |
 | Rust modularization and typed failures | **Partial** | Logic moved from the former monolith into focused modules with stable error tests; a separate public library crate and full API docs remain |
 | README/help/schema consistency | **Mostly implemented** | Current local-distribution requirements agree; generated help snapshot/release facts automation remains |
-| Four native target platforms | **Missing** | Alpha.4 publishes only `aarch64-unknown-linux-gnu` |
-| Bootstrap installer | **Missing** | Users manually download and install the native executable |
+| Four native target platforms | **Partial** | Alpha.4 publishes only ARM64 Linux; `v1.x-dev` can deterministically bind a collected four-target matrix, but native production/smoke remains |
+| Bootstrap installer | **Partial** | `v1.x-dev` adds an exact-version, non-root, checksum/signature/fingerprint-verifying bootstrap; canonical key distribution and four published assets remain |
 | Human exact-version online resolution | **Missing** | Human lifecycle commands still require `--distribution` |
 | Python/`uv` runtime contract | **Partial** | Runtime manifest and documentation exist; offline preparation and native diagnosis are incomplete |
 | Native `processkit doctor` and `processkit mcp` | **Partial** | `v1.x-dev` adds read-only native doctor delegation with typed runtime envelope and tests; MCP supervision remains missing |
@@ -66,9 +66,9 @@ user journeys.
 
 ## What Users Must Not Assume
 
-- support for Linux x86_64 or either macOS architecture;
-- a trusted `latest` resolver or bootstrap script;
-- native `doctor`, `migrate`, `package`, `harness`, or `mcp` commands;
+- published support for Linux x86_64 or either macOS architecture;
+- a trusted `latest` resolver or canonical release-key distribution;
+- native `migrate`, `package`, `harness`, or `mcp` commands;
 - removal of Python or `uv` as runtime dependencies;
 - safe in-place migration of an existing v0 project; or
 - GA stability of alpha contracts.

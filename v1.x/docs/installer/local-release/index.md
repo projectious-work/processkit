@@ -40,12 +40,44 @@ archive, creates an integrity envelope, signs it with Ed25519, and verifies the
 result. It produces the archive, native installer executable, checksum
 sidecars, release JSON, and signature under `dist/`. The signed envelope
 contains a required `installerAssets` matrix. A local alpha or beta release
-contains the current Rust host target; later multi-platform releases can add
-one unique entry per target after building each executable locally.
+contains the current Rust host target. Multi-host production can build each
+executable independently and then bind the complete collected matrix:
+
+```sh
+scripts/finalize-release-local.sh v1.0.0-alpha.5 \
+  /secure/release.pem \
+  /secure/release.pub.pem \
+  aarch64-unknown-linux-gnu \
+  x86_64-unknown-linux-gnu \
+  aarch64-apple-darwin \
+  x86_64-apple-darwin
+```
+
+Finalization fails if any named asset is absent, duplicated, symlinked, or
+unsafe. The resulting signature binds every target, filename, digest, and byte
+size. Building and natively smoking the four assets remains a release-host
+responsibility; merely naming a target never manufactures or validates it.
 
 The published alpha.4 matrix contains only
 `aarch64-unknown-linux-gnu`. Linux x86_64 and macOS x86_64/ARM64 builds are
 not yet release assets.
+
+## Exact-version bootstrap
+
+The non-root bootstrap installs a native executable only after checking its
+checksum, signed-envelope membership, signature, and an independently supplied
+Ed25519 key fingerprint:
+
+```sh
+scripts/install-processkit.sh v1.0.0-alpha.5 \
+  --key-sha256 <trusted-public-key-fingerprint>
+```
+
+It detects Linux x86_64/ARM64 and macOS x86_64/ARM64, installs to
+`$HOME/.local/bin` by default, and refuses floating versions. Supplying the
+fingerprint out of band is mandatory: downloading a public key beside its
+signature would authenticate the server to itself rather than establish
+release trust.
 
 ## Verify after copying
 
