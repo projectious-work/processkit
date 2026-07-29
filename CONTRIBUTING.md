@@ -193,33 +193,47 @@ processkit releases via semver git tags. The current cadence:
 
 To release a new tag:
 
-1. Update `context/HANDOVER.md` (preamble for the new version)
-2. Update `context/BACKLOG.md` Done section
-3. Update `docs-site` if user-visible changes shipped
-4. Run `uv run scripts/smoke-test-servers.py` and confirm green
-5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
-6. Generate a local release key once, outside the repository:
+1. Work from the semantic version's designated protected release-integration
+   branch. Resolve it with:
+
+   ```bash
+   scripts/maintain.sh release-branch vX.Y.Z
+   ```
+
+2. Add curated tracked release notes at `release-notes/vX.Y.Z.md`.
+3. Resolve or record tracked deferrals for every doctor warning.
+4. Generate a local release key once, outside the repository:
+
    ```bash
    scripts/processkit-keygen-local.sh \
        "$HOME/.config/processkit/keys/release.pem" \
        "$HOME/.config/processkit/trust.d/release.pub.pem"
    ```
-7. Build, test, sign, and verify the complete release locally:
+5. Export the two absolute key paths without printing key contents:
+
    ```bash
-   scripts/release-local.sh vX.Y.Z \
-       "$HOME/.config/processkit/keys/release.pem" \
-       "$HOME/.config/processkit/trust.d/release.pub.pem"
+   export PROCESSKIT_RELEASE_PRIVATE_KEY=\
+"$HOME/.config/processkit/keys/release.pem"
+   export PROCESSKIT_RELEASE_PUBLIC_KEY=\
+"$HOME/.config/processkit/trust.d/release.pub.pem"
    ```
-8. Copy the verified files from `dist/` to the chosen publication location.
-   Publication is deliberately separate from release creation and trust.
-9. **Build and review the documentation locally:**
+6. Run the evidence-bound candidate phases:
+
    ```bash
-   scripts/check-docs-local.sh
-   scripts/serve-docs-local.sh
+   scripts/maintain.sh release vX.Y.Z \
+     --steps phase0,checks,build
    ```
-   Do not add GitHub Actions or workflow files. The local publish script
-   pushes prebuilt output to the `gh-pages` branch; GitHub Pages does not
-   build the site.
+7. Review `dist/release-evidence/vX.Y.Z/<commit>/`, then publish and verify:
+
+   ```bash
+   scripts/maintain.sh release vX.Y.Z \
+     --steps publish,verify
+   ```
+
+Candidate evidence is reusable only for the exact version, commit, clean tree,
+toolchain, and host binding. Do not add GitHub Actions or workflow files. The
+local publish script pushes prebuilt output to `gh-pages`; GitHub Pages does
+not build the site.
 
 ## Backlog and tracked work
 

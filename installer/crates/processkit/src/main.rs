@@ -17,6 +17,7 @@ mod output;
 mod planner;
 mod release;
 mod request;
+mod runtime;
 mod signed_release;
 mod state;
 mod transaction;
@@ -28,6 +29,7 @@ use output::pretty_json;
 use planner::{plan, Change};
 use release::verified_release;
 use request::execute_request;
+use runtime::run_doctor;
 use signed_release::verify_local_release;
 use state::{
     validate_installation_state, InstallationState, ManagedAdapterState, OwnedPath, StateRelease,
@@ -138,6 +140,15 @@ enum Command {
         root: PathBuf,
         #[arg(long)]
         distribution: PathBuf,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
+    /// Diagnose the installed project and Python MCP runtime without mutation.
+    Doctor {
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+        #[arg(long)]
+        category: Option<String>,
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
@@ -384,6 +395,39 @@ fn main() {
             }
             Err(error) => {
                 eprintln!("processkit: {error}");
+                std::process::exit(3);
+            }
+        },
+        Command::Doctor {
+            root,
+            category,
+            json,
+        } => match run_doctor(&root, category.as_deref()) {
+            Ok(result) => {
+                let has_errors = result.has_errors();
+                if json {
+                    print_json_or_exit(&result);
+                } else {
+                    println!("{}", result.summary());
+                }
+                if has_errors {
+                    std::process::exit(1);
+                }
+            }
+            Err(error) => {
+                if json {
+                    print_json_or_exit(&serde_json::json!({
+                        "apiVersion": "processkit.projectious.work/runtime/v1alpha1",
+                        "kind": "DoctorResult",
+                        "status": "unavailable",
+                        "errors": [{
+                            "code": "runtime-unavailable",
+                            "message": error,
+                        }],
+                    }));
+                } else {
+                    eprintln!("processkit: {error}");
+                }
                 std::process::exit(3);
             }
         },

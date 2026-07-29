@@ -20,6 +20,7 @@ assets, native runtime diagnosis, and MCP supervision remain planned.
 - [CLI and automation interfaces](./cli/)
 - [Python MCP runtime contract](./runtime/)
 - [Local release production](./local-release/)
+- [Evidence-bound release process](./release-process/)
 - [Threat model](./threat-model/)
 - [v0 compatibility](./v0-compatibility/)
 - [aibox consumer integration](./aibox-integration/)
