@@ -82,7 +82,7 @@ project and verifies the resulting entities and events:
 
 | Surface | Implemented now | Compatibility | Planned or stabilizing |
 | --- | --- | --- | --- |
-| MCP runtime | One-process gateway and per-skill servers | Aggregate server retained for older integrations | Additional harness-specific transport validation |
+| MCP runtime | Native verification/supervision, one-process gateway, and per-skill servers | Aggregate server retained for older integrations | Additional harness-specific transport validation |
 | Project memory | Validated entities, state transitions, indexing, events, migrations | Explicit v0-to-v1 compatibility manifests | Further v1 vocabulary stabilization |
 | Installer | Local `plan`, `install`, `update`, `verify`, read-only `doctor`, recovery, and conservative `uninstall` | Selected v0 layouts detected from explicit evidence | More platform release assets and successive prerelease upgrade coverage |
 | Harness projections | Canonical MCP catalog with Codex and Claude adapters | Existing user-owned configuration is preserved or reported as a conflict | Broader first-class harness acceptance |
@@ -235,16 +235,18 @@ Then point your harness at the gateway MCP server. For stdio-based MCP:
 For a long-running local daemon:
 
 ```sh
-uv run context/skills/processkit/processkit-gateway/mcp/server.py \
-  serve --transport streamable-http --host 127.0.0.1 --port 8000 --path /mcp
+processkit mcp serve --root . \
+  --transport streamable-http \
+  --host 127.0.0.1 \
+  --port 8000 \
+  --path /mcp
 ```
 
 Harnesses that only support stdio can connect to that daemon through the
 included proxy:
 
 ```sh
-uv run context/skills/processkit/processkit-gateway/mcp/server.py \
-  stdio-proxy --url http://127.0.0.1:8000/mcp
+processkit mcp proxy --root . --url http://127.0.0.1:8000/mcp
 ```
 
 You can also run individual MCP servers when you want a smaller,

@@ -11,9 +11,9 @@ machine interface uses a versioned JSON request and result contract for aibox
 and other automation.
 
 > **Release and development status:** `v1.0.0-alpha.4` supports the local
-> lifecycle commands below except `doctor`. The `v1.x-dev` line adds the
-> read-only native `doctor` wrapper for the next prerelease. Commands in
-> “Target human lifecycle” remain planned unless listed as current.
+> lifecycle commands below except `doctor` and `mcp`. The `v1.x-dev` line adds
+> read-only native diagnosis and MCP supervision for the next prerelease.
+> Commands in “Target human lifecycle” remain planned unless listed as current.
 
 ## Current v1 alpha commands
 
@@ -26,6 +26,9 @@ processkit update
 processkit verify
 processkit verify-release
 processkit doctor
+processkit mcp verify
+processkit mcp serve --transport stdio
+processkit mcp proxy --url http://127.0.0.1:8000/mcp
 processkit inspect-compatibility
 processkit recover
 processkit uninstall
