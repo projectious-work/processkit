@@ -9,7 +9,7 @@ Dark
 <svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li><li><button type=button class="dropdown-item d-flex align-items-center active" data-bs-theme-value=auto aria-pressed=true>
 <svg class="bi me-2 opacity-50"><use href="#circle-half"/></svg>
 Auto
-<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li></ul></div></li></ul><div class="scroll-indicator scroll-right"></div></div><div class="td-navbar__search d-none d-lg-block"><div class="td-search td-search--offline"><div class=td-search__icon></div><input type=search name=q class="td-search__input form-control" placeholder='Search this site…' aria-label='Search this site…' autocomplete=off data-offline-search-index-json-src=/processkit/v1.x/offline-search-index.949076ddebd8a41ce3e4f763d66332ed.json data-offline-search-base-href=/ data-offline-search-max-results=25></div></div></div></nav></header><div class="container-fluid td-outer"><div class=td-main><div class="row flex-xl-nowrap"><main class="col-12 col-md-9 col-xl-8 ps-md-5" role=main><div class=td-content><div class="pageinfo pageinfo-primary d-print-none"><p>This is the multi-page printable view of this section.
+<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li></ul></div></li></ul><div class="scroll-indicator scroll-right"></div></div><div class="td-navbar__search d-none d-lg-block"><div class="td-search td-search--offline"><div class=td-search__icon></div><input type=search name=q class="td-search__input form-control" placeholder='Search this site…' aria-label='Search this site…' autocomplete=off data-offline-search-index-json-src=/processkit/v1.x/offline-search-index.de603fcbbd2af696549b21a5982a0b49.json data-offline-search-base-href=/ data-offline-search-max-results=25></div></div></div></nav></header><div class="container-fluid td-outer"><div class=td-main><div class="row flex-xl-nowrap"><main class="col-12 col-md-9 col-xl-8 ps-md-5" role=main><div class=td-content><div class="pageinfo pageinfo-primary d-print-none"><p>This is the multi-page printable view of this section.
 <a href=# onclick="return print(),!1">Click here to print</a>.</p><p><a href=/processkit/v1.x/docs/installer/>Return to the regular view of this page</a>.</p></div><h1 class=title>Installer and releases</h1><div class=lead>Standalone installation, trust, compatibility, and integrations.</div><ul><li>1: <a href=#pg-fa65310a985e2b6e9f8d71dd57e9ab01>CLI and automation interfaces</a></li><li>2: <a href=#pg-3b648d7b8ae507311110b0e7cd96e780>Installer Contract</a></li><li>3: <a href=#pg-39ba16745f318b4b9b002df0590b7d8c>Python MCP runtime contract</a></li><li>4: <a href=#pg-c2955e7c99fdc2046151a5996eef39dc>Local Release Production</a></li><li>5: <a href=#pg-6052ca46bf97c3656deaad0c5b895209>Evidence-bound Release Process</a></li><li>6: <a href=#pg-e56fd14286f7598d03eff889ade2d2a9>Installer Threat Model</a></li><li>7: <a href=#pg-050686e7a55bd586f5c75247b484ca41>v0 Compatibility</a></li><li>8: <a href=#pg-5e1a5094bf5308dddec37c61f9e01859>aibox Integration</a></li></ul><div class=content><p>The v1 standalone installer makes processkit independently installable,
 updatable, verifiable, and removable. Release policy is carried by the
 signed processkit distribution rather than hard-coded into downstream
@@ -21,14 +21,17 @@ review</a></li></ul></div></div><div class=td-content style=page-break-before:al
 commands optimize for reviewable output and safe project operation. The
 machine interface uses a versioned JSON request and result contract for aibox
 and other automation.</p><blockquote><p><strong>Release and development status:</strong> <code>v1.0.0-alpha.4</code> supports the local
-lifecycle commands below except <code>doctor</code>. The <code>v1.x-dev</code> line adds the
-read-only native <code>doctor</code> wrapper for the next prerelease. Commands in
-“Target human lifecycle” remain planned unless listed as current.</p></blockquote><h2 id=current-v1-alpha-commands>Current v1 alpha commands</h2><p>The current prerelease supports:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>processkit plan
+lifecycle commands below except <code>doctor</code> and <code>mcp</code>. The <code>v1.x-dev</code> line adds
+read-only native diagnosis and MCP supervision for the next prerelease.
+Commands in “Target human lifecycle” remain planned unless listed as current.</p></blockquote><h2 id=current-v1-alpha-commands>Current v1 alpha commands</h2><p>The current prerelease supports:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>processkit plan
 </span></span><span class=line><span class=cl>processkit install
 </span></span><span class=line><span class=cl>processkit update
 </span></span><span class=line><span class=cl>processkit verify
 </span></span><span class=line><span class=cl>processkit verify-release
 </span></span><span class=line><span class=cl>processkit doctor
+</span></span><span class=line><span class=cl>processkit mcp verify
+</span></span><span class=line><span class=cl>processkit mcp serve --transport stdio
+</span></span><span class=line><span class=cl>processkit mcp proxy --url http://127.0.0.1:8000/mcp
 </span></span><span class=line><span class=cl>processkit inspect-compatibility
 </span></span><span class=line><span class=cl>processkit recover
 </span></span><span class=line><span class=cl>processkit uninstall
@@ -98,8 +101,8 @@ separate reusable Rust library crate and fully documented public API remain
 future refactoring work.</p></div><div class=td-content style=page-break-before:always><h1 id=pg-39ba16745f318b4b9b002df0590b7d8c>3 - Python MCP runtime contract</h1><div class=lead>Supported Python, uv, dependency, cache, and transport behavior.</div><p>Python is an intentional processkit runtime dependency. It implements the MCP
 servers; it is not required by the Model Context Protocol itself. The native
 Rust CLI owns installation and lifecycle safety. Native diagnostics and
-optional process supervision are planned and will not reimplement MCP
-behavior.</p><h2 id=current-alpha-requirements>Current alpha requirements</h2><ul><li>Python 3.10 or newer must be discoverable by <code>uv</code>.</li><li><code>uv</code> must support PEP 723 script metadata.</li><li>The installed gateway script and processkit shared Python library must be
+process supervision wrap that Python implementation; they do not reimplement
+MCP behavior.</p><h2 id=current-alpha-requirements>Current alpha requirements</h2><ul><li>Python 3.10 or newer must be discoverable by <code>uv</code>.</li><li><code>uv</code> must support PEP 723 script metadata.</li><li>The installed gateway script and processkit shared Python library must be
 readable from the selected project root.</li><li>The first dependency resolution may require network access.</li><li>Direct <code>uv run</code> startup remains a supported compatibility and development
 interface.</li></ul><p>Every shipped MCP entry point declares its Python constraint and dependencies
 in a PEP 723 block. The gateway currently declares:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-toml data-lang=toml><span class=line><span class=cl><span class=nx>requires-python</span> <span class=p>=</span> <span class=s2>&#34;&gt;=3.10&#34;</span>
@@ -136,15 +139,15 @@ processkit does not expose it remotely by default.</p><p>The <code>v1.x-dev</cod
 </span></span></code></pre></div><p>It validates the project root and doctor script, probes <code>uv</code>, launches the
 authoritative Python doctor without a shell, and wraps its structured result
 in <code>processkit.projectious.work/runtime/v1alpha1</code>. It intentionally exposes no
-fix flags.</p><p>The remaining target Rust interface is:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>processkit mcp verify
+fix flags.</p><p>The <code>v1.x-dev</code> line also implements the native supervision interface:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>processkit mcp verify
 </span></span><span class=line><span class=cl>processkit mcp serve --transport stdio
 </span></span><span class=line><span class=cl>processkit mcp serve --transport streamable-http
 </span></span><span class=line><span class=cl>processkit mcp proxy --url http://127.0.0.1:8000/mcp
-</span></span></code></pre></div><p>The <code>processkit mcp</code> commands are not part of the current alpha binary. When
-implemented,
-they will construct a direct <code>uv</code> argument vector without shell
-interpretation, scope the child to the selected project, preserve exit and
-signal behavior, and redact secrets from diagnostics.</p><h2 id=diagnostic-contract>Diagnostic contract</h2><p>The native doctor currently preserves Python doctor findings and reports
+</span></span></code></pre></div><p>These commands validate a regular, non-symlink gateway path and launch <code>uv</code>
+with a direct argument vector, without shell interpretation. The child is
+scoped to the canonical project root and its exit status is preserved.
+Streamable HTTP and proxy URLs are restricted to explicit loopback hosts;
+remote exposure remains an operator-owned deployment concern.</p><h2 id=diagnostic-contract>Diagnostic contract</h2><p>The native doctor currently preserves Python doctor findings and reports
 runtime launch failures without exposing fix behavior. Future static checks
 will add stable codes and actionable remediation for:</p><ul><li>missing or unsupported Python;</li><li>missing or incompatible <code>uv</code>;</li><li>unreadable gateway or shared-library paths;</li><li>invalid PEP 723 metadata;</li><li>unavailable or unwritable runtime cache;</li><li>dependency preparation failure;</li><li>gateway initialization or startup timeout;</li><li>invalid harness projection;</li><li>optional semantic-index degradation.</li></ul><p>Missing optional <code>sqlite-vec</code> acceleration must not be confused with failure
 of the canonical file-backed entity operations. Diagnostic output must never

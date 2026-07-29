@@ -855,9 +855,9 @@ machine interface uses a versioned JSON request and result contract for aibox
 and other automation.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Release and development status:&lt;/strong&gt; &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt; supports the local
-lifecycle commands below except &lt;code&gt;doctor&lt;/code&gt;. The &lt;code&gt;v1.x-dev&lt;/code&gt; line adds the
-read-only native &lt;code&gt;doctor&lt;/code&gt; wrapper for the next prerelease. Commands in
-“Target human lifecycle” remain planned unless listed as current.&lt;/p&gt;</description></item><item><title>WorkItem</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</guid><description>&lt;p&gt;A unit of work — task, story, bug, epic, spike, or chore. The primary
+lifecycle commands below except &lt;code&gt;doctor&lt;/code&gt; and &lt;code&gt;mcp&lt;/code&gt;. The &lt;code&gt;v1.x-dev&lt;/code&gt; line adds
+read-only native diagnosis and MCP supervision for the next prerelease.
+Commands in “Target human lifecycle” remain planned unless listed as current.&lt;/p&gt;</description></item><item><title>WorkItem</title><link>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/primitives/workitem/</guid><description>&lt;p&gt;A unit of work — task, story, bug, epic, spike, or chore. The primary
 work-tracking primitive in processkit.&lt;/p&gt;
 &lt;table&gt;
  &lt;thead&gt;
@@ -2349,8 +2349,8 @@ the process.&lt;/li&gt;
 &lt;/ul&gt;</description></item><item><title>Python MCP runtime contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/runtime/</guid><description>&lt;p&gt;Python is an intentional processkit runtime dependency. It implements the MCP
 servers; it is not required by the Model Context Protocol itself. The native
 Rust CLI owns installation and lifecycle safety. Native diagnostics and
-optional process supervision are planned and will not reimplement MCP
-behavior.&lt;/p&gt;
+process supervision wrap that Python implementation; they do not reimplement
+MCP behavior.&lt;/p&gt;
 &lt;h2 id="current-alpha-requirements"&gt;Current alpha requirements&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;Python 3.10 or newer must be discoverable by &lt;code&gt;uv&lt;/code&gt;.&lt;/li&gt;

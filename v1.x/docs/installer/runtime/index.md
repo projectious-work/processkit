@@ -11,8 +11,8 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 Python is an intentional processkit runtime dependency. It implements the MCP
 servers; it is not required by the Model Context Protocol itself. The native
 Rust CLI owns installation and lifecycle safety. Native diagnostics and
-optional process supervision are planned and will not reimplement MCP
-behavior.
+process supervision wrap that Python implementation; they do not reimplement
+MCP behavior.
 
 ## Current alpha requirements
 
@@ -92,7 +92,7 @@ authoritative Python doctor without a shell, and wraps its structured result
 in `processkit.projectious.work/runtime/v1alpha1`. It intentionally exposes no
 fix flags.
 
-The remaining target Rust interface is:
+The `v1.x-dev` line also implements the native supervision interface:
 
 ```text
 processkit mcp verify
@@ -101,11 +101,11 @@ processkit mcp serve --transport streamable-http
 processkit mcp proxy --url http://127.0.0.1:8000/mcp
 ```
 
-The `processkit mcp` commands are not part of the current alpha binary. When
-implemented,
-they will construct a direct `uv` argument vector without shell
-interpretation, scope the child to the selected project, preserve exit and
-signal behavior, and redact secrets from diagnostics.
+These commands validate a regular, non-symlink gateway path and launch `uv`
+with a direct argument vector, without shell interpretation. The child is
+scoped to the canonical project root and its exit status is preserved.
+Streamable HTTP and proxy URLs are restricted to explicit loopback hosts;
+remote exposure remains an operator-owned deployment concern.
 
 ## Diagnostic contract
 
