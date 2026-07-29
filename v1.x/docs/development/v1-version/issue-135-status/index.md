@@ -43,7 +43,7 @@ user journeys.
 | Four native target platforms | **Partial** | Alpha.4 publishes only ARM64 Linux; `v1.x-dev` can deterministically bind a collected four-target matrix, but native production/smoke remains |
 | Bootstrap installer | **Partial** | `v1.x-dev` adds an exact-version, non-root, checksum/signature/fingerprint-verifying bootstrap; canonical key distribution and four published assets remain |
 | Human exact-version online resolution | **Missing** | Human lifecycle commands still require `--distribution` |
-| Python/`uv` runtime contract | **Partial** | Runtime manifest and documentation exist; offline preparation and native diagnosis are incomplete |
+| Python/`uv` runtime contract | **Mostly implemented** | Runtime policy, native diagnosis, dependency-profile preparation, and offline-readiness verification exist; resolved versions remain unlocked |
 | Native `processkit doctor` and `processkit mcp` | **Mostly implemented** | `v1.x-dev` provides typed read-only doctor plus native MCP verify/serve/proxy supervision; broader host and signal acceptance remains |
 | Extracted-release MCP acceptance | **Implemented** | Package smoke starts the staged gateway and exercises representative tools |
 | Repository dogfood update/recovery acceptance | **Partial** | Release boundary is checked; full disposable-repository update/interruption recovery is not yet a release gate |
@@ -78,12 +78,11 @@ user journeys.
 1. Publish and smoke-test Linux x86_64 and both macOS native assets.
 2. Publish a canonical trust root and resolve exact versions for human
    lifecycle commands without accepting a floating `latest`.
-3. Add explicit Python dependency preparation and offline-readiness checks.
-4. Exercise dogfood update/recovery and v0 migration against disposable
+3. Exercise dogfood update/recovery and v0 migration against disposable
    repositories.
-5. Demonstrate direct-CLI and aibox installed-state parity.
-6. Generate release facts and help snapshots as part of release validation.
-7. Finish the public Rust library boundary and API documentation.
+4. Demonstrate direct-CLI and aibox installed-state parity.
+5. Generate release facts and help snapshots as part of release validation.
+6. Finish the public Rust library boundary and API documentation.
 
 The guiding constraint remains: finish the trustworthy native lifecycle around
 visible content and the Python MCP runtime before expanding conceptual breadth.

@@ -30,6 +30,8 @@ processkit verify
 processkit verify-release
 processkit doctor
 processkit mcp verify
+processkit mcp prepare
+processkit mcp prepare --offline
 processkit mcp serve --transport stdio
 processkit mcp proxy --url http://127.0.0.1:8000/mcp
 processkit inspect-compatibility
