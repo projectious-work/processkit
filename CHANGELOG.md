@@ -7,6 +7,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Constrained all shipped MCP servers to the compatible `mcp` 1.x API so
+  fresh `uv run --script` environments do not resolve the incompatible
+  `mcp` 2.x package and fail before exposing tools.
+
 ### Changed
 
 - Defined dedicated development and release-integration branches for v0 and

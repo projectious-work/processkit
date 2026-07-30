@@ -448,7 +448,7 @@ When a skill ships an MCP server:
   #!/usr/bin/env -S uv run
   # /// script
   # requires-python = ">=3.10"
-  # dependencies = ["mcp[cli]>=1.0"]
+  # dependencies = ["mcp[cli]>=1.0,<2.0"]
   # ///
   from mcp.server.fastmcp import FastMCP
   server = FastMCP("processkit-<skill-name>")
