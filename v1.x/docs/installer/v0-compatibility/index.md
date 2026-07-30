@@ -33,10 +33,24 @@ inspected tree and does not authorize an in-place install.
 ## Transition an exact release
 
 Create an empty directory outside the legacy tree, review the compatibility
-result, and run:
+result, and first generate a non-mutating plan:
 
 ```sh
 mkdir /path/to/fresh-v1-project
+processkit migrate-v0 \
+  --source /path/to/exact-v0-release \
+  --root /path/to/fresh-v1-project \
+  --distribution /path/to/processkit-v1-release \
+  --profile managed \
+  --harness codex \
+  --plan-only \
+  --json
+```
+
+Resolve every blocking finding, review the dispositions and hashes, then omit
+`--plan-only` and acknowledge installation:
+
+```sh
 processkit migrate-v0 \
   --source /path/to/exact-v0-release \
   --root /path/to/fresh-v1-project \
@@ -53,9 +67,27 @@ installs v1 transactionally in the target and reports the matched manifest,
 source release, target release, and corpus disposition. The source stays
 read-only.
 
-The result deliberately reports `corpus.status` as `not-copied`. This command
-transitions the runtime and managed installation surface; it does not pretend
-that legacy entities have been transformed. To retain legacy project data:
+The result includes a deterministic corpus plan for project-owned actors,
+decisions, discussions, gates, logs, migrations, notes, scopes, and work
+items. Each entry binds its source SHA-256 and reports one of:
+
+- `copy-compatible` for a structurally compatible mutable entity;
+- `preserve-immutable` for a LogEntry or applied Migration; or
+- a blocking finding for invalid frontmatter, an unsupported API version,
+  unsafe links, missing identity, or a kind/directory mismatch.
+
+Every entry includes an explicit `fieldLoss` array. It is empty for the
+currently accepted v2 envelopes. The planner rejects the migration before
+installation when any finding is blocked.
+
+`artifacts`, `bindings`, `roles`, and `team-members` are explicitly excluded
+because these v0 release trees also shipped producer-owned files in those
+roots. They remain blocked until per-release baselines can distinguish product
+content from user additions without guessing.
+
+The plan remains evidence-only: the command transitions the runtime and
+managed installation surface but does not yet copy entity files. To retain
+legacy project data:
 
 1. copy the project
 2. run the v0-to-v1 corpus migration planner
@@ -64,7 +96,8 @@ that legacy entities have been transformed. To retain legacy project data:
 4. validate the migrated copy
 5. use `migrate-v0` to install v1 into a fresh or disposable target
 
-Automatic in-place migration remains unsupported until historical installed
-project fixtures prove mapping, rollback, and user-modification behavior.
-This boundary prevents a structural lookalike or a downstream manager's lock
-file from being mistaken for processkit provenance.
+Automatic entity copying and in-place migration remain unsupported until
+historical installed-project fixtures prove mapping, immutable preservation,
+rollback, and user-modification behavior. This boundary prevents a structural
+lookalike or a downstream manager's lock file from being mistaken for
+processkit provenance.
