@@ -1,6 +1,6 @@
 {
   "aggregate_sha256": "676bfe83ab55146810b947d34d262a3344427c5377de6c5c815126092f347483",
-  "generated_at": "2026-07-24T15:53:04Z",
+  "generated_at": "2026-07-30T06:49:48Z",
   "per_gateway": [
     {
       "path": "context/skills/processkit/processkit-gateway/mcp/mcp-config.json",
@@ -10,7 +10,7 @@
   "per_server_header": [
     {
       "path": "context/skills/devops/repo-management/mcp/server.py",
-      "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
+      "sha256": "f68d5e1eea0e8f07880a37d931a2223173a1260344799b3c4832a8859df69e63"
     },
     {
       "path": "context/skills/processkit/actor-profile/mcp/server.py",
@@ -94,7 +94,7 @@
     },
     {
       "path": "context/skills/processkit/runtime-prune/mcp/server.py",
-      "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
+      "sha256": "f68d5e1eea0e8f07880a37d931a2223173a1260344799b3c4832a8859df69e63"
     },
     {
       "path": "context/skills/processkit/scope-management/mcp/server.py",
@@ -114,7 +114,7 @@
     },
     {
       "path": "context/skills/processkit/supply-chain-audit/mcp/server.py",
-      "sha256": "c9f972ec122a2ce2da062ecc96374be9841607eea11f2f09518362d3185b5b24"
+      "sha256": "f68d5e1eea0e8f07880a37d931a2223173a1260344799b3c4832a8859df69e63"
     },
     {
       "path": "context/skills/processkit/task-router/mcp/server.py",
@@ -235,6 +235,6 @@
       "sha256": "a4ae7e26a980aeebed953f3cc2e761cde6dd8692fb033c81c9e3c8927e8b5898"
     }
   ],
-  "processkit_version": "v0.28.4",
+  "processkit_version": "v0.28.5",
   "version": 1
 }

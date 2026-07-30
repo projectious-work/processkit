@@ -9,6 +9,32 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.5] - 2026-07-30
+
+v0.28.5 restores MCP availability in fresh derived-project environments.
+
+### Fixed
+
+- Constrained all shipped MCP servers to the compatible `mcp` 1.x API so
+  fresh `uv run --script` environments do not resolve the incompatible
+  `mcp` 2.x package and fail before exposing tools.
+
+---
+
+## [v0.28.4] - 2026-07-24
+
+v0.28.4 refreshes the provider-neutral model roster used by routing and
+model-profile resolution.
+
+### Changed
+
+- Refreshed the roster from current provider documentation and added current
+  model entries while retaining explicitly unverified pricing.
+- Regenerated model-spec artifacts from the refreshed compatibility
+  projection and added Subquadratic and Xiaomi provider mappings.
+
+---
+
 ## [v0.28.3] - 2026-07-23
 
 v0.28.3 is a **patch release** that publishes the gateway GitHub credential
