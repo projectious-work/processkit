@@ -7,6 +7,13 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [v0.28.5] - 2026-07-30
+
+v0.28.5 restores MCP availability in fresh derived-project environments and
+keeps long-lived gateway GitHub authentication current.
+
 ### Fixed
 
 - Let long-lived gateways refresh GitHub CLI credentials from an owner-only
