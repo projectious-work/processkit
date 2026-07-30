@@ -85,19 +85,28 @@ because these v0 release trees also shipped producer-owned files in those
 roots. They remain blocked until per-release baselines can distinguish product
 content from user additions without guessing.
 
-The plan remains evidence-only: the command transitions the runtime and
-managed installation surface but does not yet copy entity files. To retain
-legacy project data:
+After review, the mutating command installs v1 and applies every accepted
+corpus entry through a second journaled transaction. Mutable entities and
+immutable LogEntries/applied Migrations are copied byte-for-byte, remain
+user-owned, and are not added to the installer's managed-file inventory.
+Installation state records the source release, compatibility manifest, corpus
+plan SHA-256, entry count, and complete typed plan. `processkit verify`
+re-checks every migrated path against the persisted source digest and reports
+missing, unsafe, or modified migrated entities as provenance drift.
 
-1. copy the project
-2. run the v0-to-v1 corpus migration planner
-3. review source hashes, field-loss reports, unsupported kinds, and immutable
-   LogEntry evidence
-4. validate the migrated copy
-5. use `migrate-v0` to install v1 into a fresh or disposable target
+If the process stops during corpus application, run:
 
-Automatic entity copying and in-place migration remain unsupported until
-historical installed-project fixtures prove mapping, immutable preservation,
-rollback, and user-modification behavior. This boundary prevents a structural
-lookalike or a downstream manager's lock file from being mistaken for
-processkit provenance.
+```sh
+processkit recover --root /path/to/fresh-v1-project --yes --json
+```
+
+Recovery uses the distinct pre-migration and migrated state hashes to roll
+back partially applied entities without changing the source. The recovered
+target remains a valid fresh v1 installation; select a new empty target before
+retrying `migrate-v0`.
+
+In-place migration and mixed-root entity migration remain unsupported until
+per-release ownership baselines prove which artifacts, bindings, roles, and
+TeamMembers are user-owned. This boundary prevents a structural lookalike or
+a downstream manager's lock file from being mistaken for processkit
+provenance.
