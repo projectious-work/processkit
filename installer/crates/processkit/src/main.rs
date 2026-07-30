@@ -145,6 +145,24 @@ enum Command {
         #[arg(long, action = ArgAction::SetTrue)]
         json: bool,
     },
+    /// Transition an exact v0 release into a fresh v1 target.
+    MigrateV0 {
+        #[arg(long)]
+        source: PathBuf,
+        #[arg(long)]
+        root: PathBuf,
+        #[arg(long)]
+        distribution: PathBuf,
+        #[arg(long, default_value = "managed")]
+        profile: Vec<String>,
+        #[arg(long)]
+        harness: Vec<String>,
+        /// Required acknowledgement for filesystem mutation.
+        #[arg(long)]
+        yes: bool,
+        #[arg(long, action = ArgAction::SetTrue)]
+        json: bool,
+    },
     /// Diagnose the installed project and Python MCP runtime without mutation.
     Doctor {
         #[arg(long, default_value = ".")]
@@ -454,6 +472,28 @@ fn main() {
                 std::process::exit(3);
             }
         },
+        Command::MigrateV0 {
+            source,
+            root,
+            distribution,
+            profile,
+            harness,
+            yes,
+            json,
+        } => match migrate_v0(&source, &root, &distribution, profile, harness, yes) {
+            Ok(result) if json => print_json_or_exit(&result),
+            Ok(result) => println!(
+                "transitioned {} into fresh v1 target {}",
+                result["source"]["releaseVersion"]
+                    .as_str()
+                    .unwrap_or("unknown"),
+                result["target"]["root"].as_str().unwrap_or("unknown")
+            ),
+            Err(error) => {
+                eprintln!("processkit: {error}");
+                std::process::exit(3);
+            }
+        },
         Command::Doctor {
             root,
             category,
@@ -740,6 +780,80 @@ fn install(
     };
     execute_transaction(root, "install", pending, Some(&state))?;
     Ok(state)
+}
+
+fn migrate_v0(
+    source: &Path,
+    root: &Path,
+    distribution: &Path,
+    profiles: Vec<String>,
+    harnesses: Vec<String>,
+    yes: bool,
+) -> Result<serde_json::Value, String> {
+    if !yes {
+        return Err("v0 migration requires --yes after reviewing compatibility evidence".into());
+    }
+    let source = source
+        .canonicalize()
+        .map_err(|error| format!("legacy source root: {error}"))?;
+    ensure_non_symlink_directory(&source, "legacy source root")?;
+
+    let root = root
+        .canonicalize()
+        .map_err(|error| format!("fresh target root: {error}"))?;
+    ensure_non_symlink_directory(&root, "fresh target root")?;
+    if source == root || source.starts_with(&root) || root.starts_with(&source) {
+        return Err("fresh target must be separate from and outside the legacy source".into());
+    }
+    if fs::read_dir(&root)
+        .map_err(|error| format!("fresh target root: {error}"))?
+        .next()
+        .is_some()
+    {
+        return Err("fresh target root must be empty".into());
+    }
+
+    let inspection = inspect_compatibility(&source, distribution)?;
+    if inspection["status"] != "exact-release" {
+        return Err("legacy source must exactly match a shipped compatibility manifest".into());
+    }
+    let exact_match = inspection["matches"]
+        .as_array()
+        .and_then(|matches| matches.first())
+        .ok_or_else(|| "exact compatibility result is missing release evidence".to_string())?;
+    let manifest_id = exact_match["manifestId"]
+        .as_str()
+        .ok_or_else(|| "compatibility evidence is missing manifestId".to_string())?;
+    let release_version = exact_match["releaseVersion"]
+        .as_str()
+        .ok_or_else(|| "compatibility evidence is missing releaseVersion".to_string())?;
+
+    let state = install(&root, distribution, profiles, harnesses, true)?;
+    Ok(serde_json::json!({
+        "apiVersion": API_VERSION,
+        "status": "transitioned-to-fresh-target",
+        "source": {
+            "root": source,
+            "releaseVersion": release_version,
+            "manifestId": manifest_id,
+            "disposition": "preserved-read-only",
+        },
+        "target": {
+            "root": root,
+            "release": state.release,
+            "profiles": state.profiles,
+            "harnesses": state.harnesses,
+        },
+        "corpus": {
+            "status": "not-copied",
+            "reason": "legacy entities require schema-aware transformation and explicit loss review",
+        },
+        "warnings": [
+            "the legacy source was inspected but not modified",
+            "this command installs v1 into a fresh target; it does not migrate legacy entities",
+        ],
+        "errors": [],
+    }))
 }
 
 fn adapter_actions(
