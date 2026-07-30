@@ -14,6 +14,7 @@ mod contract;
 mod error;
 mod filesystem;
 mod mcp_runtime;
+mod migration;
 mod output;
 mod planner;
 mod release;
@@ -27,6 +28,7 @@ use compatibility::inspect_compatibility;
 use contract::API_VERSION;
 use filesystem::{digest, ensure_non_symlink_directory, ensure_regular_file, safe_relative};
 use mcp_runtime::{prepare_runtime, proxy_mcp, serve_mcp, verify_mcp, McpTransport};
+use migration::plan_v0_corpus;
 use output::pretty_json;
 use planner::{plan, Change};
 use release::verified_release;
@@ -157,6 +159,9 @@ enum Command {
         profile: Vec<String>,
         #[arg(long)]
         harness: Vec<String>,
+        /// Emit compatibility and corpus evidence without installing.
+        #[arg(long, action = ArgAction::SetTrue)]
+        plan_only: bool,
         /// Required acknowledgement for filesystem mutation.
         #[arg(long)]
         yes: bool,
@@ -478,16 +483,31 @@ fn main() {
             distribution,
             profile,
             harness,
+            plan_only,
             yes,
             json,
-        } => match migrate_v0(&source, &root, &distribution, profile, harness, yes) {
+        } => match migrate_v0(
+            &source,
+            &root,
+            &distribution,
+            profile,
+            harness,
+            plan_only,
+            yes,
+        ) {
             Ok(result) if json => print_json_or_exit(&result),
+            Ok(result) if result["status"] == "transitioned-to-fresh-target" => {
+                println!(
+                    "transitioned {} into fresh v1 target {}",
+                    result["source"]["releaseVersion"]
+                        .as_str()
+                        .unwrap_or("unknown"),
+                    result["target"]["root"].as_str().unwrap_or("unknown")
+                )
+            }
             Ok(result) => println!(
-                "transitioned {} into fresh v1 target {}",
-                result["source"]["releaseVersion"]
-                    .as_str()
-                    .unwrap_or("unknown"),
-                result["target"]["root"].as_str().unwrap_or("unknown")
+                "v0 migration plan: {}",
+                result["status"].as_str().unwrap_or("blocked")
             ),
             Err(error) => {
                 eprintln!("processkit: {error}");
@@ -788,9 +808,10 @@ fn migrate_v0(
     distribution: &Path,
     profiles: Vec<String>,
     harnesses: Vec<String>,
+    plan_only: bool,
     yes: bool,
 ) -> Result<serde_json::Value, String> {
-    if !yes {
+    if !plan_only && !yes {
         return Err("v0 migration requires --yes after reviewing compatibility evidence".into());
     }
     let source = source
@@ -827,6 +848,32 @@ fn migrate_v0(
     let release_version = exact_match["releaseVersion"]
         .as_str()
         .ok_or_else(|| "compatibility evidence is missing releaseVersion".to_string())?;
+    let corpus_plan = plan_v0_corpus(&source)?;
+    if plan_only {
+        return Ok(serde_json::json!({
+            "apiVersion": API_VERSION,
+            "status": corpus_plan.status,
+            "source": {
+                "root": source,
+                "releaseVersion": release_version,
+                "manifestId": manifest_id,
+                "disposition": "preserved-read-only",
+            },
+            "target": {
+                "root": root,
+                "disposition": "not-modified",
+            },
+            "corpus": corpus_plan,
+            "warnings": [
+                "the migration plan is non-mutating",
+                "artifacts, bindings, roles, and team members require per-release ownership baselines",
+            ],
+            "errors": [],
+        }));
+    }
+    if corpus_plan.status != "planned" {
+        return Err("legacy corpus plan is blocked; resolve every reported finding".into());
+    }
 
     let state = install(&root, distribution, profiles, harnesses, true)?;
     Ok(serde_json::json!({
@@ -844,13 +891,11 @@ fn migrate_v0(
             "profiles": state.profiles,
             "harnesses": state.harnesses,
         },
-        "corpus": {
-            "status": "not-copied",
-            "reason": "legacy entities require schema-aware transformation and explicit loss review",
-        },
+        "corpus": corpus_plan,
         "warnings": [
             "the legacy source was inspected but not modified",
-            "this command installs v1 into a fresh target; it does not migrate legacy entities",
+            "the corpus plan is evidence only; entity copying remains disabled",
+            "artifacts, bindings, roles, and team members are excluded until release baselines distinguish product-owned and project-owned files",
         ],
         "errors": [],
     }))

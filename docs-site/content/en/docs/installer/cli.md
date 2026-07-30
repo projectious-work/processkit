@@ -44,6 +44,10 @@ currently require an explicit local release directory through
 suitable for offline use and for callers that already acquire and verify an
 exact release.
 
+`migrate-v0 --plan-only` emits exact-release and corpus dispositions without
+modifying either the source or the empty target. Omit `--plan-only` and add
+`--yes` only after every blocking finding is resolved.
+
 For example:
 
 ```sh
