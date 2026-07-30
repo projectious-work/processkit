@@ -197,6 +197,8 @@ pub(super) fn execute_transaction(
                 .ok()
                 .and_then(|value| value.parse::<usize>().ok())
                 == Some(index)
+                && std::env::var("PROCESSKIT_INSTALLER_FAIL_OPERATION")
+                    .map_or(true, |value| value == operation)
             {
                 std::process::exit(75);
             }
@@ -271,7 +273,7 @@ pub(super) fn rollback_journal(root: &Path, journal: &Journal) -> Result<(), Str
 pub(super) fn validate_recovery_journal(root: &Path, journal: &Journal) -> Result<(), String> {
     if !matches!(
         journal.operation.as_str(),
-        "install" | "update" | "uninstall"
+        "install" | "update" | "uninstall" | "migrate-v0-corpus"
     ) || !matches!(
         journal.phase.as_str(),
         "prepared" | "applying" | "state-written" | "committed"

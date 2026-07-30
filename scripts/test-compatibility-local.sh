@@ -100,18 +100,21 @@ for version in v0.27.1 v0.28.4; do
           and .source.releaseVersion == $version
           and .source.disposition == "preserved-read-only"
           and .target.release.version != null
-          and .corpus.status == "planned"
-          and .corpus.summary == {
+          and .corpus.status == "applied"
+          and .corpus.entryCount == 2
+          and (.corpus.planSha256 | test("^[0-9a-f]{64}$"))
+          and .corpus.plan.status == "planned"
+          and .corpus.plan.summary == {
             blocked: 0,
             copyCompatible: 1,
             preserveImmutable: 1
           }
-          and (.corpus.entries | map(.disposition) | sort) == [
+          and (.corpus.plan.entries | map(.disposition) | sort) == [
             "copy-compatible",
             "preserve-immutable"
           ]
-          and (.corpus.entries | all(.fieldLoss == []))
-          and .corpus.excludedRoots == [
+          and (.corpus.plan.entries | all(.fieldLoss == []))
+          and .corpus.plan.excludedRoots == [
             "context/artifacts",
             "context/bindings",
             "context/roles",
@@ -119,9 +122,43 @@ for version in v0.27.1 v0.28.4; do
           ]
           and .errors == []
         ' >/dev/null
+    cmp \
+        "$EXACT_ROOT/src/context/workitems/2026/07/BACK-legacy-fixture.md" \
+        "$TARGET_ROOT/context/workitems/2026/07/BACK-legacy-fixture.md"
+    cmp \
+        "$EXACT_ROOT/src/context/logs/2026/07/LOG-legacy-fixture.md" \
+        "$TARGET_ROOT/context/logs/2026/07/LOG-legacy-fixture.md"
+    jq -e --arg version "$version" '
+      (.migrationEvidence | length) == 1
+      and .migrationEvidence[0].entryCount == 2
+      and .migrationEvidence[0].manifestId == (
+        "v0-release-" + ($version | ltrimstr("v") | gsub("\\."; "-"))
+      )
+      and .migrationEvidence[0].sourceRelease == $version
+      and .migrationEvidence[0].plan.status == "planned"
+      and (.migrationEvidence[0].plan.entries | length) == 2
+      and (.migrationEvidence[0].planSha256 | test("^[0-9a-f]{64}$"))
+    ' "$TARGET_ROOT/.processkit/state.json" >/dev/null
     "$REPO_ROOT/installer/target/debug/processkit" verify \
         --root "$TARGET_ROOT" --json |
         jq -e '.status == "verified"' >/dev/null
+    printf '\nlocal drift\n' \
+        >>"$TARGET_ROOT/context/workitems/2026/07/BACK-legacy-fixture.md"
+    set +e
+    DRIFT_RESULT="$(
+        "$REPO_ROOT/installer/target/debug/processkit" verify \
+            --root "$TARGET_ROOT" --json
+    )"
+    DRIFT_STATUS=$?
+    set -e
+    test "$DRIFT_STATUS" -eq 4
+    jq -e '
+      .status == "drifted"
+      and (.errors | any(.code == "migrated-path-drift"))
+    ' <<<"$DRIFT_RESULT" >/dev/null
+    cp \
+        "$EXACT_ROOT/src/context/workitems/2026/07/BACK-legacy-fixture.md" \
+        "$TARGET_ROOT/context/workitems/2026/07/BACK-legacy-fixture.md"
     test ! -e "$EXACT_ROOT/src/.processkit/state.json"
     rm -rf "$EXACT_ROOT"
     rm -rf "$TARGET_ROOT"
@@ -173,4 +210,48 @@ printf '%s\n' \
 test -z "$(find "$BLOCKED_TARGET" -mindepth 1 -print -quit)"
 rm -rf "$BLOCKED_SOURCE" "$BLOCKED_TARGET"
 
-echo "processkit-native compatibility and corpus planning passed"
+INTERRUPT_SOURCE="$(mktemp -d "${TMPDIR:-/tmp}/processkit-migrate-interrupt.XXXXXX")"
+INTERRUPT_TARGET="$(mktemp -d "${TMPDIR:-/tmp}/processkit-migrate-recover.XXXXXX")"
+git -C "$REPO_ROOT" archive v0.28.4 src |
+    tar -x -C "$INTERRUPT_SOURCE"
+mkdir -p "$INTERRUPT_SOURCE/src/context/workitems/2026/07"
+printf '%s\n' \
+    '---' \
+    'apiVersion: processkit.projectious.work/v2' \
+    'kind: WorkItem' \
+    'metadata:' \
+    '  id: BACK-interrupted-migration' \
+    'spec:' \
+    '  title: Interrupted migration fixture' \
+    '  state: backlog' \
+    '---' \
+    >"$INTERRUPT_SOURCE/src/context/workitems/2026/07/BACK-interrupted-migration.md"
+set +e
+PROCESSKIT_INSTALLER_FAIL_OPERATION=migrate-v0-corpus \
+PROCESSKIT_INSTALLER_FAIL_AFTER_ACTION=0 \
+    "$REPO_ROOT/installer/target/debug/processkit" migrate-v0 \
+    --source "$INTERRUPT_SOURCE/src" \
+    --root "$INTERRUPT_TARGET" \
+    --distribution "$REPO_ROOT/src" \
+    --profile minimal \
+    --yes >/dev/null 2>&1
+INTERRUPT_STATUS=$?
+set -e
+test "$INTERRUPT_STATUS" -eq 75
+test "$(find "$INTERRUPT_TARGET/.processkit/transactions" \
+    -name '*.json' -type f | wc -l)" -eq 1
+"$REPO_ROOT/installer/target/debug/processkit" recover \
+    --root "$INTERRUPT_TARGET" --yes --json |
+    jq -e '.status == "recovered" and .recovered == 1' >/dev/null
+test ! -e \
+    "$INTERRUPT_TARGET/context/workitems/2026/07/BACK-interrupted-migration.md"
+jq -e '(.migrationEvidence // []) == []' \
+    "$INTERRUPT_TARGET/.processkit/state.json" >/dev/null
+"$REPO_ROOT/installer/target/debug/processkit" verify \
+    --root "$INTERRUPT_TARGET" --json |
+    jq -e '.status == "verified"' >/dev/null
+test -f \
+    "$INTERRUPT_SOURCE/src/context/workitems/2026/07/BACK-interrupted-migration.md"
+rm -rf "$INTERRUPT_SOURCE" "$INTERRUPT_TARGET"
+
+echo "processkit-native compatibility, corpus application, and recovery passed"

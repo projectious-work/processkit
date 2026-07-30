@@ -2,6 +2,7 @@
 
 use crate::contract::API_VERSION;
 use crate::filesystem::{safe_relative, valid_sha256};
+use crate::migration::CorpusPlan;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashSet};
 
@@ -16,6 +17,8 @@ pub(super) struct InstallationState {
     pub(super) owned_paths: Vec<OwnedPath>,
     #[serde(default)]
     pub(super) managed_adapters: Vec<ManagedAdapterState>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub(super) migration_evidence: Vec<MigrationEvidence>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -53,6 +56,17 @@ pub(super) struct ManagedAdapterState {
     pub(super) created_mcp_servers: bool,
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+pub(super) struct MigrationEvidence {
+    pub(super) source_release: String,
+    pub(super) manifest_id: String,
+    pub(super) plan_sha256: String,
+    pub(super) entry_count: usize,
+    pub(super) plan: CorpusPlan,
+}
+
 pub(super) fn validate_installation_state(state: &InstallationState) -> Result<(), String> {
     if state.api_version != API_VERSION {
         return Err("unsupported installer state version".into());
@@ -88,6 +102,16 @@ pub(super) fn validate_installation_state(state: &InstallationState) -> Result<(
             })
         {
             return Err("installer state contains an invalid managed adapter".into());
+        }
+    }
+    for evidence in &state.migration_evidence {
+        if semver::Version::parse(evidence.source_release.trim_start_matches('v')).is_err()
+            || evidence.manifest_id.trim().is_empty()
+            || !valid_sha256(&evidence.plan_sha256)
+            || evidence.entry_count != evidence.plan.entry_count()
+            || evidence.plan.sha256()? != evidence.plan_sha256
+        {
+            return Err("installer state contains invalid migration evidence".into());
         }
     }
     Ok(())

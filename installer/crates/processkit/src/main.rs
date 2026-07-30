@@ -36,7 +36,8 @@ use request::execute_request;
 use runtime::run_doctor;
 use signed_release::verify_local_release;
 use state::{
-    validate_installation_state, InstallationState, ManagedAdapterState, OwnedPath, StateRelease,
+    validate_installation_state, InstallationState, ManagedAdapterState, MigrationEvidence,
+    OwnedPath, StateRelease,
 };
 use transaction::{
     execute_transaction, rollback_journal, validate_recovery_journal, Journal, PendingAction,
@@ -637,6 +638,14 @@ fn verify_installation(root: &Path) -> Result<serde_json::Value, String> {
     validate_installation_state(&state)?;
 
     let mut findings = Vec::new();
+    let migrated_count: usize = state
+        .migration_evidence
+        .iter()
+        .map(|evidence| evidence.entry_count)
+        .sum();
+    for evidence in &state.migration_evidence {
+        findings.extend(evidence.plan.verify_applied(root)?);
+    }
     for owned in &state.owned_paths {
         let target = root.join(&owned.path);
         if has_symlink_ancestor(root, &owned.path)? {
@@ -693,7 +702,7 @@ fn verify_installation(root: &Path) -> Result<serde_json::Value, String> {
     Ok(serde_json::json!({
         "apiVersion": API_VERSION,
         "status": if findings.is_empty() { "verified" } else { "drifted" },
-        "checked": state.owned_paths.len(),
+        "checked": state.owned_paths.len() + migrated_count,
         "changes": [],
         "conflicts": [],
         "warnings": [],
@@ -797,6 +806,7 @@ fn install(
         harnesses: plan.harnesses,
         owned_paths,
         managed_adapters,
+        migration_evidence: Vec::new(),
     };
     execute_transaction(root, "install", pending, Some(&state))?;
     Ok(state)
@@ -875,7 +885,18 @@ fn migrate_v0(
         return Err("legacy corpus plan is blocked; resolve every reported finding".into());
     }
 
-    let state = install(&root, distribution, profiles, harnesses, true)?;
+    let plan_sha256 = corpus_plan.sha256()?;
+    let entry_count = corpus_plan.entry_count();
+    let mut state = install(&root, distribution, profiles, harnesses, true)?;
+    let pending = corpus_plan.pending_actions(&source, &root)?;
+    state.migration_evidence.push(MigrationEvidence {
+        source_release: release_version.into(),
+        manifest_id: manifest_id.into(),
+        plan_sha256: plan_sha256.clone(),
+        entry_count,
+        plan: corpus_plan.clone(),
+    });
+    execute_transaction(&root, "migrate-v0-corpus", pending, Some(&state))?;
     Ok(serde_json::json!({
         "apiVersion": API_VERSION,
         "status": "transitioned-to-fresh-target",
@@ -891,10 +912,14 @@ fn migrate_v0(
             "profiles": state.profiles,
             "harnesses": state.harnesses,
         },
-        "corpus": corpus_plan,
+        "corpus": {
+            "status": "applied",
+            "planSha256": plan_sha256,
+            "entryCount": entry_count,
+            "plan": corpus_plan,
+        },
         "warnings": [
             "the legacy source was inspected but not modified",
-            "the corpus plan is evidence only; entity copying remains disabled",
             "artifacts, bindings, roles, and team members are excluded until release baselines distinguish product-owned and project-owned files",
         ],
         "errors": [],
@@ -1599,6 +1624,7 @@ fn update(root: &Path, distribution: &Path, yes: bool) -> Result<usize, String> 
         harnesses: old.harnesses,
         owned_paths: old.owned_paths,
         managed_adapters,
+        migration_evidence: old.migration_evidence,
     };
     execute_transaction(root, "update", pending, Some(&new_state))?;
     Ok(changed)
