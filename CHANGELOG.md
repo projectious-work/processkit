@@ -11,24 +11,126 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [v0.28.5] - 2026-07-30
 
-v0.28.5 restores MCP availability in fresh derived-project environments and
-keeps long-lived gateway GitHub authentication current.
+v0.28.5 restores MCP availability in fresh derived-project environments.
+
+### Fixed
+
+- Constrained all shipped MCP servers to the compatible `mcp` 1.x API so
+  fresh `uv run --script` environments do not resolve the incompatible
+  `mcp` 2.x package and fail before exposing tools.
+
+---
+
+## [v0.28.4] - 2026-07-24
+
+v0.28.4 refreshes the provider-neutral model roster used by routing and
+model-profile resolution.
+
+### Changed
+
+- Refreshed the roster from current provider documentation and added current
+  model entries while retaining explicitly unverified pricing.
+- Regenerated model-spec artifacts from the refreshed compatibility
+  projection and added Subquadratic and Xiaomi provider mappings.
+
+---
+
+## [v0.28.3] - 2026-07-23
+
+v0.28.3 is a **patch release** that publishes the gateway GitHub credential
+refresh fix with consistent release metadata.
+
+### Fixed
+
+- Regenerated both MCP manifests with the release version before archive
+  construction, satisfying the release-integrity preflight.
+
+### Notes
+
+- The immutable `v0.28.2` tag contains the gateway fix, but archive preflight
+  stopped its distribution because its MCP manifest still identified the
+  preceding release. No GitHub Release or archive was published for it.
+
+---
+
+## [v0.28.2] - 2026-07-23
+
+v0.28.2 is a **patch release** that restores authenticated GitHub repository
+reconciliation through long-lived processkit gateway daemons.
 
 ### Fixed
 
 - Let long-lived gateways refresh GitHub CLI credentials from an owner-only
   token file immediately before each `gh` call, while redacting supported
   token values from subprocess results. Closes #107.
-- Constrained all shipped MCP servers to the compatible `mcp` 1.x API so
-  fresh `uv run --script` environments do not resolve the incompatible
-  `mcp` 2.x package and fail before exposing tools.
+
+### Verification
+
+- `uv run --with pytest --with 'mcp[cli]>=1.0' pytest
+  src/context/skills/devops/repo-management/scripts/test_repo_management.py -q`
+- `uv run scripts/smoke-test-servers.py`
+- `uv run
+  src/context/skills/processkit/release-audit/scripts/release_audit.py
+  --tree src-context --json`
+
+---
+
+## [v0.28.1] - 2026-07-22
+
+v0.28.1 is a **patch release** that removes two derived-project doctor
+dead ends in the v0 maintenance line.
+
+### Fixed
+
+- Added `normalize_migration_filename` to migration-management so canonical
+  Migration filename/ID repairs are audited, refresh indexes and mutable
+  references, and preserve append-only historical records. Closes #96.
+- Declared every literal MCP side-effect event type in the LogEntry schema,
+  including the six reported emitters and three role-slot lifecycle events,
+  so normal MCP writes no longer produce pk-doctor vocabulary errors.
+  Closes #97.
 
 ### Changed
 
-- Defined dedicated development and release-integration branches for v0 and
-  v1 lines, with stable release tags merged into `main` after publication.
-- Made a curated, version-matched `CHANGELOG.md` entry a required release
-  archive preflight rather than an optional staged file.
+- Expanded repository-portfolio-review to check the GitHub short description,
+  an applicable project logo, a maintained documentation/project page, and a
+  resolving GitHub Website link to that canonical page.
+
+### Verification
+
+- `uv run --with mcp --with pyyaml --with jsonschema
+  src/context/skills/processkit/migration-management/scripts/test_migration_management.py`
+- `uv run --with pyyaml --with jsonschema --with pytest --with mcp pytest
+  src/context/skills/processkit/event-log/scripts/test_log_event.py -v`
+- `uv run src/context/skills/processkit/pk-doctor/scripts/test_doctor.py`
+
+---
+
+## [v0.28.0] - 2026-07-21
+
+v0.28.0 is a **minor release** that adds an explicit, research-backed
+branching-strategy guide and establishes the v0 development-to-release
+promotion model for future maintenance releases.
+
+### Added
+
+- Added `git-branching`, a skill for selecting and documenting Feature
+  Branch Workflow, GitHub Flow, Trunk-Based Development, Gitflow, GitLab
+  Flow, or processkit's version-line integration model.
+- Added a strategy catalog with selection criteria, branch-contract output,
+  hotfix guidance, and branch-protection baseline.
+- Added `pk-reconcile` to coordinate migrations, pk-doctor findings, and
+  guarded GitHub issue and pull-request reconciliation in one command.
+
+### Changed
+
+- Established `v0.x-dev` as the v0 development line and `v0.x-release` as
+  its release and stable-tag authority; stable release commits are merged
+  into `main` after tagging.
+- Required a curated, version-matched `CHANGELOG.md` entry before building
+  a processkit release archive.
+- Made `pk-resume` delegate its session-start cleanup to `pk-reconcile`,
+  removing duplicated migration, health, and GitHub preflight instructions.
 
 ---
 
