@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["mcp[cli]>=1.0", "pyyaml>=6.0", "jsonschema>=4.0"]
+# dependencies = ["mcp[cli]>=1.0,<2.0", "pyyaml>=6.0", "jsonschema>=4.0"]
 # ///
 """End-to-end smoke test for processkit MCP servers.
 
