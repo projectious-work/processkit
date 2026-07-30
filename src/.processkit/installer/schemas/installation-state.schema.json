@@ -37,6 +37,30 @@
       "items": {
         "$ref": "managed-adapter-state.schema.json"
       }
+    },
+    "migrationEvidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceRelease",
+          "manifestId",
+          "planSha256",
+          "entryCount",
+          "plan"
+        ],
+        "properties": {
+          "sourceRelease": {"type": "string", "minLength": 1},
+          "manifestId": {"type": "string", "minLength": 1},
+          "planSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "entryCount": {"type": "integer", "minimum": 0},
+          "plan": {"type": "object"}
+        }
+      }
     }
   }
 }

@@ -11,7 +11,9 @@
       "const": "processkit.projectious.work/installer/v1alpha1"
     },
     "transactionId": {"type": "string", "minLength": 8},
-    "operation": {"enum": ["install", "update", "uninstall"]},
+    "operation": {
+      "enum": ["install", "update", "uninstall", "migrate-v0-corpus"]
+    },
     "phase": {
       "enum": ["prepared", "applying", "state-written", "committed"]
     },

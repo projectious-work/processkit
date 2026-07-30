@@ -43,7 +43,7 @@ user journeys.
 | Native `processkit doctor` and `processkit mcp` | **Mostly implemented** | `v1.x-dev` provides typed read-only doctor plus native MCP verify/serve/proxy supervision; broader host and signal acceptance remains |
 | Extracted-release MCP acceptance | **Implemented** | Package smoke starts the staged gateway and exercises representative tools |
 | Repository dogfood update/recovery acceptance | **Implemented** | The release gate combines the full-content lifecycle pilot with a deterministic real-process update interruption, rollback, user-data preservation, retry, and provenance verification |
-| v0 migration and aibox parity | **Partial** | Exact fixtures exercise guarded transition, source preservation, and schema-aware corpus dispositions with immutable/loss evidence; entity application, product-root baselines, recovery, and aibox parity remain |
+| v0 migration and aibox parity | **Partial** | Exact fixtures exercise guarded transition, byte-preserving transactional corpus application, persisted loss/provenance evidence, and interruption recovery; mixed-root ownership baselines and aibox parity remain |
 | Harness projection ownership | **Implemented** | Codex and Claude adapters preserve unrelated keys and have lifecycle tests |
 | Stable/prerelease documentation story | **Partial** | Alpha.4 docs now separate v0 stable and v1 preview; generated facts and broader downstream validation remain |
 
@@ -74,8 +74,8 @@ user journeys.
 1. Publish and smoke-test Linux x86_64 and both macOS native assets.
 2. Publish a canonical trust root and resolve exact versions for human
    lifecycle commands without accepting a floating `latest`.
-3. Apply planned v0 entities transactionally, starting with immutable
-   LogEntry preservation and per-release baselines for mixed-ownership roots.
+3. Add per-release ownership baselines for mixed v0 artifact, binding, role,
+   and TeamMember roots.
 4. Demonstrate direct-CLI and aibox installed-state parity.
 5. Generate release facts and help snapshots as part of release validation.
 6. Finish the public Rust library boundary and API documentation.

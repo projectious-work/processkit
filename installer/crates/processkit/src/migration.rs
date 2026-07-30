@@ -1,7 +1,9 @@
 //! Evidence-driven planning for legacy project corpus migration.
 
 use crate::filesystem::{digest, safe_relative};
-use serde::Serialize;
+use crate::transaction::{PendingAction, TransactionAction};
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::Path;
 
@@ -17,19 +19,19 @@ const ENTITY_ROOTS: &[(&str, &str)] = &[
     ("context/workitems", "WorkItem"),
 ];
 
-#[derive(Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct CorpusPlan {
     pub(super) status: String,
-    entries: Vec<CorpusEntry>,
-    excluded_roots: Vec<&'static str>,
+    pub(super) entries: Vec<CorpusEntry>,
+    excluded_roots: Vec<String>,
     errors: Vec<CorpusFinding>,
     summary: CorpusSummary,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct CorpusEntry {
+pub(super) struct CorpusEntry {
     path: String,
     kind: String,
     id: String,
@@ -38,7 +40,7 @@ struct CorpusEntry {
     field_loss: Vec<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CorpusFinding {
     path: String,
@@ -46,7 +48,7 @@ struct CorpusFinding {
     message: String,
 }
 
-#[derive(Default, Serialize)]
+#[derive(Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CorpusSummary {
     copy_compatible: usize,
@@ -96,14 +98,103 @@ pub(super) fn plan_v0_corpus(source: &Path) -> Result<CorpusPlan, String> {
         },
         entries,
         excluded_roots: vec![
-            "context/artifacts",
-            "context/bindings",
-            "context/roles",
-            "context/team-members",
+            "context/artifacts".into(),
+            "context/bindings".into(),
+            "context/roles".into(),
+            "context/team-members".into(),
         ],
         errors,
         summary,
     })
+}
+
+impl CorpusPlan {
+    pub(super) fn sha256(&self) -> Result<String, String> {
+        let bytes = serde_json::to_vec(self)
+            .map_err(|error| format!("serialize legacy corpus plan: {error}"))?;
+        Ok(format!("{:x}", Sha256::digest(bytes)))
+    }
+
+    pub(super) fn entry_count(&self) -> usize {
+        self.entries.len()
+    }
+
+    pub(super) fn pending_actions(
+        &self,
+        source: &Path,
+        target: &Path,
+    ) -> Result<Vec<PendingAction>, String> {
+        let mut pending = Vec::with_capacity(self.entries.len());
+        for entry in &self.entries {
+            let destination = target.join(&entry.path);
+            if destination.exists() {
+                return Err(format!(
+                    "migration target collides with installed content: {}",
+                    entry.path
+                ));
+            }
+            pending.push(PendingAction {
+                action: TransactionAction {
+                    kind: "create".into(),
+                    target: entry.path.clone(),
+                    old_sha256: None,
+                    new_sha256: Some(entry.sha256.clone()),
+                    staged_path: None,
+                    backup_path: None,
+                    created_parents: Vec::new(),
+                    ownership: "shared".into(),
+                    applied: false,
+                },
+                source: Some(source.join(&entry.path)),
+                content: None,
+            });
+        }
+        Ok(pending)
+    }
+
+    pub(super) fn verify_applied(&self, root: &Path) -> Result<Vec<serde_json::Value>, String> {
+        let mut findings = Vec::new();
+        for entry in &self.entries {
+            if !safe_relative(&entry.path) {
+                return Err("migration evidence contains an unsafe path".into());
+            }
+            let target = root.join(&entry.path);
+            let metadata = match target.symlink_metadata() {
+                Ok(metadata) => metadata,
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                    findings.push(serde_json::json!({
+                        "code": "missing-migrated-path",
+                        "path": entry.path,
+                        "message": "migrated entity is missing",
+                    }));
+                    continue;
+                }
+                Err(error) => return Err(format!("migrated path metadata: {error}")),
+            };
+            if metadata.file_type().is_symlink()
+                || !metadata.is_file()
+                || crate::has_symlink_ancestor(root, &entry.path)?
+            {
+                findings.push(serde_json::json!({
+                    "code": "unsafe-migrated-path",
+                    "path": entry.path,
+                    "message": "migrated entity or ancestor is not a regular path",
+                }));
+                continue;
+            }
+            let actual = digest(&target)?;
+            if actual != entry.sha256 {
+                findings.push(serde_json::json!({
+                    "code": "migrated-path-drift",
+                    "path": entry.path,
+                    "message": "migrated entity digest differs from migration evidence",
+                    "expectedSha256": entry.sha256,
+                    "actualSha256": actual,
+                }));
+            }
+        }
+        Ok(findings)
+    }
 }
 
 fn walk_entity_root(
