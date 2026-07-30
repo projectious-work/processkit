@@ -9,7 +9,7 @@ Dark
 <svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li><li><button type=button class="dropdown-item d-flex align-items-center active" data-bs-theme-value=auto aria-pressed=true>
 <svg class="bi me-2 opacity-50"><use href="#circle-half"/></svg>
 Auto
-<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li></ul></div></li></ul><div class="scroll-indicator scroll-right"></div></div><div class="td-navbar__search d-none d-lg-block"><div class="td-search td-search--offline"><div class=td-search__icon></div><input type=search name=q class="td-search__input form-control" placeholder='Search this site…' aria-label='Search this site…' autocomplete=off data-offline-search-index-json-src=/processkit/v1.x/offline-search-index.919a3edd6ca724ace9225b540b3e7fb8.json data-offline-search-base-href=/ data-offline-search-max-results=25></div></div></div></nav></header><div class="container-fluid td-outer"><div class=td-main><div class="row flex-xl-nowrap"><main class="col-12 col-md-9 col-xl-8 ps-md-5" role=main><div class=td-content><div class="pageinfo pageinfo-primary d-print-none"><p>This is the multi-page printable view of this section.
+<svg class="bi ms-auto d-none"><use href="#check2"/></svg></button></li></ul></div></li></ul><div class="scroll-indicator scroll-right"></div></div><div class="td-navbar__search d-none d-lg-block"><div class="td-search td-search--offline"><div class=td-search__icon></div><input type=search name=q class="td-search__input form-control" placeholder='Search this site…' aria-label='Search this site…' autocomplete=off data-offline-search-index-json-src=/processkit/v1.x/offline-search-index.67e7603ada36a6fefe869f48f5c38ab8.json data-offline-search-base-href=/ data-offline-search-max-results=25></div></div></div></nav></header><div class="container-fluid td-outer"><div class=td-main><div class="row flex-xl-nowrap"><main class="col-12 col-md-9 col-xl-8 ps-md-5" role=main><div class=td-content><div class="pageinfo pageinfo-primary d-print-none"><p>This is the multi-page printable view of this section.
 <a href=# onclick="return print(),!1">Click here to print</a>.</p><p><a href=/processkit/v1.x/docs/installer/>Return to the regular view of this page</a>.</p></div><h1 class=title>Installer and releases</h1><div class=lead>Standalone installation, trust, compatibility, and integrations.</div><ul><li>1: <a href=#pg-fa65310a985e2b6e9f8d71dd57e9ab01>CLI and automation interfaces</a></li><li>2: <a href=#pg-3b648d7b8ae507311110b0e7cd96e780>Installer Contract</a></li><li>3: <a href=#pg-39ba16745f318b4b9b002df0590b7d8c>Python MCP runtime contract</a></li><li>4: <a href=#pg-c2955e7c99fdc2046151a5996eef39dc>Local Release Production</a></li><li>5: <a href=#pg-6052ca46bf97c3656deaad0c5b895209>Evidence-bound Release Process</a></li><li>6: <a href=#pg-e56fd14286f7598d03eff889ade2d2a9>Installer Threat Model</a></li><li>7: <a href=#pg-050686e7a55bd586f5c75247b484ca41>v0 Compatibility</a></li><li>8: <a href=#pg-5e1a5094bf5308dddec37c61f9e01859>aibox Integration</a></li></ul><div class=content><p>The v1 standalone installer makes processkit independently installable,
 updatable, verifiable, and removable. Release policy is carried by the
 signed processkit distribution rather than hard-coded into downstream
@@ -35,13 +35,15 @@ Commands in “Target human lifecycle” remain planned unless listed as current
 </span></span><span class=line><span class=cl>processkit mcp serve --transport stdio
 </span></span><span class=line><span class=cl>processkit mcp proxy --url http://127.0.0.1:8000/mcp
 </span></span><span class=line><span class=cl>processkit inspect-compatibility
+</span></span><span class=line><span class=cl>processkit migrate-v0
 </span></span><span class=line><span class=cl>processkit recover
 </span></span><span class=line><span class=cl>processkit uninstall
 </span></span><span class=line><span class=cl>processkit execute --request request.json
-</span></span></code></pre></div><p><code>plan</code>, <code>install</code>, <code>update</code>, and compatibility inspection currently require an
-explicit local release directory through <code>--distribution</code>. Mutating commands
-also require <code>--yes</code>. This makes the alpha suitable for offline use and for
-callers that already acquire and verify an exact release.</p><p>For example:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>processkit plan <span class=se>\
+</span></span></code></pre></div><p><code>plan</code>, <code>install</code>, <code>update</code>, compatibility inspection, and <code>migrate-v0</code>
+currently require an explicit local release directory through
+<code>--distribution</code>. Mutating commands also require <code>--yes</code>. This makes the alpha
+suitable for offline use and for callers that already acquire and verify an
+exact release.</p><p>For example:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>processkit plan <span class=se>\
 </span></span></span><span class=line><span class=cl>  --root . <span class=se>\
 </span></span></span><span class=line><span class=cl>  --distribution /path/to/processkit-v1.0.0-alpha.4 <span class=se>\
 </span></span></span><span class=line><span class=cl>  --profile managed <span class=se>\
@@ -263,8 +265,9 @@ parent-traversal paths, archive links and path escapes, duplicate normalized
 destinations, unsupported operations, unverified assets, and target symlink
 escapes. It must not execute release-supplied code.</p><p>Before beta, tests must cover archive size/count limits, TOCTOU and symlink
 races, interrupted application/recovery, malformed provenance, downgrade
-policy, MCP command-array injection, and secret redaction in plans and state.</p></div><div class=td-content style=page-break-before:always><h1 id=pg-050686e7a55bd586f5c75247b484ca41>7 - v0 Compatibility</h1><div class=lead>Read-only evidence and migration boundary for v0 projects.</div><blockquote><p><strong>Alpha.4 status:</strong> Compatibility inspection is implemented and
-non-mutating. Native in-place migration is not supported.</p></blockquote><p>The v1 installer identifies legacy processkit evidence without consulting
+policy, MCP command-array injection, and secret redaction in plans and state.</p></div><div class=td-content style=page-break-before:always><h1 id=pg-050686e7a55bd586f5c75247b484ca41>7 - v0 Compatibility</h1><div class=lead>Read-only evidence and migration boundary for v0 projects.</div><blockquote><p><strong>v1.x development status:</strong> Exact-release inspection and a guarded
+fresh-target transition are implemented. Native in-place migration and
+automatic legacy-entity transformation are not supported.</p></blockquote><p>The v1 installer identifies legacy processkit evidence without consulting
 aibox, harness, devcontainer, or MCP configuration files.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>processkit inspect-compatibility <span class=se>\
 </span></span></span><span class=line><span class=cl>  --root /path/to/legacy-tree <span class=se>\
 </span></span></span><span class=line><span class=cl>  --distribution /path/to/processkit-v1-release <span class=se>\
@@ -272,10 +275,25 @@ aibox, harness, devcontainer, or MCP configuration files.</p><div class=highligh
 </span></span></code></pre></div><p>An <code>exact-release</code> result requires every immutable anchor in a shipped
 compatibility manifest to match. The beta manifests cover v0.27.1 and
 v0.28.4 release trees. A partial installed project may be classified only as
-<code>legacy-project-candidate</code>; its exact version is never guessed.</p><p>Beta compatibility is read-only and evidence-only. Detection does not mutate
-the inspected tree and does not authorize an in-place install. For an exact
-release or candidate:</p><ol><li>copy the project</li><li>run the v0-to-v1 corpus migration planner</li><li>review source hashes, field-loss reports, unsupported kinds, and immutable
-LogEntry evidence</li><li>validate the migrated copy</li><li>install v1 into a fresh or disposable target</li></ol><p>Automatic in-place migration remains unsupported until historical installed
+<code>legacy-project-candidate</code>; its exact version is never guessed.</p><p>Compatibility inspection is read-only. Detection does not mutate the
+inspected tree and does not authorize an in-place install.</p><h2 id=transition-an-exact-release>Transition an exact release</h2><p>Create an empty directory outside the legacy tree, review the compatibility
+result, and run:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>mkdir /path/to/fresh-v1-project
+</span></span><span class=line><span class=cl>processkit migrate-v0 <span class=se>\
+</span></span></span><span class=line><span class=cl>  --source /path/to/exact-v0-release <span class=se>\
+</span></span></span><span class=line><span class=cl>  --root /path/to/fresh-v1-project <span class=se>\
+</span></span></span><span class=line><span class=cl>  --distribution /path/to/processkit-v1-release <span class=se>\
+</span></span></span><span class=line><span class=cl>  --profile managed <span class=se>\
+</span></span></span><span class=line><span class=cl>  --harness codex <span class=se>\
+</span></span></span><span class=line><span class=cl>  --yes <span class=se>\
+</span></span></span><span class=line><span class=cl>  --json
+</span></span></code></pre></div><p>The command accepts only an exact v0.27.1 or v0.28.4 release match. The target
+must be empty, separate from the source, and outside the source tree. It
+installs v1 transactionally in the target and reports the matched manifest,
+source release, target release, and corpus disposition. The source stays
+read-only.</p><p>The result deliberately reports <code>corpus.status</code> as <code>not-copied</code>. This command
+transitions the runtime and managed installation surface; it does not pretend
+that legacy entities have been transformed. To retain legacy project data:</p><ol><li>copy the project</li><li>run the v0-to-v1 corpus migration planner</li><li>review source hashes, field-loss reports, unsupported kinds, and immutable
+LogEntry evidence</li><li>validate the migrated copy</li><li>use <code>migrate-v0</code> to install v1 into a fresh or disposable target</li></ol><p>Automatic in-place migration remains unsupported until historical installed
 project fixtures prove mapping, rollback, and user-modification behavior.
 This boundary prevents a structural lookalike or a downstream manager&rsquo;s lock
 file from being mistaken for processkit provenance.</p></div><div class=td-content style=page-break-before:always><h1 id=pg-5e1a5094bf5308dddec37c61f9e01859>8 - aibox Integration</h1><div class=lead>Consume the processkit v1 machine protocol without duplicating lifecycle policy.</div><blockquote><p><strong>Alpha.4 status:</strong> The opaque request/result protocol is implemented.

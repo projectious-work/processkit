@@ -35,15 +35,17 @@ processkit mcp prepare --offline
 processkit mcp serve --transport stdio
 processkit mcp proxy --url http://127.0.0.1:8000/mcp
 processkit inspect-compatibility
+processkit migrate-v0
 processkit recover
 processkit uninstall
 processkit execute --request request.json
 ```
 
-`plan`, `install`, `update`, and compatibility inspection currently require an
-explicit local release directory through `--distribution`. Mutating commands
-also require `--yes`. This makes the alpha suitable for offline use and for
-callers that already acquire and verify an exact release.
+`plan`, `install`, `update`, compatibility inspection, and `migrate-v0`
+currently require an explicit local release directory through
+`--distribution`. Mutating commands also require `--yes`. This makes the alpha
+suitable for offline use and for callers that already acquire and verify an
+exact release.
 
 For example:
 

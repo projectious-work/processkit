@@ -47,7 +47,7 @@ user journeys.
 | Native `processkit doctor` and `processkit mcp` | **Mostly implemented** | `v1.x-dev` provides typed read-only doctor plus native MCP verify/serve/proxy supervision; broader host and signal acceptance remains |
 | Extracted-release MCP acceptance | **Implemented** | Package smoke starts the staged gateway and exercises representative tools |
 | Repository dogfood update/recovery acceptance | **Implemented** | The release gate combines the full-content lifecycle pilot with a deterministic real-process update interruption, rollback, user-data preservation, retry, and provenance verification |
-| v0 migration and aibox parity | **Partial** | Compatibility inspection and explicit dispositions exist; no in-place native migration or complete parity proof |
+| v0 migration and aibox parity | **Partial** | Exact v0.27.1/v0.28.4 fixtures now exercise guarded fresh-target transition and source preservation; schema-aware corpus transformation and complete aibox parity remain |
 | Harness projection ownership | **Implemented** | Codex and Claude adapters preserve unrelated keys and have lifecycle tests |
 | Stable/prerelease documentation story | **Partial** | Alpha.4 docs now separate v0 stable and v1 preview; generated facts and broader downstream validation remain |
 
@@ -68,7 +68,7 @@ user journeys.
 
 - published support for Linux x86_64 or either macOS architecture;
 - a trusted `latest` resolver or canonical release-key distribution;
-- native `migrate`, `package`, or `harness` commands;
+- native semantic corpus migration, `package`, or `harness` commands;
 - removal of Python or `uv` as runtime dependencies;
 - safe in-place migration of an existing v0 project; or
 - GA stability of alpha contracts.
@@ -78,7 +78,8 @@ user journeys.
 1. Publish and smoke-test Linux x86_64 and both macOS native assets.
 2. Publish a canonical trust root and resolve exact versions for human
    lifecycle commands without accepting a floating `latest`.
-3. Exercise v0 migration against disposable repositories.
+3. Add schema-aware v0 corpus transformation with field-loss reporting and
+   immutable LogEntry preservation.
 4. Demonstrate direct-CLI and aibox installed-state parity.
 5. Generate release facts and help snapshots as part of release validation.
 6. Finish the public Rust library boundary and API documentation.
