@@ -37,6 +37,31 @@ for version in v0.27.1 v0.28.4; do
     TARGET_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/processkit-migrated.XXXXXX")"
     git -C "$REPO_ROOT" archive "$version" src |
         tar -x -C "$EXACT_ROOT"
+    mkdir -p "$EXACT_ROOT/src/context/workitems/2026/07"
+    mkdir -p "$EXACT_ROOT/src/context/logs/2026/07"
+    printf '%s\n' \
+        '---' \
+        'apiVersion: processkit.projectious.work/v2' \
+        'kind: WorkItem' \
+        'metadata:' \
+        '  id: BACK-legacy-fixture' \
+        'spec:' \
+        '  title: Legacy migration fixture' \
+        '  state: backlog' \
+        '---' \
+        >"$EXACT_ROOT/src/context/workitems/2026/07/BACK-legacy-fixture.md"
+    printf '%s\n' \
+        '---' \
+        'apiVersion: processkit.projectious.work/v2' \
+        'kind: LogEntry' \
+        'metadata:' \
+        '  id: LOG-legacy-fixture' \
+        'spec:' \
+        '  event_type: test.fixture' \
+        '  actor: system' \
+        '  timestamp: 2026-07-30T00:00:00Z' \
+        '---' \
+        >"$EXACT_ROOT/src/context/logs/2026/07/LOG-legacy-fixture.md"
     "$REPO_ROOT/installer/target/debug/processkit" inspect-compatibility \
         --root "$EXACT_ROOT/src" --distribution "$REPO_ROOT/src" --json |
         jq -e --arg version "$version" '
@@ -55,6 +80,19 @@ for version in v0.27.1 v0.28.4; do
         --root "$TARGET_ROOT" \
         --distribution "$REPO_ROOT/src" \
         --profile minimal \
+        --plan-only \
+        --json |
+        jq -e '
+          .status == "planned"
+          and .target.disposition == "not-modified"
+          and .corpus.summary.blocked == 0
+        ' >/dev/null
+    test -z "$(find "$TARGET_ROOT" -mindepth 1 -print -quit)"
+    "$REPO_ROOT/installer/target/debug/processkit" migrate-v0 \
+        --source "$EXACT_ROOT/src" \
+        --root "$TARGET_ROOT" \
+        --distribution "$REPO_ROOT/src" \
+        --profile minimal \
         --yes \
         --json |
         jq -e --arg version "$version" '
@@ -62,7 +100,23 @@ for version in v0.27.1 v0.28.4; do
           and .source.releaseVersion == $version
           and .source.disposition == "preserved-read-only"
           and .target.release.version != null
-          and .corpus.status == "not-copied"
+          and .corpus.status == "planned"
+          and .corpus.summary == {
+            blocked: 0,
+            copyCompatible: 1,
+            preserveImmutable: 1
+          }
+          and (.corpus.entries | map(.disposition) | sort) == [
+            "copy-compatible",
+            "preserve-immutable"
+          ]
+          and (.corpus.entries | all(.fieldLoss == []))
+          and .corpus.excludedRoots == [
+            "context/artifacts",
+            "context/bindings",
+            "context/roles",
+            "context/team-members"
+          ]
           and .errors == []
         ' >/dev/null
     "$REPO_ROOT/installer/target/debug/processkit" verify \
@@ -90,4 +144,33 @@ if "$REPO_ROOT/installer/target/debug/processkit" migrate-v0 \
 fi
 rm -rf "$REJECT_SOURCE" "$REJECT_TARGET"
 
-echo "processkit-native compatibility and fresh-target migration passed"
+BLOCKED_SOURCE="$(mktemp -d "${TMPDIR:-/tmp}/processkit-blocked.XXXXXX")"
+BLOCKED_TARGET="$(mktemp -d "${TMPDIR:-/tmp}/processkit-blocked-target.XXXXXX")"
+git -C "$REPO_ROOT" archive v0.28.4 src |
+    tar -x -C "$BLOCKED_SOURCE"
+mkdir -p "$BLOCKED_SOURCE/src/context/workitems"
+printf '%s\n' \
+    '---' \
+    'apiVersion: processkit.projectious.work/v2' \
+    'kind: UnknownEntity' \
+    'metadata:' \
+    '  id: UNKNOWN-legacy-fixture' \
+    'spec: {}' \
+    '---' \
+    >"$BLOCKED_SOURCE/src/context/workitems/UNKNOWN-legacy-fixture.md"
+"$REPO_ROOT/installer/target/debug/processkit" migrate-v0 \
+    --source "$BLOCKED_SOURCE/src" \
+    --root "$BLOCKED_TARGET" \
+    --distribution "$REPO_ROOT/src" \
+    --plan-only \
+    --json |
+    jq -e '
+      .status == "blocked"
+      and .target.disposition == "not-modified"
+      and .corpus.summary.blocked == 1
+      and .corpus.errors[0].code == "kind-directory-mismatch"
+    ' >/dev/null
+test -z "$(find "$BLOCKED_TARGET" -mindepth 1 -print -quit)"
+rm -rf "$BLOCKED_SOURCE" "$BLOCKED_TARGET"
+
+echo "processkit-native compatibility and corpus planning passed"
