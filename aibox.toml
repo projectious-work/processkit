@@ -246,14 +246,14 @@ lazygit = { enabled = false } # Interactive terminal UI for Git status, commits,
 
 # Tools/preview-archive — Yazi image/PDF/SVG preview helpers plus archive preview/extraction tools
 [addons.preview-archive.tools]
-# chafa = { enabled = false } # Terminal image renderer used by Yazi image and SVG previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# librsvg = { enabled = false } # SVG conversion fallback via rsvg-convert; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# poppler = { enabled = false } # PDF text and image utilities for preview extraction; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# timg = { enabled = false } # Terminal image and PDF thumbnail viewer; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# mupdf = { enabled = false } # Lightweight PDF utilities for document previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# entr = { enabled = false } # File watcher used by live preview helpers; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# p7zip = { enabled = false } # Archive listing and extraction support for previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# resvg = { enabled = false } # High-quality SVG rasterizer for Yazi previews; default on; options: {}, { enabled = true|false }, { version = "0.47.0" (default) or "latest" }
+chafa = { enabled = false } # Terminal image renderer used by Yazi image and SVG previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+librsvg = { enabled = false } # SVG conversion fallback via rsvg-convert; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+poppler = { enabled = false } # PDF text and image utilities for preview extraction; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+timg = { enabled = false } # Terminal image and PDF thumbnail viewer; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+mupdf = { enabled = false } # Lightweight PDF utilities for document previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+entr = { enabled = false } # File watcher used by live preview helpers; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+p7zip = { enabled = false } # Archive listing and extraction support for previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+resvg = { enabled = false } # High-quality SVG rasterizer for Yazi previews; default on; options: {}, { enabled = true|false }, { version = "0.47.0" (default) or "latest" }
 
 # Tools/preview-enhanced — Rich Markdown rendering, ffmpeg, and Ghostscript; requires preview-archive
 [addons.preview-enhanced.tools]
@@ -306,7 +306,7 @@ model_providers = [
 # `version` optionally pins the CLI recipe; omit it to use the addon default.
 harnesses = [
     { harness = "codex", enable = true, install = true },
-#   { harness = "claude", enable = true, install = true },
+    { harness = "claude", enable = true, install = true },
 #   { harness = "gemini", enable = true, install = true },
 #   { harness = "aider", enable = true, install = true },
 #   { harness = "continue", enable = true, install = true },
