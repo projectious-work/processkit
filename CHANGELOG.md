@@ -12,6 +12,9 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - Let long-lived gateways refresh GitHub CLI credentials from an owner-only
   token file immediately before each `gh` call, while redacting supported
   token values from subprocess results. Closes #107.
+- Constrained all shipped MCP servers to the compatible `mcp` 1.x API so
+  fresh `uv run --script` environments do not resolve the incompatible
+  `mcp` 2.x package and fail before exposing tools.
 
 ### Changed
 
