@@ -24,8 +24,19 @@ pub(crate) struct DoctorResult {
     status: &'static str,
     root: String,
     runtime: RuntimeInfo,
+    environment: &'static str,
+    host_checks: Vec<HostCheck>,
     doctor: Value,
     errors: Vec<Value>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct HostCheck {
+    id: &'static str,
+    status: &'static str,
+    severity: &'static str,
+    remediation: &'static str,
 }
 
 impl DoctorResult {
@@ -130,6 +141,35 @@ fn run_doctor_with_uv(
         status: if errors == 0 { "healthy" } else { "findings" },
         root: root.to_string_lossy().into_owned(),
         runtime: RuntimeInfo { uv_version },
+        environment: if root.join(".dockerenv").exists() || Path::new("/.dockerenv").exists() {
+            "container"
+        } else {
+            "local-host"
+        },
+        host_checks: if Path::new("/.dockerenv").exists() {
+            vec![
+                HostCheck {
+                    id: "host.docker-engine",
+                    status: "deferred-host-only",
+                    severity: "info",
+                    remediation: "run scripts/diagnose-aibox-doctor-host.sh on the host",
+                },
+                HostCheck {
+                    id: "host.filesystem-permissions",
+                    status: "deferred-host-only",
+                    severity: "info",
+                    remediation: "run processkit doctor outside the container",
+                },
+                HostCheck {
+                    id: "host.network-release-access",
+                    status: "deferred-host-only",
+                    severity: "info",
+                    remediation: "verify GitHub release access from the host",
+                },
+            ]
+        } else {
+            Vec::new()
+        },
         doctor: payload,
         errors: Vec::new(),
     })
@@ -197,6 +237,23 @@ mod tests {
         assert_eq!(result.status, "healthy");
         assert!(!result.has_errors());
         assert_eq!(result.runtime.uv_version, "uv 0.test");
+        assert!(matches!(result.environment, "container" | "local-host"));
+        if result.environment == "container" {
+            let ids: Vec<_> = result.host_checks.iter().map(|check| check.id).collect();
+            assert_eq!(
+                ids,
+                [
+                    "host.docker-engine",
+                    "host.filesystem-permissions",
+                    "host.network-release-access"
+                ]
+            );
+            assert!(result.host_checks.iter().all(|check| {
+                check.status == "deferred-host-only"
+                    && check.severity == "info"
+                    && !check.remediation.is_empty()
+            }));
+        }
     }
 
     #[test]
@@ -214,5 +271,24 @@ mod tests {
             .err()
             .expect("invalid category");
         assert!(error.contains("unsupported characters"));
+    }
+
+    #[test]
+    fn unavailable_uv_is_actionable() {
+        let (root, _) = fixture(0);
+        let error = run_doctor_with_uv(root.path(), None, &root.path().join("missing-uv"))
+            .err()
+            .expect("missing uv must fail");
+        assert!(error.contains("uv is unavailable"));
+    }
+
+    #[test]
+    fn degraded_uv_probe_is_actionable() {
+        let (root, uv) = fixture(0);
+        fs::write(&uv, "#!/bin/sh\nexit 17\n").expect("replace fake uv");
+        let error = run_doctor_with_uv(root.path(), None, &uv)
+            .err()
+            .expect("failed uv probe must fail");
+        assert!(error.contains("uv version probe failed with 17"));
     }
 }

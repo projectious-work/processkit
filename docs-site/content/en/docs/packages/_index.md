@@ -59,7 +59,7 @@ With the v1 CLI:
 ```sh
 processkit plan \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --distribution /path/to/processkit-v1.0.0-alpha.5 \
   --profile software \
   --harness codex
 ```

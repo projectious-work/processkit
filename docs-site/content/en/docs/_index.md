@@ -15,7 +15,7 @@ Python MCP servers.
 | Line | Status | Use |
 | --- | --- | --- |
 | v0.x | Stable and default | Existing projects and normal production use |
-| `v1.0.0-alpha.4` | Exact-pin prerelease | Evaluation of the native lifecycle CLI and v1 contracts |
+| `v1.0.0-alpha.5` | Exact-pin prerelease | Evaluation of the native lifecycle CLI and v1 contracts |
 
 The v1 alpha is opt-in. It does not replace the supported v0 line, and it
 must not be selected through an unverified `latest` URL.
@@ -56,4 +56,4 @@ for a verified, step-by-step installation.
 - [Skills](./skills/) describes reusable process knowledge.
 - [Packages](./packages/) describes installable content profiles.
 - [v1 implementation status](./development/v1-version/issue-135-status/)
-  maps issue #135 to alpha.4 evidence and remaining gaps.
+  maps issue #135 to alpha.5 evidence and remaining gaps.

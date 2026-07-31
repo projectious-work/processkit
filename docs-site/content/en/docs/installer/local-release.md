@@ -1,12 +1,12 @@
 ---
-title: "Local Release Production"
-description: "Build, sign, verify, and publish processkit releases without hosted CI."
+title: "Release Production"
+description: "Build, sign, verify, and publish processkit releases with bound host evidence."
 weight: 30
 ---
 
-The v1 release path is local, agent-first, and human-operable. It does not
-require GitHub Actions, a hosted CI service, or a publication provider.
-Agents and humans invoke the same repository scripts.
+The v1 release path is agent-first and human-operable. Local candidate gates
+run before GitHub-hosted native builds. Agents, humans, and hosted runners
+invoke the same repository scripts and bind results to one tagged commit.
 
 ## One-time key setup
 
@@ -26,7 +26,7 @@ the compromised public key from local trust stores.
 ## Validate and create a release
 
 ```sh
-scripts/release-local.sh v1.0.0-alpha.4 \
+scripts/release-local.sh v1.0.0-alpha.5 \
   "$HOME/.config/processkit/keys/release.pem" \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
@@ -51,36 +51,31 @@ scripts/finalize-release-local.sh v1.0.0-alpha.5 \
 
 Finalization fails if any named asset is absent, duplicated, symlinked, or
 unsafe. The resulting signature binds every target, filename, digest, and byte
-size. Building and natively smoking the four assets remains a release-host
-responsibility; merely naming a target never manufactures or validates it.
-
-The published alpha.4 matrix contains only
-`aarch64-unknown-linux-gnu`. Linux x86_64 and macOS x86_64/ARM64 builds are
-not yet release assets.
+size. Each hosted runner executes `scripts/build-host-artifact.sh`, verifies
+tag and commit provenance, and natively smoke-tests its binary. Merely naming a
+target never manufactures or validates it.
 
 ## Exact-version bootstrap
 
 The non-root bootstrap installs a native executable only after checking its
-checksum, signed-envelope membership, signature, and an independently supplied
-Ed25519 key fingerprint:
+checksum, signed-envelope membership, signature, and the canonical Ed25519 key
+fingerprint published in `release/processkit-v1-signing-public.pem`:
 
 ```sh
-scripts/install-processkit.sh v1.0.0-alpha.5 \
-  --key-sha256 <trusted-public-key-fingerprint>
+scripts/install-processkit.sh v1.0.0-alpha.5
 ```
 
 It detects Linux x86_64/ARM64 and macOS x86_64/ARM64, installs to
 `$HOME/.local/bin` by default, and refuses floating versions. Supplying the
-fingerprint out of band is mandatory: downloading a public key beside its
-signature would authenticate the server to itself rather than establish
-release trust.
+Operators may override the fingerprint only when intentionally selecting a
+different trusted release identity.
 
 ## Verify after copying
 
 ```sh
 scripts/verify-release-local.sh \
-  dist/processkit-v1.0.0-alpha.4.release.json \
-  dist/processkit-v1.0.0-alpha.4.release.sig \
+  dist/processkit-v1.0.0-alpha.5.release.json \
+  dist/processkit-v1.0.0-alpha.5.release.sig \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
 
@@ -102,8 +97,8 @@ installer also verifies releases against the versioned JSON trust store:
 
 ```sh
 processkit verify-release \
-  --envelope dist/processkit-v1.0.0-alpha.4.release.json \
-  --signature dist/processkit-v1.0.0-alpha.4.release.sig \
+  --envelope dist/processkit-v1.0.0-alpha.5.release.json \
+  --signature dist/processkit-v1.0.0-alpha.5.release.sig \
   --trust-store "$HOME/.config/processkit/trust-store.json"
 ```
 

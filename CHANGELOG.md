@@ -7,6 +7,38 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
 
+## [v1.0.0-alpha.5] - 2026-07-31
+
+v1.0.0-alpha.5 completes the extracted issue #135 follow-up tracks for trusted
+distribution, v0 migration, generated developer documentation, and runtime
+stabilization. The supported v0 line remains the default release.
+
+### Added
+
+- Added evidence-bound native builds and smoke tests for x86_64 and arm64 on
+  Linux and macOS, plus canonical Ed25519 bootstrap trust material.
+- Added exact-release ownership baselines for mixed-root v0 projects and
+  direct CLI/aibox installed-state parity coverage.
+- Added generated CLI and release-facts documentation and a documented public
+  Rust request API with tested examples.
+- Added a universal hash-locked Python runtime dependency set and stable local,
+  container, and host-only doctor signals.
+
+### Changed
+
+- Made the bootstrap path reject missing versions, tampered checksums, and
+  invalid signatures without fallback.
+- Made v0 migration preserve user-owned artifacts, bindings, roles, and team
+  members while blocking modified product-owned paths with remediation.
+
+### Verification
+
+- `scripts/test-installer-local.sh`
+- `scripts/test-aibox-parity-local.sh`
+- `scripts/check-docs-local.sh`
+- `cargo package --manifest-path installer/crates/processkit/Cargo.toml --list`
+- Four target-host builds and smoke tests recorded in release provenance.
+
 ### Added
 
 - Add an exact-version, non-root native bootstrap that verifies an

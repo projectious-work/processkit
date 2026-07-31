@@ -20,6 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = REPO_ROOT / "src"
 SKILLS_ROOT = SOURCE_ROOT / "context" / "skills"
 OUTPUT = SOURCE_ROOT / ".processkit" / "installer" / "runtime" / "python-uv.json"
+LOCK = SOURCE_ROOT / ".processkit" / "installer" / "runtime" / "python-requirements.lock"
 API_VERSION = "processkit.projectious.work/python-runtime/v1alpha1"
 
 
@@ -100,6 +101,12 @@ def build_manifest(source_root: Path = SOURCE_ROOT) -> dict[str, Any]:
         )
         profile["serverPaths"].append(relative)
     dependency_profiles = sorted(profiles.values(), key=lambda item: item["sha256"])
+    lock = source_root / ".processkit" / "installer" / "runtime" / "python-requirements.lock"
+    if not lock.is_file():
+        raise ValueError(f"runtime dependency lock missing: {lock}")
+    lock_bytes = lock.read_bytes()
+    if b"--hash=sha256:" not in lock_bytes:
+        raise ValueError("runtime dependency lock must contain package hashes")
     manifest_core = {
         "apiVersion": API_VERSION,
         "kind": "PythonRuntimePolicy",
@@ -117,7 +124,10 @@ def build_manifest(source_root: Path = SOURCE_ROOT) -> dict[str, Any]:
         "dependencyResolution": {
             "coldOfflineSupported": False,
             "requiresPreparedCache": True,
-            "resolvedVersionsLocked": False,
+            "resolvedVersionsLocked": True,
+            "lockFile": ".processkit/runtime/python-requirements.lock",
+            "lockSha256": hashlib.sha256(lock_bytes).hexdigest(),
+            "hashesRequired": True,
         },
         "servers": servers,
         "dependencyProfiles": dependency_profiles,

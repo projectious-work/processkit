@@ -17,6 +17,7 @@ struct CompatibilityManifest {
     source: CompatibilitySource,
     detection: CompatibilityDetection,
     migration: CompatibilityMigration,
+    ownership_baseline: String,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -75,6 +76,7 @@ pub(super) fn inspect_compatibility(
                 manifest.migration.disposition.as_str(),
                 "evidence-only" | "unsupported"
             )
+            || !safe_relative(&manifest.ownership_baseline)
         {
             return Err(format!(
                 "unsupported compatibility manifest: {}",
@@ -113,6 +115,7 @@ pub(super) fn inspect_compatibility(
                 "manifestId": manifest.id,
                 "releaseVersion": manifest.source.release_version,
                 "migration": manifest.migration,
+                "ownershipBaseline": manifest.ownership_baseline,
             }));
         }
         evidence.push(serde_json::json!({

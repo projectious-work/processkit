@@ -46,12 +46,18 @@
       "additionalProperties": false,
       "required": [
         "coldOfflineSupported", "requiresPreparedCache",
-        "resolvedVersionsLocked"
+        "resolvedVersionsLocked", "lockFile", "lockSha256",
+        "hashesRequired"
       ],
       "properties": {
         "coldOfflineSupported": {"const": false},
         "requiresPreparedCache": {"const": true},
-        "resolvedVersionsLocked": {"const": false}
+        "resolvedVersionsLocked": {"const": true},
+        "lockFile": {
+          "const": ".processkit/runtime/python-requirements.lock"
+        },
+        "lockSha256": {"$ref": "#/$defs/sha256"},
+        "hashesRequired": {"const": true}
       }
     },
     "servers": {

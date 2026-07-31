@@ -67,4 +67,46 @@ if "$REPO_ROOT/scripts/install-processkit.sh" "$VERSION" \
 fi
 [[ ! -e "$TEST_ROOT/rejected/processkit" ]]
 
+if "$REPO_ROOT/scripts/install-processkit.sh" "v9.9.9-missing" \
+    --repo "file://$TEST_ROOT/repo" \
+    --target "$TARGET" \
+    --key-sha256 "$KEY_SHA" \
+    --bin-dir "$TEST_ROOT/missing" >/dev/null 2>&1; then
+    echo "error: bootstrap accepted an unpublished exact version" >&2
+    exit 1
+fi
+[[ ! -e "$TEST_ROOT/missing/processkit" ]]
+
+if "$REPO_ROOT/scripts/install-processkit.sh" "$VERSION" \
+    --repo "file://$TEST_ROOT/repo" \
+    --target "riscv64-unknown-linux-gnu" \
+    --key-sha256 "$KEY_SHA" \
+    --bin-dir "$TEST_ROOT/unsupported" >/dev/null 2>&1; then
+    echo "error: bootstrap accepted an unsupported host target" >&2
+    exit 1
+fi
+[[ ! -e "$TEST_ROOT/unsupported/processkit" ]]
+
+printf '%064d  %s\n' 0 "$ASSET" >"$RELEASE_DIR/$ASSET.sha256"
+if "$REPO_ROOT/scripts/install-processkit.sh" "$VERSION" \
+    --repo "file://$TEST_ROOT/repo" \
+    --target "$TARGET" \
+    --key-sha256 "$KEY_SHA" \
+    --bin-dir "$TEST_ROOT/bad-checksum" >/dev/null 2>&1; then
+    echo "error: bootstrap accepted a tampered checksum" >&2
+    exit 1
+fi
+printf '%s  %s\n' "$ASSET_SHA" "$ASSET" >"$RELEASE_DIR/$ASSET.sha256"
+
+printf 'invalid signature\n' \
+    >"$RELEASE_DIR/processkit-$VERSION.release.sig"
+if "$REPO_ROOT/scripts/install-processkit.sh" "$VERSION" \
+    --repo "file://$TEST_ROOT/repo" \
+    --target "$TARGET" \
+    --key-sha256 "$KEY_SHA" \
+    --bin-dir "$TEST_ROOT/bad-signature" >/dev/null 2>&1; then
+    echo "error: bootstrap accepted an invalid signature" >&2
+    exit 1
+fi
+
 echo "bootstrap trust and installation tests passed"

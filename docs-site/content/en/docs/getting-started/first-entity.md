@@ -45,7 +45,7 @@ An invalid transition is rejected rather than silently changing the file.
 Ask:
 
 > Record the accepted decision that this project will evaluate
-> v1.0.0-alpha.4 in an isolated branch, link it to BACK-curious-quail, and
+> v1.0.0-alpha.5 in an isolated branch, link it to BACK-curious-quail, and
 > query both entities back.
 
 This exercises the core v1 user journey: governed write, relationship, audit
@@ -62,10 +62,10 @@ processkit verify --root .
 
 `processkit verify` checks installer-managed content. Domain MCP tools and
 `pk-doctor` check project entities; a native `processkit doctor` command is
-planned but is not part of alpha.4.
+planned but is not part of alpha.5.
 
 ## Next
 
 - Review [MCP server operation](../mcp-servers/).
 - Learn the [entity model](../primitives/).
-- Read the [alpha.4 limitations](../development/v1-version/issue-135-status/).
+- Read the [alpha.5 limitations](../development/v1-version/issue-135-status/).

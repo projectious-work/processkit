@@ -26,4 +26,10 @@ if "$MAINTAIN" release-branch invalid >/dev/null 2>&1; then
     exit 1
 fi
 
+if "$MAINTAIN" release-host v1.0.0-alpha.999 \
+    "$(git -C "$ROOT" rev-parse HEAD)" >/dev/null 2>&1; then
+    echo "host build unexpectedly accepted an untagged candidate" >&2
+    exit 1
+fi
+
 echo "maintain.sh contract tests passed"

@@ -70,6 +70,26 @@ exercises every server's tools end-to-end, and asserts results.
 uv run scripts/smoke-test-servers.py
 ```
 
+## Generated v1 documentation and runtime locks
+
+Regenerate the CLI reference and release facts after changing the Rust command
+surface or release metadata:
+
+```bash
+uv run scripts/generate-v1-docs.py
+```
+
+Regenerate the Python runtime lock and its signed policy after changing MCP
+dependencies:
+
+```bash
+uv pip compile installer/python-runtime.in --generate-hashes --universal \
+  --output-file src/.processkit/installer/runtime/python-requirements.lock
+uv run scripts/generate-python-runtime-manifest.py
+```
+
+CI checks both generated surfaces and builds public Rust API documentation.
+
 This is the fastest feedback loop while editing servers or the lib.
 For real MCP-protocol testing, use any MCP-capable client (Claude Code,
 the `mcp` CLI's `dev` command, etc.).

@@ -112,7 +112,9 @@ of overwriting public history.
 
 ## Host-only phase
 
-`release-host` is reserved for native targets that cannot be built in the
-current environment. It currently fails closed because the four-target build
-and upload contract is not implemented. A release must not claim host targets
-without native smoke evidence and signed-envelope binding.
+`release-host` verifies the exact tag, full source commit, and clean checkout
+before building and natively running `processkit --version`. It emits the
+binary, checksum, and runner provenance. The
+`v1-native-artifacts.yml` workflow runs that contract on x86_64 and arm64 Linux
+and macOS hosts. Collected assets are signed into one release envelope; a
+release must not claim a target without its native smoke evidence.

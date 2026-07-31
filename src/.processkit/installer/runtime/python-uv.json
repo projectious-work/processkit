@@ -1,5 +1,5 @@
 {
-  "aggregateSha256": "3ad506207fd984f683733d920e3917cf1a853179a8f33a0f2c00fb9976ce7ddf",
+  "aggregateSha256": "067163a4f5f077d070339454da747d495cbcb8edb6a0cb0c20fbdd0f861a9e7b",
   "apiVersion": "processkit.projectious.work/python-runtime/v1alpha1",
   "dependencyProfiles": [
     {
@@ -129,8 +129,11 @@
   ],
   "dependencyResolution": {
     "coldOfflineSupported": false,
+    "hashesRequired": true,
+    "lockFile": ".processkit/runtime/python-requirements.lock",
+    "lockSha256": "8e509749d37f081cb58efc0ea48cce3166d76840bbddf04abde2777a80498bd4",
     "requiresPreparedCache": true,
-    "resolvedVersionsLocked": false
+    "resolvedVersionsLocked": true
   },
   "kind": "PythonRuntimePolicy",
   "python": {

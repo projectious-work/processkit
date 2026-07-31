@@ -39,6 +39,10 @@ for version in v0.27.1 v0.28.4; do
         tar -x -C "$EXACT_ROOT"
     mkdir -p "$EXACT_ROOT/src/context/workitems/2026/07"
     mkdir -p "$EXACT_ROOT/src/context/logs/2026/07"
+    mkdir -p "$EXACT_ROOT/src/context/artifacts"
+    mkdir -p "$EXACT_ROOT/src/context/bindings"
+    mkdir -p "$EXACT_ROOT/src/context/roles"
+    mkdir -p "$EXACT_ROOT/src/context/team-members/legacy-agent"
     printf '%s\n' \
         '---' \
         'apiVersion: processkit.projectious.work/v2' \
@@ -62,6 +66,23 @@ for version in v0.27.1 v0.28.4; do
         '  timestamp: 2026-07-30T00:00:00Z' \
         '---' \
         >"$EXACT_ROOT/src/context/logs/2026/07/LOG-legacy-fixture.md"
+    for fixture in \
+        'artifacts Artifact ART-legacy-fixture legacy-artifact.md' \
+        'bindings Binding BIND-legacy-fixture legacy-binding.md' \
+        'roles Role ROLE-legacy-fixture legacy-role.md' \
+        'team-members/legacy-agent TeamMember TEAMMEMBER-legacy-fixture team-member.md'
+    do
+        set -- $fixture
+        printf '%s\n' \
+            '---' \
+            'apiVersion: processkit.projectious.work/v2' \
+            "kind: $2" \
+            'metadata:' \
+            "  id: $3" \
+            'spec: {}' \
+            '---' \
+            >"$EXACT_ROOT/src/context/$1/$4"
+    done
     "$REPO_ROOT/installer/target/debug/processkit" inspect-compatibility \
         --root "$EXACT_ROOT/src" --distribution "$REPO_ROOT/src" --json |
         jq -e --arg version "$version" '
@@ -71,6 +92,10 @@ for version in v0.27.1 v0.28.4; do
               "v0-release-" + ($version | ltrimstr("v") | gsub("\\."; "-"))
             ),
             migration: .matches[0].migration,
+            ownershipBaseline: (
+              ".processkit/installer/compatibility/" + $version
+              + "-ownership.json"
+            ),
             releaseVersion: $version
           }]
           and .migration.disposition == "evidence-only"
@@ -101,25 +126,24 @@ for version in v0.27.1 v0.28.4; do
           and .source.disposition == "preserved-read-only"
           and .target.release.version != null
           and .corpus.status == "applied"
-          and .corpus.entryCount == 2
+          and .corpus.entryCount == 6
           and (.corpus.planSha256 | test("^[0-9a-f]{64}$"))
           and .corpus.plan.status == "planned"
           and .corpus.plan.summary == {
             blocked: 0,
-            copyCompatible: 1,
+            copyCompatible: 5,
             preserveImmutable: 1
           }
           and (.corpus.plan.entries | map(.disposition) | sort) == [
             "copy-compatible",
+            "copy-compatible",
+            "copy-compatible",
+            "copy-compatible",
+            "copy-compatible",
             "preserve-immutable"
           ]
           and (.corpus.plan.entries | all(.fieldLoss == []))
-          and .corpus.plan.excludedRoots == [
-            "context/artifacts",
-            "context/bindings",
-            "context/roles",
-            "context/team-members"
-          ]
+          and .corpus.plan.excludedRoots == []
           and .errors == []
         ' >/dev/null
     cmp \
@@ -128,20 +152,43 @@ for version in v0.27.1 v0.28.4; do
     cmp \
         "$EXACT_ROOT/src/context/logs/2026/07/LOG-legacy-fixture.md" \
         "$TARGET_ROOT/context/logs/2026/07/LOG-legacy-fixture.md"
+    for migrated in \
+        context/artifacts/legacy-artifact.md \
+        context/bindings/legacy-binding.md \
+        context/roles/legacy-role.md \
+        context/team-members/legacy-agent/team-member.md
+    do
+        cmp "$EXACT_ROOT/src/$migrated" "$TARGET_ROOT/$migrated"
+    done
     jq -e --arg version "$version" '
       (.migrationEvidence | length) == 1
-      and .migrationEvidence[0].entryCount == 2
+      and .migrationEvidence[0].entryCount == 6
       and .migrationEvidence[0].manifestId == (
         "v0-release-" + ($version | ltrimstr("v") | gsub("\\."; "-"))
       )
       and .migrationEvidence[0].sourceRelease == $version
       and .migrationEvidence[0].plan.status == "planned"
-      and (.migrationEvidence[0].plan.entries | length) == 2
+      and (.migrationEvidence[0].plan.entries | length) == 6
       and (.migrationEvidence[0].planSha256 | test("^[0-9a-f]{64}$"))
     ' "$TARGET_ROOT/.processkit/state.json" >/dev/null
     "$REPO_ROOT/installer/target/debug/processkit" verify \
         --root "$TARGET_ROOT" --json |
         jq -e '.status == "verified"' >/dev/null
+    "$REPO_ROOT/installer/target/debug/processkit" migrate-v0 \
+        --source "$EXACT_ROOT/src" \
+        --root "$TARGET_ROOT" \
+        --distribution "$REPO_ROOT/src" \
+        --profile minimal \
+        --yes \
+        --json |
+        jq -e '
+          .status == "already-transitioned"
+          and .target.disposition == "verified-existing-migration"
+          and .corpus.status == "already-applied"
+          and .errors == []
+        ' >/dev/null
+    jq -e '(.migrationEvidence | length) == 1' \
+        "$TARGET_ROOT/.processkit/state.json" >/dev/null
     printf '\nlocal drift\n' \
         >>"$TARGET_ROOT/context/workitems/2026/07/BACK-legacy-fixture.md"
     set +e
@@ -209,6 +256,31 @@ printf '%s\n' \
     ' >/dev/null
 test -z "$(find "$BLOCKED_TARGET" -mindepth 1 -print -quit)"
 rm -rf "$BLOCKED_SOURCE" "$BLOCKED_TARGET"
+
+OWNERSHIP_SOURCE="$(mktemp -d "${TMPDIR:-/tmp}/processkit-owned.XXXXXX")"
+OWNERSHIP_TARGET="$(mktemp -d "${TMPDIR:-/tmp}/processkit-owned-target.XXXXXX")"
+git -C "$REPO_ROOT" archive v0.28.4 src |
+    tar -x -C "$OWNERSHIP_SOURCE"
+OWNERSHIP_BASELINE="$REPO_ROOT/src/.processkit/installer/compatibility/"
+OWNERSHIP_BASELINE+="v0.28.4-ownership.json"
+OWNED_PATH="$(jq -r '.files | keys[0]' "$OWNERSHIP_BASELINE")"
+printf '\nlocally modified\n' >>"$OWNERSHIP_SOURCE/src/$OWNED_PATH"
+"$REPO_ROOT/installer/target/debug/processkit" migrate-v0 \
+    --source "$OWNERSHIP_SOURCE/src" \
+    --root "$OWNERSHIP_TARGET" \
+    --distribution "$REPO_ROOT/src" \
+    --plan-only \
+    --json |
+    jq -e '
+      .status == "blocked"
+      and .target.disposition == "not-modified"
+      and (.corpus.errors | any(
+        .code == "modified-product-owned-path"
+        and (.remediation | length) > 0
+      ))
+    ' >/dev/null
+test -z "$(find "$OWNERSHIP_TARGET" -mindepth 1 -print -quit)"
+rm -rf "$OWNERSHIP_SOURCE" "$OWNERSHIP_TARGET"
 
 INTERRUPT_SOURCE="$(mktemp -d "${TMPDIR:-/tmp}/processkit-migrate-interrupt.XXXXXX")"
 INTERRUPT_TARGET="$(mktemp -d "${TMPDIR:-/tmp}/processkit-migrate-recover.XXXXXX")"
