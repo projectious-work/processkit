@@ -2,11 +2,18 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["apiVersion", "kind", "id", "source", "detection", "migration"],
+  "required": [
+    "apiVersion", "kind", "id", "ownershipBaseline", "source",
+    "detection", "migration"
+  ],
   "properties": {
     "apiVersion": {"const": "processkit.projectious.work/installer/v1alpha1"},
     "kind": {"const": "CompatibilityManifest"},
     "id": {"type": "string", "pattern": "^v0-release-[0-9]+-[0-9]+-[0-9]+$"},
+    "ownershipBaseline": {
+      "type": "string",
+      "pattern": "^\\.processkit/installer/compatibility/v0\\.[0-9]+\\.[0-9]+-ownership\\.json$"
+    },
     "source": {
       "type": "object",
       "additionalProperties": false,

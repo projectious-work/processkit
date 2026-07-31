@@ -89,6 +89,16 @@ def test_python_runtime_manifest_ignores_dogfood_tree(
     )
     dogfood.parent.mkdir(parents=True)
     dogfood.write_text(server.read_text(encoding="utf-8"), encoding="utf-8")
+    lock = (
+        tmp_path
+        / ".processkit/installer/runtime/python-requirements.lock"
+    )
+    lock.parent.mkdir(parents=True)
+    lock.write_text(
+        "mcp==1.0.0 \\\n"
+        "    --hash=sha256:" + "0" * 64 + "\n",
+        encoding="utf-8",
+    )
     manifest = _runtime_module().build_manifest(tmp_path)
     assert [item["path"] for item in manifest["servers"]] == [
         "context/skills/processkit/example/mcp/server.py"

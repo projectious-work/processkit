@@ -4,7 +4,7 @@
   "kind": "ReleaseDescriptor",
   "distribution": {
     "manifest": ".processkit/installer/distribution.yaml",
-    "manifestSha256": "adf3ed0cf118356560a7570553dce7babb160c6bfd8dec25c5f06ab557bba612",
+    "manifestSha256": "cf4a8fdca5eb3314031ac5009fa4639c678981b12525fd64b8765581e58856f3",
     "protocol": "processkit.projectious.work/installer/v1alpha1"
   },
   "installer": {"requires": ">=0.1.0 <0.2.0"},

@@ -4,13 +4,13 @@ set -euo pipefail
 usage() {
     cat <<'EOF'
 Usage:
-  install-processkit.sh <exact-version> --key-sha256 <sha256> [options]
+  install-processkit.sh <exact-version> [options]
 
 Options:
   --bin-dir <path>     Install directory (default: $HOME/.local/bin)
   --repo <url>         Release repository URL
   --target <triple>    Override detected target
-  --key-sha256 <hash>  Trusted Ed25519 public-key fingerprint
+  --key-sha256 <hash>  Override the canonical Ed25519 key fingerprint
 
 The version must be exact (for example v1.0.0-alpha.5). The installer never
 uses sudo and never resolves a floating "latest" release.
@@ -31,7 +31,8 @@ shift
 BIN_DIR="${HOME:?HOME is required}/.local/bin"
 REPO_URL="https://github.com/projectious-work/processkit"
 TARGET=""
-KEY_SHA256="${PROCESSKIT_TRUSTED_KEY_SHA256:-}"
+CANONICAL_KEY_SHA256="d35516ccd7be9efad6579c5f6c2ab8ba1a59f18d563f339e62e1cef9a5f9a1eb"
+KEY_SHA256="${PROCESSKIT_TRUSTED_KEY_SHA256:-$CANONICAL_KEY_SHA256}"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in

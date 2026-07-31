@@ -836,14 +836,6 @@ fn migrate_v0(
     if source == root || source.starts_with(&root) || root.starts_with(&source) {
         return Err("fresh target must be separate from and outside the legacy source".into());
     }
-    if fs::read_dir(&root)
-        .map_err(|error| format!("fresh target root: {error}"))?
-        .next()
-        .is_some()
-    {
-        return Err("fresh target root must be empty".into());
-    }
-
     let inspection = inspect_compatibility(&source, distribution)?;
     if inspection["status"] != "exact-release" {
         return Err("legacy source must exactly match a shipped compatibility manifest".into());
@@ -858,7 +850,63 @@ fn migrate_v0(
     let release_version = exact_match["releaseVersion"]
         .as_str()
         .ok_or_else(|| "compatibility evidence is missing releaseVersion".to_string())?;
-    let corpus_plan = plan_v0_corpus(&source)?;
+    let baseline_relative = exact_match["ownershipBaseline"]
+        .as_str()
+        .ok_or_else(|| "compatibility evidence is missing ownershipBaseline".to_string())?;
+    let corpus_plan = plan_v0_corpus(&source, &distribution.join(baseline_relative))?;
+    let plan_sha256 = corpus_plan.sha256()?;
+    let entry_count = corpus_plan.entry_count();
+    let target_nonempty = fs::read_dir(&root)
+        .map_err(|error| format!("fresh target root: {error}"))?
+        .next()
+        .is_some();
+    if target_nonempty {
+        let state_path = root.join(".processkit/state.json");
+        let state: InstallationState = serde_json::from_slice(
+            &fs::read(&state_path)
+                .map_err(|_| "non-empty migration target has no installer state".to_string())?,
+        )
+        .map_err(|error| format!("migration target state: {error}"))?;
+        validate_installation_state(&state)?;
+        let matching_evidence = state.migration_evidence.iter().any(|evidence| {
+            evidence.source_release == release_version
+                && evidence.manifest_id == manifest_id
+                && evidence.plan_sha256 == plan_sha256
+                && evidence.entry_count == entry_count
+        });
+        let drift = corpus_plan.verify_applied(&root)?;
+        if !matching_evidence || !drift.is_empty() {
+            return Err(
+                "non-empty migration target does not match the completed migration; use a fresh target or restore migrated paths"
+                    .into(),
+            );
+        }
+        return Ok(serde_json::json!({
+            "apiVersion": API_VERSION,
+            "status": "already-transitioned",
+            "source": {
+                "root": source,
+                "releaseVersion": release_version,
+                "manifestId": manifest_id,
+                "disposition": "preserved-read-only",
+            },
+            "target": {
+                "root": root,
+                "release": state.release,
+                "profiles": state.profiles,
+                "harnesses": state.harnesses,
+                "disposition": "verified-existing-migration",
+            },
+            "corpus": {
+                "status": "already-applied",
+                "planSha256": plan_sha256,
+                "entryCount": entry_count,
+                "plan": corpus_plan,
+            },
+            "warnings": [],
+            "errors": [],
+        }));
+    }
     if plan_only {
         return Ok(serde_json::json!({
             "apiVersion": API_VERSION,
@@ -876,7 +924,7 @@ fn migrate_v0(
             "corpus": corpus_plan,
             "warnings": [
                 "the migration plan is non-mutating",
-                "artifacts, bindings, roles, and team members require per-release ownership baselines",
+                "producer-owned baseline files are excluded; modified baseline files block migration",
             ],
             "errors": [],
         }));
@@ -885,8 +933,6 @@ fn migrate_v0(
         return Err("legacy corpus plan is blocked; resolve every reported finding".into());
     }
 
-    let plan_sha256 = corpus_plan.sha256()?;
-    let entry_count = corpus_plan.entry_count();
     let mut state = install(&root, distribution, profiles, harnesses, true)?;
     let pending = corpus_plan.pending_actions(&source, &root)?;
     state.migration_evidence.push(MigrationEvidence {
@@ -920,7 +966,7 @@ fn migrate_v0(
         },
         "warnings": [
             "the legacy source was inspected but not modified",
-            "artifacts, bindings, roles, and team members are excluded until release baselines distinguish product-owned and project-owned files",
+            "producer-owned baseline files were excluded from project corpus migration",
         ],
         "errors": [],
     }))

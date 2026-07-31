@@ -1,6 +1,7 @@
 apiVersion: processkit.projectious.work/installer/v1alpha1
 kind: CompatibilityManifest
 id: v0-release-0-28-4
+ownershipBaseline: .processkit/installer/compatibility/v0.28.4-ownership.json
 source:
   project: processkit
   releaseVersion: v0.28.4

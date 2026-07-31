@@ -63,9 +63,10 @@ installs v1 transactionally in the target and reports the matched manifest,
 source release, target release, and corpus disposition. The source stays
 read-only.
 
-The result includes a deterministic corpus plan for project-owned actors,
-decisions, discussions, gates, logs, migrations, notes, scopes, and work
-items. Each entry binds its source SHA-256 and reports one of:
+The result includes a deterministic corpus plan for every supported
+project-owned root, including artifacts, bindings, roles, and TeamMembers in
+addition to actors, decisions, discussions, gates, logs, migrations, notes,
+scopes, and work items. Each entry binds its source SHA-256 and reports one of:
 
 - `copy-compatible` for a structurally compatible mutable entity;
 - `preserve-immutable` for a LogEntry or applied Migration; or
@@ -76,10 +77,10 @@ Every entry includes an explicit `fieldLoss` array. It is empty for the
 currently accepted v2 envelopes. The planner rejects the migration before
 installation when any finding is blocked.
 
-`artifacts`, `bindings`, `roles`, and `team-members` are explicitly excluded
-because these v0 release trees also shipped producer-owned files in those
-roots. They remain blocked until per-release baselines can distinguish product
-content from user additions without guessing.
+Exact v0.27.1 and v0.28.4 release manifests are the ownership baseline. Only
+files present in the selected source project are planned, every accepted file
+must carry the expected kind and identity, and ambiguity blocks the complete
+plan rather than guessing ownership.
 
 After review, the mutating command installs v1 and applies every accepted
 corpus entry through a second journaled transaction. Mutable entities and
@@ -101,8 +102,6 @@ back partially applied entities without changing the source. The recovered
 target remains a valid fresh v1 installation; select a new empty target before
 retrying `migrate-v0`.
 
-In-place migration and mixed-root entity migration remain unsupported until
-per-release ownership baselines prove which artifacts, bindings, roles, and
-TeamMembers are user-owned. This boundary prevents a structural lookalike or
-a downstream manager's lock file from being mistaken for processkit
-provenance.
+In-place migration remains unsupported. Mixed-root migration is supported only
+for an exact recognized release into a separate empty target; a structural
+lookalike or downstream manager lock file cannot establish provenance.

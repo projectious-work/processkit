@@ -4,18 +4,23 @@ use crate::filesystem::{digest, safe_relative};
 use crate::transaction::{PendingAction, TransactionAction};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 
 const ENTITY_ROOTS: &[(&str, &str)] = &[
     ("context/actors", "Actor"),
+    ("context/artifacts", "Artifact"),
+    ("context/bindings", "Binding"),
     ("context/decisions", "DecisionRecord"),
     ("context/discussions", "Discussion"),
     ("context/gates", "Gate"),
     ("context/logs", "LogEntry"),
     ("context/migrations", "Migration"),
     ("context/notes", "Note"),
+    ("context/roles", "Role"),
     ("context/scopes", "Scope"),
+    ("context/team-members", "TeamMember"),
     ("context/workitems", "WorkItem"),
 ];
 
@@ -46,6 +51,7 @@ struct CorpusFinding {
     path: String,
     code: String,
     message: String,
+    remediation: String,
 }
 
 #[derive(Clone, Default, Deserialize, Serialize)]
@@ -56,7 +62,26 @@ struct CorpusSummary {
     blocked: usize,
 }
 
-pub(super) fn plan_v0_corpus(source: &Path) -> Result<CorpusPlan, String> {
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct OwnershipBaseline {
+    release_version: String,
+    files: BTreeMap<String, String>,
+}
+
+pub(super) fn plan_v0_corpus(source: &Path, baseline_path: &Path) -> Result<CorpusPlan, String> {
+    let baseline: OwnershipBaseline = serde_json::from_slice(
+        &fs::read(baseline_path).map_err(|error| format!("ownership baseline: {error}"))?,
+    )
+    .map_err(|error| format!("ownership baseline JSON: {error}"))?;
+    if baseline.release_version.is_empty()
+        || baseline
+            .files
+            .iter()
+            .any(|(path, digest)| !safe_relative(path) || digest.len() != 64)
+    {
+        return Err("ownership baseline is invalid".into());
+    }
     let mut entries = Vec::new();
     let mut errors = Vec::new();
     for (relative_root, expected_kind) in ENTITY_ROOTS {
@@ -75,7 +100,14 @@ pub(super) fn plan_v0_corpus(source: &Path) -> Result<CorpusPlan, String> {
             ));
             continue;
         }
-        walk_entity_root(source, &root, expected_kind, &mut entries, &mut errors)?;
+        walk_entity_root(
+            source,
+            &root,
+            expected_kind,
+            &baseline.files,
+            &mut entries,
+            &mut errors,
+        )?;
     }
     entries.sort_by(|left, right| left.path.cmp(&right.path));
     errors.sort_by(|left, right| left.path.cmp(&right.path));
@@ -97,12 +129,7 @@ pub(super) fn plan_v0_corpus(source: &Path) -> Result<CorpusPlan, String> {
             "blocked".into()
         },
         entries,
-        excluded_roots: vec![
-            "context/artifacts".into(),
-            "context/bindings".into(),
-            "context/roles".into(),
-            "context/team-members".into(),
-        ],
+        excluded_roots: Vec::new(),
         errors,
         summary,
     })
@@ -201,6 +228,7 @@ fn walk_entity_root(
     source: &Path,
     directory: &Path,
     expected_kind: &str,
+    baseline: &BTreeMap<String, String>,
     entries: &mut Vec<CorpusEntry>,
     errors: &mut Vec<CorpusFinding>,
 ) -> Result<(), String> {
@@ -227,12 +255,24 @@ fn walk_entity_root(
             .metadata()
             .map_err(|error| format!("legacy corpus metadata: {error}"))?;
         if metadata.is_dir() {
-            walk_entity_root(source, &path, expected_kind, entries, errors)?;
+            walk_entity_root(source, &path, expected_kind, baseline, entries, errors)?;
         } else if metadata.is_file()
             && path.extension().and_then(|extension| extension.to_str()) == Some("md")
             && (expected_kind != "TeamMember"
                 || path.file_name().and_then(|name| name.to_str()) == Some("team-member.md"))
         {
+            let actual = digest(&path)?;
+            if let Some(expected) = baseline.get(&relative) {
+                if expected == &actual {
+                    continue;
+                }
+                errors.push(finding(
+                    &relative,
+                    "modified-product-owned-path",
+                    "path differs from the exact-release ownership baseline",
+                ));
+                continue;
+            }
             inspect_entity(&path, &relative, expected_kind, entries, errors)?;
         }
     }
@@ -336,5 +376,23 @@ fn finding(path: &str, code: &str, message: &str) -> CorpusFinding {
         path: path.into(),
         code: code.into(),
         message: message.into(),
+        remediation: match code {
+            "modified-product-owned-path" => {
+                "restore this path from the exact v0 release or move the local changes to a new user-owned entity"
+            }
+            "unsafe-symlink" => "replace the symlink with a regular file or directory",
+            "invalid-frontmatter" | "invalid-yaml" => {
+                "repair the entity frontmatter before retrying migration"
+            }
+            "unsupported-api-version" => {
+                "convert the entity to processkit.projectious.work/v2"
+            }
+            "kind-directory-mismatch" => {
+                "move the entity to the root matching its declared kind"
+            }
+            "missing-id" => "add a string metadata.id before retrying migration",
+            _ => "resolve the reported source-path problem before retrying migration",
+        }
+        .into(),
     }
 }

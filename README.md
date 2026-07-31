@@ -29,7 +29,7 @@
 > [v1.x preview](https://projectious-work.github.io/processkit/v1.x/) tracks
 > this branch.
 >
-> The current v1 release is `v1.0.0-alpha.4`. Its published native executable
+> The current v1 release is `v1.0.0-alpha.5`. Its published native executable
 > supports Linux ARM64 GNU only.
 
 ---
@@ -130,12 +130,12 @@ extracted release directory through `--distribution`:
 ```sh
 processkit plan \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --distribution /path/to/processkit-v1.0.0-alpha.5 \
   --profile managed \
   --harness codex
 processkit install \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --distribution /path/to/processkit-v1.0.0-alpha.5 \
   --profile managed \
   --harness codex \
   --yes
@@ -177,14 +177,14 @@ git init
 
 processkit plan \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --distribution /path/to/processkit-v1.0.0-alpha.5 \
   --profile managed \
   --harness codex \
   --format human
 
 processkit install \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --distribution /path/to/processkit-v1.0.0-alpha.5 \
   --profile managed \
   --harness codex \
   --yes
@@ -347,8 +347,9 @@ The smoke tests create provider-neutral temporary projects and do not install
 or invoke aibox. `smoke-test-package.py` stages and extracts `src/` before
 running the MCP workflow, so repository imports cannot hide missing package
 content.
-The repository does not use GitHub Actions; maintainers run and report these
-checks locally before merging or releasing.
+GitHub Actions builds native four-platform artifacts and checks generated/Rust
+API documentation. Maintainers also run and report these checks locally before
+merging or releasing.
 
 Release packaging is guarded by:
 
@@ -383,7 +384,7 @@ Security issues go through [SECURITY.md](SECURITY.md), not the issue tracker.
 - [CONTRIBUTING.md](CONTRIBUTING.md) covers development and pull requests.
 
 All build, test, documentation, signing, and publication gates run locally.
-This repository does not use GitHub Actions. Maintainers release through
+Maintainers release through
 `./scripts/maintain.sh release <version>`.
 
 ## License

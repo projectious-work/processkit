@@ -94,3 +94,6 @@ installer/target/
 
 # Local integration-test sandboxes may contain generated credentials.
 tmp/
+
+# Local release signing keys are never repository content.
+.release-keys/

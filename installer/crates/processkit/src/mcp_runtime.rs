@@ -1,6 +1,7 @@
 //! Native supervision for the shipped Python MCP gateway.
 
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitStatus, Output};
@@ -45,6 +46,16 @@ struct RuntimePolicy {
     kind: String,
     aggregate_sha256: String,
     dependency_profiles: Vec<DependencyProfile>,
+    dependency_resolution: DependencyResolution,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DependencyResolution {
+    resolved_versions_locked: bool,
+    hashes_required: bool,
+    lock_file: String,
+    lock_sha256: String,
 }
 
 #[derive(Deserialize)]
@@ -161,6 +172,38 @@ fn prepare_runtime_with_uv(
     {
         return Err("unsupported or incomplete Python runtime policy".into());
     }
+    if !policy.dependency_resolution.resolved_versions_locked
+        || !policy.dependency_resolution.hashes_required
+        || !valid_digest(&policy.dependency_resolution.lock_sha256)
+    {
+        return Err("Python runtime policy does not require a hashed lock".into());
+    }
+    let lock_relative = Path::new(&policy.dependency_resolution.lock_file);
+    if lock_relative.is_absolute()
+        || lock_relative
+            .components()
+            .any(|part| !matches!(part, std::path::Component::Normal(_)))
+    {
+        return Err("Python runtime policy contains an unsafe lock path".into());
+    }
+    let lock_path = root.join(lock_relative);
+    let lock_metadata = fs::symlink_metadata(&lock_path)
+        .map_err(|error| format!("Python runtime lock: {error}"))?;
+    if !lock_metadata.is_file() || lock_metadata.file_type().is_symlink() {
+        return Err("Python runtime lock must be a regular, non-symlink file".into());
+    }
+    let lock_bytes =
+        fs::read(&lock_path).map_err(|error| format!("Python runtime lock: {error}"))?;
+    let lock_sha256 = format!("{:x}", Sha256::digest(&lock_bytes));
+    if lock_sha256 != policy.dependency_resolution.lock_sha256 {
+        return Err("Python runtime lock digest differs from policy".into());
+    }
+    if !lock_bytes
+        .windows(14)
+        .any(|window| window == b"--hash=sha256:")
+    {
+        return Err("Python runtime lock does not contain package hashes".into());
+    }
 
     let cache_dir = prepare_cache(cache_dir, offline)?;
     for profile in &policy.dependency_profiles {
@@ -194,6 +237,7 @@ fn prepare_runtime_with_uv(
         command
             .arg("run")
             .arg("--no-project")
+            .args(["--with-requirements", lock_path.to_string_lossy().as_ref()])
             .args(["--python", &profile.requires_python]);
         if offline {
             command.arg("--offline");
@@ -202,7 +246,6 @@ fn prepare_runtime_with_uv(
             if dependency.is_empty() || dependency.contains(char::is_whitespace) {
                 return Err("Python runtime policy contains an unsafe dependency".into());
             }
-            command.args(["--with", dependency]);
         }
         command.args(["python", "-c", "pass"]);
         command.current_dir(&root);
@@ -376,6 +419,12 @@ mod tests {
         fs::write(&second, "print('fixture')\n").unwrap();
         let policy = root.path().join(RUNTIME_POLICY_PATH);
         fs::create_dir_all(policy.parent().unwrap()).unwrap();
+        let lock = root
+            .path()
+            .join(".processkit/runtime/python-requirements.lock");
+        let lock_payload = "mcp==1.0.0 --hash=sha256:0000000000000000000000000000000000000000000000000000000000000000\n";
+        fs::write(&lock, lock_payload).unwrap();
+        let lock_sha = format!("{:x}", Sha256::digest(lock_payload.as_bytes()));
         fs::write(
             &policy,
             format!(
@@ -383,6 +432,12 @@ mod tests {
                   "apiVersion": "processkit.projectious.work/python-runtime/v1alpha1",
                   "kind": "PythonRuntimePolicy",
                   "aggregateSha256": "{digest}",
+                  "dependencyResolution": {{
+                    "resolvedVersionsLocked": true,
+                    "hashesRequired": true,
+                    "lockFile": ".processkit/runtime/python-requirements.lock",
+                    "lockSha256": "{lock_sha}"
+                  }},
                   "dependencyProfiles": [
                     {{
                       "sha256": "{digest}",
@@ -398,7 +453,8 @@ mod tests {
                     }}
                   ]
                 }}"#,
-                digest = "0".repeat(64)
+                digest = "0".repeat(64),
+                lock_sha = lock_sha,
             ),
         )
         .unwrap();
@@ -481,5 +537,18 @@ mod tests {
         let missing = root.path().join("missing-cache");
         let error = prepare_runtime_with_uv(root.path(), Some(&missing), true, &uv).unwrap_err();
         assert!(error.contains("runtime cache directory"));
+    }
+
+    #[test]
+    fn preparation_rejects_tampered_runtime_lock() {
+        let (root, _tools, uv, _) = fixture();
+        fs::write(
+            root.path()
+                .join(".processkit/runtime/python-requirements.lock"),
+            "mcp==9.9.9 --hash=sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\n",
+        )
+        .unwrap();
+        let error = prepare_runtime_with_uv(root.path(), None, false, &uv).unwrap_err();
+        assert!(error.contains("digest differs"));
     }
 }

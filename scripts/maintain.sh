@@ -381,8 +381,16 @@ case "$command" in
         cmd_release "$@" ;;
     release-host)
         version="$(normalize_version "${1:?version required}")"
-        require_release_branch "$version"
-        die "host-only artifact production is not implemented; candidate remains incomplete"
+        source_sha="${2:-$(git rev-parse "$version^{commit}")}"
+        case "$(uname -s):$(uname -m)" in
+            Linux:x86_64) target=x86_64-unknown-linux-gnu ;;
+            Linux:aarch64|Linux:arm64) target=aarch64-unknown-linux-gnu ;;
+            Darwin:x86_64) target=x86_64-apple-darwin ;;
+            Darwin:arm64|Darwin:aarch64) target=aarch64-apple-darwin ;;
+            *) die "unsupported release host: $(uname -s) $(uname -m)" ;;
+        esac
+        "$PROJECT_ROOT/scripts/build-host-artifact.sh" \
+            "$version" "$target" "$source_sha"
         ;;
     *) die "unknown command: $command" ;;
 esac

@@ -14,5 +14,5 @@ Use this section for exact contracts rather than inferred release behavior.
 - [privacy](./privacy/)
 - [v2 deliverable contracts](./v2-contracts/)
 
-`v1.0.0-alpha.4` is the product version; shipped entities continue to use
+`v1.0.0-alpha.5` is the product version; shipped entities continue to use
 `processkit.projectious.work/v2`.

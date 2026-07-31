@@ -3,7 +3,7 @@ title: Architecture Specification
 description: Architectural direction for processkit v1.0.
 ---
 
-> **Alpha.4 status:** The Rust lifecycle/Python MCP boundary below is
+> **Alpha.5 status:** The Rust lifecycle/Python MCP boundary below is
 > accepted and implemented for local release verification, planning, install,
 > update, recovery, verification, and uninstall. Online release resolution,
 > native runtime diagnostics, and Rust-supervised MCP are planned.
@@ -159,7 +159,7 @@ processkit should provide examples and integration surfaces for:
 The stable contract should be MCP, files, schemas, and docs, not a
 framework-specific runtime dependency.
 
-In alpha.4, harnesses launch the Python gateway directly through `uv` or an
+In alpha.5, harnesses launch the Python gateway directly through `uv` or an
 installer-managed projection. Native `processkit doctor` and `processkit mcp`
 commands are target interfaces, not current commands.
 

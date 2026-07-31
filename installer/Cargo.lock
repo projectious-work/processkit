@@ -421,7 +421,7 @@ dependencies = [
 
 [[package]]
 name = "processkit"
-version = "1.0.0-alpha.4"
+version = "1.0.0-alpha.5"
 dependencies = [
  "clap",
  "ed25519-dalek",
