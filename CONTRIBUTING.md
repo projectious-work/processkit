@@ -88,7 +88,9 @@ uv pip compile installer/python-runtime.in --generate-hashes --universal \
 uv run scripts/generate-python-runtime-manifest.py
 ```
 
-CI checks both generated surfaces and builds public Rust API documentation.
+`scripts/test-installer-local.sh` checks both generated surfaces and builds
+the public Rust API documentation. This repository deliberately has no hosted
+CI or workflow files.
 
 This is the fastest feedback loop while editing servers or the lib.
 For real MCP-protocol testing, use any MCP-capable client (Claude Code,

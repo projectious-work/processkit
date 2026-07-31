@@ -347,9 +347,9 @@ The smoke tests create provider-neutral temporary projects and do not install
 or invoke aibox. `smoke-test-package.py` stages and extracts `src/` before
 running the MCP workflow, so repository imports cannot hide missing package
 content.
-GitHub Actions builds native four-platform artifacts and checks generated/Rust
-API documentation. Maintainers also run and report these checks locally before
-merging or releasing.
+All validation, native artifact production, generated-document checks, and
+documentation deployment run from repository scripts on maintainer-controlled
+machines. This repository deliberately has no GitHub Actions workflows.
 
 Release packaging is guarded by:
 

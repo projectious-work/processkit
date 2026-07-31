@@ -55,14 +55,14 @@ jq -n --sort-keys \
     --arg version "$VERSION" \
     --arg target "$TARGET" \
     --arg sourceSha "$SOURCE_SHA" \
-    --arg runnerOs "${RUNNER_OS:-local}" \
-    --arg runnerArch "${RUNNER_ARCH:-$(uname -m)}" \
-    --arg runnerName "${RUNNER_NAME:-local}" \
-    --arg runnerImage "${ImageOS:-local}" \
-    --arg workflowRunId "${GITHUB_RUN_ID:-local}" \
-    --arg workflowRunAttempt "${GITHUB_RUN_ATTEMPT:-local}" \
+    --arg hostOs "$(uname -s)" \
+    --arg hostArch "$(uname -m)" \
+    --arg hostKernel "$(uname -r)" \
+    --arg rustHost "$host_target" \
+    --arg rustcVersion "$(rustc --version)" \
     '{version:$version,target:$target,sourceSha:$sourceSha,
-      runner:{os:$runnerOs,arch:$runnerArch,name:$runnerName,image:$runnerImage,
-        workflowRunId:$workflowRunId,workflowRunAttempt:$workflowRunAttempt},
+      buildEnvironment:"local-host",
+      host:{os:$hostOs,arch:$hostArch,kernel:$hostKernel,rustHost:$rustHost,
+        rustcVersion:$rustcVersion},
       smokeTest:"processkit --version"}' \
     >"$asset.provenance.json"

@@ -56,7 +56,7 @@ scripts/verify-release-local.sh \
 Run the native executable against a disposable project through its opaque
 request contract. The local installer suite covers install, verify, update,
 recovery, user-drift handling, and uninstall. It neither invokes aibox nor
-uses GitHub Actions.
+uses GitHub Actions or another hosted build service.
 
 The suite includes two complementary recovery signals:
 
