@@ -9,7 +9,7 @@ implemented. The Rust executable verifies and transactionally applies an
 explicit release; Python remains the MCP runtime; release content stays
 visible; and interruption recovery is exercised with real processes.&lt;/p&gt;
 &lt;p&gt;Issue #135 is therefore complete as the v1.x implementation umbrella and has
-been closed after final review. Six remaining GA concerns have been extracted
+been closed after final review. Four remaining GA tracks have been extracted
 into focused follow-up issues. Closing the umbrella does &lt;strong&gt;not&lt;/strong&gt; declare the
 alpha GA-ready or claim that those follow-ups are complete.&lt;/p&gt;</description></item><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Alpha.4 review:&lt;/strong&gt; Ontology, schema generation, local installer lifecycle,

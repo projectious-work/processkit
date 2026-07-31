@@ -21,7 +21,7 @@ explicit release; Python remains the MCP runtime; release content stays
 visible; and interruption recovery is exercised with real processes.
 
 Issue #135 is therefore complete as the v1.x implementation umbrella and has
-been closed after final review. Six remaining GA concerns have been extracted
+been closed after final review. Four remaining GA tracks have been extracted
 into focused follow-up issues. Closing the umbrella does **not** declare the
 alpha GA-ready or claim that those follow-ups are complete.
 
@@ -37,15 +37,15 @@ alpha GA-ready or claim that those follow-ups are complete.
 | Rust modularization and typed failures | **Partial** | Logic moved from the former monolith into focused modules with stable error tests; a separate public library crate and full API docs remain |
 | README/help/schema consistency | **Mostly implemented** | Current local-distribution requirements agree; generated help snapshot/release facts automation remains |
 | Four native target platforms | **Follow-up** | The release workflow binds a collected four-target matrix; native production and smoke testing remain in [#165](https://github.com/projectious-work/processkit/issues/165) |
-| Bootstrap installer | **Partial** | Exact-version, non-root, checksum/signature/fingerprint verification exists; canonical key distribution and immutable online resolution remain in [#166](https://github.com/projectious-work/processkit/issues/166) |
-| Human exact-version online resolution | **Follow-up** | Human lifecycle commands still require `--distribution`; exact immutable resolution is tracked in [#166](https://github.com/projectious-work/processkit/issues/166) |
+| Bootstrap installer | **Partial** | Exact-version, non-root, checksum/signature/fingerprint verification exists; canonical key distribution and immutable online resolution remain in [#165](https://github.com/projectious-work/processkit/issues/165) |
+| Human exact-version online resolution | **Follow-up** | Human lifecycle commands still require `--distribution`; exact immutable resolution is tracked in [#165](https://github.com/projectious-work/processkit/issues/165) |
 | Python/`uv` runtime contract | **Mostly implemented** | Runtime policy, native diagnosis, dependency-profile preparation, and offline-readiness verification exist; reproducible runtime resolution remains in [#170](https://github.com/projectious-work/processkit/issues/170) |
 | Native `processkit doctor` and `processkit mcp` | **Mostly implemented** | Typed read-only doctor plus native MCP verify/serve/proxy supervision exist; broader host-signal acceptance remains in [#170](https://github.com/projectious-work/processkit/issues/170) |
 | Extracted-release MCP acceptance | **Implemented** | Package smoke starts the staged gateway and exercises representative tools |
 | Repository dogfood update/recovery acceptance | **Implemented** | The release gate combines the full-content lifecycle pilot with a deterministic real-process update interruption, rollback, user-data preservation, retry, and provenance verification |
 | v0 migration and aibox parity | **Partial** | Exact fixtures exercise guarded transition, byte-preserving transactional corpus application, persisted loss/provenance evidence, and interruption recovery; mixed-root ownership baselines and aibox parity remain in [#167](https://github.com/projectious-work/processkit/issues/167) |
 | Harness projection ownership | **Implemented** | Codex and Claude adapters preserve unrelated keys and have lifecycle tests |
-| Stable/prerelease documentation story | **Partial** | Docs separate v0 stable and v1 preview; generated facts/help remain in [#168](https://github.com/projectious-work/processkit/issues/168), and public Rust API docs remain in [#169](https://github.com/projectious-work/processkit/issues/169) |
+| Stable/prerelease documentation story | **Partial** | Docs separate v0 stable and v1 preview; generated facts/help and public Rust API docs remain in [#168](https://github.com/projectious-work/processkit/issues/168) |
 
 ## What Users Can Rely On
 
@@ -71,12 +71,10 @@ alpha GA-ready or claim that those follow-ups are complete.
 
 ## Extracted GA Follow-ups
 
-1. [#165: publish and smoke-test all four native targets](https://github.com/projectious-work/processkit/issues/165)
-2. [#166: canonical trust root and exact-version resolver](https://github.com/projectious-work/processkit/issues/166)
-3. [#167: v0 mixed-root baselines and CLI/aibox parity](https://github.com/projectious-work/processkit/issues/167)
-4. [#168: generated CLI help and release facts](https://github.com/projectious-work/processkit/issues/168)
-5. [#169: supported Rust library API and documentation](https://github.com/projectious-work/processkit/issues/169)
-6. [#170: runtime dependency locking and host-health coverage](https://github.com/projectious-work/processkit/issues/170)
+1. [#165: trusted four-platform release distribution](https://github.com/projectious-work/processkit/issues/165)
+2. [#167: v0 mixed-root baselines and CLI/aibox parity](https://github.com/projectious-work/processkit/issues/167)
+3. [#168: generated CLI, release, and Rust API documentation](https://github.com/projectious-work/processkit/issues/168)
+4. [#170: runtime dependency locking and host-health coverage](https://github.com/projectious-work/processkit/issues/170)
 
 The guiding constraint remains: finish the trustworthy native lifecycle around
 visible content and the Python MCP runtime before expanding conceptual breadth.
