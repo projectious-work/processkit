@@ -237,7 +237,8 @@ selection uses model-recommender roster/configuration data. Process
 definitions are Artifacts plus process-instance WorkItems. Schedule
 semantics use &lt;code&gt;Binding(type=time-window)&lt;/code&gt;. Runtime state-machine YAML
 files remain implementation contracts, not user-authored StateMachine
-entities.&lt;/p&gt;</description></item><item><title>v1 Alpha Release Facts</title><link>https://projectious-work.github.io/processkit/v1.x/docs/reference/v1-alpha-release-facts/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/reference/v1-alpha-release-facts/</guid><description>&lt;p&gt;These facts describe the published &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt; release.&lt;/p&gt;
+entities.&lt;/p&gt;</description></item><item><title>v1 Alpha Release Facts</title><link>https://projectious-work.github.io/processkit/v1.x/docs/reference/v1-alpha-release-facts/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/reference/v1-alpha-release-facts/</guid><description>&lt;p&gt;Do not edit this page by hand. Its authoritative source is
+&lt;code&gt;release/v1-release-facts.json&lt;/code&gt;.&lt;/p&gt;
 &lt;table&gt;
  &lt;thead&gt;
  &lt;tr&gt;
@@ -248,39 +249,15 @@ entities.&lt;/p&gt;</description></item><item><title>v1 Alpha Release Facts</tit
  &lt;tbody&gt;
  &lt;tr&gt;
  &lt;td&gt;Release&lt;/td&gt;
- &lt;td&gt;&lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;v1.0.0-alpha.5&lt;/code&gt;&lt;/td&gt;
  &lt;/tr&gt;
  &lt;tr&gt;
  &lt;td&gt;Status&lt;/td&gt;
- &lt;td&gt;Exact-pin prerelease&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Release commit&lt;/td&gt;
- &lt;td&gt;&lt;code&gt;a703afe714faf2b154b1c0f74b52829d067e5ca6&lt;/code&gt;&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Content archive&lt;/td&gt;
- &lt;td&gt;&lt;code&gt;processkit-v1.0.0-alpha.4.tar.gz&lt;/code&gt;&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Native target&lt;/td&gt;
- &lt;td&gt;&lt;code&gt;aarch64-unknown-linux-gnu&lt;/code&gt;&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Installer asset&lt;/td&gt;
- &lt;td&gt;&lt;code&gt;processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu&lt;/code&gt;&lt;/td&gt;
+ &lt;td&gt;exact-pin prerelease&lt;/td&gt;
  &lt;/tr&gt;
  &lt;tr&gt;
  &lt;td&gt;Signature&lt;/td&gt;
- &lt;td&gt;Ed25519&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Public key ID&lt;/td&gt;
- &lt;td&gt;&lt;code&gt;035a31564b52ca7c6e0b7b4c4a37b4fcf94fb3dd178d98473af8a9242dafdeee&lt;/code&gt;&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Gateway tool count in release acceptance&lt;/td&gt;
- &lt;td&gt;199&lt;/td&gt;
+ &lt;td&gt;&lt;code&gt;Ed25519&lt;/code&gt;&lt;/td&gt;
  &lt;/tr&gt;
  &lt;tr&gt;
  &lt;td&gt;Installer protocol&lt;/td&gt;
@@ -292,7 +269,13 @@ entities.&lt;/p&gt;</description></item><item><title>v1 Alpha Release Facts</tit
  &lt;/tr&gt;
  &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;The release publishes seven assets: the content archive and checksum, native
-installer and checksum, signed JSON envelope, signature, and public key.&lt;/p&gt;
-&lt;h2 id="profiles"&gt;Profiles&lt;/h2&gt;
-&lt;p&gt;The distribution exposes these profiles:&lt;/p&gt;</description></item></channel></rss>
+&lt;h2 id="native-assets"&gt;Native Assets&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;processkit-v1.0.0-alpha.5-x86_64-unknown-linux-gnu&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;processkit-v1.0.0-alpha.5-aarch64-unknown-linux-gnu&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;processkit-v1.0.0-alpha.5-x86_64-apple-darwin&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;processkit-v1.0.0-alpha.5-aarch64-apple-darwin&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Every published asset has a checksum sidecar and is bound into the signed
+release envelope. The public release is the authority for final checksums and
+host provenance.&lt;/p&gt;</description></item></channel></rss>

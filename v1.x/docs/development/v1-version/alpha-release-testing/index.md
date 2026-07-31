@@ -8,14 +8,14 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-> **Alpha.4 documentation review:** This page records design or historical
+> **Alpha.5 documentation review:** This page records design or historical
 > planning. For shipped behavior and current gaps, use the
 > [issue #135 implementation review](./issue-135-status.md).
 
 ## Release Policy
 
 The current test release is the explicit prerelease
-`v1.0.0-alpha.4`. It is merged from `v1.x-dev` into
+`v1.0.0-alpha.5`. It is merged from `v1.x-dev` into
 `v1.x-pre-release`, validated there, and tagged there.
 
 Prereleases never become the implicit `latest` version. `latest` remains the
@@ -45,7 +45,7 @@ Create a local signing key once, then build the complete release set:
 ```sh
 scripts/processkit-keygen-local.sh release.pem release.pub.pem
 scripts/release-local.sh \
-  v1.0.0-alpha.4 release.pem release.pub.pem
+  v1.0.0-alpha.5 release.pem release.pub.pem
 ```
 
 The signed envelope binds the archive, native installer executable, target
@@ -53,15 +53,15 @@ triple, version, and trusted key. Verify it independently:
 
 ```sh
 scripts/verify-release-local.sh \
-  dist/processkit-v1.0.0-alpha.4.release.json \
-  dist/processkit-v1.0.0-alpha.4.release.sig \
+  dist/processkit-v1.0.0-alpha.5.release.json \
+  dist/processkit-v1.0.0-alpha.5.release.sig \
   release.pub.pem
 ```
 
 Run the native executable against a disposable project through its opaque
 request contract. The local installer suite covers install, verify, update,
 recovery, user-drift handling, and uninstall. It neither invokes aibox nor
-uses GitHub Actions.
+uses GitHub Actions or another hosted build service.
 
 The suite includes two complementary recovery signals:
 

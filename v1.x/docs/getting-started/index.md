@@ -30,7 +30,7 @@ project entities and local overrides remain owned by the consuming project.
 
 ## Runtime requirements
 
-- Linux ARM64 GNU for the published alpha.4 native executable.
+- Linux ARM64 GNU for the published alpha.5 native executable.
 - Python 3.10 or newer and `uv` for the Python MCP runtime.
 - Git and an MCP-capable harness for the normal agent workflow.
 - `curl`, `tar`, and `sha256sum` for the tutorial.
@@ -53,5 +53,5 @@ future work.
 Section pages:
 
 - [Installing](/processkit/v1.x/docs/getting-started/installing/)
-- [Install and Use the v1 Alpha](/processkit/v1.x/docs/getting-started/v1-alpha-tutorial/): Verify, install, and use processkit v1.0.0-alpha.4 step by step.
+- [Install and Use the v1 Alpha](/processkit/v1.x/docs/getting-started/v1-alpha-tutorial/): Verify, install, and use processkit v1.0.0-alpha.5 step by step.
 - [Your First Entity](/processkit/v1.x/docs/getting-started/first-entity/)

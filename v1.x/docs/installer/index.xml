@@ -3,10 +3,49 @@ commands optimize for reviewable output and safe project operation. The
 machine interface uses a versioned JSON request and result contract for aibox
 and other automation.&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Release and development status:&lt;/strong&gt; &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt; supports the local
+&lt;p&gt;&lt;strong&gt;Release and development status:&lt;/strong&gt; &lt;code&gt;v1.0.0-alpha.5&lt;/code&gt; supports the local
 lifecycle commands below except &lt;code&gt;doctor&lt;/code&gt; and &lt;code&gt;mcp&lt;/code&gt;. The &lt;code&gt;v1.x-dev&lt;/code&gt; line adds
 read-only native diagnosis and MCP supervision for the next prerelease.
-Commands in “Target human lifecycle” remain planned unless listed as current.&lt;/p&gt;</description></item><item><title>Installer Contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</guid><description>&lt;blockquote&gt;
+Commands in “Target human lifecycle” remain planned unless listed as current.&lt;/p&gt;</description></item><item><title>Generated CLI Reference</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli-generated/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/cli-generated/</guid><description>&lt;p&gt;Do not edit this page by hand. Regenerate it with
+&lt;code&gt;uv run scripts/generate-v1-docs.py&lt;/code&gt;.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Native lifecycle CLI for processkit projects
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Usage: processkit &amp;lt;COMMAND&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Commands:
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; plan Produce a deterministic, non-mutating installation plan
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; install Install a verified release into a new or empty target project
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; recover Roll back or finalize incomplete installer transactions
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; uninstall Remove unchanged files owned by a prior installation
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; update Update unchanged managed files from a verified release
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; verify-release Verify a signed local release against an explicit local trust store
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; verify Verify installed provenance and report managed-path drift
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; inspect-compatibility Inspect a legacy processkit tree without mutating it
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; migrate-v0 Transition an exact v0 release into a fresh v1 target
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; doctor Diagnose the installed project and Python MCP runtime without mutation
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; mcp Verify or supervise the shipped Python MCP gateway
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; execute Execute one versioned installer request and emit one result envelope
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; help Print this message or the help of the given subcommand(s)
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Options:
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; -h, --help Print help
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; -V, --version Print version
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;</description></item><item><title>Rust Library API</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/rust-api/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/rust-api/</guid><description>&lt;p&gt;The &lt;code&gt;processkit&lt;/code&gt; crate exposes the versioned request envelope used by
+&lt;code&gt;processkit execute --request&lt;/code&gt;. The supported alpha surface is intentionally
+small:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;API_VERSION&lt;/code&gt; identifies the machine protocol;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Operation&lt;/code&gt; enumerates supported lifecycle operations; and&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;InstallerRequest&lt;/code&gt; constructs and serializes typed request envelopes.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Build and test the API documentation with:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-sh" data-lang="sh"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;cargo &lt;span class="nb"&gt;test&lt;/span&gt; --doc --locked --manifest-path installer/Cargo.toml
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;cargo doc --locked --no-deps --manifest-path installer/Cargo.toml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Public items follow semantic versioning within the v1 release line. Modules
+and functions not reachable from the crate root are internal implementation
+details and may change between prereleases. Filesystem transactions, release
+verification, and lifecycle execution remain behind the executable boundary;
+the library does not offer an alternate mutation path.&lt;/p&gt;</description></item><item><title>Installer Contract</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/contract/</guid><description>&lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; Implemented for explicit local distributions and signed
 local releases. Canonical online release acquisition is not implemented.&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -27,14 +66,15 @@ MCP behavior.&lt;/p&gt;
 &lt;li&gt;&lt;code&gt;uv&lt;/code&gt; must support PEP 723 script metadata.&lt;/li&gt;
 &lt;li&gt;The installed gateway script and processkit shared Python library must be
 readable from the selected project root.&lt;/li&gt;
-&lt;li&gt;The first dependency resolution may require network access.&lt;/li&gt;
+&lt;li&gt;The first preparation may require network access to populate the &lt;code&gt;uv&lt;/code&gt; cache.&lt;/li&gt;
 &lt;li&gt;Direct &lt;code&gt;uv run&lt;/code&gt; startup remains a supported compatibility and development
 interface.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Every shipped MCP entry point declares its Python constraint and dependencies
-in a PEP 723 block. The gateway currently declares:&lt;/p&gt;</description></item><item><title>Local Release Production</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</guid><description>&lt;p&gt;The v1 release path is local, agent-first, and human-operable. It does not
-require GitHub Actions, a hosted CI service, or a publication provider.
-Agents and humans invoke the same repository scripts.&lt;/p&gt;
+in a PEP 723 block. The gateway currently declares:&lt;/p&gt;</description></item><item><title>Release Production</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/local-release/</guid><description>&lt;p&gt;The v1 release path is agent-first, human-operable, and entirely local.
+Maintainer-controlled machines invoke the same repository scripts and bind
+their native results to one tagged commit. No GitHub Actions or hosted build
+service participates.&lt;/p&gt;
 &lt;h2 id="one-time-key-setup"&gt;One-time key setup&lt;/h2&gt;
 &lt;p&gt;Keep the private key outside the repository. The public key may be copied to
 the local trust store of every machine that installs official releases.&lt;/p&gt;
@@ -108,9 +148,9 @@ aibox, harness, devcontainer, or MCP configuration files.&lt;/p&gt;
 compatibility manifest to match. The beta manifests cover v0.27.1 and
 v0.28.4 release trees. A partial installed project may be classified only as
 &lt;code&gt;legacy-project-candidate&lt;/code&gt;; its exact version is never guessed.&lt;/p&gt;</description></item><item><title>aibox Integration</title><link>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/installer/aibox-integration/</guid><description>&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; The opaque request/result protocol is implemented.
-Complete direct-CLI/aibox installed-state parity remains an acceptance
-requirement, so the v0 compatibility bridge stays enabled.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Alpha.5 status:&lt;/strong&gt; The opaque request/result protocol and direct-CLI/aibox
+installed-state parity contract are implemented. The v0 compatibility bridge
+remains available for gradual downstream adoption.&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;aibox should treat processkit as an opaque local executable. It creates a
 versioned JSON request, invokes &lt;code&gt;processkit execute --request &amp;lt;path&amp;gt;&lt;/code&gt;, parses

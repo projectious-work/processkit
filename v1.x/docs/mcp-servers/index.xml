@@ -3,7 +3,7 @@ not require aibox at runtime. aibox can install processkit, merge MCP
 configuration, pre-authorize processkit tools where a harness supports
 that, and supervise a managed devcontainer. Those are convenience and
 lifecycle features; they are not a processkit dependency.&lt;/p&gt;
-&lt;p&gt;The alpha.4 installer can project managed Codex and Claude configuration.
+&lt;p&gt;The alpha.5 installer can project managed Codex and Claude configuration.
 It owns only declared processkit keys and preserves unrelated harness settings
 during install, update, and uninstall. Restart the harness after installation
 so it reloads the projection.&lt;/p&gt;</description></item><item><title>Claude Code</title><link>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/mcp-servers/claude-code/</guid><description>&lt;blockquote&gt;

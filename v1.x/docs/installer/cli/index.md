@@ -13,7 +13,7 @@ commands optimize for reviewable output and safe project operation. The
 machine interface uses a versioned JSON request and result contract for aibox
 and other automation.
 
-> **Release and development status:** `v1.0.0-alpha.4` supports the local
+> **Release and development status:** `v1.0.0-alpha.5` supports the local
 > lifecycle commands below except `doctor` and `mcp`. The `v1.x-dev` line adds
 > read-only native diagnosis and MCP supervision for the next prerelease.
 > Commands in “Target human lifecycle” remain planned unless listed as current.
@@ -56,7 +56,7 @@ For example:
 ```sh
 processkit plan \
   --root . \
-  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --distribution /path/to/processkit-v1.0.0-alpha.5 \
   --profile managed \
   --harness codex
 ```

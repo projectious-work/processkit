@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>v1.x Version on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/</link><description>Recent content in v1.x Version on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/index.xml" rel="self" type="application/rss+xml"/><item><title>Issue #135 Implementation Review</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/</guid><description>&lt;p&gt;This final review compares
 &lt;a href="https://github.com/projectious-work/processkit/issues/135" rel="noopener"&gt;GitHub issue #135&lt;/a&gt;
 
-with the current &lt;code&gt;v1.x-dev&lt;/code&gt; implementation. It distinguishes implemented alpha
-scope from the work still required before a generally available release.&lt;/p&gt;
+with the &lt;code&gt;v1.0.0-alpha.5&lt;/code&gt; implementation and its published release evidence.&lt;/p&gt;
 &lt;h2 id="summary"&gt;Summary&lt;/h2&gt;
 &lt;p&gt;The corrected product boundary and trustworthy local lifecycle are
 implemented. The Rust executable verifies and transactionally applies an
 explicit release; Python remains the MCP runtime; release content stays
 visible; and interruption recovery is exercised with real processes.&lt;/p&gt;
-&lt;p&gt;Issue #135 is therefore complete as the v1.x implementation umbrella and has
-been closed after final review. Four remaining GA tracks have been extracted
-into focused follow-up issues. Closing the umbrella does &lt;strong&gt;not&lt;/strong&gt; declare the
-alpha GA-ready or claim that those follow-ups are complete.&lt;/p&gt;</description></item><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;Issue #135 is complete as the v1.x implementation umbrella. Three extracted
+engineering tracks are implemented in alpha.5. The four-platform publication
+track remains open until locally produced artifacts from every supported host
+have been collected and verified.&lt;/p&gt;</description></item><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Alpha.4 review:&lt;/strong&gt; Ontology, schema generation, local installer lifecycle,
 signed release, extracted-package MCP smoke, and first-ART evidence are
 implemented. Four-platform native distribution, bootstrap installation,
@@ -24,14 +23,14 @@ update recovery, and v0-to-v1 migration remain GA blockers. See the
 &lt;p&gt;The acceptance gate keeps the v1.0 rebuild measurable. The RFC&amp;rsquo;s
 81-criterion gate is authoritative for final cutover; the staged lists
 below are working summaries for alpha-first execution.&lt;/p&gt;</description></item><item><title>Alpha Release Testing</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/alpha-release-testing/</guid><description>&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Alpha.4 documentation review:&lt;/strong&gt; This page records design or historical
+&lt;p&gt;&lt;strong&gt;Alpha.5 documentation review:&lt;/strong&gt; This page records design or historical
 planning. For shipped behavior and current gaps, use the
 &lt;a href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/"&gt;issue #135 implementation review&lt;/a&gt;
 .&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h2 id="release-policy"&gt;Release Policy&lt;/h2&gt;
 &lt;p&gt;The current test release is the explicit prerelease
-&lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;. It is merged from &lt;code&gt;v1.x-dev&lt;/code&gt; into
+&lt;code&gt;v1.0.0-alpha.5&lt;/code&gt;. It is merged from &lt;code&gt;v1.x-dev&lt;/code&gt; into
 &lt;code&gt;v1.x-pre-release&lt;/code&gt;, validated there, and tagged there.&lt;/p&gt;
 &lt;p&gt;Prereleases never become the implicit &lt;code&gt;latest&lt;/code&gt; version. &lt;code&gt;latest&lt;/code&gt; remains the
 highest stable release, currently from the supported v0 line. Downstream
@@ -80,7 +79,7 @@ accepts the final ontology, migration, CLI, and aibox evidence.&lt;/p&gt;
 &lt;code&gt;docs-site/data/v1_alpha3_gates.yaml&lt;/code&gt;. It tracks all 81 original v1 criteria
 and all 15 installer criteria from issue #118. A criterion may be &lt;code&gt;met&lt;/code&gt;,
 &lt;code&gt;partial&lt;/code&gt;, &lt;code&gt;missing&lt;/code&gt;, &lt;code&gt;owner-review&lt;/code&gt;, or &lt;code&gt;deferred-post-cutover&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Architecture Specification</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/architecture-specification/</guid><description>&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Alpha.4 status:&lt;/strong&gt; The Rust lifecycle/Python MCP boundary below is
+&lt;p&gt;&lt;strong&gt;Alpha.5 status:&lt;/strong&gt; The Rust lifecycle/Python MCP boundary below is
 accepted and implemented for local release verification, planning, install,
 update, recovery, verification, and uninstall. Online release resolution,
 native runtime diagnostics, and Rust-supervised MCP are planned.&lt;/p&gt;

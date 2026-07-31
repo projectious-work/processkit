@@ -10,7 +10,7 @@ configuration, pre-authorize processkit tools where a harness supports
 that, and supervise a managed devcontainer. Those are convenience and
 lifecycle features; they are not a processkit dependency.
 
-The alpha.4 installer can project managed Codex and Claude configuration.
+The alpha.5 installer can project managed Codex and Claude configuration.
 It owns only declared processkit keys and preserves unrelated harness settings
 during install, update, and uninstall. Restart the harness after installation
 so it reloads the projection.

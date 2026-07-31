@@ -13,12 +13,12 @@ updatable, verifiable, and removable. Release policy is carried by the
 signed processkit distribution rather than hard-coded into downstream
 tools.
 
-`v1.0.0-alpha.4` implements the local lifecycle and trust boundary. It
-publishes one Linux ARM64 GNU executable and still requires an explicit local
-distribution. Online resolution, bootstrap installation, four-platform
-assets, native runtime diagnosis, and MCP supervision remain planned.
+`v1.0.0-alpha.5` implements the local lifecycle, exact-version bootstrap,
+native runtime diagnosis, MCP supervision, and trust boundary. Four-platform
+publication requires locally produced and natively smoke-tested outputs from
+each supported host architecture; no hosted build service is used.
 
-- [Install and use alpha.4](../getting-started/v1-alpha-tutorial/)
+- [Install and use alpha.5](../getting-started/v1-alpha-tutorial/)
 - [Installer contract](./contract/)
 - [CLI and automation interfaces](./cli/)
 - [Python MCP runtime contract](./runtime/)
@@ -35,9 +35,11 @@ assets, native runtime diagnosis, and MCP supervision remain planned.
 Section pages:
 
 - [CLI and automation interfaces](/processkit/v1.x/docs/installer/cli/): Human lifecycle commands and the stable automation protocol.
+- [Generated CLI Reference](/processkit/v1.x/docs/installer/cli-generated/): Generated from the processkit v1.0.0-alpha.5 executable.
+- [Rust Library API](/processkit/v1.x/docs/installer/rust-api/): Supported typed integration surface for the processkit executable.
 - [Installer Contract](/processkit/v1.x/docs/installer/contract/): Trust, ownership, transaction, and automation guarantees for the v1 lifecycle CLI.
 - [Python MCP runtime contract](/processkit/v1.x/docs/installer/runtime/): Supported Python, uv, dependency, cache, and transport behavior.
-- [Local Release Production](/processkit/v1.x/docs/installer/local-release/): Build, sign, verify, and publish processkit releases without hosted CI.
+- [Release Production](/processkit/v1.x/docs/installer/local-release/): Build, sign, verify, and publish processkit releases with bound host evidence.
 - [Evidence-bound Release Process](/processkit/v1.x/docs/installer/release-process/): Repository-owned, resumable release orchestration for processkit maintainers.
 - [Installer Threat Model](/processkit/v1.x/docs/installer/threat-model/): Trust boundaries and adversarial requirements for release and target inputs.
 - [v0 Compatibility](/processkit/v1.x/docs/installer/v0-compatibility/): Read-only evidence and migration boundary for v0 projects.

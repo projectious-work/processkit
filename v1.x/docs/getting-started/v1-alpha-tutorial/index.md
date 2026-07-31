@@ -1,6 +1,6 @@
 # Install and Use the v1 Alpha
 
-> Verify, install, and use processkit v1.0.0-alpha.4 step by step.
+> Verify, install, and use processkit v1.0.0-alpha.5 step by step.
 
 ---
 
@@ -8,9 +8,8 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-This tutorial installs the exact `v1.0.0-alpha.4` release into a new project.
-It uses the only native target currently published:
-`aarch64-unknown-linux-gnu`.
+This tutorial installs the exact `v1.0.0-alpha.5` release into a new project.
+Linux and macOS on x86_64 and arm64 are supported.
 
 ## 1. Check prerequisites
 
@@ -22,24 +21,22 @@ git --version
 jq --version
 ```
 
-Continue only when `uname -m` reports `aarch64` or `arm64`. Python 3.10 or
-newer, `uv`, Git, `curl`, `tar`, `sha256sum`, and `jq` are required.
+Python 3.10 or newer, `uv`, Git, `curl`, `tar`, a SHA-256 utility, `openssl`,
+and `jq` are required.
 
 ## 2. Download the exact release
 
 ```sh
-mkdir -p "$PWD/.processkit-download/v1.0.0-alpha.4"
-cd "$PWD/.processkit-download/v1.0.0-alpha.4"
+mkdir -p "$PWD/.processkit-download/v1.0.0-alpha.5"
+cd "$PWD/.processkit-download/v1.0.0-alpha.5"
 
-release_url="https://github.com/projectious-work/processkit/releases/download/v1.0.0-alpha.4"
+release_url="https://github.com/projectious-work/processkit/releases/download/v1.0.0-alpha.5"
 for asset in \
-  processkit-v1.0.0-alpha.4.tar.gz \
-  processkit-v1.0.0-alpha.4.tar.gz.sha256 \
-  processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu \
-  processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu.sha256 \
-  processkit-v1.0.0-alpha.4.release.json \
-  processkit-v1.0.0-alpha.4.release.sig \
-  processkit-v1.0.0-alpha.4.release.pub.pem
+  processkit-v1.0.0-alpha.5.tar.gz \
+  processkit-v1.0.0-alpha.5.tar.gz.sha256 \
+  processkit-v1.0.0-alpha.5.release.json \
+  processkit-v1.0.0-alpha.5.release.sig \
+  processkit-v1.0.0-alpha.5-public.pem
 do
   curl -fL "$release_url/$asset" -o "$asset"
 done
@@ -50,20 +47,18 @@ The release is exact-pinned. Do not replace the tag with `latest`.
 ## 3. Verify checksums
 
 ```sh
-sha256sum -c processkit-v1.0.0-alpha.4.tar.gz.sha256
-sha256sum -c \
-  processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu.sha256
+sha256sum -c processkit-v1.0.0-alpha.5.tar.gz.sha256
 ```
 
-Both commands must report `OK`.
+The command must report `OK`.
 
 ## 4. Install the CLI locally
 
 ```sh
-install -d "$HOME/.local/bin"
-install -m 0755 \
-  processkit-v1.0.0-alpha.4-aarch64-unknown-linux-gnu \
-  "$HOME/.local/bin/processkit"
+curl -fLO \
+  https://raw.githubusercontent.com/projectious-work/processkit/v1.0.0-alpha.5/scripts/install-processkit.sh
+chmod +x install-processkit.sh
+./install-processkit.sh v1.0.0-alpha.5
 export PATH="$HOME/.local/bin:$PATH"
 processkit --version
 ```
@@ -75,9 +70,9 @@ it is not already present.
 
 ```sh
 mkdir -p "$PWD/trust"
-key_id="035a31564b52ca7c6e0b7b4c4a37b4fcf94fb3dd178d98473af8a9242dafdeee"
-cp processkit-v1.0.0-alpha.4.release.pub.pem \
-  "$PWD/trust/alpha4.pub.pem"
+key_id="d35516ccd7be9efad6579c5f6c2ab8ba1a59f18d563f339e62e1cef9a5f9a1eb"
+cp processkit-v1.0.0-alpha.5-public.pem \
+  "$PWD/trust/v1.pub.pem"
 
 jq -n --arg key_id "$key_id" '{
   apiVersion: "processkit.projectious.work/local-trust/v1alpha1",
@@ -85,14 +80,14 @@ jq -n --arg key_id "$key_id" '{
   keys: [{
     keyId: $key_id,
     algorithm: "Ed25519",
-    publicKeyFile: "alpha4.pub.pem",
+    publicKeyFile: "v1.pub.pem",
     status: "active"
   }]
 }' >"$PWD/trust/trust-store.json"
 
 processkit verify-release \
-  --envelope "$PWD/processkit-v1.0.0-alpha.4.release.json" \
-  --signature "$PWD/processkit-v1.0.0-alpha.4.release.sig" \
+  --envelope "$PWD/processkit-v1.0.0-alpha.5.release.json" \
+  --signature "$PWD/processkit-v1.0.0-alpha.5.release.sig" \
   --trust-store "$PWD/trust/trust-store.json"
 ```
 
@@ -103,8 +98,8 @@ reproducible but does not by itself establish publisher identity.
 ## 6. Extract the distribution
 
 ```sh
-tar -xzf processkit-v1.0.0-alpha.4.tar.gz
-distribution="$PWD/processkit-v1.0.0-alpha.4"
+tar -xzf processkit-v1.0.0-alpha.5.tar.gz
+distribution="$PWD/processkit-v1.0.0-alpha.5"
 ```
 
 The extracted directory is the required local `--distribution` input.

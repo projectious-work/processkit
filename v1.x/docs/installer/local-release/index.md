@@ -1,6 +1,6 @@
-# Local Release Production
+# Release Production
 
-> Build, sign, verify, and publish processkit releases without hosted CI.
+> Build, sign, verify, and publish processkit releases with bound host evidence.
 
 ---
 
@@ -8,9 +8,10 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-The v1 release path is local, agent-first, and human-operable. It does not
-require GitHub Actions, a hosted CI service, or a publication provider.
-Agents and humans invoke the same repository scripts.
+The v1 release path is agent-first, human-operable, and entirely local.
+Maintainer-controlled machines invoke the same repository scripts and bind
+their native results to one tagged commit. No GitHub Actions or hosted build
+service participates.
 
 ## One-time key setup
 
@@ -30,7 +31,7 @@ the compromised public key from local trust stores.
 ## Validate and create a release
 
 ```sh
-scripts/release-local.sh v1.0.0-alpha.4 \
+scripts/release-local.sh v1.0.0-alpha.5 \
   "$HOME/.config/processkit/keys/release.pem" \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
@@ -40,8 +41,9 @@ archive, creates an integrity envelope, signs it with Ed25519, and verifies the
 result. It produces the archive, native installer executable, checksum
 sidecars, release JSON, and signature under `dist/`. The signed envelope
 contains a required `installerAssets` matrix. A local alpha or beta release
-contains the current Rust host target. Multi-host production can build each
-executable independently and then bind the complete collected matrix:
+contains the current Rust host target. Multi-host production uses local Linux
+and macOS machines to build each executable independently, copies their
+outputs into one trusted finalization workspace, and then binds the matrix:
 
 ```sh
 scripts/finalize-release-local.sh v1.0.0-alpha.5 \
@@ -55,36 +57,31 @@ scripts/finalize-release-local.sh v1.0.0-alpha.5 \
 
 Finalization fails if any named asset is absent, duplicated, symlinked, or
 unsafe. The resulting signature binds every target, filename, digest, and byte
-size. Building and natively smoking the four assets remains a release-host
-responsibility; merely naming a target never manufactures or validates it.
-
-The published alpha.4 matrix contains only
-`aarch64-unknown-linux-gnu`. Linux x86_64 and macOS x86_64/ARM64 builds are
-not yet release assets.
+size. Each local host executes `scripts/build-host-artifact.sh`, verifies tag
+and commit provenance, and natively smoke-tests its binary. Merely naming a
+target never manufactures or validates it.
 
 ## Exact-version bootstrap
 
 The non-root bootstrap installs a native executable only after checking its
-checksum, signed-envelope membership, signature, and an independently supplied
-Ed25519 key fingerprint:
+checksum, signed-envelope membership, signature, and the canonical Ed25519 key
+fingerprint published in `release/processkit-v1-signing-public.pem`:
 
 ```sh
-scripts/install-processkit.sh v1.0.0-alpha.5 \
-  --key-sha256 <trusted-public-key-fingerprint>
+scripts/install-processkit.sh v1.0.0-alpha.5
 ```
 
 It detects Linux x86_64/ARM64 and macOS x86_64/ARM64, installs to
 `$HOME/.local/bin` by default, and refuses floating versions. Supplying the
-fingerprint out of band is mandatory: downloading a public key beside its
-signature would authenticate the server to itself rather than establish
-release trust.
+Operators may override the fingerprint only when intentionally selecting a
+different trusted release identity.
 
 ## Verify after copying
 
 ```sh
 scripts/verify-release-local.sh \
-  dist/processkit-v1.0.0-alpha.4.release.json \
-  dist/processkit-v1.0.0-alpha.4.release.sig \
+  dist/processkit-v1.0.0-alpha.5.release.json \
+  dist/processkit-v1.0.0-alpha.5.release.sig \
   "$HOME/.config/processkit/trust.d/release.pub.pem"
 ```
 
@@ -106,8 +103,8 @@ installer also verifies releases against the versioned JSON trust store:
 
 ```sh
 processkit verify-release \
-  --envelope dist/processkit-v1.0.0-alpha.4.release.json \
-  --signature dist/processkit-v1.0.0-alpha.4.release.sig \
+  --envelope dist/processkit-v1.0.0-alpha.5.release.json \
+  --signature dist/processkit-v1.0.0-alpha.5.release.sig \
   --trust-store "$HOME/.config/processkit/trust-store.json"
 ```
 

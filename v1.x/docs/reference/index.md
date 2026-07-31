@@ -17,7 +17,7 @@ Use this section for exact contracts rather than inferred release behavior.
 - [privacy](./privacy/)
 - [v2 deliverable contracts](./v2-contracts/)
 
-`v1.0.0-alpha.4` is the product version; shipped entities continue to use
+`v1.0.0-alpha.5` is the product version; shipped entities continue to use
 `processkit.projectious.work/v2`.
 
 ---
@@ -29,4 +29,4 @@ Section pages:
 - [Version Migration](/processkit/v1.x/docs/reference/migration/)
 - [Privacy Tiers](/processkit/v1.x/docs/reference/privacy/)
 - [v2 Contracts](/processkit/v1.x/docs/reference/v2-contracts/)
-- [v1 Alpha Release Facts](/processkit/v1.x/docs/reference/v1-alpha-release-facts/): Verified facts for processkit v1.0.0-alpha.4.
+- [v1 Alpha Release Facts](/processkit/v1.x/docs/reference/v1-alpha-release-facts/): Generated facts for processkit v1.0.0-alpha.5.

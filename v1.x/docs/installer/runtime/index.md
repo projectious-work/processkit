@@ -20,7 +20,7 @@ MCP behavior.
 - `uv` must support PEP 723 script metadata.
 - The installed gateway script and processkit shared Python library must be
   readable from the selected project root.
-- The first dependency resolution may require network access.
+- The first preparation may require network access to populate the `uv` cache.
 - Direct `uv run` startup remains a supported compatibility and development
   interface.
 
@@ -50,9 +50,10 @@ generated exclusively from the MCP servers under the release's
 profile, and an aggregate digest. Installed projects receive it as
 `.processkit/runtime/python-uv.json`.
 
-The policy is declarative evidence, not a dependency lock. Runtime preparation
-resolves each unique dependency profile against this policy but does not claim
-globally reproducible resolved versions.
+The release also installs a universal, hash-checked requirements lock at
+`.processkit/runtime/python-requirements.lock`. The policy binds its SHA-256.
+Runtime preparation refuses a missing, symlinked, unhashed, or digest-mismatched
+lock and passes the lock directly to `uv`.
 
 ## Dependency and cache behavior
 
@@ -62,9 +63,9 @@ environments in its user cache. Operators may select a separate cache through
 content; normal MCP startup must not modify `context/`, `src/context/`, or
 tracked configuration.
 
-The current alpha uses compatible lower bounds rather than a fully locked
-runtime set. Consequently, a cold offline installation is not guaranteed.
-Prepare every unique dependency profile into the selected `uv` cache:
+Resolved runtime versions and distributions are locked with hashes. A cold
+offline installation still requires a prepared cache because wheels are not
+embedded in the release. Prepare the locked runtime into the selected cache:
 
 ```sh
 processkit mcp prepare --root .
@@ -131,9 +132,13 @@ remote exposure remains an operator-owned deployment concern.
 
 ## Diagnostic contract
 
-The native doctor currently preserves Python doctor findings and reports
-runtime launch failures without exposing fix behavior. Future static checks
-will add stable codes and actionable remediation for:
+The native doctor preserves Python findings, reports whether it is running on
+a local host or in a container, and lists deferred host-only checks with stable
+IDs, severity, and remediation. The host-only IDs are
+`host.docker-engine`, `host.filesystem-permissions`, and
+`host.network-release-access`.
+
+Runtime failures cover:
 
 - missing or unsupported Python;
 - missing or incompatible `uv`;

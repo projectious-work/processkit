@@ -9,7 +9,7 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 ---
 
 The v1 line is an active prerelease, not only a design proposal.
-`v1.0.0-alpha.4` supplies a native Rust lifecycle CLI, a signed release
+`v1.0.0-alpha.5` supplies a native Rust lifecycle CLI, a signed release
 contract, generated schemas, and the Python MCP runtime as visible project
 content.
 
@@ -20,7 +20,7 @@ implemented. Use the implementation review for the current truth.
 ## Current Status
 
 - [Issue #135 Implementation Review](./issue-135-status.md)
-- [Alpha.4 Release Facts](../../reference/v1-alpha-release-facts.md)
+- [Alpha.5 Release Facts](../../reference/v1-alpha-release-facts.md)
 - [Install and Use the v1 Alpha](../../getting-started/v1-alpha-tutorial.md)
 
 The fixed architecture is:
@@ -86,7 +86,7 @@ automatically backport.
 
 ## Historical-page convention
 
-Every page below this section is reviewed against alpha.4, but several pages
+Every page below this section is reviewed against alpha.5, but several pages
 describe a target gate or the reasoning that preceded implementation. Treat
 the labels as follows:
 

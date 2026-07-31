@@ -6,7 +6,7 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ## v1 alpha
 
-`v1.0.0-alpha.4` is installed with the native Rust lifecycle CLI from an
+`v1.0.0-alpha.5` is installed with the native Rust lifecycle CLI from an
 explicitly downloaded, signed release. The alpha does not yet have an online
 version resolver or one-command bootstrap installer.
 
@@ -21,13 +21,13 @@ The current command shape is:
 ```sh
 processkit plan \
   --root /path/to/project \
-  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --distribution /path/to/processkit-v1.0.0-alpha.5 \
   --profile managed \
   --harness codex
 
 processkit install \
   --root /path/to/project \
-  --distribution /path/to/processkit-v1.0.0-alpha.4 \
+  --distribution /path/to/processkit-v1.0.0-alpha.5 \
   --profile managed \
   --harness codex \
   --yes
