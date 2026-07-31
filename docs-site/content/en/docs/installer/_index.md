@@ -10,10 +10,10 @@ updatable, verifiable, and removable. Release policy is carried by the
 signed processkit distribution rather than hard-coded into downstream
 tools.
 
-`v1.0.0-alpha.5` implements the local lifecycle and trust boundary. It
-publishes one Linux ARM64 GNU executable and still requires an explicit local
-distribution. Online resolution, bootstrap installation, four-platform
-assets, native runtime diagnosis, and MCP supervision remain planned.
+`v1.0.0-alpha.5` implements the local lifecycle, exact-version bootstrap,
+native runtime diagnosis, MCP supervision, and trust boundary. Four-platform
+publication requires locally produced and natively smoke-tested outputs from
+each supported host architecture; no hosted build service is used.
 
 - [Install and use alpha.5](../getting-started/v1-alpha-tutorial/)
 - [Installer contract](./contract/)

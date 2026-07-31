@@ -114,7 +114,7 @@ of overwriting public history.
 
 `release-host` verifies the exact tag, full source commit, and clean checkout
 before building and natively running `processkit --version`. It emits the
-binary, checksum, and runner provenance. The
-`v1-native-artifacts.yml` workflow runs that contract on x86_64 and arm64 Linux
-and macOS hosts. Collected assets are signed into one release envelope; a
-release must not claim a target without its native smoke evidence.
+binary, checksum, and local-host provenance. Maintainers run that contract on
+local x86_64 and arm64 Linux and macOS hosts, then copy the outputs into the
+finalization workspace. Collected assets are signed into one release envelope;
+a release must not claim a target without its native smoke evidence.

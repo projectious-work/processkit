@@ -13,8 +13,8 @@
 
 ## Checks run locally
 
-GitHub Actions runs the v1 Rust/generated-doc gates; maintainers also report
-checks locally. Tick what you ran:
+All gates run locally; this repository has no GitHub Actions workflows. Tick
+what you ran:
 
 - [ ] `./scripts/check-docs-local.sh`
 - [ ] `uv run scripts/smoke-test-servers.py`

@@ -15,9 +15,10 @@ implemented. The Rust executable verifies and transactionally applies an
 explicit release; Python remains the MCP runtime; release content stays
 visible; and interruption recovery is exercised with real processes.
 
-Issue #135 is complete as the v1.x implementation umbrella. Its four extracted
-GA tracks are implemented in alpha.5. This closes the identified engineering
-gaps without declaring the prerelease API generally available or stable.
+Issue #135 is complete as the v1.x implementation umbrella. Three extracted
+engineering tracks are implemented in alpha.5. The four-platform publication
+track remains open until locally produced artifacts from every supported host
+have been collected and verified.
 
 ## Coverage Matrix
 
@@ -29,8 +30,8 @@ gaps without declaring the prerelease API generally available or stable.
 | Signed release and native verification | **Implemented** | Ed25519 envelope binds archive, descriptor, provenance, and all four native installers |
 | Opaque `execute --request` automation contract | **Implemented** | Versioned request/result schemas and golden fixtures |
 | Rust modularization and typed failures | **Implemented** | Focused modules, stable error tests, a public library API, rustdoc, and runnable examples |
-| README/help/schema consistency | **Implemented** | Shipped CLI help and release facts are generated and checked in CI |
-| Four native target platforms | **Implemented** | [#165](https://github.com/projectious-work/processkit/issues/165) provides target-host builds, smoke evidence, checksums, and provenance |
+| README/help/schema consistency | **Implemented** | Shipped CLI help and release facts are generated and checked by the mandatory local installer gate |
+| Four native target platforms | **Pending local host evidence** | [#165](https://github.com/projectious-work/processkit/issues/165) requires locally built and natively smoke-tested outputs from all four supported hosts |
 | Bootstrap installer | **Implemented** | Exact-version, non-root checksum/signature verification uses the canonical fingerprint and fails closed |
 | Human exact-version online resolution | **Implemented** | Exact tags resolve to immutable release assets; absent versions fail without fallback |
 | Python/`uv` runtime contract | **Implemented** | Every profile uses the shipped universal, hash-locked dependency set, including offline verification |
@@ -63,7 +64,7 @@ gaps without declaring the prerelease API generally available or stable.
 - in-place mutation of an existing v0 source tree; or
 - GA stability of alpha contracts.
 
-## Completed GA Follow-ups
+## Extracted GA Follow-ups
 
 1. [#165: trusted four-platform release distribution](https://github.com/projectious-work/processkit/issues/165)
 2. [#167: v0 mixed-root baselines and CLI/aibox parity](https://github.com/projectious-work/processkit/issues/167)
@@ -71,5 +72,5 @@ gaps without declaring the prerelease API generally available or stable.
 4. [#170: runtime dependency locking and host-health coverage](https://github.com/projectious-work/processkit/issues/170)
 
 Alpha.5 completes the trustworthy native lifecycle around visible content and
-the Python MCP runtime. Further work can build on that boundary without
-changing the fixed Rust/Python product split.
+the Python MCP runtime. Issue #165 remains the publication gate; the other
+three follow-ups are complete.

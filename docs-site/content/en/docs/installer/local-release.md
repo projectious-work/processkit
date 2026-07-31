@@ -4,9 +4,10 @@ description: "Build, sign, verify, and publish processkit releases with bound ho
 weight: 30
 ---
 
-The v1 release path is agent-first and human-operable. Local candidate gates
-run before GitHub-hosted native builds. Agents, humans, and hosted runners
-invoke the same repository scripts and bind results to one tagged commit.
+The v1 release path is agent-first, human-operable, and entirely local.
+Maintainer-controlled machines invoke the same repository scripts and bind
+their native results to one tagged commit. No GitHub Actions or hosted build
+service participates.
 
 ## One-time key setup
 
@@ -36,8 +37,9 @@ archive, creates an integrity envelope, signs it with Ed25519, and verifies the
 result. It produces the archive, native installer executable, checksum
 sidecars, release JSON, and signature under `dist/`. The signed envelope
 contains a required `installerAssets` matrix. A local alpha or beta release
-contains the current Rust host target. Multi-host production can build each
-executable independently and then bind the complete collected matrix:
+contains the current Rust host target. Multi-host production uses local Linux
+and macOS machines to build each executable independently, copies their
+outputs into one trusted finalization workspace, and then binds the matrix:
 
 ```sh
 scripts/finalize-release-local.sh v1.0.0-alpha.5 \
@@ -51,8 +53,8 @@ scripts/finalize-release-local.sh v1.0.0-alpha.5 \
 
 Finalization fails if any named asset is absent, duplicated, symlinked, or
 unsafe. The resulting signature binds every target, filename, digest, and byte
-size. Each hosted runner executes `scripts/build-host-artifact.sh`, verifies
-tag and commit provenance, and natively smoke-tests its binary. Merely naming a
+size. Each local host executes `scripts/build-host-artifact.sh`, verifies tag
+and commit provenance, and natively smoke-tests its binary. Merely naming a
 target never manufactures or validates it.
 
 ## Exact-version bootstrap

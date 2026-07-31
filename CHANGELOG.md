@@ -37,7 +37,7 @@ stabilization. The supported v0 line remains the default release.
 - `scripts/test-aibox-parity-local.sh`
 - `scripts/check-docs-local.sh`
 - `cargo package --manifest-path installer/crates/processkit/Cargo.toml --list`
-- Four target-host builds and smoke tests recorded in release provenance.
+- Four local-host builds and smoke tests recorded in release provenance.
 
 ### Added
 

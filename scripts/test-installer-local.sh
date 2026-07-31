@@ -21,6 +21,16 @@ cargo clippy --offline --locked \
     --manifest-path "$REPO_ROOT/installer/Cargo.toml" \
     --all-targets -- -D warnings
 cargo test --offline --locked --manifest-path "$REPO_ROOT/installer/Cargo.toml"
+cargo doc --offline --locked --no-deps \
+    --manifest-path "$REPO_ROOT/installer/Cargo.toml"
+cargo package --offline --locked --allow-dirty --list \
+    --manifest-path "$REPO_ROOT/installer/crates/processkit/Cargo.toml" \
+    >/dev/null
+uv run --offline "$REPO_ROOT/scripts/generate-python-runtime-manifest.py" \
+    --check
+uv run --offline "$REPO_ROOT/scripts/generate-v0-ownership-baselines.py" \
+    --check
+uv run --offline "$REPO_ROOT/scripts/generate-v1-docs.py" --check
 "$REPO_ROOT/scripts/test-release-trust-local.sh"
 "$REPO_ROOT/scripts/test-bootstrap-local.sh"
 "$REPO_ROOT/scripts/test-installer-pilot-local.sh"
