@@ -1,6 +1,6 @@
 # Issue #135 Implementation Review
 
-> Requirement-by-requirement review of the Rust CLI and Python MCP product briefing against v1.0.0-alpha.4.
+> Final requirement review of the Rust CLI and Python MCP product briefing against the v1.x development line.
 
 ---
 
@@ -8,30 +8,26 @@ LLMS index: [llms.txt](/processkit/v1.x/llms.txt)
 
 ---
 
-This review compares
+This final review compares
 [GitHub issue #135](https://github.com/projectious-work/processkit/issues/135)
-with `v1.0.0-alpha.4`. It distinguishes shipped evidence from target design.
+with the current `v1.x-dev` implementation. It distinguishes implemented alpha
+scope from the work still required before a generally available release.
 
 ## Summary
 
-The corrected product boundary is established and the local lifecycle alpha
-is substantial. The Rust executable safely verifies and applies an explicitly
-provided release; Python remains the MCP runtime; release content remains
-visible. The alpha is not yet the complete standalone experience described by
-the issue.
+The corrected product boundary and trustworthy local lifecycle are
+implemented. The Rust executable verifies and transactionally applies an
+explicit release; Python remains the MCP runtime; release content stays
+visible; and interruption recovery is exercised with real processes.
 
-| Outcome | Assessment |
-| --- | ---: |
-| Implemented | 8 requirement clusters |
-| Partial | 7 requirement clusters |
-| Missing | 1 requirement cluster |
-
-Counts group related criteria so that large prose sections do not outweigh
-user journeys.
+Issue #135 is therefore complete as the v1.x implementation umbrella and has
+been closed after final review. Six remaining GA concerns have been extracted
+into focused follow-up issues. Closing the umbrella does **not** declare the
+alpha GA-ready or claim that those follow-ups are complete.
 
 ## Coverage Matrix
 
-| Requirement cluster | Status | Alpha.4 evidence or gap |
+| Requirement cluster | Status | Current evidence or follow-up |
 | --- | --- | --- |
 | Rust CLI / Python MCP / visible-file boundary | **Implemented** | Rust binary under `installer/`; Python servers ship with skills; release and architecture docs state the fixed boundary |
 | `context/` dogfood vs `src/context/` payload | **Implemented** | Release-boundary checks prevent project entities from entering the staged payload |
@@ -40,16 +36,16 @@ user journeys.
 | Opaque `execute --request` automation contract | **Implemented** | Versioned request/result schemas and golden fixtures |
 | Rust modularization and typed failures | **Partial** | Logic moved from the former monolith into focused modules with stable error tests; a separate public library crate and full API docs remain |
 | README/help/schema consistency | **Mostly implemented** | Current local-distribution requirements agree; generated help snapshot/release facts automation remains |
-| Four native target platforms | **Partial** | Alpha.4 publishes only ARM64 Linux; `v1.x-dev` can deterministically bind a collected four-target matrix, but native production/smoke remains |
-| Bootstrap installer | **Partial** | `v1.x-dev` adds an exact-version, non-root, checksum/signature/fingerprint-verifying bootstrap; canonical key distribution and four published assets remain |
-| Human exact-version online resolution | **Missing** | Human lifecycle commands still require `--distribution` |
-| Python/`uv` runtime contract | **Mostly implemented** | Runtime policy, native diagnosis, dependency-profile preparation, and offline-readiness verification exist; resolved versions remain unlocked |
-| Native `processkit doctor` and `processkit mcp` | **Mostly implemented** | `v1.x-dev` provides typed read-only doctor plus native MCP verify/serve/proxy supervision; broader host and signal acceptance remains |
+| Four native target platforms | **Follow-up** | The release workflow binds a collected four-target matrix; native production and smoke testing remain in [#165](https://github.com/projectious-work/processkit/issues/165) |
+| Bootstrap installer | **Partial** | Exact-version, non-root, checksum/signature/fingerprint verification exists; canonical key distribution and immutable online resolution remain in [#166](https://github.com/projectious-work/processkit/issues/166) |
+| Human exact-version online resolution | **Follow-up** | Human lifecycle commands still require `--distribution`; exact immutable resolution is tracked in [#166](https://github.com/projectious-work/processkit/issues/166) |
+| Python/`uv` runtime contract | **Mostly implemented** | Runtime policy, native diagnosis, dependency-profile preparation, and offline-readiness verification exist; reproducible runtime resolution remains in [#170](https://github.com/projectious-work/processkit/issues/170) |
+| Native `processkit doctor` and `processkit mcp` | **Mostly implemented** | Typed read-only doctor plus native MCP verify/serve/proxy supervision exist; broader host-signal acceptance remains in [#170](https://github.com/projectious-work/processkit/issues/170) |
 | Extracted-release MCP acceptance | **Implemented** | Package smoke starts the staged gateway and exercises representative tools |
 | Repository dogfood update/recovery acceptance | **Implemented** | The release gate combines the full-content lifecycle pilot with a deterministic real-process update interruption, rollback, user-data preservation, retry, and provenance verification |
-| v0 migration and aibox parity | **Partial** | Exact fixtures exercise guarded transition, byte-preserving transactional corpus application, persisted loss/provenance evidence, and interruption recovery; mixed-root ownership baselines and aibox parity remain |
+| v0 migration and aibox parity | **Partial** | Exact fixtures exercise guarded transition, byte-preserving transactional corpus application, persisted loss/provenance evidence, and interruption recovery; mixed-root ownership baselines and aibox parity remain in [#167](https://github.com/projectious-work/processkit/issues/167) |
 | Harness projection ownership | **Implemented** | Codex and Claude adapters preserve unrelated keys and have lifecycle tests |
-| Stable/prerelease documentation story | **Partial** | Alpha.4 docs now separate v0 stable and v1 preview; generated facts and broader downstream validation remain |
+| Stable/prerelease documentation story | **Partial** | Docs separate v0 stable and v1 preview; generated facts/help remain in [#168](https://github.com/projectious-work/processkit/issues/168), and public Rust API docs remain in [#169](https://github.com/projectious-work/processkit/issues/169) |
 
 ## What Users Can Rely On
 
@@ -73,16 +69,14 @@ user journeys.
 - safe in-place migration of an existing v0 project; or
 - GA stability of alpha contracts.
 
-## Minimum Remaining Path
+## Extracted GA Follow-ups
 
-1. Publish and smoke-test Linux x86_64 and both macOS native assets.
-2. Publish a canonical trust root and resolve exact versions for human
-   lifecycle commands without accepting a floating `latest`.
-3. Add per-release ownership baselines for mixed v0 artifact, binding, role,
-   and TeamMember roots.
-4. Demonstrate direct-CLI and aibox installed-state parity.
-5. Generate release facts and help snapshots as part of release validation.
-6. Finish the public Rust library boundary and API documentation.
+1. [#165: publish and smoke-test all four native targets](https://github.com/projectious-work/processkit/issues/165)
+2. [#166: canonical trust root and exact-version resolver](https://github.com/projectious-work/processkit/issues/166)
+3. [#167: v0 mixed-root baselines and CLI/aibox parity](https://github.com/projectious-work/processkit/issues/167)
+4. [#168: generated CLI help and release facts](https://github.com/projectious-work/processkit/issues/168)
+5. [#169: supported Rust library API and documentation](https://github.com/projectious-work/processkit/issues/169)
+6. [#170: runtime dependency locking and host-health coverage](https://github.com/projectious-work/processkit/issues/170)
 
 The guiding constraint remains: finish the trustworthy native lifecycle around
 visible content and the Python MCP runtime before expanding conceptual breadth.

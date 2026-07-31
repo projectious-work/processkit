@@ -99,7 +99,7 @@ the labels as follows:
 
 Section pages:
 
-- [Issue #135 Implementation Review](/processkit/v1.x/docs/development/v1-version/issue-135-status/): Requirement-by-requirement review of the Rust CLI and Python MCP product briefing against v1.0.0-alpha.4.
+- [Issue #135 Implementation Review](/processkit/v1.x/docs/development/v1-version/issue-135-status/): Final requirement review of the Rust CLI and Python MCP product briefing against the v1.x development line.
 - [Acceptance Gate](/processkit/v1.x/docs/development/v1-version/acceptance-gate/): Readiness criteria for processkit v1.0 stages.
 - [Alpha Release Testing](/processkit/v1.x/docs/development/v1-version/alpha-release-testing/): Publish and consume an explicit v1 prerelease safely.
 - [Alpha Scope](/processkit/v1.x/docs/development/v1-version/alpha-scope/): First buildable vertical slice for processkit v1.0.

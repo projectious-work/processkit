@@ -1,37 +1,17 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>v1.x Version on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/</link><description>Recent content in v1.x Version on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/index.xml" rel="self" type="application/rss+xml"/><item><title>Issue #135 Implementation Review</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/</guid><description>&lt;p&gt;This review compares
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>v1.x Version on processkit</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/</link><description>Recent content in v1.x Version on processkit</description><generator>Hugo</generator><language>en</language><atom:link href="https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/index.xml" rel="self" type="application/rss+xml"/><item><title>Issue #135 Implementation Review</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/issue-135-status/</guid><description>&lt;p&gt;This final review compares
 &lt;a href="https://github.com/projectious-work/processkit/issues/135" rel="noopener"&gt;GitHub issue #135&lt;/a&gt;
 
-with &lt;code&gt;v1.0.0-alpha.4&lt;/code&gt;. It distinguishes shipped evidence from target design.&lt;/p&gt;
+with the current &lt;code&gt;v1.x-dev&lt;/code&gt; implementation. It distinguishes implemented alpha
+scope from the work still required before a generally available release.&lt;/p&gt;
 &lt;h2 id="summary"&gt;Summary&lt;/h2&gt;
-&lt;p&gt;The corrected product boundary is established and the local lifecycle alpha
-is substantial. The Rust executable safely verifies and applies an explicitly
-provided release; Python remains the MCP runtime; release content remains
-visible. The alpha is not yet the complete standalone experience described by
-the issue.&lt;/p&gt;
-&lt;table&gt;
- &lt;thead&gt;
- &lt;tr&gt;
- &lt;th&gt;Outcome&lt;/th&gt;
- &lt;th style="text-align: right"&gt;Assessment&lt;/th&gt;
- &lt;/tr&gt;
- &lt;/thead&gt;
- &lt;tbody&gt;
- &lt;tr&gt;
- &lt;td&gt;Implemented&lt;/td&gt;
- &lt;td style="text-align: right"&gt;8 requirement clusters&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Partial&lt;/td&gt;
- &lt;td style="text-align: right"&gt;7 requirement clusters&lt;/td&gt;
- &lt;/tr&gt;
- &lt;tr&gt;
- &lt;td&gt;Missing&lt;/td&gt;
- &lt;td style="text-align: right"&gt;1 requirement cluster&lt;/td&gt;
- &lt;/tr&gt;
- &lt;/tbody&gt;
-&lt;/table&gt;
-&lt;p&gt;Counts group related criteria so that large prose sections do not outweigh
-user journeys.&lt;/p&gt;</description></item><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;The corrected product boundary and trustworthy local lifecycle are
+implemented. The Rust executable verifies and transactionally applies an
+explicit release; Python remains the MCP runtime; release content stays
+visible; and interruption recovery is exercised with real processes.&lt;/p&gt;
+&lt;p&gt;Issue #135 is therefore complete as the v1.x implementation umbrella and has
+been closed after final review. Six remaining GA concerns have been extracted
+into focused follow-up issues. Closing the umbrella does &lt;strong&gt;not&lt;/strong&gt; declare the
+alpha GA-ready or claim that those follow-ups are complete.&lt;/p&gt;</description></item><item><title>Acceptance Gate</title><link>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://projectious-work.github.io/processkit/v1.x/docs/development/v1-version/acceptance-gate/</guid><description>&lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;Alpha.4 review:&lt;/strong&gt; Ontology, schema generation, local installer lifecycle,
 signed release, extracted-package MCP smoke, and first-ART evidence are
 implemented. Four-platform native distribution, bootstrap installation,
