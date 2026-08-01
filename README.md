@@ -310,7 +310,7 @@ Full documentation lives at
 | [Development](https://projectious-work.github.io/processkit/v1.x/docs/development/) | The v0 prototype line and the v1.0 rebuild, planned in the open |
 
 Build and preview locally with `./scripts/serve-docs-local.sh` (Hugo + Docsy,
-port 1313); validate with `./scripts/check-docs-local.sh`.
+port 1315); validate with `./scripts/check-docs-local.sh`.
 
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
