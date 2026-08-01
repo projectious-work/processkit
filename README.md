@@ -205,7 +205,7 @@ Full documentation lives at
 | [Reference](https://projectious-work.github.io/processkit/docs/reference/) | apiVersion policy, ID formats, migration, privacy, v2 contracts |
 | [Development](https://projectious-work.github.io/processkit/docs/development/) | Planning documents for the v1.0 rebuild |
 
-Preview locally with `./scripts/serve-docs-local.sh` (Hugo + Docsy, port 1313);
+Preview locally with `./scripts/serve-docs-local.sh` (Hugo + Docsy, port 1315);
 validate with `./scripts/check-docs-local.sh`.
 
 - [Changelog](CHANGELOG.md)
