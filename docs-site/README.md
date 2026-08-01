@@ -8,7 +8,7 @@ The user-facing documentation for processkit, built with
 ```bash
 cd docs-site
 npm install           # first time only
-npm run start         # localhost:3000
+npm run start         # localhost:1315
 ```
 
 ## Build
