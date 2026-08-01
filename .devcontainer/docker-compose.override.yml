@@ -21,3 +21,11 @@
 #     my-project:            # must match [container] name in aibox.toml
 #       depends_on:
 #         - postgres
+
+services:
+  processkit:
+    environment:
+      DOCS_BIND: "0.0.0.0"
+      DOCS_PORT: "1315"
+    ports:
+      - "127.0.0.1:1315:1315"
