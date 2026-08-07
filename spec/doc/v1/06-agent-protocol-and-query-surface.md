@@ -90,7 +90,8 @@ operations as applicable.
 
 ## Runtime and transports
 
-- **PK-MCP-030:** stdio MUST be supported for local harness integration.
+- **PK-MCP-030:** stdio MUST be supported for local harness integration and
+  started with `processkit mcp serve --stdio`.
 - **PK-MCP-031:** streamable HTTP MAY be supported only on loopback by default;
   non-loopback binding requires explicit authorization and an authentication
   and transport-security profile.

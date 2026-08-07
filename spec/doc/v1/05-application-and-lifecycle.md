@@ -26,7 +26,7 @@ archive, checksums, SBOM, and signature or attestation material.
 | `processkit migrate` | Plan or apply an explicit contract/data migration. |
 | `processkit reindex` | Rebuild disposable indexes from canonical files. |
 | `processkit generate` | Regenerate declared schemas, indexes, docs, or projections. |
-| `processkit mcp serve` | Serve the configured MCP capability set. |
+| `processkit mcp serve --stdio` | Serve the configured MCP capability set over standard input/output. |
 | `processkit mcp proxy` | Adapt stdio to an explicitly configured local MCP endpoint. |
 | `processkit package validate` | Validate a package or extension in isolation. |
 
@@ -39,6 +39,9 @@ archive, checksums, SBOM, and signature or attestation material.
 - **PK-CLI-014:** listable kinds MUST derive from the installed ontology and
   capability catalogs. The CLI MUST NOT maintain a second hard-coded catalog
   that can drift from MCP discovery or package manifests.
+- **PK-CLI-015:** products exposing a local MCP server MUST use the common
+  command shape `<product> mcp serve --stdio`. Product-specific root and
+  capability options MAY extend this shape without renaming the command.
 
 ## Lifecycle requirements
 
