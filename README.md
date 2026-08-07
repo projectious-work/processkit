@@ -31,6 +31,10 @@
 >
 > The current v1 release is `v1.0.0-alpha.5`. Its published native executable
 > supports Linux ARM64 GNU only.
+>
+> A [from-scratch replacement v1 product specification](spec/doc/v1/README.md)
+> is proposed for review. Until accepted and implemented, it describes planned
+> behavior and does not replace the alpha.5 contracts documented below.
 
 ---
 

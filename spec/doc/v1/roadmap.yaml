@@ -1,0 +1,84 @@
+apiVersion: roadmap.projectious.work/v1
+kind: ProductRoadmap
+metadata:
+  project: processkit
+  versionLine: v1.x
+groups:
+  - id: foundation
+    title: Product and contract foundation
+    items:
+      - id: PK1-P0
+        title: Accept the v1 product baseline
+        summary: >-
+          Establish one coherent normative product contract and reconcile the
+          existing experimental branch without inheriting accidental design.
+        status: in_progress
+        dependencies: []
+        decisions:
+          - "DEC-20260807_1003-LucidGarnet-re-specify-and-\
+            reimplement-the-processkit"
+        issues:
+          - "BACK-20260807_1003-WarmHawk-specify-processkit-v1-from-\
+            first-principles"
+      - id: PK1-P1
+        title: Prove the kernel and repository transaction model
+        summary: >-
+          Deliver typed kernel contracts, safe canonical storage, lifecycle
+          enforcement, events, and deterministic recovery.
+        status: planned
+        dependencies: [PK1-P0]
+      - id: PK1-P2
+        title: Deliver standalone installation and verification
+        summary: >-
+          Let users install, plan, update, verify, recover, and conservatively
+          remove an exact release without aibox.
+        status: planned
+        dependencies: [PK1-P1]
+  - id: agent-surface
+    title: Agent and authoring surface
+    items:
+      - id: PK1-P3
+        title: Deliver the minimal MCP workflow
+        summary: >-
+          Provide discovery, query, validated mutation, events, configuration
+          inspection, and stdio transport from one application core.
+        status: planned
+        dependencies: [PK1-P1, PK1-P2]
+      - id: PK1-P4
+        title: Stabilize managed packages and extensions
+        summary: >-
+          Ship deterministic profiles, provider-neutral skills and processes,
+          conformance tooling, and safe harness projections.
+        status: planned
+        dependencies: [PK1-P3]
+      - id: PK1-P5
+        title: Prove migration and cross-repository handoff
+        summary: >-
+          Preserve representative v0 and alpha corpora and exchange bounded
+          handoffs without distributed ownership claims.
+        status: planned
+        dependencies: [PK1-P3, PK1-P4]
+  - id: release
+    title: Stabilization and release
+    items:
+      - id: PK1-P6
+        title: Complete beta conformance
+        summary: >-
+          Pass the full contract, security, extension, migration, platform,
+          documentation, and package matrices and enter feature freeze.
+        status: planned
+        dependencies: [PK1-P5]
+      - id: PK1-P7
+        title: Verify release candidates
+        summary: >-
+          Prove every acceptance journey using exact candidate artifacts with
+          no unexplained skips.
+        status: planned
+        dependencies: [PK1-P6]
+      - id: PK1-P8
+        title: Publish and verify processkit v1.0.0
+        summary: >-
+          Publish the accepted stable commit and independently verify
+          installation, MCP, migration, documentation, and first-use behavior.
+        status: planned
+        dependencies: [PK1-P7]
