@@ -7,8 +7,8 @@
 [source]
 project = "processkit"
 upstream = "https://github.com/projectious-work/processkit.git"
-generated_at = "2026-07-30T06:51:51Z"
-generated_for_tag = "v0.28.5"
+generated_at = "2026-08-07T19:34:45Z"
+generated_for_tag = "v0.28.6"
 
 [files]
 ".gitignore.example" = "v0.25.2"
@@ -673,7 +673,7 @@ generated_for_tag = "v0.28.5"
 "context/skills/processkit/pk-doctor/scripts/checks/v2_contracts.py" = "v0.26.18"
 "context/skills/processkit/pk-doctor/scripts/doctor.py" = "v0.26.2"
 "context/skills/processkit/pk-doctor/scripts/fixtures/.gitkeep" = "v0.19.0"
-"context/skills/processkit/pk-doctor/scripts/test_doctor.py" = "v0.27.6"
+"context/skills/processkit/pk-doctor/scripts/test_doctor.py" = "v0.28.6"
 "context/skills/processkit/pk-doctor/scripts/test_id_vocabulary.py" = "v0.26.10"
 "context/skills/processkit/pk-doctor/scripts/test_pk_doctor_json.py" = "v0.26.13"
 "context/skills/processkit/pk-doctor/scripts/test_pk_doctor_mcp.py" = "v0.27.2"

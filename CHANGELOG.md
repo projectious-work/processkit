@@ -9,6 +9,20 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.6] - 2026-08-07
+
+v0.28.6 restores internally consistent MCP dependency-header metadata in
+derived projects.
+
+### Fixed
+
+- Generate the dogfood and release MCP manifests against their respective
+  server trees, so the shipped manifest records the constrained MCP 1.x
+  headers that are actually present in the release archive. Fixes
+  projectious-work/aibox#365.
+
+---
+
 ## [v0.28.5] - 2026-07-30
 
 v0.28.5 restores MCP availability in fresh derived-project environments.
