@@ -181,7 +181,7 @@ def _extract_pep723_header(path: Path) -> str | None:
     return None
 
 
-def _collect_server_headers(repo_root: Path) -> list[dict]:
+def _collect_server_headers(repo_root: Path, skills_root: Path) -> list[dict]:
     """Hash PEP 723 dep headers for every MCP server.py.
 
     Used by the pk-doctor `server_header_drift` check (RapidSwan) to
@@ -189,27 +189,18 @@ def _collect_server_headers(repo_root: Path) -> list[dict]:
     regeneration — signal that the harness needs a restart and the
     manifest needs regenerating.
     """
-    skills_roots = [
-        repo_root / "context" / "skills",
-        repo_root / "src" / "context" / "skills",
-    ]
     entries: list[dict] = []
-    seen: set[str] = set()
-    for skills_root in skills_roots:
-        if not skills_root.is_dir():
+    if not skills_root.is_dir():
+        return entries
+    for server in sorted(skills_root.glob("*/*/mcp/server.py")):
+        rel = _context_rel(server, repo_root)
+        header = _extract_pep723_header(server)
+        if header is None:
             continue
-        for server in sorted(skills_root.glob("*/*/mcp/server.py")):
-            rel = _context_rel(server, repo_root)
-            if rel in seen:
-                continue
-            seen.add(rel)
-            header = _extract_pep723_header(server)
-            if header is None:
-                continue
-            entries.append({
-                "path": rel,
-                "sha256": hashlib.sha256(header.encode("utf-8")).hexdigest(),
-            })
+        entries.append({
+            "path": rel,
+            "sha256": hashlib.sha256(header.encode("utf-8")).hexdigest(),
+        })
     entries.sort(key=lambda e: e["path"])
     return entries
 
@@ -232,6 +223,38 @@ def _write_manifest(path: Path, manifest: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
     path.write_text(payload, encoding="utf-8")
+
+
+def _manifest(
+    existing: dict | None,
+    *,
+    aggregate: str,
+    entries: list[dict],
+    gateway_entries: list[dict],
+    server_headers: list[dict],
+    version: str,
+    now_iso: str,
+) -> dict:
+    generated_at = now_iso
+    if (
+        existing
+        and existing.get("aggregate_sha256") == aggregate
+        and existing.get("per_skill") == entries
+        and existing.get("per_gateway") == gateway_entries
+        and existing.get("per_server_header") == server_headers
+        and existing.get("processkit_version") == version
+        and isinstance(existing.get("generated_at"), str)
+    ):
+        generated_at = existing["generated_at"]
+    return {
+        "version": MANIFEST_VERSION,
+        "generated_at": generated_at,
+        "processkit_version": version,
+        "per_skill": entries,
+        "per_gateway": gateway_entries,
+        "per_server_header": server_headers,
+        "aggregate_sha256": aggregate,
+    }
 
 
 def main() -> int:
@@ -258,39 +281,39 @@ def main() -> int:
     now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     try:
-        server_headers = _collect_server_headers(REPO_ROOT)
+        dogfood_headers = _collect_server_headers(
+            REPO_ROOT, REPO_ROOT / "context" / "skills"
+        )
+        source_headers = _collect_server_headers(
+            REPO_ROOT, REPO_ROOT / "src" / "context" / "skills"
+        )
     except Exception as e:
         print(f"error: failed to collect server headers: {e}", file=sys.stderr)
         return 1
 
-    existing = _load_existing(DOGFOOD_MANIFEST)
-    generated_at = now_iso
-    if (
-        existing
-        and existing.get("aggregate_sha256") == aggregate
-        and existing.get("per_skill") == entries
-        and existing.get("per_gateway") == gateway_entries
-        and existing.get("per_server_header") == server_headers
-        and existing.get("processkit_version") == version
-        and isinstance(existing.get("generated_at"), str)
-    ):
-        # Preserve generated_at on no-op regenerations to keep git diffs clean.
-        generated_at = existing["generated_at"]
-
-    manifest = {
-        "version": MANIFEST_VERSION,
-        "generated_at": generated_at,
-        "processkit_version": version,
-        "per_skill": entries,
-        "per_gateway": gateway_entries,
-        "per_server_header": server_headers,
-        "aggregate_sha256": aggregate,
-    }
+    dogfood_manifest = _manifest(
+        _load_existing(DOGFOOD_MANIFEST),
+        aggregate=aggregate,
+        entries=entries,
+        gateway_entries=gateway_entries,
+        server_headers=dogfood_headers,
+        version=version,
+        now_iso=now_iso,
+    )
+    source_manifest = _manifest(
+        _load_existing(SRC_MANIFEST),
+        aggregate=aggregate,
+        entries=entries,
+        gateway_entries=gateway_entries,
+        server_headers=source_headers,
+        version=version,
+        now_iso=now_iso,
+    )
 
     if check_only:
         if (
-            _load_existing(DOGFOOD_MANIFEST) != manifest
-            or _load_existing(SRC_MANIFEST) != manifest
+            _load_existing(DOGFOOD_MANIFEST) != dogfood_manifest
+            or _load_existing(SRC_MANIFEST) != source_manifest
         ):
             print(
                 "MCP manifests are out of date. Regenerate with: "
@@ -300,14 +323,14 @@ def main() -> int:
             return 1
         print(
             f"MCP manifests are up to date ({len(entries)} skills, "
-            f"{len(server_headers)} server header(s), "
+            f"{len(source_headers)} release server header(s), "
             f"aggregate {aggregate[:12]}...)"
         )
         return 0
 
     try:
-        _write_manifest(DOGFOOD_MANIFEST, manifest)
-        _write_manifest(SRC_MANIFEST, manifest)
+        _write_manifest(DOGFOOD_MANIFEST, dogfood_manifest)
+        _write_manifest(SRC_MANIFEST, source_manifest)
     except OSError as e:
         print(f"error: failed to write manifest: {e}", file=sys.stderr)
         return 1
@@ -315,7 +338,7 @@ def main() -> int:
     print(
         f"wrote {DOGFOOD_MANIFEST.relative_to(REPO_ROOT)} "
         f"and {SRC_MANIFEST.relative_to(REPO_ROOT)} "
-        f"({len(entries)} skills, {len(server_headers)} server header(s), "
+        f"({len(entries)} skills, {len(source_headers)} release server header(s), "
         f"aggregate {aggregate[:12]}...)"
     )
     return 0
