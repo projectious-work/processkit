@@ -25,10 +25,18 @@ metadata live below `.processkit/` and are not domain entities.
 
 ## Sources of truth
 
+- **PK-STORE-006:** v1 MUST preserve the product principle of Git-backed,
+  human-readable canonical entities while defining their formats anew from
+  this specification. Existing file shapes are migration inputs, not v1
+  format authority.
 - **PK-STORE-001:** canonical entities, accepted project policy, and local
   extensions MUST be ordinary files suitable for Git review.
 - **PK-STORE-002:** SQLite databases, search indexes, caches, rendered indexes,
   and harness projections MUST be rebuildable derived state.
+- **PK-STORE-007:** SQLite with FTS MUST remain the default derived index
+  adapter, reimplemented behind the repository query port. Existing index
+  schemas and code are evidence only and MUST NOT constrain canonical storage
+  or public query semantics.
 - **PK-STORE-003:** generated schemas MAY be committed for review, but their
   generator inputs and generation metadata MUST identify the authoritative
   source and support a drift check.

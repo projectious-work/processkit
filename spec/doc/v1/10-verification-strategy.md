@@ -41,6 +41,10 @@ Tests assert observable contracts and failure behavior, not only code paths.
   executed or schema-validated and checked for drift.
 - **PK-TEST-009:** confirmed defects MUST gain permanent regression coverage at
   the narrowest useful layer and at a public boundary when user-visible.
+- **PK-TEST-013:** applicable signed-release, interrupted-installation, and
+  recovery cases from prior implementations MUST be adapted to the Python
+  artifacts and the new ownership contract. Passing an old implementation's
+  test unchanged is not evidence when its asserted contract differs from v1.
 
 ## Property and fuzz testing
 

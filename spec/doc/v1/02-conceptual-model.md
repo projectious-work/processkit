@@ -1,53 +1,71 @@
-# Conceptual model
+# Conceptual model and ontology
 
 ## Design rule
 
-The core model is deliberately small. A concept belongs in the v1 kernel only
-when processkit must validate its lifecycle or relationships consistently
-across unrelated projects. Domain taxonomies belong in packages or project
-extensions.
+The complete v1 ontology is a primary product capability, not an experiment or
+optional extension. processkit v0 already demonstrated that a smaller
+Git-native process model and validated agent operations work in principle.
+v1 adds the semantic breadth required to express processes, organizations,
+evidence, plans, communication, resources, and agentic work without forcing
+unrelated concepts into generic tags or records.
 
-The earlier 89-concept T/P/D/C model is useful research, but breadth is not a
-v1 success criterion. The clean v1 model optimizes for coherent invariants,
-composability, and migration rather than maximum vocabulary coverage.
+The ontology remains framework-neutral. Domain packages may compose and extend
+it, but MUST NOT redefine its canonical concepts or their class semantics.
 
-## Kernel concepts
+## T/P/D/C class system
 
-| Concept | Purpose |
+| Class | Count | Contract |
+|---|---:|---|
+| T — foundational concept | 19 | Reusable schema and lifecycle mechanic without independent persistence. |
+| P — primitive | 22 | Atomic persistent entity family with identity, schema, storage, lifecycle, and interfaces. |
+| D — discriminator | 24 | Closed typed variant of a parent primitive that inherits its storage and lifecycle. |
+| C — composition | 24 | Named concept assembled from primitives and foundational fragments, with a generated schema and declared lifecycle. |
+| **Total** | **89** | Complete mandatory v1 ontology. |
+
+- **PK-MODEL-000:** the v1 ontology MUST contain exactly the 89 canonical
+  concepts named below: 19 T, 22 P, 24 D, and 24 C concepts.
+- **PK-MODEL-008:** a product profile MAY expose a smaller operational tool
+  surface, but the managed v1 distribution MUST install and validate the
+  complete ontology. Profile selection MUST NOT change concept meaning.
+
+## Canonical ontology inventory
+
+### T — foundational concepts (19)
+
+State, Transition, StateMachine, Lifecycle, Constraint, Guard, Identity,
+Versioning, Ownership, Immutability, Schema, Composition, Inheritance,
+Uniqueness, Interface, ValidationMode, Provenance, Visibility, and
+Cardinality.
+
+### P — atomic primitives (22)
+
+Actor, Artifact, Binding, Capability, Channel, Command, Container, Event,
+Gate, Location, Note, Outcome, Policy, Proposition, Queue, Record, Recurrence,
+Resource, Role, Skill, Specification, and WorkItem.
+
+### D — discriminator variants (24)
+
+| Parent primitive | Discriminators |
 |---|---|
-| Entity | Persisted typed project record with identity and version. |
-| EntityType | Schema, lifecycle, storage, and interface declaration. |
-| StateMachine | Allowed states, transitions, guards, and terminal states. |
-| Relation | Typed edge between addressable subjects. |
-| Event | Append-only fact describing an observed process change. |
-| Policy | Project-owned rule controlling authority or validation. |
-| Package | Versioned set of content and compatibility declarations. |
-| Capability | Discoverable operation or knowledge surface. |
-| ProcessDefinition | Reusable ordered or branching workflow contract. |
-| ProcessRun | Project-owned execution state and evidence for a definition. |
+| Proposition | Risk, Belief, WorldFact, WSJFEstimate, Assumption |
+| Location | GeographicRegion, Site, Coordinate, LogicalRegion, Timezone |
+| Capability | Disposition |
+| Container | Portfolio, ValueStream, ART, Team, Project, Scope |
+| Binding | Hierarchy, Position, ProvenanceLink, Correlation, Dependency, OwnershipLink, RelatedTo |
 
-## Standard entity types
+### C — compositions (24)
 
-- **PK-MODEL-000:** the managed profile MUST include these standard
-  EntityTypes:
+TeamMember, DecisionRecord, LogEntry, Measurement, Archive,
+ProcessSpecification, GoalSpecification, Service, RoleSpecification,
+GateSpecification, SchemaSpecification, ScheduleSpecification,
+TestSpecification, ChannelSpecification, QueueSpecification, WorkItemTemplate,
+Migration, ScopePlan, Roadmap, ProgramIncrement, Iteration, Release,
+Discussion, and EvaluationRun.
 
-- WorkItem;
-- DecisionRecord;
-- Discussion;
-- Note;
-- Artifact;
-- Actor;
-- Role;
-- TeamMember;
-- Binding;
-- Scope;
-- Gate;
-- Migration;
-- LogEntry; and
-- ProcessRun.
-
-- **PK-MODEL-008:** profiles MAY omit EntityTypes they do not expose, but
-  installed schemas and tools MUST agree exactly.
+- **PK-MODEL-009:** canonical names, classes, parent primitives, and
+  composition membership MUST be represented in one versioned ontology
+  registry from which schemas, references, query metadata, and coverage
+  reports are generated or mechanically checked.
 
 ## Common envelope
 
@@ -110,7 +128,8 @@ composability, and migration rather than maximum vocabulary coverage.
 
 ## Extensibility test
 
-- **PK-MODEL-026:** a proposed new kernel concept MUST demonstrate at least two
-  unrelated product domains, lifecycle semantics that packages cannot express
-  safely, and a migration path. Otherwise it belongs in a package or project
+- **PK-MODEL-026:** additions beyond the canonical 89-concept v1 ontology MUST
+  demonstrate reusable meaning across at least two unrelated product domains,
+  declare whether they are T, P, D, or C, and provide compatibility and
+  migration treatment. Otherwise they belong in a package or project
   namespace.

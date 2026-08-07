@@ -43,6 +43,10 @@ The product answers four questions without replaying chat history:
   repositories.
 - **PK-PROD-007:** project state MUST remain authoritative when indexes,
   caches, generated references, or harness projections are absent.
+- **PK-PROD-008:** v1 MUST provide the complete 89-concept T/P/D/C ontology
+  defined in the conceptual-model chapter so users can express broad process,
+  organizational, evidence, planning, and agentic-work concepts without
+  overloading a reduced set of generic records.
 
 ## Non-goals
 
@@ -103,3 +107,6 @@ and cross-agent coordination.
 - **PK-PROD-026:** a project MUST be able to export a sanitized, bounded
   handoff bundle and record an external reference without surrendering local
   ownership or exposing private context by default.
+- **PK-PROD-027:** a user MUST be able to validate, create or compose, query,
+  relate, and inspect every applicable concept in the complete v1 ontology
+  through its declared schema and interfaces.

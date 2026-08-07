@@ -12,7 +12,7 @@ The v1 reference profile is one repository containing up to:
 - 1,000,000 LogEntries;
 - 10,000 relations returned by an explicitly bounded traversal;
 - 1 GiB total structured context excluding externally referenced artifacts;
-- 500 installed skills and ProcessDefinitions; and
+- 500 installed skills and ProcessSpecifications; and
 - 16 concurrent read requests with one serialized root mutation.
 
 - **PK-PERF-000:** larger repositories MAY work but are outside the v1

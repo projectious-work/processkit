@@ -6,7 +6,7 @@ processkit distributes process capability as independently inspectable files:
 
 - EntityType schemas and state machines;
 - skills containing instructions, tools, configuration, and references;
-- ProcessDefinitions;
+- ProcessSpecifications;
 - templates and maintained examples;
 - policies and validation rules;
 - harness-neutral capability metadata;
@@ -45,13 +45,15 @@ processkit distributes process capability as independently inspectable files:
 
 ## Processes
 
-- **PK-PKG-020:** a ProcessDefinition MUST declare ordered or branching steps,
+- **PK-PKG-020:** a ProcessSpecification MUST declare ordered or branching
+  steps,
   entry conditions, completion conditions, required capabilities, evidence,
   failure behavior, and resumability.
-- **PK-PKG-021:** ProcessDefinitions describe coordination semantics; they MUST
-  NOT embed arbitrary executable code.
-- **PK-PKG-022:** starting a durable process MUST create a ProcessRun or a
-  declared set of linked WorkItems so execution state is inspectable.
+- **PK-PKG-021:** ProcessSpecifications describe coordination semantics; they
+  MUST NOT embed arbitrary executable code.
+- **PK-PKG-022:** starting a durable process MUST create a declared execution
+  record composed from the canonical ontology, or a declared set of linked
+  WorkItems, so execution state is inspectable.
 - **PK-PKG-023:** process overrides MUST identify the upstream definition and
   compatibility range they replace.
 

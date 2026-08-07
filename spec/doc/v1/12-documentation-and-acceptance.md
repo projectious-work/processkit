@@ -14,6 +14,10 @@
   during v1 development and clearly distinguish stable from prerelease lines.
 - **PK-DOC-006:** maintained examples are product contracts and MUST run or
   validate in release gates.
+- **PK-DOC-007:** existing public documentation MUST be retained in its
+  applicable versioned archive. v1 documentation MUST be rewritten from the
+  accepted specification and shipped behavior, not edited as though historical
+  pages already described the new product.
 
 The public information architecture covers overview, getting started,
 concepts, how-to guides, reference, troubleshooting, roadmap, releases and
@@ -58,17 +62,20 @@ examples, governing decisions, and applicable company standards.
 3. Start MCP over stdio and discover the declared capability catalog.
 4. Create, query, transition, relate, and supersede representative entities;
    verify events and index equivalence.
-5. Run a durable process with a gate, evidence, interruption, and resumption.
-6. Add and validate a namespaced extension package without core modification.
-7. Preview and apply an update with unchanged, locally modified, mergeable,
+5. Generate and validate coverage for all 89 canonical ontology concepts,
+   exercise every persistent P and C schema, every D discriminator, and every
+   T fragment through at least one consuming contract.
+6. Run a durable process with a gate, evidence, interruption, and resumption.
+7. Add and validate a namespaced extension package without core modification.
+8. Preview and apply an update with unchanged, locally modified, mergeable,
    conflicting, generated, and project-owned files.
-8. Recover from injected interruption at each mutation boundary.
-9. Import representative v0 and earlier-v1-alpha corpora with preservation
+9. Recover from injected interruption at each mutation boundary.
+10. Import representative v0 and earlier-v1-alpha corpora with preservation
    reports and explicit manual blockers.
-10. Export a sanitized cross-repository handoff and receive it as local state.
-11. Conservatively uninstall processkit while preserving modified and
+11. Export a sanitized cross-repository handoff and receive it as local state.
+12. Conservatively uninstall processkit while preserving modified and
     project-owned content.
-12. Build documentation and verify the exact published release artifacts.
+13. Build documentation and verify the exact published release artifacts.
 
 ## Definition of v1.0.0 complete
 

@@ -10,7 +10,7 @@ processkit versions these axes independently:
 - lifecycle plan and journal;
 - machine result;
 - event vocabulary;
-- skill and ProcessDefinition contracts; and
+- skill and ProcessSpecification contracts; and
 - extension metaschemas.
 
 The proposed v1 identifiers are:
@@ -70,6 +70,9 @@ The proposed v1 identifiers are:
 - **PK-MIG-006:** v0 and earlier-v1-alpha importers are compatibility adapters,
   not sources of v1 semantics. Each has representative golden corpora and a
   field-level preservation report.
+- **PK-MIG-008:** maintained v0 and released v1-alpha corpora MUST be preserved
+  as immutable migration fixtures and compatibility evidence. Fixture
+  preservation does not grandfather their schemas, ontology, or behavior.
 - **PK-MIG-007:** an unsupported or ambiguous transformation produces a manual
   action and blocks completion; migration MUST NOT guess intent.
 
@@ -106,8 +109,8 @@ or force-updating a protected branch.
 
 ## v1 acceptance sequence
 
-- `alpha`: kernel contracts, repository transactions, install/verify, and
-  minimal MCP workflow proven.
+- `alpha`: the complete 89-concept ontology registry and generated contracts,
+  repository transactions, install/verify, and MCP workflow proven.
 - `beta`: managed profile, extension conformance, migration corpus, complete
   security and platform matrices proven; feature freeze begins.
 - `rc`: documentation, compatibility, performance, package set, and exact

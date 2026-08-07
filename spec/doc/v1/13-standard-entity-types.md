@@ -1,8 +1,30 @@
-# Standard entity types
+# Ontology contracts
 
-This chapter defines the semantic minimum for the managed profile. The
-implementation phase produces closed JSON Schemas, positive and negative
-fixtures, and state-machine documents conforming to these requirements.
+This chapter refines high-use ontology concepts and defines the conformance
+contract for the complete inventory in the conceptual-model chapter. The
+named refinements below do not reduce v1 scope: every one of the 89 canonical
+concepts is a release requirement.
+
+## Complete-ontology requirements
+
+- **PK-ENTITY-000:** the release MUST publish a machine-readable ontology
+  registry containing every canonical concept, its T/P/D/C class, description,
+  owner, interfaces, dependencies, and schema or fragment location.
+- **PK-ENTITY-004:** every P primitive and C composition MUST have a closed
+  entity schema, storage declaration, identity policy, interface metadata,
+  lifecycle declaration where mutable, and positive and negative fixtures.
+- **PK-ENTITY-005:** every D discriminator MUST be a closed variant of its
+  declared parent P schema, inherit the parent's lifecycle and storage rules,
+  and publish fixtures proving both valid specialization and invalid mixing.
+- **PK-ENTITY-006:** every T foundational concept MUST have one canonical
+  schema fragment or registry contract and MUST be exercised by at least one
+  generated P or C schema.
+- **PK-ENTITY-007:** ontology generation MUST fail on an unknown class,
+  duplicate canonical name, missing parent, dependency cycle, unconsumed T
+  concept, uncovered discriminator, or composition with unresolved parts.
+- **PK-ENTITY-008:** a release coverage report MUST prove 19/19 T, 22/22 P,
+  24/24 D, and 24/24 C concepts complete. Partial ontology coverage prevents
+  v1.0.0 release.
 
 ## Work and reasoning
 
@@ -126,22 +148,24 @@ fixtures, and state-machine documents conforming to these requirements.
 - **PK-ENTITY-121:** Binding validation enforces the relation registry's
   endpoint, cardinality, inverse, and temporal rules.
 
-## ProcessRun
+## Durable execution record
 
-- **PK-ENTITY-130:** ProcessRun binds an exact ProcessDefinition version to a
-  project root, scope, initiator, inputs, ordered state, produced entities,
-  evidence, and completion or recovery outcome.
-- **PK-ENTITY-131:** ProcessRun MUST expose the current actionable step and
-  MUST distinguish waiting, blocked, failed, cancelled, and completed.
+- **PK-ENTITY-130:** a durable execution record binds an exact
+  ProcessSpecification version to a project root, Scope, initiator, inputs,
+  ordered state, produced entities, evidence, and completion or recovery
+  Outcome.
+- **PK-ENTITY-131:** a durable execution record MUST expose the current
+  actionable step and MUST distinguish waiting, blocked, failed, cancelled,
+  and completed.
 - **PK-ENTITY-132:** process execution may coordinate external work but records
   observed handoffs and results; it MUST NOT claim external completion without
   evidence from the owning system or repository.
 
 ## Schema acceptance
 
-- **PK-ENTITY-140:** every standard EntityType MUST publish a closed schema,
-  state machine where applicable, storage declaration, relation constraints,
-  event vocabulary, and valid/invalid fixtures.
+- **PK-ENTITY-140:** every persistent P or C concept MUST publish a closed
+  schema, state machine where applicable, storage declaration, relation
+  constraints, event vocabulary, and valid/invalid fixtures.
 - **PK-ENTITY-141:** schemas MUST reuse one versioned common envelope and
   fragments without generating divergent copies of shared semantics.
 - **PK-ENTITY-142:** generated schemas are release artifacts and MUST match

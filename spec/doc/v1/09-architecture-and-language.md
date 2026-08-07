@@ -39,10 +39,12 @@ dependency-free executable or a long-running high-concurrency service. Rust
 would be preferred for a smaller security-critical native installer with
 strict resource or embedded constraints. Neither is the primary v1 product.
 
-The earlier Rust CLI plus Python MCP split demonstrated useful safety ideas but
-also created duplicated contracts, two toolchains, cross-language fixtures,
-release complexity, and an unclear source of behavioral truth. v1 therefore
-chooses one implementation language unless measured evidence later justifies a
+The earlier Rust CLI plus Python MCP split is not an implementation baseline.
+No module, architecture boundary, API, or behavior is inherited merely because
+it exists in that implementation. It may supply adversarial fixtures and
+evidence for transaction, archive, trust, migration, and recovery requirements
+only after those fixtures are reviewed against this specification. v1 uses a
+new one-language implementation unless measured evidence later justifies a
 narrow native component.
 
 ## Reference architecture
@@ -58,6 +60,14 @@ narrow native component.
 - **PK-ARCH-005:** a future native component requires measured need, a narrow
   versioned boundary, independent fixtures, failure isolation, and an accepted
   architecture decision.
+- **PK-ARCH-006:** implementation MUST begin from the accepted specification
+  and conformance fixtures, not by porting or adapting modules from the prior
+  Rust v1 implementation. Reuse requires an explicit file-level review proving
+  conformance and must not import prior architecture by default.
+- **PK-ARCH-007:** the Rust installer MUST be replaced. Its adversarial
+  transaction, interruption, archive, and recovery cases SHOULD be extracted
+  as implementation-independent fixtures before replacement where they remain
+  applicable to the accepted contracts.
 
 ## Component boundaries
 

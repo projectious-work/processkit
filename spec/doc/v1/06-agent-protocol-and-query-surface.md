@@ -10,6 +10,14 @@ The default runtime is a single local process exposing a configured capability
 catalog. Per-domain servers can be supported for isolation or debugging, but
 do not define competing behavior.
 
+- **PK-MCP-006:** behavior from the existing gateway and domain tools MAY be
+  reused only when new v1 conformance fixtures approve it. Existing tool
+  implementations and observed behavior are not normative.
+- **PK-MCP-007:** semantics currently distributed across Python per-skill
+  servers MUST be consolidated into the shared application core. Per-domain
+  or per-skill servers MAY remain as thin protocol adapters with no independent
+  validation, mutation, lifecycle, or event authority.
+
 ## Discovery
 
 - **PK-MCP-001:** runtime discovery MUST expose tool name, version, description,

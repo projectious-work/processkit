@@ -12,25 +12,24 @@ meanings defined by RFC 2119 and RFC 8174.
 
 ## Reading order
 
-1. [From-scratch assessment](00-from-scratch-assessment.md)
-2. [Product definition](01-product-definition.md)
-3. [Conceptual model](02-conceptual-model.md)
-4. [Project storage and ownership](03-project-storage-and-ownership.md)
-5. [Content, packages, and extensions](04-content-packages-and-extensions.md)
-6. [Application and lifecycle](05-application-and-lifecycle.md)
-7. [Agent protocol and query surface](06-agent-protocol-and-query-surface.md)
-8. [Configuration, output, and
+1. [Product definition](01-product-definition.md)
+2. [Conceptual model and ontology](02-conceptual-model.md)
+3. [Project storage and ownership](03-project-storage-and-ownership.md)
+4. [Content, packages, and extensions](04-content-packages-and-extensions.md)
+5. [Application and lifecycle](05-application-and-lifecycle.md)
+6. [Agent protocol and query surface](06-agent-protocol-and-query-surface.md)
+7. [Configuration, output, and
    evidence](07-configuration-output-and-evidence.md)
-9. [Security and trust](08-security-and-trust.md)
-10. [Architecture and language assessment](09-architecture-and-language.md)
-11. [Verification strategy](10-verification-strategy.md)
-12. [Compatibility, migration, and
+8. [Security and trust](08-security-and-trust.md)
+9. [Architecture and language](09-architecture-and-language.md)
+10. [Verification strategy](10-verification-strategy.md)
+11. [Compatibility, migration, and
     release](11-compatibility-migration-and-release.md)
-13. [Documentation and acceptance](12-documentation-and-acceptance.md)
-14. [Standard entity types](13-standard-entity-types.md)
-15. [Performance and operations](14-performance-and-operations.md)
-16. [Review decisions](15-review-decisions.md)
-17. [Roadmap](roadmap.yaml)
+12. [Documentation and acceptance](12-documentation-and-acceptance.md)
+13. [Ontology contracts](13-standard-entity-types.md)
+14. [Performance and operations](14-performance-and-operations.md)
+15. [Review decisions](15-review-decisions.md)
+16. [Roadmap](roadmap.yaml)
 
 ## Contract hierarchy
 

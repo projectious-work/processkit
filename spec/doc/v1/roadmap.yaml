@@ -21,10 +21,11 @@ groups:
           - "BACK-20260807_1003-WarmHawk-specify-processkit-v1-from-\
             first-principles"
       - id: PK1-P1
-        title: Prove the kernel and repository transaction model
+        title: Implement the complete ontology and transaction model
         summary: >-
-          Deliver typed kernel contracts, safe canonical storage, lifecycle
-          enforcement, events, and deterministic recovery.
+          Deliver the versioned registry and all 89 T/P/D/C concepts with
+          generated contracts, safe canonical storage, lifecycle enforcement,
+          events, query metadata, fixtures, and deterministic recovery.
         status: planned
         dependencies: [PK1-P0]
       - id: PK1-P2
@@ -38,10 +39,11 @@ groups:
     title: Agent and authoring surface
     items:
       - id: PK1-P3
-        title: Deliver the minimal MCP workflow
+        title: Deliver the ontology-aware MCP workflow
         summary: >-
-          Provide discovery, query, validated mutation, events, configuration
-          inspection, and stdio transport from one application core.
+          Provide discovery, polymorphic ontology query, validated mutation,
+          events, configuration inspection, and stdio transport from one
+          application core.
         status: planned
         dependencies: [PK1-P1, PK1-P2]
       - id: PK1-P4
@@ -64,8 +66,9 @@ groups:
       - id: PK1-P6
         title: Complete beta conformance
         summary: >-
-          Pass the full contract, security, extension, migration, platform,
-          documentation, and package matrices and enter feature freeze.
+          Pass full 89-concept coverage plus the contract, security, extension,
+          migration, platform, documentation, and package matrices and enter
+          feature freeze.
         status: planned
         dependencies: [PK1-P5]
       - id: PK1-P7

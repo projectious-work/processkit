@@ -4,19 +4,20 @@ This draft is internally coherent but intentionally does not manufacture
 approval for consequential choices. Review must accept, amend, or reject each
 item before the specification becomes the implementation baseline.
 
-## D1 — Product kernel instead of ontology breadth
+## D1 — Complete 89-concept ontology in v1
 
-**Proposal:** adopt the small kernel and standard managed EntityTypes in this
-specification. Treat the former 89-concept T/P/D/C ontology as optional package
-research, not the v1 kernel or release gate.
+**Accepted:** ship the complete 89-concept T/P/D/C ontology as mandatory v1
+scope and a v1.0.0 release gate. processkit v0 is sufficient proof that the
+Git-native, validated process model works; v1 does not need another
+reduced-scope product experiment.
 
-**Reason:** only concepts requiring consistent cross-domain lifecycle
-enforcement belong in the core. Vocabulary breadth multiplies migration,
-schema, query, documentation, and agent-training obligations without proving
-user value.
+**Reason:** a principal value of v1 is enough semantic breadth to express the
+processes, artifacts, organizational structures, evidence, resources, and
+agentic-work concepts users may need without misusing generic records or tags.
 
-**Impact:** previous ontology-first alpha behavior is not automatically carried
-forward. Useful domain concepts can return through versioned packages.
+**Impact:** all 19 T, 22 P, 24 D, and 24 C concepts require registry coverage,
+schema or fragment treatment, query metadata, fixtures, documentation, and
+release evidence. Delivery may be phased, but v1.0.0 cannot omit concepts.
 
 ## D2 — Python as the sole required implementation language
 
