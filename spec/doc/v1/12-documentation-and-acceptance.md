@@ -65,17 +65,22 @@ examples, governing decisions, and applicable company standards.
 5. Generate and validate coverage for all 89 canonical ontology concepts,
    exercise every persistent P and C schema, every D discriminator, and every
    T fragment through at least one consuming contract.
-6. Run a durable process with a gate, evidence, interruption, and resumption.
-7. Add and validate a namespaced extension package without core modification.
-8. Preview and apply an update with unchanged, locally modified, mergeable,
+6. Assemble bounded, attributed agent context through lexical, semantic, and
+   hybrid retrieval; delete every derived index, rebuild it from canonical Git
+   files, and obtain functionally equivalent sources without memory loss.
+7. Install, discover, verify, and invoke a managed skill and MCP server through
+   their versioned capability manifests.
+8. Run a durable process with a gate, evidence, interruption, and resumption.
+9. Add and validate a namespaced extension package without core modification.
+10. Preview and apply an update with unchanged, locally modified, mergeable,
    conflicting, generated, and project-owned files.
-9. Recover from injected interruption at each mutation boundary.
-10. Import representative v0 and earlier-v1-alpha corpora with preservation
+11. Recover from injected interruption at each mutation boundary.
+12. Import representative v0 and earlier-v1-alpha corpora with preservation
    reports and explicit manual blockers.
-11. Export a sanitized cross-repository handoff and receive it as local state.
-12. Conservatively uninstall processkit while preserving modified and
+13. Export a sanitized cross-repository handoff and receive it as local state.
+14. Conservatively uninstall processkit while preserving modified and
     project-owned content.
-13. Build documentation and verify the exact published release artifacts.
+15. Build documentation and verify the exact published release artifacts.
 
 ## Definition of v1.0.0 complete
 

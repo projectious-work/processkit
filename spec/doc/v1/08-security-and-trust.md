@@ -5,7 +5,9 @@
 Protected assets include project entities, unpublished discussions and notes,
 credentials referenced by integrations, Git history, release packages,
 ownership manifests, migration evidence, harness configuration, and generated
-agent instructions.
+agent instructions. Derived embedding text and vectors are protected at the
+highest sensitivity of their canonical sources because they may reveal source
+meaning even when the original text is absent.
 
 Trust boundaries exist between:
 
@@ -71,6 +73,13 @@ Trust boundaries exist between:
   and no ambient credentials or user configuration.
 - **PK-SEC-034:** security defects add permanent negative regression coverage
   and follow coordinated disclosure without moving published tags.
+- **PK-SEC-035:** embedding generation and semantic retrieval MUST run locally
+  by default. Sending source text or derived representations to a remote model
+  or vector service requires explicit configuration, disclosure of affected
+  data classes and destination, and project policy authorization.
+- **PK-SEC-036:** private or excluded canonical content MUST remain excluded
+  from embedding, similarity search, context assembly, logs, and exports unless
+  the same caller is explicitly authorized for that content.
 
 ## Threat-driven acceptance
 

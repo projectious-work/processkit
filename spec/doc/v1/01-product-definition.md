@@ -2,23 +2,35 @@
 
 ## Purpose
 
-processkit is a local-first, provider-neutral process and project-memory
-substrate for humans and AI agents working in software repositories. It turns
-important project state into typed, inspectable, versioned records and exposes
-safe operations over that state through a CLI and MCP.
+processkit is a local-first, provider-neutral AI-agent context and memory
+management system for humans and agents working in Git repositories. It turns
+repository text files into durable, typed, inspectable memory and provides the
+shared ontology through which humans and agents describe work, knowledge,
+decisions, evidence, organizations, capabilities, and processes in
+conversation.
 
-The product answers four questions without replaying chat history:
+Human-readable Git files are always canonical. Local databases, full-text
+indexes, and embedding/vector entries augment retrieval and context assembly,
+but remain disposable client-side projections that can be rebuilt from the
+repository. processkit also installs, versions, discovers, and governs skills
+and MCP servers that let agents understand and safely operate on this context.
 
-1. What work, decisions, evidence, and risks exist?
-2. What state are they in, and which transitions are valid?
-3. Why did the state change, who or what changed it, and what evidence exists?
-4. Which process capability should an agent use next?
+The product answers these questions without depending on replay of a chat
+history or one model provider's private memory:
+
+1. What project and organizational context should an agent know now?
+2. Which durable memories, decisions, evidence, relationships, and history
+   support that context?
+3. How can a human and an agent express new information in the same ontology?
+4. What state are process entities in, and which transitions are valid?
+5. Which skill, MCP tool, or process capability should an agent use next?
 
 ## Users
 
 - A project owner installs and upgrades a coherent process capability set.
 - A human contributor reads and reviews canonical state in Git.
-- An AI agent queries and mutates project state through validated tools.
+- An AI agent retrieves bounded relevant context, queries durable memory, and
+  records or mutates project state through validated tools.
 - A process author creates reusable skills, schemas, state machines, and
   process definitions.
 - A harness or orchestrator integrates through stable MCP and machine
@@ -47,6 +59,12 @@ The product answers four questions without replaying chat history:
   defined in the conceptual-model chapter so users can express broad process,
   organizational, evidence, planning, and agentic-work concepts without
   overloading a reduced set of generic records.
+- **PK-PROD-009:** processkit MUST assemble bounded, attributable agent context
+  from canonical entities and verified derived indexes without treating model
+  conversation history as authoritative project memory.
+- **PK-PROD-016:** skills and MCP servers MUST be managed as versioned,
+  inspectable capabilities with ownership, discovery, configuration,
+  compatibility, and verification contracts.
 
 ## Non-goals
 
@@ -72,6 +90,11 @@ processkit owns:
 - local installation and reconciliation of processkit-owned files;
 - validated CLI and MCP operations;
 - derived local indexes and generated harness projections;
+- context discovery, retrieval, ranking, and bounded context assembly;
+- local full-text and embedding/vector projections derived from canonical
+  repository content;
+- versioned skills and MCP server capability manifests, installation, and
+  verification;
 - compatibility, migration, verification, and diagnostic behavior.
 
 The consuming repository owns:

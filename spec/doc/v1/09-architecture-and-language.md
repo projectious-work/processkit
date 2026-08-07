@@ -78,9 +78,11 @@ application services
         ↓
 domain model and policies
         ↓
-ports: repository, index, package, clock, process, network, rendering
+ports: repository, lexical index, semantic index, package, clock, process,
+       network, rendering
         ↓
-local adapters: filesystem, SQLite/FTS, uv/Python packaging, stdio/HTTP
+local adapters: filesystem, SQLite/FTS, embedding/vector index,
+                uv/Python packaging, stdio/HTTP
 ```
 
 - **PK-ARCH-010:** domain behavior MUST not depend on CLI parsing, MCP SDK
@@ -89,6 +91,10 @@ local adapters: filesystem, SQLite/FTS, uv/Python packaging, stdio/HTTP
   path shared by CLI, MCP, migration, and reconciliation.
 - **PK-ARCH-012:** SQLite with FTS is the default derived query adapter; a
   different adapter MAY be added without changing canonical storage semantics.
+- **PK-ARCH-015:** embedding generation and vector search MUST be behind
+  replaceable local ports. Their model, dimensions, chunking, distance metric,
+  and projection version are adapter metadata and MUST NOT enter canonical
+  entity semantics.
 - **PK-ARCH-013:** Pydantic or equivalent typed boundary models MAY be used,
   but published JSON Schemas and fixtures remain the interoperability contract.
 - **PK-ARCH-014:** network release resolution and external connectors are

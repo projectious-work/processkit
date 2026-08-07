@@ -31,12 +31,21 @@ metadata live below `.processkit/` and are not domain entities.
   format authority.
 - **PK-STORE-001:** canonical entities, accepted project policy, and local
   extensions MUST be ordinary files suitable for Git review.
-- **PK-STORE-002:** SQLite databases, search indexes, caches, rendered indexes,
-  and harness projections MUST be rebuildable derived state.
+- **PK-STORE-002:** SQLite databases, full-text indexes, embedding/vector
+  indexes and entries, caches, rendered indexes, and harness projections MUST
+  be rebuildable derived state. None may become the only copy of project
+  context or memory.
 - **PK-STORE-007:** SQLite with FTS MUST remain the default derived index
   adapter, reimplemented behind the repository query port. Existing index
   schemas and code are evidence only and MUST NOT constrain canonical storage
   or public query semantics.
+- **PK-STORE-008:** embedding text, vectors, chunk metadata, and similarity
+  indexes MUST identify the canonical source ID, source revision or digest,
+  projection version, embedding model contract, and generation. Stale or
+  untraceable entries MUST NOT contribute to a complete or verified result.
+- **PK-STORE-009:** deleting every derived database and embedding entry MUST
+  lose no canonical information; `rebuild` MUST reproduce functionally
+  equivalent indexes from Git-backed files and declared local configuration.
 - **PK-STORE-003:** generated schemas MAY be committed for review, but their
   generator inputs and generation metadata MUST identify the authoritative
   source and support a drift check.

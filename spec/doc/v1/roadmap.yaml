@@ -39,18 +39,19 @@ groups:
     title: Agent and authoring surface
     items:
       - id: PK1-P3
-        title: Deliver the ontology-aware MCP workflow
+        title: Deliver agent context, memory, and MCP workflows
         summary: >-
-          Provide discovery, polymorphic ontology query, validated mutation,
-          events, configuration inspection, and stdio transport from one
-          application core.
+          Provide lexical, semantic, and hybrid retrieval, bounded attributed
+          context assembly, polymorphic ontology query, validated mutation,
+          events, configuration inspection, and stdio transport from one core.
         status: planned
         dependencies: [PK1-P1, PK1-P2]
       - id: PK1-P4
-        title: Stabilize managed packages and extensions
+        title: Stabilize skills, MCP servers, packages, and extensions
         summary: >-
           Ship deterministic profiles, provider-neutral skills and processes,
-          conformance tooling, and safe harness projections.
+          versioned MCP server manifests, conformance tooling, and safe harness
+          projections.
         status: planned
         dependencies: [PK1-P3]
       - id: PK1-P5

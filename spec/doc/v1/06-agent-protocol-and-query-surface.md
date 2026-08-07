@@ -40,12 +40,15 @@ The managed profile provides operations equivalent to:
 get_entity(id | path)
 list_entities(type?, state?, scope?, limit?, cursor?)
 search_entities(text, filters?, limit?, cursor?)
+semantic_search_entities(text, filters?, limit?, cursor?)
+hybrid_search_entities(text, filters?, limit?, cursor?)
 query_by_interface(interface, filters?, limit?, cursor?)
 traverse_relations(subject, relation?, direction?, depth?)
 events_for_subject(subject, after?, limit?, cursor?)
 find_skill(task_description)
 route_task(task_description, constraints?)
 get_effective_configuration()
+assemble_context(task, constraints?, token_budget?, provenance?)
 ```
 
 - **PK-MCP-010:** reads MUST come from canonical files or a verified index
@@ -56,6 +59,14 @@ get_effective_configuration()
   identity, and completeness claims MUST be explicit.
 - **PK-MCP-013:** a query MUST not expose private entity bodies or sensitive
   fields beyond the caller's configured local policy.
+- **PK-MCP-014:** semantic and hybrid search MUST return canonical entity IDs,
+  source digests, ranking method, and index generation. Similarity is a
+  retrieval signal, not evidence that a proposition is true or current.
+- **PK-MCP-015:** context assembly MUST be bounded by explicit size or token
+  limits, preserve source attribution, report omissions and stale indexes, and
+  prefer canonical relationships and policy over embedding similarity alone.
+- **PK-MCP-016:** every context result MUST remain reproducible enough to fetch
+  its canonical source records without relying on an embedding database row.
 
 ## Mutation surface
 

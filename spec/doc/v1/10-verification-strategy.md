@@ -35,6 +35,10 @@ Tests assert observable contracts and failure behavior, not only code paths.
   concurrency, cancellation, bounds, and shutdown when HTTP ships.
 - **PK-TEST-006:** query tests MUST compare indexed results with a canonical
   scan across randomized create/update/archive sequences.
+- **PK-TEST-014:** semantic and hybrid retrieval tests MUST cover deterministic
+  fixture embeddings or a controlled fake adapter, source attribution,
+  sensitivity filters, stale projections, model changes, complete rebuild,
+  bounded context assembly, and operation with semantic indexing disabled.
 - **PK-TEST-007:** security suites MUST exercise every threat-driven case in
   the security chapter and verify refusal plus redaction.
 - **PK-TEST-008:** documentation examples and generated references MUST be
