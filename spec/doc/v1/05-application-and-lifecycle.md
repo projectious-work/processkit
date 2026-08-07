@@ -17,6 +17,7 @@ archive, checksums, SBOM, and signature or attestation material.
 |---|---|
 | `processkit version` | Report product, source, runtime, and contract versions. |
 | `processkit help` | Show stable command help. |
+| `processkit list KIND` | List installed `skills`, `ontology`, `packages`, `profiles`, `mcp-servers`, or other declared catalog kinds. |
 | `processkit init` | Create a new installation plan for an uninitialized root. |
 | `processkit plan` | Preview install, update, profile, adapter, or removal changes. |
 | `processkit apply --plan PLAN` | Apply an exact reviewed plan. |
@@ -32,6 +33,12 @@ archive, checksums, SBOM, and signature or attestation material.
 - **PK-CLI-009:** EntityType- and skill-specific convenience commands MAY be
   added after their MCP operations are stable. They use the same application
   services rather than reimplementing semantics.
+- **PK-CLI-013:** `list` MUST be read-only and return canonical identity,
+  version, source package, installation status, enabled state where
+  applicable, and compatibility metadata in text and versioned machine form.
+- **PK-CLI-014:** listable kinds MUST derive from the installed ontology and
+  capability catalogs. The CLI MUST NOT maintain a second hard-coded catalog
+  that can drift from MCP discovery or package manifests.
 
 ## Lifecycle requirements
 
@@ -91,3 +98,23 @@ archive, checksums, SBOM, and signature or attestation material.
 - **PK-CLI-025:** root discovery MUST NOT search configured root lists, cross a
   filesystem boundary implicitly, select a descendant, or choose between
   multiple repositories by basename.
+
+## Post-v1 CLI directions
+
+These directions are intentionally outside the v1.0.0 release gate and need
+separate accepted contracts before implementation:
+
+- skill authoring, installation, update, enablement, deprecation, and removal;
+- provider-neutral prompt assets and their harness-specific slash-command
+  projections;
+- memory review, promotion, compaction, archival, restoration, retention, and
+  pruning, informed by v0 behavior; and
+- company-specific processkit distributions carrying organization-wide
+  processes, policy, skills, prompts, profiles, and MCP capabilities.
+
+Memory lifecycle design MUST first distinguish durable repository memory from
+harness conversation/session context and analyze overlap with harnesses such
+as tau. Company-distribution design MUST compare upstream package composition,
+private distributions, overlays, and downstream forks, and define provenance,
+trust, naming, compatibility, update cadence, and continuous upstream
+reconciliation. No particular adaptation mechanism is selected by v1.

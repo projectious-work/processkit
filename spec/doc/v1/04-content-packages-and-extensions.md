@@ -43,6 +43,11 @@ processkit distributes process capability as independently inspectable files:
 - **PK-PKG-014:** extension skills MUST NOT impersonate a reserved processkit
   identity or override a core capability without explicit policy.
 
+Provider-neutral prompt assets and slash-command projections are a post-v1
+package capability. A future contract must separate canonical prompt purpose,
+inputs, outputs, safety, and versioning from provider- or harness-specific
+command syntax.
+
 ## Processes
 
 - **PK-PKG-020:** a ProcessSpecification MUST declare ordered or branching
@@ -83,3 +88,17 @@ processkit distributes process capability as independently inspectable files:
   verification, CLI use, or manual MCP configuration.
 - **PK-PKG-043:** adding a harness adapter MUST NOT change core entity or
   process semantics.
+
+## Future organizational distributions
+
+Organizations may eventually publish a governed processkit adaptation that
+preselects or adds mandatory profiles, processes, policies, skills, prompts,
+and MCP capabilities for their developers. The organization-specific
+distribution is not part of the v1 contract.
+
+Its future design must preserve upstream processkit identity and provenance,
+distinguish upstream and organization-owned content, support private
+distribution and authenticated installation, declare compatibility with an
+exact upstream range, and provide a continuous update and conflict-resolution
+path. A downstream Git fork requiring indefinite manual merges is one option
+to evaluate, not the assumed product model.

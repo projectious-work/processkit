@@ -60,27 +60,30 @@ examples, governing decisions, and applicable company standards.
    on every supported platform.
 2. Verify the installed profile and inspect effective configuration.
 3. Start MCP over stdio and discover the declared capability catalog.
-4. Create, query, transition, relate, and supersede representative entities;
+4. List installed skills, ontology concepts, packages, profiles, and MCP
+   servers in both text and machine form and reconcile the result with package
+   manifests and MCP discovery.
+5. Create, query, transition, relate, and supersede representative entities;
    verify events and index equivalence.
-5. Generate and validate coverage for all 89 canonical ontology concepts,
+6. Generate and validate coverage for all 89 canonical ontology concepts,
    exercise every persistent P and C schema, every D discriminator, and every
    T fragment through at least one consuming contract.
-6. Assemble bounded, attributed agent context through lexical, semantic, and
+7. Assemble bounded, attributed agent context through lexical, semantic, and
    hybrid retrieval; delete every derived index, rebuild it from canonical Git
    files, and obtain functionally equivalent sources without memory loss.
-7. Install, discover, verify, and invoke a managed skill and MCP server through
+8. Install, discover, verify, and invoke a managed skill and MCP server through
    their versioned capability manifests.
-8. Run a durable process with a gate, evidence, interruption, and resumption.
-9. Add and validate a namespaced extension package without core modification.
-10. Preview and apply an update with unchanged, locally modified, mergeable,
+9. Run a durable process with a gate, evidence, interruption, and resumption.
+10. Add and validate a namespaced extension package without core modification.
+11. Preview and apply an update with unchanged, locally modified, mergeable,
    conflicting, generated, and project-owned files.
-11. Recover from injected interruption at each mutation boundary.
-12. Import representative v0 and earlier-v1-alpha corpora with preservation
+12. Recover from injected interruption at each mutation boundary.
+13. Import representative v0 and earlier-v1-alpha corpora with preservation
    reports and explicit manual blockers.
-13. Export a sanitized cross-repository handoff and receive it as local state.
-14. Conservatively uninstall processkit while preserving modified and
+14. Export a sanitized cross-repository handoff and receive it as local state.
+15. Conservatively uninstall processkit while preserving modified and
     project-owned content.
-15. Build documentation and verify the exact published release artifacts.
+16. Build documentation and verify the exact published release artifacts.
 
 ## Definition of v1.0.0 complete
 
