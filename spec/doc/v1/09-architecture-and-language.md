@@ -68,6 +68,13 @@ narrow native component.
   transaction, interruption, archive, and recovery cases SHOULD be extracted
   as implementation-independent fixtures before replacement where they remain
   applicable to the accepted contracts.
+- **PK-ARCH-008:** the reference runtime is an on-demand CLI or MCP process,
+  or an optional long-lived local MCP daemon, bound to one repository working
+  copy. A sidecar, shared database, remote daemon, or hosted processkit service
+  MUST NOT be required for v1.
+- **PK-ARCH-009:** the Python application MUST remain useful without Aibox,
+  Airunner, Tau, Kaits, or a Git forge. Those products may launch or consume
+  it through the documented CLI, MCP, file, and handoff contracts.
 
 ## Component boundaries
 
@@ -82,8 +89,13 @@ ports: repository, lexical index, semantic index, package, clock, process,
        network, rendering
         ↓
 local adapters: filesystem, SQLite/FTS, embedding/vector index,
-                uv/Python packaging, stdio/HTTP
+                uv/Python packaging, MCP stdio and loopback HTTP
 ```
+
+Each running application instance binds the repository port to one working
+copy and the index ports to disposable state derived from that copy. Separate
+agents normally have separate clones and index generations; Git review and
+merge, not shared index state, reconcile their accepted work.
 
 - **PK-ARCH-010:** domain behavior MUST not depend on CLI parsing, MCP SDK
   objects, SQLite rows, or ambient process globals.
@@ -99,6 +111,10 @@ local adapters: filesystem, SQLite/FTS, embedding/vector index,
   but published JSON Schemas and fixtures remain the interoperability contract.
 - **PK-ARCH-014:** network release resolution and external connectors are
   optional adapters and MUST not enter the local domain core.
+- **PK-ARCH-016:** Git and forge automation MAY be implemented later as
+  explicit adapters over proposed changes and handoff bundles. It MUST NOT be
+  embedded in entity application services or make GitHub-specific concepts
+  part of the ontology.
 
 ## Dependency posture
 

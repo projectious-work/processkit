@@ -18,6 +18,7 @@ Trust boundaries exist between:
 - canonical files and untrusted indexes or caches;
 - package instructions and executable tools;
 - one repository and external repositories or services.
+- one clone or worktree and another clone or worktree of the same repository.
 
 ## Release trust
 
@@ -49,8 +50,15 @@ Trust boundaries exist between:
 
 ## MCP and instruction safety
 
-- **PK-SEC-020:** MCP HTTP transport binds to loopback unless a reviewed remote
-  security profile is explicitly enabled.
+- **PK-SEC-020:** stdio is the universal local transport. The optional v1 HTTP
+  daemon MUST bind to loopback, authenticate every client using credentials
+  kept outside project-controlled files, enforce origin and request-isolation
+  controls applicable to the selected MCP transport, and disclose residual
+  same-host risks. Non-loopback binding is outside v1.
+- **PK-SEC-028:** daemon and proxy diagnostics MUST redact bearer material and
+  MUST NOT place credentials in command arguments, repository configuration,
+  generated skill projections, or MCP discovery responses. Credential files
+  require owner-only permissions where the platform supports them.
 - **PK-SEC-021:** mutating and destructive capabilities MUST be labeled for
   harness policy and independently checked by processkit.
 - **PK-SEC-022:** content from packages, entities, external references, and
@@ -60,6 +68,17 @@ Trust boundaries exist between:
   trust and project policy accept them.
 - **PK-SEC-024:** diagnostics MUST not recommend bypassing containment,
   signature, validation, approval, or recovery checks.
+- **PK-SEC-025:** repository content, including processkit entities changed by
+  another participant, MUST be treated as untrusted input until normal project
+  review and validation policy accepts it. A valid schema does not establish
+  the truth, authorization, or safety of its claims.
+- **PK-SEC-026:** processkit MUST NOT infer caller identity or mutation
+  authority solely from mutable TeamMember files, Git author metadata, harness
+  prompts, or environment variables. Authority-sensitive operations require an
+  authenticated runtime principal or an explicit local policy decision.
+- **PK-SEC-027:** project TeamMember records MUST NOT be used as storage for
+  model-provider credentials, harness session secrets, or private conversational
+  memory.
 
 ## Dependencies and privacy
 

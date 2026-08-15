@@ -43,7 +43,7 @@ explicit baseline amendment before affected implementation continues.
 processkit is a composite product with these company-standard profiles:
 
 - CLI application;
-- local service or worker for MCP transports;
+- local per-repository MCP process;
 - schema, protocol, and process package;
 - Python library for internal composition and tested extension points; and
 - documentation website.

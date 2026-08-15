@@ -15,6 +15,11 @@ The v1 reference profile is one repository containing up to:
 - 500 installed skills and ProcessSpecifications; and
 - 16 concurrent read requests with one serialized root mutation.
 
+This is a per-working-copy profile. Multiple agents may operate independent
+clones of the same repository; processkit does not coordinate their local
+locks or indexes. Git integration detects and resolves concurrent proposed
+changes at branch and review boundaries.
+
 - **PK-PERF-000:** larger repositories MAY work but are outside the v1
   performance guarantee.
 
@@ -31,6 +36,9 @@ The v1 reference profile is one repository containing up to:
   one second cold on the reference machine.
 - **PK-PERF-005:** MCP stdio startup SHOULD advertise capabilities within two
   seconds with installed dependencies and no network access.
+- **PK-PERF-006:** a warm local daemon SHOULD avoid repeated application and
+  tool-catalog import cost across client connections and report startup,
+  catalog-load, refresh, request, and proxy overhead separately.
 
 These are release objectives, not semantic timeouts. A slower correct result
 must report measurement and remain cancellable; it must not bypass validation.
@@ -55,6 +63,10 @@ must report measurement and remain cancellable; it must not bypass validation.
 - **PK-OPS-001:** `doctor` reports runtime, contract support, root identity,
   lock and journal state, canonical validation, ownership drift, projection
   drift, index generation, package consistency, and configured MCP readiness.
+- **PK-OPS-006:** status and diagnostic output MUST distinguish repository
+  root, context directory, Git revision, canonical generation, and local index
+  generation so an agent cannot mistake a stale clone or index for current
+  accepted state.
 - **PK-OPS-002:** health output MUST distinguish `healthy`, `degraded`,
   `blocked`, and `recovery_required`; unavailable optional checks are not
   successes.

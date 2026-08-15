@@ -9,6 +9,12 @@ shared ontology through which humans and agents describe work, knowledge,
 decisions, evidence, organizations, capabilities, and processes in
 conversation.
 
+One processkit installation belongs to one Git repository representing one
+project or coordination scope. Its `context/` is the authoritative shared
+process memory of that scope, not the private memory of one agent. Any number
+of human, permanent-agent, and ephemeral-agent TeamMembers may participate by
+working with ordinary clones, branches, reviews, and merges.
+
 Human-readable Git files are always canonical. Local databases, full-text
 indexes, and embedding/vector entries augment retrieval and context assembly,
 but remain disposable client-side projections that can be rebuilt from the
@@ -53,6 +59,17 @@ history or one model provider's private memory:
 - **PK-PROD-006:** processkit MUST support one repository as one concern while
   allowing explicit references and handoffs between independently owned
   repositories.
+- **PK-PROD-017:** one repository MUST have at most one active processkit
+  installation and one authoritative context root; nested Git repositories or
+  submodules are independent roots and MUST NOT be absorbed implicitly.
+- **PK-PROD-018:** a processkit root MUST support multiple human and AI
+  participants and MUST NOT imply one repository or one processkit
+  installation per agent.
+- **PK-PROD-019:** every reference runtime MUST operate locally against one
+  selected working copy. A long-lived local MCP daemon MAY serve several
+  authorized clients for that working copy, but it is not shared repository
+  authority or a second project database. Git synchronization and review
+  transfer accepted state between working copies.
 - **PK-PROD-007:** project state MUST remain authoritative when indexes,
   caches, generated references, or harness projections are absent.
 - **PK-PROD-008:** v1 MUST provide the complete 89-concept T/P/D/C ontology
@@ -80,6 +97,9 @@ history or one model provider's private memory:
   claim that unstructured documentation has lifecycle semantics.
 - **PK-PROD-015:** processkit v1 MUST NOT provide portfolio-wide distributed
   transactions or pretend cross-repository operations are atomic.
+- **PK-PROD-028:** processkit MUST NOT create branches, commits, pull
+  requests, issues, discussions, merges, pushes, or fetches as implicit side
+  effects. Humans, agents, harnesses, and forge adapters own those workflows.
 
 ## Product boundary
 
@@ -105,9 +125,12 @@ The consuming repository owns:
 - authorization to mutate the repository;
 - credentials and external-system integrations.
 
-The harness or orchestrator owns model execution, prompts outside shipped
-skills, conversation state, task scheduling, agent isolation, cost control,
-and cross-agent coordination.
+The harness or orchestrator owns agent identity bootstrap, model execution,
+prompts outside shipped skills, conversation and runtime memory, heartbeat,
+task scheduling, agent isolation, cost control, and cross-agent coordination.
+Company modelling, teams-of-teams orchestration, simulation, message delivery,
+and portfolio views belong to products such as Kaits, which consume
+processkit contracts without becoming repository authority.
 
 ## Required user journeys
 

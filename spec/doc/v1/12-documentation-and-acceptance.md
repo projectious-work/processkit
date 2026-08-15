@@ -59,20 +59,24 @@ examples, governing decisions, and applicable company standards.
 1. Install an exact authenticated release into an empty temporary repository
    on every supported platform.
 2. Verify the installed profile and inspect effective configuration.
-3. Start MCP over stdio and discover the declared capability catalog.
+3. Start MCP over stdio, then reuse the same capability catalog through an
+   authenticated local daemon and stdio proxy; prove equivalent operations,
+   root isolation, refresh, and shutdown behavior.
 4. List installed skills, ontology concepts, packages, profiles, and MCP
    servers in both text and machine form and reconcile the result with package
    manifests and MCP discovery.
 5. Create, query, transition, relate, and supersede representative entities;
-   verify events and index equivalence.
+   verify equivalent CLI and MCP outcomes, events, and index state without an
+   implicit Git commit.
 6. Generate and validate coverage for all 89 canonical ontology concepts,
    exercise every persistent P and C schema, every D discriminator, and every
    T fragment through at least one consuming contract.
 7. Assemble bounded, attributed agent context through lexical, semantic, and
    hybrid retrieval; delete every derived index, rebuild it from canonical Git
    files, and obtain functionally equivalent sources without memory loss.
-8. Install, discover, verify, and invoke a managed skill and MCP server through
-   their versioned capability manifests.
+8. Install one canonical skill and MCP capability, project them into two
+   supported harness formats in one reviewed adapter plan, and prove equivalent
+   discovery, safety metadata, invocation, provenance, and conflict handling.
 9. Run a durable process with a gate, evidence, interruption, and resumption.
 10. Add and validate a namespaced extension package without core modification.
 11. Preview and apply an update with unchanged, locally modified, mergeable,
@@ -84,6 +88,17 @@ examples, governing decisions, and applicable company standards.
 15. Conservatively uninstall processkit while preserving modified and
     project-owned content.
 16. Build documentation and verify the exact published release artifacts.
+17. Run two independently indexed clones as different TeamMembers, integrate
+    their proposed context changes through an ordinary reviewed Git merge,
+    rebuild both indexes, and verify that canonical state converges without a
+    shared processkit database.
+18. Confirm that one repository supports human, permanent-agent, and
+    ephemeral-agent participants while TeamMember state remains project-local
+    and runtime memory remains outside canonical entities.
+19. Add a newly installed harness target to declarative project configuration,
+    preview and apply the adapter reconciliation, verify convergence, and then
+    obtain an empty plan from the same desired state without a harness-specific
+    imperative command.
 
 ## Definition of v1.0.0 complete
 

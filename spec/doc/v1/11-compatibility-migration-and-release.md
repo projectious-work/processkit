@@ -111,7 +111,8 @@ or force-updating a protected branch.
 
 - `alpha`: the complete 89-concept ontology registry and generated contracts,
   repository transactions, install/verify, and MCP workflow proven.
-- `beta`: managed profile, extension conformance, migration corpus, complete
+- `beta`: standard profile, harness-adapter and extension conformance,
+  migration corpus, complete
   security and platform matrices proven; feature freeze begins.
 - `rc`: documentation, compatibility, performance, package set, and exact
   candidate journeys complete with no unexplained skips.

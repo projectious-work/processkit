@@ -35,8 +35,8 @@ a later measured justification and versioned boundary.
 
 ## D3 — One application core
 
-**Proposal:** CLI and MCP become adapters over one application and domain core;
-per-skill servers may remain compatibility adapters but own no semantics.
+**Proposal:** CLI and MCP become adapters over one application and domain core.
+Earlier per-skill servers are migration evidence, not another v1 runtime.
 
 **Reason:** one mutation, validation, event, and recovery path prevents the
 current split authority from recurring.
@@ -103,3 +103,91 @@ safely.
 explicit source adapter. The apparent numeric move from `v2` to a qualified
 `entity/v1` is a namespace change, not a claim that old data has been silently
 downgraded.
+
+## D8 — Repository-scoped process memory
+
+**Accepted company architecture:** one repository represents one project or
+coordination scope and contains one authoritative processkit context. The
+context is shared project memory for any number of human and AI participants,
+not an agent-private memory repository.
+
+**Reason:** the repository already supplies the authority, deliverable,
+history, collaboration, and review boundary. Agents can use ordinary clones
+and branches while processkit gives their shared context typed semantics and
+validated operations.
+
+**Impact:** root means repository root; local indexes are per working copy;
+TeamMember is project-local participation state; and processkit does not own
+Airunner runtime memory, heartbeat, Git synchronization, or Kaits company
+orchestration.
+
+## D9 — Python command surface
+
+**Proposal:** ship one Python application with lifecycle, catalog, entity,
+event, context, skill, handoff, index, generation, package, and MCP command
+groups. CLI and MCP are adapters over identical application operations; typed
+MCP tools and optional convenience commands do not create separate semantics.
+
+**Reason:** humans, scripts, harnesses, and conformance tests need the same
+repository capabilities without reproducing validation in shell scripts or
+requiring MCP for local administration. Namespaced generic commands avoid a
+flat CLI containing one command for every EntityType and skill.
+
+**Impact:** generic entity and retrieval commands move into mandatory v1
+scope. The tool changes only one selected working copy and never implies Git
+commit, review, push, or cross-repository acceptance.
+
+## D10 — Canonical skills with generated harness adapters
+
+**Proposal:** processkit continues to own and version skills. Each skill has
+one harness-neutral source contract; versioned adapters generate native
+discovery files, command aliases, and MCP configuration for selected harnesses.
+Initialization may detect and propose supported targets, while the ordinary
+plan/apply lifecycle performs changes. There is no top-level command per
+harness and no implicit installation of all known adapters.
+
+**Reason:** harnesses differ in file locations, metadata, invocation syntax,
+and MCP configuration, but those differences do not justify divergent copies
+of a skill's purpose, safety rules, inputs, or outputs. A generated projection
+keeps processkit authoritative while making loss of semantics visible.
+
+**Impact:** skill authoring and harness projection are v1 capabilities rather
+than post-v1 ideas. The release requires adapter support matrices, provenance,
+idempotent regeneration, conflict preservation, and cross-harness conformance
+fixtures.
+
+## D11 — Retain the efficient local MCP daemon
+
+**Proposal:** support both an on-demand stdio server and the useful v0-style
+long-lived local gateway daemon with lightweight stdio proxies. The v1 daemon
+executes the unified application core directly, serves exactly one repository
+root, binds only to loopback, authenticates every client, and refreshes its
+catalog safely. Process supervision remains external.
+
+**Reason:** repeated interpreter startup and registration of a large tool
+catalog is avoidable overhead, especially when several harness sessions use
+the same working copy. Removing the daemon would discard a proven operational
+benefit merely to obtain a smaller topology diagram.
+
+**Impact:** daemon and proxy are v1 surfaces with root-isolation, credential,
+catalog-refresh, concurrency, health, shutdown, and adapter-equivalence tests.
+They do not restore per-skill runtime authority, create a shared project
+database, or make a hosted service necessary.
+
+## D12 — Declarative harness reconciliation
+
+**Proposal:** desired profiles, packages, skills, MCP capabilities, and harness
+targets live in versioned project configuration. `plan reconcile` computes the
+drift and `apply --plan` converges it. `plan adapter --harness ...` is an
+onboarding convenience that proposes the desired-state change as well as the
+projection actions.
+
+**Reason:** adding Tau or another harness later should use the same reviewed,
+idempotent plan/apply model as installation and upgrade. A declarative source
+also permits future CI/CD or GitOps controllers to run reconciliation without
+embedding a separate imperative command sequence.
+
+**Impact:** v1 does not need to ship a controller, Argo CD integration, or
+continuous reconciler. It must provide stable desired-state, plan, machine
+result, drift, idempotence, and verification contracts from which those
+systems can be built.

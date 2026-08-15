@@ -31,8 +31,12 @@ Tests assert observable contracts and failure behavior, not only code paths.
   unchanged update, local modification, compatible merge, conflict, stale plan,
   interruption, recovery, downgrade refusal, and conservative uninstall.
 - **PK-TEST-005:** MCP tests MUST compare runtime discovery with published
-  schemas and execute requests over stdio; HTTP tests cover loopback security,
-  concurrency, cancellation, bounds, and shutdown when HTTP ships.
+  schemas and execute requests over stdio and the authenticated daemon/proxy
+  path, including concurrency, cancellation, bounds, malformed input,
+  authentication refusal, catalog refresh, root isolation, and shutdown.
+- **PK-TEST-015:** every application operation exposed through both CLI and
+  MCP MUST have adapter-equivalence tests for successful, refused, stale,
+  invalid, interrupted, and recovery-required outcomes.
 - **PK-TEST-006:** query tests MUST compare indexed results with a canonical
   scan across randomized create/update/archive sequences.
 - **PK-TEST-014:** semantic and hybrid retrieval tests MUST cover deterministic
@@ -49,6 +53,14 @@ Tests assert observable contracts and failure behavior, not only code paths.
   recovery cases from prior implementations MUST be adapted to the Python
   artifacts and the new ownership contract. Passing an old implementation's
   test unchanged is not evidence when its asserted contract differs from v1.
+- **PK-TEST-016:** multi-participant tests MUST use independent clones or
+  worktrees with separate indexes, integrate canonical changes through Git,
+  and prove that no local lock, cache, or database is mistaken for
+  cross-working-copy authority.
+- **PK-TEST-017:** each supported harness adapter MUST project one canonical
+  fixture skill, MCP capability, and safety constraint; tests MUST verify
+  provenance, conflict preservation, idempotence, support-matrix reporting,
+  and equivalence across all generated harness forms.
 
 ## Property and fuzz testing
 

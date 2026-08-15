@@ -27,7 +27,8 @@ compiled defaults
   configuration with winning and overridden sources and rejected settings.
 - **PK-CONFIG-006:** invocation overrides are ephemeral unless a dedicated
   write command explicitly changes project-owned configuration.
-- **PK-CONFIG-007:** project configuration is `<root>/processkit.toml` by
+- **PK-CONFIG-007:** project configuration is
+  `<repository-root>/processkit.toml` by
   default; project policy and mutable operational state MUST NOT share one
   file.
 - **PK-CONFIG-008:** system and user files use the operating system's published
@@ -36,6 +37,10 @@ compiled defaults
 - **PK-CONFIG-009:** environment and invocation layers MUST NOT change the
   selected root after root discovery has loaded project policy; root selection
   is resolved before other project configuration.
+- **PK-CONFIG-010:** project configuration MUST declare the desired profile,
+  packages, skills, MCP capabilities, and harness-adapter targets needed for
+  deterministic reconciliation. Machine-local daemon addresses, credentials,
+  and supervisor state MUST remain in higher-authority local configuration.
 
 ## Result envelope
 
@@ -59,6 +64,9 @@ apiVersion, command, outcome, result, diagnostics, correlationId
 - **PK-OUTPUT-005:** `version` output MUST report product version, source
   commit, build/package provenance, Python runtime, platform, and supported
   entity, package, plan, event, and machine-result contract versions.
+- **PK-OUTPUT-006:** repository-scoped results MUST identify the normalized
+  repository root, context path, observed Git revision when available, and
+  canonical or index generation relevant to the operation.
 
 ## Operational logging
 

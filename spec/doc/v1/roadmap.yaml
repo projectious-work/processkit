@@ -29,35 +29,40 @@ groups:
         status: planned
         dependencies: [PK1-P0]
       - id: PK1-P2
-        title: Deliver standalone installation and verification
+        title: Deliver the standalone repository tool
         summary: >-
-          Let users install, plan, update, verify, recover, and conservatively
-          remove an exact release without aibox.
+          Let users install, inspect, query, mutate, index, verify, recover,
+          and conservatively remove an exact release against one repository
+          working copy without aibox, a harness, or a shared service.
         status: planned
         dependencies: [PK1-P1]
   - id: agent-surface
     title: Agent and authoring surface
     items:
       - id: PK1-P3
-        title: Deliver agent context, memory, and MCP workflows
+        title: Deliver equivalent CLI and agent workflows
         summary: >-
           Provide lexical, semantic, and hybrid retrieval, bounded attributed
           context assembly, polymorphic ontology query, validated mutation,
-          events, configuration inspection, and stdio transport from one core.
+          events, configuration inspection, generic CLI commands, stdio MCP,
+          and an authenticated reusable local daemon/proxy path from one
+          application core.
         status: planned
         dependencies: [PK1-P1, PK1-P2]
       - id: PK1-P4
         title: Stabilize skills, MCP servers, packages, and extensions
         summary: >-
-          Ship deterministic profiles, provider-neutral skills and processes,
-          versioned MCP server manifests, conformance tooling, and safe harness
-          projections.
+          Ship the standard profile, canonical provider-neutral skills and
+          processes, versioned MCP manifests, conformance tooling, and
+          provenance-preserving declarative harness adapters with explicit
+          support matrices and plan/apply reconciliation.
         status: planned
         dependencies: [PK1-P3]
       - id: PK1-P5
-        title: Prove migration and cross-repository handoff
+        title: Prove migration and Git-mediated collaboration
         summary: >-
-          Preserve representative v0 and alpha corpora and exchange bounded
+          Preserve representative v0 and alpha corpora, converge independent
+          agent clones through reviewed Git changes, and exchange bounded
           handoffs without distributed ownership claims.
         status: planned
         dependencies: [PK1-P3, PK1-P4]

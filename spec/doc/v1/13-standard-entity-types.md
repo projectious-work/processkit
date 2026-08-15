@@ -133,12 +133,27 @@ concepts is a release requirement.
 
 ### TeamMember
 
-- **PK-ENTITY-110:** TeamMember composes an Actor identity with team-facing
-  role defaults, persona, capability references, and bounded memory locations.
-- **PK-ENTITY-111:** private memory, credentials, and runtime working state use
-  separately classified storage and are excluded from exports by default.
+- **PK-ENTITY-110:** TeamMember is the selected repository's local
+  representation of a human, permanent-agent, or ephemeral-agent participant.
+  It composes an Actor or qualified Actor reference with project-facing role
+  defaults, persona projection, capability references, engagement class, and
+  lifecycle.
+- **PK-ENTITY-111:** a project TeamMember MUST NOT silently become the
+  canonical cross-repository identity, private memory store, credential store,
+  or Airunner session record for that participant. Credentials and runtime
+  working state remain outside ordinary project entities and exports.
 - **PK-ENTITY-112:** TeamMember identity remains provider-neutral; runtime
   model selection is a policy or Binding resolved at invocation time.
+- **PK-ENTITY-113:** permanent and ephemeral participation MUST be explicit.
+  Ephemeral engagement may declare an end condition and narrower authority but
+  uses the same Actor, Role, Binding, event, and evidence contracts.
+- **PK-ENTITY-114:** one TeamMember may hold a scoped team-leader Role without
+  becoming a different Actor kind. Human companion agents remain AI Actors and
+  may exercise human authority only through an explicit scoped Binding.
+- **PK-ENTITY-115:** resolution of a company-wide canonical identity and its
+  projection into Airunner is an external identity contract in v1. A project
+  MAY use a revision-bound qualified reference and retain only locally owned
+  membership, role, and participation state.
 
 ### Binding
 

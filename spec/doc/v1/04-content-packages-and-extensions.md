@@ -23,12 +23,18 @@ processkit distributes process capability as independently inspectable files:
   ranges, duplicate ownership, or ambiguous capability providers.
 - **PK-PKG-003:** profiles MUST be named selections of packages; they MUST NOT
   duplicate package contents or alter package semantics implicitly.
-- **PK-PKG-004:** the initial profiles are `minimal`, `managed`, `product`,
-  `research`, and `software`; each MUST publish an exact resolved manifest.
+- **PK-PKG-004:** v1 MUST publish one complete `standard` profile. Additional
+  profiles MAY select different packages, but are not separate v1 conformance
+  targets and MUST publish an exact resolved manifest when supplied.
 - **PK-PKG-005:** package and profile selection MUST be previewable without
   filesystem mutation.
 
 ## Skills
+
+A skill has one canonical processkit representation. It is not authored once
+per harness. Its package contains a harness-neutral manifest and instruction
+document plus any declared references, templates, assets, scripts, and MCP
+capabilities. Harness-native files are disposable projections of that source.
 
 - **PK-PKG-010:** a skill MUST declare stable identity, version, purpose,
   triggers, inputs, outputs, owned capabilities, dependencies, side effects,
@@ -42,11 +48,13 @@ processkit distributes process capability as independently inspectable files:
   project-mutating, externally mutating, privileged, or destructive.
 - **PK-PKG-014:** extension skills MUST NOT impersonate a reserved processkit
   identity or override a core capability without explicit policy.
-
-Provider-neutral prompt assets and slash-command projections are a post-v1
-package capability. A future contract must separate canonical prompt purpose,
-inputs, outputs, safety, and versioning from provider- or harness-specific
-command syntax.
+- **PK-PKG-015:** a canonical skill MUST declare which parts are normative
+  semantics and which are explanatory text. A harness adapter MUST preserve
+  purpose, triggers, inputs, outputs, safety, side effects, required tools, and
+  progressive-disclosure order; formatting and invocation syntax MAY differ.
+- **PK-PKG-016:** scripts and MCP tools remain separately executable declared
+  capabilities. Project text or generated prompt files MUST NOT silently gain
+  executable authority.
 
 ## Processes
 
@@ -80,6 +88,11 @@ command syntax.
 
 ## Harness projections
 
+A harness adapter maps the canonical skill and capability catalogs to one
+documented harness contract: discovery paths, instruction wrappers, command
+aliases, MCP configuration, and supported metadata. Adapters do not own skill
+semantics.
+
 - **PK-PKG-040:** one canonical capability catalog MUST generate supported
   harness configuration and command/skill projections.
 - **PK-PKG-041:** projection generation MUST preserve user-owned configuration
@@ -88,6 +101,21 @@ command syntax.
   verification, CLI use, or manual MCP configuration.
 - **PK-PKG-043:** adding a harness adapter MUST NOT change core entity or
   process semantics.
+- **PK-PKG-044:** each adapter MUST publish a support matrix. If a harness
+  cannot represent a required skill constraint, generation MUST report the
+  loss and verification MUST fail when that projection is required by policy.
+- **PK-PKG-045:** `init` MAY detect supported harnesses and include their
+  projections in its installation plan, but MUST NOT install every known
+  adapter implicitly. Explicitly configured or selected targets take
+  precedence over detection.
+- **PK-PKG-046:** one plan MAY contain several harness targets. Applying it
+  MUST generate all selected projections from the same canonical catalog and
+  record adapter versions and source digests, allowing one repository to
+  support several harnesses without maintaining several skill sources.
+- **PK-PKG-047:** selected harness targets and adapter options MUST be
+  declarative desired state in project configuration. Projection files and
+  merged harness MCP configuration are observed state; deleting or changing
+  them creates detectable drift rather than changing the desired catalog.
 
 ## Future organizational distributions
 

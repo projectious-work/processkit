@@ -12,6 +12,12 @@ unrelated concepts into generic tags or records.
 The ontology remains framework-neutral. Domain packages may compose and extend
 it, but MUST NOT redefine its canonical concepts or their class semantics.
 
+The ontology is applied recursively at different organizational levels. A
+deliverable repository may use it to govern product work, while a coordinating
+repository may use the same concepts for strategy, portfolio goals, standards,
+or cross-project decisions. This semantic consistency does not create a global
+database: each repository remains authoritative only for the entities it owns.
+
 ## T/P/D/C class system
 
 | Class | Count | Contract |
@@ -25,7 +31,7 @@ it, but MUST NOT redefine its canonical concepts or their class semantics.
 - **PK-MODEL-000:** the v1 ontology MUST contain exactly the 89 canonical
   concepts named below: 19 T, 22 P, 24 D, and 24 C concepts.
 - **PK-MODEL-008:** a product profile MAY expose a smaller operational tool
-  surface, but the managed v1 distribution MUST install and validate the
+  surface, but the standard v1 distribution MUST install and validate the
   complete ontology. Profile selection MUST NOT change concept meaning.
 
 ## Canonical ontology inventory
@@ -114,6 +120,17 @@ Discussion, and EvaluationRun.
   object identity, and observed revision where reproducibility matters.
 - **PK-MODEL-025:** unresolved external references MUST remain visible and
   MUST NOT be treated as validated local relations.
+- **PK-MODEL-027:** every persistent entity MUST have exactly one authoritative
+  repository context. Other contexts MUST use qualified references, imported
+  evidence, or explicitly non-authoritative projections rather than competing
+  writable copies.
+- **PK-MODEL-028:** authority MUST be scoped to a decision surface. A
+  coordinating repository MAY own broader intent, policy, dependencies, and
+  coordination processes, but MUST NOT thereby acquire implicit write
+  authority over participant repositories.
+- **PK-MODEL-029:** organizational structure MAY form a multi-level graph of
+  coordinating and participating repositories. Where authority overlaps, the
+  applicable contract MUST define precedence or require explicit resolution.
 
 ## Events
 

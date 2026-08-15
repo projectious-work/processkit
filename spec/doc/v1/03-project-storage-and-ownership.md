@@ -2,9 +2,11 @@
 
 ## Canonical layout
 
-- **PK-STORE-000:** the default installed root is `context/`. A project MAY
-  configure another contained root before installation. The selected root is
-  recorded in processkit state and cannot change implicitly.
+- **PK-STORE-000:** the processkit root is the selected repository root. The
+  default context directory is `<repository>/context/`. A project MAY
+  configure another contained context directory before installation. Both the
+  repository identity and contained context path are recorded in processkit
+  state and cannot change implicitly.
 
 ```text
 context/
@@ -22,6 +24,14 @@ context/
 Exact sharding beneath an EntityType is declared by its storage contract.
 Index databases, journals, locks, ownership manifests, and installed-release
 metadata live below `.processkit/` and are not domain entities.
+
+- **PK-STORE-000A:** root discovery MUST resolve exactly one repository and
+  one contained context directory. It MUST reject ambiguous nested roots,
+  context paths outside the selected repository, and attempts to combine
+  several repositories into one invocation.
+- **PK-STORE-000B:** each clone or worktree MAY maintain its own runtime locks
+  and disposable indexes. Those derived stores do not coordinate Git branches
+  and MUST never be treated as shared authority between working copies.
 
 ## Sources of truth
 
@@ -109,6 +119,9 @@ Every managed path is classified as one of:
   rules, and cleanliness for safety evidence but MUST NOT commit, merge,
   rebase, push, fetch, switch branches, or modify Git configuration as an
   implicit side effect of a lifecycle or entity operation.
+- **PK-STORE-038:** processkit MUST report the selected repository identity,
+  working-copy revision, context path, and relevant worktree state in plans
+  and machine results whenever they affect reproducibility or mutation safety.
 - **PK-STORE-036:** a command requiring a clean worktree MUST report the exact
   relevant dirty paths and allow no blanket assumption that unrelated changes
   belong to processkit.
