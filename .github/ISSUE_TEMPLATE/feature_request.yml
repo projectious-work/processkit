@@ -1,0 +1,37 @@
+name: Proposal
+description: Suggest a primitive, skill, tool, or contract change.
+labels: ["proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        processkit prefers extending an existing skill or schema over adding a
+        new one. If your proposal adds a surface, please say why an existing
+        one does not fit.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What does an agent or a maintainer fail to do today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What would you add or change, concretely?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Including "extend <existing skill/schema> instead", and why that does or does not work.
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Does this break an existing contract?
+      options:
+        - "No"
+        - "Yes — schema, tool signature, or ID format changes"
+        - "Not sure"
