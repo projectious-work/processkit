@@ -9,6 +9,20 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.7] - 2026-08-18
+
+v0.28.7 keeps immutable historical entity IDs from creating an
+unresolvable pk-doctor remediation queue.
+
+### Fixed
+
+- Report blocked vocabulary in historical IDs as non-actionable inventory;
+  the generator continues to prevent those words in newly allocated IDs.
+- Make the applied-migration archive-age regression fixture independent of
+  the current date.
+
+---
+
 ## [v0.28.6] - 2026-08-07
 
 v0.28.6 restores internally consistent MCP dependency-header metadata in
