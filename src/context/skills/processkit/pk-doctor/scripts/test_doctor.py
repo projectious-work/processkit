@@ -2555,6 +2555,7 @@ with tempfile.TemporaryDirectory() as tmp:
             [
                 ("BACK-20260409_1449-CleanRapidRiver-one",),
                 ("DEC-20260409_1450-CleanRapidRiver-two",),
+                ("BACK-20260409_1451-OpenDeer-three",),
             ],
         )
         conn.commit()
@@ -2581,6 +2582,18 @@ with tempfile.TemporaryDirectory() as tmp:
         and payload.get("action_required") is False
         and payload.get("action_kind") is None,
         json.dumps(payload, indent=2),
+    )
+    blocked = [
+        item for item in findings if item.id == "id-vocabulary.blocked-word"
+    ]
+    blocked_payload = blocked[0].to_dict() if blocked else {}
+    check(
+        "20: historical blocked word is INFO and non-actionable",
+        len(blocked) == 1
+        and blocked_payload.get("severity") == "INFO"
+        and blocked_payload.get("action_required") is False
+        and blocked_payload.get("action_kind") is None,
+        json.dumps(blocked_payload, indent=2),
     )
 
 # ---------------------------------------------------------------------------
@@ -2801,8 +2814,11 @@ with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     applied = root / "context" / "migrations" / "applied"
     applied.mkdir(parents=True)
-    for name, applied_at in (("MIG-new", "2026-07-19T00:00:00Z"),
-                             ("MIG-old", "2020-01-01T00:00:00Z")):
+    now = datetime.now(timezone.utc)
+    for name, applied_at in (
+        ("MIG-new", (now - timedelta(days=1)).isoformat()),
+        ("MIG-old", (now - timedelta(days=31)).isoformat()),
+    ):
         (applied / f"{name}.md").write_text(
             textwrap.dedent(f"""\
                 ---
