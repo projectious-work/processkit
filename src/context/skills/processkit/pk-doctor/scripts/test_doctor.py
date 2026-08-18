@@ -722,6 +722,22 @@ with tempfile.TemporaryDirectory() as tmp:
         '{"mcpServers":{"processkit-runtime-prune":{}}}\n',
         encoding="utf-8",
     )
+    dogfood_server = (
+        root / "context/skills/processkit/actor-profile/mcp/server.py"
+    )
+    source_server = (
+        root / "src/context/skills/processkit/actor-profile/mcp/server.py"
+    )
+    dogfood_server.parent.mkdir(parents=True)
+    source_server.parent.mkdir(parents=True)
+    dogfood_server.write_text(
+        '# /// script\n# dependencies = ["mcp>=1"]\n# ///\n',
+        encoding="utf-8",
+    )
+    source_server.write_text(
+        '# /// script\n# dependencies = ["mcp>=1,<2"]\n# ///\n',
+        encoding="utf-8",
+    )
 
     generator_path = _REPO_ROOT / "scripts" / "generate-mcp-manifest.py"
     spec = importlib.util.spec_from_file_location(
@@ -753,6 +769,17 @@ with tempfile.TemporaryDirectory() as tmp:
             "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
         ],
         gateway_entries,
+    )
+    dogfood_headers = generator._collect_server_headers(
+        root, root / "context/skills"
+    )
+    source_headers = generator._collect_server_headers(
+        root, root / "src/context/skills"
+    )
+    check(
+        "manifest generator keeps dogfood and release headers distinct",
+        dogfood_headers[0]["sha256"] != source_headers[0]["sha256"],
+        {"dogfood": dogfood_headers, "source": source_headers},
     )
 
 # ---------------------------------------------------------------------------

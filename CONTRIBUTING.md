@@ -16,7 +16,8 @@ repo.
   `src/` mirrors a fresh consumer project root
 - **`src/.processkit/FORMAT.md`** — the entity file format spec
 - **`src/context/skills/FORMAT.md`** — the skill package format spec
-- **`docs-site/`** — user-facing docs, published to GitHub Pages
+- **`docs-site/`** — the Hugo + Docsy documentation site, published to
+  GitHub Pages (content under `docs-site/content/en/`)
 
 ## The golden rule
 
@@ -43,7 +44,7 @@ Smart exemptions (enforced by author judgment, not by tooling):
 The rule is encoded in `.editorconfig` at the repo root for editors that
 respect it. There is no automated enforcement yet — it is applied to
 new and edited content. The 85 migrated skills under `src/skills/` and
-the docs-site catalog pages predate the rule and will be wrapped as
+the docs catalog pages predate the rule and will be wrapped as
 part of BACK-001 / BACK-009.
 
 ## Developing inside the dev container
@@ -92,8 +93,8 @@ the `mcp` CLI's `dev` command, etc.).
    package tier, add it to `src/.processkit/packages/managed.yaml` (or
    higher).
 6. Update `src/context/skills/INDEX.md` if appropriate.
-7. Add the skill to `docs-site/sidebars.js` under the right catalog
-   page if it deserves a docs entry.
+7. Add the skill to the right page under
+   `docs-site/content/en/docs/skills/catalog/` if it deserves a docs entry.
 
 ## Adding a new primitive
 
@@ -108,7 +109,7 @@ the `mcp` CLI's `dev` command, etc.).
 5. Add a management skill at `src/skills/<kind>-management/` (Layer 1–4
    depending on dependencies).
 6. Optionally ship an MCP server (`mcp/server.py`).
-7. Update `docs-site/docs/primitives/overview.md`.
+7. Update `docs-site/content/en/docs/primitives/overview.md`.
 
 ## Adding a new MCP server
 
@@ -119,7 +120,7 @@ the `mcp` CLI's `dev` command, etc.).
 4. Register tools with `@server.tool()` decorators.
 5. Add `mcp-config.json` and `README.md`.
 6. Extend `scripts/smoke-test-servers.py` to exercise the new tools.
-7. Add a section to `docs-site/docs/mcp-servers/overview.md`.
+7. Add a section to `docs-site/content/en/docs/mcp-servers/overview.md`.
 
 ### Foundation dependencies
 
@@ -194,7 +195,7 @@ To release a new tag:
 
 1. Update `context/HANDOVER.md` (preamble for the new version)
 2. Update `context/BACKLOG.md` Done section
-3. Update `docs-site` if user-visible changes shipped
+3. Update `docs-site/content/en/` if user-visible changes shipped
 4. Run `uv run scripts/smoke-test-servers.py` and confirm green
 5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
 6. `git tag -a vX.Y.Z -m "..."`

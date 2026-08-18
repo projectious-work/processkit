@@ -22,6 +22,60 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.7] - 2026-08-18
+
+v0.28.7 keeps immutable historical entity IDs from creating an
+unresolvable pk-doctor remediation queue.
+
+### Fixed
+
+- Report blocked vocabulary in historical IDs as non-actionable inventory;
+  the generator continues to prevent those words in newly allocated IDs.
+- Make the applied-migration archive-age regression fixture independent of
+  the current date.
+
+---
+
+## [v0.28.6] - 2026-08-07
+
+v0.28.6 restores internally consistent MCP dependency-header metadata in
+derived projects.
+
+### Fixed
+
+- Generate the dogfood and release MCP manifests against their respective
+  server trees, so the shipped manifest records the constrained MCP 1.x
+  headers that are actually present in the release archive. Fixes
+  projectious-work/aibox#365.
+
+---
+
+## [v0.28.5] - 2026-07-30
+
+v0.28.5 restores MCP availability in fresh derived-project environments.
+
+### Fixed
+
+- Constrained all shipped MCP servers to the compatible `mcp` 1.x API so
+  fresh `uv run --script` environments do not resolve the incompatible
+  `mcp` 2.x package and fail before exposing tools.
+
+---
+
+## [v0.28.4] - 2026-07-24
+
+v0.28.4 refreshes the provider-neutral model roster used by routing and
+model-profile resolution.
+
+### Changed
+
+- Refreshed the roster from current provider documentation and added current
+  model entries while retaining explicitly unverified pricing.
+- Regenerated model-spec artifacts from the refreshed compatibility
+  projection and added Subquadratic and Xiaomi provider mappings.
+
+---
+
 ## [v0.28.3] - 2026-07-23
 
 v0.28.3 is a **patch release** that publishes the gateway GitHub credential
@@ -118,6 +172,26 @@ promotion model for future maintenance releases.
   a processkit release archive.
 - Made `pk-resume` delegate its session-start cleanup to `pk-reconcile`,
   removing duplicated migration, health, and GitHub preflight instructions.
+
+---
+
+## [v0.28.4] - 2026-07-24
+
+v0.28.4 refreshes the provider-neutral model roster used by routing and
+model-profile resolution.
+
+### Changed
+
+- Refresh the roster from current provider documentation and add current
+  Anthropic, Moonshot, Google, MiniMax, xAI, Alibaba, and Subquadratic
+  model entries. Preserve models without published pricing as explicitly
+  unverified rather than estimating a price.
+- Regenerate model-spec artifacts from the refreshed compatibility projection
+  and add Subquadratic and Xiaomi provider mappings to the generator.
+
+### Verification
+
+- `uv run context/skills/processkit/model-recommender/scripts/test_migrate_models.py`
 
 ---
 

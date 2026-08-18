@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://projectious-work.github.io/processkit/
+    about: Reference for primitives, skills, packages, and the MCP layouts.
+  - name: Security report
+    url: https://github.com/projectious-work/processkit/security/advisories/new
+    about: Report a vulnerability privately rather than as an issue.
