@@ -2649,6 +2649,19 @@ with tempfile.TemporaryDirectory() as tmp:
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
+    nested = root / "vendor" / "nested-repo"
+    nested.mkdir(parents=True)
+    (nested / ".git").write_text("gitdir: elsewhere\n", encoding="utf-8")
+    (nested / "package.json").write_text('{"name":"nested"}\n', encoding="utf-8")
+    generated = root / "tmp" / "host-gates" / "cargo-home" / "crate"
+    generated.mkdir(parents=True)
+    (generated / "Cargo.toml").write_text("[package]\nname='cached'\n", encoding="utf-8")
+    findings = _supply_chain_run({"repo_root": root, "since_files": None})
+    missing = [item.message for item in findings if item.id == "supply_chain.missing-lockfile"]
+    check("21d: nested repositories and generated tmp trees are skipped", not missing, missing)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
     policy = root / ".processkit"
     policy.mkdir()
     (policy / "supply-chain-policy.yaml").write_text(
