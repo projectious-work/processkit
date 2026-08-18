@@ -9,6 +9,18 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.28.8] - 2026-08-18
+
+v0.28.8 prevents derived-project supply-chain scans from treating nested
+repositories and generated host-gate trees as application dependencies.
+
+### Fixed
+
+- Restore nested Git repository and generated `tmp`/`target` exclusions in
+  both manifest and SBOM discovery walkers.
+
+---
+
 ## [v0.28.7] - 2026-08-18
 
 v0.28.7 keeps immutable historical entity IDs from creating an
