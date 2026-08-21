@@ -2,7 +2,7 @@
 apiVersion: processkit.projectious.work/v2
 kind: Migration
 metadata:
-  id: MIG-DISABLED-HARNESS-STATE
+  id: MIG-20260513_1827-DisabledHarness
   created: 2026-05-13 18:27:28.805218+00:00
   updated: '2026-05-14T19:46:33+00:00'
 spec:

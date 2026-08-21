@@ -11,6 +11,7 @@ no file written.
 """
 from __future__ import annotations
 
+import ast
 import os
 import shutil
 import sys
@@ -18,6 +19,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
+import yaml
 
 # --- Path bootstrap so we can import the lib + the server module --------------
 _REPO_ROOT = Path(__file__).resolve().parents[5]
@@ -88,3 +90,46 @@ def test_log_event_with_empty_actor_returns_error(project_root):
     )
     assert "error" in result
     assert "actor" in result["error"].lower()
+
+
+def test_literal_side_effect_event_types_are_declared_in_schema():
+    """Every literal side-effect event must satisfy schema_vocabulary.
+
+    MCP write paths call ``log.log_side_effect`` directly.  Scanning those
+    calls here prevents a normal operation from creating a LogEntry that
+    pk-doctor subsequently rejects as unknown vocabulary.
+    """
+    source_root = _REPO_ROOT / "context"
+    schema = yaml.safe_load(
+        (source_root / "schemas" / "logentry.yaml").read_text(encoding="utf-8")
+    )
+    declared = set(schema["spec"]["known_event_types"])
+    emitted: dict[str, list[str]] = {}
+
+    for path in source_root.glob("skills/**/mcp/server.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for call in ast.walk(tree):
+            if not isinstance(call, ast.Call):
+                continue
+            func = call.func
+            if not (
+                isinstance(func, ast.Attribute)
+                and func.attr == "log_side_effect"
+            ):
+                continue
+            event = call.args[2] if len(call.args) >= 3 else next(
+                (kw.value for kw in call.keywords if kw.arg == "event_type"),
+                None,
+            )
+            if isinstance(event, ast.Constant) and isinstance(event.value, str):
+                emitted.setdefault(event.value, []).append(
+                    str(path.relative_to(_REPO_ROOT))
+                )
+
+    missing = {
+        event: paths for event, paths in emitted.items() if event not in declared
+    }
+    assert not missing, (
+        "literal log.log_side_effect event types missing from "
+        f"schemas/logentry.yaml: {missing}"
+    )
