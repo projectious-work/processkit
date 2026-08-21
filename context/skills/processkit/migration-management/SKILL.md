@@ -295,7 +295,7 @@ resolved commit live in the project lockfile at the project root
 
 This skill ships an MCP server — see
 [`mcp/SERVER.md`](mcp/SERVER.md) for the contract. The server exposes
-five tools that together cover the full lifecycle: `list_migrations`
+six tools that together cover the full lifecycle: `list_migrations`
 and `get_migration` for discovery, `start_migration` for the
 `pending → in-progress` edge, `apply_migration` for the terminal
 `in-progress → applied` edge (with implicit-start support from a
@@ -307,6 +307,15 @@ and `applied/` directories, refreshes `context/migrations/INDEX.md`
 (preserving the hand-written Notes column and the trailing
 `## CLI Migrations` section), and writes a `migration.*` event via the
 side-effect log helper.
+
+`normalize_migration_filename(id, target_id)` is the narrowly-scoped,
+audited repair path for a Migration that violates the canonical
+`MIG-YYYYMMDD_HHMM-WordPair` policy. It is safe for applied/rejected history:
+the tool writes the corrected record before removing the old path, rewrites
+exact ID references only in mutable canonical files, regenerates the migration
+index, rebuilds SQLite, and emits `migration.filename-normalized`. It never
+rewrites LogEntries or other terminal Migration records; that event preserves
+the old-to-new ID bridge.
 
 In gateway deployments, these tools are available only when
 migration-management is present in the installed/merged MCP

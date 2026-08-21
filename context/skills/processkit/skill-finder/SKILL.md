@@ -129,6 +129,7 @@ that skill before proceeding.
 | "archive context", "cold tier", "archive old workitems" | `context-archiving` |
 | "prune runtime", "cleanup aibox runtime", "clean up agent worktrees", "reclaim runtime disk" | `runtime-prune` |
 | "check all open issues", "check all PRs", "merge ready PRs", "repo reconcile", "commit and push all", "repository cleanup" | `repo-management` |
+| "resolve all migrations", "resolve pk-doctor findings", "reconcile the project", "resolve issues and pull requests" | `project-reconciliation` |
 | "second opinion", "devil's advocate", "poke holes in this" | `devils-advocate` |
 | "multiple perspectives", "board of advisors" | `board-of-advisors` |
 | "research this", "I'm not sure about this fact" | `research-with-confidence` |
@@ -138,7 +139,8 @@ that skill before proceeding.
 | "session start", "which skill applies", "check skill-finder", "1% rule" | `skill-gate` |
 | "dependency audit", "check dependencies" | `dependency-audit` |
 | "dependency management", "update packages" | `dependency-management` |
-| "git workflow", "branching strategy", "commit message" | `git-workflow` |
+| "choose a branching strategy", "Gitflow", "GitHub Flow", "trunk-based development", "release branch strategy" | `git-branching` |
+| "git workflow", "branch naming", "commit message" | `git-workflow` |
 | "shell script", "bash script" | `shell-scripting` |
 | "caching", "cache strategy" | `caching-strategies` |
 | "concurrency", "async", "parallelism" | `concurrency-patterns` |
@@ -155,8 +157,8 @@ directory name as the `category:` value when authoring or filtering:
 
 | Directory | Contents |
 |---|---|
-| `processkit/` | 45 skills for operating the processkit system |
-| `engineering/` | 46 skills: software design, architecture, backend, languages |
+| `processkit/` | 46 skills for operating the processkit system |
+| `engineering/` | 47 skills: software design, architecture, backend, languages |
 | `devops/` | 16 skills: infrastructure, CI/CD, ops, monitoring |
 | `data-ai/` | 11 skills: data science, ML, AI/LLM, embeddings |
 | `product/` | 11 skills: product management, discovery, communication |

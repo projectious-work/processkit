@@ -1,13 +1,74 @@
 {
   "hooks": {
-    "pre_tool_use": {
-      "command": "python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/check_route_task_called.py"
-    },
-    "session_start": {
-      "command": "python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py"
-    },
-    "user_prompt_submit": {
-      "command": "python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py"
-    }
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "command": "aibox-agent-signal question --harness codex --hook-input",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "aibox-agent-signal working --harness codex --hook-input >/dev/null 2>&1 || true",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "aibox-agent-signal working --harness codex --hook-input >/dev/null 2>&1 || true; python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/check_route_task_called.py",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "command": "aibox-agent-signal idle --harness codex --hook-input",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "aibox-agent-signal idle --harness codex --hook-input >/dev/null 2>&1 || true; python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "python3 -c 'import json, subprocess, sys; p=json.load(sys.stdin); m=(p.get(\"last_assistant_message\") or \"\").rstrip(); s=\"question\" if m.endswith((\"?\", \"？\")) else \"done\"; subprocess.run([\"aibox-agent-signal\", s, \"--harness\", \"codex\", \"--hook-input\"], input=json.dumps(p), text=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)'",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "aibox-agent-signal working --harness codex --hook-input >/dev/null 2>&1 || true; python3 \"$(git rev-parse --show-toplevel)\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "type": "command"
+          }
+        ]
+      }
+    ]
   }
 }

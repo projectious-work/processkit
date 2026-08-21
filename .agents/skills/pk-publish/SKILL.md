@@ -1,7 +1,7 @@
 ---
 name: pk-publish
-description: Publish a prepared processkit release.
+description: Use the release-semver skill to execute the publish phase of the
 ---
 
-Use the release-semver skill to publish the prepared release, including
-release assets and GitHub Release verification.
+Use the release-semver skill to execute the publish phase of the
+prepared release.

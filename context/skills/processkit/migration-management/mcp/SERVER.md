@@ -19,6 +19,7 @@ manifest.
 | `start_migration(id)`                  | Transition `pending → in-progress`. Stamps `spec.started_at`, moves file, refreshes INDEX.md.            |
 | `apply_migration(id, notes?)`          | Transition `in-progress → applied` (or `pending → in-progress → applied` via implicit start). Appends `notes` to `spec.progress_notes` if given. |
 | `reject_migration(id, reason)`         | Transition `pending` or `in-progress` → `rejected`. Stamps `spec.rejected_reason`. Moves file to `applied/` per processkit convention. |
+| `normalize_migration_filename(id, target_id)` | Audited normalization to a canonical `MIG-YYYYMMDD_HHMM-WordPair` ID. Updates mutable references, regenerates `INDEX.md`, rebuilds the index, and logs the old-to-new mapping without rewriting append-only history. |
 
 ## State machine
 
@@ -49,6 +50,13 @@ moves the file atomically with the state update.
   share a single historical directory. "Applied" here means "decision
   finalized", not "code applied". INDEX.md splits the two into
   separate `## Applied` and `## Rejected` sections.
+- **Filename normalization is the sole historical administrative repair.**
+  `normalize_migration_filename` may correct an applied or rejected
+  Migration's ID and filename only when the caller supplies the canonical
+  target format. It writes the corrected record before removing the old file,
+  rebuilds the index, and emits `migration.filename-normalized`. Existing
+  LogEntries and other terminal Migrations remain append-only; the emitted
+  event is the durable old-to-new ID bridge.
 - **`spec.started_at`** is stamped on first entry to `in-progress`;
   `spec.applied_at` on entering `applied`; `spec.rejected_at` +
   `spec.rejected_reason` on entering `rejected`. `spec.applied_by` is

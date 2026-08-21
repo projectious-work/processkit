@@ -26,6 +26,7 @@ spec:
     - binding.created
     - binding.ended
     - binding.role-assigned
+    - binding.updated
     - context.groomed
     - context_archive.created
     - decision.created
@@ -35,8 +36,10 @@ spec:
     - discussion.transitioned
     - doctor.report
     - gate.created
+    - gate.emergency-updated
     - gate.passed
     - gate.failed
+    - gate.updated
     - gate.waived
     - github.issue.closed
     - external_issue.created
@@ -54,6 +57,7 @@ spec:
     - migration.transitioned
     - migration.applied
     - migration.rejected
+    - migration.filename-normalized
     - migration.v2-context-converted
     - note.created
     - process.backlog_review
@@ -71,6 +75,9 @@ spec:
     - retro.completed
     - role.created
     - role.updated
+    - role_slot.closed
+    - role_slot.created
+    - role_slot.filled
     - scope.created
     - scope.transitioned
     - session.ended
@@ -89,12 +96,15 @@ spec:
     - team_member.exported
     - team_member.imported
     - team_member.reactivated
+    - team_member.runtime_launched
+    - team_member.runtime_stopped
     - team_member.updated
     - workitem.archive-moved
     - workitem.created
     - workitem.note
     - workitem.rewritten
     - workitem.transitioned
+    - workitem.updated
     - scope.archive-moved
     - note.archive-moved
     - cost.call.accounted

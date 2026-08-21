@@ -86,3 +86,7 @@ context/private/
 
 .agents/skills/
 .codex/hooks.json
+
+.latex-cache/
+.release-keys/
+installer/target/

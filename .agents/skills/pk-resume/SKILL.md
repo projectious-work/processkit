@@ -1,6 +1,6 @@
 ---
 name: pk-resume
-description: Use the status-briefing skill to generate a session-start orientation
+description: "Use the status-briefing skill to run `pk-reconcile session-start`, then"
 ---
 
 Use the status-briefing skill to run `pk-reconcile session-start`, then

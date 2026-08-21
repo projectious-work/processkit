@@ -467,8 +467,10 @@ def _layout_checks(repo_root: Path) -> list[CheckResult]:
                     f"filename policies ({len(styles['other'])})"
                 ),
                 suggested_fix=(
-                    "create and apply a data-fix Migration that normalizes "
-                    "filenames and references to the canonical policy"
+                    "use migration-management.normalize_migration_filename "
+                    "with a canonical MIG-YYYYMMDD_HHMM-WordPair target ID; "
+                    "it updates mutable references and preserves append-only "
+                    "historical records"
                 ),
                 extra={"sample": _sample(styles["other"], repo_root)},
             ))
