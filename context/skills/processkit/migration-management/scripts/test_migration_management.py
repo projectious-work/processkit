@@ -121,6 +121,68 @@ def test_list_migrations_empty_pending_returns_empty_list() -> None:
     assert migrations == []
 
 
+def test_normalize_migration_filename_repairs_applied_history_safely() -> None:
+    server = _load_server()
+    old_id = "MIG-LOCK-20260721T121620"
+    new_id = "MIG-20260721_1216-SteadyOtter"
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "AGENTS.md").write_text("# Test repo\n", encoding="utf-8")
+        _write_migration(root, "applied", old_id, "applied")
+        old_path = root / "context" / "migrations" / "applied" / f"{old_id}.md"
+        old_path.write_text(
+            old_path.read_text(encoding="utf-8") + f"\n# {old_id}\n",
+            encoding="utf-8",
+        )
+        workitem = root / "context" / "workitems" / "BACK-reference.md"
+        workitem.parent.mkdir(parents=True, exist_ok=True)
+        workitem.write_text(
+            f"---\napiVersion: processkit.projectious.work/v2\n"
+            "kind: WorkItem\nmetadata:\n  id: BACK-reference\n"
+            "spec:\n  state: backlog\n  migration: " + old_id + "\n---\n",
+            encoding="utf-8",
+        )
+        historical_log = root / "context" / "logs" / "2026" / "07" / "old.md"
+        historical_log.parent.mkdir(parents=True, exist_ok=True)
+        historical_log.write_text(old_id, encoding="utf-8")
+
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(root)
+            result = server.normalize_migration_filename(old_id, new_id)
+        finally:
+            os.chdir(old_cwd)
+
+        assert result["ok"] is True
+        assert result["old_id"] == old_id
+        assert result["new_id"] == new_id
+        assert not old_path.exists()
+        new_path = old_path.with_name(f"{new_id}.md")
+        assert new_path.is_file()
+        assert new_id in new_path.read_text(encoding="utf-8")
+        assert old_id not in workitem.read_text(encoding="utf-8")
+        assert new_id in workitem.read_text(encoding="utf-8")
+        assert historical_log.read_text(encoding="utf-8") == old_id
+        assert str(historical_log.relative_to(root)) in result["preserved_history"]
+
+
+def test_normalize_migration_filename_rejects_noncanonical_target() -> None:
+    server = _load_server()
+    with tempfile.TemporaryDirectory() as td:
+        root = Path(td)
+        (root / "AGENTS.md").write_text("# Test repo\n", encoding="utf-8")
+        _write_migration(root, "applied", "MIG-LOCK-20260721T121620", "applied")
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(root)
+            result = server.normalize_migration_filename(
+                "MIG-LOCK-20260721T121620", "MIG-not-canonical"
+            )
+        finally:
+            os.chdir(old_cwd)
+    assert "error" in result
+
+
 def test_draft_migration_creates_pending_schema_valid_entity() -> None:
     server = _load_server()
     with tempfile.TemporaryDirectory() as td:
@@ -154,5 +216,7 @@ if __name__ == "__main__":
     test_list_migrations_default_returns_only_active_states()
     test_list_migrations_ignores_non_entity_briefings()
     test_list_migrations_empty_pending_returns_empty_list()
+    test_normalize_migration_filename_repairs_applied_history_safely()
+    test_normalize_migration_filename_rejects_noncanonical_target()
     test_draft_migration_creates_pending_schema_valid_entity()
     print("All tests passed.")

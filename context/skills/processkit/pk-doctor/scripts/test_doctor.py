@@ -722,6 +722,22 @@ with tempfile.TemporaryDirectory() as tmp:
         '{"mcpServers":{"processkit-runtime-prune":{}}}\n',
         encoding="utf-8",
     )
+    dogfood_server = (
+        root / "context/skills/processkit/actor-profile/mcp/server.py"
+    )
+    source_server = (
+        root / "src/context/skills/processkit/actor-profile/mcp/server.py"
+    )
+    dogfood_server.parent.mkdir(parents=True)
+    source_server.parent.mkdir(parents=True)
+    dogfood_server.write_text(
+        '# /// script\n# dependencies = ["mcp>=1"]\n# ///\n',
+        encoding="utf-8",
+    )
+    source_server.write_text(
+        '# /// script\n# dependencies = ["mcp>=1,<2"]\n# ///\n',
+        encoding="utf-8",
+    )
 
     generator_path = _REPO_ROOT / "scripts" / "generate-mcp-manifest.py"
     spec = importlib.util.spec_from_file_location(
@@ -753,6 +769,17 @@ with tempfile.TemporaryDirectory() as tmp:
             "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
         ],
         gateway_entries,
+    )
+    dogfood_headers = generator._collect_server_headers(
+        root, root / "context/skills"
+    )
+    source_headers = generator._collect_server_headers(
+        root, root / "src/context/skills"
+    )
+    check(
+        "manifest generator keeps dogfood and release headers distinct",
+        dogfood_headers[0]["sha256"] != source_headers[0]["sha256"],
+        {"dogfood": dogfood_headers, "source": source_headers},
     )
 
 # ---------------------------------------------------------------------------
@@ -1004,6 +1031,58 @@ with tempfile.TemporaryDirectory() as tmp:
         "walked > 0 entity files (no longer silent zero)",
         "walked 1 entity file" in result.stdout,
         result.stdout[-400:],
+    )
+
+# ---------------------------------------------------------------------------
+# Test 8a: schema_filename preserves block scalars containing --- (issue #88)
+# ---------------------------------------------------------------------------
+print("\n[8a] schema_filename — YAML block scalar delimiter regression")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root / "context" / "schemas").mkdir(parents=True)
+    src_note = _SCHEMAS_SRC / "note.yaml"
+    if src_note.is_file():
+        (root / "context" / "schemas" / "note.yaml").write_text(
+            src_note.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    (root / "scripts").mkdir()
+    drift = root / "scripts" / "check-src-context-drift.sh"
+    drift.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
+    drift.chmod(0o755)
+    (root / "context" / "notes").mkdir()
+    (root / "context" / "notes" / "NOTE-20260720_1407-PlainCedar-frontmatter.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Note
+            metadata:
+              id: NOTE-20260720_1407-PlainCedar-frontmatter
+              created: '2026-07-20T14:07:00Z'
+            spec:
+              title: Frontmatter delimiter regression
+              body: |
+                A Markdown horizontal rule must remain within this scalar.
+                ---
+                Parsing must continue after it.
+              type: insight
+              state: captured
+            ---
+            """),
+        encoding="utf-8",
+    )
+    stub = root / ".doctor-logentry.json"
+    result = _run_doctor(root, "--category=schema_filename", stub_path=stub)
+    check(
+        "block scalar delimiter does not truncate frontmatter",
+        result.returncode == 0,
+        f"got {result.returncode}; stdout: {result.stdout[-600:]}",
+    )
+    check(
+        "block scalar fixture has no missing Note fields",
+        "'type' is a required property" not in result.stdout
+        and "'state' is a required property" not in result.stdout,
+        result.stdout[-600:],
     )
 
 # ---------------------------------------------------------------------------
@@ -2503,6 +2582,7 @@ with tempfile.TemporaryDirectory() as tmp:
             [
                 ("BACK-20260409_1449-CleanRapidRiver-one",),
                 ("DEC-20260409_1450-CleanRapidRiver-two",),
+                ("BACK-20260409_1451-OpenDeer-three",),
             ],
         )
         conn.commit()
@@ -2530,6 +2610,18 @@ with tempfile.TemporaryDirectory() as tmp:
         and payload.get("action_kind") is None,
         json.dumps(payload, indent=2),
     )
+    blocked = [
+        item for item in findings if item.id == "id-vocabulary.blocked-word"
+    ]
+    blocked_payload = blocked[0].to_dict() if blocked else {}
+    check(
+        "20: historical blocked word is INFO and non-actionable",
+        len(blocked) == 1
+        and blocked_payload.get("severity") == "INFO"
+        and blocked_payload.get("action_required") is False
+        and blocked_payload.get("action_kind") is None,
+        json.dumps(blocked_payload, indent=2),
+    )
 
 # ---------------------------------------------------------------------------
 # Test 21: supply_chain — offline lockfile/license/security advisories
@@ -2554,6 +2646,19 @@ with tempfile.TemporaryDirectory() as tmp:
     check("21a: missing lockfile emits ERROR", "supply_chain.missing-lockfile" in ids)
     check("21b: missing policy emits WARN", "supply_chain.no-policy" in ids)
     check("21c: inventory summary is emitted", "supply_chain.inventory" in ids)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    nested = root / "vendor" / "nested-repo"
+    nested.mkdir(parents=True)
+    (nested / ".git").write_text("gitdir: elsewhere\n", encoding="utf-8")
+    (nested / "package.json").write_text('{"name":"nested"}\n', encoding="utf-8")
+    generated = root / "tmp" / "host-gates" / "cargo-home" / "crate"
+    generated.mkdir(parents=True)
+    (generated / "Cargo.toml").write_text("[package]\nname='cached'\n", encoding="utf-8")
+    findings = _supply_chain_run({"repo_root": root, "since_files": None})
+    missing = [item.message for item in findings if item.id == "supply_chain.missing-lockfile"]
+    check("21d: nested repositories and generated tmp trees are skipped", not missing, missing)
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
@@ -2749,8 +2854,11 @@ with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     applied = root / "context" / "migrations" / "applied"
     applied.mkdir(parents=True)
-    for name, applied_at in (("MIG-new", "2026-07-19T00:00:00Z"),
-                             ("MIG-old", "2020-01-01T00:00:00Z")):
+    now = datetime.now(timezone.utc)
+    for name, applied_at in (
+        ("MIG-new", (now - timedelta(days=1)).isoformat()),
+        ("MIG-old", (now - timedelta(days=31)).isoformat()),
+    ):
         (applied / f"{name}.md").write_text(
             textwrap.dedent(f"""\
                 ---

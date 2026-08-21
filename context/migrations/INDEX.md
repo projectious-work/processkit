@@ -12,15 +12,15 @@ None.
 
 | Date       | Migration                                | Notes |
 |------------|------------------------------------------|-------|
-| 2026-05-16 | MIG-20260515T184054 — processkit v0.26.10 → v0.26.13 | 0 changed upstream, 0 conflicts, 8 new, 0 removed, 0 stale-removed (2 groups affected) |
-| 2026-05-16 | MIG-RUNTIME-20260515T184054 — aibox-runtime-home 0.26.4 → 0.26.5 | 0 changed upstream, 0 conflicts, 1 new, 0 removed (1 groups affected) |
-| 2026-05-23 | MIG-20260522T192406 — processkit v0.26.14 → v0.27.0 | 0 changed upstream, 0 conflicts, 14 new, 0 removed, 0 stale-removed (2 groups affected) |
+| 2026-08-20 | MIG-20260820_0729-ContentSync-processkit-content-sync — processkit v0.27.0 → v0.28.8 | 0 changed upstream, 1 conflicts, 15 new, 0 removed, 0 stale-removed (8 groups affected) |
+| 2026-08-20 | MIG-20260820_0729-RuntimeSync-aibox-runtime — aibox-runtime-home 0.27.2 → 0.34.0 | 0 changed upstream, 0 conflicts, 2 new, 0 removed (2 groups affected) |
+| 2026-08-20 | MIG-20260820_1715-RuntimeSync-aibox-runtime — aibox-runtime-home 0.34.0 → 0.34.1 | 0 changed upstream, 0 conflicts, 3 new, 0 removed (1 groups affected) |
 
 ## Rejected (1)
 
 | Date       | Migration                                | Reason |
 |------------|------------------------------------------|--------|
-| 2026-05-14 | MIG-DISABLED-HARNESS-STATE — aibox  → | Resolved by policy disposition: do not purge disabled Claude harness state automatically. aibox.toml does not set purge… |
+| 2026-05-14 | MIG-20260513_1827-DisabledHarness — aibox  → | Resolved by policy disposition: do not purge disabled Claude harness state automatically. aibox.toml does not set purge… |
 
 ## CLI Migrations
 
