@@ -120,6 +120,25 @@ The initial semantic reuse assessment is deliberately narrow:
 - **PK-MODEL-044:** general semantic-web export and inference are future work
   and MUST NOT enter the v1 critical path.
 
+## Canonical and derived graphs
+
+The canonical entities and typed relations already form a graph-shaped domain
+model. Graph storage is not another source of truth: it is a query projection
+over exact entity identities, revisions, relation types, scopes, and validity
+bounds.
+
+- **PK-MODEL-045:** an explicit relation recorded by a validated Processkit
+  operation is canonical according to its owning repository and contract.
+- **PK-MODEL-046:** a relation inferred from prose, embeddings, model output,
+  clustering, or another probabilistic method MUST remain derived retrieval
+  evidence and MUST NOT establish truth, instruction trust, lifecycle,
+  ownership, completion, or mutation authority.
+- **PK-MODEL-047:** every inferred edge MUST identify its canonical sources
+  and revisions or digests, extraction method and version, index generation,
+  time, and confidence or equivalent uncertainty metadata.
+- **PK-MODEL-048:** rebuilding or deleting a graph projection MUST NOT create,
+  remove, or modify canonical entities or relations.
+
 ## Common envelope
 
 - **PK-MODEL-001:** every entity MUST declare a contract version, entity type,

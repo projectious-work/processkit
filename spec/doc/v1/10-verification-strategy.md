@@ -80,6 +80,15 @@ Tests assert observable contracts and failure behavior, not only code paths.
   corrections, provenance completeness, trust classification, and behavior
   across at least two supported provider harnesses. It is product evidence,
   not a universal performance claim.
+- **PK-TEST-026:** retrieval fixtures MUST combine lexical or vector seed
+  discovery with bounded canonical graph expansion and prove authority,
+  dependency, supersession, provenance, trust, staleness, truncation, and
+  source attribution behavior against canonical scans.
+- **PK-TEST-027:** graph-index benchmarks MUST cover representative depth,
+  fan-out, cycles, invalid endpoints, stale generations, and the accepted
+  scale profile. A dedicated graph adapter remains unjustified unless the
+  default SQLite projection fails an accepted requirement after appropriate
+  indexing and bounded-query optimization.
 
 ## Property and fuzz testing
 

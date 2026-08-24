@@ -44,7 +44,8 @@ groups:
         title: Deliver equivalent CLI and agent workflows
         summary: >-
           Provide lexical, semantic, and hybrid retrieval, bounded attributed
-          context assembly, polymorphic ontology query, validated mutation,
+          context assembly with typed graph expansion over a disposable SQLite
+          relation projection, polymorphic ontology query, validated mutation,
           events, configuration inspection, generic CLI commands, stdio MCP,
           and an authenticated reusable local daemon/proxy path from one
           application core; establish MCP-first positioning, typed next

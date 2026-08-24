@@ -71,6 +71,23 @@ harnesses. v1 does not implement an ICM importer or exporter.
 
 [icm]: https://github.com/RinDig/Interpretable-Context-Methodology
 
+## D15 — Graph projection and hybrid retrieval
+
+**Accepted:** treat Processkit's canonical entities and typed relations as a
+graph-shaped domain model, project them into the disposable SQLite index, and
+combine lexical or vector seed discovery with bounded typed-relation expansion
+for attributed context assembly.
+
+**Reason:** vectors find content that looks relevant; typed relations express
+dependency, authority, supersession, provenance, and lifecycle that similarity
+cannot. The accepted local scale and bounded traversals do not justify a
+dedicated graph database.
+
+**Impact:** canonical and probabilistically inferred edges remain visibly
+distinct. Graph storage is behind a replaceable index port, but another adapter
+requires measured failure of the indexed SQLite implementation against an
+accepted requirement. A graph database is not a v1 dependency.
+
 ## D3 — One application core
 
 **Accepted:** CLI and MCP become adapters over one application and domain core.

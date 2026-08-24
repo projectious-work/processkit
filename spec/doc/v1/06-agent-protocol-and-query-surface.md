@@ -77,6 +77,16 @@ assemble_context(task, constraints?, token_budget?, provenance?)
   prefer canonical relationships and policy over embedding similarity alone.
 - **PK-MCP-016:** every context result MUST remain reproducible enough to fetch
   its canonical source records without relying on an embedding database row.
+- **PK-MCP-017:** hybrid context retrieval SHOULD discover initial candidates
+  through declared lexical, semantic, or direct-identity methods and MAY then
+  expand them through bounded typed relations before policy, trust, lifecycle,
+  revision, ranking, and token-budget filters assemble the result.
+- **PK-MCP-018:** graph expansion MUST report seed identities, traversed
+  relation types and direction, limits, omissions, truncation, source and index
+  generations, and whether each returned edge is canonical or inferred.
+- **PK-MCP-019:** canonical relations SHOULD outrank semantic similarity when
+  they express applicable authority, dependency, supersession, provenance, or
+  lifecycle. Relevance ranking MUST NOT convert either signal into truth.
 
 ## Mutation surface
 

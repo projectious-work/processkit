@@ -56,6 +56,20 @@ metadata live below `.processkit/` and are not domain entities.
 - **PK-STORE-009:** deleting every derived database and embedding entry MUST
   lose no canonical information; `rebuild` MUST reproduce functionally
   equivalent indexes from Git-backed files and declared local configuration.
+- **PK-STORE-039:** the default SQLite derived index MUST project canonical
+  entity nodes and typed relation edges with indexes suitable for bounded
+  directional traversal. It MAY use recursive queries without becoming the
+  canonical relation store.
+- **PK-STORE-040:** lexical, semantic/vector, and graph projections MUST share
+  canonical source identity and generation metadata so hybrid retrieval can
+  detect and report incompatible or stale generations.
+- **PK-STORE-041:** graph indexing MUST be exposed behind a replaceable local
+  index port. v1 MUST NOT require a dedicated graph database, network service,
+  or shared graph authority.
+- **PK-STORE-042:** another graph adapter requires benchmark evidence that the
+  default indexed SQLite projection cannot meet an accepted query, scale, or
+  graph-analysis requirement. Adapter choice MUST NOT alter public relation
+  semantics or canonical ownership.
 - **PK-STORE-003:** generated schemas MAY be committed for review, but their
   generator inputs and generation metadata MUST identify the authoritative
   source and support a drift check.
