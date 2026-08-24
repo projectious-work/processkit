@@ -4,24 +4,23 @@ This draft is internally coherent but intentionally does not manufacture
 approval for consequential choices. Review must accept, amend, or reject each
 item before the specification becomes the implementation baseline.
 
-## D1 — Complete 89-concept ontology in v1
+## D1 — Small mandatory kernel with optional ontology packages
 
-**Accepted:** ship the complete 89-concept T/P/D/C ontology as mandatory v1
-scope and a v1.0.0 release gate. processkit v0 is sufficient proof that the
-Git-native, validated process model works; v1 does not need another
-reduced-scope product experiment.
+**Accepted:** ship a small repository-memory kernel as mandatory v1 scope and
+move non-universal organizational, scaling-framework, communication,
+location, scheduling, portfolio, and evaluation concepts into optional
+first-party packages.
 
-**Reason:** a principal value of v1 is enough semantic breadth to express the
-processes, artifacts, organizational structures, evidence, resources, and
-agentic-work concepts users may need without misusing generic records or tags.
+**Reason:** v0 proves the Git-native validated kernel, not market demand for
+all 89 internally shaped concepts. Optional packages preserve broader value
+without encoding one operating model as universal.
 
-**Impact:** all 19 T, 22 P, 24 D, and 24 C concepts require registry coverage,
-schema or fragment treatment, query metadata, fixtures, documentation, and
-release evidence. Delivery may be phased, but v1.0.0 cannot omit concepts.
+**Impact:** Phase 0 produces a concept disposition matrix. Core conformance is
+independent of optional-package conformance.
 
 ## D2 — Python as the sole required implementation language
 
-**Proposal:** implement CLI, MCP, domain services, reconciliation, migrations,
+**Accepted:** implement CLI, MCP, domain services, reconciliation, migrations,
 generation, and indexing in Python 3.12+, installed as an isolated application
 with uv or an equivalent tool.
 
@@ -33,9 +32,26 @@ justify its additional delivery cost for the specified workload.
 recovery fixtures remain implementation evidence. A native component requires
 a later measured justification and versioned boundary.
 
+No prior source code is retained by default. A v0 and alpha capability
+disposition matrix preserves useful behavior and failure evidence through
+requirements and black-box fixtures rather than code reuse.
+
+## D13 — Minimal semantic-standard reuse
+
+**Accepted:** reuse only the smallest best-fitting established semantics,
+initially Dublin Core Terms for generic metadata and W3C PROV for provenance
+where meanings fit. Keep canonical Git files, JSON Schema, and state machines.
+
+**Reason:** Processkit should avoid redefining mature generic concepts without
+becoming an RDF, ontology-reasoning, or vocabulary-integration product.
+
+**Impact:** Phase 0 includes a versioned mapping/disposition matrix. General
+RDF, JSON-LD, OWL, SHACL, Wikidata, DBpedia, and other export or integration
+work is deferred until a concrete use case justifies it.
+
 ## D3 — One application core
 
-**Proposal:** CLI and MCP become adapters over one application and domain core.
+**Accepted:** CLI and MCP become adapters over one application and domain core.
 Earlier per-skill servers are migration evidence, not another v1 runtime.
 
 **Reason:** one mutation, validation, event, and recovery path prevents the

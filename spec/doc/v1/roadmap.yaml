@@ -21,9 +21,10 @@ groups:
           - "BACK-20260807_1003-WarmHawk-specify-processkit-v1-from-\
             first-principles"
       - id: PK1-P1
-        title: Implement the complete ontology and transaction model
+        title: Implement the kernel and transaction model
         summary: >-
-          Deliver the versioned registry and all 89 T/P/D/C concepts with
+          Produce the 89-concept disposition and minimal standards-reuse
+          matrices, then deliver the small versioned kernel registry with
           generated contracts, safe canonical storage, lifecycle enforcement,
           events, query metadata, fixtures, and deterministic recovery.
         status: planned
@@ -52,10 +53,11 @@ groups:
         status: planned
         dependencies: [PK1-P1, PK1-P2]
       - id: PK1-P4
-        title: Stabilize skills, MCP servers, packages, and extensions
+        title: Stabilize skills, optional ontology, and extensions
         summary: >-
-          Ship the standard profile, canonical provider-neutral skills and
-          processes, versioned MCP manifests, conformance tooling, and
+          Ship the core-only standard profile, optional first-party ontology,
+          canonical provider-neutral skills and processes, versioned MCP
+          manifests, conformance tooling, and
           provenance-preserving declarative harness adapters with explicit
           support matrices, instruction/data trust classification, collision-
           safe tool namespaces, and plan/apply reconciliation.
@@ -64,9 +66,10 @@ groups:
       - id: PK1-P5
         title: Prove migration and Git-mediated collaboration
         summary: >-
-          Preserve representative v0 and alpha corpora, converge independent
-          agent clones through reviewed Git changes, and exchange bounded
-          handoffs without distributed ownership claims.
+          Complete the v0 and alpha capability disposition matrix, preserve
+          representative corpora and retained black-box behavior, converge
+          independent agent clones through reviewed Git changes, and exchange
+          bounded handoffs without distributed ownership claims.
         status: planned
         dependencies: [PK1-P3, PK1-P4]
   - id: release
@@ -75,9 +78,10 @@ groups:
       - id: PK1-P6
         title: Complete beta conformance
         summary: >-
-          Pass full 89-concept coverage plus the contract, security, extension,
-          migration, platform, documentation, and package matrices and enter
-          feature freeze.
+          Pass kernel coverage plus the contract, security, extension,
+          migration, platform, documentation, and selected-package matrices
+          and enter feature freeze. Optional packages do not become universal
+          release gates.
         status: planned
         dependencies: [PK1-P5]
       - id: PK1-P7

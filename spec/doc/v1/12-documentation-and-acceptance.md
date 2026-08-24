@@ -80,9 +80,10 @@ examples, governing decisions, and applicable company standards.
 5. Create, query, transition, relate, and supersede representative entities;
    verify equivalent CLI and MCP outcomes, events, and index state without an
    implicit Git commit.
-6. Generate and validate coverage for all 89 canonical ontology concepts,
-   exercise every persistent P and C schema, every D discriminator, and every
-   T fragment through at least one consuming contract.
+6. Generate and validate coverage for every installed kernel and selected
+   optional-package concept; exercise each persistent P and C schema, each D
+   discriminator, and each T fragment through at least one consuming contract,
+   and verify that a core-only installation omits optional concepts cleanly.
 7. Assemble bounded, attributed agent context through lexical, semantic, and
    hybrid retrieval; delete every derived index, rebuild it from canonical Git
    files, and obtain functionally equivalent sources without memory loss.

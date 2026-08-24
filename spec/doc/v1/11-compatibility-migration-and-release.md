@@ -109,10 +109,11 @@ or force-updating a protected branch.
 
 ## v1 acceptance sequence
 
-- `alpha`: the complete 89-concept ontology registry and generated contracts,
-  repository transactions, install/verify, and MCP workflow proven.
-- `beta`: standard profile, harness-adapter and extension conformance,
-  migration corpus, complete
+- `alpha`: the kernel ontology registry and generated contracts, concept
+  disposition matrix, repository transactions, install/verify, and MCP
+  workflow proven.
+- `beta`: core-only standard profile, selected optional-package,
+  harness-adapter and extension conformance, migration corpus, and complete
   security and platform matrices proven; feature freeze begins.
 - `rc`: documentation, compatibility, performance, package set, and exact
   candidate journeys complete with no unexplained skips.

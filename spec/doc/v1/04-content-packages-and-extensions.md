@@ -23,11 +23,15 @@ processkit distributes process capability as independently inspectable files:
   ranges, duplicate ownership, or ambiguous capability providers.
 - **PK-PKG-003:** profiles MUST be named selections of packages; they MUST NOT
   duplicate package contents or alter package semantics implicitly.
-- **PK-PKG-004:** v1 MUST publish one complete `standard` profile. Additional
-  profiles MAY select different packages, but are not separate v1 conformance
-  targets and MUST publish an exact resolved manifest when supplied.
+- **PK-PKG-004:** v1 MUST publish a core-only `standard` profile. The current
+  non-kernel concept inventory MAY initially ship in one first-party
+  `extended` package while evidence accumulates for smaller durable package
+  boundaries. Additional profiles MUST publish an exact resolved manifest.
 - **PK-PKG-005:** package and profile selection MUST be previewable without
   filesystem mutation.
+- **PK-PKG-006:** optional packages MUST be removable without invalidating
+  unrelated kernel entities; references to removed package concepts MUST be
+  reported explicitly and MUST NOT be silently coerced into generic records.
 
 ## Skills
 

@@ -2,39 +2,60 @@
 
 ## Design rule
 
-The complete v1 ontology is a primary product capability, not an experiment or
-optional extension. processkit v0 already demonstrated that a smaller
-Git-native process model and validated agent operations work in principle.
-v1 adds the semantic breadth required to express processes, organizations,
-evidence, plans, communication, resources, and agentic work without forcing
-unrelated concepts into generic tags or records.
+Processkit v1 has a small repository-memory kernel and optional semantic
+packages. The kernel contains only concepts needed to install, operate,
+validate, query, migrate, and hand off durable project memory. Organizational,
+scaling-framework, communication, location, scheduling, portfolio, and
+evaluation concepts are not universal merely because projectious.work uses
+them.
 
-The ontology remains framework-neutral. Domain packages may compose and extend
-it, but MUST NOT redefine its canonical concepts or their class semantics.
+The existing 89-concept inventory is retained as design input for package
+disposition, not as mandatory core or a v1.0.0 release gate. A concept may be
+retained in the kernel, moved to an optional first-party package, aligned with
+an established term, redesigned, or removed.
 
-The ontology is applied recursively at different organizational levels. A
-deliverable repository may use it to govern product work, while a coordinating
-repository may use the same concepts for strategy, portfolio goals, standards,
-or cross-project decisions. This semantic consistency does not create a global
-database: each repository remains authoritative only for the entities it owns.
+Packages may compose and extend kernel concepts, but MUST NOT redefine their
+canonical semantics. Each repository remains authoritative only for the
+entities it owns.
 
 ## T/P/D/C class system
 
-| Class | Count | Contract |
-|---|---:|---|
-| T — foundational concept | 19 | Reusable schema and lifecycle mechanic without independent persistence. |
-| P — primitive | 22 | Atomic persistent entity family with identity, schema, storage, lifecycle, and interfaces. |
-| D — discriminator | 24 | Closed typed variant of a parent primitive that inherits its storage and lifecycle. |
-| C — composition | 24 | Named concept assembled from primitives and foundational fragments, with a generated schema and declared lifecycle. |
-| **Total** | **89** | Complete mandatory v1 ontology. |
+| Class | Contract |
+|---|---|
+| T — foundational concept | Reusable schema and lifecycle mechanic without independent persistence. |
+| P — primitive | Atomic persistent entity family with identity, schema, storage, lifecycle, and interfaces. |
+| D — discriminator | Closed typed variant of a parent primitive that inherits its storage and lifecycle. |
+| C — composition | Named concept assembled from primitives and foundational fragments, with a generated schema and declared lifecycle. |
 
-- **PK-MODEL-000:** the v1 ontology MUST contain exactly the 89 canonical
-  concepts named below: 19 T, 22 P, 24 D, and 24 C concepts.
-- **PK-MODEL-008:** a product profile MAY expose a smaller operational tool
-  surface, but the standard v1 distribution MUST install and validate the
-  complete ontology. Profile selection MUST NOT change concept meaning.
+- **PK-MODEL-000:** the v1 kernel MUST contain only the T/P/D/C concepts
+  required by the mandatory repository-memory journeys. Optional packages MAY
+  add concepts through the same registry and validation machinery.
+- **PK-MODEL-008:** profile and package selection MUST NOT change the meaning
+  of an installed concept.
 
-## Canonical ontology inventory
+## Provisional kernel inventory
+
+The baseline kernel contains:
+
+- the foundational schema, identity, versioning, ownership, lifecycle,
+  validation, visibility, provenance, relation, and cardinality mechanics;
+- the persistent primitives Actor, Artifact, Binding, Event, Note, Policy,
+  Record, Role, Skill, Specification, and WorkItem; and
+- the compositions DecisionRecord, Discussion, LogEntry, and Migration.
+
+This is the maximum initial kernel, not a minimum quota. Phase 0 may remove or
+merge a concept when the mandatory journeys remain explicit and type-safe.
+
+- **PK-MODEL-040:** every kernel concept MUST be justified by at least one
+  mandatory v1 user journey and MUST NOT exist only to support an optional
+  package.
+- **PK-MODEL-041:** optional concepts MUST remain absent from a core-only
+  installation rather than appearing as empty schemas or disabled tools.
+
+## Existing 89-concept candidate inventory
+
+The following inventory is retained for the required disposition review. Its
+presence in this chapter does not make a concept mandatory.
 
 ### T — foundational concepts (19)
 
@@ -68,10 +89,36 @@ TestSpecification, ChannelSpecification, QueueSpecification, WorkItemTemplate,
 Migration, ScopePlan, Roadmap, ProgramIncrement, Iteration, Release,
 Discussion, and EvaluationRun.
 
-- **PK-MODEL-009:** canonical names, classes, parent primitives, and
-  composition membership MUST be represented in one versioned ontology
-  registry from which schemas, references, query metadata, and coverage
-  reports are generated or mechanically checked.
+- **PK-MODEL-009:** installed canonical names, classes, parent primitives,
+  package ownership, and composition membership MUST be represented in one
+  versioned ontology registry from which schemas, references, query metadata,
+  and coverage reports are generated or mechanically checked.
+
+## Minimal standards reuse
+
+Processkit keeps YAML or JSON Git files, published JSON Schemas, and explicit
+state machines as its operational contracts. It does not make RDF, RDFS, OWL,
+SHACL, JSON-LD, Wikidata, DBpedia, or another knowledge graph a runtime
+dependency.
+
+The initial semantic reuse assessment is deliberately narrow:
+
+- use Dublin Core Terms as the reference semantics for generic descriptive
+  metadata where the meaning fits exactly;
+- use the W3C PROV model as the reference semantics for entity, activity,
+  agent, plan, generation, derivation, association, attribution, and
+  delegation concepts where the meaning fits; and
+- evaluate other vocabularies only when a concrete kernel or optional-package
+  requirement cannot be expressed cleanly with these foundations.
+
+- **PK-MODEL-042:** reuse MUST be documented in a versioned concept
+  disposition matrix as exact reuse, specialization, informative alignment,
+  processkit-specific semantics, optional-package semantics, or removal.
+- **PK-MODEL-043:** semantic alignment MUST NOT weaken processkit's
+  closed-world schema validation, state-machine rules, repository authority,
+  or deterministic mutation behavior.
+- **PK-MODEL-044:** general semantic-web export and inference are future work
+  and MUST NOT enter the v1 critical path.
 
 ## Common envelope
 
@@ -145,8 +192,7 @@ Discussion, and EvaluationRun.
 
 ## Extensibility test
 
-- **PK-MODEL-026:** additions beyond the canonical 89-concept v1 ontology MUST
-  demonstrate reusable meaning across at least two unrelated product domains,
-  declare whether they are T, P, D, or C, and provide compatibility and
-  migration treatment. Otherwise they belong in a package or project
-  namespace.
+- **PK-MODEL-026:** additions to the kernel MUST demonstrate necessity across
+  at least two unrelated product domains, declare whether they are T, P, D, or
+  C, and provide compatibility and migration treatment. Otherwise they belong
+  in an optional package or project namespace.

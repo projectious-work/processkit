@@ -68,6 +68,12 @@ narrow native component.
   transaction, interruption, archive, and recovery cases SHOULD be extracted
   as implementation-independent fixtures before replacement where they remain
   applicable to the accepted contracts.
+- **PK-ARCH-017:** v1 is a clean implementation and MUST NOT copy source code
+  from processkit v0 or the Rust alpha merely to preserve sunk cost. Before
+  replacement, a concise capability disposition matrix MUST classify material
+  v0 and alpha behavior as retain, redesign, discard, defer, or investigate.
+  Retained behavior MUST become a requirement or implementation-independent
+  black-box fixture.
 - **PK-ARCH-008:** the reference runtime is an on-demand CLI or MCP process,
   or an optional long-lived local MCP daemon, bound to one repository working
   copy. A sidecar, shared database, remote daemon, or hosted processkit service

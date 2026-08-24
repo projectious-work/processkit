@@ -78,10 +78,10 @@ history or one model provider's private memory:
   transfer accepted state between working copies.
 - **PK-PROD-007:** project state MUST remain authoritative when indexes,
   caches, generated references, or harness projections are absent.
-- **PK-PROD-008:** v1 MUST provide the complete 89-concept T/P/D/C ontology
-  defined in the conceptual-model chapter so users can express broad process,
-  organizational, evidence, planning, and agentic-work concepts without
-  overloading a reduced set of generic records.
+- **PK-PROD-008:** v1 MUST provide a small mandatory repository-memory kernel.
+  Broader organizational, scaling-framework, communication, location,
+  planning, and evaluation concepts MUST be supplied through optional
+  first-party packages rather than universal core semantics.
 - **PK-PROD-009:** processkit MUST assemble bounded, attributable agent context
   from canonical entities and verified derived indexes without treating model
   conversation history as authoritative project memory.
@@ -166,5 +166,9 @@ processkit contracts without becoming repository authority.
   handoff bundle and record an external reference without surrendering local
   ownership or exposing private context by default.
 - **PK-PROD-027:** a user MUST be able to validate, create or compose, query,
-  relate, and inspect every applicable concept in the complete v1 ontology
+  relate, and inspect every concept installed by the selected package set
   through its declared schema and interfaces.
+- **PK-PROD-031:** processkit MUST reuse the smallest best-fitting subset of
+  established semantic terms where doing so prevents duplicate design. V1
+  MUST NOT require a general RDF store, ontology reasoner, linked-data export,
+  or support for a broad external ontology catalog.
