@@ -35,6 +35,10 @@ formalization.
   equivalent CLI workflow.
 - **PK-DOC-009:** documentation MUST distinguish entity content, accepted agent
   instructions, authenticated identity, attribution, authority, and evidence.
+- **PK-DOC-013:** documentation for simple sequential processes MUST credit
+  ICM as prior art for layered context, stage contracts, human-editable
+  intermediate artifacts, and canonical-source discipline while explaining
+  Processkit's additional lifecycle, trust, provenance, and evidence boundary.
 
 ## Development evidence
 
@@ -117,6 +121,11 @@ examples, governing decisions, and applicable company standards.
     definitions remain stable, and unsafe next actions are refused.
 21. Interrupt and retry one mutation across stdio, daemon, and proxy clients;
     prove one canonical effect, durable status, and equivalent CLI recovery.
+22. Run one internal research-to-assessment `linear-reviewed` pilot through
+    draft, human review, and final recommendation; prove explicit context
+    selection, editable intermediate artifacts, staleness detection,
+    trustworthy provenance, and equivalent interpretation by two supported
+    provider harnesses without an ICM importer or exporter.
 
 ## Definition of v1.0.0 complete
 

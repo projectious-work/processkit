@@ -49,6 +49,28 @@ becoming an RDF, ontology-reasoning, or vocabulary-integration product.
 RDF, JSON-LD, OWL, SHACL, Wikidata, DBpedia, and other export or integration
 work is deferred until a concrete use case justifies it.
 
+## D14 — Bounded ICM-inspired workflow profile
+
+**Accepted:** cite
+[Interpretable Context Methodology (ICM)][icm] as prior art and
+provide an optional `linear-reviewed` Processkit profile for sequential,
+repeatable, human-reviewed processes. Its simple authoring view distinguishes
+accepted instructions, stable reference context, and per-run working context,
+and exposes human-editable intermediate artifacts.
+
+**Reason:** explicit `Inputs`, `Process`, and `Outputs` contracts plus staged
+context disclosure are a natural fit for simple research, assessment,
+documentation, and content workflows. ICM's folder-presence state model does
+not replace Processkit's typed lifecycle, trust, provenance, gates, evidence,
+or recovery semantics.
+
+**Impact:** Processkit may generate a provider-neutral human-readable stage
+projection, but canonical Processkit records remain authoritative. The first
+use is a measured internal research-to-assessment pilot across two provider
+harnesses. v1 does not implement an ICM importer or exporter.
+
+[icm]: https://github.com/RinDig/Interpretable-Context-Methodology
+
 ## D3 — One application core
 
 **Accepted:** CLI and MCP become adapters over one application and domain core.

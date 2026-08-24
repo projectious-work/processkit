@@ -92,6 +92,19 @@ instructions.
 - **PK-AGENT-022:** project policy MUST be able to disable an installed skill
   or capability without deleting its canonical source or falsifying package
   provenance.
+- **PK-AGENT-023:** context assembly MUST keep accepted instructions, stable
+  reference material, and per-run working material distinguishable even when
+  all three are stored as human-readable files.
+- **PK-AGENT-024:** context MAY be disclosed or enriched stepwise, but every
+  increment MUST retain source identity, revision or digest, sensitivity,
+  trust classification, selection reason, and applicable size limits.
+- **PK-AGENT-025:** a process step SHOULD receive the smallest sufficient
+  context selected by its declared inputs. Absence, truncation, fallback
+  retrieval, and later enrichment MUST be visible rather than silently
+  changing the effective step contract.
+- **PK-AGENT-026:** directory placement under `references`, `working`,
+  `output`, or an equivalent projection MUST NOT grant instruction trust,
+  mutation authority, completion, or approval semantics.
 
 ## Identity, attribution, and authority
 

@@ -94,6 +94,10 @@ history or one model provider's private memory:
 - **PK-PROD-030:** agents MUST be able to discover typed applicability,
   authority requirements, permitted next actions, and recovery state without
   parsing console prose or treating entity content as executable policy.
+- **PK-PROD-033:** processkit MUST support a deliberately bounded authoring
+  profile for simple sequential, human-reviewed processes without requiring
+  every such workflow to adopt branching, scheduling, or orchestration
+  machinery.
 
 ## Non-goals
 
@@ -112,6 +116,9 @@ history or one model provider's private memory:
 - **PK-PROD-028:** processkit MUST NOT create branches, commits, pull
   requests, issues, discussions, merges, pushes, or fetches as implicit side
   effects. Humans, agents, harnesses, and forge adapters own those workflows.
+- **PK-PROD-034:** v1 MUST NOT implement an Interpretable Context Methodology
+  importer or exporter. Compatibility work requires demonstrated user demand
+  and a later versioned contract decision.
 
 ## Product boundary
 

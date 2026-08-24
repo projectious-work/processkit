@@ -74,6 +74,36 @@ capabilities. Harness-native files are disposable projections of that source.
 - **PK-PKG-023:** process overrides MUST identify the upstream definition and
   compatibility range they replace.
 
+### Linear reviewed profile
+
+The optional `linear-reviewed` authoring profile applies the useful bounded
+patterns of Interpretable Context Methodology (ICM) to Processkit's existing
+process model. It is for repeatable, sequential work in which a human may
+inspect or edit an artifact between steps. It is not a second execution model.
+
+- **PK-PKG-024:** a `linear-reviewed` ProcessSpecification MUST express each
+  step through declared inputs, process intent, outputs, and optional
+  checkpoints and audits.
+- **PK-PKG-025:** inputs MUST classify content as accepted `instruction`,
+  stable `reference`, or per-run `working` context and MUST identify exact
+  entities, artifacts, files, sections, queries, or previous-step outputs.
+- **PK-PKG-026:** the profile MUST support ordered steps only. Branching,
+  concurrent scheduling, dynamic agent coordination, and unattended retry
+  policy require the general ProcessSpecification contract or an external
+  orchestrator.
+- **PK-PKG-027:** Processkit EntityTypes, execution records, transitions,
+  gates, evidence, provenance, and result contracts remain authoritative.
+  Folder numbering, file presence, or human-readable projection layout MUST
+  NOT independently prove step completion, approval, freshness, or success.
+- **PK-PKG-028:** Processkit MAY render a provider-neutral, human-readable
+  stage view with `Inputs`, `Process`, `Outputs`, `Checkpoints`, and `Audits`.
+  The rendering MUST carry source provenance and MUST be disposable or
+  reconciled through the normal ownership contract.
+- **PK-PKG-029:** intermediate outputs MUST remain ordinary inspectable and
+  editable project artifacts. A later step MUST consume their current
+  revision through a declared input and preserve enough provenance to
+  distinguish agent output, human revision, approval, and staleness.
+
 ## Extension model
 
 - **PK-PKG-030:** projects MAY add namespaced EntityTypes, relation types,

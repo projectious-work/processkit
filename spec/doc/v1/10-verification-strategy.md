@@ -71,6 +71,15 @@ Tests assert observable contracts and failure behavior, not only code paths.
 - **PK-TEST-023:** retry and session-loss tests MUST prove replay-resistant
   mutation identity, no duplicate canonical effect, and recovery through both
   CLI and a newly authorized MCP client.
+- **PK-TEST-024:** `linear-reviewed` fixtures MUST prove ordered execution,
+  explicit context classes, human-edited intermediate artifacts, checkpoint
+  and audit behavior, staleness after an input change, interruption and
+  resumption, and refusal to infer completion from file presence alone.
+- **PK-TEST-025:** the first internal `linear-reviewed` pilot MUST record
+  effective context size, selected and omitted sources, reruns, human
+  corrections, provenance completeness, trust classification, and behavior
+  across at least two supported provider harnesses. It is product evidence,
+  not a universal performance claim.
 
 ## Property and fuzz testing
 
