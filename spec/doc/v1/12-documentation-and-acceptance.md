@@ -24,6 +24,18 @@ concepts, how-to guides, reference, troubleshooting, roadmap, releases and
 migration, contributing, and security. The README remains a concise entry
 point, not a second specification.
 
+It also includes a background page explaining why durable governed context
+remains necessary in an agentic software world, the division between
+probabilistic reasoning and deterministic enforcement, MCP-first agent use,
+complete CLI administration/recovery, instruction trust, and the limits of
+formalization.
+
+- **PK-DOC-008:** the README and documentation landing page MUST lead with the
+  agent-native context/workflow posture and present MCP first use beside an
+  equivalent CLI workflow.
+- **PK-DOC-009:** documentation MUST distinguish entity content, accepted agent
+  instructions, authenticated identity, attribution, authority, and evidence.
+
 ## Development evidence
 
 - **PK-DOC-010:** every non-trivial roadmap phase maintains a development note
@@ -99,6 +111,11 @@ examples, governing decisions, and applicable company standards.
     preview and apply the adapter reconciliation, verify convergence, and then
     obtain an empty plan from the same desired state without a harness-specific
     imperative command.
+20. Inject adversarial instructions through every supported content class and
+    prove that only explicitly trusted skills become instructions, tool
+    definitions remain stable, and unsafe next actions are refused.
+21. Interrupt and retry one mutation across stdio, daemon, and proxy clients;
+    prove one canonical effect, durable status, and equivalent CLI recovery.
 
 ## Definition of v1.0.0 complete
 

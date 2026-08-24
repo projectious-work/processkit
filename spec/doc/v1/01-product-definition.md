@@ -9,6 +9,12 @@ shared ontology through which humans and agents describe work, knowledge,
 decisions, evidence, organizations, capabilities, and processes in
 conversation.
 
+Its external posture is an agent-native context and workflow layer for durable,
+governed project operations. MCP is the primary agent experience; CLI remains
+complete for humans, automation, administration, and recovery. The precise
+division between agent reasoning and product enforcement is defined in the
+[agent-native posture](16-agent-native-posture.md).
+
 One processkit installation belongs to one Git repository representing one
 project or coordination scope. Its `context/` is the authoritative shared
 process memory of that scope, not the private memory of one agent. Any number
@@ -82,6 +88,12 @@ history or one model provider's private memory:
 - **PK-PROD-016:** skills and MCP servers MUST be managed as versioned,
   inspectable capabilities with ownership, discovery, configuration,
   compatibility, and verification contracts.
+- **PK-PROD-029:** MCP, CLI, and future adapters MUST call one interface-
+  neutral application core and preserve equivalent domain semantics wherever
+  capabilities overlap.
+- **PK-PROD-030:** agents MUST be able to discover typed applicability,
+  authority requirements, permitted next actions, and recovery state without
+  parsing console prose or treating entity content as executable policy.
 
 ## Non-goals
 

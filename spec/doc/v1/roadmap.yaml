@@ -46,7 +46,9 @@ groups:
           context assembly, polymorphic ontology query, validated mutation,
           events, configuration inspection, generic CLI commands, stdio MCP,
           and an authenticated reusable local daemon/proxy path from one
-          application core.
+          application core; establish MCP-first positioning, typed next
+          actions, durable mutation identity, stable capability snapshots,
+          CLI recovery parity, and agent-interface adversarial security.
         status: planned
         dependencies: [PK1-P1, PK1-P2]
       - id: PK1-P4
@@ -55,7 +57,8 @@ groups:
           Ship the standard profile, canonical provider-neutral skills and
           processes, versioned MCP manifests, conformance tooling, and
           provenance-preserving declarative harness adapters with explicit
-          support matrices and plan/apply reconciliation.
+          support matrices, instruction/data trust classification, collision-
+          safe tool namespaces, and plan/apply reconciliation.
         status: planned
         dependencies: [PK1-P3]
       - id: PK1-P5

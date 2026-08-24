@@ -29,7 +29,8 @@ meanings defined by RFC 2119 and RFC 8174.
 13. [Ontology contracts](13-standard-entity-types.md)
 14. [Performance and operations](14-performance-and-operations.md)
 15. [Review decisions](15-review-decisions.md)
-16. [Roadmap](roadmap.yaml)
+16. [Agent-native product posture](16-agent-native-posture.md)
+17. [Roadmap](roadmap.yaml)
 
 ## Contract hierarchy
 
@@ -51,3 +52,5 @@ processkit is a composite product with these company-standard profiles:
 The v1 implementation follows the company standards for configuration,
 application output and logging, compatibility, security, verification,
 roadmaps, documentation, branching, and spec-driven development.
+Consequential agent operations additionally follow the company agent-native
+product-interface standard.

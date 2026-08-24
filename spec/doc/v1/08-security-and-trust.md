@@ -79,6 +79,18 @@ Trust boundaries exist between:
 - **PK-SEC-027:** project TeamMember records MUST NOT be used as storage for
   model-provider credentials, harness session secrets, or private conversational
   memory.
+- **PK-SEC-029:** tool names, descriptions, schemas, annotations, namespaces,
+  and capability membership MUST be immutable trusted assets for one running
+  capability snapshot; content and extensions MUST NOT shadow them.
+- **PK-SEC-037:** the gateway MUST verify tool identity and provenance and fail
+  closed on duplicate names, ambiguous namespaces, manifest drift, tool
+  replacement, or an unreviewed capability refresh.
+- **PK-SEC-038:** durable mutations MUST resist ambiguous replay after client,
+  proxy, daemon, timeout, or cancellation failure and remain recoverable without
+  private conversation state.
+- **PK-SEC-039:** structured diagnostics and next actions MUST NOT reflect
+  arbitrary executable instructions from entity, package, reference, search,
+  log, or handoff content.
 
 ## Dependencies and privacy
 
@@ -107,3 +119,7 @@ Trust boundaries exist between:
   inputs, untrusted Markdown instructions, MCP request flooding, stale plans,
   interrupted writes, signature failures, malicious package paths, and
   redaction boundary cases.
+- **PK-SEC-041:** threat-driven acceptance MUST also cover prompt injection,
+  tool poisoning, rug pulls, name collision and shadowing, capability or root
+  substitution, conversational approval, confused identity/authority,
+  credential extraction, unsafe remediation, request replay, and session loss.

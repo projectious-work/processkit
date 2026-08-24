@@ -61,6 +61,16 @@ Tests assert observable contracts and failure behavior, not only code paths.
   fixture skill, MCP capability, and safety constraint; tests MUST verify
   provenance, conflict preservation, idempotence, support-matrix reporting,
   and equivalence across all generated harness forms.
+- **PK-TEST-018:** MCP tests MUST prove stable capability snapshots, manifest
+  provenance, namespace collision refusal, tool-description immutability, and
+  explicit refresh or restart after package changes.
+- **PK-TEST-019:** adversarial agent-interface tests MUST inject instructions
+  through skills, entities, external references, search results, logs, and
+  handoffs and prove that untrusted data cannot alter tools, authority, next
+  actions, or server policy.
+- **PK-TEST-023:** retry and session-loss tests MUST prove replay-resistant
+  mutation identity, no duplicate canonical effect, and recovery through both
+  CLI and a newly authorized MCP client.
 
 ## Property and fuzz testing
 
