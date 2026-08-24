@@ -1,0 +1,105 @@
+apiVersion: roadmap.projectious.work/v1
+kind: ProductRoadmap
+metadata:
+  project: processkit
+  versionLine: v1.x
+groups:
+  - id: foundation
+    title: Product and contract foundation
+    items:
+      - id: PK1-P0
+        title: Accept the v1 product baseline
+        summary: >-
+          Establish one coherent normative product contract and reconcile the
+          existing experimental branch without inheriting accidental design.
+        status: in_progress
+        dependencies: []
+        decisions:
+          - "DEC-20260807_1003-LucidGarnet-re-specify-and-\
+            reimplement-the-processkit"
+        issues:
+          - "BACK-20260807_1003-WarmHawk-specify-processkit-v1-from-\
+            first-principles"
+      - id: PK1-P1
+        title: Implement the kernel and transaction model
+        summary: >-
+          Produce the 89-concept disposition and minimal standards-reuse
+          matrices, then deliver the small versioned kernel registry with
+          generated contracts, safe canonical storage, lifecycle enforcement,
+          events, query metadata, fixtures, and deterministic recovery.
+        status: planned
+        dependencies: [PK1-P0]
+      - id: PK1-P2
+        title: Deliver the standalone repository tool
+        summary: >-
+          Let users install, inspect, query, mutate, index, verify, recover,
+          and conservatively remove an exact release against one repository
+          working copy without aibox, a harness, or a shared service.
+        status: planned
+        dependencies: [PK1-P1]
+  - id: agent-surface
+    title: Agent and authoring surface
+    items:
+      - id: PK1-P3
+        title: Deliver equivalent CLI and agent workflows
+        summary: >-
+          Provide lexical, semantic, and hybrid retrieval, bounded attributed
+          context assembly with typed graph expansion over a disposable SQLite
+          relation projection, polymorphic ontology query, validated mutation,
+          events, configuration inspection, generic CLI commands, stdio MCP,
+          and an authenticated reusable local daemon/proxy path from one
+          application core; establish MCP-first positioning, typed next
+          actions, durable mutation identity, stable capability snapshots,
+          CLI recovery parity, and agent-interface adversarial security.
+        status: planned
+        dependencies: [PK1-P1, PK1-P2]
+      - id: PK1-P4
+        title: Stabilize skills, optional ontology, and extensions
+        summary: >-
+          Ship the core-only standard profile, optional first-party ontology,
+          canonical provider-neutral skills and processes, the bounded
+          linear-reviewed authoring profile with explicit context classes,
+          versioned MCP manifests, conformance tooling, and
+          provenance-preserving declarative harness adapters with explicit
+          support matrices, instruction/data trust classification, collision-
+          safe tool namespaces, and plan/apply reconciliation.
+        status: planned
+        dependencies: [PK1-P3]
+      - id: PK1-P5
+        title: Prove migration and Git-mediated collaboration
+        summary: >-
+          Complete the v0 and alpha capability disposition matrix, preserve
+          representative corpora and retained black-box behavior, converge
+          independent agent clones through reviewed Git changes, and exchange
+          bounded handoffs without distributed ownership claims. Run the
+          internal research-to-assessment linear-reviewed pilot across two
+          provider harnesses and measure context selection, human correction,
+          provenance, staleness, and rerun behavior.
+        status: planned
+        dependencies: [PK1-P3, PK1-P4]
+  - id: release
+    title: Stabilization and release
+    items:
+      - id: PK1-P6
+        title: Complete beta conformance
+        summary: >-
+          Pass kernel coverage plus the contract, security, extension,
+          migration, platform, documentation, and selected-package matrices
+          and enter feature freeze. Optional packages do not become universal
+          release gates.
+        status: planned
+        dependencies: [PK1-P5]
+      - id: PK1-P7
+        title: Verify release candidates
+        summary: >-
+          Prove every acceptance journey using exact candidate artifacts with
+          no unexplained skips.
+        status: planned
+        dependencies: [PK1-P6]
+      - id: PK1-P8
+        title: Publish and verify processkit v1.0.0
+        summary: >-
+          Publish the accepted stable commit and independently verify
+          installation, MCP, migration, documentation, and first-use behavior.
+        status: planned
+        dependencies: [PK1-P7]

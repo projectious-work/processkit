@@ -7,6 +7,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- Add a from-scratch processkit v1.x product specification, implementation
+  language assessment, normative requirement set, executable roadmap schema,
+  and phased roadmap for review.
+
 ## [v1.0.0-alpha.5] - 2026-07-31
 
 v1.0.0-alpha.5 completes the extracted issue #135 follow-up tracks for trusted
