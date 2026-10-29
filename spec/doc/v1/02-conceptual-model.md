@@ -38,9 +38,11 @@ entities it owns.
 The baseline kernel contains:
 
 - the foundational schema, identity, versioning, ownership, lifecycle,
-  validation, visibility, provenance, relation, and cardinality mechanics;
-- the persistent primitives Actor, Artifact, Binding, Event, Note, Policy,
-  Record, Role, Skill, Specification, and WorkItem; and
+  validation, visibility, labeling, provenance, relation, and cardinality
+  mechanics;
+- the persistent primitives Actor, Artifact, Binding, Container, Event, Note,
+  Policy, Record, Role, Skill, Specification, and WorkItem, with the Container
+  discriminators Team and Project; and
 - the compositions DecisionRecord, Discussion, LogEntry, and Migration.
 
 This is the maximum initial kernel, not a minimum quota. Phase 0 may remove or
@@ -88,6 +90,13 @@ GateSpecification, SchemaSpecification, ScheduleSpecification,
 TestSpecification, ChannelSpecification, QueueSpecification, WorkItemTemplate,
 Migration, ScopePlan, Roadmap, ProgramIncrement, Iteration, Release,
 Discussion, and EvaluationRun.
+
+This specification adds one foundational concept to the inventory:
+Labeling, the selectable key/value metadata defined in
+[Resources, identity, and access control](17-resources-identity-and-access.md). Container moves from the
+optional inventory into the kernel because namespaces and access scopes are
+mandatory; its Portfolio, ValueStream, ART, and Scope discriminators stay
+optional.
 
 - **PK-MODEL-009:** installed canonical names, classes, parent primitives,
   package ownership, and composition membership MUST be represented in one
@@ -154,11 +163,14 @@ bounds.
 - **PK-MODEL-006:** references MUST use typed IDs or declared external
   references; filenames and Markdown links alone are not durable identity.
 - **PK-MODEL-016:** the common envelope MUST carry `metadata.name`, an
-  optional `metadata.namespace`, selectable `metadata.labels`, and
-  non-selectable `metadata.annotations` as defined in
-  [Resources, identity, and access control](17-resources-identity-and-access.md). These are envelope
-  fields, not ontology concepts, and are fixed in the PK1-P1 kernel so later
-  access control does not change entity formats.
+  optional `metadata.namespace` that names a Container, selectable
+  `metadata.labels`, and non-selectable `metadata.annotations` as defined in
+  [Resources, identity, and access control](17-resources-identity-and-access.md). They are fixed in
+  the PK1-P1 kernel so later access control does not change entity formats.
+- **PK-MODEL-017:** processkit's own repository MUST be governed with the
+  published core ontology and published packages only. It MUST NOT define
+  private concepts, kinds, or relation types; a concept processkit needs for
+  itself MUST be added to the published ontology or not used.
 - **PK-MODEL-007:** a schema MUST distinguish absent, null, empty, and default
   values whenever they have different semantics.
 

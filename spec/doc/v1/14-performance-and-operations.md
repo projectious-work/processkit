@@ -36,9 +36,9 @@ changes at branch and review boundaries.
   one second cold on the reference machine.
 - **PK-PERF-005:** MCP stdio startup SHOULD advertise capabilities within two
   seconds with installed dependencies and no network access.
-- **PK-PERF-006:** a warm local daemon SHOULD avoid repeated application and
+- **PK-PERF-006:** the shared server SHOULD avoid repeated application and
   tool-catalog import cost across client connections and report startup,
-  catalog-load, refresh, request, and proxy overhead separately.
+  catalog-load, refresh, and request overhead separately.
 
 These are release objectives, not semantic timeouts. A slower correct result
 must report measurement and remain cancellable; it must not bypass validation.

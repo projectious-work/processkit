@@ -12,10 +12,10 @@ but the launcher does not change repository authority. The reference profile
 runs locally inside the contributor's execution environment against that
 contributor's working copy.
 
-The runtime exposes one repository's configured capability catalog. It may be
-an on-demand stdio process or one long-lived local daemon reused through
-direct HTTP clients and lightweight stdio proxies. Both execute the same
-application core and enforce the same repository root, policy, locking,
+The runtime exposes one repository's configured capability catalog. It is
+either an on-demand stdio process for a contributor's working copy or the
+read-only shared server for many readers of one working copy. Both execute the
+same application core and enforce the same repository root, policy, locking,
 transactions, events, and result contracts.
 
 - **PK-MCP-006:** behavior from the existing gateway and domain tools MAY be
@@ -125,9 +125,8 @@ hard-coded lists, determine which operations apply to each EntityType.
 
 - **PK-MCP-030:** stdio MUST be supported for local harness integration and
   started with `processkit mcp serve --stdio`.
-- **PK-MCP-031:** `processkit mcp serve --http` MAY run as a long-lived daemon
-  for exactly one repository root, bound to loopback or, as the read-only
-  shared server, to a configured address. It MUST require
+- **PK-MCP-031:** `processkit mcp serve --http --listen ADDRESS` MAY run the
+  read-only shared server for exactly one repository root. It MUST require
   per-client authentication, publish health and catalog-generation metadata,
   and reject a request attempting to select another root.
 - **PK-MCP-032:** requests MUST have size and concurrency limits, cancellation,
@@ -137,14 +136,14 @@ hard-coded lists, determine which operations apply to each EntityType.
 - **PK-MCP-034:** graceful shutdown MUST stop accepting work, complete or
   cancel active operations according to contract, flush evidence, and release
   locks.
-- **PK-MCP-035:** `processkit mcp proxy` MUST be a bounded transport bridge; it
-  MUST NOT load tools, reinterpret schemas, weaken authentication, select a
-  different root, or acquire independent mutation authority.
-- **PK-MCP-036:** daemon reuse MUST invalidate or atomically refresh its
+- **PK-MCP-035:** processkit v1 MUST NOT provide a local loopback daemon or a
+  stdio-to-HTTP proxy. Harnesses use stdio locally and their own HTTP
+  transport for the shared server.
+- **PK-MCP-036:** the shared server MUST invalidate or atomically refresh its
   capability catalog and derived indexes when the installed manifest,
   configuration, canonical generation, or adapter plan changes. A stale
   catalog MUST be reported rather than silently served as current.
-- **PK-MCP-037:** processkit provides a foreground daemon process and health
+- **PK-MCP-037:** processkit provides a foreground server process and health
   contract, not a cross-platform service manager. Aibox, an operating-system
   supervisor, or another authorized runtime MAY own start, restart, and stop.
 

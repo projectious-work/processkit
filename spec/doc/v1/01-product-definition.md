@@ -72,10 +72,9 @@ history or one model provider's private memory:
   participants and MUST NOT imply one repository or one processkit
   installation per agent.
 - **PK-PROD-019:** every reference runtime MUST operate on the host where it
-  runs against one selected working copy. A long-lived MCP daemon MAY serve
-  several authorized clients for that working copy, locally or as the
-  read-only shared server defined in
-  [Resources, identity, and access control](17-resources-identity-and-access.md), but it is not shared repository
+  runs against one selected working copy. The read-only shared server defined
+  in [Resources, identity, and access control](17-resources-identity-and-access.md) MAY serve several
+  authenticated clients for that working copy, but it is not shared repository
   authority or a second project database. Git synchronization and review
   transfer accepted state between working copies.
 - **PK-PROD-007:** project state MUST remain authoritative when indexes,

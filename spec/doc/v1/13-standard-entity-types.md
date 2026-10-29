@@ -2,8 +2,8 @@
 
 This chapter refines high-use ontology concepts and defines the conformance
 contract for the complete inventory in the conceptual-model chapter. The
-named refinements below do not reduce v1 scope: every one of the 89 canonical
-concepts is a release requirement.
+named refinements below do not reduce v1 scope: every one of the 90 canonical
+concepts (the 89-concept inventory plus Labeling) is a release requirement.
 
 ## Complete-ontology requirements
 
@@ -65,7 +65,7 @@ concepts is a release requirement.
 
 - **PK-ENTITY-030:** Note captures bounded uncommitted information as one of
   `fleeting`, `insight`, `question`, or `reference`, with title, body, source,
-  tags, and optional review time.
+  labels, and optional review time. Note has no separate tag field.
 - **PK-ENTITY-031:** promotion creates or links a durable target; it does not
   silently mutate a Note into a different EntityType.
 
@@ -130,6 +130,10 @@ concepts is a release requirement.
   capabilities or skills, and default scope; a Role is not a person or model.
 - **PK-ENTITY-101:** changing the meaning of a Role with historical bindings
   requires versioning or supersession rather than silent reinterpretation.
+- **PK-ENTITY-102:** a Role MAY declare access rules of verbs on kinds,
+  optionally narrowed by names or a label selector, as defined in
+  [Resources, identity, and access control](17-resources-identity-and-access.md). Access rules grant
+  nothing until a `grants-role` Binding binds the Role.
 
 ### TeamMember
 
@@ -162,6 +166,19 @@ concepts is a release requirement.
   validity, conditions, and description.
 - **PK-ENTITY-121:** Binding validation enforces the relation registry's
   endpoint, cardinality, inverse, and temporal rules.
+- **PK-ENTITY-122:** the kernel relation type `grants-role` has a user or
+  group principal as subject, a Role as target, a Container as scope, and
+  optional validity. It is the only way to grant access.
+
+### Container
+
+- **PK-ENTITY-150:** Container is an organizational scope with name, title,
+  owner, optional parent through the `Hierarchy` relation, and lifecycle. Core
+  discriminators are Team and Project; a Container without discriminator
+  represents a company or other unit.
+- **PK-ENTITY-151:** a Container is the namespace of the resources that name
+  it. Renaming or removing a Container that resources or Bindings reference
+  MUST fail unless the same operation updates or archives every reference.
 
 ## Durable execution record
 

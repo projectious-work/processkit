@@ -31,8 +31,8 @@ Tests assert observable contracts and failure behavior, not only code paths.
   unchanged update, local modification, compatible merge, conflict, stale plan,
   interruption, recovery, downgrade refusal, and conservative uninstall.
 - **PK-TEST-005:** MCP tests MUST compare runtime discovery with published
-  schemas and execute requests over stdio and the authenticated daemon/proxy
-  path, including concurrency, cancellation, bounds, malformed input,
+  schemas and execute requests over stdio and the authenticated shared
+  server, including concurrency, cancellation, bounds, malformed input,
   authentication refusal, catalog refresh, root isolation, and shutdown.
 - **PK-TEST-015:** every application operation exposed through both CLI and
   MCP MUST have adapter-equivalence tests for successful, refused, stale,

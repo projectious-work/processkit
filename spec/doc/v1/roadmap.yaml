@@ -27,9 +27,11 @@ groups:
           matrices, then deliver the small versioned kernel registry with
           generated contracts, safe canonical storage, lifecycle enforcement,
           events, query metadata, fixtures, and deterministic recovery. Fix the
-          resource envelope with name, namespace, labels, and annotations,
-          the label-selector grammar, and the principal input to every
-          application operation, with only the local-owner authorizer. The
+          resource envelope with name, Container namespace, labels, and
+          annotations, add Container and Labeling to the kernel, define the
+          label-selector grammar, and pass a principal into every application
+          operation, with only the local-owner authorizer. processkit's own
+          repository uses only this published ontology. The
           storage and transaction requirements are under owner review before
           this phase starts.
         status: planned
@@ -49,7 +51,7 @@ groups:
       - id: PK1-P3
         title: Serve repository context and governance standards over MCP
         summary: >-
-          Deliver stdio MCP and the authenticated local daemon/proxy path from
+          Deliver stdio MCP from
           the same application core as the CLI, with discovery, typed next
           actions, durable mutation identity, and agent-interface adversarial
           security. Ship the governance-standard JSON Schema and template so
@@ -90,8 +92,8 @@ groups:
           Identify callers through an operator-configured chain of local,
           OIDC, x509 client-certificate, and trusted-proxy authenticators
           without managing identity in processkit. Authorize every read with
-          deny-by-default roles and role bindings stored as reviewed
-          repository files, scoped by namespace hierarchy and label
+          deny-by-default access rules on kernel Roles, granted by kernel
+          grants-role Bindings scoped to Containers and narrowed by label
           selectors, and filter listing, search, retrieval, and context
           assembly before ranking. Run the read-only shared server over TLS
           for many users of one installation, with access audit logging.

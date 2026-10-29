@@ -39,8 +39,9 @@ compiled defaults
   is resolved before other project configuration.
 - **PK-CONFIG-010:** project configuration MUST declare the desired profile,
   packages, skills, MCP capabilities, and harness-adapter targets needed for
-  deterministic reconciliation. Machine-local daemon addresses, credentials,
-  and supervisor state MUST remain in higher-authority local configuration.
+  deterministic reconciliation. Shared-server listen addresses, TLS material,
+  authenticator settings, credentials, and supervisor state MUST remain in
+  higher-authority operator configuration.
 
 ## Result envelope
 

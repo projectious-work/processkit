@@ -57,13 +57,13 @@ relevant. Human explanation may accompany but cannot replace the typed result.
 - **PK-AGENT-011:** the MCP server MUST reject duplicate, ambiguous, shadowed, or
   provenance-conflicting tool identities across core, installed package, and
   extension capabilities.
-- **PK-AGENT-012:** a running MCP server or daemon MUST use a stable capability
+- **PK-AGENT-012:** a running MCP server MUST use a stable capability
   snapshot; package or configuration changes require explicit refresh with a
   reported before/after manifest or restart.
 - **PK-AGENT-013:** structured next actions MUST reference registered product
   operations and MUST NOT contain arbitrary executable instructions obtained
   from untrusted project content.
-- **PK-AGENT-014:** loss of an MCP client or proxy session MUST NOT lose,
+- **PK-AGENT-014:** loss of an MCP client session MUST NOT lose,
   duplicate, or ambiguously repeat a repository mutation; status and recovery
   remain available through CLI or another authorized client.
 

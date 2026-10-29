@@ -50,13 +50,13 @@ Trust boundaries exist between:
 
 ## MCP and instruction safety
 
-- **PK-SEC-020:** stdio is the universal local transport. The optional v1 HTTP
-  daemon MUST bind to loopback, authenticate every client using credentials
-  kept outside project-controlled files, enforce origin and request-isolation
-  controls applicable to the selected MCP transport, and disclose residual
-  same-host risks. Non-loopback binding is permitted only for the read-only
-  shared server defined in [Resources, identity, and access control](17-resources-identity-and-access.md).
-- **PK-SEC-028:** daemon and proxy diagnostics MUST redact bearer material and
+- **PK-SEC-020:** stdio is the universal local transport. The only HTTP
+  transport is the read-only shared server defined in
+  [Resources, identity, and access control](17-resources-identity-and-access.md). It MUST use TLS,
+  authenticate every client with credentials kept outside project-controlled
+  files, and enforce origin and request-isolation controls applicable to the
+  selected MCP transport.
+- **PK-SEC-028:** server diagnostics MUST redact bearer material and
   MUST NOT place credentials in command arguments, repository configuration,
   generated skill projections, or MCP discovery responses. Credential files
   require owner-only permissions where the platform supports them.
@@ -89,7 +89,7 @@ Trust boundaries exist between:
   closed on duplicate names, ambiguous namespaces, manifest drift, tool
   replacement, or an unreviewed capability refresh.
 - **PK-SEC-038:** durable mutations MUST resist ambiguous replay after client,
-  proxy, daemon, timeout, or cancellation failure and remain recoverable without
+  server, timeout, or cancellation failure and remain recoverable without
   private conversation state.
 - **PK-SEC-039:** structured diagnostics and next actions MUST NOT reflect
   arbitrary executable instructions from entity, package, reference, search,

@@ -42,8 +42,7 @@ archive, checksums, SBOM, and signature or attestation material.
 | `processkit harness detect|verify` | Detect applicable harnesses and verify generated projections; the general catalog lists adapters. |
 | `processkit handoff export|import` | Export or import a bounded cross-repository handoff without remote mutation. |
 | `processkit mcp serve --stdio` | Serve the configured MCP capability set over standard input/output. |
-| `processkit mcp serve --http [--listen ADDRESS]` | Run the same repository-bound MCP application as a long-lived authenticated daemon: loopback by default, or as the read-only shared server. |
-| `processkit mcp proxy` | Bridge a harness's stdio connection to the configured local daemon. |
+| `processkit mcp serve --http --listen ADDRESS` | Run the read-only shared server for one working copy over authenticated HTTPS. |
 | `processkit package validate` | Validate a package or extension in isolation. |
 | `processkit standard list|show|section|applicable` | Read governance standards at disclosure level 0, 1, or 2, or find those applicable to a task. |
 | `processkit standard validate` | Validate governance standards against the installed schema and report exact failures. |
@@ -79,11 +78,11 @@ archive, checksums, SBOM, and signature or attestation material.
   copy. They MUST NOT stage, commit, branch, merge, push, open a pull request,
   or contact a Git forge unless a separately named future adapter command is
   explicitly invoked.
-- **PK-CLI-027:** stdio is the universal v1 MCP baseline. V1 also supports an
-  optional local daemon over authenticated loopback HTTP and a lightweight
-  stdio proxy, plus the self-operated, authenticated, read-only shared server
-  defined in [Resources, identity, and access control](17-resources-identity-and-access.md).
-  Unauthenticated endpoints and a hosted processkit service are outside v1.
+- **PK-CLI-027:** stdio is the universal v1 MCP transport for local work. The
+  only network transport is the self-operated, authenticated, read-only shared
+  server defined in [Resources, identity, and access control](17-resources-identity-and-access.md).
+  A local loopback daemon, a stdio proxy, unauthenticated endpoints, and a
+  hosted processkit service are outside v1.
 - **PK-CLI-028:** harness projection changes use the ordinary lifecycle:
   `processkit plan adapter --harness TARGET...` followed by
   `processkit apply --plan PLAN`. `TARGET` is data resolved through the adapter

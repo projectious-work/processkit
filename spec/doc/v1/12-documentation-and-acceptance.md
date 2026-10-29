@@ -75,9 +75,10 @@ examples, governing decisions, and applicable company standards.
 1. Install an exact authenticated release into an empty temporary repository
    on every supported platform.
 2. Verify the installed profile and inspect effective configuration.
-3. Start MCP over stdio, then reuse the same capability catalog through an
-   authenticated local daemon and stdio proxy; prove equivalent operations,
-   root isolation, refresh, and shutdown behavior.
+3. Start MCP over stdio, then serve the same repository through the
+   authenticated read-only shared server; prove equivalent read operations,
+   refusal of mutating tools, per-principal filtering, root isolation,
+   refresh, and shutdown behavior.
 4. List installed skills, ontology concepts, packages, profiles, and MCP
    servers in both text and machine form and reconcile the result with package
    manifests and MCP discovery.
@@ -119,7 +120,7 @@ examples, governing decisions, and applicable company standards.
 20. Inject adversarial instructions through every supported content class and
     prove that only explicitly trusted skills become instructions, tool
     definitions remain stable, and unsafe next actions are refused.
-21. Interrupt and retry one mutation across stdio, daemon, and proxy clients;
+21. Interrupt and retry one mutation across stdio client restarts;
     prove one canonical effect, durable status, and equivalent CLI recovery.
 22. Run one internal research-to-assessment `linear-reviewed` pilot through
     draft, human review, and final recommendation; prove explicit context

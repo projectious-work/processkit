@@ -75,8 +75,8 @@ narrow native component.
   Retained behavior MUST become a requirement or implementation-independent
   black-box fixture.
 - **PK-ARCH-008:** the reference runtime is an on-demand CLI or MCP process,
-  or an optional long-lived local MCP daemon, bound to one repository working
-  copy. A sidecar, shared database, remote daemon, or hosted processkit service
+  or the optional read-only shared MCP server, bound to one repository working
+  copy. A sidecar, shared database, or hosted processkit service
   MUST NOT be required for v1.
 - **PK-ARCH-009:** the Python application MUST remain useful without Aibox,
   Airunner, Tau, Kaits, or a Git forge. Those products may launch or consume
@@ -95,7 +95,7 @@ ports: repository, lexical index, semantic index, package, clock, process,
        network, rendering
         ↓
 local adapters: filesystem, SQLite/FTS, embedding/vector index,
-                uv/Python packaging, MCP stdio and loopback HTTP
+                uv/Python packaging, MCP stdio and HTTPS
 ```
 
 Each running application instance binds the repository port to one working

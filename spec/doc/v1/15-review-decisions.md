@@ -114,11 +114,11 @@ over the kernel `Policy` primitive, so the ontology gains no new primitive.
 **Accepted:** every served object is a resource with kind, namespace, name,
 selectable labels, and non-selectable annotations. Callers are identified by
 an operator-configured authenticator chain (`local`, `oidc`, `x509`,
-`trusted-proxy`) and authorized by additive, deny-by-default roles and role
-bindings stored as reviewed repository files. A non-loopback shared server is
-allowed in v1 only with TLS, a non-local authenticator, and no mutating tools.
-Access control is roadmap item PK1-P6 and a v1.0 release gate; the envelope
-fields and the principal input to the application core are part of PK1-P1.
+`trusted-proxy`) and authorized by additive, deny-by-default access rules on
+kernel Roles, granted through kernel `grants-role` Bindings scoped to
+Containers. Access control is roadmap item PK1-P6 and a v1.0 release gate; the
+envelope fields and the principal input to the application core are part of
+PK1-P1.
 
 **Reason:** one installation serves people and agents with different rights,
 so even authenticated callers must see only the standards, documents, skills,
@@ -151,6 +151,42 @@ gateway or harness. Gateway concerns such as upstream credentials, token
 exchange, and tool forwarding stay outside processkit.
 Writing standards is an ordinary reviewed file change; MCP stays read-only
 for standards in v1.
+
+## D19 — Access control reuses the ontology, and processkit dogfoods it
+
+**Accepted:** namespaces are Container entities, access rules extend the
+kernel Role, grants are kernel Bindings with relation type `grants-role`, and
+enforcement is the contract of the Visibility mechanic. Container joins the
+kernel with the Team and Project discriminators; Labeling is the only new
+foundational concept and replaces the Note-specific tag field. processkit's
+own repository uses only the published core ontology and published packages.
+
+**Reason:** separate access-control kinds would duplicate Role and Binding
+under colliding names. An ontology that processkit does not use for itself
+drifts from what users receive; dogfooding exposes missing or awkward
+concepts before users meet them.
+
+**Impact:** the kernel grows by one primitive and one foundational concept.
+Every served kind must be registered in the ontology registry. Any concept
+processkit needs for its own governance is added to the published ontology
+or not used.
+
+## D20 — stdio and the shared server; no local daemon
+
+**Accepted:** v1 has two MCP serving modes: stdio for authoring and project
+work in one working copy, and the authenticated read-only shared server for
+distributing a governing repository's content to many readers. The local
+loopback daemon and stdio proxy from D11 are removed.
+
+**Reason:** the daemon's benefit was startup cost across several sessions of
+one person, which stdio performance budgets address. Keeping it would add a
+second HTTP mode with its own credentials, refresh, and tests. Access control
+only protects confidentiality on the shared server, because a stdio caller
+can already read every file of the working copy.
+
+**Impact:** D11 is superseded. One HTTP mode remains, always TLS-protected,
+authenticated, and read-only. Agents typically combine a local stdio server
+for their project with the company's shared server.
 
 ## D3 — One application core
 
@@ -276,6 +312,8 @@ idempotent regeneration, conflict preservation, and cross-harness conformance
 fixtures.
 
 ## D11 — Retain the efficient local MCP daemon
+
+**Superseded by D20.**
 
 **Proposal:** support both an on-demand stdio server and the useful v0-style
 long-lived local gateway daemon with lightweight stdio proxies. The v1 daemon

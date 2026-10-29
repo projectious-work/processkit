@@ -16,7 +16,7 @@
       "maxLength": 80
     },
     "namespace": {
-      "description": "Declared namespace; omitted means the repository's root namespace.",
+      "description": "Name of the Container this resource belongs to; omitted means the repository's root Container.",
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
       "maxLength": 63
