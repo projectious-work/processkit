@@ -133,7 +133,8 @@ starting point an author or agent fills in.
   can retrieve one section without loading the whole standard. Sections MAY
   use Markdown text; rules and applicability MUST remain structured fields.
 - **PK-STD-004:** governance standards MUST be stored under the configured
-  context directory at `standards/<standard-id>.json`. Other locations MUST be
+  context directory at `standards/<name>.json`, where `<name>` equals
+  `metadata.name`. Other locations MUST be
   declared in project configuration; processkit MUST NOT discover standards by
   scanning arbitrary repository paths.
 - **PK-STD-005:** `processkit standard validate` and `processkit verify` MUST
@@ -150,6 +151,9 @@ starting point an author or agent fills in.
 - **PK-STD-008:** the standards surface is read-only over MCP in v1. Creating
   or changing a standard is an ordinary reviewed file change validated by
   `processkit standard validate`.
+- **PK-STD-013:** a standard MUST use the common resource envelope, so it can
+  carry a namespace and labels and be selected and access-controlled like
+  every other served resource.
 - **PK-STD-009:** a standard is modelled as a composition over the kernel
   `Policy` primitive so it can take part in relations, lifecycle, and events
   without a separate ontology concept.
@@ -176,7 +180,7 @@ Serving a standard has three levels so agents load only what a task needs:
 
 ### Future hierarchies
 
-Roadmap item PK1-P6 plans standards inherited from pinned upstream processkit
+Roadmap item PK1-P7 plans standards inherited from pinned upstream processkit
 repositories, for example company to team to project. Its contract must keep
 upstream content read-only, record provenance, make local overrides explicit
 and reviewable, and never create shared mutable authority. Until that contract
@@ -243,7 +247,7 @@ exact upstream range, and provide a continuous update and conflict-resolution
 path. A downstream Git fork requiring indefinite manual merges is one option
 to evaluate, not the assumed product model.
 
-Roadmap item PK1-P6 covers the first concrete step in this direction: an MCP
-gateway for trusted organization MCP servers and inherited governance
-standards. It does not change the v1 contract until it is specified and
-accepted.
+Two v1 capabilities already serve this direction without a distribution: the
+trusted MCP server catalog and access control in
+[Resources, identity, and access control](17-resources-identity-and-access.md). Roadmap item PK1-P7 plans
+inherited governance standards. Neither makes processkit an MCP gateway.

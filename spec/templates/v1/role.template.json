@@ -1,0 +1,33 @@
+{
+  "apiVersion": "processkit.projectious.work/v1",
+  "kind": "Role",
+  "metadata": {
+    "name": "standards-reader"
+  },
+  "spec": {
+    "description": "Read standards and documents that are not confidential.",
+    "rules": [
+      {
+        "kinds": [
+          "Standard",
+          "Document"
+        ],
+        "verbs": [
+          "get",
+          "list",
+          "search"
+        ],
+        "selector": "sensitivity notin (confidential)"
+      },
+      {
+        "kinds": [
+          "MCPServer"
+        ],
+        "verbs": [
+          "get",
+          "list"
+        ]
+      }
+    ]
+  }
+}

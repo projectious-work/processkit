@@ -26,7 +26,10 @@ groups:
           Produce the 89-concept disposition and minimal standards-reuse
           matrices, then deliver the small versioned kernel registry with
           generated contracts, safe canonical storage, lifecycle enforcement,
-          events, query metadata, fixtures, and deterministic recovery. The
+          events, query metadata, fixtures, and deterministic recovery. Fix the
+          resource envelope with name, namespace, labels, and annotations,
+          the label-selector grammar, and the principal input to every
+          application operation, with only the local-owner authorizer. The
           storage and transaction requirements are under owner review before
           this phase starts.
         status: planned
@@ -53,7 +56,10 @@ groups:
           a company, team, or project repository can author arbitrary
           structured standards at a defined location, validate them, and
           serve them to agents with progressive disclosure and applicability
-          filtering. processkit ships no company standard content.
+          filtering. Serve the trusted MCP server catalog and declared
+          document sources the same way, with generic resource list and get
+          operations, label selectors, and MCP resource URIs. processkit ships
+          no company standard content and is not an MCP gateway.
         status: planned
         dependencies: [PK1-P1, PK1-P2]
       - id: PK1-P4
@@ -79,27 +85,39 @@ groups:
         status: planned
         dependencies: [PK1-P3, PK1-P4]
       - id: PK1-P6
-        title: Federate trusted MCP servers and standards hierarchies
+        title: Control access to served resources
         summary: >-
-          Let the processkit MCP server act as a gateway that serves trusted,
-          explicitly configured company, team, or project MCP servers, and
-          resolve governance standards inherited from pinned upstream
-          processkit repositories, with provenance, override rules, and no
-          shared mutable authority.
-        status: idea
+          Identify callers through an operator-configured chain of local,
+          OIDC, x509 client-certificate, and trusted-proxy authenticators
+          without managing identity in processkit. Authorize every read with
+          deny-by-default roles and role bindings stored as reviewed
+          repository files, scoped by namespace hierarchy and label
+          selectors, and filter listing, search, retrieval, and context
+          assembly before ranking. Run the read-only shared server over TLS
+          for many users of one installation, with access audit logging.
+        status: planned
         dependencies: [PK1-P3, PK1-P5]
+      - id: PK1-P7
+        title: Inherit standards from upstream processkit repositories
+        summary: >-
+          Resolve governance standards inherited from pinned upstream
+          processkit repositories, for example company to team to project,
+          with provenance, explicit reviewed overrides, upstream access
+          policy respected, and no shared mutable authority.
+        status: idea
+        dependencies: [PK1-P6]
   - id: release
     title: Stabilization and release
     items:
-      - id: PK1-P7
+      - id: PK1-P8
         title: Prove migration from v0 and alpha installations
         summary: >-
           Complete the v0 and alpha capability disposition matrix, migrate
           representative corpora without data loss, and preserve retained
           black-box behavior.
         status: planned
-        dependencies: [PK1-P4, PK1-P5]
-      - id: PK1-P8
+        dependencies: [PK1-P4, PK1-P5, PK1-P6]
+      - id: PK1-P9
         title: Prove Git-mediated collaboration in a pilot
         summary: >-
           Converge independent agent clones through reviewed Git changes and
@@ -108,8 +126,8 @@ groups:
           provider harnesses and measure context selection, human correction,
           provenance, staleness, and rerun behavior.
         status: planned
-        dependencies: [PK1-P7]
-      - id: PK1-P9
+        dependencies: [PK1-P8]
+      - id: PK1-P10
         title: Complete beta conformance
         summary: >-
           Pass kernel coverage plus the contract, security, extension,
@@ -117,18 +135,18 @@ groups:
           and enter feature freeze. Optional packages and idea-status phases
           do not become universal release gates.
         status: planned
-        dependencies: [PK1-P8]
-      - id: PK1-P10
+        dependencies: [PK1-P9]
+      - id: PK1-P11
         title: Verify release candidates
         summary: >-
           Prove every acceptance journey using exact candidate artifacts with
           no unexplained skips.
         status: planned
-        dependencies: [PK1-P9]
-      - id: PK1-P11
+        dependencies: [PK1-P10]
+      - id: PK1-P12
         title: Publish and verify processkit v1.0.0
         summary: >-
           Publish the accepted stable commit and independently verify
           installation, MCP, migration, documentation, and first-use behavior.
         status: planned
-        dependencies: [PK1-P10]
+        dependencies: [PK1-P11]

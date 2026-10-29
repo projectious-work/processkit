@@ -30,7 +30,8 @@ meanings defined by RFC 2119 and RFC 8174.
 14. [Performance and operations](14-performance-and-operations.md)
 15. [Review decisions](15-review-decisions.md)
 16. [Agent-native product posture](16-agent-native-posture.md)
-17. [Roadmap](roadmap.yaml)
+17. [Resources, identity, and access control](17-resources-identity-and-access.md)
+18. [Roadmap](roadmap.yaml)
 
 ## Contract hierarchy
 
@@ -44,7 +45,8 @@ explicit baseline amendment before affected implementation continues.
 processkit is a composite product with these company-standard profiles:
 
 - CLI application;
-- local per-repository MCP process;
+- local per-repository MCP process, optionally run as a self-operated,
+  access-controlled, read-only shared server;
 - schema, protocol, and process package;
 - Python library for internal composition and tested extension points; and
 - documentation website.

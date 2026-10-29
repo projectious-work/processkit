@@ -1,34 +1,43 @@
 {
   "apiVersion": "processkit.projectious.work/v1",
   "kind": "Standard",
-  "id": "example-standard",
-  "title": "Example standard",
-  "version": "0.1.0",
-  "status": "draft",
-  "owner": "Replace with the accountable person, role, or team",
-  "summary": "Replace with what this standard requires, in at most a few sentences. Agents see this before deciding to load more.",
-  "triggers": [
-    "Replace with a situation in which an agent must apply this standard"
-  ],
-  "applicability": {
-    "profiles": ["*"]
+  "metadata": {
+    "name": "example-standard",
+    "labels": {
+      "area": "replace-with-area"
+    }
   },
-  "rules": [
-    {
-      "id": "EX-001",
-      "level": "MUST",
-      "text": "Replace with one testable rule.",
-      "rationale": "Replace with why the rule exists.",
-      "section": "details"
-    }
-  ],
-  "sections": [
-    {
-      "id": "details",
-      "title": "Details",
-      "body": "Replace with the detailed guidance, examples, and exceptions for the rules above."
-    }
-  ],
-  "references": [],
-  "supersedes": []
+  "spec": {
+    "title": "Example standard",
+    "version": "0.1.0",
+    "status": "draft",
+    "owner": "Replace with the accountable person, role, or team",
+    "summary": "Replace with what this standard requires, in at most a few sentences. Agents see this before deciding to load more.",
+    "triggers": [
+      "Replace with a situation in which an agent must apply this standard"
+    ],
+    "applicability": {
+      "profiles": [
+        "*"
+      ]
+    },
+    "rules": [
+      {
+        "id": "EX-001",
+        "level": "MUST",
+        "text": "Replace with one testable rule.",
+        "rationale": "Replace with why the rule exists.",
+        "section": "details"
+      }
+    ],
+    "sections": [
+      {
+        "id": "details",
+        "title": "Details",
+        "body": "Replace with the detailed guidance, examples, and exceptions for the rules above."
+      }
+    ],
+    "references": [],
+    "supersedes": []
+  }
 }

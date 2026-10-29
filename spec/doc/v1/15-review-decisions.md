@@ -95,8 +95,8 @@ standards, validates standards that a repository authors at
 `context/standards/`, and serves them read-only over MCP and CLI with three
 disclosure levels and profile-based applicability. MCP serving moves ahead of
 memory and retrieval in the roadmap (PK1-P3), and memory and retrieval become
-PK1-P5. A gateway for trusted MCP servers and inherited standards
-hierarchies is recorded as idea PK1-P6, outside the v1.0 release gates.
+PK1-P5. Inherited standards hierarchies are recorded as idea PK1-P7,
+outside the v1.0 release gates. D18 replaces the earlier gateway idea.
 
 **Reason:** companies, teams, and projects need agents to apply their own
 rules without loading every rule into every prompt. Skills can approximate
@@ -108,6 +108,47 @@ small extension of that role rather than a new product.
 **Impact:** the standard content stays in the consuming repository.
 processkit ships no organization's standards. Standards are a composition
 over the kernel `Policy` primitive, so the ontology gains no new primitive.
+
+## D17 — Kubernetes-pattern resources and consumed identity
+
+**Accepted:** every served object is a resource with kind, namespace, name,
+selectable labels, and non-selectable annotations. Callers are identified by
+an operator-configured authenticator chain (`local`, `oidc`, `x509`,
+`trusted-proxy`) and authorized by additive, deny-by-default roles and role
+bindings stored as reviewed repository files. A non-loopback shared server is
+allowed in v1 only with TLS, a non-local authenticator, and no mutating tools.
+Access control is roadmap item PK1-P6 and a v1.0 release gate; the envelope
+fields and the principal input to the application core are part of PK1-P1.
+
+**Reason:** one installation serves people and agents with different rights,
+so even authenticated callers must see only the standards, documents, skills,
+and catalog entries granted to them. Managing identity inside processkit
+would duplicate company identity providers and certificate authorities. The
+Kubernetes pattern is widely understood, separates authentication from
+authorization, and keeps policy reviewable in Git. Certificates alone would
+exclude MCP clients that authenticate with OAuth, so they are one
+authenticator among several.
+
+**Impact:** processkit never stores users or issues credentials; identity
+providers and certificate authorities are operator infrastructure. Labels and
+namespaces are fixed in the kernel envelope before the first release, which
+avoids a breaking format change later. Retrieval and context assembly must
+filter before ranking. Remote mutation stays outside v1.
+
+## D18 — Catalog trusted MCP servers; do not become a gateway
+
+**Accepted:** processkit serves `MCPServer` entries that a governing
+repository authors from a published schema and template, including an entry
+for an external company gateway. It never connects to, proxies, aggregates,
+or invokes a catalogued server. The earlier PK1-P6 gateway idea is withdrawn.
+
+**Reason:** the product focus is serving governance content. General MCP
+gateways already exist; processkit's distinct value is the reviewed,
+access-controlled statement of which servers an organization trusts.
+
+**Impact:** the catalog is part of PK1-P3 and can be exported for an external
+gateway or harness. Gateway concerns such as upstream credentials, token
+exchange, and tool forwarding stay outside processkit.
 Writing standards is an ordinary reviewed file change; MCP stays read-only
 for standards in v1.
 

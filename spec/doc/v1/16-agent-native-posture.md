@@ -54,7 +54,7 @@ relevant. Human explanation may accompany but cannot replace the typed result.
 - **PK-AGENT-010:** MCP tool descriptions, schemas, annotations, namespaces,
   and capability membership MUST be versioned trusted package assets and MUST
   NOT be derived from entity bodies or external-reference prose.
-- **PK-AGENT-011:** the gateway MUST reject duplicate, ambiguous, shadowed, or
+- **PK-AGENT-011:** the MCP server MUST reject duplicate, ambiguous, shadowed, or
   provenance-conflicting tool identities across core, installed package, and
   extension capabilities.
 - **PK-AGENT-012:** a running MCP server or daemon MUST use a stable capability

@@ -42,11 +42,14 @@ archive, checksums, SBOM, and signature or attestation material.
 | `processkit harness detect|verify` | Detect applicable harnesses and verify generated projections; the general catalog lists adapters. |
 | `processkit handoff export|import` | Export or import a bounded cross-repository handoff without remote mutation. |
 | `processkit mcp serve --stdio` | Serve the configured MCP capability set over standard input/output. |
-| `processkit mcp serve --http` | Run the same repository-bound MCP application as a long-lived authenticated loopback daemon. |
+| `processkit mcp serve --http [--listen ADDRESS]` | Run the same repository-bound MCP application as a long-lived authenticated daemon: loopback by default, or as the read-only shared server. |
 | `processkit mcp proxy` | Bridge a harness's stdio connection to the configured local daemon. |
 | `processkit package validate` | Validate a package or extension in isolation. |
 | `processkit standard list|show|section|applicable` | Read governance standards at disclosure level 0, 1, or 2, or find those applicable to a task. |
 | `processkit standard validate` | Validate governance standards against the installed schema and report exact failures. |
+| `processkit resource list|get` | List or read any served resource kind with namespace and label selectors. |
+| `processkit catalog list|show|export` | Read the trusted MCP server catalog or export it for an external gateway or harness. |
+| `processkit access whoami|can-i|validate` | Show the current principal, explain an access decision, or validate roles, bindings, and namespaces. |
 
 - **PK-CLI-009:** the generic entity, event, context, skill, and handoff
   command groups are mandatory v1 surfaces. EntityType- and skill-specific
@@ -78,7 +81,9 @@ archive, checksums, SBOM, and signature or attestation material.
   explicitly invoked.
 - **PK-CLI-027:** stdio is the universal v1 MCP baseline. V1 also supports an
   optional local daemon over authenticated loopback HTTP and a lightweight
-  stdio proxy. Remote, unauthenticated, and hosted endpoints are outside v1.
+  stdio proxy, plus the self-operated, authenticated, read-only shared server
+  defined in [Resources, identity, and access control](17-resources-identity-and-access.md).
+  Unauthenticated endpoints and a hosted processkit service are outside v1.
 - **PK-CLI-028:** harness projection changes use the ordinary lifecycle:
   `processkit plan adapter --harness TARGET...` followed by
   `processkit apply --plan PLAN`. `TARGET` is data resolved through the adapter

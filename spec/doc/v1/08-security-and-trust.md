@@ -54,7 +54,8 @@ Trust boundaries exist between:
   daemon MUST bind to loopback, authenticate every client using credentials
   kept outside project-controlled files, enforce origin and request-isolation
   controls applicable to the selected MCP transport, and disclose residual
-  same-host risks. Non-loopback binding is outside v1.
+  same-host risks. Non-loopback binding is permitted only for the read-only
+  shared server defined in [Resources, identity, and access control](17-resources-identity-and-access.md).
 - **PK-SEC-028:** daemon and proxy diagnostics MUST redact bearer material and
   MUST NOT place credentials in command arguments, repository configuration,
   generated skill projections, or MCP discovery responses. Credential files
@@ -76,13 +77,15 @@ Trust boundaries exist between:
   authority solely from mutable TeamMember files, Git author metadata, harness
   prompts, or environment variables. Authority-sensitive operations require an
   authenticated runtime principal or an explicit local policy decision.
+  Identity, authenticators, and access policy are defined in
+  [Resources, identity, and access control](17-resources-identity-and-access.md).
 - **PK-SEC-027:** project TeamMember records MUST NOT be used as storage for
   model-provider credentials, harness session secrets, or private conversational
   memory.
 - **PK-SEC-029:** tool names, descriptions, schemas, annotations, namespaces,
   and capability membership MUST be immutable trusted assets for one running
   capability snapshot; content and extensions MUST NOT shadow them.
-- **PK-SEC-037:** the gateway MUST verify tool identity and provenance and fail
+- **PK-SEC-037:** the MCP server MUST verify tool identity and provenance and fail
   closed on duplicate names, ambiguous namespaces, manifest drift, tool
   replacement, or an unreviewed capability refresh.
 - **PK-SEC-038:** durable mutations MUST resist ambiguous replay after client,

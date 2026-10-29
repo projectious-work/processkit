@@ -153,6 +153,12 @@ bounds.
   stable across path changes.
 - **PK-MODEL-006:** references MUST use typed IDs or declared external
   references; filenames and Markdown links alone are not durable identity.
+- **PK-MODEL-016:** the common envelope MUST carry `metadata.name`, an
+  optional `metadata.namespace`, selectable `metadata.labels`, and
+  non-selectable `metadata.annotations` as defined in
+  [Resources, identity, and access control](17-resources-identity-and-access.md). These are envelope
+  fields, not ontology concepts, and are fixed in the PK1-P1 kernel so later
+  access control does not change entity formats.
 - **PK-MODEL-007:** a schema MUST distinguish absent, null, empty, and default
   values whenever they have different semantics.
 

@@ -113,8 +113,10 @@ hard-coded lists, determine which operations apply to each EntityType.
   operation contract explicitly defines partial outcomes and compensation.
 - **PK-MCP-024:** idempotency keys SHOULD be supported for operations likely to
   be retried by orchestrators.
-- **PK-MCP-025:** authorization is local policy plus host-process authority;
-  MCP connectivity alone MUST NOT grant permission to bypass policy.
+- **PK-MCP-025:** authorization is the access policy in
+  [Resources, identity, and access control](17-resources-identity-and-access.md) evaluated for the
+  authenticated principal, plus local policy and host-process authority. MCP
+  connectivity alone MUST NOT grant permission to bypass policy.
 - **PK-MCP-026:** a successful mutation changes canonical files only in the
   selected working copy. It MUST NOT imply that the change was staged,
   committed, reviewed, merged, pushed, or accepted by another clone.
@@ -124,7 +126,8 @@ hard-coded lists, determine which operations apply to each EntityType.
 - **PK-MCP-030:** stdio MUST be supported for local harness integration and
   started with `processkit mcp serve --stdio`.
 - **PK-MCP-031:** `processkit mcp serve --http` MAY run as a long-lived daemon
-  bound to loopback for exactly one repository root. It MUST require
+  for exactly one repository root, bound to loopback or, as the read-only
+  shared server, to a configured address. It MUST require
   per-client authentication, publish health and catalog-generation metadata,
   and reject a request attempting to select another root.
 - **PK-MCP-032:** requests MUST have size and concurrency limits, cancellation,
@@ -166,16 +169,23 @@ They are read-only and available in the standard profile.
   `processkit standard list|show|section|applicable` with equivalent machine
   results.
 
-## Planned MCP gateway
+## Resources and catalog
 
-Roadmap item PK1-P6 plans a gateway mode in which the processkit MCP server
-also serves trusted company, team, or project MCP servers, including
-hierarchies of them, behind one connection. Its future contract must keep
-each upstream explicitly configured and pinned, namespace upstream tools
-without collisions, preserve each upstream's side-effect class and
-authorization, report upstream health and provenance, and never let a
-gateway connection widen authority. The proxy requirement above still governs the
-existing proxy, which is a transport bridge and not this gateway.
+Every served kind is also reachable through the generic resource operations
+and MCP resource URIs defined in
+[Resources, identity, and access control](17-resources-identity-and-access.md):
+
+```text
+list_resources(kind, namespace?, selector?, limit?, cursor?)
+get_resource(kind, namespace, name, level?)
+list_mcp_servers(selector?)
+```
+
+- **PK-MCP-055:** every read tool, including the standards and entity tools,
+  MUST accept a label selector and MUST return only resources the principal
+  may read.
+- **PK-MCP-056:** `list_mcp_servers` MUST return catalog entries only. The MCP
+  server MUST NOT expose tools of a catalogued server or act as an MCP gateway.
 
 ## Cross-repository coordination
 

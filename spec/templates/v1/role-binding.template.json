@@ -1,0 +1,16 @@
+{
+  "apiVersion": "processkit.projectious.work/v1",
+  "kind": "RoleBinding",
+  "metadata": {
+    "name": "engineering-standards-reader"
+  },
+  "spec": {
+    "role": "standards-reader",
+    "subjects": [
+      {
+        "kind": "Group",
+        "name": "engineering@example.com"
+      }
+    ]
+  }
+}
