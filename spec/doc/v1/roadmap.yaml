@@ -26,7 +26,9 @@ groups:
           Produce the 89-concept disposition and minimal standards-reuse
           matrices, then deliver the small versioned kernel registry with
           generated contracts, safe canonical storage, lifecycle enforcement,
-          events, query metadata, fixtures, and deterministic recovery.
+          events, query metadata, fixtures, and deterministic recovery. The
+          storage and transaction requirements are under owner review before
+          this phase starts.
         status: planned
         dependencies: [PK1-P0]
       - id: PK1-P2
@@ -34,23 +36,24 @@ groups:
         summary: >-
           Let users install, inspect, query, mutate, index, verify, recover,
           and conservatively remove an exact release against one repository
-          working copy without aibox, a harness, or a shared service.
+          working copy through the processkit CLI, without aibox, a harness,
+          or a shared service.
         status: planned
         dependencies: [PK1-P1]
   - id: agent-surface
-    title: Agent and authoring surface
+    title: Agent and governance surface
     items:
       - id: PK1-P3
-        title: Deliver equivalent CLI and agent workflows
+        title: Serve repository context and governance standards over MCP
         summary: >-
-          Provide lexical, semantic, and hybrid retrieval, bounded attributed
-          context assembly with typed graph expansion over a disposable SQLite
-          relation projection, polymorphic ontology query, validated mutation,
-          events, configuration inspection, generic CLI commands, stdio MCP,
-          and an authenticated reusable local daemon/proxy path from one
-          application core; establish MCP-first positioning, typed next
-          actions, durable mutation identity, stable capability snapshots,
-          CLI recovery parity, and agent-interface adversarial security.
+          Deliver stdio MCP and the authenticated local daemon/proxy path from
+          the same application core as the CLI, with discovery, typed next
+          actions, durable mutation identity, and agent-interface adversarial
+          security. Ship the governance-standard JSON Schema and template so
+          a company, team, or project repository can author arbitrary
+          structured standards at a defined location, validate them, and
+          serve them to agents with progressive disclosure and applicability
+          filtering. processkit ships no company standard content.
         status: planned
         dependencies: [PK1-P1, PK1-P2]
       - id: PK1-P4
@@ -66,6 +69,29 @@ groups:
         status: planned
         dependencies: [PK1-P3]
       - id: PK1-P5
+        title: Deliver memory and retrieval
+        summary: >-
+          Provide lexical, semantic, and hybrid retrieval, bounded attributed
+          context assembly with typed graph expansion over a disposable SQLite
+          relation projection, and polymorphic ontology query through the
+          existing CLI and MCP surfaces. Governance standards become
+          retrievable candidates in context assembly.
+        status: planned
+        dependencies: [PK1-P3, PK1-P4]
+      - id: PK1-P6
+        title: Federate trusted MCP servers and standards hierarchies
+        summary: >-
+          Let the processkit MCP server act as a gateway that serves trusted,
+          explicitly configured company, team, or project MCP servers, and
+          resolve governance standards inherited from pinned upstream
+          processkit repositories, with provenance, override rules, and no
+          shared mutable authority.
+        status: idea
+        dependencies: [PK1-P3, PK1-P5]
+  - id: release
+    title: Stabilization and release
+    items:
+      - id: PK1-P7
         title: Prove migration and Git-mediated collaboration
         summary: >-
           Complete the v0 and alpha capability disposition matrix, preserve
@@ -76,30 +102,27 @@ groups:
           provider harnesses and measure context selection, human correction,
           provenance, staleness, and rerun behavior.
         status: planned
-        dependencies: [PK1-P3, PK1-P4]
-  - id: release
-    title: Stabilization and release
-    items:
-      - id: PK1-P6
+        dependencies: [PK1-P4, PK1-P5]
+      - id: PK1-P8
         title: Complete beta conformance
         summary: >-
           Pass kernel coverage plus the contract, security, extension,
           migration, platform, documentation, and selected-package matrices
-          and enter feature freeze. Optional packages do not become universal
-          release gates.
+          and enter feature freeze. Optional packages and idea-status phases
+          do not become universal release gates.
         status: planned
-        dependencies: [PK1-P5]
-      - id: PK1-P7
+        dependencies: [PK1-P7]
+      - id: PK1-P9
         title: Verify release candidates
         summary: >-
           Prove every acceptance journey using exact candidate artifacts with
           no unexplained skips.
         status: planned
-        dependencies: [PK1-P6]
-      - id: PK1-P8
+        dependencies: [PK1-P8]
+      - id: PK1-P10
         title: Publish and verify processkit v1.0.0
         summary: >-
           Publish the accepted stable commit and independently verify
           installation, MCP, migration, documentation, and first-use behavior.
         status: planned
-        dependencies: [PK1-P7]
+        dependencies: [PK1-P9]

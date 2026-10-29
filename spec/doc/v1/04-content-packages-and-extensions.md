@@ -104,6 +104,84 @@ inspect or edit an artifact between steps. It is not a second execution model.
   revision through a declared input and preserve enough provenance to
   distinguish agent output, human revision, approval, and staleness.
 
+## Governance standards
+
+A governance standard is a structured, versioned rule set that a company,
+team, or project defines for its own work: for example a branching, security,
+or documentation standard. processkit provides the format, validation,
+storage location, and MCP serving. It does not define or ship the content of
+any organization's standards.
+
+A repository that governs a company or team installs processkit and keeps its
+standards as canonical files. An implementation repository may install
+processkit and keep project-level standards the same way. Each standard is
+one JSON document validated against the published
+[`standard.schema.json`](../../schemas/v1/standard.schema.json); the published
+[`standard.template.json`](../../templates/v1/standard.template.json) is the
+starting point an author or agent fills in.
+
+- **PK-STD-001:** processkit MUST publish a versioned JSON Schema for
+  governance standards and a matching JSON template that validates against it.
+  The schema and template are release-owned; the standards written from them
+  are project-owned.
+- **PK-STD-002:** a governance standard MUST declare a stable identifier,
+  title, version, lifecycle status, owner, a short `summary`, `triggers` that
+  describe when it applies, applicability by profile, and an ordered list of
+  normative `rules`. Each rule MUST carry a stable identifier, an RFC 2119
+  level, and its text.
+- **PK-STD-003:** detailed guidance MUST live in named `sections` so readers
+  can retrieve one section without loading the whole standard. Sections MAY
+  use Markdown text; rules and applicability MUST remain structured fields.
+- **PK-STD-004:** governance standards MUST be stored under the configured
+  context directory at `standards/<standard-id>.json`. Other locations MUST be
+  declared in project configuration; processkit MUST NOT discover standards by
+  scanning arbitrary repository paths.
+- **PK-STD-005:** `processkit standard validate` and `processkit verify` MUST
+  validate every standard against the installed schema version and report the
+  exact file, field, and rule. An invalid standard MUST NOT be served as
+  valid; other valid standards remain available with the failure reported.
+- **PK-STD-006:** a project MUST be able to declare which profiles apply to
+  itself, such as `cli`, `library`, `service`, or `documentation`. Profile
+  names are project-defined vocabulary validated against the profiles the
+  project declares, not a fixed processkit list.
+- **PK-STD-007:** standards MUST be able to reference other standards by
+  identifier and MAY declare `supersedes`. References MUST be validated;
+  a dangling reference is a verification error.
+- **PK-STD-008:** the standards surface is read-only over MCP in v1. Creating
+  or changing a standard is an ordinary reviewed file change validated by
+  `processkit standard validate`.
+- **PK-STD-009:** a standard is modelled as a composition over the kernel
+  `Policy` primitive so it can take part in relations, lifecycle, and events
+  without a separate ontology concept.
+
+### Progressive disclosure
+
+Serving a standard has three levels so agents load only what a task needs:
+
+| Level | Content | Typical size |
+|---|---|---|
+| 0 | identifier, title, `summary`, `triggers`, applicability | one line per standard |
+| 1 | level 0 plus all `rules` and the section index | tens of lines |
+| 2 | one named section in full | as authored |
+
+- **PK-STD-010:** MCP and CLI MUST serve each level separately. A level-0
+  listing MUST NOT include rule text or section bodies; a level-1 read MUST
+  NOT include section bodies.
+- **PK-STD-011:** listing and applicability queries MUST filter by the
+  project's declared profiles and MUST report which standards were excluded
+  and why.
+- **PK-STD-012:** every served result MUST carry the standard identifier,
+  version, source path, and content digest so an agent can cite the exact
+  rule it applied.
+
+### Future hierarchies
+
+Roadmap item PK1-P6 plans standards inherited from pinned upstream processkit
+repositories, for example company to team to project. Its contract must keep
+upstream content read-only, record provenance, make local overrides explicit
+and reviewable, and never create shared mutable authority. Until that contract
+exists, every served standard belongs to the selected repository.
+
 ## Extension model
 
 - **PK-PKG-030:** projects MAY add namespaced EntityTypes, relation types,
@@ -164,3 +242,8 @@ distribution and authenticated installation, declare compatibility with an
 exact upstream range, and provide a continuous update and conflict-resolution
 path. A downstream Git fork requiring indefinite manual merges is one option
 to evaluate, not the assumed product model.
+
+Roadmap item PK1-P6 covers the first concrete step in this direction: an MCP
+gateway for trusted organization MCP servers and inherited governance
+standards. It does not change the v1 contract until it is specified and
+accepted.

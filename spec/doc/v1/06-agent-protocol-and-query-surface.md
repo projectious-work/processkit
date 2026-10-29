@@ -59,6 +59,10 @@ find_skill(task_description)
 route_task(task_description, constraints?)
 get_effective_configuration()
 assemble_context(task, constraints?, token_budget?, provenance?)
+list_standards(profiles?, trigger_text?)
+get_standard(id, level?)
+get_standard_section(id, section)
+applicable_standards(task_description, profiles?)
 ```
 
 - **PK-MCP-010:** reads MUST come from canonical files or a verified index
@@ -140,6 +144,38 @@ hard-coded lists, determine which operations apply to each EntityType.
 - **PK-MCP-037:** processkit provides a foreground daemon process and health
   contract, not a cross-platform service manager. Aibox, an operating-system
   supervisor, or another authorized runtime MAY own start, restart, and stop.
+
+## Governance standards surface
+
+The standards tools serve the governance standards defined in
+[Content, packages, and extensions](04-content-packages-and-extensions.md#governance-standards).
+They are read-only and available in the standard profile.
+
+- **PK-MCP-050:** `list_standards` MUST return level-0 entries only and MUST
+  apply the project's declared profiles unless the caller overrides them.
+- **PK-MCP-051:** `get_standard` MUST default to level 1. Level 2 is reached
+  only through `get_standard_section`, one section per call.
+- **PK-MCP-052:** `applicable_standards` MUST rank by declared triggers and
+  applicability before any lexical or semantic similarity, and MUST report
+  the matching basis for each result. Before PK1-P5 it MAY use declared
+  triggers and profile filters only.
+- **PK-MCP-053:** standards results MUST carry identifier, version, source
+  path, content digest, and validation status, and MUST report invalid or
+  excluded standards rather than omitting them silently.
+- **PK-MCP-054:** the same operations MUST be available through
+  `processkit standard list|show|section|applicable` with equivalent machine
+  results.
+
+## Planned MCP gateway
+
+Roadmap item PK1-P6 plans a gateway mode in which the processkit MCP server
+also serves trusted company, team, or project MCP servers, including
+hierarchies of them, behind one connection. Its future contract must keep
+each upstream explicitly configured and pinned, namespace upstream tools
+without collisions, preserve each upstream's side-effect class and
+authorization, report upstream health and provenance, and never let a
+gateway connection widen authority. The proxy requirement above still governs the
+existing proxy, which is a transport bridge and not this gateway.
 
 ## Cross-repository coordination
 

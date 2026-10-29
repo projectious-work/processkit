@@ -45,6 +45,8 @@ archive, checksums, SBOM, and signature or attestation material.
 | `processkit mcp serve --http` | Run the same repository-bound MCP application as a long-lived authenticated loopback daemon. |
 | `processkit mcp proxy` | Bridge a harness's stdio connection to the configured local daemon. |
 | `processkit package validate` | Validate a package or extension in isolation. |
+| `processkit standard list|show|section|applicable` | Read governance standards at disclosure level 0, 1, or 2, or find those applicable to a task. |
+| `processkit standard validate` | Validate governance standards against the installed schema and report exact failures. |
 
 - **PK-CLI-009:** the generic entity, event, context, skill, and handoff
   command groups are mandatory v1 surfaces. EntityType- and skill-specific

@@ -88,6 +88,29 @@ distinct. Graph storage is behind a replaceable index port, but another adapter
 requires measured failure of the indexed SQLite implementation against an
 accepted requirement. A graph database is not a v1 dependency.
 
+## D16 — processkit serves governance standards it does not define
+
+**Accepted:** processkit publishes a JSON Schema and template for governance
+standards, validates standards that a repository authors at
+`context/standards/`, and serves them read-only over MCP and CLI with three
+disclosure levels and profile-based applicability. MCP serving moves ahead of
+memory and retrieval in the roadmap (PK1-P3), and memory and retrieval become
+PK1-P5. A gateway for trusted MCP servers and inherited standards
+hierarchies is recorded as idea PK1-P6, outside the v1.0 release gates.
+
+**Reason:** companies, teams, and projects need agents to apply their own
+rules without loading every rule into every prompt. Skills can approximate
+this per repository but cannot be validated, versioned, filtered by
+applicability, or shared through one interface. processkit already owns
+repository-scoped structured context and MCP serving, so standards are a
+small extension of that role rather than a new product.
+
+**Impact:** the standard content stays in the consuming repository.
+processkit ships no organization's standards. Standards are a composition
+over the kernel `Policy` primitive, so the ontology gains no new primitive.
+Writing standards is an ordinary reviewed file change; MCP stays read-only
+for standards in v1.
+
 ## D3 — One application core
 
 **Accepted:** CLI and MCP become adapters over one application and domain core.
