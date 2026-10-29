@@ -92,18 +92,24 @@ groups:
     title: Stabilization and release
     items:
       - id: PK1-P7
-        title: Prove migration and Git-mediated collaboration
+        title: Prove migration from v0 and alpha installations
         summary: >-
-          Complete the v0 and alpha capability disposition matrix, preserve
-          representative corpora and retained black-box behavior, converge
-          independent agent clones through reviewed Git changes, and exchange
-          bounded handoffs without distributed ownership claims. Run the
-          internal research-to-assessment linear-reviewed pilot across two
-          provider harnesses and measure context selection, human correction,
-          provenance, staleness, and rerun behavior.
+          Complete the v0 and alpha capability disposition matrix, migrate
+          representative corpora without data loss, and preserve retained
+          black-box behavior.
         status: planned
         dependencies: [PK1-P4, PK1-P5]
       - id: PK1-P8
+        title: Prove Git-mediated collaboration in a pilot
+        summary: >-
+          Converge independent agent clones through reviewed Git changes and
+          exchange bounded handoffs without distributed ownership claims. Run
+          the internal research-to-assessment linear-reviewed pilot across two
+          provider harnesses and measure context selection, human correction,
+          provenance, staleness, and rerun behavior.
+        status: planned
+        dependencies: [PK1-P7]
+      - id: PK1-P9
         title: Complete beta conformance
         summary: >-
           Pass kernel coverage plus the contract, security, extension,
@@ -111,18 +117,18 @@ groups:
           and enter feature freeze. Optional packages and idea-status phases
           do not become universal release gates.
         status: planned
-        dependencies: [PK1-P7]
-      - id: PK1-P9
+        dependencies: [PK1-P8]
+      - id: PK1-P10
         title: Verify release candidates
         summary: >-
           Prove every acceptance journey using exact candidate artifacts with
           no unexplained skips.
         status: planned
-        dependencies: [PK1-P8]
-      - id: PK1-P10
+        dependencies: [PK1-P9]
+      - id: PK1-P11
         title: Publish and verify processkit v1.0.0
         summary: >-
           Publish the accepted stable commit and independently verify
           installation, MCP, migration, documentation, and first-use behavior.
         status: planned
-        dependencies: [PK1-P9]
+        dependencies: [PK1-P10]
