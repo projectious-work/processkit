@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/resource-metadata.schema.json",
+  "title": "processkit resource metadata",
+  "description": "Common metadata for every served processkit resource. Labels are selectable; annotations are not.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "name": {
+      "description": "Stable name, unique per kind within its namespace; also the file name stem.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "maxLength": 80
+    },
+    "namespace": {
+      "description": "Name of the Container this resource belongs to; omitted means the repository's root Container.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "maxLength": 63
+    },
+    "labels": {
+      "description": "Selectable key/value pairs.",
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?[A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$",
+        "maxLength": 317
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^([A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?)?$"
+      }
+    },
+    "annotations": {
+      "description": "Non-selectable descriptive metadata.",
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {
+        "maxLength": 317
+      },
+      "additionalProperties": {
+        "type": "string",
+        "maxLength": 4096
+      }
+    }
+  }
+}

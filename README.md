@@ -18,7 +18,8 @@
 > **Maturity:** alpha project — active development.
 >
 > The maintained v0.x line is the supported/default release. The independent
-> v1.x line supports end-to-end local installation and validated MCP workflows
+> The agent-native context and workflow layer for durable, governed project
+> operations.
 > as an exact-pin preview, but contracts may change between prereleases.
 > Linux ARM64 GNU is the only native v1 target currently published. See
 > [MAINTENANCE.md](MAINTENANCE.md) and [SECURITY.md](SECURITY.md).
@@ -31,6 +32,10 @@
 >
 > The current v1 release is `v1.0.0-alpha.5`. Its published native executable
 > supports Linux ARM64 GNU only.
+>
+> A [from-scratch replacement v1 product specification](spec/doc/v1/README.md)
+> is proposed for review. Until accepted and implemented, it describes planned
+> behavior and does not replace the alpha.5 contracts documented below.
 
 ---
 

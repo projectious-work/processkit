@@ -1,0 +1,123 @@
+apiVersion: roadmap.projectious.work/v1
+kind: ProductRoadmap
+metadata:
+  project: processkit
+  versionLine: v1.x
+groups:
+  - id: foundation
+    title: Product and contract foundation
+    items:
+      - id: PK1-P0
+        title: Accept the v1 context-framework baseline
+        summary: >-
+          Establish one coherent normative contract for processkit as a
+          context framework: common ontology, structured governance content,
+          inheritance across repositories, and per-caller MCP serving. Memory,
+          event logging, and process execution leave the product.
+        status: in_progress
+        dependencies: []
+        decisions:
+          - "DEC-20260807_1003-LucidGarnet-re-specify-and-\
+            reimplement-the-processkit"
+        issues:
+          - "BACK-20260807_1003-WarmHawk-specify-processkit-v1-from-\
+            first-principles"
+      - id: PK1-P1
+        title: Publish the ontology and the content model
+        summary: >-
+          Publish the complete ontology as a versioned definition vocabulary
+          with its registry, the common resource envelope with Container
+          namespaces and labels, the selector grammar, and JSON Schemas and
+          templates for standards, process specifications, skills, MCP server
+          entries, decision records, and documents. Define the repository
+          layout and deterministic serialization.
+        status: planned
+        dependencies: [PK1-P0]
+      - id: PK1-P2
+        title: Deliver the CLI for authoring and validation
+        summary: >-
+          Let humans, agents, and automation initialize a governing or project
+          repository, create content from templates, validate files and
+          drafts with exact diagnostics, and inspect resolved content through
+          the processkit CLI, without a harness or a running server.
+        status: planned
+        dependencies: [PK1-P1]
+  - id: serving
+    title: Context serving
+    items:
+      - id: PK1-P3
+        title: Serve personalized context over MCP
+        summary: >-
+          Serve one repository's content over stdio MCP from the same
+          application core as the CLI: a bounded level-0 briefing at
+          connection time, level-by-level disclosure, applicability by
+          triggers, profiles, labels, and task arguments, deterministic
+          assembly with caching, and draft validation. A project needs no
+          copied instruction or skill files for governance content.
+        status: planned
+        dependencies: [PK1-P2]
+      - id: PK1-P4
+        title: Inherit content across governing repositories
+        summary: >-
+          Pin upstream governing repositories in a lockfile, fetch them by
+          explicit command, resolve company, team, and project levels with
+          explicit reviewed overrides, and record provenance for every served
+          item.
+        status: planned
+        dependencies: [PK1-P3]
+      - id: PK1-P5
+        title: Run the shared server with access control
+        summary: >-
+          Run the read-only shared server over TLS for many users of one
+          governing repository. Identify callers through operator-configured
+          local, OIDC, x509, and trusted-proxy authenticators without
+          managing identity, and authorize every read with deny-by-default
+          access rules on Roles granted by Bindings scoped to Containers.
+        status: planned
+        dependencies: [PK1-P3, PK1-P4]
+  - id: proof
+    title: Proof and dogfooding
+    items:
+      - id: PK1-P6
+        title: Prove process definition and dogfood the framework
+        summary: >-
+          Define a ticket-handling process from a natural-language
+          description with the ontology, validate and serve it, and govern
+          the projectious.work standards repository and processkit itself
+          with processkit, replacing their harness instruction and skill
+          files with the processkit MCP server.
+        status: planned
+        dependencies: [PK1-P4, PK1-P5]
+      - id: PK1-P7
+        title: Migrate v0 governance content
+        summary: >-
+          Convert v0 decision records, skills, and process definitions to
+          v1 content and leave v0 memory records, logs, and work items as
+          read-only history.
+        status: planned
+        dependencies: [PK1-P6]
+  - id: release
+    title: Stabilization and release
+    items:
+      - id: PK1-P8
+        title: Complete beta conformance
+        summary: >-
+          Pass the contract, ontology, security, access-control, inheritance,
+          platform, and documentation matrices and enter feature freeze.
+        status: planned
+        dependencies: [PK1-P7]
+      - id: PK1-P9
+        title: Verify release candidates
+        summary: >-
+          Prove every acceptance journey using exact candidate artifacts with
+          no unexplained skips.
+        status: planned
+        dependencies: [PK1-P8]
+      - id: PK1-P10
+        title: Publish and verify processkit v1.0.0
+        summary: >-
+          Publish the accepted stable commit and independently verify
+          installation, MCP serving, inheritance, documentation, and
+          first-use behavior.
+        status: planned
+        dependencies: [PK1-P9]

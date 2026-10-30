@@ -1,0 +1,14 @@
+apiVersion: roadmap.projectious.work/v1
+kind: ProductRoadmap
+metadata:
+  project: processkit
+  versionLine: v1.x
+groups:
+  - id: invalid
+    title: Invalid
+    items:
+      - id: PK1-BAD1
+        title: Unknown status
+        summary: Uses a status outside the standard vocabulary.
+        status: almost_done
+        dependencies: []

@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-server.schema.json",
+  "title": "processkit trusted MCP server entry",
+  "description": "A catalog entry for an MCP server that the publishing repository trusts. processkit serves the entry; it never connects to, proxies, or invokes the server.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "MCPServer"
+    },
+    "metadata": {
+      "$ref": "resource-metadata.schema.json"
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "summary",
+        "owner",
+        "status",
+        "role",
+        "transport",
+        "version",
+        "sideEffects",
+        "authentication"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "summary": {
+          "description": "Level-0 briefing: what the server offers and when to use it.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "owner": {
+          "description": "Accountable person, role, or team.",
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "active",
+            "deprecated",
+            "retired"
+          ]
+        },
+        "role": {
+          "description": "server: one MCP server. gateway: an external gateway that fronts several servers.",
+          "enum": [
+            "server",
+            "gateway"
+          ]
+        },
+        "transport": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "url"
+              ],
+              "properties": {
+                "type": {
+                  "const": "http"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https://"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "package"
+              ],
+              "properties": {
+                "type": {
+                  "const": "stdio"
+                },
+                "package": {
+                  "description": "Package coordinate, e.g. npm, PyPI, or OCI reference; never a shell command line.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "args": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "version": {
+          "description": "Exact pinned version of the server or gateway.",
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "description": "Content digest of the pinned artifact.",
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "sideEffects": {
+          "description": "Highest side-effect class the server exposes.",
+          "enum": [
+            "read-only",
+            "project-mutating",
+            "externally-mutating"
+          ]
+        },
+        "authentication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "none",
+                "oauth",
+                "mtls",
+                "other"
+              ]
+            },
+            "notes": {
+              "description": "How a client obtains access. Never a credential value.",
+              "type": "string",
+              "maxLength": 1000
+            }
+          }
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri"
+        },
+        "upstreams": {
+          "description": "For role=gateway: names of MCPServer entries it fronts.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}
