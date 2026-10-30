@@ -125,6 +125,54 @@
             "$ref": "#/$defs/standardId"
           },
           "uniqueItems": true
+        },
+        "alwaysOn": {
+          "description": "When true, the rules join the level-0 connection briefing.",
+          "type": "boolean",
+          "default": false
+        },
+        "final": {
+          "description": "When true, downstream repositories cannot override this standard.",
+          "type": "boolean",
+          "default": false
+        },
+        "overrides": {
+          "description": "Declares that this standard overrides an inherited one.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "upstream",
+            "name",
+            "version",
+            "reason"
+          ],
+          "properties": {
+            "upstream": {
+              "description": "Upstream name from processkit.toml.",
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "$ref": "#/$defs/standardId"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "decisions": {
+          "description": "DecisionRecords that justify this standard.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
         }
       }
     }
@@ -180,6 +228,11 @@
           "description": "Section id that explains this rule in detail.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "final": {
+          "description": "When true, downstream overrides cannot change this rule.",
+          "type": "boolean",
+          "default": false
         }
       }
     },
@@ -218,8 +271,10 @@
           "type": "string",
           "minLength": 1
         },
-        "standard": {
-          "$ref": "#/$defs/standardId"
+        "ref": {
+          "description": "Typed reference <kind>/<name> or <kind>/<namespace>/<name>.",
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
         },
         "url": {
           "type": "string",
@@ -229,7 +284,7 @@
       "oneOf": [
         {
           "required": [
-            "standard"
+            "ref"
           ]
         },
         {
