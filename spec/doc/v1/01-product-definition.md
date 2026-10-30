@@ -2,181 +2,158 @@
 
 ## Purpose
 
-processkit is a local-first, provider-neutral AI-agent context and memory
-management system for humans and agents working in Git repositories. It turns
-repository text files into durable, typed, inspectable memory and provides the
-shared ontology through which humans and agents describe work, knowledge,
-decisions, evidence, organizations, capabilities, and processes in
-conversation.
+processkit is a provider-neutral framework for agent context in an
+organization. It gives companies, teams, and projects a common ontology in
+which to define how they work, lets them author that governance content as
+structured, validated files in Git repositories, composes it across a
+hierarchy of repositories, and serves it to any AI agent over MCP,
+personalized for the caller.
 
-Its external posture is an agent-native context and workflow layer for durable,
-governed project operations. MCP is the primary agent experience; CLI remains
-complete for humans, automation, administration, and recovery. The precise
-division between agent reasoning and product enforcement is defined in the
-[agent-native posture](16-agent-native-posture.md).
+processkit manages context, not memory. It stores what an organization has
+decided and defined: standards, process definitions, skills, trusted MCP
+servers, decision records, and documents. It does not record what happens
+while work is done. Instances such as tickets, events, logs, session
+transcripts, and agent memories belong to the harness, the issue tracker, the
+code forge, and Git history.
 
-One processkit installation belongs to one Git repository representing one
-project or coordination scope. Its `context/` is the authoritative shared
-process memory of that scope, not the private memory of one agent. Any number
-of human, permanent-agent, and ephemeral-agent TeamMembers may participate by
-working with ordinary clones, branches, reviews, and merges.
+The target is that processkit's MCP server replaces the governance part of
+harness instruction files and skill directories. A harness keeps assembling
+its system prompt and remains responsible for memory, conversation history,
+and code-base context; it obtains organizational rules, processes, skills,
+and approved MCP servers from processkit. A project's harness configuration
+then needs little more than the processkit MCP server entry.
 
-Human-readable Git files are always canonical. Local databases, full-text
-indexes, and embedding/vector entries augment retrieval and context assembly,
-but remain disposable client-side projections that can be rebuilt from the
-repository. processkit also installs, versions, discovers, and governs skills
-and MCP servers that let agents understand and safely operate on this context.
+The ontology is the product's common language, not processkit's private
+storage model. A user can describe a process in natural language, for example
+ticket handling, and an agent expresses it with ontology concepts such as
+WorkItem, StateMachine, Role, Gate, and Binding. processkit validates the
+result as a structured process definition, stores it in the governing
+repository, and serves it company-wide.
 
-The product answers these questions without depending on replay of a chat
-history or one model provider's private memory:
+The product answers these questions for a human or an agent:
 
-1. What project and organizational context should an agent know now?
-2. Which durable memories, decisions, evidence, relationships, and history
-   support that context?
-3. How can a human and an agent express new information in the same ontology?
-4. What state are process entities in, and which transitions are valid?
-5. Which skill, MCP tool, or process capability should an agent use next?
+1. Which standards, processes, skills, and MCP servers apply to me and to
+   this task now?
+2. Which rules must I follow, and where exactly is each rule defined?
+3. How is this process defined: which roles, states, transitions, gates, and
+   artifacts does it have?
+4. Why does a rule exist, and which decision introduced or changed it?
+5. Which level of the organization defines a rule, and which level overrides
+   it?
+
+## Content
+
+| Kind | Purpose | Ontology |
+|---|---|---|
+| `Standard` | rules an organization defines for its work | composition over `Policy` |
+| `ProcessSpecification` | a process defined in ontology terms | composition |
+| `Skill` | a reusable agent capability | primitive |
+| `MCPServer` | a trusted MCP server or gateway entry | refinement of `Service` |
+| `DecisionRecord` | why a rule or process exists | composition |
+| `Document` | governed Markdown, such as guides and handbooks | composition over `Artifact` |
+| `Container`, `Role`, `Binding` | organizational scope and access | primitives |
+
+## Repository roles
+
+- A **governing repository** holds the standards, processes, skills, catalog,
+  and decisions of a company, business unit, or team. It is usually served to
+  many readers through the shared server.
+- A **project repository** inherits governance content from one or more
+  governing repositories and may add project-level content. It is usually
+  served locally to the agents working in it.
+- Governing repositories may inherit from other governing repositories,
+  forming a tree of organizational levels.
 
 ## Users
 
-- A project owner installs and upgrades a coherent process capability set.
-- A human contributor reads and reviews canonical state in Git.
-- An AI agent retrieves bounded relevant context, queries durable memory, and
-  records or mutates project state through validated tools.
-- A process author creates reusable skills, schemas, state machines, and
-  process definitions.
-- A harness or orchestrator integrates through stable MCP and machine
-  contracts without becoming a processkit dependency.
-- A portfolio coordinator links work and evidence across repositories without
-  treating any single repository as a global mutable database.
+- A governance owner defines and maintains a level's standards and processes.
+- An author, human or agent, writes and revises governance content from
+  published schemas and templates.
+- An AI agent asks for the context that applies to its task and receives a
+  bounded, attributed, personalized answer.
+- An operator runs a shared server and connects it to the organization's
+  identity infrastructure.
+- A project owner chooses which governing repositories a project inherits
+  from and at which pinned versions.
 
 ## Goals
 
-- **PK-PROD-001:** canonical project process state MUST remain human-readable,
-  Git-compatible, and usable without a hosted processkit service.
-- **PK-PROD-002:** normal agent writes MUST pass through validated operations
-  that enforce schemas, lifecycle rules, ownership, and event recording.
-- **PK-PROD-003:** the same public process semantics MUST be available to every
-  supported harness through provider-neutral contracts.
-- **PK-PROD-004:** installation, upgrade, verification, and removal MUST
-  preserve project-owned changes or stop with an explicit conflict.
-- **PK-PROD-005:** shipped content and runtime behavior MUST be versioned,
-  locally testable, and independently verifiable from release artifacts.
-- **PK-PROD-006:** processkit MUST support one repository as one concern while
-  allowing explicit references and handoffs between independently owned
-  repositories.
-- **PK-PROD-017:** one repository MUST have at most one active processkit
-  installation and one authoritative context root; nested Git repositories or
-  submodules are independent roots and MUST NOT be absorbed implicitly.
-- **PK-PROD-018:** a processkit root MUST support multiple human and AI
-  participants and MUST NOT imply one repository or one processkit
-  installation per agent.
-- **PK-PROD-019:** every reference runtime MUST operate on the host where it
-  runs against one selected working copy. The read-only shared server defined
-  in [Resources, identity, and access control](17-resources-identity-and-access.md) MAY serve several
-  authenticated clients for that working copy, but it is not shared repository
-  authority or a second project database. Git synchronization and review
-  transfer accepted state between working copies.
-- **PK-PROD-007:** project state MUST remain authoritative when indexes,
-  caches, generated references, or harness projections are absent.
-- **PK-PROD-008:** v1 MUST provide a small mandatory repository-memory kernel.
-  Broader organizational, scaling-framework, communication, location,
-  planning, and evaluation concepts MUST be supplied through optional
-  first-party packages rather than universal core semantics.
-- **PK-PROD-009:** processkit MUST assemble bounded, attributable agent context
-  from canonical entities and verified derived indexes without treating model
-  conversation history as authoritative project memory.
-- **PK-PROD-016:** skills and MCP servers MUST be managed as versioned,
-  inspectable capabilities with ownership, discovery, configuration,
-  compatibility, and verification contracts.
-- **PK-PROD-029:** MCP, CLI, and future adapters MUST call one interface-
-  neutral application core and preserve equivalent domain semantics wherever
-  capabilities overlap.
-- **PK-PROD-030:** agents MUST be able to discover typed applicability,
-  authority requirements, permitted next actions, and recovery state without
-  parsing console prose or treating entity content as executable policy.
-- **PK-PROD-033:** processkit MUST support a deliberately bounded authoring
-  profile for simple sequential, human-reviewed processes without requiring
-  every such workflow to adopt branching, scheduling, or orchestration
-  machinery.
+- **PK-PROD-001:** canonical governance content MUST be human-readable files
+  in Git repositories and MUST remain usable without a hosted processkit
+  service.
+- **PK-PROD-002:** processkit MUST ship the ontology, schemas, templates,
+  validation, composition, and serving. It MUST NOT ship or define any
+  organization's governance content.
+- **PK-PROD-003:** processkit MUST publish the complete ontology as a
+  versioned definition vocabulary. Instance concepts such as WorkItem, Event,
+  and LogEntry remain usable as vocabulary inside definitions; processkit
+  MUST NOT store their instances.
+- **PK-PROD-004:** MCP MUST be the agent interface. Every capability an agent
+  needs MUST be available over MCP, and processkit MUST NOT require
+  harness-specific instruction files, skill directories, or plugin formats.
+- **PK-PROD-005:** the CLI MUST cover initialization, validation, inspection,
+  composition, and serving for humans and automation, through the same
+  application core as MCP.
+- **PK-PROD-006:** context MUST be assembled per request from the repository
+  revision, the resolved inheritance lock, the caller's access grants, and
+  the caller's arguments such as task description, profiles, paths, kinds,
+  and disclosure level.
+- **PK-PROD-007:** assembly MUST be deterministic: equal inputs MUST produce
+  byte-identical output, ordered so that stable content precedes
+  caller-specific content. Results MUST be cacheable under a key derived from
+  content digests, the lock, the caller's access set, and normalized
+  arguments.
+- **PK-PROD-008:** the MCP server MUST provide a bounded level-0 briefing at
+  connection time and MUST let the agent request more detail one level at a
+  time.
+- **PK-PROD-014:** the level-0 briefing MUST be able to carry the always-on
+  rules a project would otherwise keep in a harness instruction file, and
+  skills and standards MUST be discoverable and loadable on demand over MCP,
+  so a harness needs no copied instruction or skill files for governance
+  content.
+- **PK-PROD-009:** a governing or project repository MUST be able to inherit
+  content from pinned upstream governing repositories, with explicit and
+  reviewable overrides and recorded provenance for every served item.
+- **PK-PROD-010:** decision records MUST be kept as reviewed governance
+  documents and MUST be linkable from the standards and processes they
+  justify.
+- **PK-PROD-011:** a shared server MUST serve each caller only the content
+  the caller's access grants allow.
+- **PK-PROD-012:** authors MUST be able to create and change content with
+  ordinary file edits and validate it before review. processkit MUST also
+  validate draft content passed as an argument without writing it.
+- **PK-PROD-013:** processkit's own repositories MUST be governed with the
+  published ontology and schemas only.
 
 ## Non-goals
 
-- **PK-PROD-010:** processkit MUST NOT run language models, own an agent loop,
-  schedule autonomous teams, or replace a harness or orchestrator.
-- **PK-PROD-011:** processkit MUST NOT replace Git hosting, issue trackers,
-  code review, CI systems, chat, secrets managers, or artifact stores.
-- **PK-PROD-012:** processkit MUST NOT require a central database, cloud
-  account, projectious.work service, aibox, or a specific AI provider.
-- **PK-PROD-013:** processkit MUST NOT encode a single scaling framework,
-  organizational method, or model vendor as its universal ontology.
-- **PK-PROD-014:** processkit MUST NOT make every Markdown file an entity or
-  claim that unstructured documentation has lifecycle semantics.
-- **PK-PROD-015:** processkit v1 MUST NOT provide portfolio-wide distributed
-  transactions or pretend cross-repository operations are atomic.
-- **PK-PROD-028:** processkit MUST NOT create branches, commits, pull
-  requests, issues, discussions, merges, pushes, or fetches as implicit side
-  effects. Humans, agents, harnesses, and forge adapters own those workflows.
-- **PK-PROD-034:** v1 MUST NOT implement an Interpretable Context Methodology
-  importer or exporter. Compatibility work requires demonstrated user demand
-  and a later versioned contract decision.
+- **PK-PROD-020:** processkit MUST NOT act as agent or project memory: no
+  event log, LogEntry records, work-item instances, session transcripts, or
+  agent memories.
+- **PK-PROD-021:** processkit MUST NOT execute or track processes. It defines
+  them; harnesses, trackers, forges, and orchestrators run them.
+- **PK-PROD-022:** processkit MUST NOT write repository content over MCP in
+  v1. Content changes are file edits reviewed through Git.
+- **PK-PROD-023:** processkit MUST NOT generate harness-specific outputs such
+  as instruction files, skill directories, plugin marketplaces, or vendor rule
+  formats as a product requirement.
+- **PK-PROD-024:** processkit MUST NOT run language models, own an agent
+  loop, or replace a harness, issue tracker, code forge, CI system, or
+  secrets manager.
+- **PK-PROD-025:** processkit MUST NOT proxy, aggregate, or invoke other MCP
+  servers.
+- **PK-PROD-026:** processkit MUST NOT create commits, branches, pull
+  requests, pushes, or fetches as implicit side effects. Fetching a pinned
+  upstream is an explicit command.
 
 ## Product boundary
 
-processkit owns:
-
-- contracts for process entities, relations, transitions, and events;
-- reusable process content and its packaging metadata;
-- local installation and reconciliation of processkit-owned files;
-- validated CLI and MCP operations;
-- derived local indexes and generated harness projections;
-- context discovery, retrieval, ranking, and bounded context assembly;
-- local full-text and embedding/vector projections derived from canonical
-  repository content;
-- versioned skills and MCP server capability manifests, installation, and
-  verification;
-- compatibility, migration, verification, and diagnostic behavior.
-
-The consuming repository owns:
-
-- its entities and their meaning within the declared contracts;
-- local policies, extensions, accepted overrides, and private content;
-- Git history, review, retention, backup, and publication;
-- authorization to mutate the repository;
-- credentials and external-system integrations.
-
-The harness or orchestrator owns agent identity bootstrap, model execution,
-prompts outside shipped skills, conversation and runtime memory, heartbeat,
-task scheduling, agent isolation, cost control, and cross-agent coordination.
-Company modelling, teams-of-teams orchestration, simulation, message delivery,
-and portfolio views belong to products such as Kaits, which consume
-processkit contracts without becoming repository authority.
-
-## Required user journeys
-
-- **PK-PROD-020:** a new user MUST be able to install a pinned release into a
-  disposable Git repository, verify it, start MCP, and create/read/transition
-  a WorkItem without aibox.
-- **PK-PROD-021:** an existing project MUST be able to preview an update,
-  inspect every planned file action and conflict, apply it atomically within
-  documented limits, and verify the result.
-- **PK-PROD-022:** an agent MUST be able to discover an applicable skill,
-  query the relevant entities, perform an allowed mutation, and observe the
-  resulting event without raw filesystem discovery.
-- **PK-PROD-023:** a maintainer MUST be able to rebuild all derived indexes
-  and projections from canonical files.
-- **PK-PROD-024:** a project with local extensions MUST be able to distinguish
-  upstream-owned, locally modified, project-owned, and generated paths.
-- **PK-PROD-025:** a failed or interrupted mutation MUST leave either the
-  previous valid state or explicit recovery evidence; it MUST NOT claim
-  transactionality beyond what was achieved.
-- **PK-PROD-026:** a project MUST be able to export a sanitized, bounded
-  handoff bundle and record an external reference without surrendering local
-  ownership or exposing private context by default.
-- **PK-PROD-027:** a user MUST be able to validate, create or compose, query,
-  relate, and inspect every concept installed by the selected package set
-  through its declared schema and interfaces.
-- **PK-PROD-031:** processkit MUST reuse the smallest best-fitting subset of
-  established semantic terms where doing so prevents duplicate design. V1
-  MUST NOT require a general RDF store, ontology reasoner, linked-data export,
-  or support for a broad external ontology catalog.
+| processkit owns | Others own |
+|---|---|
+| ontology, schemas, templates, validation | the content of an organization's standards and processes |
+| composition across governing repositories | Git hosting, review, and merge |
+| per-caller context assembly and MCP serving | agent memory, sessions, and conversation history |
+| governance context: rules, processes, skills, approved servers | system-prompt assembly and code-base context |
+| access decisions for the shared server | identity providers and certificate authorities |
+| the trusted MCP server catalog | MCP gateways and the catalogued servers |
+| process definitions | process execution, tickets, events, and evidence |
