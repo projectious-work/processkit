@@ -14,7 +14,8 @@ groups:
           context framework: common ontology, structured governance content,
           inheritance across repositories, and per-caller MCP serving. Memory,
           event logging, and process execution leave the product.
-        status: in_progress
+        status: done
+        devNote: dev-notes/PK1-P0-context-framework-baseline.md
         dependencies: []
         decisions:
           - "DEC-20260807_1003-LucidGarnet-re-specify-and-\
