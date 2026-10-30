@@ -83,7 +83,7 @@ def validate_roadmap(
 
     if check_note_paths:
         for item in items:
-            if item["status"] == "shipped":
+            if item["status"] == "shipped" or "devNote" in item:
                 note = ROOT / item["devNote"]
                 if not note.is_file():
                     raise ValueError(

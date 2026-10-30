@@ -47,7 +47,7 @@
         "id": {"$ref": "#/$defs/id"},
         "title": {"type": "string", "minLength": 1},
         "summary": {"type": "string", "minLength": 1},
-        "status": {"enum": ["idea", "planned", "in_progress", "shipped", "cancelled"]},
+        "status": {"enum": ["idea", "planned", "in_progress", "done", "shipped", "cancelled"]},
         "target": {"type": "string", "minLength": 1},
         "dependencies": {
           "type": "array",
