@@ -1,0 +1,124 @@
+{
+  "_processkit_managed_keys": {
+    "allow": [
+      "mcp__processkit-gateway__*"
+    ],
+    "enabled_servers": [
+      "processkit-gateway"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "processkit-gateway"
+  ],
+  "hooks": {
+    "Notification": [
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal question --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog"
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal question --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "PreToolUse": [
+      {
+        "_processkit_managed": true,
+        "hooks": [
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/check_route_task_called.py",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit|MultiEdit|create_workitem|transition_workitem|record_decision|link_entities|open_discussion|create_artifact|log_event|create_note"
+      }
+    ],
+    "SessionStart": [
+      {
+        "_processkit_managed": true,
+        "hooks": [
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      },
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal idle --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "Stop": [
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal done --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "StopFailure": [
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal error --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "_processkit_managed": true,
+        "hooks": [
+          {
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      },
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal working --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "mcp__processkit-gateway__*"
+    ]
+  }
+}
