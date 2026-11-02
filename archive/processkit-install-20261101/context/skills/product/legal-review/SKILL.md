@@ -119,8 +119,7 @@ When reviewing a contract, work through these sections:
 ```markdown
 # Contract Review — [Counterparty] [Contract Type] — [Date]
 
-**Reviewer:** [Name]
-
+**Reviewer:** [Name]  
 **Qualified counsel review needed:** Yes / No / For these sections only: [list]
 
 ## Summary
