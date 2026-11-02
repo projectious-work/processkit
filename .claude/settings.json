@@ -1,59 +1,59 @@
 {
-  "_processkit_managed_keys": {
-    "allow": [
-      "mcp__processkit-actor-profile__*",
-      "mcp__processkit-agent-card__*",
-      "mcp__processkit-artifact-management__*",
-      "mcp__processkit-binding-management__*",
-      "mcp__processkit-decision-record__*",
-      "mcp__processkit-discussion-management__*",
-      "mcp__processkit-eval-gate-authoring__*",
-      "mcp__processkit-event-log__*",
-      "mcp__processkit-gate-management__*",
-      "mcp__processkit-gateway__*",
-      "mcp__processkit-id-management__*",
-      "mcp__processkit-index-management__*",
-      "mcp__processkit-migration-management__*",
-      "mcp__processkit-model-recommender__*",
-      "mcp__processkit-note-management__*",
-      "mcp__processkit-pk-doctor__*",
-      "mcp__processkit-repo-management__*",
-      "mcp__processkit-role-management__*",
-      "mcp__processkit-runtime-prune__*",
-      "mcp__processkit-scope-management__*",
-      "mcp__processkit-security-projections__*",
-      "mcp__processkit-skill-finder__*",
-      "mcp__processkit-skill-gate__*",
-      "mcp__processkit-task-router__*",
-      "mcp__processkit-team-manager__*",
-      "mcp__processkit-workitem-management__*"
-    ],
-    "enabled_servers": [
-      "processkit-gateway"
-    ]
-  },
-  "enabledMcpjsonServers": [
-    "processkit-gateway"
-  ],
   "hooks": {
-    "PreToolUse": [
+    "Notification": [
       {
-        "_processkit_managed": true,
+        "_aibox_attention_managed": true,
         "hooks": [
           {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/check_route_task_called.py",
+            "command": "aibox-agent-signal question --harness claude --hook-input",
             "type": "command"
           }
         ],
-        "matcher": "Write|Edit|MultiEdit|create_workitem|transition_workitem|record_decision|link_entities|open_discussion|create_artifact|log_event|create_note"
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog"
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal question --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
       }
     ],
     "SessionStart": [
       {
-        "_processkit_managed": true,
+        "_aibox_attention_managed": true,
         "hooks": [
           {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "command": "aibox-agent-signal idle --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "Stop": [
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal done --harness claude --hook-input",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "StopFailure": [
+      {
+        "_aibox_attention_managed": true,
+        "hooks": [
+          {
+            "command": "aibox-agent-signal error --harness claude --hook-input",
             "type": "command"
           }
         ],
@@ -62,45 +62,15 @@
     ],
     "UserPromptSubmit": [
       {
-        "_processkit_managed": true,
+        "_aibox_attention_managed": true,
         "hooks": [
           {
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/context/skills/processkit/skill-gate/scripts/emit_compliance_contract.py",
+            "command": "aibox-agent-signal working --harness claude --hook-input",
             "type": "command"
           }
         ],
         "matcher": ""
       }
-    ]
-  },
-  "permissions": {
-    "allow": [
-      "mcp__processkit-actor-profile__*",
-      "mcp__processkit-agent-card__*",
-      "mcp__processkit-artifact-management__*",
-      "mcp__processkit-binding-management__*",
-      "mcp__processkit-decision-record__*",
-      "mcp__processkit-discussion-management__*",
-      "mcp__processkit-eval-gate-authoring__*",
-      "mcp__processkit-event-log__*",
-      "mcp__processkit-gate-management__*",
-      "mcp__processkit-gateway__*",
-      "mcp__processkit-id-management__*",
-      "mcp__processkit-index-management__*",
-      "mcp__processkit-migration-management__*",
-      "mcp__processkit-model-recommender__*",
-      "mcp__processkit-note-management__*",
-      "mcp__processkit-pk-doctor__*",
-      "mcp__processkit-repo-management__*",
-      "mcp__processkit-role-management__*",
-      "mcp__processkit-runtime-prune__*",
-      "mcp__processkit-scope-management__*",
-      "mcp__processkit-security-projections__*",
-      "mcp__processkit-skill-finder__*",
-      "mcp__processkit-skill-gate__*",
-      "mcp__processkit-task-router__*",
-      "mcp__processkit-team-manager__*",
-      "mcp__processkit-workitem-management__*"
     ]
   }
 }

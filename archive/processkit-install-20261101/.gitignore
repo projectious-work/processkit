@@ -1,0 +1,9 @@
+# Same files stay untracked as before the move.
+context/.cache/
+context/.state/
+context/templates/aibox-home/
+context/templates/processkit/
+context/**/private/
+harness/pre-unwire/claude-settings.local.json
+harness/pre-unwire/mcp.json
+harness/pre-unwire/codex-config.toml
