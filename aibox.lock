@@ -2,13 +2,6 @@
 cli_version = "0.28.17"
 synced_at = "2026-07-28T19:13:56.789524+00:00"
 
-[processkit]
-source = "https://github.com/projectious-work/processkit.git"
-version = "v0.28.4"
-src_path = "src"
-installed_at = "2026-07-28T19:13:56.789524+00:00"
-processkit_install_hash = "v2:c8509e98f266cdd9c096aa29f624114e0ec532d29f26b04cf1405a4461a487bf"
-
 [addons]
 resolved_at = "2026-05-09T11:20:52Z"
 
