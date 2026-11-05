@@ -87,7 +87,13 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    target_roots = (repo_root, repo_root / "src")
+    # The root context/ (dogfood install) was retired on 2026-11-01; keep
+    # it as a target only while it exists.
+    target_roots = tuple(
+        root
+        for root in (repo_root, repo_root / "src")
+        if (root / "context" / "skills").is_dir()
+    )
     expected = _render(_all_server_names(target_roots))
     stale: list[Path] = []
     for root in target_roots:

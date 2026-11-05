@@ -148,7 +148,7 @@ fi
 
 echo "running release audit: src/context deliverable" >&2
 if ! uv run --offline --script \
-        "$REPO_ROOT/context/skills/processkit/release-audit/scripts/release_audit.py" \
+        "$REPO_ROOT/src/context/skills/processkit/release-audit/scripts/release_audit.py" \
         --tree=src-context; then
     echo "" >&2
     echo "error: release audit failed for src/context/." >&2

@@ -170,13 +170,12 @@ cmd_release_doctors() {
         echo "# Release doctors — $version"
         echo
         echo '```text'
+        # The repository no longer runs on its own processkit install
+        # (retired 2026-11-01), so there is no live context/ for pk-doctor.
+        # Audit the shipped src/context/ tree only.
         uv run \
-            "$PROJECT_ROOT/context/skills/processkit/pk-doctor/scripts/doctor.py" \
-            --no-log || status=$?
-        echo
-        uv run \
-            "$PROJECT_ROOT/context/skills/processkit/release-audit/scripts/release_audit.py" \
-            --repo-root="$PROJECT_ROOT" --tree=both || status=$?
+            "$PROJECT_ROOT/src/context/skills/processkit/release-audit/scripts/release_audit.py" \
+            --repo-root="$PROJECT_ROOT" --tree=src-context || status=$?
         echo '```'
     } >"$report" 2>"$log"
     cp "$report" "$DIST_DIR/RELEASE-DOCTORS.md"
@@ -208,8 +207,8 @@ run_gate() {
 
 gate_audit() {
     uv run \
-        "$PROJECT_ROOT/context/skills/processkit/release-audit/scripts/release_audit.py" \
-        --repo-root="$PROJECT_ROOT" --tree=both
+        "$PROJECT_ROOT/src/context/skills/processkit/release-audit/scripts/release_audit.py" \
+        --repo-root="$PROJECT_ROOT" --tree=src-context
 }
 
 gate_test() {

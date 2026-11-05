@@ -43,26 +43,24 @@ and private entity files.
 - `AGENTS.md`, `CLAUDE.md`: replaced the compliance contract, skill guards,
   team and MCP-manifest sections with neutral project instructions.
 
-## Scripts that still expect a root `context/`
+## Scripts that used the root `context/`
 
-These stopped working, or lost part of their function, with this change. They
-were left unchanged.
+These were repointed after the retirement (2026-11-05):
 
 - `scripts/build-release-tarball.sh`: runs the release audit from
-  `context/skills/processkit/release-audit/`. The same script exists under
-  `src/context/`.
-- `scripts/maintain.sh`: the release `doctors` and `audit` gates run
-  `pk-doctor` and the release audit from root `context/`, with
-  `--tree=both`.
-- `scripts/check-src-context-drift.sh`: compares root `context/` with
-  `src/context/`.
+  `src/context/` (the same script, byte-identical to the archived copy).
+- `scripts/maintain.sh`: the release `doctors` and `audit` gates run the
+  release audit from `src/context/` with `--tree=src-context`. `pk-doctor`
+  is no longer run, because there is no live install to check.
+- `scripts/check-src-context-drift.sh`: `--release-deliverable` works without
+  a root `context/`; the default drift mode explains that the tree is retired.
 - `scripts/generate-mcp-manifest.py` and `scripts/generate-mcp-preauth.py`:
-  write to root `context/` as well as `src/context/`.
-- `scripts/processkit-diff.sh` and `scripts/test_processkit_diff.py`: review
-  these before relying on them.
+  write only to `src/context/` while no root `context/` exists.
+- `scripts/bench-aggregate-mcp-coldstart.py`: falls back to `src/context/`.
 
-`CONTRIBUTING.md`, `README.md`, and `docs/harness-claude-code.md` also still
-describe the root `context/` tree.
+`scripts/processkit-diff.sh` and `scripts/test_processkit_diff.py` were not
+changed; review them before relying on them. `CONTRIBUTING.md`, `README.md`,
+and `docs/harness-claude-code.md` still describe the root `context/` tree.
 
 ## Restoring
 
