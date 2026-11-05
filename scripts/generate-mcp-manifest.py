@@ -49,6 +49,11 @@ MANIFEST_VERSION = 1
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOGFOOD_MANIFEST = REPO_ROOT / "context" / ".processkit-mcp-manifest.json"
 SRC_MANIFEST = REPO_ROOT / "src" / "context" / ".processkit-mcp-manifest.json"
+# The dogfood install was retired on 2026-11-01; only maintain its copy of
+# the manifest while a root context/ tree exists.
+MANIFEST_TARGETS = [SRC_MANIFEST] + (
+    [DOGFOOD_MANIFEST] if DOGFOOD_MANIFEST.parent.is_dir() else []
+)
 GATEWAY_CONFIG_REL = Path(
     "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
 )
@@ -262,7 +267,7 @@ def main() -> int:
         print(f"error: failed to collect server headers: {e}", file=sys.stderr)
         return 1
 
-    existing = _load_existing(DOGFOOD_MANIFEST)
+    existing = _load_existing(MANIFEST_TARGETS[-1])
     generated_at = now_iso
     if (
         existing
@@ -287,10 +292,7 @@ def main() -> int:
     }
 
     if check_only:
-        if (
-            _load_existing(DOGFOOD_MANIFEST) != manifest
-            or _load_existing(SRC_MANIFEST) != manifest
-        ):
+        if any(_load_existing(t) != manifest for t in MANIFEST_TARGETS):
             print(
                 "MCP manifests are out of date. Regenerate with: "
                 "uv run scripts/generate-mcp-manifest.py",
@@ -305,15 +307,16 @@ def main() -> int:
         return 0
 
     try:
-        _write_manifest(DOGFOOD_MANIFEST, manifest)
-        _write_manifest(SRC_MANIFEST, manifest)
+        for target in MANIFEST_TARGETS:
+            _write_manifest(target, manifest)
     except OSError as e:
         print(f"error: failed to write manifest: {e}", file=sys.stderr)
         return 1
 
     print(
-        f"wrote {DOGFOOD_MANIFEST.relative_to(REPO_ROOT)} "
-        f"and {SRC_MANIFEST.relative_to(REPO_ROOT)} "
+        "wrote "
+        + " and ".join(str(t.relative_to(REPO_ROOT)) for t in MANIFEST_TARGETS)
+        + " "
         f"({len(entries)} skills, {len(server_headers)} server header(s), "
         f"aggregate {aggregate[:12]}...)"
     )
