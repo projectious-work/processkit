@@ -8,31 +8,37 @@ Issue
 [#151](https://github.com/projectious-work/processkit/issues/151)
 defines the aibox-style release ritual adopted by processkit.
 
-## Version-line authority
+## Release branch and target line
 
-The requested semantic version determines the only branch permitted to tag:
+Releases follow the company GitHub Flow standard. The candidate is prepared
+on `release/vX.Y.Z`, which holds only the `chore(release): vX.Y.Z` commit.
+After owner approval it is squash-merged into its target line, and the tag
+is created on the squash commit:
 
-| Version | Required branch |
-| --- | --- |
-| stable v0 | `v0.x-release` |
-| v1 alpha, beta, or RC | `v1.x-pre-release` |
-| stable v1 | `v1.x-release` |
+| Version | Release branch | Target line and tag |
+| --- | --- | --- |
+| v0.x | `release/v0.Y.Z` from `lts/v0` | `lts/v0` |
+| v1.x and later, including prereleases | `release/vX.Y.Z` from `main` | `main` |
 
-Resolve the mapping without mutation:
+Resolve both without mutation:
 
 ```sh
 scripts/maintain.sh release-branch v1.0.0-alpha.5
+scripts/maintain.sh release-target v1.0.0-alpha.5
 ```
 
-Promotion into protected branches happens through pull requests. Never
-force-push a release branch.
+The candidate steps (`state`, `doctors`, `audit`, `test`, `docs`, `build`)
+run only on the release branch. `publish` and `verify` run only on the target
+line, at its fetched tip, after the squash merge. If the release finds a
+defect, close the release pull request, fix it through `fix/*`, and cut a new
+release branch. Never force-push `main` or `lts/v0`.
 
 ## Candidate evidence
 
 Evidence belongs to an exact candidate:
 
 ```text
-dist/release-evidence/<version>/<commit>/
+dist/release-evidence/<version>/<tree>/
 ├── binding.json
 ├── RELEASE-STATE.md
 ├── RELEASE-DOCTORS.md
@@ -40,8 +46,10 @@ dist/release-evidence/<version>/<commit>/
 └── <step>.passed
 ```
 
-The binding records version, commit, clean tree, branch, Rust, Python, `uv`,
-and host target. A step marker is reused only within that binding.
+The binding records version, commit, source tree, clean state, branch, Rust,
+Python, `uv`, and host target. Evidence is keyed by the source tree, because
+the squash commit on the target line has a new commit id but the same tree as
+the release branch. A step marker is reused only within that binding.
 
 ## Phase zero
 

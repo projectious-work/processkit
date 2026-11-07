@@ -22,6 +22,7 @@ Usage:
   scripts/maintain.sh test
   scripts/maintain.sh docs-deploy
   scripts/maintain.sh release-branch <version>
+  scripts/maintain.sh release-target <version>
   scripts/maintain.sh release-check-state <version>
   scripts/maintain.sh release-doctors <version>
   scripts/maintain.sh release <version> [--steps <list>] [--list-steps]
@@ -45,15 +46,22 @@ normalize_version() {
     printf '%s\n' "$version"
 }
 
+# GitHub Flow (company git-branching-and-releases standard): a release is
+# prepared on release/vX.Y.Z, squash-merged into its target line, and tagged
+# on the resulting squash commit. v0 releases target the lts/v0 line.
 release_branch_for() {
     local version
     version="$(normalize_version "$1")"
+    printf 'release/%s\n' "$version"
+}
+
+release_target_for() {
+    local version
+    version="$(normalize_version "$1")"
     case "$version" in
-        v0.*-*) die "v0 prerelease branch policy is not defined" ;;
-        v0.*) printf '%s\n' "v0.x-release" ;;
-        v1.*-*) printf '%s\n' "v1.x-pre-release" ;;
-        v1.*) printf '%s\n' "v1.x-release" ;;
-        *) die "no release branch mapping for $version" ;;
+        v0.*) printf '%s\n' "lts/v0" ;;
+        v[1-9]*) printf '%s\n' "main" ;;
+        *) die "no release target mapping for $version" ;;
     esac
 }
 
@@ -61,9 +69,15 @@ candidate_sha() {
     git -C "$PROJECT_ROOT" rev-parse HEAD
 }
 
+# Evidence binds to the source tree, not the commit: the squash commit on the
+# target line has a new commit id but the same tree as the release branch.
+candidate_tree() {
+    git -C "$PROJECT_ROOT" rev-parse 'HEAD^{tree}'
+}
+
 evidence_dir() {
     local version="$1"
-    printf '%s/%s/%s\n' "$EVIDENCE_ROOT" "$version" "$(candidate_sha)"
+    printf '%s/%s/%s\n' "$EVIDENCE_ROOT" "$version" "$(candidate_tree)"
 }
 
 require_clean_candidate() {
@@ -76,7 +90,21 @@ require_release_branch() {
     expected="$(release_branch_for "$version")"
     current="$(git -C "$PROJECT_ROOT" branch --show-current)"
     [[ "$current" == "$expected" ]] ||
-        die "$version must be released from $expected, not $current"
+        die "$version candidate checks run on $expected, not $current"
+}
+
+# Publication runs on the target line after the release branch was
+# squash-merged: HEAD must be the fetched tip of that line.
+require_release_target() {
+    local version="$1" expected current
+    expected="$(release_target_for "$version")"
+    current="$(git -C "$PROJECT_ROOT" branch --show-current)"
+    [[ "$current" == "$expected" ]] ||
+        die "$version is tagged on $expected, not $current"
+    git -C "$PROJECT_ROOT" fetch --quiet origin "$expected"
+    [[ "$(candidate_sha)" == "$(git -C "$PROJECT_ROOT" rev-parse \
+        "origin/$expected")" ]] ||
+        die "$expected is not at origin/$expected; pull before publishing"
 }
 
 write_binding() {
@@ -89,6 +117,7 @@ write_binding() {
     jq -n --sort-keys \
         --arg version "$version" \
         --arg commit "$(candidate_sha)" \
+        --arg tree "$(candidate_tree)" \
         --arg branch "$branch" \
         --arg tree_state "clean" \
         --arg rustc "$rustc_version" \
@@ -99,6 +128,7 @@ write_binding() {
         '{
           version: $version,
           commit: $commit,
+          tree: $tree,
           branch: $branch,
           treeState: $tree_state,
           toolchain: {rustc: $rustc, python: $python, uv: $uv},
@@ -115,8 +145,8 @@ ensure_binding() {
     fi
     jq -e \
         --arg version "$version" \
-        --arg commit "$(candidate_sha)" \
-        '.version == $version and .commit == $commit
+        --arg tree "$(candidate_tree)" \
+        '.version == $version and .tree == $tree
          and .treeState == "clean"' \
         "$dir/binding.json" >/dev/null ||
         die "candidate evidence binding does not match"
@@ -145,6 +175,8 @@ cmd_release_check_state() {
         echo "- Candidate commit: \`$(candidate_sha)\`"
         echo "- Branch: \`$(git -C "$PROJECT_ROOT" branch --show-current)\`"
         echo "- Required branch: \`$(release_branch_for "$version")\`"
+        echo "- Target line: \`$(release_target_for "$version")\`"
+        echo "- Source tree: \`$(candidate_tree)\`"
         echo "- Rust: \`$(rustc --version 2>/dev/null || echo unavailable)\`"
         echo "- Python: \`$(python3 --version 2>&1 || echo unavailable)\`"
         echo "- uv: \`$(uv --version 2>&1 || echo unavailable)\`"
@@ -259,7 +291,7 @@ expand_steps() {
 
 publish_release() {
     local version="$1" dir="$2" notes prerelease=()
-    require_release_branch "$version"
+    require_release_target "$version"
     for step in state doctors audit test docs build; do
         step_passed "$dir" "$step" ||
             die "publication requires current $step evidence"
@@ -325,9 +357,31 @@ cmd_release() {
         return
     fi
     version="$(normalize_version "$version")"
-    require_release_branch "$version"
-    dir="$(ensure_binding "$version")"
     mapfile -t steps < <(expand_steps "$selected")
+    if [[ "$(git -C "$PROJECT_ROOT" branch --show-current)" == \
+        "$(release_target_for "$version")" ]]; then
+        # Post-merge phase on the target line: publish and verify only.
+        if [[ "$selected" == "all" ]]; then
+            steps=(publish verify)
+        fi
+        for step in "${steps[@]}"; do
+            [[ "$step" == publish || "$step" == verify ]] ||
+                die "$step runs on $(release_branch_for "$version")"
+        done
+        require_release_target "$version"
+    else
+        # Candidate phase on the release branch: everything before the tag.
+        if [[ "$selected" == "all" ]]; then
+            steps=(state doctors audit test docs build)
+        fi
+        for step in "${steps[@]}"; do
+            [[ "$step" != publish && "$step" != verify ]] ||
+                die "$step runs on $(release_target_for "$version")" \
+                    "after the squash merge"
+        done
+        require_release_branch "$version"
+    fi
+    dir="$(ensure_binding "$version")"
 
     for step in "${steps[@]}"; do
         case "$step" in
@@ -372,6 +426,7 @@ case "$command" in
     test) cmd_test ;;
     docs-deploy) "$PROJECT_ROOT/scripts/publish-docs-gh-pages.sh" ;;
     release-branch) release_branch_for "${1:?version required}" ;;
+    release-target) release_target_for "${1:?version required}" ;;
     release-check-state)
         cmd_release_check_state "${1:?version required}" ;;
     release-doctors) cmd_release_doctors "${1:?version required}" ;;

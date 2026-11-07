@@ -215,12 +215,16 @@ processkit releases via semver git tags. The current cadence:
 
 To release a new tag:
 
-1. Work from the semantic version's designated protected release-integration
-   branch. Resolve it with:
+1. Create the release branch from the tip of the target line (`main` for
+   v1, `lts/v0` for v0). Resolve both names with:
 
    ```bash
-   scripts/maintain.sh release-branch vX.Y.Z
+   scripts/maintain.sh release-branch vX.Y.Z   # release/vX.Y.Z
+   scripts/maintain.sh release-target vX.Y.Z   # main or lts/v0
    ```
+
+   The branch holds a single `chore(release): vX.Y.Z` commit (changelog and
+   version metadata) and no development.
 
 2. Add curated tracked release notes at `release-notes/vX.Y.Z.md`.
 3. Resolve or record tracked deferrals for every doctor warning.
@@ -245,17 +249,20 @@ To release a new tag:
    scripts/maintain.sh release vX.Y.Z \
      --steps phase0,checks,build
    ```
-7. Review `dist/release-evidence/vX.Y.Z/<commit>/`, then publish and verify:
+7. Review `dist/release-evidence/vX.Y.Z/<tree>/`, open the release pull
+   request with the evidence, and squash-merge it after owner approval.
+8. Check out the updated target line, then tag, publish, and verify:
 
    ```bash
    scripts/maintain.sh release vX.Y.Z \
      --steps publish,verify
    ```
 
-Candidate evidence is reusable only for the exact version, commit, clean tree,
-toolchain, and host binding. Do not add GitHub Actions or workflow files. The
-local publish script pushes prebuilt output to `gh-pages`; GitHub Pages does
-not build the site.
+Candidate evidence is reusable only for the exact version, source tree, clean
+state, toolchain, and host binding. If a release finds a defect, close the
+release pull request, fix it through `fix/*`, and cut a new release branch.
+Do not add GitHub Actions or workflow files. The local publish script pushes
+prebuilt output to `gh-pages`; GitHub Pages does not build the site.
 
 ## Backlog and tracked work
 

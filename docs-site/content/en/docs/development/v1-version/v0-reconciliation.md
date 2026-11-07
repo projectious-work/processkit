@@ -45,7 +45,7 @@ repository imports cannot conceal a missing carry-over.
 
 Before each prerelease:
 
-1. compare the selected v0 release with `v1.x-dev`
+1. compare the selected v0 release with `main`
 2. update this matrix
 3. run schema, server, package, docs, doctor, and release-audit checks
 4. record any intentional deferral with an owner or milestone

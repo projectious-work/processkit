@@ -7,6 +7,17 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
 
+### Changed
+
+- Adopt GitHub Flow for this repository (#205): v1 is developed on `main`,
+  v0 continues on `lts/v0`, and releases are prepared on `release/vX.Y.Z`
+  and tagged on the squash commit. `scripts/maintain.sh` keys release
+  evidence by source tree, adds `release-target`, and runs `publish` and
+  `verify` only on the target line.
+- The `git-workflow` and `release-semver` skills describe `release/*` and
+  `lts/*` branches instead of version-line promotion branches.
+- The v1 roadmap status `shipped` is renamed to `released`.
+
 ### Added
 
 - Add a from-scratch processkit v1.x product specification, implementation

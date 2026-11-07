@@ -10,8 +10,8 @@ description: Publish and consume an explicit v1 prerelease safely.
 ## Release Policy
 
 The current test release is the explicit prerelease
-`v1.0.0-alpha.5`. It is merged from `v1.x-dev` into
-`v1.x-pre-release`, validated there, and tagged there.
+`v1.0.0-alpha.5`. It is prepared on `release/v1.0.0-alpha.5` from `main`,
+validated there, squash-merged into `main`, and tagged on the squash commit.
 
 Prereleases never become the implicit `latest` version. `latest` remains the
 highest stable release, currently from the supported v0 line. Downstream
@@ -19,7 +19,7 @@ installers must opt in to an exact prerelease.
 
 ## Pre-tag Gate
 
-Run from a clean `v1.x-pre-release` worktree:
+Run from a clean `release/v1.0.0-alpha.N` worktree:
 
 ```sh
 uv run scripts/generate-v1-schemas.py --check
@@ -79,6 +79,6 @@ release correctness.
 
 ## Promotion
 
-Promote the next alpha only from a new merge into `v1.x-pre-release`. Alpha
+Cut the next alpha only from a new `release/*` branch off `main`. Alpha
 tags are immutable. The supported v0 line remains the default until the final
 CLI and migration path have passed joint processkit/aibox testing.

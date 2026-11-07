@@ -6,8 +6,8 @@ SITE_ROOT="$REPO_ROOT/docs-site"
 
 "$REPO_ROOT/scripts/build-docs-local.sh"
 
-# The base path differs per release line (root on v0.x-dev, /v1.x/ on
-# v1.x-dev), so derive it from the site's own baseURL rather than assuming.
+# The base path differs per release line (root on lts/v0, /v1.x/ on
+# main), so derive it from the site's own baseURL rather than assuming.
 BASE_PATH="$(sed -n 's|^baseURL:[[:space:]]*"https\?://[^/]*\(/.*\)"[[:space:]]*$|\1|p' \
     "$SITE_ROOT/hugo.yaml" | head -n 1)"
 BASE_PATH="${BASE_PATH:-/}"

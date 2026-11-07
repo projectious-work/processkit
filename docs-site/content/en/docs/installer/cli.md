@@ -11,7 +11,7 @@ machine interface uses a versioned JSON request and result contract for aibox
 and other automation.
 
 > **Release and development status:** `v1.0.0-alpha.5` supports the local
-> lifecycle commands below except `doctor` and `mcp`. The `v1.x-dev` line adds
+> lifecycle commands below except `doctor` and `mcp`. The v1 line adds
 > read-only native diagnosis and MCP supervision for the next prerelease.
 > Commands in “Target human lifecycle” remain planned unless listed as current.
 
