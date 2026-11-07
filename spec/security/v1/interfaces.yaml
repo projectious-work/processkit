@@ -1,0 +1,248 @@
+slug: security
+version: 1
+
+# Everything the security baseline makes observable. Identifiers, options,
+# defaults, and fields below are stated by the requirements or the #197
+# baseline (or by the governance-draft gap items carried as PK-SEC-013 to
+# PK-SEC-017). Anything a test author would need but the baseline leaves
+# undefined is under `open`. Behavior owned by another slug is named with
+# `owner` and is not restated here.
+
+content_handling:
+  - effect: repository and upstream content is data; it gains no authority
+      over tool definitions, configuration, access rules of other
+      repositories, or processkit behavior
+    check: with content that contains instructions to change tools,
+      configuration, or access, the MCP tool names, descriptions, and schemas
+      (owner mcp-context-serving@v1, PK-MCP-024), `processkit config show
+      --json`, and access decisions for other repositories are identical to
+      a run without that content
+    requirements: [PK-SEC-001]
+  - effect: every served item is labelled with its kind and provenance
+    applies_to: [get_context, list, get, explain, MCP resources, briefing
+      index, processkit context, processkit list, processkit show]
+    check: every served item carries its kind and its provenance (repository
+      or upstream, and origin of the item); exact field names are owned by
+      mcp-context-serving@v1 and inheritance@v1
+    requirements: [PK-SEC-002]
+  - effect: processkit never executes content, runs skill scripts, evaluates
+      templates with code, or follows URLs in content
+    check: a skill script that would create a marker file when run, a
+      template containing code syntax, and content containing URLs leave no
+      marker file, no evaluated output, and no network connection; the
+      script is returned as labelled content (owner content-kinds@v1,
+      PK-SKILL-003)
+    requirements: [PK-SEC-003]
+
+input_limits:
+  inputs:
+    - repository files (JSON items, Markdown with front matter, skill files)
+    - draft content passed to `processkit validate -` and the MCP `validate`
+      tool
+    - MCP requests (size, concurrency, and time limits owned by
+      mcp-context-serving@v1, PK-MCP-040)
+    - configuration files
+  limit_values: open (OPEN-security-01)
+  malformed_formats: [JSON, YAML, Markdown]
+  effect: input over a size limit, and malformed JSON, YAML, or Markdown,
+    fails with a bounded diagnostic
+  check: the command or tool fails; the diagnostic is bounded in size
+    regardless of input size and does not echo the full input
+  related: [repository-storage@v1 PK-STORE-012 (safe YAML subset and front
+    matter delimiter), repository-storage@v1 PK-STORE-013 (path containment)]
+  requirements: [PK-SEC-004]
+
+limit_configuration:
+  configurable_from: [operator configuration, invocation flags and
+    PROCESSKIT_ environment variables]
+  not_configurable_from: [project configuration (processkit.toml),
+    repository content]
+  effect: project configuration and repository content cannot raise,
+    remove, or disable a request or parser limit
+  check: a processkit.toml that tries to set a request or parser limit does
+    not change the effective limit reported by `processkit config show
+    --json`; with a closed project schema (cli@v1 PK-CONFIG-001) the file
+    fails as an unknown key; an input over the limit still fails
+  requirements: [PK-SEC-017]
+
+network:
+  default: no network access and no telemetry
+  allowed:
+    - command: processkit fetch
+      purpose: fetch locked upstream commits into the local cache
+    - command: processkit mcp serve --http --listen ADDRESS
+      purpose: the shared server (listens; owner access-control@v1)
+  check: every other command, and `processkit mcp serve --stdio`, run with
+    all outbound connections observed (or blocked) make no connection
+    attempt and succeed when they would succeed offline; no command sends
+    telemetry
+  requirements: [PK-SEC-005]
+
+release:
+  - artifact: signatures for every release artifact
+    effect: releases are signed
+    scheme: open (OPEN-security-04)
+    requirements: [PK-SEC-010]
+  - artifact: documented installation
+    effect: verifies integrity and authenticity before use; a checksum from
+      the artifact's own location is not accepted as authentication
+    check: a tampered artifact, a missing or invalid signature, and an
+      artifact whose only evidence is a checksum from the same location are
+      each rejected before anything is installed
+    requirements: [PK-SEC-010]
+  - artifact: committed dependency lockfiles in the processkit source
+      repository
+    check: release build fails when a dependency input is unresolved or
+      mutable (for example a version range or a moving reference)
+    requirements: [PK-SEC-011]
+  - artifact: dependency record (documented purpose and reviewed license per
+      direct runtime dependency)
+    location: open (OPEN-security-05)
+    check: every direct runtime dependency of the release has an entry
+    requirements: [PK-SEC-011]
+  - artifact: negative regression test per security defect; coordinated
+      disclosure procedure
+    check: release gate inspects the test suite and the published disclosure
+      policy
+    requirements: [PK-SEC-012]
+
+shared_server_http:
+  transports:
+    - name: stdio
+      network: none
+      hardening: not applicable
+    - name: shared server
+      command: processkit mcp serve --http --listen ADDRESS
+      prerequisites: TLS and at least one authenticator other than local
+        (owner access-control@v1, PK-ACC-030)
+  origin_validation:
+    rule: the Origin validation the MCP specification requires for the HTTP
+      transport of each supported MCP protocol version
+    accepted_origins: open (OPEN-security-02)
+    effect: a request with an Origin header the server does not accept is
+      rejected without serving content
+    response: open (OPEN-security-02)
+    requirements: [PK-SEC-013]
+  request_isolation:
+    rule: the request-isolation controls the MCP specification requires for
+      the HTTP transport of each supported MCP protocol version
+    effects:
+      - every HTTP request is authenticated
+      - an MCP session identifier is never proof of identity
+      - a request presenting a session identifier established for a
+        different principal is rejected without serving content
+    check: replaying principal A's session identifier with principal B's
+      credentials, or with no credentials, returns no content of A's
+      session; concurrent requests of different principals never share
+      results or diagnostics (owner mcp-context-serving@v1, PK-MCP-041)
+    response: open (OPEN-security-03)
+    requirements: [PK-SEC-014]
+
+credentials:
+  command_arguments:
+    effect: no command or option of the processkit CLI accepts a credential
+      value; no process started by processkit receives a credential value
+      in its command arguments
+    check: the documented option set contains no option whose value is a
+      credential; during `processkit fetch` and `processkit mcp serve
+      --http`, the argument vectors of processkit and of every child process
+      contain no credential value
+    requirements: [PK-SEC-015]
+  discovery_responses:
+    applies_to: [MCP initialize result including server instructions,
+      tools/list, resources/list, prompts/list]
+    effect: no credential value appears in an MCP discovery response
+    requirements: [PK-SEC-015]
+  credential_files:
+    examples_stated_by_baseline: [TLS key material supplied by the operator]
+    full_set: open (OPEN-security-06)
+    platform_condition: where the platform supports owner-only permissions
+      (the supported release targets are Linux and macOS, cli@v1 PK-CLI-016)
+    effect: a credential file readable or writable by a user other than its
+      owner is refused; the report names the file path and the reason, not
+      the content
+    check: with the TLS key file at mode 0644 (or group-readable)
+      `processkit mcp serve --http` refuses to start; at mode 0600 it starts
+    requirements: [PK-SEC-016]
+  related: [cli@v1 PK-CONFIG-002 (no credentials in project configuration),
+    cli@v1 PK-OUT-004 (redaction), access-control@v1 PK-ACC-011 and
+    PK-ACC-016 (authenticators outside repository files; no token
+    pass-through), content-kinds@v1 PK-CAT-003 (no credential values in
+    catalog entries)]
+
+errors:
+  codes: open (OPEN-security-07)
+  conditions:
+    - condition: input over a size limit
+      requirements: [PK-SEC-004]
+    - condition: malformed JSON, YAML, or Markdown
+      requirements: [PK-SEC-004]
+    - condition: HTTP request with an unaccepted Origin
+      requirements: [PK-SEC-013]
+    - condition: session identifier established for a different principal
+      requirements: [PK-SEC-014]
+    - condition: credential file without owner-only permissions
+      requirements: [PK-SEC-016]
+    - condition: release installation verification failure
+      requirements: [PK-SEC-010]
+
+open:
+  - id: OPEN-security-01
+    question: What are the default input size limits (file size, nesting
+      depth, collection counts, string length, request size), which are
+      configurable, under which operator-configuration keys and PROCESSKIT_
+      variables, and what is the maximum size of a "bounded diagnostic"?
+    requirements: [PK-SEC-004, PK-SEC-017]
+  - id: OPEN-security-02
+    question: Which Origin values does the shared server accept (an operator
+      configured allowlist, the listen address only, or none), is a request
+      without an Origin header accepted, and which HTTP status and body does
+      a rejected request receive?
+    requirements: [PK-SEC-013]
+  - id: OPEN-security-03
+    question: Does the shared server use MCP sessions at all (stateless
+      Streamable HTTP versus session identifiers), and if it does, how is a
+      session bound to a principal and what does a cross-principal session
+      reuse return?
+    requirements: [PK-SEC-014]
+  - id: OPEN-security-04
+    question: Which signing scheme and trust anchor do releases use (for
+      example Sigstore with a stated identity, or a published key), where is
+      the trust anchor obtained independently of the artifact, and what is
+      the documented installation command?
+    requirements: [PK-SEC-010]
+  - id: OPEN-security-05
+    question: Where is the dependency record (purpose and reviewed license
+      per direct runtime dependency) kept and in which format, and which
+      lockfile format counts as committed?
+    requirements: [PK-SEC-011]
+  - id: OPEN-security-06
+    question: Which files count as credential files (TLS private key, OIDC
+      client material, x509 CA or revocation list, operator configuration
+      containing secrets), does processkit check the containing directory
+      too, and is group readability refused?
+    requirements: [PK-SEC-016]
+  - id: OPEN-security-07
+    question: Which diagnostic codes and exit codes do the security failures
+      use (size limit, malformed input, Origin rejection, session mismatch,
+      credential file permissions, verification failure)?
+    requirements: [PK-SEC-004, PK-SEC-010, PK-SEC-013, PK-SEC-014,
+                   PK-SEC-016]
+  - id: OPEN-security-08
+    question: "`processkit lock` must resolve refs of upstreams to commits
+      (inheritance@v1 PK-INH-002), which normally needs remote access, but
+      PK-SEC-005 allows network access only for `fetch` and the shared
+      server. Does lock read only the fetched cache, or is lock a permitted
+      network command?"
+    requirements: [PK-SEC-005]
+  - id: OPEN-security-09
+    question: May project configuration tighten (lower) request or parser
+      limits, and is there a release-defined hard ceiling that operator
+      configuration and the invocation layer cannot exceed?
+    requirements: [PK-SEC-017]
+  - id: OPEN-security-10
+    question: What is a "credential value" for PK-SEC-015 (bearer tokens,
+      private keys, passwords, values matching configured secret patterns),
+      and how does processkit pass upstream credentials to Git during fetch
+      without command arguments (credential helper, environment, file)?
+    requirements: [PK-SEC-015]

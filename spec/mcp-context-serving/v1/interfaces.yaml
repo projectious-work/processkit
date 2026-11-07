@@ -1,0 +1,338 @@
+slug: mcp-context-serving
+version: 1
+
+# Everything mcp-context-serving makes observable. Identifiers, arguments,
+# and values below are stated by the requirements or the #197 baseline (and,
+# for pinned profiles, by the owner-accepted proposal in issue #204 P1).
+# Anything a test author would need but those sources leave undefined is
+# under `open`. No entry here adds an MCP tool: the six-tool set is fixed.
+
+commands:
+  - name: processkit mcp serve --stdio
+    synopsis: processkit mcp serve --stdio [--profile NAME]...
+    transport: stdio
+    serves: exactly one repository working copy
+    options:
+      - name: --profile
+        argument: NAME
+        repeatable: true
+        default: none (no profiles pinned)
+        effect: pins NAME for the served instance
+        requirements: [PK-MCP-051]
+    observable: >-
+      one MCP session over standard input/output; opens no network listener;
+      result revisions all name the one served working copy
+    requirements: [PK-MCP-001, PK-MCP-002, PK-MCP-043, PK-MCP-051]
+  - name: processkit mcp serve --http
+    synopsis: processkit mcp serve --http --listen ADDRESS [--profile NAME]...
+    transport: HTTPS (shared server; startup, TLS, and authenticator rules in
+      access-control@v1)
+    options:
+      - name: --listen
+        argument: ADDRESS
+        requirements: [PK-MCP-002]
+      - name: --profile
+        argument: NAME
+        repeatable: true
+        default: none (no profiles pinned)
+        effect: pins NAME for the served instance
+        requirements: [PK-MCP-051]
+    observable: the only network transport of the MCP server
+    requirements: [PK-MCP-002, PK-MCP-043, PK-MCP-051, PK-MCP-057]
+
+process_model:
+  form: foreground process; no service manager, daemon, or proxy is provided
+  requirements: [PK-MCP-043]
+
+briefing:
+  delivered_as: MCP server instructions at connection time
+  order:
+    - rules of always-on standards
+    - level-0 index of applicable standards, processes, skills, and
+      catalogued MCP servers (only items within pinned profiles while
+      profiles are pinned)
+    - instruction to call get_context at the start of a task
+  when_pinned:
+    names: [pinned profiles, resolved revision]
+    requirements: [PK-MCP-055]
+  budget:
+    source: project configuration (processkit.toml, "briefing budget")
+    key: null          # OPEN-mcp-context-serving-04
+    unit: null         # OPEN-mcp-context-serving-04
+    default: null      # OPEN-mcp-context-serving-04
+    over_budget: index summarized by kind and label; agent relies on list and
+      get_context
+  observable:
+    - byte-identical across connections for one principal and one resolved
+      revision (and one pinned profile set)
+    - size never exceeds the configured budget
+  requirements: [PK-PROD-008, PK-PROD-014, PK-MCP-010, PK-MCP-011,
+    PK-MCP-012, PK-MCP-052, PK-MCP-055]
+
+# The fixed tool set. Names, descriptions, and schemas are fixed by the
+# release; repository content cannot change them. Discovery (tools/list) must
+# return exactly these six tools.
+tools:
+  - name: get_context
+    arguments:
+      - {name: task, required: false}
+      - {name: profiles, required: false, note: narrows within pinned set}
+      - {name: paths, required: false}
+      - {name: kinds, required: false}
+      - {name: level, required: false, values: [0, 1, 2],
+         default: null}   # OPEN-mcp-context-serving-02
+    returns: applicable items ranked by declared triggers, profiles, labels,
+      and path applicability, each at the requested level, with the match
+      basis; excluded readable items with reasons; cache key; revision
+    requirements: [PK-MCP-020, PK-MCP-030, PK-MCP-031, PK-MCP-033,
+      PK-MCP-034, PK-MCP-044, PK-MCP-045, PK-MCP-052, PK-MCP-053,
+      PK-PROD-006, PK-PROD-007]
+  - name: list
+    arguments:
+      - {name: kind, required: true}
+      - {name: selector, required: false, grammar: same as the processkit CLI}
+      - {name: namespace, required: false}
+      - {name: limit, required: false,
+         default: null}   # documented default; OPEN-mcp-context-serving-02
+      - {name: cursor, required: false,
+         format: null}    # OPEN-mcp-context-serving-03
+    returns: level-0 items, a cursor for the next page, excluded readable
+      items with reasons
+    requirements: [PK-MCP-021, PK-MCP-044, PK-MCP-045, PK-MCP-049,
+      PK-MCP-050, PK-MCP-052, PK-MCP-053]
+  - name: get
+    arguments:
+      - {name: kind, required: true}
+      - {name: name, required: true}
+      - {name: namespace, required: false}
+      - {name: level, required: false, values: [0, 1, 2],
+         default: null}   # OPEN-mcp-context-serving-02
+      - {name: section, required: false, note: level-2 named section}
+    returns: one item at one disclosure level, or one section
+    requirements: [PK-MCP-021, PK-PROD-008, PK-PROD-014]
+  - name: explain
+    arguments:
+      - {name: kind, required: true}
+      - {name: name, required: true}
+      - {name: namespace, required: false}
+    returns: provenance, overrides, applicability basis, validation status
+      (same as processkit explain, cli@v1)
+    requirements: [PK-PROD-004]
+  - name: validate
+    arguments:
+      - {name: kind, required: true}
+      - {name: content, required: true,
+         encoding: null}  # OPEN-mcp-context-serving-12
+    returns: validation result for the draft
+    writes: nothing
+    requirements: [PK-MCP-022, PK-MCP-003, PK-PROD-022]
+  - name: ontology
+    arguments:
+      - {name: concept, required: false}
+    returns: the published ontology registry, or one concept (ontology@v1)
+    requirements: [PK-PROD-004]
+
+tool_set:
+  fixed: true
+  count: 6
+  observable: tools/list returns exactly the six tools above with the
+    release's names, descriptions, and schemas, whatever the repository
+    contains; no tool writes files, calls external systems, or invokes MCP
+    servers
+  requirements: [PK-MCP-003, PK-MCP-024, PK-PROD-022, PK-PROD-025]
+
+resources:
+  - uri: processkit://<namespace>/<kind>/<name>
+    applies_to: every item the caller may read
+    requirements: [PK-MCP-023]
+
+prompts:
+  - applies_to: [Skill, ProcessSpecification]
+    strength: should
+    name_form: null      # OPEN-mcp-context-serving-12
+    requirements: [PK-MCP-023]
+
+# Result fields of assembled results. Meaning is normative; field names are
+# open (OPEN-mcp-context-serving-01).
+result_fields:
+  - meaning: match basis per item (trigger, profile, label, or path)
+    name: null
+    requirements: [PK-MCP-020, PK-MCP-034]
+  - meaning: cache key
+    name: null
+    observable: equal for equal inputs; differs when any input changes
+    requirements: [PK-MCP-032, PK-MCP-033, PK-MCP-056]
+  - meaning: revision of the served working copy
+    name: null
+    requirements: [PK-MCP-033]
+  - meaning: excluded readable items, each with identity (kind, namespace,
+      name) and reason
+    name: null
+    reasons: [profile, applicability]   # codes open, OPEN-mcp-context-serving-08
+    requirements: [PK-MCP-044, PK-MCP-045]
+  - meaning: next-page cursor of list
+    name: null
+    requirements: [PK-MCP-050]
+
+assembly:
+  inputs: [working-copy revision, lock, caller access set,
+    normalized arguments (including the pinned profile set)]
+  excluded_inputs: [time of day, prior requests, anything else]
+  ordering: stable key; content shared by many callers before
+    caller-specific content
+  cache_key_from: [content digests, lock digest, access-set digest,
+    normalized arguments]
+  invalidation: any input change invalidates affected entries
+  matching_v1: [declared triggers, profiles, labels, paths]
+  pinning_order: access rules first, then pinned profiles, then caller
+    profiles (narrowing only)
+  observable:
+    - repeat request returns byte-identical output and the same cache key,
+      reported as a cache hit   # hit indicator name: OPEN-mcp-context-serving-01
+    - changing one input yields a different cache key and fresh result
+  requirements: [PK-PROD-006, PK-PROD-007, PK-MCP-030, PK-MCP-031,
+    PK-MCP-032, PK-MCP-033, PK-MCP-034, PK-MCP-054, PK-MCP-056]
+
+configuration:
+  - layer: invocation flags
+    item: --profile NAME (repeatable) on processkit mcp serve
+    requirements: [PK-MCP-051]
+  - layer: operator configuration (shared server)
+    item: group-to-default-pinned-profiles binding
+    key: null            # OPEN-mcp-context-serving-10
+    requirements: [PK-MCP-057]
+  - layer: project configuration (processkit.toml)
+    item: briefing budget
+    key: null            # OPEN-mcp-context-serving-04
+    requirements: [PK-MCP-011]
+  - layer: operator configuration
+    item: request size, concurrency, and time limits; list result limit
+    key: null            # OPEN-mcp-context-serving-05
+    requirements: [PK-MCP-040, PK-MCP-049]
+
+health:
+  states: [healthy, degraded, blocked]
+  rule: an unavailable or unrun check is never counted as a success
+  exposure: null         # OPEN-mcp-context-serving-06
+  requirements: [PK-MCP-043, PK-MCP-046, PK-MCP-047]
+
+diagnostics:
+  fields: [code, severity, scope, evidence, next action]  # names/values open
+  codes: []              # no codes defined; OPEN-mcp-context-serving-07
+  severities: null       # OPEN-mcp-context-serving-07
+  bounded_payload: true
+  isolation: never contain another caller's data or diagnostics
+  requirements: [PK-MCP-040, PK-MCP-041, PK-MCP-048]
+
+generations:
+  watched_inputs: [working copy, lock, local cache]
+  observable: every result belongs to exactly one generation; a change is
+    followed by results from a consistent new generation
+  identifier: null       # OPEN-mcp-context-serving-15
+  requirements: [PK-MCP-042, PK-MCP-050]
+
+prohibitions:
+  - statement: no tool writes repository files
+    check: repository tree and git status unchanged after any tool call,
+      including validate
+    requirements: [PK-MCP-003, PK-MCP-022, PK-PROD-022]
+  - statement: no connection to, proxying of, or invocation of other MCP
+      servers, including catalogued ones
+    check: no outbound connection while serving catalog entries
+    requirements: [PK-MCP-003, PK-PROD-025]
+  - statement: no harness-specific output files
+    check: no instruction file, skill directory, plugin, or vendor rule file
+      is created by any command or tool
+    requirements: [PK-PROD-023, PK-PROD-004]
+  - statement: pinning never grants access
+    check: an item hidden by access rules stays hidden with any pin
+    requirements: [PK-MCP-054, PK-MCP-045]
+
+performance:
+  reference_repository: 500 items, two locked upstreams
+  reference_host: null   # OPEN-mcp-context-serving-14
+  objectives:
+    - {metric: stdio startup to served briefing, target: "< 2 s",
+       strength: should, requirements: [PK-PERF-001]}
+    - {metric: cached get_context latency, target: "<= 50 ms",
+       strength: should, requirements: [PK-PERF-002]}
+    - {metric: uncached get_context latency, target: "<= 500 ms",
+       strength: should, requirements: [PK-PERF-002]}
+    - {metric: concurrent principals on one shared-server host at these
+         latencies, target: 50, strength: should,
+       requirements: [PK-PERF-003]}
+
+open:
+  - id: OPEN-mcp-context-serving-01
+    question: Field names in get_context and list results for the match
+      basis, cache key, revision, excluded items and their reasons, the next
+      cursor, and any cache-hit indicator.
+    requirements: [PK-MCP-020, PK-MCP-033, PK-MCP-044, PK-MCP-050]
+  - id: OPEN-mcp-context-serving-02
+    question: Default `level` for get_context and get; the documented default
+      and maximum `limit` of list, and behavior when `limit` exceeds the
+      maximum.
+    requirements: [PK-MCP-020, PK-MCP-021, PK-MCP-049]
+  - id: OPEN-mcp-context-serving-03
+    question: Cursor format (opaque or not) and the result when a cursor from
+      an older generation is used after the generation changed.
+    requirements: [PK-MCP-050, PK-MCP-042]
+  - id: OPEN-mcp-context-serving-04
+    question: processkit.toml key, unit (bytes or tokens), and default of the
+      briefing budget; exact shape of the summarized-by-kind-and-label index.
+    requirements: [PK-MCP-011]
+  - id: OPEN-mcp-context-serving-05
+    question: Configuration keys and default values of request size,
+      concurrency, and time limits, and the diagnostic returned when a limit
+      is exceeded.
+    requirements: [PK-MCP-040]
+  - id: OPEN-mcp-context-serving-06
+    question: How health is exposed without adding a tool - over stdio, and
+      the shared server's unauthenticated health endpoint path and format -
+      and which checks exist and which outcomes map to healthy, degraded,
+      and blocked.
+    requirements: [PK-MCP-043, PK-MCP-046, PK-MCP-047]
+  - id: OPEN-mcp-context-serving-07
+    question: The registry of stable diagnostic codes, the severity values,
+      and the field names for code, severity, scope, evidence, and next
+      action.
+    requirements: [PK-MCP-048]
+  - id: OPEN-mcp-context-serving-08
+    question: Reason codes for excluded items; whether items excluded by a
+      pinned profile set are reported as excluded or omitted (reporting them
+      defeats pinning's token saving); any bound on the number of excluded
+      items reported, and whether exclusions count against the list limit.
+    requirements: [PK-MCP-044, PK-MCP-045, PK-MCP-052]
+  - id: OPEN-mcp-context-serving-09
+    question: Whether items that declare no profile (labels only, or
+      universally applicable) are "within" a pinned profile set; behavior
+      when --profile names a profile the repository does not declare
+      (refuse to start or serve nothing); result when caller profiles do not
+      intersect the pinned set.
+    requirements: [PK-MCP-051, PK-MCP-052, PK-MCP-053]
+  - id: OPEN-mcp-context-serving-10
+    question: Operator configuration key for group default pinned profiles;
+      precedence with --profile; result for a principal in several groups
+      with different defaults.
+    requirements: [PK-MCP-057, PK-MCP-051]
+  - id: OPEN-mcp-context-serving-11
+    question: Argument normalization rules (case, order, duplicates, path
+      form, task text) and the cache key's digest algorithm and format.
+    requirements: [PK-MCP-030, PK-MCP-032, PK-PROD-007]
+  - id: OPEN-mcp-context-serving-12
+    question: Encoding of validate's `content` argument (string or
+      structured), and the MCP prompt name form for skills and processes.
+    requirements: [PK-MCP-022, PK-MCP-023]
+  - id: OPEN-mcp-context-serving-13
+    question: How the free-text `task` argument is matched against declared
+      triggers when v1 forbids lexical or semantic ranking, and the relative
+      ranking weight of triggers, profiles, labels, and paths.
+    requirements: [PK-MCP-020, PK-MCP-034]
+  - id: OPEN-mcp-context-serving-14
+    question: Reference host and measurement method (cold/warm, percentile,
+      synthetic corpus) for the performance objectives.
+    requirements: [PK-PERF-001, PK-PERF-002, PK-PERF-003]
+  - id: OPEN-mcp-context-serving-15
+    question: Whether and how a result reports its generation, and how
+      changes to the local cache are detected (watch or per-request check).
+    requirements: [PK-MCP-042]

@@ -1,0 +1,320 @@
+slug: inheritance
+version: 1
+
+# Everything inheritance makes observable. Identifiers, keys, fields, and
+# values below are stated by the requirements or the #197 baseline (including
+# the published Standard schema, owned by content-kinds@v1). Anything a test
+# author would need but the baseline leaves undefined is under `open`.
+
+configuration:
+  file: processkit.toml          # project configuration, committed
+  layer: project configuration (lowest precedence; see cli@v1)
+  upstream_table:
+    toml: "[[upstream]]"         # array of tables, one per upstream
+    count: any number, including zero
+    keys:
+      - name: name
+        required: true           # upstreams are named
+        meaning: upstream name; referenced by overrides (Standard
+          spec.overrides.upstream) and by lock --update NAME
+        example: company
+      - name: source
+        required: true
+        meaning: Git source of the upstream repository
+        example: https://git.example.com/company/standards.git
+      - name: ref
+        required: true
+        meaning: Git ref to resolve (tag or branch)
+        examples: [v3.2.0, main]
+    example: |
+      [[upstream]]
+      name = "company"
+      source = "https://git.example.com/company/standards.git"
+      ref = "v3.2.0"
+
+      [[upstream]]
+      name = "platform"
+      source = "https://git.example.com/platform/standards.git"
+      ref = "main"
+    requirements: [PK-INH-001, PK-PROD-009]
+  override_winners:
+    where: processkit.toml (project configuration lists "override winners")
+    meaning: for each item provided by two or more upstreams, the upstream
+      that wins
+    key_name: open           # OPEN-inheritance-03
+    check: without a declaration, two upstreams providing the same item fail
+      resolution; swapping the order of [[upstream]] tables never changes
+      which item is served
+    requirements: [PK-INH-014]
+  imported_access_rules:
+    where: operator configuration, outside the repository ("imported access
+      rules" in the operator layer)
+    meaning: explicit import of an upstream's access rules, Roles, and
+      Bindings into the downstream repository
+    key_name: open           # OPEN-inheritance-09
+    requirements: [PK-INH-030, PK-INH-031]
+
+files:
+  - path: processkit.lock
+    location: repository root
+    committed: true
+    written_by: [processkit lock, processkit lock --update]
+    never_written_by: [serving (stdio or shared server), validate, fetch,
+      every read command]
+    content:
+      # Observable facts the baseline states; serialization and key names
+      # are open (OPEN-inheritance-01).
+      per_upstream: one entry for every declared upstream and every
+        transitive upstream
+      entry_facts: [upstream name, source, requested ref, exact commit,
+        content digest]
+      versioned: the lock format carries its own version, reported by
+        processkit version (PK-COMPAT-001, not owned here)
+    check: after lock, every entry names a full commit and a content digest;
+      serving the same revision with the same lock twice gives identical
+      results; serving never changes the file (byte-identical, same mtime)
+    requirements: [PK-INH-002, PK-INH-010, PK-INH-021]
+  - path: .processkit/
+    role: local cache holding fetched upstream copies (repository-storage@v1)
+    committed: false
+    written_by: [processkit fetch]
+    check: fetch changes no repository file; deleting the directory loses
+      nothing that fetch cannot rebuild from the lock
+    requirements: [PK-INH-003, PK-PROD-026]
+
+commands:
+  - name: lock
+    synopsis: processkit lock
+    network: true            # resolves refs at the Git sources
+    effect: resolves every ref, including transitive upstreams, to an exact
+      commit and content digest and writes processkit.lock
+    writes: processkit.lock only
+    git_side_effects: none   # no commit, branch, push
+    failures:
+      - condition: upstream missing
+        reports: [exact upstream, reason]
+      - condition: upstream unreachable
+        reports: [exact upstream, reason]
+      - condition: content does not match its digest
+        reports: [exact upstream, reason]
+      - rule: on failure no other revision is substituted and the lock is
+          not written with a substitute
+    requirements: [PK-INH-002, PK-INH-004, PK-INH-021, PK-PROD-026]
+  - name: lock --update
+    synopsis: processkit lock --update [NAME]
+    arguments:
+      - {name: NAME, optional: true,
+         meaning: upstream name to update; omitted means all (open,
+           OPEN-inheritance-05)}
+    effect: re-resolves refs and, before writing the lock, shows the change
+    shows_before_write: [items added, items changed, items removed,
+      items newly conflicting]
+    writes: processkit.lock
+    check: with --dry-run (cli@v1) the four lists are shown and the lock is
+      byte-identical afterwards
+    requirements: [PK-INH-020, PK-INH-021]
+  - name: fetch
+    synopsis: processkit fetch
+    network: true
+    effect: fetches the locked upstream commits into the local cache
+    writes: local cache only
+    failures:
+      - condition: upstream missing, unreachable, or digest mismatch
+        reports: [exact upstream, reason]
+        rule: no other revision is substituted
+    requirements: [PK-INH-003, PK-INH-004, PK-PROD-026]
+  - name: validate
+    synopsis: processkit validate [PATH...]
+    network: false
+    checks:
+      - local item with same kind and name as an inherited item and no
+        override -> conflict
+      - override of a final item or final rule -> validation failure
+      - override naming an upstream version that no longer matches -> stale
+      - override missing upstream item, version, or reason -> invalid
+      - same item from two upstreams without a declared winner -> conflict
+    requirements: [PK-INH-003, PK-INH-011, PK-INH-012, PK-INH-013,
+      PK-INH-014, PK-INH-016]
+  - name: explain
+    synopsis: processkit explain KIND NAME
+    mcp_equivalent: explain(kind, name, namespace?)
+    network: false
+    reports: [provenance, overrides, applicability basis, validation status]
+    check: for an overridden inherited item, reports the originating
+      repository, commit, and path and each override applied with its
+      upstream, name, version, and reason
+    requirements: [PK-INH-015, PK-PROD-009]
+
+serving:
+  modes: [stdio, shared server]
+  network_for_upstreams: none
+  source_of_inherited_content: locked commits in the local cache only
+  lock_updates: never
+  check: with the network disabled, serving and validation of a locked and
+    fetched repository succeed; changing an upstream's ref target remotely
+    does not change any served result until lock and fetch run
+  requirements: [PK-INH-002, PK-INH-003, PK-INH-021]
+
+fields:
+  # Item fields that express inheritance. The Standard schema
+  # (content-kinds@v1, schemas/standard.schema.json) defines them for
+  # Standards; other kinds are open (OPEN-inheritance-04).
+  - name: spec.final
+    kind: Standard
+    type: boolean
+    default: false
+    meaning: downstream repositories cannot override this standard
+    requirements: [PK-INH-013]
+  - name: spec.rules[].final
+    kind: Standard
+    type: boolean
+    default: false
+    meaning: downstream overrides cannot change this rule
+    requirements: [PK-INH-013]
+  - name: spec.overrides
+    kind: Standard
+    type: object
+    required_keys: [upstream, name, version, reason]
+    keys:
+      - {name: upstream, type: string, meaning: upstream name from
+           processkit.toml}
+      - {name: name, type: string, meaning: metadata.name of the overridden
+           Standard, optionally <namespace>/<name>}
+      - {name: version, type: string, meaning: version of the overridden
+           upstream item}
+      - {name: reason, type: string, meaning: why the override exists}
+    requirements: [PK-INH-011, PK-INH-012, PK-INH-016]
+  - name: spec.rules[].level
+    kind: Standard
+    values: [MUST, MUST NOT, SHOULD, SHOULD NOT, MAY]
+    meaning: the rule level an override may change
+    requirements: [PK-INH-012]
+  - name: restricted marker
+    meaning: upstream marks an item as restricted
+    field_name: open         # OPEN-inheritance-08
+    requirements: [PK-INH-031]
+
+results:
+  provenance:
+    on: every served item (CLI and MCP)
+    facts: [originating repository, commit, path, overrides applied on the
+      way]
+    upstream_identity: kept for every inherited item
+    field_names: open        # OPEN-inheritance-06
+    requirements: [PK-INH-011, PK-INH-015, PK-PROD-009]
+
+access:
+  default: upstream access rules, Roles, and Bindings grant nothing
+    downstream
+  import: explicit, in downstream configuration
+  restricted_items:
+    not_imported: not served by a downstream shared server (absent from
+      every result)
+    imported: served to a caller only when both upstream and downstream
+      rules allow
+  requirements: [PK-INH-030, PK-INH-031]
+
+diagnostics:
+  # The baseline names these conditions but no codes; see OPEN-inheritance-07.
+  - {condition: upstream missing, reported_by: [lock, fetch],
+     requirements: [PK-INH-004]}
+  - {condition: upstream unreachable, reported_by: [lock, fetch],
+     requirements: [PK-INH-004]}
+  - {condition: upstream content digest mismatch, reported_by: [lock, fetch],
+     requirements: [PK-INH-004]}
+  - {condition: local item conflicts with inherited item without override,
+     reported_by: [validate], requirements: [PK-INH-011]}
+  - {condition: override lacks upstream item, version, or reason,
+     reported_by: [validate], requirements: [PK-INH-012]}
+  - {condition: override of a final item or rule, reported_by: [validate],
+     outcome: validation failure, requirements: [PK-INH-013]}
+  - {condition: same item from two upstreams without declared winner,
+     reported_by: [validate], requirements: [PK-INH-014]}
+  - {condition: stale override, reported_by: [validate],
+     requirements: [PK-INH-016]}
+  - {condition: locked upstream not fetched, reported_by: [read commands],
+     outcome: environment failure with the fix (cli@v1 PK-CLI-005),
+     requirements: [PK-INH-003]}
+
+git_boundary:
+  never: [commit, branch, pull request, push, implicit fetch]
+  explicit_fetch_only: processkit fetch (and ref resolution by processkit
+    lock)
+  check: refs, HEAD, index, and remotes of the repository are unchanged
+    after lock, fetch, validate, explain, and serving; no network access
+    occurs except during lock and fetch
+  requirements: [PK-PROD-026, PK-INH-003, PK-INH-021]
+
+open:
+  - id: OPEN-inheritance-01
+    question: What is the serialization of processkit.lock (TOML, JSON?), its
+      key names, its format version key, and how are transitive entries
+      keyed and linked to the upstream that introduced them?
+    requirements: [PK-INH-002]
+  - id: OPEN-inheritance-02
+    question: Which algorithm and scope define an upstream's "content
+      digest" (whole commit tree, content directory only, per item), and
+      how is a digest mismatch detected at fetch time?
+    requirements: [PK-INH-002, PK-INH-004]
+  - id: OPEN-inheritance-03
+    question: Which processkit.toml key declares the winning upstream for an
+      item provided by two upstreams, and at what granularity (per item,
+      per kind, per upstream)?
+    requirements: [PK-INH-014]
+  - id: OPEN-inheritance-04
+    question: How do kinds other than Standard declare final and overrides,
+      and how does a schema declare which override effects (replace, add
+      rules, change level) it allows? The Standard schema's overrides object
+      has no field selecting the effect; is a partial override expressed by
+      a full overriding item whose rules differ, and how is a single
+      overridden rule identified?
+    requirements: [PK-INH-012, PK-INH-013]
+  - id: OPEN-inheritance-05
+    question: Does `processkit lock --update` without NAME update every
+      upstream, and does plain `processkit lock` re-resolve already locked
+      refs or only add missing entries? Does writing after the change
+      summary require confirmation?
+    requirements: [PK-INH-002, PK-INH-020]
+  - id: OPEN-inheritance-06
+    question: What are the result-envelope field names for provenance
+      (repository identity as upstream name or source URL, commit, path,
+      override chain), and how is provenance mapped to W3C PROV?
+    requirements: [PK-INH-015]
+  - id: OPEN-inheritance-07
+    question: What diagnostic codes and exit categories report missing,
+      unreachable, and digest-mismatched upstreams, conflicts, final
+      violations, missing winners, and stale overrides? Is a stale override
+      a validation failure or a warning?
+    requirements: [PK-INH-004, PK-INH-011, PK-INH-013, PK-INH-014,
+      PK-INH-016]
+  - id: OPEN-inheritance-08
+    question: Which field marks an item as restricted, and how does a
+      restricted inherited item behave under stdio serving, where the local
+      principal sees everything?
+    requirements: [PK-INH-031]
+  - id: OPEN-inheritance-09
+    question: Where and how does downstream configuration import an
+      upstream's access rules, Roles, and Bindings? The baseline places
+      "imported access rules" in operator configuration while PK-INH-030
+      says "downstream configuration"; can project configuration import
+      them?
+    requirements: [PK-INH-030, PK-INH-031]
+  - id: OPEN-inheritance-10
+    question: How are transitive upstreams resolved when two paths reach the
+      same upstream at different refs or commits (diamond), and is an
+      upstream's own processkit.lock honoured or re-resolved?
+    requirements: [PK-INH-002, PK-INH-010, PK-INH-014]
+  - id: OPEN-inheritance-11
+    question: What exactly is a stale override - a mismatch between the
+      override's version and the upstream item's spec.version, or any change
+      of the upstream item's content digest?
+    requirements: [PK-INH-016]
+  - id: OPEN-inheritance-12
+    question: How does the change summary of lock --update determine "newly
+      conflicting" items, and what is its JSON shape?
+    requirements: [PK-INH-020]
+  - id: OPEN-inheritance-13
+    question: Which credentials, if any, may lock and fetch use for private
+      Git sources, given that project configuration must not carry
+      credentials?
+    requirements: [PK-INH-001, PK-INH-003]

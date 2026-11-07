@@ -1,0 +1,532 @@
+slug: content-kinds
+version: 1
+
+# Content API version every item of this slug declares and is validated
+# against.
+api_versions:
+  - value: processkit.projectious.work/v1
+    field: apiVersion
+    requirements: [PK-CONT-010]
+
+disclosure_levels:
+  - level: 0
+    content: [name, title, summary, triggers, applicability, labels]
+    excludes: [rule text, section bodies]
+    check: >-
+      A level-0 listing of any kind contains no rule text and no section
+      body.
+    requirements: [PK-CONT-001, PK-CONT-002]
+  - level: 1
+    content: >-
+      level 0 plus the binding core: rules, process outline, skill
+      instructions, server entry
+    excludes: [section bodies]
+    check: A level-1 read of any kind contains no section body.
+    requirements: [PK-CONT-001]
+  - level: 2
+    content: one named section in full
+    check: A level-2 read returns exactly one named section.
+    requirements: [PK-CONT-001, PK-STD-002]
+
+kinds:
+  - kind: Standard
+    ontology: composition over Policy
+    file: context/standards/<name>.json
+    format: JSON
+    schema: schemas/standard.schema.json
+    template: examples/standard.template.json
+    levels:
+      0: [metadata.name, spec.title, spec.summary, spec.triggers,
+          spec.applicability, metadata.labels]
+      1: [spec.rules, section index]
+      2: one entry of spec.sections, addressed by its id
+    requirements: [PK-STD-001, PK-STD-002, PK-STD-004, PK-CONT-001]
+  - kind: ProcessSpecification
+    ontology: composition
+    file: context/processes/<name>.json
+    format: JSON
+    schema: null          # required by PK-PROC-006; see OPEN-content-kinds-02
+    template: null        # required by PK-PROC-006; see OPEN-content-kinds-02
+    levels:
+      1: the whole process (process outline)
+      2: one state
+    requirements: [PK-PROC-001, PK-PROC-005, PK-PROC-006]
+  - kind: Skill
+    ontology: primitive
+    files:
+      - path: context/skills/<name>/SKILL.md
+        role: skill body; level 1
+      - path: context/skills/<name>/skill.json
+        role: skill metadata
+      - path: context/skills/<name>/<other file>
+        role: level 2, retrievable one file at a time
+    schema: null          # skill.json schema; see OPEN-content-kinds-01
+    template: null
+    levels:
+      1: body of SKILL.md
+      2: one additional file in the skill directory
+    requirements: [PK-SKILL-001, PK-SKILL-002, PK-SKILL-004]
+  - kind: MCPServer
+    ontology: refinement of Service
+    file: context/mcp-servers/<name>.json
+    format: JSON
+    schema: schemas/mcp-server.schema.json
+    template: examples/mcp-server.template.json
+    levels:
+      1: the server entry
+    requirements: [PK-CAT-002, PK-CONT-001]
+  - kind: DecisionRecord
+    ontology: composition
+    file: context/decisions/<name>.md
+    format: Markdown with JSON or YAML front matter
+    schema: null          # see OPEN-content-kinds-03
+    template: null
+    requirements: [PK-DEC-001, PK-PROD-010]
+  - kind: Document
+    ontology: composition over Artifact
+    file: any Markdown file matched by a declared document source
+    format: Markdown
+    schema: null
+    levels:
+      0: [title, path, labels, heading index]
+      2: one heading section
+    requirements: [PK-DOC-001, PK-DOC-002]
+
+fields:
+  common:
+    - name: summary
+      required: true
+      constraint: "bounded length (Standard and MCPServer schemas: 1..600)"
+      requirements: [PK-CONT-002]
+    - name: triggers
+      required: true
+      constraint: >-
+        list of strings (Standard schema: at least one, unique, 1..200
+        characters each)
+      requirements: [PK-CONT-002]
+    - name: applicability
+      constraint: >-
+        declared by project-defined profiles, labels, or both; profile names
+        are repository vocabulary
+      requirements: [PK-CONT-004]
+  Standard:
+    # Authoritative structure: schemas/standard.schema.json.
+    - {name: spec.title, required: true, requirements: [PK-STD-001]}
+    - name: spec.version
+      required: true
+      constraint: semantic version MAJOR.MINOR.PATCH
+      requirements: [PK-STD-001]
+    - name: spec.status
+      required: true
+      values: [draft, active, deprecated, superseded]
+      requirements: [PK-STD-001]
+    - {name: spec.owner, required: true, requirements: [PK-STD-001]}
+    - {name: spec.summary, required: true, requirements: [PK-STD-001]}
+    - {name: spec.triggers, required: true, requirements: [PK-STD-001]}
+    - name: spec.applicability.profiles
+      required: true
+      constraint: '"*" means all profiles'
+      requirements: [PK-STD-001, PK-CONT-004]
+    - name: spec.rules
+      required: true
+      constraint: ordered, at least one
+      requirements: [PK-STD-001]
+    - name: "spec.rules[].id"
+      required: true
+      constraint: pattern ^[A-Z][A-Z0-9]*-[0-9]{3}$, unique within standard
+      requirements: [PK-STD-001]
+    - name: "spec.rules[].level"
+      required: true
+      values: [MUST, MUST NOT, SHOULD, SHOULD NOT, MAY]
+      requirements: [PK-STD-001]
+    - {name: "spec.rules[].text", required: true, requirements: [PK-STD-001]}
+    - name: "spec.sections[]"
+      required: false
+      constraint: id, title, Markdown body; served one at a time (level 2)
+      requirements: [PK-STD-002]
+    - name: "spec.references[]"
+      required: false
+      constraint: >-
+        title plus exactly one of ref (<Kind>/<name> or
+        <Kind>/<namespace>/<name>) or url; an unresolved ref is a
+        validation error
+      requirements: [PK-STD-003]
+    - name: "spec.supersedes[]"
+      required: false
+      requirements: [PK-STD-003]
+    - name: "spec.decisions[]"
+      required: false
+      constraint: names of DecisionRecords that justify the standard
+      requirements: [PK-STD-003, PK-DEC-002, PK-PROD-010]
+    - name: spec.alwaysOn
+      required: false
+      default: false
+      constraint: when true, rules join the level-0 briefing
+      requirements: [PK-STD-005]
+  ProcessSpecification:
+    # Required content; field names not defined (OPEN-content-kinds-02).
+    - {name: title, required: true, requirements: [PK-PROC-001]}
+    - {name: version, required: true, requirements: [PK-PROC-001]}
+    - {name: status, required: true, requirements: [PK-PROC-001]}
+    - {name: owner, required: true, requirements: [PK-PROC-001]}
+    - {name: summary, required: true, requirements: [PK-PROC-001]}
+    - {name: triggers, required: true, requirements: [PK-PROC-001]}
+    - {name: governed WorkItem type, required: true,
+       requirements: [PK-PROC-001]}
+    - name: StateMachine (states, transitions, terminal states)
+      required: true
+      requirements: [PK-PROC-001, PK-PROC-003]
+    - {name: Roles per transition, required: true,
+       requirements: [PK-PROC-001, PK-PROC-003]}
+    - {name: Gates on transitions, required: false,
+       requirements: [PK-PROC-002]}
+    - {name: Artifacts required or produced per state, required: false,
+       requirements: [PK-PROC-002]}
+    - name: per-state references to standards, skills, MCP servers
+      required: false
+      requirements: [PK-PROC-002]
+    - {name: decision references, required: false,
+       requirements: [PK-DEC-002, PK-PROD-010]}
+    - {name: external system holding instances, required: false,
+       requirements: [PK-PROC-004]}
+  Skill:
+    # skill.json field names not defined (OPEN-content-kinds-01).
+    - {name: name, required: true, requirements: [PK-SKILL-001]}
+    - {name: version, required: true, requirements: [PK-SKILL-001]}
+    - {name: summary, required: true, requirements: [PK-SKILL-001]}
+    - {name: triggers, required: true, requirements: [PK-SKILL-001]}
+    - {name: applicability, required: true, requirements: [PK-SKILL-001]}
+    - {name: inputs, required: true, requirements: [PK-SKILL-005]}
+    - {name: outputs, required: true, requirements: [PK-SKILL-005]}
+    - {name: dependencies, required: true, requirements: [PK-SKILL-006]}
+    - name: side-effect class
+      required: true
+      values: [read-only, project-mutating, externally mutating, privileged,
+               destructive]
+      requirements: [PK-SKILL-007]
+    - {name: safety constraints, required: true,
+       requirements: [PK-SKILL-008]}
+    - {name: required MCP servers, required: true,
+       requirements: [PK-SKILL-009]}
+    - name: normative and explanatory parts
+      required: true
+      requirements: [PK-SKILL-010]
+  MCPServer:
+    # Authoritative structure: schemas/mcp-server.schema.json.
+    - {name: spec.version, required: true, constraint: exact pinned version,
+       requirements: [PK-CAT-002]}
+    - name: spec.transport
+      required: true
+      constraint: >-
+        {type: http, url: https://...} or {type: stdio, package: <package
+        coordinate>, args?: [..]}; never a shell command line
+      requirements: [PK-CAT-002]
+    - name: spec.sideEffects
+      required: true
+      values: [read-only, project-mutating, externally-mutating]
+      constraint: highest class the server exposes
+      requirements: [PK-CAT-002]
+    - {name: spec.owner, required: true, requirements: [PK-CAT-002]}
+    - name: spec.status
+      required: true
+      values: [draft, active, deprecated, retired]
+      requirements: [PK-CAT-002]
+    - name: spec.authentication.mode
+      required: true
+      values: [none, oauth, mtls, other]
+      requirements: [PK-CAT-002]
+    - name: spec.authentication.notes
+      required: false
+      constraint: never a credential value
+      requirements: [PK-CAT-003]
+    - name: spec.role
+      required: true
+      values: [server, gateway]
+      requirements: [PK-CAT-004]
+    - name: "spec.upstreams[]"
+      required: false
+      constraint: for role gateway, names of MCPServer entries it fronts
+      requirements: [PK-CAT-004]
+  DecisionRecord:
+    # Front matter field names not defined (OPEN-content-kinds-03).
+    - {name: title, required: true, requirements: [PK-DEC-001]}
+    - name: status
+      required: true
+      values: [proposed, accepted, superseded, rejected]
+      requirements: [PK-DEC-001]
+    - {name: date, required: true, requirements: [PK-DEC-001]}
+    - {name: deciders, required: true, requirements: [PK-DEC-001]}
+    - {name: context, required: true, requirements: [PK-DEC-001]}
+    - {name: decision, required: true, requirements: [PK-DEC-001]}
+    - {name: consequences, required: true, requirements: [PK-DEC-001]}
+    - {name: alternatives, required: false, requirements: [PK-DEC-001]}
+  DocumentSource:
+    # Declared in processkit.toml; key names not defined
+    # (OPEN-content-kinds-04).
+    - {name: path pattern, required: true, requirements: [PK-DOC-001]}
+    - {name: namespace, required: true, requirements: [PK-DOC-001]}
+    - {name: labels, required: true, requirements: [PK-DOC-001]}
+
+result_fields:
+  # Every served item carries these facts; field names are not defined
+  # (OPEN-content-kinds-07).
+  - {fact: kind, requirements: [PK-CONT-003]}
+  - {fact: name, requirements: [PK-CONT-003]}
+  - {fact: version, requirements: [PK-CONT-003]}
+  - {fact: source repository, requirements: [PK-CONT-003]}
+  - {fact: source path, requirements: [PK-CONT-003]}
+  - {fact: content digest, requirements: [PK-CONT-003]}
+  - {fact: validation status, requirements: [PK-CONT-003, PK-CONT-011]}
+  - fact: decision references of a served rule
+    requirements: [PK-DEC-002]
+  - fact: script label on a skill file returned as content
+    requirements: [PK-SKILL-003]
+
+# Operations through which this slug's requirements are observed. Their
+# syntax is owned by cli@v1 and mcp-context-serving@v1; only arguments the
+# baseline states are listed.
+operations:
+  - name: processkit new KIND NAME
+    owner: cli@v1
+    effect: create an item from the published template
+    check: the created file validates with processkit validate
+    requirements: [PK-STD-001, PK-CAT-002, PK-SKILL-001]
+  - name: processkit validate [PATH...]
+    owner: cli@v1
+    arguments:
+      - {name: PATH, meaning: files to validate}
+      - {name: "-", meaning: read draft content from standard input}
+    check: >-
+      every violation is reported with file, JSON pointer, and violated
+      constraint; draft input via "-" writes no file
+    requirements: [PK-CONT-010, PK-CONT-012, PK-STD-003, PK-PROC-003,
+                   PK-CAT-003]
+  - name: processkit list KIND [--selector S] [--namespace N]
+    owner: cli@v1
+    check: results are level 0 only
+    requirements: [PK-CONT-001, PK-CONT-002]
+  - name: processkit show KIND NAME [--level L] [--section S]
+    owner: cli@v1
+    check: >-
+      --level 1 returns no section bodies; --section returns exactly one
+      section, skill file, process state, or document heading section
+    requirements: [PK-CONT-001, PK-STD-002, PK-SKILL-002, PK-PROC-005,
+                   PK-DOC-002]
+  - name: processkit context [--task T] [--profile P] [--path PATH]
+    owner: cli@v1
+    requirements: [PK-CONT-004]
+  - name: validate(kind, content)
+    owner: mcp-context-serving@v1
+    check: draft content is validated and no file is written
+    requirements: [PK-CONT-012]
+  - name: list(kind, selector?, namespace?, limit?, cursor?)
+    owner: mcp-context-serving@v1
+    requirements: [PK-CONT-001, PK-CONT-011]
+  - name: get(kind, name, namespace?, level?, section?)
+    owner: mcp-context-serving@v1
+    requirements: [PK-CONT-001, PK-CONT-003, PK-PROC-005, PK-SKILL-002,
+                   PK-SKILL-003, PK-DEC-002]
+  - name: get_context(task?, profiles?, paths?, kinds?, level?)
+    owner: mcp-context-serving@v1
+    requirements: [PK-CONT-004, PK-CONT-011]
+  - name: connection briefing (MCP server instructions)
+    owner: mcp-context-serving@v1
+    check: rules of every always-on Standard appear in the briefing
+    requirements: [PK-STD-005]
+
+validation_failures:
+  # Conditions that make processkit validate fail. Diagnostic codes are
+  # not defined (OPEN-content-kinds-06).
+  - condition: item violates the schema of its declared apiVersion
+    requirements: [PK-CONT-010]
+  - condition: unresolved reference in a Standard
+    requirements: [PK-STD-003]
+  - condition: ProcessSpecification state not reachable
+    requirements: [PK-PROC-003]
+  - condition: ProcessSpecification without declared terminal states
+    requirements: [PK-PROC-003]
+  - condition: transition names a Role that does not exist
+    requirements: [PK-PROC-003]
+  - condition: ProcessSpecification reference does not resolve
+    requirements: [PK-PROC-003]
+  - condition: MCPServer remote transport URL not https://
+    requirements: [PK-CAT-002]
+  - condition: MCPServer stdio transport without package coordinate
+    requirements: [PK-CAT-002]
+  - condition: MCPServer field matches a configured secret pattern
+    requirements: [PK-CAT-003]
+  - condition: required field of any kind missing
+    requirements: [PK-STD-001, PK-PROC-001, PK-SKILL-001, PK-SKILL-005,
+                   PK-SKILL-006, PK-SKILL-007, PK-SKILL-008, PK-SKILL-009,
+                   PK-SKILL-010, PK-CAT-002, PK-DEC-001]
+
+prohibitions:
+  # Absence checks: each effect must not be observable.
+  - effect: processkit runs a process, or creates, stores, or tracks a
+      WorkItem instance
+    check: >-
+      no command or MCP tool starts, advances, or records a process
+      instance; no instance file appears in the repository or cache
+    requirements: [PK-PROC-004, PK-PROD-021]
+  - effect: processkit executes a script contained in a skill
+    check: >-
+      serving a skill whose script would create a marker file leaves no
+      marker file; the script is returned as labelled content
+    requirements: [PK-SKILL-003]
+  - effect: processkit connects to, forwards to, proxies, or invokes a
+      catalogued server
+    check: >-
+      serving and validating catalog entries opens no connection to any
+      catalogued URL and starts no catalogued package
+    requirements: [PK-CAT-001]
+  - effect: trust inferred from presence behind a gateway
+    check: >-
+      a server named only in a gateway's upstreams, with no MCPServer entry
+      of its own, is not served as a catalogued server
+    requirements: [PK-CAT-004]
+  - effect: processkit creates a DecisionRecord as a side effect
+    check: >-
+      no command other than an explicit author file edit adds a file under
+      context/decisions/
+    requirements: [PK-DEC-004]
+  - effect: Markdown matched by no document source is served
+    check: list and get for Document never return it
+    requirements: [PK-DOC-001]
+  - effect: invalid item served as valid
+    check: >-
+      the item is reported with an invalid validation status; other valid
+      items remain served
+    requirements: [PK-CONT-011]
+
+schemas:
+  - path: schemas/standard.schema.json
+    kind: Standard
+    note: references resource-metadata.schema.json (OPEN-content-kinds-08)
+    requirements: [PK-STD-001, PK-STD-002, PK-STD-003, PK-STD-005]
+  - path: schemas/resource-metadata.schema.json
+    kind: common envelope (copy of ontology@v1)
+    note: carried so the version resolves standalone (OPEN-content-kinds-08)
+    requirements: [PK-CONT-002]
+  - path: schemas/mcp-server.schema.json
+    kind: MCPServer
+    note: references resource-metadata.schema.json (OPEN-content-kinds-08)
+    requirements: [PK-CAT-002, PK-CAT-003, PK-CAT-004]
+
+examples:
+  - path: examples/standard.template.json
+    validates_against: schemas/standard.schema.json
+    requirements: [PK-STD-001]
+  - path: examples/mcp-server.template.json
+    validates_against: schemas/mcp-server.schema.json
+    requirements: [PK-CAT-002]
+
+open:
+  - id: OPEN-content-kinds-01
+    question: >-
+      No skill.json schema or Skill template exists. What are the field
+      names, types, and constraints for name, version, summary, triggers,
+      applicability, inputs, outputs, dependencies, side-effect class,
+      safety constraints, and required MCP servers?
+    requirements: [PK-SKILL-001, PK-SKILL-005, PK-SKILL-006, PK-SKILL-007,
+                   PK-SKILL-008, PK-SKILL-009]
+  - id: OPEN-content-kinds-02
+    question: >-
+      No ProcessSpecification schema or template exists although
+      PK-PROC-006 requires both. What are the field names for the governed
+      WorkItem type, StateMachine states, transitions, terminal states,
+      Roles per transition, Gates, per-state Artifacts and references,
+      decision references, and the external instance system, and what
+      exactly do level 0 and level 1 contain?
+    requirements: [PK-PROC-001, PK-PROC-002, PK-PROC-004, PK-PROC-005,
+                   PK-PROC-006, PK-CONT-001]
+  - id: OPEN-content-kinds-03
+    question: >-
+      No DecisionRecord schema or template exists. What are the front
+      matter field names, the date format, the shape of deciders and
+      alternatives, how a superseding record names the record it
+      supersedes, and what levels 0 and 1 contain?
+    requirements: [PK-DEC-001, PK-DEC-003, PK-CONT-001, PK-PROD-010]
+  - id: OPEN-content-kinds-04
+    question: >-
+      What are the processkit.toml keys for a document source (path
+      pattern syntax, namespace, labels), the shape of the heading index,
+      how a heading section is addressed at level 2, and what a Document
+      level 1 contains?
+    requirements: [PK-DOC-001, PK-DOC-002, PK-CONT-001]
+  - id: OPEN-content-kinds-05
+    question: >-
+      PK-CONT-002 requires every item to declare summary and triggers, but
+      mcp-server.schema.json makes triggers optional and PK-DEC-001 and
+      PK-DOC-002 name neither field for DecisionRecord and Document. Which
+      governs, and what is the summary length bound for kinds without a
+      schema?
+    requirements: [PK-CONT-002, PK-CAT-002, PK-DEC-001, PK-DOC-002]
+  - id: OPEN-content-kinds-06
+    question: >-
+      What are the diagnostic field names (file, JSON pointer, violated
+      constraint), the diagnostic or error codes for each validation
+      failure, and how an invalid item is reported in a result that would
+      have included it?
+    requirements: [PK-CONT-010, PK-CONT-011, PK-STD-003, PK-PROC-003,
+                   PK-CAT-002, PK-CAT-003]
+  - id: OPEN-content-kinds-07
+    question: >-
+      What are the result field names for kind, name, version, source
+      repository, path, digest, and validation status, and what "version"
+      means for kinds whose version field means something else (MCPServer
+      spec.version is the server's version) or that have none
+      (DecisionRecord, Document)?
+    requirements: [PK-CONT-003]
+  - id: OPEN-content-kinds-08
+    question: >-
+      Both schemas $ref resource-metadata.schema.json. A copy of the
+      ontology@v1 schema is carried in schemas/ so this version resolves
+      standalone; which slug owns future changes to the shared envelope,
+      and must copies stay byte-identical across slugs?
+    requirements: [PK-STD-001, PK-CAT-002]
+  - id: OPEN-content-kinds-09
+    question: >-
+      Where are the secret patterns for PK-CAT-003 configured, and is
+      there a default set that applies when none is configured?
+    requirements: [PK-CAT-003]
+  - id: OPEN-content-kinds-10
+    question: >-
+      What KIND token does the CLI and the MCP kind argument accept for
+      each kind (for example Standard or standard), and does processkit new
+      support kinds that have no published template?
+    requirements: [PK-STD-001, PK-CAT-002, PK-SKILL-001, PK-PROC-006]
+  - id: OPEN-content-kinds-11
+    question: >-
+      Skill side-effect classes (five values) differ from MCPServer
+      sideEffects (three values, spelled externally-mutating). What are
+      the skill values' exact spelling, and is the class declared per
+      operation or as the skill's highest class?
+    requirements: [PK-SKILL-007]
+  - id: OPEN-content-kinds-12
+    question: >-
+      Must Skill dependencies and required MCP servers be typed references
+      that resolve (to items and to MCPServer entries) and fail validation
+      when dangling, and which kinds may a dependency target?
+    requirements: [PK-SKILL-006, PK-SKILL-009]
+  - id: OPEN-content-kinds-13
+    question: >-
+      How does a Skill mark normative versus explanatory parts (skill.json
+      field per file, a declared structured region in SKILL.md, or front
+      matter), compatibly with the Agent Skills format?
+    requirements: [PK-SKILL-010, PK-SKILL-004]
+  - id: OPEN-content-kinds-14
+    question: >-
+      How is a skill file identified as a script, and what is the label
+      field and value on returned content? Which Agent Skills format
+      version is the compatibility target?
+    requirements: [PK-SKILL-003, PK-SKILL-004]
+  - id: OPEN-content-kinds-15
+    question: >-
+      Is spec.upstreams on an MCPServer with role server a validation
+      error, and must gateway upstream names resolve to MCPServer entries?
+    requirements: [PK-CAT-004]
+  - id: OPEN-content-kinds-16
+    question: >-
+      How is a process state addressed at level 2 (the get section
+      argument with the state name, or another argument)?
+    requirements: [PK-PROC-005]

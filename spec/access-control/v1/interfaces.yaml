@@ -1,0 +1,370 @@
+# Interface catalog for access-control@v1.
+# Everything identity and access control make observable. Identifiers,
+# options, defaults, fields, and codes not stated by the requirements or the
+# baseline are listed under `open`.
+slug: access-control
+version: 1
+
+serving_modes:
+  - mode: stdio
+    command: processkit mcp serve --stdio     # mcp-context-serving@v1
+    default_authenticator: local
+    confidentiality_control: false
+    visibility: the local principal sees every item
+    check: no output or documentation of stdio mode presents access rules as
+      a confidentiality control; every valid item is returned to the local
+      principal regardless of Roles and Bindings
+    requirements: [PK-ACC-001]
+  - mode: shared server
+    command: processkit mcp serve --http --listen ADDRESS
+    transport: HTTPS (TLS required)
+    working_copies: exactly one
+    visibility: each caller sees only items its access grants allow
+    requirements: [PK-PROD-011, PK-ACC-030, PK-ACC-031]
+
+authenticators:
+  chain:
+    order: as configured by the operator
+    first_accepting_defines_principal: true
+    none_accepts: request rejected
+    configured_in: operator configuration outside repository files
+    repository_content_may_not: [enable an authenticator,
+                                 trust an issuer or CA, define a principal]
+    format: OPEN-access-control-01
+    requirements: [PK-ACC-011, PK-ACC-012]
+  anonymous:
+    default: off
+    enabled_by: operator configuration (key is OPEN-access-control-01)
+    principal_groups: [system:unauthenticated]   # only this group
+    requirements: [PK-ACC-012]
+  kinds:
+    - name: local
+      use: stdio, the default
+      identity_source: the operating-system user that owns the server process
+      requirements: [PK-ACC-001, PK-ACC-012]
+    - name: oidc
+      use: people and harnesses using the shared server
+      identity_source: bearer token from a configured issuer; user and group
+        claims (claim names OPEN-access-control-02)
+      validates: [issuer, audience, signature, expiry, not-before]
+      protocol_role: OAuth protected resource per the MCP authorization
+        specification for the supported MCP version (supported versions are
+        reported by processkit version --json, cli@v1)
+      rejects: [expired token, not-yet-valid token, wrong-audience token,
+                wrong-issuer token, bad signature]
+      requirements: [PK-ACC-013]
+    - name: x509
+      use: services and automation using the shared server
+      identity_source: client certificate from a configured CA
+      user: subject CN
+      groups: subject O
+      verifies: [chain, validity, client-authentication usage]
+      revocation_list: supported (configuration key OPEN-access-control-01)
+      recommendation: operators should issue short-lived certificates
+      rejects: [untrusted certificate, expired certificate,
+                not-yet-valid certificate, certificate without
+                client-authentication usage, revoked certificate]
+      requirements: [PK-ACC-014]
+    - name: trusted-proxy
+      use: a shared server behind an authenticating reverse proxy
+      identity_source: identity headers (names OPEN-access-control-03)
+      accepted_only_when: the connection's peer certificate (mutual TLS)
+        identifies a configured proxy
+      other_connections: identity headers stripped, never used
+      requirements: [PK-ACC-015]
+
+principal:
+  attributes: [user identifier, groups, authenticator]
+  asserted_by: the authenticator that accepted the request
+  not_identity: [Actor items, TeamMember items]
+  passed_to: every application operation; CLI and MCP adapters make no
+    access decisions
+  credentials: never stored, issued, signed, rotated, or forwarded; bearer
+    material redacted from every output
+  requirements: [PK-ACC-010, PK-ACC-016, PK-ACC-017, PK-ACC-018]
+
+content:
+  # Roles and Bindings are ordinary ontology content (ontology@v1), stored
+  # with the other ontology content (repository-storage@v1) and reviewed
+  # through Git. The baseline states the fields below by example; the full
+  # field contract is OPEN-access-control-04 and OPEN-access-control-05.
+  apiVersion: processkit.projectious.work/v1
+  role:
+    kind: Role
+    access_rules_optional: true
+    fields:
+      - path: spec.responsibilities
+        type: array of string
+        source: baseline example
+      - path: spec.access
+        type: array of access rule
+        meaning: rules granting verbs on kinds
+      - path: spec.access[].kinds
+        type: array of kind names
+      - path: spec.access[].verbs
+        type: array of verbs (get, list)
+      - path: spec.access[].selector
+        type: label selector string (grammar ontology@v1)
+        optional: true
+      - path: names narrowing of a rule
+        stated: a rule may be narrowed by names
+        field_name: OPEN-access-control-04
+    example: |
+      {
+        "apiVersion": "processkit.projectious.work/v1",
+        "kind": "Role",
+        "metadata": { "name": "standards-reader" },
+        "spec": {
+          "responsibilities": ["Apply company engineering standards"],
+          "access": [
+            {
+              "kinds": ["Standard", "ProcessSpecification", "Skill"],
+              "verbs": ["get", "list"],
+              "selector": "sensitivity notin (confidential)"
+            }
+          ]
+        }
+      }
+    requirements: [PK-ACC-020, PK-ACC-021, PK-ACC-022, PK-ACC-025]
+  binding:
+    kind: Binding
+    fields:
+      - path: spec.relation
+        value: grants-role
+      - path: spec.subject
+        type: object
+        meaning: a user or group principal
+      - path: spec.subject.principal
+        values_stated: [Group]          # user value OPEN-access-control-05
+      - path: spec.subject.name
+        meaning: identifier the authenticator asserts (for example an OIDC
+          group claim value or an x509 subject O)
+      - path: spec.target
+        type: typed reference to a Role (Role/<name>)
+      - path: spec.scope
+        type: typed reference to a Container (Container/<name>)
+      - path: spec.validity
+        type: object
+        meaning: bounds the grant in time
+      - path: spec.validity.until
+        type: RFC 3339 timestamp
+        source: baseline example
+    example: |
+      {
+        "apiVersion": "processkit.projectious.work/v1",
+        "kind": "Binding",
+        "metadata": { "name": "engineering-reads-standards" },
+        "spec": {
+          "relation": "grants-role",
+          "subject": { "principal": "Group", "name": "engineering@example.com" },
+          "target": "Role/standards-reader",
+          "scope": "Container/engineering",
+          "validity": { "until": "2027-12-31T23:59:59Z" }
+        }
+      }
+    requirements: [PK-ACC-018, PK-ACC-021, PK-ACC-025]
+
+authorization:
+  default: deny
+  rules: additive; no deny rule in v1
+  verbs: [get, list]
+  allow_when_all:
+    - a grants-role Binding is valid at request time
+    - the Binding is scoped to the item's Container or an ancestor of it
+      (Container tree from ontology@v1)
+    - the Binding subject is the principal's user or one of its groups
+    - the bound Role has a rule matching the item's kind, the verb, the
+      item's name (when the rule names names), and the rule's selector
+      (when present)
+  operation_declarations:
+    rule: every tool and command declares the verb and kinds it requires
+    declarations: OPEN-access-control-06
+  inherited_rules: governed by inheritance@v1 (upstream rules grant nothing
+    downstream unless imported)
+  requirements: [PK-ACC-020, PK-ACC-021, PK-ACC-022]
+
+filtering:
+  # Surfaces through which forbidden items must not be observable on the
+  # shared server. Assembly itself is defined by mcp-context-serving@v1.
+  filter_before: [ordering, counting, truncation]
+  surfaces:
+    - surface: list (CLI and MCP)
+      check: forbidden items absent; counts, page sizes, and cursors computed
+        over allowed items only
+      requirements: [PK-ACC-023]
+    - surface: get (CLI and MCP) and MCP resources
+      check: result for a forbidden item is identical to the result for a
+        missing item (outcome, diagnostics, and error text)
+      requirements: [PK-ACC-023]
+    - surface: get_context
+      check: forbidden items absent; ranking and truncation unaffected by them
+      requirements: [PK-ACC-023]
+    - surface: connection briefing
+      check: forbidden items absent from rules, index, and kind/label
+        summaries, including summary counts
+      requirements: [PK-ACC-023]
+    - surface: references
+      check: reference from an allowed item to a forbidden item returned as
+        unresolved without title, labels, or content of the target
+      requirements: [PK-ACC-024]
+    - surface: errors and diagnostics
+      check: no diagnostic names or describes a forbidden item
+      requirements: [PK-PROD-011, PK-ACC-023]
+    - surface: timing
+      check: response-time difference between forbidden and missing items
+        stays within a documented bound (value OPEN-access-control-08)
+      requirements: [PK-PROD-011, PK-ACC-023]
+  requirements: [PK-PROD-011, PK-ACC-023, PK-ACC-024]
+
+commands:
+  - name: access can-i
+    synopsis: processkit access can-i VERB KIND [NAME] --as USER [--as-group G]
+    arguments:
+      - {name: VERB, values: [get, list]}
+      - {name: KIND, value: content kind}
+      - {name: NAME, optional: true}
+    options:
+      - {name: --as, value: USER, meaning: user to impersonate}
+      - {name: --as-group, value: G, optional: true,
+         meaning: group of the impersonated principal}
+    reports: [decision, granting Binding]
+    impersonation:
+      requires: an explicit grant (form OPEN-access-control-07)
+      logged: true
+    writes: nothing
+    result_envelope: cli@v1
+    output_fields: OPEN-access-control-09
+    requirements: [PK-ACC-027]
+  - name: access whoami
+    synopsis: processkit access whoami
+    meaning: show the current principal (listed in cli@v1; no access-control
+      requirement states its output, see OPEN-access-control-10)
+    requirements: []
+  - name: mcp serve --http
+    synopsis: processkit mcp serve --http --listen ADDRESS
+    options:
+      - {name: --listen, value: ADDRESS}
+    refuses_to_start_when: [no TLS configured,
+                            no authenticator other than local configured]
+    tls_material: supplied by the operator; processkit never creates a CA or
+      requests certificates
+    serves: exactly one working copy
+    reports: working-copy revision (in every result envelope, cli@v1 and
+      mcp-context-serving@v1)
+    refusal_diagnostic: OPEN-access-control-11
+    requirements: [PK-ACC-030, PK-ACC-031, PK-ACC-032]
+
+limits:
+  per_principal: true
+  per_server: true
+  values_and_configuration: OPEN-access-control-12
+  requirements: [PK-ACC-033]
+
+health_endpoint:
+  authentication: none
+  must_not_reveal: [item names, counts, rules]
+  path_and_response: OPEN-access-control-13
+  requirements: [PK-ACC-033]
+
+decision_log:
+  sink: operational log (structured; default sink standard error, security@v1)
+  repository_content: false
+  record_fields: [principal, authenticator, verb, kind, namespace, name,
+                  outcome, granting Binding]
+  field_keys: OPEN-access-control-14
+  impersonation: logged (PK-ACC-027)
+  redaction: bearer material never appears
+  requirements: [PK-ACC-016, PK-ACC-026, PK-ACC-027]
+
+validation_errors:
+  # Reported by processkit validate (cli@v1); the offending Binding or rule
+  # grants nothing. Codes OPEN-access-control-15.
+  conditions:
+  - Binding names an unknown Role
+  - Binding scoped to an unknown Container
+  - Binding subject is not a principal
+  - Role rule with an invalid selector (position per ontology@v1)
+  requirements: [PK-ACC-025]
+
+open:
+  - id: OPEN-access-control-01
+    question: What are the operator-configuration keys and format for the
+      authenticator chain and its order, the oidc issuer and audience, the
+      x509 trusted CA and revocation list, the trusted-proxy peer identities,
+      TLS key and certificate paths, and enabling anonymous access?
+    requirements: [PK-ACC-011, PK-ACC-012, PK-ACC-013, PK-ACC-014,
+                   PK-ACC-015, PK-ACC-030, PK-ACC-032]
+  - id: OPEN-access-control-02
+    question: Which OIDC claims provide the user identifier and groups, and
+      are they configurable? What user identifier and groups does the local
+      authenticator assert?
+    requirements: [PK-ACC-012, PK-ACC-013, PK-ACC-018]
+  - id: OPEN-access-control-03
+    question: Which identity header names does trusted-proxy read (user and
+      groups), and how is a configured proxy identified from its peer
+      certificate?
+    requirements: [PK-ACC-015]
+  - id: OPEN-access-control-04
+    question: What is the full schema of a Role access rule, in particular
+      the field that narrows a rule by names, whether names and selector
+      combine by AND, and whether kinds or verbs accept wildcards?
+    requirements: [PK-ACC-021, PK-ACC-022, PK-ACC-025]
+  - id: OPEN-access-control-05
+    question: What is the full Binding schema - the allowed
+      spec.subject.principal values (the baseline shows only Group), the
+      validity fields other than until (for example a start bound), whether
+      validity is optional, and whether target and scope accept namespaced
+      references? The governance-draft field contracts are pending an owner
+      decision.
+    requirements: [PK-ACC-018, PK-ACC-021, PK-ACC-025]
+  - id: OPEN-access-control-06
+    question: Which verb and kinds does each tool and command declare (for
+      example get_context, explain, validate, ontology, MCP resources and
+      prompts, and the briefing)?
+    requirements: [PK-ACC-022]
+  - id: OPEN-access-control-07
+    question: How is the explicit impersonation grant expressed, given that
+      v1 verbs are only get and list? Does can-i evaluate rules in stdio
+      mode, and does it run against the shared server or the local working
+      copy?
+    requirements: [PK-ACC-001, PK-ACC-022, PK-ACC-027]
+  - id: OPEN-access-control-08
+    question: What is the documented timing bound within which forbidden and
+      missing items must be indistinguishable, and how is it measured?
+    requirements: [PK-PROD-011, PK-ACC-023]
+  - id: OPEN-access-control-09
+    question: What are the data fields of the can-i result (decision value,
+      granting Binding reference, matched rule) and its exit code for a
+      denied decision?
+    requirements: [PK-ACC-027]
+  - id: OPEN-access-control-10
+    question: What does access whoami report (user, groups, authenticator),
+      and is it in scope of access-control@v1? The baseline lists the
+      command but states no requirement for it.
+    requirements: []
+  - id: OPEN-access-control-11
+    question: What diagnostic code, message, and exit code does mcp serve
+      --http produce when it refuses to start?
+    requirements: [PK-ACC-030]
+  - id: OPEN-access-control-12
+    question: Which per-principal and per-server limits exist, what are their
+      defaults and configuration keys, and what does a caller receive when a
+      limit is exceeded?
+    requirements: [PK-ACC-033]
+  - id: OPEN-access-control-13
+    question: What is the health endpoint's path and response body?
+    requirements: [PK-ACC-033]
+  - id: OPEN-access-control-14
+    question: What are the field keys of the decision log record, and how is
+      the outcome encoded? Is every allowed item in a list logged, or one
+      record per request?
+    requirements: [PK-ACC-026]
+  - id: OPEN-access-control-15
+    question: What diagnostic codes do the access validation errors use?
+    requirements: [PK-ACC-025]
+  - id: OPEN-access-control-16
+    question: How does "valid at request time" for Binding validity combine
+      with deterministic assembly, whose inputs exclude time of day
+      (mcp-context-serving@v1)? Is the access set (and its digest) recomputed
+      per request from the clock?
+    requirements: [PK-ACC-021]

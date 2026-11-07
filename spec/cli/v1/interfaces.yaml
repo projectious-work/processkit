@@ -1,0 +1,409 @@
+slug: cli
+version: 1
+
+# Everything the processkit CLI makes observable. Identifiers, options,
+# defaults, and fields below are stated by the requirements or the #197
+# baseline (or by the governance-draft gap items carried as PK-CLI-008 to
+# PK-CLI-020). Anything a test author would need but the baseline leaves
+# undefined is under `open`. Semantics of individual commands are owned by
+# the slug named in `semantics_owner`.
+
+executable: processkit
+
+global_options:
+  - name: --json
+    applies_to: every data-bearing command (the exact set is open)
+    effect: standard output carries exactly one versioned result envelope
+    check: stdout parses as one JSON document with the envelope fields; names,
+      digests, provenance, and diagnostics present in text output are also
+      present in the envelope
+    requirements: [PK-CLI-002, PK-OUT-001]
+  - name: --dry-run
+    applies_to: [init, new, format, lock, migrate, fetch]
+    effect: the plan is printed and nothing is written
+    check: repository files and the local cache are byte-identical before
+      and after the command
+    requirements: [PK-CLI-004]
+  - name: --root
+    value: PATH
+    applies_to: every command that selects a repository root
+    effect: selects the repository root; highest precedence in root selection
+    check: given a content directory instead of the root, the command fails,
+      or reports the normalized root before any write
+    requirements: [PK-CLI-008, PK-CLI-010, PK-CLI-011]
+  - name: --yes
+    applies_to: commands that apply a plan requiring confirmation
+    effect: confirms the plan when running non-interactively
+    check: without --yes in a non-interactive run, such a plan is refused and
+      no file changes
+    requirements: [PK-CLI-014]
+
+environment:
+  - name: PROCESSKIT_ROOT
+    effect: selects the repository root when --root is absent
+    precedence: below --root, above discovery of processkit.toml
+    requirements: [PK-CLI-008, PK-CLI-011]
+  - name: PROCESSKIT_*
+    effect: invocation-layer configuration (highest configuration layer
+      together with invocation flags); individual variable names other than
+      PROCESSKIT_ROOT are open
+    requirements: [PK-CONFIG-003]
+
+commands:
+  - name: init
+    synopsis: processkit init [--governing | --project]
+    options:
+      - {name: --governing, meaning: initialize a governing repository}
+      - {name: --project, meaning: initialize a project repository}
+    writes: repository files (configuration and content directory)
+    from_reviewed_plan: true
+    root_when_none_found: current directory
+    semantics_owner: repository-storage@v1
+    check: processkit.toml and the content directory exist; the printed plan
+      lists exactly the files created; no Git state changed
+    requirements: [PK-PROD-005, PK-CLI-004, PK-CLI-006, PK-CLI-008,
+                   PK-CLI-012, PK-CLI-013]
+  - name: new
+    synopsis: processkit new KIND NAME
+    arguments:
+      - {name: KIND, meaning: content kind}
+      - {name: NAME, meaning: item name}
+    writes: repository files (one item)
+    semantics_owner: content-kinds@v1
+    check: the created file validates with processkit validate
+    requirements: [PK-PROD-012, PK-CLI-004]
+  - name: validate
+    synopsis: processkit validate [PATH...]
+    arguments:
+      - {name: PATH, meaning: files to validate; default when omitted is open}
+      - {name: "-", meaning: read draft content from standard input}
+    writes: nothing
+    mcp_equivalent: validate(kind, content)
+    semantics_owner: content-kinds@v1
+    check: draft content read from "-" is validated and no file is written;
+      result and diagnostics equal those of the MCP validate tool for the
+      same content
+    requirements: [PK-PROD-005, PK-PROD-012, PK-CLI-001, PK-CLI-002]
+  - name: format
+    synopsis: processkit format [PATH...]
+    writes: repository files (rewrites existing items)
+    semantics_owner: repository-storage@v1
+    check: a second run changes no file; existing files are overwritten only
+      after confirmation (PK-STORE-022 of repository-storage@v1)
+    requirements: [PK-CLI-004, PK-CLI-014]
+  - name: list
+    synopsis: processkit list KIND [--selector S] [--namespace N]
+    options:
+      - {name: --selector, value: S}
+      - {name: --namespace, value: N}
+    writes: nothing
+    mcp_equivalent: list(kind, selector?, namespace?, limit?, cursor?)
+    semantics_owner: mcp-context-serving@v1
+    requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005]
+  - name: show
+    synopsis: processkit show KIND NAME [--level L] [--section S]
+    options:
+      - {name: --level, value: L}
+      - {name: --section, value: S}
+    writes: nothing
+    mcp_equivalent: get(kind, name, namespace?, level?, section?)
+    semantics_owner: mcp-context-serving@v1
+    requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005]
+  - name: context
+    synopsis: processkit context [--task T] [--profile P] [--path PATH]
+    options:
+      - {name: --task, value: T}
+      - {name: --profile, value: P}
+      - {name: --path, value: PATH}
+    writes: nothing
+    mcp_equivalent: get_context(task?, profiles?, paths?, kinds?, level?)
+    semantics_owner: mcp-context-serving@v1
+    check: output is exactly what the MCP server returns to the same
+      principal for the same arguments
+    requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005,
+                   PK-CLI-007]
+  - name: explain
+    synopsis: processkit explain KIND NAME
+    writes: nothing
+    mcp_equivalent: explain(kind, name, namespace?)
+    semantics_owner: inheritance@v1
+    reports: [provenance, overrides, applicability basis, validation status]
+    requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005]
+  - name: lock
+    synopsis: processkit lock [--update [NAME]]
+    options:
+      - {name: --update, value: "[NAME]"}
+    writes: repository files (the lock)
+    semantics_owner: inheritance@v1
+    requirements: [PK-PROD-005, PK-CLI-004]
+  - name: fetch
+    synopsis: processkit fetch
+    writes: local cache only
+    semantics_owner: inheritance@v1
+    check: no repository file changes; only the local cache changes
+    requirements: [PK-CLI-004]
+  - name: ontology
+    synopsis: processkit ontology list|show
+    subcommands: [list, show]
+    writes: nothing
+    mcp_equivalent: ontology(concept?)
+    semantics_owner: ontology@v1
+    requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002]
+  - name: access
+    synopsis: processkit access whoami|can-i
+    subcommands: [whoami, can-i]
+    writes: nothing
+    semantics_owner: access-control@v1
+    requirements: [PK-PROD-005, PK-CLI-002]
+  - name: mcp serve --stdio
+    synopsis: processkit mcp serve --stdio
+    writes: nothing
+    semantics_owner: mcp-context-serving@v1
+    requirements: [PK-PROD-005]
+  - name: mcp serve --http
+    synopsis: processkit mcp serve --http --listen ADDRESS
+    options:
+      - {name: --listen, value: ADDRESS}
+    writes: nothing
+    semantics_owner: access-control@v1
+    requirements: [PK-PROD-005]
+  - name: migrate
+    synopsis: processkit migrate [--from v0]
+    options:
+      - {name: --from, value: v0}
+    writes: repository files
+    from_reviewed_plan: true
+    semantics_owner: v0-migration@v1
+    requirements: [PK-CLI-004, PK-CLI-012, PK-CLI-013, PK-CLI-014]
+  - name: config show
+    synopsis: processkit config show
+    writes: nothing
+    reports: effective configuration, the source of every value, secrets
+      redacted
+    check: with --json, every value carries its source; no secret value
+      appears in stdout or stderr
+    requirements: [PK-CONFIG-003, PK-OUT-004]
+  - name: version
+    synopsis: processkit version
+    writes: nothing
+    json_fields: [release, source commit, ontology version,
+                  supported content API versions,
+                  supported MCP protocol versions]   # field names open
+    requirements: [PK-OUT-005]
+
+writing_commands:
+  repository_files: [init, new, format, lock, migrate]
+  local_cache_only: [fetch]
+  all_other_commands: write nothing
+  plan: printed before writing
+  check: after any other command, repository files and the local cache are
+    unchanged
+  requirements: [PK-CLI-004]
+
+git_boundary:
+  never: [stage, commit, push, open pull requests]
+  check: index, HEAD, refs, and remotes are unchanged after every command
+  requirements: [PK-CLI-006]
+
+offline_reads:
+  sources: [committed files, the lock, the local cache]
+  network: none for read commands
+  missing_upstream_fetch:
+    outcome: environment failure
+    reports: the fix (running processkit fetch)
+  requirements: [PK-CLI-005]
+
+exit_categories:
+  # Numeric values are not defined by the baseline; see OPEN-cli-01.
+  - {category: success, requirements: [PK-CLI-003]}
+  - {category: validation failure, requirements: [PK-CLI-003]}
+  - {category: usage error, requirements: [PK-CLI-003]}
+  - {category: environment failure,
+     examples: [missing upstream fetch],
+     requirements: [PK-CLI-003, PK-CLI-005]}
+
+result_envelope:
+  versioned: true
+  count_per_invocation: 1
+  fields: [outcome, data, diagnostics, revision]   # exact keys open
+  stream: standard output
+  requirements: [PK-CLI-002, PK-OUT-001, PK-OUT-002]
+
+streams:
+  stdout: results
+  stderr: [diagnostics, operational logs (default sink)]
+  requirements: [PK-OUT-002, PK-OUT-003]
+
+logging:
+  format: structured
+  default_level: warning
+  default_sink: standard error
+  configurable_sink: operator configuration (log sinks)
+  requirements: [PK-OUT-003]
+
+redaction:
+  applies_to: [logs, diagnostics, errors]
+  redacted: [bearer material, certificates,
+             values matching configured secret patterns]
+  check: a seeded secret of each class never appears in stdout, stderr, or
+    any log sink
+  requirements: [PK-OUT-004, PK-CONFIG-003]
+
+configuration:
+  schema: closed and versioned for every configuration file
+  unknown_key: fails
+  layers:   # lowest precedence first
+    - name: project
+      file: processkit.toml
+      committed: true
+      carries: [content directory, profiles, document sources, upstreams,
+                override winners, briefing budget]
+      forbidden: [authenticators, credentials, listen addresses, executables]
+    - name: operator
+      location: outside the repository (path open)
+      carries: [listen address, TLS material, authenticators,
+                imported access rules, limits, log sinks]
+    - name: invocation
+      sources: [invocation flags, PROCESSKIT_ environment variables]
+  requirements: [PK-CONFIG-001, PK-CONFIG-002, PK-CONFIG-003]
+
+root_selection:
+  order:
+    - --root
+    - PROCESSKIT_ROOT
+    - nearest ancestor of the current directory, including itself, that
+      contains processkit.toml
+  none_found:
+    init: current directory
+    other_commands: fail
+  never:
+    - search configured lists of roots
+    - cross a filesystem boundary implicitly
+    - select a descendant of the current directory
+    - choose between repositories by basename
+  content_directory_as_root: error, or normalize unambiguously to the owning
+    repository root and report it before any write
+  resolved_before: any other project configuration; not changed afterwards
+    by environment or invocation layers
+  requirements: [PK-CLI-008, PK-CLI-009, PK-CLI-010, PK-CLI-011]
+
+plans:
+  binds: [selected repository root, operation, processkit release,
+          digest of every input]
+  stale_plan: refused if any bound input or target path changed after
+    planning; no file written
+  confirmation:
+    required_when: the plan overwrites, replaces, or deletes an existing file
+    non_interactive: only --yes confirms; otherwise refused, no file written
+  related: PK-STORE-021 and PK-STORE-022 of repository-storage@v1
+  check: modify a bound input between planning and confirmation; the
+    command refuses and every file is byte-identical
+  requirements: [PK-CLI-004, PK-CLI-012, PK-CLI-013, PK-CLI-014]
+
+files:
+  - path: processkit.toml
+    role: project configuration; root marker for root discovery
+    requirements: [PK-CLI-008, PK-CONFIG-001, PK-CONFIG-002]
+  - path: Git ignore file (which file is open)
+    role: may receive processkit entries inside a marked processkit block
+    check: running the update twice yields byte-identical content; content
+      outside the block is byte-identical to before
+    requirements: [PK-CLI-015]
+
+supported_targets:
+  release_targets:
+    - {os: linux, arch: x86_64}
+    - {os: linux, arch: arm64}
+    - {os: macos, arch: x86_64}
+    - {os: macos, arch: arm64}
+  windows: open (OPEN-cli-09)
+  python: 3.12 or later (PK-ARCH-001); supported minor versions open
+  tested_matrix: stated in each release
+  portability:
+    never_assumed: [a shell, GNU userland, writable home directory,
+                    ambient Git credentials]
+  evidence:
+    - every supported Python minor version and release target has
+      pre-release test results
+    - filesystem-sensitive behavior tested on case-sensitive and
+      case-insensitive filesystems where the target offers both
+    - path, locking, replacement, signal, and terminal differences from
+      Linux tested by black-box tests on the differing target
+  requirements: [PK-CLI-016, PK-CLI-017, PK-CLI-018, PK-CLI-019, PK-CLI-020]
+
+errors: []   # the baseline defines no diagnostic codes; see open
+
+open:
+  - id: OPEN-cli-01
+    question: What are the numeric exit codes for success, validation
+      failure, usage error, and environment failure, and are further
+      categories (for example stale-plan refusal, missing confirmation,
+      interruption) distinct codes? The governance draft used 0, 2, 3, 4,
+      5, 6, 7, and 130 with different categories.
+    requirements: [PK-CLI-003, PK-CLI-005, PK-CLI-013, PK-CLI-014]
+  - id: OPEN-cli-02
+    question: What are the exact keys of the result envelope, the envelope
+      version field and its value, the allowed outcome values, and the shape
+      of a diagnostic (code, message, file, JSON pointer, severity)?
+    requirements: [PK-CLI-002, PK-OUT-001]
+  - id: OPEN-cli-03
+    question: Which commands are data-bearing and must support --json (for
+      example init, fetch, and mcp serve), and what does a writing command
+      put in the envelope for its plan and changed files?
+    requirements: [PK-CLI-002, PK-CLI-004]
+  - id: OPEN-cli-04
+    question: How does the CLI determine that it runs non-interactively
+      (absence of a terminal, a flag such as the governance draft's
+      --non-interactive, or --json), and how does it ask for and accept
+      interactive confirmation?
+    requirements: [PK-CLI-014]
+  - id: OPEN-cli-05
+    question: Do init and migrate ("from a reviewed plan") always require
+      confirmation, even when they create files only? Does any plan expire?
+      Can a plan printed by --dry-run be saved and applied later, and if so
+      in which format?
+    requirements: [PK-CLI-004, PK-CLI-012, PK-CLI-013, PK-CLI-014]
+  - id: OPEN-cli-06
+    question: Does init write a Git ignore entry for .processkit/, into which
+      file, and what are the exact begin and end markers of the processkit
+      block?
+    requirements: [PK-CLI-015]
+  - id: OPEN-cli-07
+    question: How do CLI arguments map to MCP tool arguments for
+      equivalence (context --profile P vs profiles?, missing CLI options for
+      kinds?, level?, limit?, cursor?, and namespace? on show/explain), and
+      how does the CLI establish the principal for processkit context?
+    requirements: [PK-CLI-001, PK-CLI-007]
+  - id: OPEN-cli-08
+    question: For validate with "-", how is the kind of the draft
+      determined (from its kind field or an option), and what is validated
+      when validate is given no PATH?
+    requirements: [PK-PROD-012]
+  - id: OPEN-cli-09
+    question: Is Windows a supported release target in v1? The governance
+      draft listed Linux, macOS, and Windows; GitHub issue 165 lists only x86_64
+      and arm64 Linux and macOS.
+    requirements: [PK-CLI-016, PK-CLI-020]
+  - id: OPEN-cli-10
+    question: Which Python minor versions are supported, and where does the
+      release state its tested platform matrix?
+    requirements: [PK-CLI-016, PK-CLI-018]
+  - id: OPEN-cli-11
+    question: What is the location and schema version field of the operator
+      configuration file, which PROCESSKIT_ variables and flags exist besides
+      PROCESSKIT_ROOT and --root, how are secret patterns configured, and
+      how is the log level set?
+    requirements: [PK-CONFIG-001, PK-CONFIG-003, PK-OUT-003, PK-OUT-004]
+  - id: OPEN-cli-12
+    question: What exactly does "filesystem boundary" mean for root
+      discovery (device ID change, mount point), and is there an explicit way
+      to allow crossing it?
+    requirements: [PK-CLI-009]
+  - id: OPEN-cli-13
+    question: Does init invoked from a subdirectory of a Git working copy
+      use the current directory or the working-copy root?
+    requirements: [PK-CLI-008]
+  - id: OPEN-cli-14
+    question: What are the field names of processkit version --json and the
+      format of the text output of processkit version?
+    requirements: [PK-OUT-005]

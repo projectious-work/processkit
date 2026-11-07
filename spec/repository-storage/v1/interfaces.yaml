@@ -1,0 +1,250 @@
+slug: repository-storage
+version: 1
+
+# Everything repository-storage makes observable. Identifiers, paths, and
+# values below are stated by the requirements or the #197 baseline; anything a
+# test author would need but the baseline leaves undefined is under `open`.
+
+files:
+  - path: processkit.toml
+    role: project configuration; its presence makes a Git repository a
+      processkit repository
+    committed: true
+    location: repository root
+    observable: file exists at the root of the single resolved Git working
+      copy; it names the content directory
+    requirements: [PK-STORE-001, PK-PROD-001]
+  - path: processkit.lock
+    role: resolved upstream pins
+    committed: true
+    location: repository root
+    observable: together with committed content, sufficient to rebuild every
+      cache under .processkit/
+    requirements: [PK-STORE-003]
+  - path: context/
+    role: content directory holding all governance content
+    default: context/
+    configurable: true   # configured in processkit.toml; key name is open
+    committed: true
+    observable: resolves inside the same Git working copy as the repository
+      root
+    requirements: [PK-STORE-001, PK-STORE-002, PK-PROD-001]
+  - path: .processkit/
+    role: local cache and fetched upstream copies only
+    committed: false
+    observable: >-
+      contains only caches and fetched upstream copies; deleting it and
+      re-running read commands (after fetch, for upstream copies) yields
+      byte-identical results; never required to be committed
+    requirements: [PK-STORE-003, PK-STORE-004]
+
+# Declared location per kind, relative to the content directory. One file
+# holds one item.
+kind_locations:
+  - kinds: [Standard]
+    path: standards/<name>.json
+    format: json
+    requirements: [PK-STORE-002]
+  - kinds: [ProcessSpecification]
+    path: processes/<name>.json
+    format: json
+    requirements: [PK-STORE-002]
+  - kinds: [Skill]
+    path: skills/<name>/SKILL.md
+    format: markdown-front-matter
+    companion: skill.json   # skill metadata, JSON; exact path is open
+    requirements: [PK-STORE-002]
+  - kinds: [MCPServer]
+    path: mcp-servers/<name>.json
+    format: json
+    requirements: [PK-STORE-002]
+  - kinds: [DecisionRecord]
+    path: decisions/<name>.md
+    format: markdown-front-matter
+    requirements: [PK-STORE-002]
+  - kinds: [Document]
+    path: documents/...
+    alternative: other declared document sources (processkit.toml)
+    format: markdown-front-matter
+    requirements: [PK-STORE-002]
+  - kinds: [Container, Role, Binding, extensions]
+    path: ontology/
+    format: json
+    requirements: [PK-STORE-002]
+  - check: a file placed outside every declared location is not read,
+      listed, validated, or served
+    requirements: [PK-STORE-002]
+
+formats:
+  json:
+    used_for: [standards, process specifications, MCP server entries,
+      containers, roles, bindings, extensions, skill metadata]
+    requirements: [PK-STORE-010]
+  markdown-front-matter:
+    used_for: [decision records, documents, skill bodies]
+    front_matter: JSON or YAML
+    rules:
+      - all structured fields in front matter or a declared structured region
+      - prose carries no structural semantics
+      - front matter located by an exact delimiter contract (delimiters open)
+      - YAML limited to a declared safe subset (subset open)
+    requirements: [PK-STORE-011, PK-STORE-012]
+  text:
+    encoding: UTF-8
+    line_endings: LF
+    requirements: [PK-STORE-010]
+  serialization_written_by_processkit:
+    object_keys: sorted where the schema does not define an order
+    indentation: two spaces
+    trailing_newline: true
+    deterministic: true
+    observable: formatting the same content twice yields byte-identical
+      files; a second format run changes no file
+    requirements: [PK-STORE-010]
+
+fields:
+  - name: apiVersion
+    where: every content item
+    required: true
+    example: processkit.projectious.work/v1
+    effect: validation uses the schema of the declared apiVersion
+    requirements: [PK-STORE-031]
+
+paths:
+  normalization: paths derived from names or input are normalized and
+    checked for containment
+  rejected:
+    - traversal outside the root
+    - symlink escape
+    - special files
+    - case-normalization collision
+  requirements: [PK-STORE-013]
+
+writes:
+  # Commands that write repository files, per the baseline CLI chapter
+  # (cli@v1): init, new, format, lock, migrate.
+  per_file:
+    method: temporary file in the destination directory, then atomic replace
+      where the platform supports it
+    observable: no partially written destination file is ever visible; no
+      temporary file remains after the command
+    requirements: [PK-STORE-020]
+  multi_file:
+    plan: stated before any file is written
+    report: exactly the files changed
+    atomicity_across_files: not claimed
+    recovery: Git
+    requirements: [PK-STORE-021]
+  overwrite:
+    rule: a file not created in the same command is overwritten only after
+      the user confirmed the plan (confirmation mechanism open)
+    observable: without confirmation, such a file is byte-identical after the
+      command
+    requirements: [PK-STORE-022]
+
+release_owned:
+  items: [schemas, templates, ontology registry]
+  default: used from the installed release; not copied into the repository
+  vendoring:
+    explicit: true
+    copies_carry: [release version, digest]
+    modified_copy: fails verification
+  observable: after init and new with defaults, no schema or template file
+    exists in the repository
+  requirements: [PK-STORE-030]
+
+git:
+  may_read: [root, revision, tracked state, cleanliness]
+  never_does: [commit, branch, merge, rebase, push, switch branches,
+    change Git configuration]
+  observable: HEAD, branch list, refs, index, and .git/config are unchanged
+    by every processkit command
+  requirements: [PK-STORE-040]
+
+served_results:
+  attribution: every served result names a working-copy revision
+  uncommitted: content differing from that revision is marked uncommitted
+  requirements: [PK-STORE-041]
+
+non_storage:
+  # processkit stores definitions only.
+  never_stored: [event log, LogEntry records, work-item instances,
+    session transcripts, agent memories]
+  observable: no processkit command creates such records in the repository
+    or in .processkit/; the content kinds are limited to those in
+    kind_locations
+  requirements: [PK-PROD-020]
+
+hosting:
+  hosted_service_required: false
+  observable: init, new, validate, format, and stdio serving work against a
+    local Git working copy with no network and no hosted processkit service
+  requirements: [PK-PROD-001]
+
+errors: []   # no diagnostic codes are defined by the baseline; see open
+
+open:
+  - id: OPEN-repository-storage-01
+    question: What is the processkit.toml key that sets the content
+      directory, and how are per-kind locations and document sources
+      declared there? Are the default subdirectory names fixed or
+      configurable?
+    requirements: [PK-STORE-002]
+  - id: OPEN-repository-storage-02
+    question: What diagnostic codes, exit codes, and messages report path
+      rejection (traversal, symlink escape, special file, case collision),
+      and which case normalization (for example Unicode casefold, NFC)
+      defines a collision?
+    requirements: [PK-STORE-013]
+  - id: OPEN-repository-storage-03
+    question: What are the exact front-matter delimiters for JSON and for
+      YAML front matter, what is the declared safe YAML subset, and what is a
+      "declared structured region" in Markdown?
+    requirements: [PK-STORE-011, PK-STORE-012]
+  - id: OPEN-repository-storage-04
+    question: Which result-envelope fields carry the working-copy revision
+      and the uncommitted marker, and at what granularity (per item, per
+      result) is uncommitted content marked?
+    requirements: [PK-STORE-041]
+  - id: OPEN-repository-storage-05
+    question: How does a user confirm a write plan that overwrites existing
+      files (flag name, interactive prompt, behavior under --json or
+      non-interactive use), and what is reported when confirmation is
+      missing?
+    requirements: [PK-STORE-022, PK-STORE-021]
+  - id: OPEN-repository-storage-06
+    question: What is the format of the stated plan and of the changed-files
+      report (fields in the JSON envelope)?
+    requirements: [PK-STORE-021]
+  - id: OPEN-repository-storage-07
+    question: How are schemas and templates vendored (command, location,
+      configuration key for pinning a release), how do vendored copies carry
+      the release version and digest, and which diagnostic reports a modified
+      copy?
+    requirements: [PK-STORE-030]
+  - id: OPEN-repository-storage-08
+    question: Which diagnostic is reported for missing or unsupported
+      apiVersion?
+    requirements: [PK-STORE-031]
+  - id: OPEN-repository-storage-09
+    question: What happens when the configured content directory resolves
+      into a nested repository or submodule (error code, or silent exclusion),
+      and how are nested repositories inside the content directory treated?
+    requirements: [PK-STORE-001]
+  - id: OPEN-repository-storage-10
+    question: How is non-UTF-8 or CRLF input reported (diagnostic code), and
+      how does a schema "define an order" for object keys?
+    requirements: [PK-STORE-010]
+  - id: OPEN-repository-storage-11
+    question: Where exactly does skill.json live relative to SKILL.md, and
+      which file is authoritative for which fields?
+    requirements: [PK-STORE-002]
+  - id: OPEN-repository-storage-12
+    question: What is observable when a file under a declared location
+      attempts to store an instance (for example kind WorkItem or LogEntry)
+      — which diagnostic does validation report?
+    requirements: [PK-PROD-020]
+  - id: OPEN-repository-storage-13
+    question: What does processkit do on platforms without atomic replace
+      (fallback, diagnostic)?
+    requirements: [PK-STORE-020]

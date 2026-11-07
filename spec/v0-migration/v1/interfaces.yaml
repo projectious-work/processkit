@@ -1,0 +1,227 @@
+slug: v0-migration
+version: 1
+
+# Everything the v0 conversion and the contract-version report make
+# observable. Identifiers, options, and fields below are stated by the
+# requirements, by the #197 baseline, or by the governance-draft gap items
+# carried as PK-MIG-003 to PK-MIG-007. Plan binding, staleness, and
+# confirmation (PK-CLI-012 to PK-CLI-014), --dry-run, --yes, --json, and
+# exit codes are defined by cli@v1; file writing (PK-STORE-020 to
+# PK-STORE-022) and the Git boundary (PK-STORE-040) by repository-storage@v1.
+# They are referenced here, not redefined. Anything a test author would need
+# but the baseline leaves undefined is under `open`.
+
+commands:
+  - name: migrate
+    synopsis: processkit migrate [--from v0]
+    defined_in: cli@v1
+    options:
+      - name: --from
+        value: v0
+        meaning: convert v0 governance content to v1 content
+        requirements: [PK-MIG-001]
+      - name: --dry-run
+        defined_in: cli@v1 (PK-CLI-004)
+        meaning: analyse and print the plan; write nothing
+        requirements: [PK-MIG-003]
+      - name: --json
+        defined_in: cli@v1 (PK-CLI-002, PK-OUT-001)
+        meaning: the analysis and the plan are carried in the versioned result
+          envelope
+        requirements: [PK-MIG-003]
+      - name: --yes
+        defined_in: cli@v1 (PK-CLI-014)
+        meaning: confirms the plan in a non-interactive run
+        requirements: [PK-MIG-001]
+    without_from: rewrites content to a newer content API version from a
+      reviewed plan (behavior when content is already current is open,
+      OPEN-v0-migration-11)
+    phases:
+      - name: analysis and planning
+        writes: nothing
+        output: the analysis and the plan, in text and in the JSON result
+          envelope (field names open, OPEN-v0-migration-07)
+        check: repository files are byte-identical before and after; with
+          --json, standard output is one envelope that carries the plan
+        requirements: [PK-MIG-001, PK-MIG-003, PK-COMPAT-003]
+      - name: apply
+        writes: converted v1 content files, only from the reviewed plan
+        preconditions:
+          - plan is not stale and is confirmed (cli@v1 PK-CLI-012 to
+            PK-CLI-014)
+          - one of - the Git working copy is clean; a complete, contained
+            backup has been created first; the user explicitly accepted a
+            narrower, documented recovery boundary (how is open,
+            OPEN-v0-migration-05)
+        reports: every change it made (and, per repository-storage@v1
+          PK-STORE-021, exactly which files it changed)
+        check: the reported changes equal the difference shown by
+          `git status` and `git diff` after the run
+        requirements: [PK-MIG-001, PK-MIG-004, PK-COMPAT-003]
+    requirements: [PK-MIG-001, PK-MIG-003, PK-MIG-004, PK-COMPAT-003]
+
+  - name: version
+    synopsis: processkit version
+    defined_in: cli@v1 (PK-OUT-005)
+    reports_contract_versions:
+      - content apiVersion
+      - ontology version
+      - MCP tool contract
+      - CLI result contract
+      - lock format
+    independence: each contract carries its own version; a change to one
+      does not require a version change of another
+    field_names: open (OPEN-v0-migration-10; see also OPEN-cli-14)
+    check: with --json, the envelope reports a version for each of the five
+      contracts listed
+    requirements: [PK-COMPAT-001]
+
+conversion:
+  source: a processkit v0 repository (supported v0 releases and layout
+    open, OPEN-v0-migration-01)
+  converted:
+    - {v0: decision records, v1_kind: DecisionRecord}
+    - {v0: skills, v1_kind: Skill}
+    - {v0: process definitions, v1_kind: ProcessSpecification}
+  field_mapping: open (OPEN-v0-migration-02)
+  converted_items_valid: converted items validate with `processkit validate`
+    against the schema of their declared apiVersion (content-kinds@v1)
+  untouched:
+    records: [logs, events, work items, memory records]
+    treatment: not converted; left as read-only history
+    check: every such file is byte-identical, with the same path, before and
+      after analysis, planning, and apply; no v1 item is created from it
+    requirements: [PK-MIG-002]
+  unknown_fields:
+    allowed_outcomes:
+      - preserved in the converted item (where, see ontology@v1
+        PK-MODEL-015 and OPEN-v0-migration-12)
+      - migration stops and reports the field
+    forbidden: dropping the field so that converted content validates
+    check: for a v0 item with an unknown field, either the converted item
+      contains the field's value or the run stops and names the field; no
+      run succeeds with the value absent
+    requirements: [PK-MIG-005]
+  manual_actions:
+    raised_for: unsupported or ambiguous transformations
+    effect: reported as a manual action; the migration is not reported as
+      complete while it is open; no guessed value is written
+    representation: open (OPEN-v0-migration-06)
+    check: a corpus with an ambiguous case yields a manual action naming it,
+      the outcome is not success, and no converted item contains a value
+      the source did not state
+    requirements: [PK-MIG-006]
+  adapter_status: compatibility adapter; not a source of v1 semantics
+  requirements: [PK-MIG-001, PK-MIG-002, PK-MIG-005, PK-MIG-006, PK-MIG-007]
+
+verification:
+  golden_corpora:
+    content: representative v0 repositories containing decision records,
+      skills, process definitions, and logs, events, work items, and memory
+      records (composition and location open, OPEN-v0-migration-09)
+    check: converting each corpus yields the golden v1 output and the
+      golden set of manual actions
+    requirements: [PK-MIG-007]
+  preservation_report:
+    granularity: one entry per v0 field
+    states: how the conversion treats that field (value set open,
+      OPEN-v0-migration-08)
+    check: every field occurring in the golden corpora has an entry
+    requirements: [PK-MIG-007]
+
+compatibility:
+  independently_versioned_contracts:
+    - content apiVersion (current value processkit.projectious.work/v1)
+    - ontology version
+    - MCP tool contract
+    - CLI result contract
+    - lock format
+  before_v1_0_0: prereleases may break contracts with documented migration
+  from_v1_0_0: a breaking change requires a new major version of the
+    affected contract
+  stored_content: validated under its declared apiVersion
+    (repository-storage@v1 PK-STORE-031); never silently reinterpreted under
+    a newer schema; rewritten only by `processkit migrate`, which reports
+    every change
+  requirements: [PK-COMPAT-001, PK-COMPAT-002, PK-COMPAT-003]
+
+errors: []   # the baseline defines no diagnostic codes; see open
+
+open:
+  - id: OPEN-v0-migration-01
+    question: Which v0 releases (tags v0.x) are supported conversion
+      sources, where does each keep its decision records, skills, process
+      definitions, logs, events, work items, and memory records, and how
+      does processkit recognize a v0 repository and each record type?
+    requirements: [PK-MIG-001, PK-MIG-002]
+  - id: OPEN-v0-migration-02
+    question: What is the field-level mapping from each converted v0 type
+      to DecisionRecord, Skill, and ProcessSpecification, and how are v1
+      required fields with no v0 counterpart (for example summary, triggers,
+      owner, deciders, the governed WorkItem type) treated - manual action
+      or a stated default?
+    requirements: [PK-MIG-001, PK-MIG-006]
+  - id: OPEN-v0-migration-03
+    question: Where are converted items written, are the v0 source files of
+      converted types kept, moved, or deleted, and must processkit.toml
+      exist before `migrate --from v0` runs (cli@v1 PK-CLI-008 makes every
+      command except init fail without it)?
+    requirements: [PK-MIG-001, PK-MIG-002]
+  - id: OPEN-v0-migration-04
+    question: What does "clean Git working copy" mean - the whole working
+      copy or only plan targets, and do untracked or ignored files count?
+    requirements: [PK-MIG-004]
+  - id: OPEN-v0-migration-05
+    question: Where and in which format is a "complete, contained backup"
+      created and what does it contain, given that `.processkit/` holds only
+      caches and fetched upstream copies (repository-storage@v1 PK-STORE-003)
+      and decision C1 removed recovery from the product? How does the user
+      explicitly accept a narrower recovery boundary (flag or confirmation),
+      and where is that boundary documented?
+    requirements: [PK-MIG-004]
+  - id: OPEN-v0-migration-06
+    question: How is a manual action represented in the plan and result
+      (fields, diagnostic code), which exit code does an open manual action
+      produce, and does apply write the unaffected items or nothing at all
+      while a manual action is open?
+    requirements: [PK-MIG-006]
+  - id: OPEN-v0-migration-07
+    question: What are the field names of the analysis and the plan in the
+      result envelope (see OPEN-cli-02 and OPEN-cli-03), and does the plan
+      list the v0 logs, events, work items, and memory records it leaves
+      untouched?
+    requirements: [PK-MIG-002, PK-MIG-003, PK-COMPAT-003]
+  - id: OPEN-v0-migration-08
+    question: What are the format, location, and field set of the
+      field-level preservation report and the allowed treatments (for
+      example mapped, preserved, manual action)? Is it a release artifact,
+      a test fixture, or also emitted by each migrate run?
+    requirements: [PK-MIG-007]
+  - id: OPEN-v0-migration-09
+    question: Which v0 versions and content shapes make the golden corpora
+      representative, and where are the corpora and their golden outputs
+      kept?
+    requirements: [PK-MIG-007]
+  - id: OPEN-v0-migration-10
+    question: What are the field names in `processkit version --json` for
+      each of the five contract versions, what identifier format does each
+      use, and what are the current values for the MCP tool contract, the
+      CLI result contract, and the lock format? How do they relate to the
+      "supported content API versions" of PK-OUT-005 (cli@v1)?
+    requirements: [PK-COMPAT-001]
+  - id: OPEN-v0-migration-11
+    question: Which source content API versions can `processkit migrate`
+      (without --from) rewrite, what does it do when all content is already
+      at the newest version, and does --from accept values other than v0?
+    requirements: [PK-COMPAT-003]
+  - id: OPEN-v0-migration-12
+    question: Where is an unknown v0 field preserved in the converted item
+      when the target schema declares an extension map (which namespace,
+      per ontology@v1 PK-MODEL-015), and is stopping the only allowed
+      outcome when it declares none?
+    requirements: [PK-MIG-005]
+  - id: OPEN-v0-migration-13
+    question: What counts as "documented migration" for a prerelease
+      breaking change (release notes, migrate support, both), and how is a
+      change classified as breaking for each contract?
+    requirements: [PK-COMPAT-002]
