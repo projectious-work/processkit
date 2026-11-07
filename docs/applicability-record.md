@@ -1,0 +1,49 @@
+# Applicability record
+
+Record required by the company application-profiles standard
+(`.standards/application-profiles.md`, "Applicability record"). Review it
+when the product boundary or distribution model changes.
+
+## Profiles and components
+
+| Component | Profile |
+| --- | --- |
+| `processkit` CLI (`installer/`) | CLI application |
+| MCP servers (`src/context/skills/*/mcp/`), local over stdio | MCP server, CLI stream rules |
+| Shared server (v1 roadmap, access-controlled) | MCP server, remote, so also Service or worker |
+| Schemas, ontology, templates (`src/context/`, `spec/`) | Schema, protocol, or process package |
+| Documentation site (`docs-site/`) | Documentation website |
+
+## Platforms and distribution
+
+- Release targets: x86_64 and arm64 Linux, x86_64 and arm64 macOS (#165).
+  v1 prereleases currently ship the native Linux ARM64 GNU target only.
+- Distribution: signed GitHub Release assets, consumed by exact version.
+  Documentation is published to `gh-pages` by the local publish script.
+- MCP runtime: Python 3.10+ and `uv`, as intentional dependencies.
+
+## Verification and release gates
+
+`scripts/maintain.sh release` runs the candidate gates (`state`, `doctors`,
+`audit`, `test`, `docs`, `build`) on `release/vX.Y.Z`, then `publish` and
+`verify` on the target line. See `CONTRIBUTING.md`, "Releasing". The host-gated
+release overlay applies: signing and native host builds run outside the dev
+container.
+
+## Twelve-Factor deviations beyond the company list
+
+The company position table already covers III (CLI config), V (local
+release), X (dev containers), and XI (CLI logs). processkit adds:
+
+| Factor | Component | Deviation and rationale |
+| --- | --- | --- |
+| II Dependencies | Local MCP servers | Each server's PEP 723 header declares version ranges (`mcp[cli]>=1.0,<2.0`), which `uv` resolves on first run when a server is started on its own. The release pins them: `installer/python-runtime.in` is compiled with hashes into the release-owned runtime lock. |
+
+No further deviation is identified for the local stdio servers. The shared
+server does not exist yet. Its Twelve-Factor review is due when the
+shared-server roadmap phase starts.
+
+## Non-applicable or deferred requirements
+
+- User-interface application profile: does not apply (no GUI).
+- Infrastructure or template product profile: does not apply.
