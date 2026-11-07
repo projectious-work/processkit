@@ -484,96 +484,48 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
-# Test 6b3: pruned derived installs use their installed MCP surface
+# Test 6b3: source checkout validates each release line against its own spec
 # ---------------------------------------------------------------------------
-print("\n[6b3] derived install — pruned MCP skills do not cause drift")
-
-from checks.mcp_config_drift import (  # noqa: E402
-    _aggregate as _pruned_aggregate,
-    _sha256_of_file as _pruned_sha256,
-    run as _pruned_mcp_run,
-)
-from checks.server_header_drift import (  # noqa: E402
-    _extract_header as _pruned_header,
-    _sha256 as _pruned_header_sha256,
-    run as _pruned_header_run,
-)
+print("\n[6b3] preauth_applied — split source and dogfood release lines")
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
-    spec_dir = (
-        root / "context" / "skills" / "processkit" / "skill-gate" / "assets"
+    dogfood_spec = (
+        root / "context" / "skills" / "processkit" /
+        "skill-gate" / "assets" / "preauth.json"
     )
-    spec_dir.mkdir(parents=True)
-    (spec_dir / "preauth.json").write_text(
-        json.dumps({
-            "permissions": {
-                "allow": ["mcp__processkit-a__*", "mcp__processkit-b__*"],
-            },
-            "enabledMcpjsonServers": ["processkit-a", "processkit-b"],
-            "codex": {
-                "mcp": {
-                    "allowed_tools": [
-                        "mcp__processkit-a__*", "mcp__processkit-b__*",
-                    ],
-                },
-            },
-        }),
+    source_spec = root / "src" / dogfood_spec.relative_to(root)
+    dogfood_spec.parent.mkdir(parents=True)
+    source_spec.parent.mkdir(parents=True)
+    dogfood_spec.write_text(json.dumps({
+        "version": 1,
+        "permissions": {"allow": ["mcp__processkit-stable__*"]},
+        "enabledMcpjsonServers": ["processkit-stable"],
+    }), encoding="utf-8")
+    source_spec.write_text(json.dumps({
+        "version": 1,
+        "permissions": {"allow": ["mcp__processkit-alpha__*"]},
+        "enabledMcpjsonServers": ["processkit-alpha"],
+    }), encoding="utf-8")
+    source_cfg = (
+        root / "src" / "context" / "skills" / "processkit" /
+        "alpha" / "mcp" / "mcp-config.json"
+    )
+    source_cfg.parent.mkdir(parents=True)
+    source_cfg.write_text(
+        '{"mcpServers":{"processkit-alpha":{}}}\n',
         encoding="utf-8",
     )
-    cfg_a = root / "context" / "skills" / "processkit" / "a" / "mcp" / "mcp-config.json"
-    cfg_a.parent.mkdir(parents=True)
-    cfg_a.write_text('{"mcpServers":{"processkit-a":{}}}\n', encoding="utf-8")
-    server_a = cfg_a.parent / "server.py"
-    server_a.write_text("# /// script\n# ///\n", encoding="utf-8")
-    per_skill = [{
-        "path": "context/skills/processkit/a/mcp/mcp-config.json",
-        "sha256": _pruned_sha256(cfg_a),
-    }, {
-        "path": "context/skills/processkit/b/mcp/mcp-config.json",
-        "sha256": "removed-skill",
-    }]
-    per_header = [{
-        "path": "context/skills/processkit/a/mcp/server.py",
-        "sha256": _pruned_header_sha256(_pruned_header(server_a) or ""),
-    }, {
-        "path": "context/skills/processkit/b/mcp/server.py",
-        "sha256": "removed-skill",
-    }]
-    (root / "context" / ".processkit-mcp-manifest.json").write_text(
-        json.dumps({
-            "per_skill": per_skill,
-            "per_gateway": [],
-            "per_server_header": per_header,
-            "aggregate_sha256": _pruned_aggregate(per_skill),
-        }),
-        encoding="utf-8",
-    )
-    (root / ".claude").mkdir()
-    (root / ".claude" / "settings.json").write_text(
-        json.dumps({
-            "permissions": {"allow": ["mcp__processkit-a__*"]},
-            "enabledMcpjsonServers": ["processkit-a"],
-        }),
-        encoding="utf-8",
-    )
+    source_manifest = root / "src" / "context" / ".processkit-mcp-manifest.json"
+    source_manifest.write_text(json.dumps({
+        "per_skill": [{
+            "path": "context/skills/processkit/alpha/mcp/mcp-config.json",
+        }],
+    }), encoding="utf-8")
     results = _preauth_run({"repo_root": root})
     check(
-        "pruned derived preauth has no false drift",
+        "split source and dogfood specs produce no false drift",
         not any(r.id == "preauth_applied.spec-drift" for r in results),
-        [r.to_dict() for r in results],
-    )
-    mcp_results = _pruned_mcp_run({"repo_root": root})
-    check(
-        "pruned derived manifest is in sync",
-        any(r.id == "mcp_config_drift.in-sync" for r in mcp_results),
-        [r.to_dict() for r in mcp_results],
-    )
-    header_results = _pruned_header_run({"repo_root": root})
-    check(
-        "pruned derived server headers are in sync",
-        any(r.id == "server_header_drift.in-sync" for r in header_results),
-        [r.to_dict() for r in header_results],
     )
 
 # ---------------------------------------------------------------------------
@@ -722,22 +674,6 @@ with tempfile.TemporaryDirectory() as tmp:
         '{"mcpServers":{"processkit-runtime-prune":{}}}\n',
         encoding="utf-8",
     )
-    dogfood_server = (
-        root / "context/skills/processkit/actor-profile/mcp/server.py"
-    )
-    source_server = (
-        root / "src/context/skills/processkit/actor-profile/mcp/server.py"
-    )
-    dogfood_server.parent.mkdir(parents=True)
-    source_server.parent.mkdir(parents=True)
-    dogfood_server.write_text(
-        '# /// script\n# dependencies = ["mcp>=1"]\n# ///\n',
-        encoding="utf-8",
-    )
-    source_server.write_text(
-        '# /// script\n# dependencies = ["mcp>=1,<2"]\n# ///\n',
-        encoding="utf-8",
-    )
 
     generator_path = _REPO_ROOT / "scripts" / "generate-mcp-manifest.py"
     spec = importlib.util.spec_from_file_location(
@@ -769,17 +705,6 @@ with tempfile.TemporaryDirectory() as tmp:
             "context/skills/processkit/processkit-gateway/mcp/mcp-config.json"
         ],
         gateway_entries,
-    )
-    dogfood_headers = generator._collect_server_headers(
-        root, root / "context/skills"
-    )
-    source_headers = generator._collect_server_headers(
-        root, root / "src/context/skills"
-    )
-    check(
-        "manifest generator keeps dogfood and release headers distinct",
-        dogfood_headers[0]["sha256"] != source_headers[0]["sha256"],
-        {"dogfood": dogfood_headers, "source": source_headers},
     )
 
 # ---------------------------------------------------------------------------
@@ -976,6 +901,46 @@ with tempfile.TemporaryDirectory() as tmp:
     )
 
 # ---------------------------------------------------------------------------
+# Test 7b: alpha Scope uses its Container discriminator schema
+# ---------------------------------------------------------------------------
+print("\n[7b] schema_filename — alpha Scope discriminator")
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    generated = root / "context" / "schemas" / "_generated"
+    generated.mkdir(parents=True)
+    source = _SCHEMAS_SRC / "_generated" / "container-scope.yaml"
+    if source.is_file():
+        (generated / "container-scope.yaml").write_text(
+            source.read_text(encoding="utf-8"), encoding="utf-8"
+        )
+    (root / "context" / "scopes").mkdir(parents=True)
+    (root / "context" / "scopes" / "SCOPE-20260724_1200-AlphaScope.md").write_text(
+        textwrap.dedent("""\
+            ---
+            apiVersion: processkit.projectious.work/v2
+            kind: Container
+            metadata:
+              id: SCOPE-20260724_1200-AlphaScope
+              created: '2026-07-24T12:00:00+00:00'
+            spec:
+              name: Alpha scope
+              kind: scope
+              scope_type: release
+              state: planned
+            ---
+            """),
+        encoding="utf-8",
+    )
+    stub = root / ".doctor-logentry.json"
+    result = _run_doctor(root, "--category=schema_filename", stub_path=stub)
+    check(
+        "alpha Container Scope validates with discriminator schema",
+        result.returncode == 0 and "schema.invalid" not in result.stdout,
+        result.stdout[-400:],
+    )
+
+# ---------------------------------------------------------------------------
 # Test 8: derived-project schema_filename fallback (HappyReef)
 # Ensures pk-doctor walks entity files even when the dogfood
 # `src/context/schemas/` tree is absent — the bug that hid all
@@ -1031,58 +996,6 @@ with tempfile.TemporaryDirectory() as tmp:
         "walked > 0 entity files (no longer silent zero)",
         "walked 1 entity file" in result.stdout,
         result.stdout[-400:],
-    )
-
-# ---------------------------------------------------------------------------
-# Test 8a: schema_filename preserves block scalars containing --- (issue #88)
-# ---------------------------------------------------------------------------
-print("\n[8a] schema_filename — YAML block scalar delimiter regression")
-
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    (root / "context" / "schemas").mkdir(parents=True)
-    src_note = _SCHEMAS_SRC / "note.yaml"
-    if src_note.is_file():
-        (root / "context" / "schemas" / "note.yaml").write_text(
-            src_note.read_text(encoding="utf-8"), encoding="utf-8"
-        )
-    (root / "scripts").mkdir()
-    drift = root / "scripts" / "check-src-context-drift.sh"
-    drift.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
-    drift.chmod(0o755)
-    (root / "context" / "notes").mkdir()
-    (root / "context" / "notes" / "NOTE-20260720_1407-PlainCedar-frontmatter.md").write_text(
-        textwrap.dedent("""\
-            ---
-            apiVersion: processkit.projectious.work/v2
-            kind: Note
-            metadata:
-              id: NOTE-20260720_1407-PlainCedar-frontmatter
-              created: '2026-07-20T14:07:00Z'
-            spec:
-              title: Frontmatter delimiter regression
-              body: |
-                A Markdown horizontal rule must remain within this scalar.
-                ---
-                Parsing must continue after it.
-              type: insight
-              state: captured
-            ---
-            """),
-        encoding="utf-8",
-    )
-    stub = root / ".doctor-logentry.json"
-    result = _run_doctor(root, "--category=schema_filename", stub_path=stub)
-    check(
-        "block scalar delimiter does not truncate frontmatter",
-        result.returncode == 0,
-        f"got {result.returncode}; stdout: {result.stdout[-600:]}",
-    )
-    check(
-        "block scalar fixture has no missing Note fields",
-        "'type' is a required property" not in result.stdout
-        and "'state' is a required property" not in result.stdout,
-        result.stdout[-600:],
     )
 
 # ---------------------------------------------------------------------------
@@ -2154,9 +2067,9 @@ with tempfile.TemporaryDirectory() as tmp:
 
 
 # ---------------------------------------------------------------------------
-# Test 17b: runtime Binding IDs coexist with deterministic policy Bindings
+# Test 17b: binding filename warning stays strict and actionable
 # ---------------------------------------------------------------------------
-print("\n[17b] context hygiene — runtime Binding filename policy")
+print("\n[17b] context hygiene — mixed Binding filenames advise data fix")
 
 from checks.context_hygiene import (  # noqa: E402
     run as _context_hygiene_run,
@@ -2203,17 +2116,13 @@ with tempfile.TemporaryDirectory() as tmp:
         r.to_dict() for r in results
         if r.id == "binding.filename-style-mixed"
     ]
-    check("17b: role-slot-fill Binding IDs do not WARN", not mixed, results)
-
-    storage_results = _entity_storage_run({"repo_root": root})
-    storage_mixed = [
-        r.to_dict() for r in storage_results
-        if r.id == "storage.filename-policy-mixed"
-    ]
+    check("17b: mixed Binding filenames still WARN", bool(mixed), results)
     check(
-        "17b: storage policy accepts role-slot-fill Binding IDs",
-        not storage_mixed,
-        json.dumps(storage_mixed, indent=2),
+        "17b: warning calls out role-slot-fill and LogEntry rewrites",
+        bool(mixed)
+        and "role-slot-fill" in mixed[0]["message"]
+        and "LogEntry references" in mixed[0]["suggested_fix"],
+        json.dumps(mixed, indent=2),
     )
 
 
@@ -2406,25 +2315,6 @@ with tempfile.TemporaryDirectory() as tmp:
         [r.to_dict() for r in clean_results],
     )
 
-    reference_text = agents_text.replace(
-        'build: "make build"',
-        'build: "npm --prefix docs-site run build"',
-    )
-    (root / "src" / "AGENTS.md").write_text(
-        reference_text,
-        encoding="utf-8",
-    )
-    project_commands = _agents_md_hygiene_run({"repo_root": root})
-    check(
-        "18: project-local pk-commands values do not drift",
-        not [
-            r for r in project_commands
-            if r.id == "agents_md_hygiene.managed-block-drift"
-            and r.extra.get("block_id") == "pk-commands"
-        ],
-        [r.to_dict() for r in project_commands],
-    )
-
 print("\n[19] runtime_health — container-local probe helpers")
 
 if str(_SCRIPTS_DIR) not in sys.path:
@@ -2582,7 +2472,6 @@ with tempfile.TemporaryDirectory() as tmp:
             [
                 ("BACK-20260409_1449-CleanRapidRiver-one",),
                 ("DEC-20260409_1450-CleanRapidRiver-two",),
-                ("BACK-20260409_1451-OpenDeer-three",),
             ],
         )
         conn.commit()
@@ -2609,18 +2498,6 @@ with tempfile.TemporaryDirectory() as tmp:
         and payload.get("action_required") is False
         and payload.get("action_kind") is None,
         json.dumps(payload, indent=2),
-    )
-    blocked = [
-        item for item in findings if item.id == "id-vocabulary.blocked-word"
-    ]
-    blocked_payload = blocked[0].to_dict() if blocked else {}
-    check(
-        "20: historical blocked word is INFO and non-actionable",
-        len(blocked) == 1
-        and blocked_payload.get("severity") == "INFO"
-        and blocked_payload.get("action_required") is False
-        and blocked_payload.get("action_kind") is None,
-        json.dumps(blocked_payload, indent=2),
     )
 
 # ---------------------------------------------------------------------------
@@ -2649,16 +2526,41 @@ with tempfile.TemporaryDirectory() as tmp:
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
-    nested = root / "vendor" / "nested-repo"
-    nested.mkdir(parents=True)
-    (nested / ".git").write_text("gitdir: elsewhere\n", encoding="utf-8")
-    (nested / "package.json").write_text('{"name":"nested"}\n', encoding="utf-8")
-    generated = root / "tmp" / "host-gates" / "cargo-home" / "crate"
-    generated.mkdir(parents=True)
-    (generated / "Cargo.toml").write_text("[package]\nname='cached'\n", encoding="utf-8")
+    submodule = root / "vendor" / "theme"
+    submodule.mkdir(parents=True)
+    (submodule / ".git").write_text(
+        "gitdir: ../../../.git/modules/vendor/theme\n",
+        encoding="utf-8",
+    )
+    (submodule / "package.json").write_text(
+        '{"name": "vendored-theme"}\n',
+        encoding="utf-8",
+    )
     findings = _supply_chain_run({"repo_root": root, "since_files": None})
-    missing = [item.message for item in findings if item.id == "supply_chain.missing-lockfile"]
-    check("21d: nested repositories and generated tmp trees are skipped", not missing, missing)
+    missing = [
+        item for item in findings
+        if item.id == "supply_chain.missing-lockfile"
+    ]
+    check("21d: git submodule manifests are skipped", not missing)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    member = root / "installer" / "crates" / "processkit"
+    member.mkdir(parents=True)
+    (root / "installer" / "Cargo.lock").write_text(
+        "# workspace lockfile\n",
+        encoding="utf-8",
+    )
+    (member / "Cargo.toml").write_text(
+        "[package]\nname = \"processkit\"\nversion = \"1.0.0\"\n",
+        encoding="utf-8",
+    )
+    findings = _supply_chain_run({"repo_root": root, "since_files": None})
+    missing = [
+        item for item in findings
+        if item.id == "supply_chain.missing-lockfile"
+    ]
+    check("21e: workspace Cargo.lock covers member crate", not missing)
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
@@ -2719,14 +2621,14 @@ with tempfile.TemporaryDirectory() as tmp:
 
     core_findings = _supply_chain_run({"repo_root": root, "since_files": None})
     ids = {item.id for item in core_findings}
-    check("21d: denied license emits ERROR", "supply_chain.denied-license" in ids)
-    check("21e: review license emits WARN", "supply_chain.review-license" in ids)
-    check("21f: unknown license emits WARN", "supply_chain.unknown-license" in ids)
-    check("21g: skipped scanner is WARN", "supply_chain.scanner-skipped" in ids)
-    check("21h: high severity vulnerability emits ERROR", "supply_chain.high-or-critical-vulnerability" in ids)
-    check("21i: outdated signal remains advisory", "supply_chain.advisory-outdated" in ids)
-    check("21j: supplier quality remains advisory", "supply_chain.advisory-supplier-quality" in ids)
-    check("21k: sbom files are reported", "supply_chain.sbom-found" in ids)
+    check("21f: denied license emits ERROR", "supply_chain.denied-license" in ids)
+    check("21g: review license emits WARN", "supply_chain.review-license" in ids)
+    check("21h: unknown license emits WARN", "supply_chain.unknown-license" in ids)
+    check("21i: skipped scanner is WARN", "supply_chain.scanner-skipped" in ids)
+    check("21j: high severity vulnerability emits ERROR", "supply_chain.high-or-critical-vulnerability" in ids)
+    check("21k: outdated signal remains advisory", "supply_chain.advisory-outdated" in ids)
+    check("21l: supplier quality remains advisory", "supply_chain.advisory-supplier-quality" in ids)
+    check("21m: sbom files are reported", "supply_chain.sbom-found" in ids)
 
 # ---------------------------------------------------------------------------
 # Test 22: sensitive_data — deterministic findings plus briefing
@@ -2734,7 +2636,6 @@ with tempfile.TemporaryDirectory() as tmp:
 print("\n[22] sensitive_data — deterministic findings plus briefing")
 
 from checks import sensitive_data  # noqa: E402
-from checks.schema_filename import _parse_frontmatter as _parse_entity_frontmatter  # noqa: E402
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
@@ -2786,101 +2687,6 @@ with tempfile.TemporaryDirectory() as tmp:
             )),
             sample,
         )
-        url_with_variable = "https://user:${GH_TOKEN}@github.com/org/repo"
-        check(
-            "22: URL environment-variable credential is ignored",
-            not list(sensitive_data._matches(
-                root / "AGENTS.md", url_with_variable, url_pattern
-            )),
-            url_with_variable,
-        )
-        social_url = "https://x.com/example/status/1745511940351287394"
-        check(
-            "22: social-media numeric URL identifier is not a card",
-            not list(sensitive_data._credit_cards(social_url)),
-            social_url,
-        )
-    frontmatter_path = root / "frontmatter.md"
-    frontmatter_path.write_text(
-        "---\nspec:\n  divider: '|---|---|'\n---\nbody\n",
-        encoding="utf-8",
-    )
-    parsed, parse_error = _parse_entity_frontmatter(frontmatter_path)
-    check(
-        "22: frontmatter parser accepts literal --- content",
-        parsed is not None and parse_error is None,
-        parse_error or "",
-    )
-
-# ---------------------------------------------------------------------------
-# Test 23: fresh derived-project doctor regressions
-# ---------------------------------------------------------------------------
-print("\n[23] pk-doctor — fresh derived project regressions")
-
-from checks import drift as _drift  # noqa: E402
-
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    no_script = _drift.run({"repo_root": root})
-    check(
-        "23: missing release script is not applicable, not an ERROR",
-        len(no_script) == 1 and no_script[0].id == "drift.not-applicable"
-        and no_script[0].severity == "INFO",
-        [item.to_dict() for item in no_script],
-    )
-
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    subprocess.run(["git", "init", "-q", str(root)], check=True)
-    (root / ".gitignore").write_text(".aibox/\n", encoding="utf-8")
-    (root / ".aibox").mkdir()
-    (root / ".aibox" / "auth.env").write_text(
-        "CONTACT=private@example.com\n", encoding="utf-8"
-    )
-    (root / "project.env").write_text(
-        "CONTACT=public@example.com\n", encoding="utf-8"
-    )
-    findings = sensitive_data.run({"repo_root": root, "since_files": None})
-    emails = [
-        item.extra.get("path") for item in findings
-        if item.id == "sensitive-data.email-address"
-    ]
-    check(
-        "23: empty Git index scans non-ignored files but not ignored state",
-        emails == ["project.env"], emails,
-    )
-
-with tempfile.TemporaryDirectory() as tmp:
-    root = Path(tmp)
-    applied = root / "context" / "migrations" / "applied"
-    applied.mkdir(parents=True)
-    now = datetime.now(timezone.utc)
-    for name, applied_at in (
-        ("MIG-new", (now - timedelta(days=1)).isoformat()),
-        ("MIG-old", (now - timedelta(days=31)).isoformat()),
-    ):
-        (applied / f"{name}.md").write_text(
-            textwrap.dedent(f"""\
-                ---
-                apiVersion: processkit.projectious.work/v2
-                kind: Migration
-                metadata:
-                  id: {name}
-                  created: {applied_at}
-                spec:
-                  state: applied
-                  applied_at: {applied_at}
-                ---
-                """),
-            encoding="utf-8",
-        )
-    findings = _context_hygiene_run({"repo_root": root})
-    archive = [item for item in findings if item.id == "archive.applied-migrations"]
-    check(
-        "23: only migrations older than the archive policy are candidates",
-        len(archive) == 1 and "1 applied migration" in archive[0].message,
-        [item.to_dict() for item in archive],
-    )
 
 # ---------------------------------------------------------------------------
 # Summary

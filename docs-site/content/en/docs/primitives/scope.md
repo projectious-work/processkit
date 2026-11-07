@@ -1,6 +1,6 @@
 ---
-title: "Scope"
 weight: 18
+title: "Scope"
 ---
 
 A bounded container for work — sprint, milestone, quarter, release, or
@@ -61,7 +61,7 @@ spec:
   ends_at: '2026-04-25'
   goals:
     - All primitive reference pages published
-    - Documentation build green
+    - Hugo and Docsy local build green
     - First public deploy complete
   parent: SCOPE-20260410_q2-2026
 ---

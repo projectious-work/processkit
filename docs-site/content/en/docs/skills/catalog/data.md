@@ -1,6 +1,6 @@
 ---
-title: "Data & Analytics Skills"
 weight: 8
+title: "Data & Analytics Skills"
 ---
 
 Skills for data science, data engineering, and analytics workflows.

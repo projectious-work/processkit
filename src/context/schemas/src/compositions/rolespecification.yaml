@@ -1,0 +1,17 @@
+extends: ../primitives/specification.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-rolespecification, target_kind: RoleSpecification, version: 1.0.0-beta.1}
+spec:
+  description: A specification of responsibilities, authority, and skills.
+  id_prefix: ROLESPEC
+  default_directory: context/specifications/roles
+  spec_schema:
+    required: {__merge: concat, value: [responsibilities]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: role}
+        responsibilities: {type: array, minItems: 1, items: {type: string}}
+        authority: {type: array, items: {type: string}}
+        expected_skills: {type: array, items: {type: string}}

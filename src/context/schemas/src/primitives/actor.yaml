@@ -1,0 +1,35 @@
+extends:
+  - ../fragments/entity.yaml
+  - ../fragments/versioned.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-actor
+  target_kind: Actor
+  version: "1.0.0-alpha.1"
+  created: 2026-07-23T00:00:00Z
+spec:
+  interfaces:
+    __merge: concat
+    value: [Actor]
+  description: An accountable human, agent, service, or organization.
+  id_prefix: ACTOR
+  state_machine: null
+  default_directory: context/actors
+  spec_schema:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    required: [name, type]
+    additionalProperties: true
+    properties:
+      name: {type: string, minLength: 1}
+      type:
+        type: string
+        enum: [human, ai-agent, service, organization]
+      state:
+        type: string
+        enum: [active, inactive]
+      expertise:
+        type: array
+        items: {type: string}
+      contact: {type: [string, "null"]}

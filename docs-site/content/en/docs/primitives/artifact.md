@@ -1,6 +1,6 @@
 ---
-title: "Artifact"
 weight: 13
+title: "Artifact"
 ---
 
 A completed deliverable — document, dataset, build, diagram, URL,

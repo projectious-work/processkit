@@ -1,6 +1,6 @@
 ---
-title: "Binding"
 weight: 17
+title: "Binding"
 ---
 
 A scoped or time-bounded relationship between two entities — the

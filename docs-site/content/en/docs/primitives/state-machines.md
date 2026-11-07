@@ -1,6 +1,6 @@
 ---
-title: "State Machines"
 weight: 3
+title: "State Machines"
 ---
 
 Primitives with lifecycle (WorkItem, DecisionRecord, Scope, Discussion)

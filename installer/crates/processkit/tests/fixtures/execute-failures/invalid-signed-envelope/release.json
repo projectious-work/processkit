@@ -1,0 +1,33 @@
+{
+  "apiVersion": "processkit.projectious.work/local-release/unsupported",
+  "kind": "LocalRelease",
+  "release": {
+    "name": "processkit",
+    "version": "v1.0.0-alpha.3"
+  },
+  "archive": {
+    "file": "processkit-v1.0.0-alpha.3.tar.gz",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "size": 1,
+    "topLevelDirectory": "processkit-v1.0.0-alpha.3"
+  },
+  "descriptor": {
+    "file": ".processkit/installer/release-descriptor.json",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "provenance": {
+    "file": "PROVENANCE.toml",
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "generatedForTag": "v1.0.0-alpha.3"
+  },
+  "signing": {
+    "algorithm": "Ed25519",
+    "keyId": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "installerAssets": [{
+    "file": "processkit-v1.0.0-alpha.3-aarch64-unknown-linux-gnu",
+    "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "target": "aarch64-unknown-linux-gnu",
+    "size": 1
+  }]
+}

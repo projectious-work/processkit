@@ -1,6 +1,6 @@
 ---
-title: "Harness Compatibility"
 weight: 2
+title: "Harness Compatibility"
 ---
 
 processkit's MCP servers are provider-neutral Python programs. They do
@@ -8,6 +8,11 @@ not require aibox at runtime. aibox can install processkit, merge MCP
 configuration, pre-authorize processkit tools where a harness supports
 that, and supervise a managed devcontainer. Those are convenience and
 lifecycle features; they are not a processkit dependency.
+
+The alpha.5 installer can project managed Codex and Claude configuration.
+It owns only declared processkit keys and preserves unrelated harness settings
+during install, update, and uninstall. Restart the harness after installation
+so it reloads the projection.
 
 For a direct install, point the harness at the desired server command
 inside the installed `context/skills` tree. The recommended one-process

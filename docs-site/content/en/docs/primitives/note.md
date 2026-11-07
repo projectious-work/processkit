@@ -1,6 +1,6 @@
 ---
-title: "Note"
 weight: 14
+title: "Note"
 ---
 
 A Zettelkasten capture layer for ideas, observations, and references.

@@ -215,14 +215,10 @@ def run(ctx) -> list[CheckResult]:
             blocked.append((entity_id, token, words))
     for entity_id, token, words in blocked[:20]:
         results.append(CheckResult(
-            severity="INFO",
+            severity="WARN",
             category=CATEGORY,
             id="id-vocabulary.blocked-word",
-            message=(
-                f"historical ID {entity_id} uses blocked process word(s) "
-                f"in {token!r}: {words}; immutable IDs are retained"
-            ),
-            action_required=False,
+            message=f"{entity_id} uses blocked process word(s) in {token!r}: {words}",
             entity_ref=entity_id,
             suggested_fix=(
                 "avoid operational/process vocabulary in future generated IDs"

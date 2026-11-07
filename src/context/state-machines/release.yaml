@@ -1,0 +1,12 @@
+apiVersion: processkit.projectious.work/v2
+kind: StateMachine
+metadata: {id: SM-release, name: release, version: 1.0.0-alpha.3}
+spec:
+  initial: planned
+  terminal: [published, withdrawn]
+  states:
+    planned: {transitions: [{to: candidate}, {to: withdrawn}]}
+    candidate: {transitions: [{to: approved}, {to: planned}, {to: withdrawn}]}
+    approved: {transitions: [{to: published}, {to: candidate}, {to: withdrawn}]}
+    published: {transitions: []}
+    withdrawn: {transitions: []}

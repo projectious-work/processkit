@@ -1,6 +1,6 @@
 ---
-title: "Version Migration"
 weight: 3
+title: "Version Migration"
 ---
 
 processkit is distributed as versioned releases. Upgrading pinned

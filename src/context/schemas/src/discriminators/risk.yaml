@@ -1,0 +1,56 @@
+---
+extends: ../primitives/proposition.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-proposition-risk
+  target_kind: Proposition
+  version: "1.0.0-alpha.1"
+  created: 2026-07-22T00:00:00Z
+spec:
+  parent: Proposition
+  discriminator:
+    field: kind
+    value: risk
+  description: >
+    A Proposition about uncertainty, likelihood, impact, response, mitigation,
+    contingency, and ownership.
+  spec_schema:
+    required:
+      __merge: concat
+      value: [likelihood, impact]
+    properties:
+      __merge: name-merge
+      value:
+        kind:
+          const: risk
+        likelihood:
+          type: string
+          enum: [rare, unlikely, possible, likely, almost-certain]
+        probability:
+          type: number
+          minimum: 0
+          maximum: 1
+        impact:
+          type: string
+          enum: [negligible, minor, moderate, major, critical]
+        risk_status:
+          type: string
+          enum: [identified, analyzing, accepted, mitigating, realized, closed]
+        response:
+          type: string
+          enum: [avoid, mitigate, transfer, accept, escalate]
+        mitigation:
+          type: string
+        contingency:
+          type: string
+        affected_entities:
+          type: array
+          items:
+            type: string
+        review_at:
+          type: string
+          format: date-time
+        realized_at:
+          type: string
+          format: date-time

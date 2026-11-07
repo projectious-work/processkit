@@ -1,6 +1,6 @@
 ---
-title: "Process Skills"
 weight: 2
+title: "Process Skills"
 ---
 
 Skills for managing project workflows, team coordination, and operational

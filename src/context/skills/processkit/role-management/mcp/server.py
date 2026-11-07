@@ -369,18 +369,40 @@ def link_role_to_actor(
     valid_until: str | None = None,
     description: str | None = None,
 ) -> dict:
-    """Bind an Actor to a Role by creating a Binding (type: role-assignment).
+    """Bind an Actor-compatible entity to a Role.
 
     Use this rather than editing the Actor's ``spec.roles`` field when
     the assignment has scope, time, or its own attributes. The created
-    binding can be queried via binding-management's
-    resolve_bindings_for.    Prerequisite: call find_skill(task_description) or confirm you are
+    binding accepts both Actor and TeamMember subjects because TeamMember
+    implements the generated Actor interface. It can be queried via
+    binding-management's ``resolve_bindings_for``.
+
+    Prerequisite: call find_skill(task_description) or confirm you are
     already operating within a named processkit skill before using this
     tool. 1% rule: call route_task first; commit in the same turn —
     deferred writes are dropped.
     """
-    if not actor_id.startswith("ACTOR-"):
-        return {"error": f"actor_id must start with ACTOR-, got {actor_id!r}"}
+    subject_kind = (
+        "Actor"
+        if actor_id.startswith("ACTOR-")
+        else "TeamMember"
+        if actor_id.startswith("TEAMMEMBER-")
+        else None
+    )
+    if subject_kind is None:
+        return {
+            "error": (
+                "actor_id must identify an Actor-compatible entity with "
+                f"ACTOR- or TEAMMEMBER-, got {actor_id!r}"
+            )
+        }
+    if "Actor" not in schema.interfaces_for_kind(subject_kind):
+        return {
+            "error": (
+                f"{subject_kind} does not implement the generated Actor "
+                "interface"
+            )
+        }
     if not role_id.startswith("ROLE-"):
         return {"error": f"role_id must start with ROLE-, got {role_id!r}"}
 
@@ -407,7 +429,7 @@ def link_role_to_actor(
     spec: dict = {
         "type": "role-assignment",
         "subject": actor_id,
-        "subject_kind": "Actor",
+        "subject_kind": subject_kind,
         "target": role_id,
         "target_kind": "Role",
     }
@@ -436,7 +458,7 @@ def link_role_to_actor(
 
     log.log_side_effect(
         "Binding", new_id, "binding.role-assigned",
-        f"Bound Actor {actor_id!r} to Role {role_id!r} via {new_id!r}",
+        f"Bound {subject_kind} {actor_id!r} to Role {role_id!r} via {new_id!r}",
         root=root,
         actor=new_id,
     )

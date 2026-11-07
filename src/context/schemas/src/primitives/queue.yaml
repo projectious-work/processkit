@@ -1,0 +1,18 @@
+extends: [../fragments/entity.yaml, ../fragments/versioned.yaml]
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-queue, target_kind: Queue, version: 1.0.0-beta.1}
+spec:
+  description: An ordered or claimable work intake and processing surface.
+  id_prefix: QUEUE
+  state_machine: null
+  default_directory: context/queues
+  known_kinds: [fifo, priority, claimable, retry]
+  spec_schema:
+    type: object
+    required: [name, discipline]
+    additionalProperties: true
+    properties:
+      name: {type: string, minLength: 1}
+      discipline: {type: string, enum: [fifo, priority, claimable, retry]}
+      items: {type: array, items: {type: string}}

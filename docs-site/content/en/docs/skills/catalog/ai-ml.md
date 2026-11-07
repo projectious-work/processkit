@@ -1,6 +1,6 @@
 ---
-title: "AI & ML Skills"
 weight: 9
+title: "AI & ML Skills"
 ---
 
 Skills for AI/ML development, RAG pipelines, prompt engineering, and model evaluation.

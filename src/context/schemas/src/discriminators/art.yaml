@@ -1,0 +1,12 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-container-art, target_kind: Container, version: 1.0.0-alpha.3}
+spec:
+  parent: Container
+  discriminator: {field: kind, value: art}
+  description: An Agile Release Train or equivalent multi-team container.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value: {kind: {const: art}}

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "processkit-skill-management": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--script",
+        "context/skills/processkit/skill-management/mcp/server.py"
+      ],
+      "env": {}
+    }
+  }
+}

@@ -1,6 +1,6 @@
 ---
-title: "Actor"
 weight: 15
+title: "Actor"
 ---
 
 A participant in the project — human, AI agent, or automated service.

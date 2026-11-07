@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "distribution", "installer", "asset"],
+  "properties": {
+    "$schema": {"type": "string"},
+    "apiVersion": {"const": "processkit.projectious.work/installer/v1alpha1"},
+    "kind": {"const": "ReleaseDescriptor"},
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest", "manifestSha256", "protocol"],
+      "properties": {
+        "manifest": {"type": "string", "minLength": 1},
+        "manifestSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "protocol": {"const": "processkit.projectious.work/installer/v1alpha1"}
+      }
+    },
+    "installer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requires"],
+      "properties": {"requires": {"type": "string", "minLength": 1}}
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["layout"],
+      "properties": {"layout": {"const": "single-top-level-directory"}}
+    }
+  }
+}

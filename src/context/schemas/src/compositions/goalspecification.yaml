@@ -1,0 +1,16 @@
+extends: ../primitives/specification.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-goalspecification, target_kind: GoalSpecification, version: 1.0.0-beta.1}
+spec:
+  description: A specification of desired outcomes, measures, and owners.
+  id_prefix: GOALSPEC
+  default_directory: context/specifications/goals
+  spec_schema:
+    required: {__merge: concat, value: [desired_outcomes]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: goal}
+        desired_outcomes: {type: array, minItems: 1, items: {type: string}}
+        measures: {type: array, items: {type: string}}

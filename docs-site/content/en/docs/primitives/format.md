@@ -1,6 +1,6 @@
 ---
-title: "Entity File Format"
 weight: 2
+title: "Entity File Format"
 ---
 
 Every processkit primitive entity is stored as a Markdown file with a

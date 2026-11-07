@@ -1,0 +1,7 @@
+apiVersion: processkit.projectious.work/installer/v1alpha1
+kind: HarnessAdapter
+id: claude
+format: json
+destination: .claude/settings.json
+ownership: managed-keys
+catalog: .processkit/installer/catalogs/mcp.yaml

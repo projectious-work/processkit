@@ -1,6 +1,6 @@
 ---
-title: "Gate"
 weight: 20
+title: "Gate"
 ---
 
 A validation checkpoint in a process. Gates define what must be true

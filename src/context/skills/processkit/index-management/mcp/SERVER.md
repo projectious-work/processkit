@@ -16,6 +16,7 @@ manifest.
 |----------------------------------------------------------------|--------------------------------------------------|
 | `reindex()`                                                    | Walk `context/`, rebuild the index from scratch  |
 | `query_entities(kind?, state?, limit?)`                        | List entities matching filters                   |
+| `query_by_interface(interface, kind?, state?, limit?)`         | List entities by schema-declared interface       |
 | `get_entity(id)`                                               | Fetch one entity by ID                           |
 | `search_entities(text, limit?)`                                | FTS5-ranked search with LIKE fallback           |
 | `semantic_status()`                                            | Semantic chunk/vector capability and counts      |
@@ -28,6 +29,8 @@ manifest.
 List/search tools clamp caller-provided limits before querying the
 database. Unfiltered event queries are capped more tightly than filtered
 event queries, and long event summaries are returned as previews.
+Run `reindex()` once after upgrading an existing index so its entities gain
+schema-declared interface memberships.
 
 ## Database
 
@@ -60,7 +63,8 @@ STDIO. Subsequent runs are near-instant due to uv's environment cache.
 - Semantic search uses optional sqlite-vec. When sqlite-vec is not
   installed or loadable, `semantic_search_entities` returns no vector
   results and `hybrid_search_entities` falls back to FTS5.
-- No incremental indexing — `reindex()` is a full sweep (BACK-006).
+- Entity writes incrementally update interface membership; `reindex()` is
+  still a full sweep for filesystem reconciliation (BACK-006).
 
 ## Configuration
 

@@ -1,0 +1,13 @@
+extends: ../primitives/capability.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-capability-disposition, target_kind: Capability, version: 1.0.0-alpha.3}
+spec:
+  parent: Capability
+  discriminator: {field: kind, value: disposition}
+  description: A tendency or affordance represented as a capability.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: disposition}

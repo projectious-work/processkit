@@ -1,0 +1,30 @@
+{
+  "apiVersion": "processkit.projectious.work/v1",
+  "kind": "MCPServer",
+  "metadata": {
+    "name": "example-server",
+    "labels": {
+      "area": "replace-with-area"
+    }
+  },
+  "spec": {
+    "title": "Example MCP server",
+    "summary": "Replace with what the server offers and when an agent should use it.",
+    "owner": "Replace with the accountable person, role, or team",
+    "status": "draft",
+    "role": "server",
+    "transport": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp"
+    },
+    "version": "1.0.0",
+    "sideEffects": "read-only",
+    "authentication": {
+      "mode": "oauth",
+      "notes": "Replace with how a client obtains access. Never put a credential here."
+    },
+    "triggers": [
+      "Replace with a situation in which an agent should use this server"
+    ]
+  }
+}

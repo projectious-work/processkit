@@ -61,6 +61,11 @@ that skill before proceeding.
 | "SQL style", "format the SQL" | `sql-style-guide` |
 | "database design", "schema design" | `database-modeling` |
 | "database migration", "migrate the schema" | `database-migration` |
+| "regenerate schemas", "schema contract", "validation mode" | `schema-management` |
+| "manage a capability", "capability lifecycle" | `capability-management` |
+| "record a proposition", "record a risk" | `proposition-management` |
+| "manage a skill lifecycle", "transition a skill" | `skill-management` |
+| "export OKF", "validate an OKF bundle" | `okf-compatibility` |
 | "NoSQL", "MongoDB", "document store" | `nosql-patterns` |
 | "secure this", "security review" | `secure-coding` |
 | "threat model" | `threat-modeling` |
@@ -129,7 +134,6 @@ that skill before proceeding.
 | "archive context", "cold tier", "archive old workitems" | `context-archiving` |
 | "prune runtime", "cleanup aibox runtime", "clean up agent worktrees", "reclaim runtime disk" | `runtime-prune` |
 | "check all open issues", "check all PRs", "merge ready PRs", "repo reconcile", "commit and push all", "repository cleanup" | `repo-management` |
-| "resolve all migrations", "resolve pk-doctor findings", "reconcile the project", "resolve issues and pull requests" | `project-reconciliation` |
 | "second opinion", "devil's advocate", "poke holes in this" | `devils-advocate` |
 | "multiple perspectives", "board of advisors" | `board-of-advisors` |
 | "research this", "I'm not sure about this fact" | `research-with-confidence` |
@@ -139,8 +143,7 @@ that skill before proceeding.
 | "session start", "which skill applies", "check skill-finder", "1% rule" | `skill-gate` |
 | "dependency audit", "check dependencies" | `dependency-audit` |
 | "dependency management", "update packages" | `dependency-management` |
-| "choose a branching strategy", "Gitflow", "GitHub Flow", "trunk-based development", "release branch strategy" | `git-branching` |
-| "git workflow", "branch naming", "commit message" | `git-workflow` |
+| "git workflow", "branching strategy", "commit message" | `git-workflow` |
 | "shell script", "bash script" | `shell-scripting` |
 | "caching", "cache strategy" | `caching-strategies` |
 | "concurrency", "async", "parallelism" | `concurrency-patterns` |
@@ -157,8 +160,8 @@ directory name as the `category:` value when authoring or filtering:
 
 | Directory | Contents |
 |---|---|
-| `processkit/` | 46 skills for operating the processkit system |
-| `engineering/` | 47 skills: software design, architecture, backend, languages |
+| `processkit/` | 51 skills for operating the processkit system |
+| `engineering/` | 46 skills: software design, architecture, backend, languages |
 | `devops/` | 16 skills: infrastructure, CI/CD, ops, monitoring |
 | `data-ai/` | 11 skills: data science, ML, AI/LLM, embeddings |
 | `product/` | 11 skills: product management, discovery, communication |
@@ -183,6 +186,11 @@ For the full catalog, read `skills/INDEX.md`.
 - `context-grooming` — periodically prune and compact the project context
 - `runtime-prune` — inspect and invoke safe cleanup for
   runtime-manager-owned state
+- `schema-management` — rebuild and inspect generated schema contracts
+- `capability-management` — manage Capability entities and lifecycle
+- `proposition-management` — create and query claims and risks
+- `skill-management` — govern package-backed Skill lifecycle
+- `okf-compatibility` — export and validate OKF v0.1 bundles
 - `release-semver` — plan and execute a semver release
 - `retrospective` — post-release blameless retrospective (4 signals, dual-emit Artifact+LogEntry)
 

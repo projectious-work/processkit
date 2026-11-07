@@ -126,7 +126,6 @@ def test_gh_child_refreshes_token_from_owner_only_file(
         return subprocess.CompletedProcess(args, 0, "[]", "")
 
     monkeypatch.setattr(server.subprocess, "run", fake_run)
-
     result = server._run(["gh", "issue", "list"], cwd=tmp_path)
 
     assert result["ok"] is True
@@ -156,7 +155,6 @@ def test_direct_gh_token_takes_precedence_over_token_file(
         return subprocess.CompletedProcess(args, 0, "[]", "")
 
     monkeypatch.setattr(server.subprocess, "run", fake_run)
-
     result = server._run(["gh", "pr", "list"], cwd=tmp_path)
 
     assert result["ok"] is True

@@ -1,6 +1,6 @@
 ---
-title: "Constraint"
 weight: 24
+title: "Constraint"
 ---
 
 An explicit rule or limit the project must respect — budget ceiling,

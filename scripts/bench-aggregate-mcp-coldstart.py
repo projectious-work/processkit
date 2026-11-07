@@ -29,15 +29,18 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SERVER_PATH = (
-    REPO_ROOT
-    / "context"
+_AGGREGATE_REL = (
+    Path("context")
     / "skills"
     / "processkit"
     / "aggregate-mcp"
     / "mcp"
     / "server.py"
 )
+SERVER_PATH = REPO_ROOT / _AGGREGATE_REL
+if not SERVER_PATH.is_file():
+    # Root context/ was retired on 2026-11-01; use the shipped tree.
+    SERVER_PATH = REPO_ROOT / "src" / _AGGREGATE_REL
 
 
 CHILD_SCRIPT = """

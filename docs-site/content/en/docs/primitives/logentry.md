@@ -1,6 +1,6 @@
 ---
-title: "LogEntry"
 weight: 11
+title: "LogEntry"
 ---
 
 An immutable, append-only record of something that happened. The audit

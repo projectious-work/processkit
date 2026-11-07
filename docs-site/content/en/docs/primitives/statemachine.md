@@ -1,6 +1,6 @@
 ---
-title: "StateMachine"
 weight: 29
+title: "StateMachine"
 ---
 
 Legacy v1 state/transition graph entity. In the SmoothTiger/SmoothRiver

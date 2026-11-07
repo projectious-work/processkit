@@ -1,6 +1,6 @@
 ---
-title: "product"
 weight: 6
+title: "product"
 ---
 
 **Intended for:** end-to-end product development teams.

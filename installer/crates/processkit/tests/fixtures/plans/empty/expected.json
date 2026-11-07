@@ -1,0 +1,24 @@
+{
+  "apiVersion": "processkit.projectious.work/installer/v1alpha1",
+  "status": "planned",
+  "distribution": {
+    "name": "fixture-processkit",
+    "version": "0.0.0-test",
+    "manifestSha256": "8524e178f6d6d4ffb06d3d6e413a6b59a763e0579c189234731fcab4d7c03838"
+  },
+  "selectedProfiles": ["managed"],
+  "harnesses": [],
+  "changes": [
+    {
+      "destination": "payload/hello.txt",
+      "component": "payload",
+      "operation": "copy/v1",
+      "ownership": "managed-three-way",
+      "kind": "create",
+      "sourceSha256": "565b24bc77ebeee74f70f6c608e099956666c3589ed85146fcea7e77d9f25356"
+    }
+  ],
+  "conflicts": [],
+  "warnings": [],
+  "errors": []
+}

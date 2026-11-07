@@ -1,6 +1,6 @@
 ---
-title: "Schedule"
 weight: 23
+title: "Schedule"
 ---
 
 Legacy v1 time-based trigger or recurring cadence. In the

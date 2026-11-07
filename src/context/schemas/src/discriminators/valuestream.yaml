@@ -1,0 +1,12 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-container-valuestream, target_kind: Container, version: 1.0.0-alpha.3}
+spec:
+  parent: Container
+  discriminator: {field: kind, value: value-stream}
+  description: A flow of value across products, systems, and teams.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value: {kind: {const: value-stream}}

@@ -1,7 +1,12 @@
 #!/usr/bin/env -S uv run
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["mcp[cli]>=1.0,<2.0", "pyyaml>=6.0", "jsonschema>=4.0"]
+# dependencies = [
+#   "mcp[cli]>=1.0,<2.0",
+#   "pyyaml>=6.0",
+#   "jsonschema>=4.0",
+#   "jinja2>=3.1",
+# ]
 # ///
 """End-to-end smoke test for processkit MCP servers.
 
@@ -18,23 +23,42 @@ the protocol), and exercises a realistic workflow:
 """
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import os
+import subprocess
 import sys
 import tempfile
 import shutil
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-PROCESSKIT = Path(__file__).resolve().parent.parent
-LIB = PROCESSKIT / "src" / "context" / "skills" / "_lib"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DISTRIBUTION_ROOT = REPO_ROOT / "src"
+CONTEXT_ROOT = DISTRIBUTION_ROOT / "context"
+LIB = CONTEXT_ROOT / "skills" / "_lib"
 sys.path.insert(0, str(LIB))
+
+
+def configure_distribution_root(path: Path | str | None) -> None:
+    """Select the staged or extracted processkit distribution to exercise."""
+    global DISTRIBUTION_ROOT, CONTEXT_ROOT, LIB
+    if path is not None:
+        DISTRIBUTION_ROOT = Path(path).resolve()
+    CONTEXT_ROOT = DISTRIBUTION_ROOT / "context"
+    LIB = CONTEXT_ROOT / "skills" / "_lib"
+    if not (LIB / "processkit" / "__init__.py").is_file():
+        raise RuntimeError(
+            f"distribution root does not contain the processkit library: "
+            f"{DISTRIBUTION_ROOT}"
+        )
+    sys.path.insert(0, str(LIB))
 
 
 def import_server(name: str):
     """Import a server.py module by skill name without running its main()."""
     # Skills are now organized into category subdirectories. Search all of them.
-    skills_root = PROCESSKIT / "src" / "context" / "skills"
+    skills_root = CONTEXT_ROOT / "skills"
     path = None
     for cat_dir in skills_root.iterdir():
         if not cat_dir.is_dir():
@@ -67,19 +91,21 @@ def get_tool(server_module, name: str):
     return tool.fn
 
 
-def run():
+def run(distribution_root: Path | str | None = None):
+    configure_distribution_root(distribution_root)
     workdir = Path(tempfile.mkdtemp(prefix="processkit-smoke-"))
     print(f"workdir: {workdir}")
     try:
         # 1. Set up a minimal project
-        (workdir / "aibox.toml").write_text(
-            '[aibox]\nversion = "0.14.1"\n[context]\npackages = ["managed"]\n'
+        (workdir / "AGENTS.md").write_text(
+            "# Standalone processkit smoke fixture\n",
+            encoding="utf-8",
         )
         (workdir / "context").mkdir()
         # Seed schemas + state machines at the consumer install paths so
         # paths.primitive_schemas_dir / state_machines_dir find them.
-        # paths.find_project_root walks up looking for aibox.toml — that
-        # finds workdir. The lib then looks for:
+        # paths.find_project_root uses the provider-neutral AGENTS.md marker.
+        # The lib then looks for:
         #   workdir/context/schemas/        (consumer install)
         #   workdir/context/state-machines/ (consumer install)
         # falling back to processkit's src/primitives/{schemas,state-machines}
@@ -87,16 +113,15 @@ def run():
         # code path.
         context_root = workdir / "context"
         shutil.copytree(
-            PROCESSKIT / "src" / "context" / "schemas",
+            CONTEXT_ROOT / "schemas",
             context_root / "schemas",
         )
         shutil.copytree(
-            PROCESSKIT / "src" / "context" / "state-machines",
+            CONTEXT_ROOT / "state-machines",
             context_root / "state-machines",
         )
         shutil.copytree(
-            PROCESSKIT
-            / "src" / "context" / "skills"
+            CONTEXT_ROOT / "skills"
             / "processkit" / "index-management" / "config",
             context_root
             / "skills" / "processkit" / "index-management" / "config",
@@ -107,8 +132,7 @@ def run():
         # Seed a minimal skill catalog so skill-finder and task-router
         # can parse triggers and read skill descriptions.
         _skf_src = (
-            PROCESSKIT
-            / "src" / "context" / "skills"
+            CONTEXT_ROOT / "skills"
             / "processkit" / "skill-finder" / "SKILL.md"
         )
         _skf_dst = (
@@ -121,8 +145,7 @@ def run():
         # Seed workitem-management SKILL.md so task-router can read its
         # description excerpt.
         _wi_src = (
-            PROCESSKIT
-            / "src" / "context" / "skills"
+            CONTEXT_ROOT / "skills"
             / "processkit" / "workitem-management" / "SKILL.md"
         )
         _wi_dst = (
@@ -222,6 +245,7 @@ def run():
         bind = import_server("binding-management")
         elog = import_server("event-log")
         idx = import_server("index-management")
+        schema_mgmt = import_server("schema-management")
         idm = import_server("id-management")
         actor = import_server("actor-profile")
         role = import_server("role-management")
@@ -231,6 +255,99 @@ def run():
         art = import_server("artifact-management")
         mig = import_server("migration-management")
         note = import_server("note-management")
+        capability = import_server("capability-management")
+        proposition = import_server("proposition-management")
+        skill_mgmt = import_server("skill-management")
+        ontology = import_server("ontology-management")
+        okf = import_server("okf-compatibility")
+        team = import_server("team-manager")
+
+        create_ontology = get_tool(ontology, "create_ontology_entity")
+        transition_ontology = get_tool(
+            ontology, "transition_ontology_entity"
+        )
+        timezone_entity = create_ontology(
+            kind="Location",
+            id="LOC-alpha3-timezone",
+            spec={
+                "name": "Berlin delivery timezone",
+                "kind": "timezone",
+                "value": "Europe/Berlin",
+            },
+        )
+        assert timezone_entity["id"] == "LOC-alpha3-timezone"
+        art_containers = {}
+        for container_id, container_kind, container_name in (
+            ("CONT-alpha3-portfolio", "portfolio", "Alpha.3 Portfolio"),
+            ("CONT-alpha3-value-stream", "value-stream", "Delivery Value Stream"),
+            ("CONT-alpha3-art", "art", "Processkit ART"),
+            ("CONT-alpha3-team", "team", "Processkit Team"),
+        ):
+            art_containers[container_kind] = create_ontology(
+                kind="Container",
+                id=container_id,
+                spec={"name": container_name, "kind": container_kind},
+            )
+            assert art_containers[container_kind]["id"] == container_id
+        create_binding = get_tool(bind, "create_binding")
+        art_hierarchy = [
+            create_binding(
+                type="hierarchy",
+                subject="CONT-alpha3-value-stream",
+                target="CONT-alpha3-portfolio",
+                description="Value stream belongs to portfolio.",
+            ),
+            create_binding(
+                type="hierarchy",
+                subject="CONT-alpha3-art",
+                target="CONT-alpha3-value-stream",
+                description="ART delivers through value stream.",
+            ),
+            create_binding(
+                type="hierarchy",
+                subject="CONT-alpha3-team",
+                target="CONT-alpha3-art",
+                description="Team belongs to ART.",
+            ),
+        ]
+        assert all("id" in item for item in art_hierarchy)
+        pi_entity = create_ontology(
+            kind="ProgramIncrement",
+            id="PI-alpha3-proof",
+            spec={
+                "name": "Alpha.3 proof PI",
+                "kind": "program-increment",
+                "state": "planned",
+                "starts_at": "2026-07-27T00:00:00Z",
+                "ends_at": "2026-08-10T00:00:00Z",
+                "objectives": [],
+                "risks": [],
+                "iterations": [],
+            },
+        )
+        assert pi_entity["id"] == "PI-alpha3-proof"
+        pi_active = transition_ontology(
+            kind="ProgramIncrement",
+            id="PI-alpha3-proof",
+            to_state="active",
+        )
+        assert pi_active["to_state"] == "active"
+
+        schema_contract = get_tool(
+            schema_mgmt, "get_schema_contract"
+        )(kind="WorkItem")
+        assert schema_contract["contract"]["interfaces"] == [
+            "Entity",
+            "Versioned",
+        ]
+        schema_mode = get_tool(
+            schema_mgmt, "get_validation_mode"
+        )(kind="WorkItem")
+        assert schema_mode["validation_mode"] == "tolerant"
+        schema_regen = get_tool(
+            schema_mgmt, "regenerate_schemas"
+        )(kinds=["WorkItem"])
+        assert schema_regen["errors"] == {}
         agent_card = import_server("agent-card")
         eval_gate = import_server("eval-gate-authoring")
         security = import_server("security-projections")
@@ -243,6 +360,13 @@ def run():
         assert gateway_tools["count"] >= 90
         assert gateway_tools["runtime"]["transport"] == "stdio"
         assert "create_workitem" in gateway.server._tool_manager._tools
+        assert "regenerate_schemas" in gateway.server._tool_manager._tools
+        assert "create_capability" in gateway.server._tool_manager._tools
+        assert "create_proposition" in gateway.server._tool_manager._tools
+        assert "create_skill" in gateway.server._tool_manager._tools
+        assert "export_okf_bundle" in gateway.server._tool_manager._tools
+        assert "import_okf_bundle" in gateway.server._tool_manager._tools
+        assert "plan_v0_to_v1_migration" in gateway.server._tool_manager._tools
         gateway_health = get_tool(gateway, "gateway_health")()
         assert gateway_health["ok"] is True
 
@@ -250,6 +374,7 @@ def run():
         print("aggregate-mcp tool count:", aggregate_tools["count"])
         assert aggregate_tools["count"] >= 90
         assert "create_workitem" in agg.server._tool_manager._tools
+        assert "regenerate_schemas" in agg.server._tool_manager._tools
 
         # 0. id-management sanity
         gen_id = get_tool(idm, "generate_id")
@@ -447,6 +572,23 @@ def run():
         assert lk["ok"]
         role_binding_id = lk["binding_id"]
 
+        create_member = get_tool(team, "create_team_member")
+        member = create_member(
+            name="Alpha Reviewer",
+            type="human",
+            slug="alpha-reviewer",
+            default_role=role_id,
+            default_seniority="expert",
+        )
+        print("create_team_member:", member)
+        assert member["id"] == "TEAMMEMBER-alpha-reviewer"
+        member_link = link_rta(
+            role_id=role_id,
+            actor_id=member["id"],
+        )
+        print("link_role_to_actor TeamMember:", member_link)
+        assert member_link["ok"]
+
         # 4d. scope-management
         create_scope = get_tool(scope, "create_scope")
         sc = create_scope(
@@ -479,6 +621,53 @@ def run():
         ls = list_scopes(kind="sprint")
         print("list_scopes sprint:", len(ls))
         assert any(x["id"] == scope_id for x in ls)
+
+        # 4d.1. v1 alpha Capability, Proposition, Risk, and Skill lifecycles.
+        create_capability = get_tool(capability, "create_capability")
+        alpha_capability = create_capability(
+            name="Alpha contract validation",
+            description="Validate the generated v1 alpha contracts.",
+            owner=member["id"],
+        )
+        print("create_capability:", alpha_capability)
+        assert alpha_capability["state"] == "draft"
+        transition_capability = get_tool(
+            capability, "transition_capability"
+        )
+        capability_active = transition_capability(
+            id=alpha_capability["id"], to_state="active"
+        )
+        assert capability_active["to_state"] == "active"
+
+        create_proposition = get_tool(proposition, "create_proposition")
+        alpha_claim = create_proposition(
+            statement="The alpha package validates generated schemas.",
+            kind="claim",
+            owner=member["id"],
+        )
+        alpha_risk = create_proposition(
+            statement="A downstream adapter may reject prerelease tags.",
+            kind="risk",
+            likelihood="possible",
+            impact="major",
+            owner=member["id"],
+        )
+        print("create_proposition:", alpha_claim, alpha_risk)
+        assert alpha_claim["kind"] == "claim"
+        assert alpha_risk["kind"] == "risk"
+
+        create_skill = get_tool(skill_mgmt, "create_skill")
+        alpha_skill = create_skill(
+            name="alpha-contract-review",
+            description="Review v1 alpha contract evidence.",
+        )
+        assert alpha_skill["state"] == "draft"
+        transition_skill = get_tool(skill_mgmt, "transition_skill")
+        alpha_skill_active = transition_skill(
+            name="alpha-contract-review", to_state="active"
+        )
+        print("transition_skill:", alpha_skill_active)
+        assert alpha_skill_active["to_state"] == "active"
 
         # 4e. gate-management
         create_gate = get_tool(gate, "create_gate")
@@ -1112,6 +1301,29 @@ def run():
         assert len(_ev_disc) >= 1, "discussion.opened log entry missing"
         assert len(_ev_art) >= 1, "artifact.created log entry missing"
 
+        export_okf = get_tool(okf, "export_okf_bundle")
+        okf_result = export_okf(
+            output_dir=".processkit/exports/smoke-okf",
+        )
+        print("export_okf_bundle:", okf_result["entity_count"])
+        assert okf_result["ok"] is True
+        assert okf_result["entity_count"] >= 13
+        validate_okf = get_tool(okf, "validate_okf_bundle")
+        assert validate_okf(
+            bundle_dir=".processkit/exports/smoke-okf"
+        )["valid"] is True
+        import_okf = get_tool(okf, "import_okf_bundle")
+        import_plan = import_okf(
+            bundle_dir=".processkit/exports/smoke-okf",
+            dry_run=True,
+        )
+        assert import_plan["ok"] is False
+        import_unexpected = [
+            error for error in import_plan["errors"]
+            if "exists" not in error["error"]
+        ]
+        assert not import_unexpected, import_unexpected
+
         # Systemic self-attribution guard (BACK-20260421_0209-*).
         # Every entity-mutating MCP tool must pass actor=<subject-id> to its
         # log helper so the emitted LogEntry passes schema validation (actor
@@ -1136,14 +1348,19 @@ def run():
                 assert _rows, (
                     f"{_label}: no {_evt!r} LogEntry found for {_subj!r}"
                 )
-                _full = _index.get_entity(_db_sa, _rows[0]["id"])
-                assert _full and _full.get("path"), (
-                    f"{_label}: LogEntry row has no path: {_full}"
-                )
-                _ent = _entity_sa.load(_full["path"])
-                assert _ent.spec.get("actor") == _subj, (
-                    f"{_label}: spec.actor={_ent.spec.get('actor')!r} "
-                    f"expected {_subj!r} (self-attribution)"
+                _ent = None
+                for _row in _rows:
+                    _full = _index.get_entity(_db_sa, _row["id"])
+                    assert _full and _full.get("path"), (
+                        f"{_label}: LogEntry row has no path: {_full}"
+                    )
+                    _candidate = _entity_sa.load(_full["path"])
+                    if _candidate.spec.get("actor") == _subj:
+                        _ent = _candidate
+                        break
+                assert _ent is not None, (
+                    f"{_label}: no self-attributed {_evt!r} LogEntry found "
+                    f"for {_subj!r}"
                 )
                 _errs = _schema_sa.validate_spec("LogEntry", _ent.spec)
                 assert _errs == [], (
@@ -1176,6 +1393,12 @@ def run():
         assert sep["id"] in wi_row_ids
         assert "BACK-template-asset" not in wi_row_ids
         assert len(wi_rows) >= 5
+
+        query_i = get_tool(idx, "query_by_interface")
+        record_rows = query_i(interface="Record", limit=200)
+        print("query_by_interface Record:", len(record_rows))
+        assert query_i(interface="Record", kind="DecisionRecord", limit=10)
+        assert query_i(interface="Record", kind="LogEntry", limit=10)
 
         search = get_tool(idx, "search_entities")
         s = search(text="lint", limit=10)
@@ -1305,8 +1528,7 @@ def run():
         # 9. skill-gate: acknowledge_contract + check_contract_acknowledged
         # Seed the compliance contract asset so the server can find it.
         _sg_assets_src = (
-            PROCESSKIT
-            / "src" / "context" / "skills"
+            CONTEXT_ROOT / "skills"
             / "processkit" / "skill-gate" / "assets"
         )
         _sg_assets_dst = (
@@ -1376,7 +1598,7 @@ def run():
 
         # ── 1% rule guard (DEC-20260414_1430-SteelLatch / FEAT-InkStamp) ──────
         # Assert that every locked MCP tool description contains "1% rule".
-        # If any description is missing the string, fail loudly so CI catches it.
+        # If a description is missing the string, fail the local check loudly.
         _1pct_checks = [
             (tr,   "route_task"),
             (skf,  "find_skill"),
@@ -1405,7 +1627,7 @@ def run():
                 )
         if _1pct_failures:
             raise AssertionError(
-                "1% rule CI guard failed — the following tool descriptions "
+                "1% rule local guard failed — the following tool descriptions "
                 "are missing the literal string '1% rule':\n"
                 + "\n".join(_1pct_failures)
                 + "\n\nFix: append the canonical 1%-rule sentence to each "
@@ -1449,10 +1671,90 @@ def run():
         )
         # End BraveBird guard.
 
+        # Release gate: the package must also be healthy from the consumer
+        # project's point of view after the full alpha lifecycle smoke.
+        doctor = (
+            CONTEXT_ROOT
+            / "skills"
+            / "processkit"
+            / "pk-doctor"
+            / "scripts"
+            / "doctor.py"
+        )
+        doctor_run = subprocess.run(
+            [
+                "uv",
+                "run",
+                "--script",
+                str(doctor),
+                "--category=schema_vocabulary,v2_contracts,drift,"
+                "team_consistency",
+            ],
+            cwd=workdir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert doctor_run.returncode == 0, (
+            "derived-project pk-doctor failed after the package smoke:\n"
+            f"stdout:\n{doctor_run.stdout}\n"
+            f"stderr:\n{doctor_run.stderr}"
+        )
+        print("derived-project pk-doctor: PASSED")
+
+        # First-ART release-candidate acceptance matrix. These assertions bind
+        # the broad smoke scenario to the v1 A5 proof rather than treating its
+        # individual tool calls as unrelated checks.
+        first_art_acceptance = {
+            "planning": all([
+                len(art_containers) == 4,
+                all("id" in item for item in art_hierarchy),
+                pi_entity.get("id") == "PI-alpha3-proof",
+                pi_active.get("to_state") == "active",
+                "id" in proc,
+                len(proc["children"]) == 2,
+                "id" in alpha_risk,
+                member_link.get("ok") is True,
+                "id" in tw,
+                "id" in budget,
+            ]),
+            "execution": all([
+                t.get("to_state") == "in-progress",
+                t_archive_review.get("to_state") == "review",
+                t_archive_done.get("to_state") == "done",
+                good_eval.get("outcome") == "passed",
+            ]),
+            "evidence": all([
+                "id" in d,
+                "id" in a_doc,
+                okf_result["ok"] is True,
+                doctor_run.returncode == 0,
+            ]),
+            "inspect_and_adapt": all([
+                completed.get("ok") is True,
+                td.get("to_state") == "resolved",
+                td2.get("to_state") == "active",
+                len(_ev_transitioned) >= 1,
+            ]),
+        }
+        assert all(first_art_acceptance.values()), first_art_acceptance
+        print("first-ART RC acceptance:", first_art_acceptance)
+
         print("\n=== ALL SERVER SMOKE TESTS PASSED ===")
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
 
 
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--distribution-root",
+        help="staged processkit root containing context/ (default: src/)",
+    )
+    args = parser.parse_args(argv)
+    run(args.distribution_root)
+    return 0
+
+
 if __name__ == "__main__":
-    run()
+    raise SystemExit(main())

@@ -23,6 +23,8 @@ import re
 
 from . import entity as entity_mod
 from . import paths
+from . import schema as schema_mod
+from . import frontmatter
 
 
 DEFAULT_RESULT_LIMIT = 50
@@ -66,6 +68,7 @@ SCHEMA_DDL = """
 CREATE TABLE IF NOT EXISTS entities (
     id TEXT PRIMARY KEY,
     kind TEXT NOT NULL,
+    discriminator TEXT,
     api_version TEXT NOT NULL,
     path TEXT NOT NULL,
     storage_location TEXT,
@@ -80,6 +83,14 @@ CREATE TABLE IF NOT EXISTS entities (
 CREATE INDEX IF NOT EXISTS idx_entities_kind ON entities (kind);
 CREATE INDEX IF NOT EXISTS idx_entities_state ON entities (state);
 CREATE INDEX IF NOT EXISTS idx_entities_created ON entities (created);
+
+CREATE TABLE IF NOT EXISTS entity_interfaces (
+    entity_id TEXT NOT NULL,
+    interface TEXT NOT NULL,
+    PRIMARY KEY (entity_id, interface)
+);
+CREATE INDEX IF NOT EXISTS idx_entity_interfaces_interface
+    ON entity_interfaces (interface);
 
 CREATE TABLE IF NOT EXISTS events (
     id TEXT PRIMARY KEY,
@@ -212,6 +223,12 @@ def _migrate_schema(db: sqlite3.Connection) -> None:
     }
     if "storage_location" not in columns:
         db.execute("ALTER TABLE entities ADD COLUMN storage_location TEXT")
+    if "discriminator" not in columns:
+        db.execute("ALTER TABLE entities ADD COLUMN discriminator TEXT")
+    db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_entities_discriminator "
+        "ON entities (discriminator)"
+    )
 
 
 def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> IndexStats:
@@ -221,6 +238,7 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
     if db is None:
         db = open_db()
     db.execute("DELETE FROM entities")
+    db.execute("DELETE FROM entity_interfaces")
     db.execute("DELETE FROM events")
     db.execute("DELETE FROM errors")
     if _has_fts(db):
@@ -259,6 +277,34 @@ def reindex(root: Path | None = None, db: sqlite3.Connection | None = None) -> I
         if ent.kind == "LogEntry":
             _insert_event(db, ent)
             n_events += 1
+    for manifest_path in sorted((context_dir / "skills").glob("*/*/SKILL.md")):
+        try:
+            manifest, body = frontmatter.parse(
+                manifest_path.read_text(encoding="utf-8")
+            )
+            projected = schema_mod.skill_spec_from_manifest(manifest)
+            processkit = (manifest.get("metadata") or {}).get("processkit") or {}
+            skill_id = processkit.get("id") or f"SKILL-{projected.get('name')}"
+            created = processkit.get("created") or "1970-01-01T00:00:00Z"
+            errors = schema_mod.validate_spec("Skill", projected)
+            if errors:
+                raise ValueError("; ".join(errors))
+            ent = entity_mod.Entity(
+                apiVersion=processkit.get("apiVersion") or entity_mod.API_VERSION,
+                kind="Skill",
+                metadata={"id": skill_id, "created": created},
+                spec=projected,
+                body=body,
+                path=manifest_path,
+            )
+            _insert_entity(db, ent)
+            n_entities += 1
+        except Exception as e:
+            db.execute(
+                "INSERT OR REPLACE INTO errors (path, message) VALUES (?, ?)",
+                (str(manifest_path), f"Skill manifest projection: {e}"),
+            )
+            n_errors += 1
     for manifest_path in sorted((context_dir / "archives").rglob("*.json")):
         try:
             archived_entities, archived_events = _insert_archive_manifest(
@@ -297,6 +343,7 @@ def _insert_entity(
     storage_location: str | None = None,
 ) -> None:
     spec = ent.spec or {}
+    discriminator = schema_mod.discriminator_for_kind(ent.kind, spec)
     title = spec.get("title") or spec.get("name")
     spec_json = json.dumps(spec, default=str)
     if storage_location is None and ent.path:
@@ -305,14 +352,16 @@ def _insert_entity(
         """
         INSERT OR REPLACE INTO entities
         (
-            id, kind, api_version, path, storage_location, created, updated,
+            id, kind, discriminator, api_version, path, storage_location,
+            created, updated,
             title, state, labels_json, spec_json, body
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             ent.id,
             ent.kind,
+            discriminator,
             ent.apiVersion,
             str(ent.path) if ent.path else "",
             storage_location,
@@ -324,6 +373,20 @@ def _insert_entity(
             spec_json,
             ent.body or None,
         ),
+    )
+    db.execute(
+        "DELETE FROM entity_interfaces WHERE entity_id = ?",
+        (ent.id,),
+    )
+    db.executemany(
+        "INSERT INTO entity_interfaces (entity_id, interface) VALUES (?, ?)",
+        [
+            (ent.id, interface)
+            for interface in schema_mod.interfaces_for_kind(
+                ent.kind,
+                discriminator=discriminator,
+            )
+        ],
     )
     _upsert_fts(db, ent, title=title, spec_json=spec_json)
     _upsert_semantic(
@@ -663,7 +726,7 @@ def query_entities(
 ) -> list[dict[str, Any]]:
     limit = coerce_limit(limit, max_limit=MAX_ENTITY_RESULT_LIMIT)
     sql = (
-        "SELECT id, kind, title, state, created, updated, path,"
+        "SELECT id, kind, discriminator, title, state, created, updated, path,"
         " storage_location FROM entities WHERE 1=1"
     )
     params: list[Any] = []
@@ -678,10 +741,39 @@ def query_entities(
     return [dict(row) for row in db.execute(sql, params).fetchall()]
 
 
+def query_by_interface(
+    db: sqlite3.Connection,
+    interface: str,
+    *,
+    kind: str | None = None,
+    state: str | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    """List entities whose generated schema declares ``interface``."""
+    limit = coerce_limit(limit, max_limit=MAX_ENTITY_RESULT_LIMIT)
+    sql = (
+        "SELECT e.id, e.kind, e.discriminator, e.title, e.state,"
+        " e.created, e.updated,"
+        " e.path, e.storage_location FROM entities AS e"
+        " JOIN entity_interfaces AS i ON i.entity_id = e.id"
+        " WHERE i.interface = ?"
+    )
+    params: list[Any] = [interface]
+    if kind:
+        sql += " AND e.kind = ?"
+        params.append(kind)
+    if state:
+        sql += " AND e.state = ?"
+        params.append(state)
+    sql += " ORDER BY e.created DESC LIMIT ?"
+    params.append(limit)
+    return [dict(row) for row in db.execute(sql, params).fetchall()]
+
+
 def get_entity(db: sqlite3.Connection, id: str) -> dict[str, Any] | None:
     row = db.execute(
         (
-            "SELECT id, kind, title, state, created, updated, path,"
+            "SELECT id, kind, discriminator, title, state, created, updated, path,"
             " storage_location, spec_json, labels_json FROM entities WHERE id = ?"
         ),
         (id,),
@@ -733,7 +825,7 @@ def resolve_entity(
 
     def _fetch(where: str, params: list[Any]) -> list[dict[str, Any]]:
         sql = (
-            "SELECT id, kind, title, state, created, updated, path,"
+            "SELECT id, kind, discriminator, title, state, created, updated, path,"
             " storage_location, spec_json, labels_json FROM entities WHERE " + where
         )
         if kind:

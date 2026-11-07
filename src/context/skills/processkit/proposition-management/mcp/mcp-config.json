@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "processkit-proposition-management": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--script",
+        "context/skills/processkit/proposition-management/mcp/server.py"
+      ],
+      "env": {}
+    }
+  }
+}

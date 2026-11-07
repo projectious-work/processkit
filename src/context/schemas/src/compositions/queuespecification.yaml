@@ -1,0 +1,17 @@
+extends: ../primitives/specification.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-queuespecification, target_kind: QueueSpecification, version: 1.0.0-beta.1}
+spec:
+  description: A queue discipline, claim, retry, and dead-letter contract.
+  id_prefix: QUEUESPEC
+  default_directory: context/specifications/queues
+  spec_schema:
+    required: {__merge: concat, value: [discipline]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: queue}
+        discipline: {type: string, enum: [fifo, priority, claimable, retry]}
+        claim_rules: {type: array, items: {type: string}}
+        retry_limit: {type: integer, minimum: 0}

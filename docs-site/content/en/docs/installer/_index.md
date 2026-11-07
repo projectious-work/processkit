@@ -1,0 +1,28 @@
+---
+title: Installer and releases
+linkTitle: Installer
+weight: 60
+description: Standalone installation, trust, compatibility, and integrations.
+---
+
+The v1 standalone installer makes processkit independently installable,
+updatable, verifiable, and removable. Release policy is carried by the
+signed processkit distribution rather than hard-coded into downstream
+tools.
+
+`v1.0.0-alpha.5` implements the local lifecycle, exact-version bootstrap,
+native runtime diagnosis, MCP supervision, and trust boundary. Four-platform
+publication requires locally produced and natively smoke-tested outputs from
+each supported host architecture; no hosted build service is used.
+
+- [Install and use alpha.5](../getting-started/v1-alpha-tutorial/)
+- [Installer contract](./contract/)
+- [CLI and automation interfaces](./cli/)
+- [Python MCP runtime contract](./runtime/)
+- [Local release production](./local-release/)
+- [Evidence-bound release process](./release-process/)
+- [Threat model](./threat-model/)
+- [v0 compatibility](./v0-compatibility/)
+- [aibox consumer integration](./aibox-integration/)
+- [Issue #135 implementation
+  review](../development/v1-version/issue-135-status/)

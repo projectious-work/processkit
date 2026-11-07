@@ -1,0 +1,19 @@
+extends: [../fragments/entity.yaml, ../fragments/versioned.yaml]
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-recurrence, target_kind: Recurrence, version: 1.0.0-beta.1}
+spec:
+  description: A repeating schedule, cadence, ritual, or trigger rule.
+  id_prefix: RECUR
+  state_machine: null
+  default_directory: context/recurrences
+  known_kinds: [cron, interval, calendar, ritual]
+  spec_schema:
+    type: object
+    required: [name, kind, expression]
+    additionalProperties: true
+    properties:
+      name: {type: string, minLength: 1}
+      kind: {type: string, enum: [cron, interval, calendar, ritual]}
+      expression: {type: string, minLength: 1}
+      timezone: {type: [string, "null"]}

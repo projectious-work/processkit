@@ -1,0 +1,28 @@
+version: 1
+target: v1.0.0-alpha.3
+malformed_output_threshold_percent: 0.1
+scenarios:
+  - {id: ontology-location, area: ontology, proof: schema-contract}
+  - {id: ontology-container-hierarchy, area: ontology, proof: package-smoke}
+  - {id: ontology-binding-types, area: relations, proof: package-smoke}
+  - {id: ontology-composition-validation, area: ontology, proof: schema-contract}
+  - {id: workitem-lifecycle, area: work, proof: package-smoke}
+  - {id: decision-and-discussion, area: decisions, proof: package-smoke}
+  - {id: gate-evidence, area: gates, proof: package-smoke}
+  - {id: proposition-risk-assumption, area: propositions, proof: package-smoke}
+  - {id: teammember-role-routing, area: team, proof: package-smoke}
+  - {id: portfolio-value-stream-art-team, area: art, proof: package-smoke}
+  - {id: program-increment-lifecycle, area: art, proof: package-smoke}
+  - {id: iteration-commit-review, area: art, proof: schema-contract}
+  - {id: release-gate-publication, area: release, proof: schema-contract}
+  - {id: measurement-outcome-evidence, area: evidence, proof: schema-contract}
+  - {id: evaluation-run, area: evaluation, proof: schema-contract}
+  - {id: archive-retention, area: archive, proof: schema-contract}
+  - {id: migration-plan-execute, area: migration, proof: migration-test}
+  - {id: migration-stale-source-refusal, area: migration, proof: migration-test}
+  - {id: okf-export-import, area: interoperability, proof: package-smoke}
+  - {id: malformed-output-measurement, area: quality, proof: scenario-test}
+results:
+  executed: 20
+  malformed: 0
+  malformed_percent: 0.0

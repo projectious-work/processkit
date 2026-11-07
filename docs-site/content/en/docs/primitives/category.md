@@ -1,6 +1,6 @@
 ---
-title: "Category"
 weight: 25
+title: "Category"
 ---
 
 A classification axis with a closed set of allowed values — priority

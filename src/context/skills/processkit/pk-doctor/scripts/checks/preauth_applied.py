@@ -152,12 +152,20 @@ def _expected_servers_from_manifest(manifest: dict) -> set[str]:
     return names
 
 
-def _expected_servers_from_mcp_configs(repo_root: Path) -> set[str]:
+def _expected_servers_from_mcp_configs(
+    repo_root: Path,
+    *,
+    source_only: bool = False,
+) -> set[str]:
     names: set[str] = set()
-    skills_roots = [
-        repo_root / "context" / "skills",
-        repo_root / "src" / "context" / "skills",
-    ]
+    skills_roots = (
+        [repo_root / "src" / "context" / "skills"]
+        if source_only
+        else [
+            repo_root / "context" / "skills",
+            repo_root / "src" / "context" / "skills",
+        ]
+    )
     seen_paths: set[str] = set()
     for skills_root in skills_roots:
         if not skills_root.is_dir():
@@ -187,37 +195,6 @@ def _expected_servers_from_mcp_configs(repo_root: Path) -> set[str]:
                 if isinstance(name, str) and name != _GATEWAY_SERVER
             )
     return names
-
-
-def _is_derived_install(repo_root: Path) -> bool:
-    return (
-        (repo_root / "context" / "skills").is_dir()
-        and not (repo_root / "src" / "context" / "skills").is_dir()
-    )
-
-
-def _installed_spec(
-    spec_perms: set[str],
-    spec_servers: set[str],
-    spec_codex_tools: set[str],
-    installed_servers: set[str],
-    repo_root: Path,
-) -> tuple[set[str], set[str], set[str]]:
-    """Use only installed processkit server grants in derived projects."""
-    if not _is_derived_install(repo_root) or not installed_servers:
-        return spec_perms, spec_servers, spec_codex_tools
-    allowed_tools = {f"mcp__{server}__*" for server in installed_servers}
-    return (
-        {
-            item for item in spec_perms
-            if not item.startswith("mcp__processkit-") or item in allowed_tools
-        },
-        spec_servers & installed_servers,
-        {
-            item for item in spec_codex_tools
-            if not item.startswith("mcp__processkit-") or item in allowed_tools
-        },
-    )
 
 
 def _gateway_covers_permissions(
@@ -250,12 +227,7 @@ def _gateway_covers_codex_tools(
     )
 
 
-def _drift_result(
-    source: str,
-    expected: set[str],
-    spec_servers: set[str],
-    repo_root: Path,
-):
+def _drift_result(source: str, expected: set[str], spec_servers: set[str]):
     missing = sorted(expected - spec_servers)
     extra = sorted(spec_servers - expected)
     bits: list[str] = []
@@ -276,10 +248,7 @@ def _drift_result(
             f"{source}-derived names; {'; '.join(bits)}"
         ),
         suggested_fix=(
-            "host action: re-run the project installer/sync tool outside "
-            "the container to refresh processkit metadata"
-            if _is_derived_install(repo_root)
-            else "regenerate preauth.json from shipped mcp-config.json files"
+            "regenerate preauth.json from shipped mcp-config.json files"
         ),
     )
 
@@ -315,41 +284,49 @@ def run(ctx) -> list[CheckResult]:
         or spec_perms
     )
 
-    expected_from_configs = _expected_servers_from_mcp_configs(repo_root)
-    spec_perms, spec_servers, spec_codex_tools = _installed_spec(
-        spec_perms,
-        spec_servers,
-        spec_codex_tools,
-        expected_from_configs,
-        repo_root,
-    )
     results: list[CheckResult] = []
+
+    # A processkit source checkout intentionally dogfoods the supported
+    # context line while developing the next deliverable under src/context.
+    # Validate release metadata against the source preauth spec, but retain
+    # the dogfood spec above for live harness-merge checks. Derived projects
+    # have no src/context tree and therefore use one spec for both roles.
+    source_spec_path = repo_root / "src" / _SPEC_REL
+    drift_spec = spec
+    source_only = source_spec_path.is_file()
+    if source_only:
+        loaded_source_spec = _load_json(source_spec_path)
+        if loaded_source_spec is not None:
+            drift_spec = loaded_source_spec
+    drift_spec_servers = set(drift_spec.get("enabledMcpjsonServers") or [])
 
     # Drift: spec server list vs manifest-derived list. Warns processkit
     # maintainers when the manifest moves but preauth.json hasn't been
     # regenerated.
-    if expected_from_configs and expected_from_configs != spec_servers:
+    expected_from_configs = _expected_servers_from_mcp_configs(
+        repo_root,
+        source_only=source_only,
+    )
+    if expected_from_configs and expected_from_configs != drift_spec_servers:
         results.append(_drift_result(
             "mcp-config",
             expected_from_configs,
-            spec_servers,
-            repo_root,
+            drift_spec_servers,
         ))
 
-    manifest_path = repo_root / _MANIFEST_REL
+    manifest_path = (
+        repo_root / "src" / _MANIFEST_REL
+        if source_only
+        else repo_root / _MANIFEST_REL
+    )
     if manifest_path.is_file():
         manifest = _load_json(manifest_path)
         if manifest is not None:
             expected = _expected_servers_from_manifest(manifest)
-            if _is_derived_install(repo_root) and expected_from_configs:
-                expected &= expected_from_configs
-            if expected and expected != spec_servers:
-                results.append(_drift_result(
-                    "manifest",
-                    expected,
-                    spec_servers,
-                    repo_root,
-                ))
+            if expected and expected != drift_spec_servers:
+                results.append(
+                    _drift_result("manifest", expected, drift_spec_servers)
+                )
 
     settings_path = repo_root / _SETTINGS_REL
     if not settings_path.is_file():
