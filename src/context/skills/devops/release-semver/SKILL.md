@@ -81,9 +81,9 @@ passes. See DEC-20260422_1348-SnowyWolf.
    `scripts/stamp-provenance.sh vX.Y.Z`.
 4. **Commit** the bump with message `chore(release): bump to vX.Y.Z`.
 5. **Tag** the commit: `git tag -a vX.Y.Z -m "<tag summary>"`.
-6. **Push** the release-integration branch then tag. For a stable release,
-   merge that tagged branch into `main` immediately afterwards; for a v1
-   prerelease, retain the tag on `v1.x-pre-release`.
+6. **Merge, then tag.** Prepare steps 1–4 on `release/vX.Y.Z`, squash-merge
+   it into `main` (or its `lts/*` line) after approval, then tag the squash
+   commit and push the tag.
    A tag push alone does **not** create a GitHub Release — it is a
    git ref, not a distribution-channel artifact.
 7. **Create the GitHub Release** with notes extracted from the

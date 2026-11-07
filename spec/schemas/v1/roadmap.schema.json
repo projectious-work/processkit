@@ -47,7 +47,7 @@
         "id": {"$ref": "#/$defs/id"},
         "title": {"type": "string", "minLength": 1},
         "summary": {"type": "string", "minLength": 1},
-        "status": {"enum": ["idea", "planned", "in_progress", "done", "shipped", "cancelled"]},
+        "status": {"enum": ["idea", "planned", "in_progress", "done", "released", "cancelled"]},
         "target": {"type": "string", "minLength": 1},
         "dependencies": {
           "type": "array",
@@ -69,7 +69,7 @@
       },
       "allOf": [
         {
-          "if": {"properties": {"status": {"const": "shipped"}}},
+          "if": {"properties": {"status": {"const": "released"}}},
           "then": {"required": ["devNote", "release"]}
         }
       ]

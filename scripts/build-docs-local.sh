@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SITE_ROOT="$REPO_ROOT/docs-site"
 HUGO="$SITE_ROOT/.tools/hugo"
 # Unset by default: hugo.yaml's own baseURL is the source of truth, and it
-# differs per release line (root on v0.x-dev, /v1.x/ on v1.x-dev). Passing a
+# differs per release line (root on lts/v0, /v1.x/ on main). Passing a
 # hardcoded --baseURL here would silently publish the preview line at the
 # root. publish-docs-gh-pages.sh sets this explicitly when it needs to.
 DOCS_BASE_URL="${DOCS_BASE_URL:-}"

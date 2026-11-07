@@ -33,6 +33,11 @@ archive `README.md` lists them.
   frontmatter, and code fences are exempt.
 - Use Conventional Commits. Never use `--no-verify`.
 - Squash-merge PRs, with tests green before merge.
+- Branching is GitHub Flow: short-lived `feat/`, `fix/`, `chore/`, or `spec/`
+  branches from `main`, squash-merged after owner approval. v0 maintenance
+  targets `lts/v0` (names `<prefix>/lts0-<slug>`); fixes land on `main` first,
+  then `git cherry-pick -x`. Releases use `release/vX.Y.Z`; see
+  `CONTRIBUTING.md`.
 
 ## Container
 

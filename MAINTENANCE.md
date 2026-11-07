@@ -2,14 +2,18 @@
 
 processkit is maintained in two version lines:
 
-| Line | Status | Branches | Policy |
+| Line | Status | Branch | Policy |
 | --- | --- | --- | --- |
-| v0.x | Supported and default | `v0.x-dev` → `v0.x-release` | Receives maintenance releases and compatibility fixes |
-| v1.x | Alpha preview | `v1.x-dev` → `v1.x-pre-release` | Exact-pin evaluation; contracts may change between prereleases |
+| v0.x | Supported and default | `lts/v0` | Receives maintenance releases and compatibility fixes |
+| v1.x | Alpha preview | `main` | Exact-pin evaluation; contracts may change between prereleases |
 
-The default `main` branch is published history, not the development branch
-for either line. Release tags are cut only from the designated protected
-integration branch and promoted through pull requests.
+Branching follows GitHub Flow with Conventional Commits (company
+`git-branching-and-releases` standard). Every change is made on a short-lived
+`feat/`, `fix/`, `chore/`, or `spec/` branch and squash-merged into `main`, or
+into `lts/v0` for a v0 change. A fix that applies to both lines lands on
+`main` first and is cherry-picked to `lts/v0` with `git cherry-pick -x`. A
+release is prepared on `release/vX.Y.Z`, squash-merged, and tagged on the
+squash commit.
 
 ## Maintenance posture
 

@@ -16,7 +16,7 @@ read_param() {
 }
 
 # Which subtree of gh-pages this branch owns. processkit publishes two
-# release lines to one Pages site: v0.x-dev owns the root and v1.x-dev owns
+# release lines to one Pages site: lts/v0 owns the root and main owns
 # /v1.x/. The value comes from hugo.yaml so this script is identical on both
 # branches; "main" and the empty string both mean the root.
 DOCS_VERSION="${DOCS_VERSION-$(read_param docs_deploy_path)}"

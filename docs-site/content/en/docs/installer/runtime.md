@@ -98,7 +98,7 @@ The gateway also supports streamable HTTP on loopback and a stdio proxy. A
 non-loopback HTTP listener requires an explicit deployment security layer;
 processkit does not expose it remotely by default.
 
-The `v1.x-dev` line implements the first read-only native diagnostic:
+The v1 line implements the first read-only native diagnostic:
 
 ```sh
 processkit doctor --root . --json
@@ -110,7 +110,7 @@ authoritative Python doctor without a shell, and wraps its structured result
 in `processkit.projectious.work/runtime/v1alpha1`. It intentionally exposes no
 fix flags.
 
-The `v1.x-dev` line also implements the native supervision interface:
+The v1 line also implements the native supervision interface:
 
 ```text
 processkit mcp verify

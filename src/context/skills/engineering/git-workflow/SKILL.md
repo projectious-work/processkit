@@ -35,29 +35,28 @@ Examples:
 - `fix/17-null-pointer-crash`
 - `refactor/89-extract-payment-service`
 
-### Version-line release branches
+### Release and long-term-support branches
 
-For concurrently maintained major lines, use explicit development and
-release-integration branches. `main` is the published-history branch, not
-the active development or tagging authority.
+Keep `main` as the only development line. Prepare each release on a
+short-lived branch and keep supported older majors on long-term-support
+branches.
 
-| Line | Development | Integration and tag authority | Publication |
-| --- | --- | --- | --- |
-| v0.x | `v0.x-dev` | `v0.x-release` | merge tagged release into `main` |
-| v1.x prerelease | `v1.x-dev` | `v1.x-pre-release` | prerelease tag stays on integration branch |
-| v1.x GA | `v1.x-pre-release` | `v1.x-release` | merge tagged release into `main` |
+| Branch | Purpose | Merges into |
+| --- | --- | --- |
+| `release/vX.Y.Z` | One release; only the `chore(release): vX.Y.Z` commit | `main` or its `lts/*` line |
+| `lts/vN` | A supported older major, branched from its last `vN` tag | never merged |
 
-- Create a version-line release branch from the currently published tag,
-  then create its development branch from that release branch.
-- Merge development into the relevant integration branch for each release;
-  validate, prepare, and tag only on that integration branch.
-- Immediately merge the tagged integration branch into `main`, so every
-  stable release tag is reachable from `main`.
-- Do not commit directly to `main` or an integration branch. Protect them
-  and use merge commits for long-lived branch integration.
-- For a maintenance hotfix, branch from the latest stable tag, merge into
-  the release branch, tag, merge the release branch into `main`, then
-  merge the result back into the development branch.
+- Create `release/vX.Y.Z` from the tip of `main` (or of `lts/vN`), run the
+  release gates there, squash-merge it, then tag the squash commit.
+- Never develop on a release branch. If the release finds a defect, close
+  it, fix through `fix/*`, and cut a new release branch.
+- Name work for an LTS line `<prefix>/lts<N>-<slug>` so the target is
+  visible.
+- A fix that also applies to `main` lands on `main` first, then reaches the
+  LTS line with `git cherry-pick -x`. Never merge `main` and an LTS branch
+  into each other.
+- Do not commit directly to `main` or `lts/*`. Squash merge is the only
+  merge method into them.
 
 ### Commit messages
 

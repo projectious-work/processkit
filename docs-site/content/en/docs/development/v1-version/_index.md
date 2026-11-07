@@ -65,19 +65,18 @@ The v1 development line is isolated from v0 maintenance:
 
 | Purpose | Branch | Tag policy |
 | --- | --- | --- |
-| v0 maintenance development | `v0.x-dev` | never tag |
-| v0 integration | `v0.x-release` | stable v0 tags only |
-| v1 development | `v1.x-dev` | never tag |
-| v1 prerelease integration | `v1.x-pre-release` | v1 alpha, beta, and RC tags only |
-| v1 GA integration | `v1.x-release` | stable v1 tags only |
-| published history | `main` | contains every stable tagged release |
+| v1 development and releases | `main` | v1 prerelease and stable tags on squash commits |
+| v0 long-term support | `lts/v0` | stable v0 tags on squash commits |
+| one change | `feat/`, `fix/`, `chore/`, `spec/` | never tag |
+| one release | `release/vX.Y.Z` | never tag; tag after the squash merge |
 
-`v1.x-dev` merges to `v1.x-pre-release` for each prerelease. At general
-availability, create `v1.x-release` from the selected prerelease state,
-validate and tag there, then merge it into `main`. v0 follows the same
-development-to-release-to-main pattern. Security fixes and dependency
-bumps may flow between lines when needed; feature work does not
-automatically backport.
+Since the GitHub Flow migration
+([#205](https://github.com/projectious-work/processkit/issues/205)), v1 is
+developed on `main`. The former `v1.x-dev` and `v1.x-pre-release` branches
+are retired; the `v1.0.0-alpha.*` tags keep their history. v0 continues on
+`lts/v0`, branched from `v0.28.8`. A fix that applies to both lines lands on
+`main` first and is cherry-picked to `lts/v0` with `git cherry-pick -x`;
+feature work does not backport.
 
 ## Historical-page convention
 
