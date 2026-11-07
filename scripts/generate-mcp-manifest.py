@@ -310,11 +310,14 @@ def main() -> int:
         now_iso=now_iso,
     )
 
+    # The root dogfood context/ was retired on 2026-11-01. Maintain its
+    # manifest only while that tree exists.
+    targets = [(SRC_MANIFEST, source_manifest)]
+    if DOGFOOD_MANIFEST.parent.is_dir():
+        targets.insert(0, (DOGFOOD_MANIFEST, dogfood_manifest))
+
     if check_only:
-        if (
-            _load_existing(DOGFOOD_MANIFEST) != dogfood_manifest
-            or _load_existing(SRC_MANIFEST) != source_manifest
-        ):
+        if any(_load_existing(path) != data for path, data in targets):
             print(
                 "MCP manifests are out of date. Regenerate with: "
                 "uv run scripts/generate-mcp-manifest.py",
@@ -329,15 +332,16 @@ def main() -> int:
         return 0
 
     try:
-        _write_manifest(DOGFOOD_MANIFEST, dogfood_manifest)
-        _write_manifest(SRC_MANIFEST, source_manifest)
+        for path, data in targets:
+            _write_manifest(path, data)
     except OSError as e:
         print(f"error: failed to write manifest: {e}", file=sys.stderr)
         return 1
 
     print(
-        f"wrote {DOGFOOD_MANIFEST.relative_to(REPO_ROOT)} "
-        f"and {SRC_MANIFEST.relative_to(REPO_ROOT)} "
+        "wrote "
+        + " and ".join(str(p.relative_to(REPO_ROOT)) for p, _ in targets)
+        + " "
         f"({len(entries)} skills, {len(source_headers)} release server header(s), "
         f"aggregate {aggregate[:12]}...)"
     )

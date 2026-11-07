@@ -7,6 +7,14 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Release tooling no longer reads the retired root `context/` tree: the
+  tarball build runs the release audit from `src/context/`, the MCP
+  manifest generator maintains the root manifest only while that tree
+  exists, and `check-src-context-drift.sh --release-deliverable` no longer
+  requires it.
+
 ---
 
 ## [v0.28.8] - 2026-08-18

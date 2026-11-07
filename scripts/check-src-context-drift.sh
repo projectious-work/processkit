@@ -150,8 +150,10 @@ EOF
     exit 0
 fi
 
-if [[ ! -d "$DOGFOOD" ]]; then
+if [[ "$MODE" == "drift" && ! -d "$DOGFOOD" ]]; then
     echo "error: dogfood tree not found: $DOGFOOD" >&2
+    echo "The dogfood install was retired on 2026-11-01; use" >&2
+    echo "--release-deliverable to validate src/context/." >&2
     exit 1
 fi
 if [[ ! -d "$SRC" ]]; then
