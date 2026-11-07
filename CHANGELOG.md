@@ -17,6 +17,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - The `git-workflow` and `release-semver` skills describe `release/*` and
   `lts/*` branches instead of version-line promotion branches.
 - The v1 roadmap status `shipped` is renamed to `released`.
+- Company standards are vendored from projectious-work/standards v2.1.0
+  in `.standards/` with generated `standard-*` skills; the hand-copied
+  `docs/standards/` is removed. `docs/applicability-record.md` records the
+  product profiles and Twelve-Factor deviations.
 
 ### Added
 

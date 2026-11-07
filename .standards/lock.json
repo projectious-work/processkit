@@ -1,0 +1,33 @@
+{
+  "source": "https://github.com/projectious-work/standards",
+  "version": "v2.1.0",
+  "commit": "8a5a5bc9482841cfb9bb4da621657916c4e70db3",
+  "files": {
+    "LICENSE-CODE": "b9c40a7d4bffbb15a58960e91ef2063551ce9277fddaaf9e3cdb326b4ed74fea",
+    "README.md": "186ffa90020d5c4b713bec94d983477773b7c19e968beec88a77a1cbc962cce1",
+    "agent-communication.md": "1f34b95a2ca515d73f43905eb32b973257b3a598432e57d901d872226a57cff5",
+    "agent-execution-budget.md": "959bf061efa292b55173a80ef89f9e3b7192e481d55399ff23559a5062c3e5ed",
+    "agent-native-product-interfaces.md": "fd2195579ac6124d0b6041485d7de90d3d8349e65539be0f53d93d9bb2c11589",
+    "ai-agent-accessibility-and-generative-discovery.md": "bef5be61eb2829b60ae5f97e09e82cd949c587151e0d4686ae705ebb730d70aa",
+    "application-configuration.md": "b90919f4c24dcc34596c8c4504dcafccc71b691d4d5f21c74344d3ca58593e02",
+    "application-output-logging-and-evidence.md": "5eeef794d89216fd8d70a6be2232530c7f67b13c4accd83d4491a49dcb0ebc3f",
+    "application-profiles.md": "377ff0a1a6869fa7d565f4d7ebf117503ab6b7c3037cd70b7d31b0319184ee2a",
+    "compatibility-and-machine-interfaces.md": "0243ae0c750b4138a8170215058c80c76c521b4fd03b172fac771b49cd14ac1e",
+    "git-branching-and-releases.md": "6e06c1dece10500a36fbab5daf52598bb22c0480aebfd68f243ae5601dfcfdd8",
+    "host-gated-release-conformance.md": "cf2d50e6f04efa3ffe30b1ce124ba4d25fa94a7b82daf5aba5b085887da969fa",
+    "human-controlled-host-phase-execution.md": "44729d5a6c5cd7c76f5002f87266dc699b5ebcbaae031f553609564075984ba1",
+    "open-source-documentation-strategy.md": "18033819662159b35e04041a99cb9e665e079cc1fd49d9261c2063aa7eae846b",
+    "product-roadmap-and-development-evidence.md": "4aeade47b7501594f2f7c9575669229199beaf93c0c0e1664a1235cd982e27ff",
+    "refactoring.md": "913ded617d9f39627add6ba7e78e3e09e14874ae15f1cf316ac49d030acf65c1",
+    "schemas/host-gated-release-handover-v1.schema.json": "6ae10b0e265114cfafee3c5fc339ea8083057955b989c376037511903ad175f6",
+    "security-and-software-supply-chain.md": "6f66f7029ece197096c92fc9b8bb4460d6b53f76ad6ec4ea68607e978f80d87a",
+    "software-architecture-and-code-design.md": "282918b4312b0b5a6c9659020a96347f22ad73d99a5dd11425805bb5416332e0",
+    "software-verification-and-release-engineering.md": "b031b76b4383ac816932fc28b404b67fadf946f490628b72bf204fbb207f4d65",
+    "sources/i-have-adhd/LICENSE": "8acbb618089b738404f76ac60fca1aaa995d9a87995eddf95f0b777acd7f7d2c",
+    "sources/i-have-adhd/SKILL.md": "88955c019bbb1419ff4b49dbb1f80a867467de6233d7865af2e06a7d7b76c7d3",
+    "sources/i-have-adhd/UPSTREAM.md": "b48fc56c3659aacef29dc5e5fad52adcb0de8c1c41a7bc25a2ac7f2a211a036c",
+    "spec-driven-development-cycle.md": "08f1717aaa291eb3e3879433cd19e54e0dc9ca019aeda5fb25a1eb1aa7b452b1",
+    "specification-layout-and-lifecycle.md": "c1fe441b1596d1ccb489df0bd403f4200f0fafc614e3c2441a79d7ecb682febb",
+    "standards.py": "d8aa9de16488f0f3c68a32e0d4d9857f53e2aa1df187bacdf53fd22315b7e5a2"
+  }
+}
