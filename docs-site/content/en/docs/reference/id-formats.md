@@ -1,6 +1,6 @@
 ---
-title: "ID Formats"
 weight: 2
+title: "ID Formats"
 ---
 
 Entity IDs in processkit have the shape `<PREFIX>-<id-body>`. The prefix

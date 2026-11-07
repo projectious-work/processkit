@@ -1,6 +1,6 @@
 ---
-title: "WorkItem"
 weight: 10
+title: "WorkItem"
 ---
 
 A unit of work — task, story, bug, epic, spike, or chore. The primary

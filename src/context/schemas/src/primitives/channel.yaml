@@ -1,0 +1,19 @@
+extends: [../fragments/entity.yaml, ../fragments/versioned.yaml]
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-channel, target_kind: Channel, version: 1.0.0-beta.1}
+spec:
+  description: A communication or asynchronous handoff surface.
+  id_prefix: CHAN
+  state_machine: null
+  default_directory: context/channels
+  known_kinds: [chat, inbox, issue-stream, event-bus, other]
+  spec_schema:
+    type: object
+    required: [name, kind]
+    additionalProperties: true
+    properties:
+      name: {type: string, minLength: 1}
+      kind: {type: string, enum: [chat, inbox, issue-stream, event-bus, other]}
+      participants: {type: array, items: {type: string}}
+      retention: {type: [string, "null"]}

@@ -1,0 +1,12 @@
+apiVersion: processkit.projectious.work/installer/v1alpha1
+kind: OwnershipMatrix
+policies:
+  managed-three-way:
+    on_user_change: conflict
+    on_upstream_removal: preserve
+  shared:
+    on_user_change: preserve
+    on_upstream_removal: preserve
+  user-owned:
+    on_user_change: preserve
+    on_upstream_removal: preserve

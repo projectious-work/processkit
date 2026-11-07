@@ -1,6 +1,6 @@
 ---
-title: "Skill Package Format"
 weight: 2
+title: "Skill Package Format"
 ---
 
 This page summarizes the skill package format. The authoritative source is

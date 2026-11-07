@@ -1,0 +1,14 @@
+extends: ../primitives/proposition.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-proposition-belief, target_kind: Proposition, version: 1.0.0-beta.1}
+spec:
+  parent: Proposition
+  discriminator: {field: kind, value: belief}
+  description: A held judgment that may be revised as evidence changes.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: belief}
+        rationale: {type: string}

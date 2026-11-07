@@ -1,6 +1,6 @@
 ---
-title: "CrossReference"
 weight: 26
+title: "CrossReference"
 ---
 
 A lightweight, frontmatter-embedded relationship between two entities.

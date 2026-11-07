@@ -12,9 +12,9 @@ metadata:
     layer: 0
     provides:
       primitives: []
-      mcp_tools: [reindex, query_entities, get_entity, search_entities,
-            semantic_status, semantic_search_entities, hybrid_search_entities,
-            query_events, list_errors, stats]
+      mcp_tools: [reindex, query_entities, query_by_interface, get_entity,
+            search_entities, semantic_status, semantic_search_entities,
+            hybrid_search_entities, query_events, list_errors, stats]
 ---
 
 # Index Management
@@ -41,6 +41,9 @@ every entity-creating skill.
 
 - **`reindex()`** — rebuild the SQLite index from scratch
 - **`query_entities(kind?, state?, limit?)`** — list entities matching filters
+- **`query_by_interface(interface, kind?, state?, limit?)`** — list entities
+  whose generated schema declares an interface such as `Record` or
+  `Versioned`
 - **`get_entity(id)`** — fetch a single entity by ID
 - **`search_entities(text, limit?)`** — FTS5 search across titles, bodies, specs
 - **`semantic_status()`** — report semantic chunk/vector availability
@@ -80,6 +83,10 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
   an entity file directly (bypassing the MCP write tools), the index
   is stale until the next `reindex()` call. Either go through the
   write tools, or call `reindex()` yourself before querying.
+- **Querying interfaces before the first post-upgrade reindex.** Existing
+  index databases do not have interface memberships until they are rebuilt.
+  Run `reindex()` once after installing a version that introduces
+  `query_by_interface`.
 - **Forgetting to call `reindex` after writing a new entity.** Every
   entity-creating MCP server should call `index_management.reindex`
   (or the lighter `upsert_entity`) after a write. Not doing so means
@@ -107,7 +114,8 @@ Agent-specific failure modes — provider-neutral pause-and-self-check items:
 
 ### Database schema
 
-Three tables — see `src/lib/processkit/index.py` for the DDL.
+The entity, interface, event, error, full-text, and semantic tables are
+defined in the shared processkit index library.
 
 ```sql
 entities(id, kind, api_version, path, storage_location, created, updated, title, state, labels_json, spec_json, body)

@@ -1,6 +1,6 @@
 ---
-title: "Infrastructure Skills"
 weight: 5
+title: "Infrastructure Skills"
 ---
 
 Skills for containers, orchestration, networking, system administration, and CI/CD.

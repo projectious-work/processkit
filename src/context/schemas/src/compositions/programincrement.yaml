@@ -1,0 +1,21 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-programincrement, target_kind: ProgramIncrement, version: 1.0.0-alpha.3}
+spec:
+  description: A cadence container for objectives, risks, and delivery evidence.
+  id_prefix: PI
+  state_machine: program-increment
+  default_directory: context/program-increments
+  spec_schema:
+    required: {__merge: concat, value: [state, starts_at, ends_at]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: program-increment}
+        state: {type: string, enum: [planned, active, inspecting, completed, cancelled]}
+        starts_at: {type: string, format: date-time}
+        ends_at: {type: string, format: date-time}
+        objectives: {type: array, items: {type: string}}
+        risks: {type: array, items: {type: string}}
+        iterations: {type: array, items: {type: string}}

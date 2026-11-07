@@ -1,0 +1,14 @@
+extends: ../primitives/location.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-location-logicalregion, target_kind: Location, version: 1.0.0-alpha.3}
+spec:
+  parent: Location
+  discriminator: {field: kind, value: logical-region}
+  description: A logical business, data, deployment, or governance region.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: logical-region}
+        value: {type: string, minLength: 1}

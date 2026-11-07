@@ -1,0 +1,21 @@
+{
+  "apiVersion": "processkit.projectious.work/installer/v1alpha1",
+  "status": "conflict",
+  "distribution": {
+    "name": "fixture-processkit",
+    "version": "0.0.0-test",
+    "manifestSha256": "8524e178f6d6d4ffb06d3d6e413a6b59a763e0579c189234731fcab4d7c03838"
+  },
+  "selectedProfiles": ["managed"],
+  "harnesses": [],
+  "changes": [],
+  "conflicts": [
+    {
+      "code": "existing-target",
+      "path": "payload/hello.txt",
+      "message": "managed replacement requires an explicit update policy"
+    }
+  ],
+  "warnings": [],
+  "errors": []
+}

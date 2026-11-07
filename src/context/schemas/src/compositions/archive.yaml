@@ -1,0 +1,18 @@
+extends: ../primitives/record-kind.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-archive, target_kind: Archive, version: 1.0.0-alpha.3}
+spec:
+  description: A retained immutable source snapshot and its policy.
+  id_prefix: ARCHIVE
+  default_directory: context/archives
+  spec_schema:
+    required: {__merge: concat, value: [source, source_sha256, location]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: archive}
+        source: {type: string, minLength: 1}
+        source_sha256: {type: string, pattern: "^[a-f0-9]{64}$"}
+        location: {type: string, minLength: 1}
+        retention_policy: {type: [string, "null"]}

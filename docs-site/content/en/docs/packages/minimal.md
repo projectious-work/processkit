@@ -1,6 +1,6 @@
 ---
-title: "minimal"
 weight: 2
+title: "minimal"
 ---
 
 **Intended for:** solo developers and small side projects.

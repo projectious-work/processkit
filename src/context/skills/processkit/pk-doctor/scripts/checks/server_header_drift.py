@@ -93,22 +93,6 @@ def _collect_current(repo_root: Path) -> dict[str, str]:
     return found
 
 
-def _is_derived_install(repo_root: Path) -> bool:
-    return (
-        (repo_root / "context" / "skills").is_dir()
-        and not (repo_root / "src" / "context" / "skills").is_dir()
-    )
-
-
-def _manifest_fix(repo_root: Path) -> str:
-    if _is_derived_install(repo_root):
-        return (
-            "host action: re-run the project installer/sync tool outside "
-            "the container to refresh processkit metadata"
-        )
-    return "uv run scripts/generate-mcp-manifest.py"
-
-
 def _slug_for(path_str: str) -> str:
     parts = Path(path_str).parts
     try:
@@ -133,7 +117,7 @@ def run(ctx) -> list[CheckResult]:
                 f"{_MANIFEST_REL.as_posix()} not found; "
                 "run `scripts/generate-mcp-manifest.py` before release."
             ),
-            suggested_fix=_manifest_fix(repo_root),
+            suggested_fix="uv run scripts/generate-mcp-manifest.py",
         )]
 
     try:
@@ -156,16 +140,11 @@ def run(ctx) -> list[CheckResult]:
                 "manifest has no per_server_header field; regenerate with "
                 "`scripts/generate-mcp-manifest.py` to record current headers."
             ),
-            suggested_fix=_manifest_fix(repo_root),
+            suggested_fix="uv run scripts/generate-mcp-manifest.py",
         )]
 
-    current = _collect_current(repo_root)
     manifest_map = {e["path"]: e["sha256"] for e in manifest_entries}
-    if _is_derived_install(repo_root):
-        manifest_map = {
-            path: sha for path, sha in manifest_map.items()
-            if path in current
-        }
+    current = _collect_current(repo_root)
 
     results: list[CheckResult] = []
 
@@ -187,7 +166,7 @@ def run(ctx) -> list[CheckResult]:
                 f"({preview}); restart the harness to pick up dep changes "
                 "and regenerate the manifest."
             ),
-            suggested_fix=_manifest_fix(repo_root),
+            suggested_fix="uv run scripts/generate-mcp-manifest.py",
         ))
 
     only_live = sorted(p for p in current if p not in manifest_map)

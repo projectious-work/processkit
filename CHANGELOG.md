@@ -5,205 +5,262 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
+## Unreleased
 
-### Fixed
+### Added
 
-- Constrained all shipped MCP servers to the compatible `mcp` 1.x API so
-  fresh `uv run --script` environments do not resolve the incompatible
-  `mcp` 2.x package and fail before exposing tools.
+- Add a from-scratch processkit v1.x product specification, implementation
+  language assessment, normative requirement set, executable roadmap schema,
+  and phased roadmap for review.
+
+## [v1.0.0-alpha.5] - 2026-07-31
+
+v1.0.0-alpha.5 completes the extracted issue #135 follow-up tracks for trusted
+distribution, v0 migration, generated developer documentation, and runtime
+stabilization. The supported v0 line remains the default release.
+
+### Added
+
+- Added evidence-bound native builds and smoke tests for x86_64 and arm64 on
+  Linux and macOS, plus canonical Ed25519 bootstrap trust material.
+- Added exact-release ownership baselines for mixed-root v0 projects and
+  direct CLI/aibox installed-state parity coverage.
+- Added generated CLI and release-facts documentation and a documented public
+  Rust request API with tested examples.
+- Added a universal hash-locked Python runtime dependency set and stable local,
+  container, and host-only doctor signals.
 
 ### Changed
 
+- Made the bootstrap path reject missing versions, tampered checksums, and
+  invalid signatures without fallback.
+- Made v0 migration preserve user-owned artifacts, bindings, roles, and team
+  members while blocking modified product-owned paths with remediation.
+
+### Verification
+
+- `scripts/test-installer-local.sh`
+- `scripts/test-aibox-parity-local.sh`
+- `scripts/check-docs-local.sh`
+- `cargo package --manifest-path installer/crates/processkit/Cargo.toml --list`
+- Four local-host builds and smoke tests recorded in release provenance.
+
+### Added
+
+- Add an exact-version, non-root native bootstrap that verifies an
+  independently trusted Ed25519 key fingerprint, the signed release envelope,
+  checksum sidecar, asset digest, size, and native version smoke before an
+  atomic install.
+- Add deterministic multi-target release-envelope finalization so independently
+  produced Linux and macOS assets can be collected into one signed matrix
+  without claiming absent or duplicate targets.
+- Add native `processkit mcp verify`, `serve`, and `proxy` supervision for the
+  shipped Python gateway, with direct argument vectors and loopback-only HTTP
+  defaults.
+- Add policy-bound Python dependency preparation and offline-readiness
+  verification across every unique shipped dependency profile.
+- Add a release-gate acceptance test that interrupts a real update after its
+  first filesystem action, recovers the prior state, preserves project-owned
+  data, completes the update, and verifies final provenance.
+
+- Added an evidence-bound, resumable `scripts/maintain.sh` release
+  orchestrator with semantic-version branch authority, phase-zero state and
+  doctor reports, candidate-bound gate logs, required release notes,
+  documentation gates, guarded publication, and public verification.
+- Added a read-only native `processkit doctor` command that safely delegates
+  to the authoritative Python doctor and emits a versioned runtime result.
+- Added repository maintenance and support policies and linked them from the
+  GitHub landing page.
+
+---
+
+## [v1.0.0-alpha.4] - 2026-07-28
+
+v1.0.0-alpha.4 reconciles the v1 shipped content boundary, hardens lifecycle
+commands, and completes the documentation foundation for continued alpha
+evaluation. The supported v0 line remains the default release.
+
+### Added
+
+- Added managed content synchronization for v1 schema, runtime, skill, and
+  installer surfaces, with explicit migration evidence.
+- Added lifecycle command coverage for capability, proposition, risk, and
+  skill inspection and transitions.
+- Added the Hugo and Docsy documentation foundation, version navigation, and
+  independently styled v0 and v1 documentation lines.
+
+### Changed
+
+- Reconciled the dogfood and shipped v1 content boundaries while retaining
+  consumer-only release assets under `src/context`.
+- Hardened lifecycle CLI validation, exit behavior, and machine-readable
+  responses.
+- Improved documentation branding, navigation hierarchy, and dark-theme
+  contrast.
+
+### Fixed
+
+- Fixed unresolved live-tree skill dependencies in the release audit.
+- Fixed `pk-doctor` supply-chain workspace detection and repeated
+  frontmatter parsing so the full release gate completes reliably.
+
+### Verification
+
+- `uv run scripts/smoke-test-servers.py`
+- Release audit over both `context` and `src/context`.
+- `uv run context/skills/processkit/pk-doctor/scripts/doctor.py --no-log`
+- `scripts/test-installer-local.sh`
+- `scripts/test-installer-pilot-local.sh`
+- `scripts/build-release-tarball.sh v1.0.0-alpha.4`
+
+---
+
+## [v1.0.0-alpha.3] - 2026-07-27
+
+v1.0.0-alpha.3 completes the planned v1 ontology and provides the exact,
+immutable prerelease contract required by the aibox M5 consumer pilot. The
+supported v0 line remains the default release.
+
+### Added
+
+- Added the remaining 27 ontology concepts, reaching 89 concepts and 70
+  generated schema kinds, with lifecycle state machines for program
+  increments, iterations, releases, and evaluation runs.
+- Added generic ontology-management MCP operations with validation, indexing,
+  lifecycle transitions, and event-log side effects.
+- Added explicit v0 kind dispositions, a 20-scenario conformance corpus, and
+  expanded first-ART Portfolio-to-Team and ProgramIncrement acceptance.
+- Added exact harness-adapter mutations to non-mutating installer plans and
+  Codex/Claude managed-key lifecycle parity coverage.
+
+### Changed
+
+- Made unknown v0 entity kinds a migration-plan error instead of silently
+  assigning an implicit disposition.
+- Defined `v1.0.0-alpha.3` as an exact-pin opt-in for aibox while retaining
+  the v0 compatibility bridge and stable default.
+
+### Verification
+
+- `uv run scripts/smoke-test-servers.py`
+- `scripts/test-installer-local.sh`
+- `scripts/test-installer-pilot-local.sh`
+- `uv run --with pytest --with jsonschema --with pyyaml pytest -q`
+
+---
+
+## [v1.0.0-alpha.2] - 2026-07-25
+
+v1.0.0-alpha.2 is a standalone installer and local-release alpha. It
+establishes processkit as the upstream contract: aibox may consume the
+release, but processkit build, verification, and acceptance do not require
+aibox.
+
+### Added
+
+- Added a native Rust installer with opaque request/result contracts for
+  plan, install, update, verify, recover, and uninstall operations.
+- Added transactional ownership state, three-way managed-file updates,
+  user-drift preservation, recovery journals, and repeatable uninstall.
+- Added local Ed25519 release signing and trust-store verification for the
+  archive and the platform-specific installer executable.
+- Added local-only build, test, release, and tamper-validation scripts with
+  no GitHub Actions or hosted-CI dependency.
+
+### Changed
+
+- Bound the installer executable version, distribution version, signed
+  envelope, and release archive to the same v1 alpha version.
+- Made aibox an optional downstream integration consumer rather than a
+  processkit release prerequisite.
+
+### Verification
+
+- `scripts/test-installer-local.sh`
+- `scripts/build-installer-local.sh v1.0.0-alpha.2`
+- `scripts/release-local.sh v1.0.0-alpha.2 <private-key> <public-key>`
+
+---
+
+## [Unreleased]
+
+### Added
+
+- Added a locally built Hugo Extended and Docsy documentation site modeled on
+  kubeclaw, with projectious-work branding, a pinned local toolchain, link and
+  privacy gates, and a local `gh-pages` publication script.
+- Added a required signed installer-asset matrix with unique target/file
+  identities, byte sizes, and digest verification.
+- Added signed archive-root, release-descriptor, and provenance bindings with
+  extraction-time verification.
+- Added v1 lifecycle MCP servers for Capability, Proposition/Risk, and
+  package-backed Skill entities, including schema validation, interface
+  indexing, lifecycle events, and gateway exposure.
+- Added deterministic, hash-guarded v0-to-v1 corpus migration planning and
+  execution with field-loss reporting, append-only LogEntry preservation,
+  and a recovery journal.
+- Added OKF v0.1 export and validation as an explicit boundary profile, with
+  stable processkit identity, interfaces, and typed relation extensions.
+- Added lossless processkit producer-profile OKF import with dry-run planning,
+  schema checks, collision refusal, index updates, and adversarial fixtures.
+- Added an executable first-ART release-candidate acceptance matrix covering
+  planning, execution, evidence, and inspect-and-adapt through shipped MCP
+  tools.
+- Added a release-tested alpha workflow covering TeamMember role assignment,
+  Scope, Capability, Proposition, Risk, Skill, migration, interface queries,
+  and OKF export from the staged package.
+- Activated the generated Belief, WorldFact, WSJFEstimate, and Assumption
+  Proposition discriminator contracts through MCP create, update, and query
+  operations.
+- Added v0 reconciliation and explicit aibox alpha-pilot documentation.
+- Expanded the v1 generated-schema alpha slice with Artifact and Gate.
+- Added interface-aware indexing and the `query_by_interface` MCP tool for
+  polymorphic reads across schema-declared interfaces.
+- Added schema-management MCP tools for deterministic regeneration, contract
+  inspection, and validation-mode inspection.
+- Added Proposition as an alpha primitive and Risk as its first generated
+  discriminator overlay, with discriminator-aware validation and indexing.
+- Completed the dependency-correct alpha schema slice with Role, TeamMember,
+  Skill, Capability, Scope, and Migration, plus their Actor, Container,
+  Command, and Event parent contracts.
+- Added representative Role, Capability, TeamMember, Scope, and Migration
+  fixtures with interface and discriminator indexing coverage.
+- Added an explicit adapter that validates package-based `SKILL.md` manifests
+  against the generated Skill contract.
+- Added a dependency-aware beta ontology plan targeting 62 of 89 concepts
+  (69.7%).
+
+### Changed
+
+- Migrated the maintained documentation corpus from Docusaurus to Hugo content
+  and removed the Docusaurus runtime. Documentation builds and publication do
+  not use GitHub Actions or workflow files.
+- Canonicalized Scope writes as `Container(kind=scope)` while preserving the
+  public Scope API and date-only inputs.
+- Projected package `SKILL.md` manifests into the v1 index instead of
+  introducing a competing Skill storage format.
+- Enabled dependency-free RFC 3339 date-time format validation and aligned
+  TeamMember alpha compatibility with the existing lifecycle server.
+- Made release builds verify committed MCP manifests without mutating the
+  tagged worktree.
+- Carried forward secure refreshable GitHub token-file authentication from
+  the supported v0 line.
+- Separated the v1 product version from entity API v2 and independent
+  per-kind schema versions so migration provenance reports product 1.x.
 - Defined dedicated development and release-integration branches for v0 and
   v1 lines, with stable release tags merged into `main` after publication.
 - Made a curated, version-matched `CHANGELOG.md` entry a required release
   archive preflight rather than an optional staged file.
-
----
-
-## [v0.28.8] - 2026-08-18
-
-v0.28.8 prevents derived-project supply-chain scans from treating nested
-repositories and generated host-gate trees as application dependencies.
+- Clarified that the 14-concept alpha product scope requires 18 generated
+  ontology contracts once composition parents are counted.
 
 ### Fixed
 
-- Restore nested Git repository and generated `tmp`/`target` exclusions in
-  both manifest and SBOM discovery walkers.
-
----
-
-## [v0.28.7] - 2026-08-18
-
-v0.28.7 keeps immutable historical entity IDs from creating an
-unresolvable pk-doctor remediation queue.
-
-### Fixed
-
-- Report blocked vocabulary in historical IDs as non-actionable inventory;
-  the generator continues to prevent those words in newly allocated IDs.
-- Make the applied-migration archive-age regression fixture independent of
-  the current date.
-
----
-
-## [v0.28.6] - 2026-08-07
-
-v0.28.6 restores internally consistent MCP dependency-header metadata in
-derived projects.
-
-### Fixed
-
-- Generate the dogfood and release MCP manifests against their respective
-  server trees, so the shipped manifest records the constrained MCP 1.x
-  headers that are actually present in the release archive. Fixes
-  projectious-work/aibox#365.
-
----
-
-## [v0.28.5] - 2026-07-30
-
-v0.28.5 restores MCP availability in fresh derived-project environments.
-
-### Fixed
-
-- Constrained all shipped MCP servers to the compatible `mcp` 1.x API so
-  fresh `uv run --script` environments do not resolve the incompatible
-  `mcp` 2.x package and fail before exposing tools.
-
----
-
-## [v0.28.4] - 2026-07-24
-
-v0.28.4 refreshes the provider-neutral model roster used by routing and
-model-profile resolution.
-
-### Changed
-
-- Refreshed the roster from current provider documentation and added current
-  model entries while retaining explicitly unverified pricing.
-- Regenerated model-spec artifacts from the refreshed compatibility
-  projection and added Subquadratic and Xiaomi provider mappings.
-
----
-
-## [v0.28.3] - 2026-07-23
-
-v0.28.3 is a **patch release** that publishes the gateway GitHub credential
-refresh fix with consistent release metadata.
-
-### Fixed
-
-- Regenerated both MCP manifests with the release version before archive
-  construction, satisfying the release-integrity preflight.
-
-### Notes
-
-- The immutable `v0.28.2` tag contains the gateway fix, but archive preflight
-  stopped its distribution because its MCP manifest still identified the
-  preceding release. No GitHub Release or archive was published for it.
-
----
-
-## [v0.28.2] - 2026-07-23
-
-v0.28.2 is a **patch release** that restores authenticated GitHub repository
-reconciliation through long-lived processkit gateway daemons.
-
-### Fixed
-
-- Let long-lived gateways refresh GitHub CLI credentials from an owner-only
-  token file immediately before each `gh` call, while redacting supported
-  token values from subprocess results. Closes #107.
-
-### Verification
-
-- `uv run --with pytest --with 'mcp[cli]>=1.0' pytest
-  src/context/skills/devops/repo-management/scripts/test_repo_management.py -q`
-- `uv run scripts/smoke-test-servers.py`
-- `uv run
-  src/context/skills/processkit/release-audit/scripts/release_audit.py
-  --tree src-context --json`
-
----
-
-## [v0.28.1] - 2026-07-22
-
-v0.28.1 is a **patch release** that removes two derived-project doctor
-dead ends in the v0 maintenance line.
-
-### Fixed
-
-- Added `normalize_migration_filename` to migration-management so canonical
-  Migration filename/ID repairs are audited, refresh indexes and mutable
-  references, and preserve append-only historical records. Closes #96.
-- Declared every literal MCP side-effect event type in the LogEntry schema,
-  including the six reported emitters and three role-slot lifecycle events,
-  so normal MCP writes no longer produce pk-doctor vocabulary errors.
-  Closes #97.
-
-### Changed
-
-- Expanded repository-portfolio-review to check the GitHub short description,
-  an applicable project logo, a maintained documentation/project page, and a
-  resolving GitHub Website link to that canonical page.
-
-### Verification
-
-- `uv run --with mcp --with pyyaml --with jsonschema
-  src/context/skills/processkit/migration-management/scripts/test_migration_management.py`
-- `uv run --with pyyaml --with jsonschema --with pytest --with mcp pytest
-  src/context/skills/processkit/event-log/scripts/test_log_event.py -v`
-- `uv run src/context/skills/processkit/pk-doctor/scripts/test_doctor.py`
-
----
-
-## [v0.28.0] - 2026-07-21
-
-v0.28.0 is a **minor release** that adds an explicit, research-backed
-branching-strategy guide and establishes the v0 development-to-release
-promotion model for future maintenance releases.
-
-### Added
-
-- Added `git-branching`, a skill for selecting and documenting Feature
-  Branch Workflow, GitHub Flow, Trunk-Based Development, Gitflow, GitLab
-  Flow, or processkit's version-line integration model.
-- Added a strategy catalog with selection criteria, branch-contract output,
-  hotfix guidance, and branch-protection baseline.
-- Added `pk-reconcile` to coordinate migrations, pk-doctor findings, and
-  guarded GitHub issue and pull-request reconciliation in one command.
-
-### Changed
-
-- Established `v0.x-dev` as the v0 development line and `v0.x-release` as
-  its release and stable-tag authority; stable release commits are merged
-  into `main` after tagging.
-- Required a curated, version-matched `CHANGELOG.md` entry before building
-  a processkit release archive.
-- Made `pk-resume` delegate its session-start cleanup to `pk-reconcile`,
-  removing duplicated migration, health, and GitHub preflight instructions.
-
----
-
-## [v0.28.4] - 2026-07-24
-
-v0.28.4 refreshes the provider-neutral model roster used by routing and
-model-profile resolution.
-
-### Changed
-
-- Refresh the roster from current provider documentation and add current
-  Anthropic, Moonshot, Google, MiniMax, xAI, Alibaba, and Subquadratic
-  model entries. Preserve models without published pricing as explicitly
-  unverified rather than estimating a price.
-- Regenerate model-spec artifacts from the refreshed compatibility projection
-  and add Subquadratic and Xiaomi provider mappings to the generator.
-
-### Verification
-
-- `uv run context/skills/processkit/model-recommender/scripts/test_migrate_models.py`
+- Restored a compliant v1 migration draft and historical filename
+  normalization path with mutable-reference repair and append-only audit
+  preservation.
+- Allowed Role bindings to target TeamMembers through their generated Actor
+  interface.
 
 ---
 

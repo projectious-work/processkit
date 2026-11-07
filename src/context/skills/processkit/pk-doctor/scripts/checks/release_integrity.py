@@ -85,9 +85,9 @@ def _default_repo(repo_root: Path) -> Optional[str]:
     return None
 
 
-def _release_tags(repo: Optional[str], limit: int) -> Optional[set[str]]:
-    """Return recent GitHub Release tags, or None when the query fails."""
-    cmd = ["gh", "release", "list", "--limit", str(limit), "--json", "tagName"]
+def _release_exists(tag: str, repo: Optional[str]) -> Optional[bool]:
+    """Return True if a Release matching ``tag`` exists, False if not, None on error."""
+    cmd = ["gh", "release", "view", tag, "--json", "tagName"]
     if repo:
         cmd.extend(["--repo", repo])
     try:
@@ -96,16 +96,14 @@ def _release_tags(repo: Optional[str], limit: int) -> Optional[set[str]]:
         return None
     if proc.returncode == 0:
         try:
-            data = json.loads(proc.stdout or "[]")
+            data = json.loads(proc.stdout or "{}")
+            return data.get("tagName") == tag
         except json.JSONDecodeError:
-            return None
-        if not isinstance(data, list):
-            return None
-        return {
-            item["tagName"] for item in data
-            if isinstance(item, dict) and isinstance(item.get("tagName"), str)
-        }
-    return None
+            return True  # gh succeeded but returned non-JSON; trust the exit code
+    stderr = (proc.stderr or "").lower()
+    if "release not found" in stderr or "no release" in stderr or "404" in stderr:
+        return False
+    return None  # transient error — treat as unknown, not as a missing release
 
 
 def run(ctx) -> list[CheckResult]:
@@ -145,13 +143,13 @@ def run(ctx) -> list[CheckResult]:
     unknown: list[str] = []
     max_tags = int(os.environ.get("PK_DOCTOR_RELEASE_INTEGRITY_MAX", "50") or "50")
 
-    tags_to_check = tags[:max_tags]
-    release_tags = _release_tags(repo_slug, max_tags)
-    if release_tags is None:
-        unknown = tags_to_check
-    else:
-        checked = len(tags_to_check)
-        missing = [tag for tag in tags_to_check if tag not in release_tags]
+    for tag in tags[:max_tags]:
+        exists = _release_exists(tag, repo_slug)
+        checked += 1
+        if exists is False:
+            missing.append(tag)
+        elif exists is None:
+            unknown.append(tag)
 
     for tag in missing:
         results.append(CheckResult(

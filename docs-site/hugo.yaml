@@ -1,6 +1,6 @@
-baseURL: "https://projectious-work.github.io/processkit/"
+baseURL: "https://projectious-work.github.io/processkit/v1.x/"
 title: processkit
-description: "Provider-neutral process primitives, skills, and MCP tools for AI-assisted work — the released v0.x line."
+description: "Provider-neutral process primitives, skills, and MCP tools for AI-assisted work — the v1.0 preview line."
 theme: [docsy]
 enableRobotsTXT: true
 enableGitInfo: true
@@ -41,17 +41,18 @@ params:
   offlineSearch: true
   offlineSearchSummaryLength: 200
   offlineSearchMaxResults: 25
-  # processkit publishes two release lines to one GitHub Pages site. This
+  # processkit publishes two release lines to one GitHub Pages site. The
   # released v0.x line owns the site root and is the default landing
-  # documentation; the v1.0 preview line publishes under /v1.x/.
+  # documentation; this v1.0 preview line publishes under /v1.x/.
   #
   # `docs_deploy_path` is the subdirectory this branch's build owns on the
-  # gh-pages branch, relative to `productionURL`. It is empty here because
-  # this line publishes to the root. scripts/publish-docs-gh-pages.sh reads
-  # it so both branches can carry an identical script.
-  version: "v0.x"
-  release_line: "v0.x"
-  docs_deploy_path: ""
+  # gh-pages branch, relative to `productionURL`. It is empty on the branch
+  # that publishes to the root. scripts/publish-docs-gh-pages.sh reads it so
+  # both branches can carry an identical script.
+  version: "v1.x"
+  release_line: "v1.x"
+  docs_deploy_path: "v1.x"
+  url_latest_version: "https://projectious-work.github.io/processkit/"
   version_menu: "Release line"
   version_menu_pagelinks: false
   # Two-level menu: release line, then the releases published from it. A
@@ -76,7 +77,7 @@ params:
     - version: "v1.x (preview)"
       url: "https://projectious-work.github.io/processkit/v1.x/"
       releases:
-        - version: "v1.0.0-alpha.3"
+        - version: "v1.0.0-alpha.5"
           kind: current
           url: "https://projectious-work.github.io/processkit/v1.x/"
   ui:

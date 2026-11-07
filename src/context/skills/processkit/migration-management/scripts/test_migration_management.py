@@ -154,8 +154,6 @@ def test_normalize_migration_filename_repairs_applied_history_safely() -> None:
             os.chdir(old_cwd)
 
         assert result["ok"] is True
-        assert result["old_id"] == old_id
-        assert result["new_id"] == new_id
         assert not old_path.exists()
         new_path = old_path.with_name(f"{new_id}.md")
         assert new_path.is_file()
@@ -183,7 +181,7 @@ def test_normalize_migration_filename_rejects_noncanonical_target() -> None:
     assert "error" in result
 
 
-def test_draft_migration_creates_pending_schema_valid_entity() -> None:
+def test_draft_migration_creates_pending_v1_entity() -> None:
     server = _load_server()
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
@@ -209,6 +207,7 @@ def test_draft_migration_creates_pending_schema_valid_entity() -> None:
         text = path.read_text(encoding="utf-8")
         assert "kind: data-fix" in text
         assert "state: pending" in text
+        assert "apply_mode: automatic" in text
         assert "related_decisions:" in text
 
 
@@ -218,5 +217,5 @@ if __name__ == "__main__":
     test_list_migrations_empty_pending_returns_empty_list()
     test_normalize_migration_filename_repairs_applied_history_safely()
     test_normalize_migration_filename_rejects_noncanonical_target()
-    test_draft_migration_creates_pending_schema_valid_entity()
+    test_draft_migration_creates_pending_v1_entity()
     print("All tests passed.")

@@ -1,6 +1,6 @@
 ---
-title: "Relationships"
 weight: 4
+title: "Relationships"
 ---
 
 processkit expresses relationships between entities two ways:

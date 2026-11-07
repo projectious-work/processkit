@@ -1,6 +1,6 @@
 ---
-title: "Context"
 weight: 27
+title: "Context"
 ---
 
 A structured narrative document for long-lived ambient knowledge —

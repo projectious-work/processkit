@@ -1,0 +1,16 @@
+extends: ../primitives/location.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-location-coordinate, target_kind: Location, version: 1.0.0-alpha.3}
+spec:
+  parent: Location
+  discriminator: {field: kind, value: coordinate}
+  description: A latitude and longitude point.
+  spec_schema:
+    required: {__merge: concat, value: [latitude, longitude]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: coordinate}
+        latitude: {type: number, minimum: -90, maximum: 90}
+        longitude: {type: number, minimum: -180, maximum: 180}

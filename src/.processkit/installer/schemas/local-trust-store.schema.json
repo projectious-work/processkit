@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "keys"],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/local-trust/v1alpha1"
+    },
+    "kind": {"const": "TrustStore"},
+    "keys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["keyId", "algorithm", "publicKeyFile", "status"],
+        "properties": {
+          "keyId": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "algorithm": {"const": "Ed25519"},
+          "publicKeyFile": {"type": "string", "minLength": 1},
+          "status": {"enum": ["active", "revoked"]}
+        }
+      }
+    }
+  }
+}

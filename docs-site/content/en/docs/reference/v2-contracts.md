@@ -1,6 +1,6 @@
 ---
-title: "v2 Contracts"
 weight: 5
+title: "v2 Contracts"
 ---
 
 SmoothTiger/SmoothRiver v2 keeps durable facts in existing entity

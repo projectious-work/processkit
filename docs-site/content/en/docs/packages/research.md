@@ -1,6 +1,6 @@
 ---
-title: "research"
 weight: 5
+title: "research"
 ---
 
 **Intended for:** research teams, data science projects, ML engineering.

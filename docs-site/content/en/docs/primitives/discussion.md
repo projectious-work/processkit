@@ -1,6 +1,6 @@
 ---
-title: "Discussion"
 weight: 19
+title: "Discussion"
 ---
 
 A structured, multi-turn conversation exploring an open question.

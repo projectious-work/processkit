@@ -1,0 +1,12 @@
+extends: ../primitives/binding.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-binding-ownershiplink, target_kind: Binding, version: 1.0.0-alpha.3}
+spec:
+  parent: Binding
+  discriminator: {field: type, value: ownership-link}
+  description: A relation assigning accountability or stewardship.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value: {type: {const: ownership-link}}

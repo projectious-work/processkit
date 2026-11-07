@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/standard.schema.json",
+  "title": "processkit governance standard",
+  "description": "A structured, versioned rule set a company, team, or project defines for its own work. Level 0: id, title, summary, triggers, applicability. Level 1: plus rules and section index. Level 2: one section body.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "Standard"
+    },
+    "metadata": {
+      "$ref": "resource-metadata.schema.json"
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "version",
+        "status",
+        "owner",
+        "summary",
+        "triggers",
+        "applicability",
+        "rules"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "version": {
+          "description": "Semantic version of the standard's content.",
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "active",
+            "deprecated",
+            "superseded"
+          ]
+        },
+        "owner": {
+          "description": "Accountable person, role, or team.",
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "description": "Level-0 briefing: what the standard requires, in at most a few sentences.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "triggers": {
+          "description": "Situations in which an agent must apply this standard.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "uniqueItems": true
+        },
+        "applicability": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "profiles"
+          ],
+          "properties": {
+            "profiles": {
+              "description": "Project-declared profiles this standard applies to; [\"*\"] means all.",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^(\\*|[a-z][a-z0-9-]*)$"
+              },
+              "uniqueItems": true
+            },
+            "notes": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "rules": {
+          "description": "Level-1 normative rules, in order.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/rule"
+          }
+        },
+        "sections": {
+          "description": "Level-2 detail, retrievable one section at a time.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/section"
+          }
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "supersedes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/standardId"
+          },
+          "uniqueItems": true
+        },
+        "alwaysOn": {
+          "description": "When true, the rules join the level-0 connection briefing.",
+          "type": "boolean",
+          "default": false
+        },
+        "final": {
+          "description": "When true, downstream repositories cannot override this standard.",
+          "type": "boolean",
+          "default": false
+        },
+        "overrides": {
+          "description": "Declares that this standard overrides an inherited one.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "upstream",
+            "name",
+            "version",
+            "reason"
+          ],
+          "properties": {
+            "upstream": {
+              "description": "Upstream name from processkit.toml.",
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "$ref": "#/$defs/standardId"
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "decisions": {
+          "description": "DecisionRecords that justify this standard.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "$defs": {
+    "standardId": {
+      "description": "metadata.name of another Standard, optionally namespace-qualified as <namespace>/<name>.",
+      "type": "string",
+      "pattern": "^([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "level",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "description": "Stable rule identifier, unique within the standard.",
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]*-[0-9]{3}$"
+        },
+        "level": {
+          "enum": [
+            "MUST",
+            "MUST NOT",
+            "SHOULD",
+            "SHOULD NOT",
+            "MAY"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profiles": {
+          "description": "Narrows the rule to these profiles; omitted means the standard's applicability.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(\\*|[a-z][a-z0-9-]*)$"
+          },
+          "uniqueItems": true
+        },
+        "section": {
+          "description": "Section id that explains this rule in detail.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "final": {
+          "description": "When true, downstream overrides cannot change this rule.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "body"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body": {
+          "description": "Markdown text.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "description": "Typed reference <kind>/<name> or <kind>/<namespace>/<name>.",
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "ref"
+          ]
+        },
+        {
+          "required": [
+            "url"
+          ]
+        }
+      ]
+    }
+  }
+}

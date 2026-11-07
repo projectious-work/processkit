@@ -1,0 +1,126 @@
+---
+extends:
+  - ../fragments/entity.yaml
+  - ../fragments/versioned.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-artifact
+  target_kind: Artifact
+  version: "2.0.0-alpha.1"
+  created: 2026-04-07T00:00:00Z
+spec:
+  description: >
+    A tangible deliverable produced by the project — a document, design
+    file, dataset, build output, slide deck, video, or URL.
+
+    Two usage patterns are equally valid: self-hosted artifacts store their
+    content in the Markdown body, while pointer artifacts use location as
+    their canonical address.
+  id_prefix: ART
+  state_machine: null
+  default_directory: context/artifacts
+  known_kinds:
+    - document
+    - design
+    - dataset
+    - build
+    - slides
+    - video
+    - spec
+    - diagram
+    - url
+    - other
+    - diagnostic
+    - reference-dataset
+    - test-fixture
+    - tool-allowlist-policy
+    - egress-policy
+    - credential-scope
+    - memory-policy
+    - approval-policy
+    - trace-policy
+    - cost-policy
+    - agent-card
+    - provider-adapter-config
+    - agent-ids-rule
+    - workspace-manifest
+    - addon-spec
+    - container-image-spec
+    - provider-backend-spec
+    - image-provenance-policy
+    - schedule-rule
+    - process-definition
+    - model-spec
+    - model-profile
+    - metric-spec
+    - memory-index
+    - eval-spec
+  spec_schema:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    required: [name, kind]
+    additionalProperties: true
+    properties:
+      name:
+        type: string
+        minLength: 1
+        description: Human-readable name.
+      kind:
+        type: string
+        description: Closed v2 artifact subtype declared in spec.known_kinds.
+      unit:
+        type: string
+        description: Optional unit of measurement for metric-spec artifacts.
+      direction:
+        type: string
+        enum:
+          - higher-is-better
+          - lower-is-better
+          - target
+        description: Optional direction for metric-spec artifacts.
+      measurement:
+        type: string
+        description: Optional recipe for computing a metric value.
+      target:
+        description: Optional desired value or target expression.
+      tolerance:
+        type: string
+        description: Optional acceptable deviation from target.
+      cadence:
+        type: string
+        description: Optional measurement frequency.
+      active:
+        type: boolean
+        default: true
+        description: False means the artifact is no longer tracked.
+      location:
+        type: string
+        description: >
+          Path, URL, repository reference, or storage identifier. Optional
+          for self-hosted artifacts and required for external pointers.
+      format:
+        type: string
+        description: Optional file format or MIME type.
+      version:
+        type: string
+        description: Optional version identifier.
+      checksum:
+        type: string
+        description: Optional integrity hash.
+      owner:
+        type: [string, "null"]
+        pattern: "^(ACTOR|TEAMMEMBER)-[a-zA-Z0-9_-]+$"
+        description: Actor or TeamMember responsible for the artifact.
+      produced_by:
+        type: string
+        description: Entity that produced this artifact.
+      produced_at:
+        type: string
+        format: date-time
+        description: When the artifact was produced.
+      tags:
+        type: array
+        items:
+          type: string
+        description: Freeform retrieval tags.

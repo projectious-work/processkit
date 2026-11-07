@@ -20,7 +20,7 @@
 #
 #   --check          Compare against the existing PROVENANCE.toml and exit
 #                    nonzero if regeneration would change anything (use as a
-#                    pre-tag CI check).
+#                    pre-tag local check).
 #
 # Conventions:
 #   - The script must be run from the processkit repo root.
@@ -137,7 +137,7 @@ mapfile -t FILES < <(
         ! -path "$PROVENANCE_FILE" \
         ! -name '*.pyc' \
         ! -path '*/__pycache__/*' \
-        | sort
+        | LC_ALL=C sort
 )
 
 for f in "${FILES[@]}"; do

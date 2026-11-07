@@ -1,0 +1,20 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-release, target_kind: Release, version: 1.0.0-alpha.3}
+spec:
+  description: A versioned delivery container with gates and provenance.
+  id_prefix: RELEASE
+  state_machine: release
+  default_directory: context/releases
+  spec_schema:
+    required: {__merge: concat, value: [state, version]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: release}
+        state: {type: string, enum: [planned, candidate, approved, published, withdrawn]}
+        version: {type: string, minLength: 1}
+        gates: {type: array, items: {type: string}}
+        artifacts: {type: array, items: {type: string}}
+        provenance: {type: array, items: {type: string}}

@@ -1,0 +1,38 @@
+extends:
+  - ../fragments/entity.yaml
+  - ../fragments/versioned.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata:
+  id: SCHEMA-capability
+  target_kind: Capability
+  version: "1.0.0-alpha.1"
+  created: 2026-07-23T00:00:00Z
+spec:
+  interfaces:
+    __merge: concat
+    value: [Capability]
+  description: An ability a system, actor, or team can provide or consume.
+  id_prefix: CAP
+  state_machine: capability
+  default_directory: context/capabilities
+  spec_schema:
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    required: [name, description, state]
+    additionalProperties: true
+    properties:
+      name: {type: string, minLength: 1}
+      description: {type: string, minLength: 1}
+      state:
+        type: string
+        enum: [draft, active, deprecated, retired]
+      kind: {type: string, enum: [ability]}
+      owner: {type: [string, "null"]}
+      providers: {type: array, items: {type: string}}
+      consumers: {type: array, items: {type: string}}
+      inputs: {type: array, items: {type: string}}
+      outputs: {type: array, items: {type: string}}
+      constraints: {type: array, items: {type: string}}
+      evidence: {type: array, items: {type: string}}
+      supersedes: {type: [string, "null"], pattern: "^CAP-"}

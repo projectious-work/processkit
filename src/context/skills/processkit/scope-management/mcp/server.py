@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -148,6 +149,13 @@ def _now_iso() -> str:
     return _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds")
 
 
+def _scope_datetime(value: str | None) -> str | None:
+    """Normalize the public date-or-datetime API to schema date-time."""
+    if value and re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        return f"{value}T00:00:00Z"
+    return value
+
+
 def _load_scope(root: Path, id: str) -> entity.Entity | None:
     scope_dir = paths.context_dir("Scope", root)
     candidate = scope_dir / f"{id}.md"
@@ -155,7 +163,9 @@ def _load_scope(root: Path, id: str) -> entity.Entity | None:
         return entity.load(candidate)
     db = index.open_db()
     try:
-        row, _ = index.resolve_entity(db, id, kind="Scope")
+        row, _ = index.resolve_entity(db, id, kind="Container")
+        if row is None:
+            row, _ = index.resolve_entity(db, id, kind="Scope")
         if row and row.get("path"):
             return entity.load(row["path"])
     finally:
@@ -250,11 +260,16 @@ def create_scope(
         existing=existing,
     )
 
-    spec: dict = {"name": name, "kind": kind, "state": "planned"}
+    spec: dict = {
+        "name": name,
+        "kind": "scope",
+        "scope_type": kind,
+        "state": "planned",
+    }
     if starts_at:
-        spec["starts_at"] = starts_at
+        spec["starts_at"] = _scope_datetime(starts_at)
     if ends_at:
-        spec["ends_at"] = ends_at
+        spec["ends_at"] = _scope_datetime(ends_at)
     if goals:
         spec["goals"] = list(goals)
     if description:
@@ -262,11 +277,11 @@ def create_scope(
     if parent:
         spec["parent"] = parent
 
-    errors = schema.validate_spec("Scope", spec)
+    errors = schema.validate_spec("Container", spec)
     if errors:
         return {"error": "schema validation failed", "details": errors}
 
-    ent = entity.new("Scope", new_id, spec)
+    ent = entity.new("Container", new_id, spec)
     target_path = scope_dir / f"{new_id}.md"
     ent.write(target_path)
 
@@ -277,7 +292,7 @@ def create_scope(
         db.close()
 
     log.log_side_effect(
-        "Scope", new_id, "scope.created",
+        "Container", new_id, "scope.created",
         f"Created Scope {new_id!r}: {name!r}",
         root=root,
         actor=new_id,
@@ -300,7 +315,7 @@ def get_scope(id: str) -> dict:
     return {
         "id": ent.id,
         "name": ent.spec.get("name"),
-        "kind": ent.spec.get("kind"),
+        "kind": ent.spec.get("scope_type") or ent.spec.get("kind"),
         "state": ent.spec.get("state"),
         "starts_at": ent.spec.get("starts_at"),
         "ends_at": ent.spec.get("ends_at"),
@@ -367,14 +382,14 @@ def transition_scope(id: str, to_state: str) -> dict:
         archived = False
 
     log.log_side_effect(
-        "Scope", id, "scope.transitioned",
+        "Container", id, "scope.transitioned",
         f"Transitioned Scope {id!r} from {from_state!r} to {to_state!r}",
         root=root,
         actor=id,
     )
     if archived:
         log.log_side_effect(
-            "Scope", id, "scope.archive-moved",
+            "Container", id, "scope.archive-moved",
             f"Archived terminal Scope {id!r} to {final_path}",
             root=root,
             actor=id,
@@ -415,7 +430,20 @@ def list_scopes(
     """List Scope entities with optional filters by kind and state."""
     db = index.open_db()
     try:
-        rows = index.query_entities(db, kind="Scope", state=state, limit=limit * 4)
+        rows = index.query_entities(
+            db,
+            kind="Container",
+            state=state,
+            limit=limit * 4,
+        )
+        rows.extend(
+            index.query_entities(
+                db,
+                kind="Scope",
+                state=state,
+                limit=limit * 4,
+            )
+        )
     finally:
         db.close()
     out: list[dict] = []
@@ -428,12 +456,13 @@ def list_scopes(
         if not full:
             continue
         spec = full.get("spec", {})
-        if kind and spec.get("kind") != kind:
+        scope_type = spec.get("scope_type") or spec.get("kind")
+        if kind and scope_type != kind:
             continue
         out.append({
             "id": full["id"],
             "name": spec.get("name"),
-            "kind": spec.get("kind"),
+            "kind": scope_type,
             "state": spec.get("state"),
             "starts_at": spec.get("starts_at"),
             "ends_at": spec.get("ends_at"),

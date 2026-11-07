@@ -1,6 +1,6 @@
 ---
-title: "Process"
 weight: 28
+title: "Process"
 ---
 
 Legacy v1 declarative workflow definition. In the

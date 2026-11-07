@@ -1,0 +1,18 @@
+extends: ../primitives/specification.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-processspecification, target_kind: ProcessSpecification, version: 1.0.0-beta.1}
+spec:
+  description: A specification of states, transitions, guards, and commands.
+  id_prefix: PROCSPEC
+  default_directory: context/specifications/processes
+  spec_schema:
+    required: {__merge: concat, value: [states, transitions]}
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: process}
+        states: {type: array, minItems: 1, items: {type: string}}
+        transitions: {type: array, items: {type: object}}
+        guards: {type: array, items: {type: string}}
+        commands: {type: array, items: {type: string}}

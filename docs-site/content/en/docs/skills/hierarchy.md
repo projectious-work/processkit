@@ -1,6 +1,6 @@
 ---
-title: "Skill Hierarchy"
 weight: 3
+title: "Skill Hierarchy"
 ---
 
 Process-primitive skills form a strict layered DAG. A skill's `spec.uses`

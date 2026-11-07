@@ -1,0 +1,12 @@
+extends: ../primitives/container.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-container-team, target_kind: Container, version: 1.0.0-alpha.3}
+spec:
+  parent: Container
+  discriminator: {field: kind, value: team}
+  description: A delivery or operating team.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value: {kind: {const: team}}

@@ -18,6 +18,33 @@ spec:
   default_directory: context/logs
   append_only: true
   known_event_types:
+    - archive.created
+    - archive.updated
+    - evaluationrun.created
+    - evaluationrun.transitioned
+    - evaluationrun.updated
+    - iteration.created
+    - iteration.transitioned
+    - iteration.updated
+    - location.created
+    - container.created
+    - location.updated
+    - measurement.created
+    - measurement.updated
+    - programincrement.created
+    - programincrement.transitioned
+    - programincrement.updated
+    - release.created
+    - release.transitioned
+    - release.updated
+    - roadmap.created
+    - roadmap.updated
+    - scopeplan.created
+    - scopeplan.updated
+    - service.created
+    - service.updated
+    - workitemtemplate.created
+    - workitemtemplate.updated
     - actor.created
     - actor.deactivated
     - actor.updated
@@ -26,7 +53,9 @@ spec:
     - binding.created
     - binding.ended
     - binding.role-assigned
-    - binding.updated
+    - capability.created
+    - capability.updated
+    - capability.transitioned
     - context.groomed
     - context_archive.created
     - decision.created
@@ -36,10 +65,8 @@ spec:
     - discussion.transitioned
     - doctor.report
     - gate.created
-    - gate.emergency-updated
     - gate.passed
     - gate.failed
-    - gate.updated
     - gate.waived
     - github.issue.closed
     - external_issue.created
@@ -55,10 +82,12 @@ spec:
     - metric.recorded
     - milestone
     - migration.transitioned
+    - migration.drafted
     - migration.applied
     - migration.rejected
     - migration.filename-normalized
     - migration.v2-context-converted
+    - migration.v0-v1-corpus-applied
     - note.created
     - process.backlog_review
     - process.behavioral_norms_encoded
@@ -69,15 +98,14 @@ spec:
     - process.prd_relocated
     - process.prd_updated
     - process.skill_updated
+    - proposition.created
+    - proposition.updated
     - research.completed
     - release.published
     - retro.action_item_created
     - retro.completed
     - role.created
     - role.updated
-    - role_slot.closed
-    - role_slot.created
-    - role_slot.filled
     - scope.created
     - scope.transitioned
     - session.ended
@@ -96,17 +124,15 @@ spec:
     - team_member.exported
     - team_member.imported
     - team_member.reactivated
-    - team_member.runtime_launched
-    - team_member.runtime_stopped
     - team_member.updated
     - workitem.archive-moved
     - workitem.created
     - workitem.note
     - workitem.rewritten
     - workitem.transitioned
-    - workitem.updated
     - scope.archive-moved
     - note.archive-moved
+    - okf.bundle-exported
     - cost.call.accounted
     - cost.budget.warning
     - cost.budget.breach
@@ -119,6 +145,8 @@ spec:
     - security.tetragon_policy_projected
     - sep.handoff.created
     - skill.implemented
+    - skill.updated
+    - skill.transitioned
     - decision.re-recorded
     - entity.renamed
     - test.event

@@ -1,6 +1,6 @@
 ---
-title: "DecisionRecord"
 weight: 12
+title: "DecisionRecord"
 ---
 
 A significant choice — architectural, product, or process — recorded with

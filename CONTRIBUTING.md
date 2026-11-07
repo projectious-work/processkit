@@ -16,8 +16,7 @@ repo.
   `src/` mirrors a fresh consumer project root
 - **`src/.processkit/FORMAT.md`** — the entity file format spec
 - **`src/context/skills/FORMAT.md`** — the skill package format spec
-- **`docs-site/`** — the Hugo + Docsy documentation site, published to
-  GitHub Pages (content under `docs-site/content/en/`)
+- **`docs-site/`** — user-facing docs, published to GitHub Pages
 
 ## The golden rule
 
@@ -44,7 +43,7 @@ Smart exemptions (enforced by author judgment, not by tooling):
 The rule is encoded in `.editorconfig` at the repo root for editors that
 respect it. There is no automated enforcement yet — it is applied to
 new and edited content. The 85 migrated skills under `src/skills/` and
-the docs catalog pages predate the rule and will be wrapped as
+the docs-site catalog pages predate the rule and will be wrapped as
 part of BACK-001 / BACK-009.
 
 ## Developing inside the dev container
@@ -71,6 +70,28 @@ exercises every server's tools end-to-end, and asserts results.
 uv run scripts/smoke-test-servers.py
 ```
 
+## Generated v1 documentation and runtime locks
+
+Regenerate the CLI reference and release facts after changing the Rust command
+surface or release metadata:
+
+```bash
+uv run scripts/generate-v1-docs.py
+```
+
+Regenerate the Python runtime lock and its signed policy after changing MCP
+dependencies:
+
+```bash
+uv pip compile installer/python-runtime.in --generate-hashes --universal \
+  --output-file src/.processkit/installer/runtime/python-requirements.lock
+uv run scripts/generate-python-runtime-manifest.py
+```
+
+`scripts/test-installer-local.sh` checks both generated surfaces and builds
+the public Rust API documentation. This repository deliberately has no hosted
+CI or workflow files.
+
 This is the fastest feedback loop while editing servers or the lib.
 For real MCP-protocol testing, use any MCP-capable client (Claude Code,
 the `mcp` CLI's `dev` command, etc.).
@@ -93,8 +114,8 @@ the `mcp` CLI's `dev` command, etc.).
    package tier, add it to `src/.processkit/packages/managed.yaml` (or
    higher).
 6. Update `src/context/skills/INDEX.md` if appropriate.
-7. Add the skill to the right page under
-   `docs-site/content/en/docs/skills/catalog/` if it deserves a docs entry.
+7. Add the skill to the appropriate page under
+   `docs-site/content/en/docs/skills/` if it deserves a docs entry.
 
 ## Adding a new primitive
 
@@ -120,7 +141,8 @@ the `mcp` CLI's `dev` command, etc.).
 4. Register tools with `@server.tool()` decorators.
 5. Add `mcp-config.json` and `README.md`.
 6. Extend `scripts/smoke-test-servers.py` to exercise the new tools.
-7. Add a section to `docs-site/content/en/docs/mcp-servers/overview.md`.
+7. Add a section to
+   `docs-site/content/en/docs/mcp-servers/overview.md`.
 
 ### Foundation dependencies
 
@@ -193,28 +215,47 @@ processkit releases via semver git tags. The current cadence:
 
 To release a new tag:
 
-1. Update `context/HANDOVER.md` (preamble for the new version)
-2. Update `context/BACKLOG.md` Done section
-3. Update `docs-site/content/en/` if user-visible changes shipped
-4. Run `uv run scripts/smoke-test-servers.py` and confirm green
-5. **Run `scripts/stamp-provenance.sh vX.Y.Z`** (regenerates `src/PROVENANCE.toml`)
-6. `git tag -a vX.Y.Z -m "..."`
-7. `git push origin main && git push origin vX.Y.Z`
-8. **Build and upload the release-asset tarball:**
+1. Work from the semantic version's designated protected release-integration
+   branch. Resolve it with:
+
    ```bash
-   scripts/build-release-tarball.sh vX.Y.Z
-   gh release upload vX.Y.Z \
-       dist/processkit-vX.Y.Z.tar.gz \
-       dist/processkit-vX.Y.Z.tar.gz.sha256
+   scripts/maintain.sh release-branch vX.Y.Z
    ```
-   This is the preferred consumption path for aibox (DEC-025); aibox
-   falls back to a git fetch if the asset is missing.
-9. **Build and publish the documentation locally:**
+
+2. Add curated tracked release notes at `release-notes/vX.Y.Z.md`.
+3. Resolve or record tracked deferrals for every doctor warning.
+4. Generate a local release key once, outside the repository:
+
    ```bash
-   scripts/publish-docs-gh-pages.sh vX.Y.Z
+   scripts/processkit-keygen-local.sh \
+       "$HOME/.config/processkit/keys/release.pem" \
+       "$HOME/.config/processkit/trust.d/release.pub.pem"
    ```
-   This builds the site, commits the generated output to `gh-pages`, and
-   pushes the branch. Do not add a GitHub Actions workflow.
+5. Export the two absolute key paths without printing key contents:
+
+   ```bash
+   export PROCESSKIT_RELEASE_PRIVATE_KEY=\
+"$HOME/.config/processkit/keys/release.pem"
+   export PROCESSKIT_RELEASE_PUBLIC_KEY=\
+"$HOME/.config/processkit/trust.d/release.pub.pem"
+   ```
+6. Run the evidence-bound candidate phases:
+
+   ```bash
+   scripts/maintain.sh release vX.Y.Z \
+     --steps phase0,checks,build
+   ```
+7. Review `dist/release-evidence/vX.Y.Z/<commit>/`, then publish and verify:
+
+   ```bash
+   scripts/maintain.sh release vX.Y.Z \
+     --steps publish,verify
+   ```
+
+Candidate evidence is reusable only for the exact version, commit, clean tree,
+toolchain, and host binding. Do not add GitHub Actions or workflow files. The
+local publish script pushes prebuilt output to `gh-pages`; GitHub Pages does
+not build the site.
 
 ## Backlog and tracked work
 

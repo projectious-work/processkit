@@ -1,6 +1,6 @@
 ---
-title: "Language Skills"
 weight: 4
+title: "Language Skills"
 ---
 
 Language-specific conventions, patterns, and best practices.

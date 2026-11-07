@@ -1,6 +1,6 @@
 ---
-title: "API & Integration Skills"
 weight: 10
+title: "API & Integration Skills"
 ---
 
 Skills for API design, protocol patterns, and system integration.

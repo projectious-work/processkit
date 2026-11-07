@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["adapter", "path", "format", "catalogSha256", "managedKeys"],
+  "properties": {
+    "adapter": {"type": "string", "minLength": 1},
+    "path": {"type": "string", "minLength": 1},
+    "format": {"enum": ["json", "yaml", "toml"]},
+    "catalogSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "managedKeys": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "createdFile": {"type": "boolean", "default": false},
+    "createdMcpServers": {"type": "boolean", "default": false}
+  }
+}

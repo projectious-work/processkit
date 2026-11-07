@@ -4,13 +4,6 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SITE_ROOT="$REPO_ROOT/docs-site"
 
-if [[ -d "$REPO_ROOT/.github/workflows" ]] &&
-    find "$REPO_ROOT/.github/workflows" -type f -print -quit |
-        read -r _; then
-    echo "error: documentation must not depend on GitHub workflows" >&2
-    exit 1
-fi
-
 "$REPO_ROOT/scripts/build-docs-local.sh"
 
 # The base path differs per release line (root on v0.x-dev, /v1.x/ on

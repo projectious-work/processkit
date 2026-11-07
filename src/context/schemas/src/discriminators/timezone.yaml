@@ -1,0 +1,16 @@
+extends: ../primitives/location.yaml
+apiVersion: processkit.projectious.work/v2
+kind: Schema
+metadata: {id: SCHEMA-location-timezone, target_kind: Location, version: 1.0.0-alpha.3}
+spec:
+  parent: Location
+  discriminator: {field: kind, value: timezone}
+  description: An IANA timezone anchor.
+  spec_schema:
+    properties:
+      __merge: name-merge
+      value:
+        kind: {const: timezone}
+        value:
+          type: string
+          pattern: "^[A-Za-z_]+(?:/[A-Za-z0-9_+\\-]+)+$"

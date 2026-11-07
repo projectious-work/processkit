@@ -1,7 +1,7 @@
-# migration-management MCP server
+# Migration Management MCP Server
 
-Upstream-migration lifecycle — list, read, start, apply, and reject
-Migrations. Layer 3 — depends on `event-log`, `index-management`,
+Migration drafting, lifecycle, normalization, and deterministic v0-to-v1
+corpus conversion. Layer 3 — depends on `event-log`, `index-management`,
 and `id-management`.
 
 This server documents its own tool contract only. In gateway deployments,
@@ -13,13 +13,16 @@ manifest.
 
 | Tool                                   | Purpose                                                                                                  |
 |----------------------------------------|----------------------------------------------------------------------------------------------------------|
-| `draft_migration(kind, summary, affected_files, related_decisions?, body?)` | Create a well-formed locally-authored pending migration for a schema extension or data fix. |
 | `list_migrations(state?)`              | List active Migrations by default (`pending` + `in-progress`), or explicitly filter by `pending`, `in-progress`, `applied`, or `rejected`. Walks the state directories directly (no index dependency). |
 | `get_migration(id)`                    | Fetch one Migration with full spec + body. Accepts full ID, prefix, or bare word-pair.                   |
+| `draft_migration(kind, summary, affected_files, related_decisions?, body?)` | Create a schema-valid pending local Migration and event. |
 | `start_migration(id)`                  | Transition `pending → in-progress`. Stamps `spec.started_at`, moves file, refreshes INDEX.md.            |
 | `apply_migration(id, notes?)`          | Transition `in-progress → applied` (or `pending → in-progress → applied` via implicit start). Appends `notes` to `spec.progress_notes` if given. |
 | `reject_migration(id, reason)`         | Transition `pending` or `in-progress` → `rejected`. Stamps `spec.rejected_reason`. Moves file to `applied/` per processkit convention. |
-| `normalize_migration_filename(id, target_id)` | Audited normalization to a canonical `MIG-YYYYMMDD_HHMM-WordPair` ID. Updates mutable references, regenerates `INDEX.md`, rebuilds the index, and logs the old-to-new mapping without rewriting append-only history. |
+| `normalize_migration_filename(id, target_id)` | Normalize a Migration ID and mutable references while preserving append-only history. |
+| `migrate_context_to_v2(dry_run?)` | Restamp legacy entity API content through the v2 compatibility path. |
+| `plan_v0_to_v1_migration(source_version?, target_version?)` | Produce a deterministic hash-guarded corpus plan. |
+| `execute_v0_to_v1_migration(plan)` | Stage, validate, and apply the unchanged corpus plan with a recovery journal. |
 
 ## State machine
 
@@ -50,13 +53,6 @@ moves the file atomically with the state update.
   share a single historical directory. "Applied" here means "decision
   finalized", not "code applied". INDEX.md splits the two into
   separate `## Applied` and `## Rejected` sections.
-- **Filename normalization is the sole historical administrative repair.**
-  `normalize_migration_filename` may correct an applied or rejected
-  Migration's ID and filename only when the caller supplies the canonical
-  target format. It writes the corrected record before removing the old file,
-  rebuilds the index, and emits `migration.filename-normalized`. Existing
-  LogEntries and other terminal Migrations remain append-only; the emitted
-  event is the durable old-to-new ID bridge.
 - **`spec.started_at`** is stamped on first entry to `in-progress`;
   `spec.applied_at` on entering `applied`; `spec.rejected_at` +
   `spec.rejected_reason` on entering `rejected`. `spec.applied_by` is

@@ -1,5 +1,5 @@
 ---
-title: "Framework & SEO Skills"
+title: Framework & SEO Skills
 ---
 
 Skills for specific frameworks and search engine optimization.

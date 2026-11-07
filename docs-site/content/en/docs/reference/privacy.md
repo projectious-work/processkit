@@ -1,6 +1,6 @@
 ---
-title: "Privacy Tiers"
 weight: 4
+title: "Privacy Tiers"
 ---
 
 processkit recognizes three privacy tiers for entities under `context/`.
@@ -104,22 +104,14 @@ functionally identical.
 
 ## Docs-site filtering
 
-Projects that build a documentation site from their context content must
-exclude private subtrees from the build. For the Hugo site processkit
-itself ships, that is a `hugo.yaml` entry:
+The processkit Hugo site publishes only explicitly curated content under
+`docs-site/content/en/`. It does not mount a project `context/` tree.
+The local documentation gate also rejects any directory named `private`
+inside the publishable content tree.
 
-```yaml
-ignoreFiles:
-  - "/private/"
-```
-
-Other generators need the same rule expressed their own way — a
-Docusaurus `docs` preset, for example, takes
-`exclude: ['**/private/**']`.
-
-This is the rule processkit's own documentation build carries. It
-matches `private/` directories at any depth, so `context/private/`,
-`context/owner/private/`, and any deeper nesting are all excluded.
+Derived projects that mount or generate Hugo content from `context/` must
+apply the same boundary before invoking Hugo: no `private/` directory at
+any depth may enter the site's content or static mounts.
 
 ## Multi-user projects
 

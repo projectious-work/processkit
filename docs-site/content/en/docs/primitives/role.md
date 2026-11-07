@@ -1,6 +1,6 @@
 ---
-title: "Role"
 weight: 16
+title: "Role"
 ---
 
 A named set of responsibilities. Roles are descriptive — they document

@@ -1,0 +1,5 @@
+{
+  "apiVersion": "processkit.projectious.work/installer/v1alpha1",
+  "operation": "plan",
+  "root": "."
+}

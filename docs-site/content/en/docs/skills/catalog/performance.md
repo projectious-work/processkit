@@ -1,5 +1,5 @@
 ---
-title: "Performance Skills"
+title: Performance Skills
 ---
 
 Skills for performance analysis, optimization, and load testing.
