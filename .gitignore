@@ -1,19 +1,6 @@
 # ── Project-specific ─────────────────────────────────────────────────────────
 # Add your project-specific ignore patterns here.
 
-# processkit runtime cache (SQLite index, etc.) — regenerable
-context/.cache/
-
-# processkit runtime state (skill-gate session markers, etc.) — regenerable
-context/.state/
-
-# generated upstream template mirrors — regenerable from pinned releases
-context/templates/aibox-home/
-context/templates/processkit/
-
-# user-private entity files (privacy: user-private convention)
-context/**/private/
-
 # temporary holding area for the post-v0.5.1 aibox re-scaffolding
 # experiment — see _pre-aibox-context/README.md
 _pre-aibox-context/
@@ -86,3 +73,12 @@ context/private/
 
 .agents/skills/
 .codex/hooks.json
+
+.latex-cache/
+.release-keys/
+installer/target/
+
+context/.cache/
+context/.state/
+context/**/private/
+context/templates/aibox-home/
