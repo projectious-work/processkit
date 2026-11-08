@@ -19,7 +19,11 @@ Versions follow [Semantic Versioning](https://semver.org/).
   added from the earlier governance draft (#206) and the pinned-profiles
   proposal (#204). Product definition, architecture, decisions, and the
   release-wide verification text move to `docs/v1/`; the roadmap moves to
-  `roadmap.yaml` and lists each phase's `specs`.
+  `roadmap.yaml` and lists each phase's `specs`. The open questions of
+  the nine drafts are answered (#213): 236 requirements and 48 JSON Schemas
+  were added, and agent proposals are marked for owner review. Two ADRs
+  in `docs/adr/` record the CLI command style and that `processkit lock`
+  reads only fetched data.
 - Adopt GitHub Flow for this repository (#205): v1 is developed on `main`,
   v0 continues on `lts/v0`, and releases are prepared on `release/vX.Y.Z`
   and tagged on the squash commit. `scripts/maintain.sh` keys release
