@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/v0-migration/migrate-result.schema.json",
+  "title": "processkit migrate data",
+  "description": "The 'data' of processkit migrate --json (v0-migration@v1 PK-MIG-022). The plan is carried in the envelope's 'plan' (cli@v1 schemas/plan.schema.json), the written files in 'changes', and manual actions in 'diagnostics' (PK-MIG-020).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mode", "source", "items", "untouched"],
+  "properties": {
+    "mode": {
+      "description": "v0: processkit migrate --from v0. content-api: processkit migrate without --from.",
+      "enum": ["v0", "content-api"]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v0Release"],
+      "properties": {
+        "v0Release": {
+          "description": "install.processkit_version of context/.processkit-provenance.toml, or null when the marker is absent or mode is content-api.",
+          "type": ["string", "null"],
+          "pattern": "^v0\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        }
+      }
+    },
+    "items": {
+      "description": "One entry per recognized v0 source (or per rewritten item in mode content-api), sorted by the first source path in ascending Unicode code point order.",
+      "type": "array",
+      "items": {"$ref": "#/$defs/item"}
+    },
+    "untouched": {
+      "description": "Untouched v0 items (files below context/ with a string metadata.id that are not converted sources) per v0 kind, sorted by kind. Empty in mode content-api.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "count"],
+        "properties": {
+          "kind": {"type": "string", "minLength": 1},
+          "count": {"type": "integer", "minimum": 1}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "path": {
+      "description": "Repository-relative path with '/' separators.",
+      "type": "string",
+      "minLength": 1
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceKind", "sourceId", "sourcePaths", "targetKind", "targetName", "targetPaths", "status", "fields"],
+      "properties": {
+        "sourceKind": {
+          "description": "v0 kind of the source; Skill for a v0 skill.",
+          "enum": ["DecisionRecord", "Process", "Artifact", "Skill"]
+        },
+        "sourceId": {
+          "description": "metadata.id of the v0 source (metadata.processkit.id for a skill).",
+          "type": "string",
+          "minLength": 1
+        },
+        "sourcePaths": {
+          "description": "Every v0 file of the source, sorted.",
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/path"}
+        },
+        "targetKind": {
+          "enum": ["DecisionRecord", "ProcessSpecification", "Skill"]
+        },
+        "targetName": {
+          "description": "v1 metadata.name of the converted item, or null when it could not be derived.",
+          "type": ["string", "null"]
+        },
+        "targetPaths": {
+          "description": "Every file of the converted item, sorted.",
+          "type": "array",
+          "items": {"$ref": "#/$defs/path"}
+        },
+        "status": {
+          "description": "convertible: no manual action for this source. blocked: at least one manual action names one of its source paths.",
+          "enum": ["convertible", "blocked"]
+        },
+        "fields": {
+          "description": "Per-run preservation report of the item (PK-MIG-026): one entry per source field and target, sorted by source, then target.",
+          "type": "array",
+          "items": {"$ref": "#/$defs/field"}
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "treatment", "target"],
+      "properties": {
+        "source": {
+          "description": "JSON pointer into the v0 front matter, 'body' for the Markdown body, or a path relative to the skill directory for a kept file.",
+          "type": "string"
+        },
+        "treatment": {
+          "enum": ["mapped", "annotated", "kept", "supplement"]
+        },
+        "target": {
+          "description": "mapped: JSON pointer into the converted item's front matter or JSON, or 'body'. annotated: the annotation key. kept: the target path. supplement: null.",
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

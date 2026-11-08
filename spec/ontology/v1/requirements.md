@@ -127,6 +127,11 @@ recommended, "may" optional; IDs are stable and never reused.
   access decisions.
 - **PK-MODEL-013:** The key prefix `processkit.projectious.work/` shall be
   reserved. Authored content shall not set reserved keys.
+- **PK-MODEL-075:** The reservation of PK-MODEL-013 shall apply to the exact
+  prefix `processkit.projectious.work/` only. Keys under a subdomain, such
+  as the v0 annotation keys `v0.processkit.projectious.work/<pointer>` that
+  v0-migration@v1 writes, shall not be reserved.
+  <!-- agent proposal: reconciliation with v0-migration@v1 -->
 - **PK-MODEL-014:** Authored content shall live in `spec`. processkit shall
   report validation result, content digest, source path, provenance, and
   other derived facts as `status`, and authored content shall not set them.

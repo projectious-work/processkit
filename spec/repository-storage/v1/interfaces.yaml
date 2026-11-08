@@ -331,6 +331,10 @@ fields:
       PK-DOC-004).
     required: true
     supported_in_v1: [processkit.projectious.work/v1]
+    never_assigned: processkit.projectious.work/v2 and later values that v0
+      releases used are not reused as content apiVersions; the next content
+      API version is chosen so that it cannot be mistaken for a v0 value
+      (v0-migration@v1 recognition rules)
     supported_list_source: processkit version (cli@v1 PK-OUT-005, PK-OUT-010)
     effect: validation uses the schema of the declared apiVersion
     missing: the missing-envelope-field diagnostic of ontology@v1

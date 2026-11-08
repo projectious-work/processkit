@@ -282,7 +282,8 @@ confirmed.
   `--yes` is given, the processkit CLI shall not ask.
   <!-- agent proposal: OPEN-cli-04 -->
 - **PK-CLI-034:** `processkit init` and `processkit migrate` shall always
-  require confirmation, also when their plan only creates files. Other
+  require confirmation, also when their plan only creates files, except
+  when `migrate` has nothing to migrate (v0-migration@v1 PK-MIG-023). Other
   writing commands shall require confirmation as PK-CLI-014 states. If a
   plan that requires confirmation runs non-interactively without `--yes`,
   then the processkit CLI shall refuse it with `cli.confirmation-required`.

@@ -360,6 +360,9 @@ Covers: PK-MODEL-020, PK-MODEL-070
   schema and fixture tests.
 - **PK-MODEL-030** — a recommendation verified by schema review against
   Dublin Core Terms and W3C PROV mappings.
+- **PK-MODEL-075** — a fixture item with a
+  `v0.processkit.projectious.work/` key validates, and one with a
+  `processkit.projectious.work/` key fails; a schema-fixture test.
 - **PK-MODEL-031** — optional; no projection ships in v1. If one is added,
   a generation test proves it derives from the registry.
 - **PK-MODEL-042** — a review criterion for changes to the published
