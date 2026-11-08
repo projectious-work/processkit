@@ -7,7 +7,7 @@ without changing behavior: breaking up large files, extracting libraries
 from monoliths, and paying down technical debt. It applies to every
 refactoring larger than a local rename.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 ## Principles
@@ -22,17 +22,20 @@ Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic
 1. **Name the target.** State the *Code Smells* to remove (for example Long
    Method, Feature Envy, Shotgun Surgery, Divergent Change) and the
    refactorings from the *Refactoring Catalog according to Fowler* to apply.
-2. **Secure behavior first.** If existing tests do not cover the code at its
+2. **Know why the code is as it is** before removing a check, boundary, or
+   oddity (*Chesterton's Fence*).
+3. **Secure behavior first.** If existing tests do not cover the code at its
    public boundary, add characterization tests before changing structure.
-3. **Move in small steps.** Each step is one catalog refactoring followed by
+4. **Move in small steps.** Each step is one catalog refactoring followed by
    the affected test run.
-4. **Larger changes use the *Mikado Method*.** Record the Mikado
+5. **Larger changes use the *Mikado Method*.** Record the Mikado
    graph in the pull request or development note. Never leave the build broken
    while digging.
-5. **Respect the target architecture.** Refactorings move code towards the
+6. **Respect the target architecture.** Refactorings move code towards the
    [software architecture and code design standard](software-architecture-and-code-design.md),
-   never across its boundaries in the wrong direction.
-6. **Keep scope.** Clean up code you touch anyway (*Boy Scout Rule*); larger
+   never across its boundaries in the wrong direction. Extractions produce
+   *Deep Modules*, not shallow pass-through layers.
+7. **Keep scope.** Clean up code you touch anyway (*Boy Scout Rule*); larger
    findings become explicit follow-up work.
 
 ## Commits and review
@@ -47,7 +50,8 @@ Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic
 
 ## Agent briefing
 
-> Name the *Code Smells*, secure behavior with characterization tests, apply
-> *Refactoring Catalog* steps one at a time with green tests at every commit,
-> use the *Mikado Method* for large changes, limit scope by the *Boy Scout
-> Rule*, and keep behavior changes out of `refactor:` commits.
+> Name the *Code Smells*, learn why code exists (*Chesterton's Fence*), secure
+> behavior with characterization tests, apply *Refactoring Catalog* steps one
+> at a time with green tests at every commit, use the *Mikado Method* for large
+> changes, extract *Deep Modules*, limit scope by the *Boy Scout Rule*, and
+> keep behavior changes out of `refactor:` commits.

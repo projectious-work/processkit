@@ -7,7 +7,7 @@ projectious.work applications. It applies to applications that combine two or
 more configuration sources. Libraries with no autonomous runtime use their
 host application's configuration contract instead.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 Services and workers follow *Twelve-Factor App* factor III: configuration comes

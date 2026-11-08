@@ -21,6 +21,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
   in `.standards/` with generated `standard-*` skills; the hand-copied
   `docs/standards/` is removed. `docs/applicability-record.md` records the
   product profiles and Twelve-Factor deviations.
+- Company standards upgraded to v2.2.0 (#213). This adds the CLI design,
+  user-interface design, agent-building, and agent-use standards with their
+  `standard-*` skills. The applicability record declares the AI agent
+  profile and the obligations v2.2.0 adds.
 
 ### Added
 

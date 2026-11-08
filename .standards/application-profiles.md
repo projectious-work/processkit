@@ -7,7 +7,7 @@ document defines applicability profiles so a CLI convention is not imposed on
 a library, and a service requirement is not imposed on a documentation-only
 repository.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 A repository declares one primary profile and any secondary profiles in its
@@ -20,7 +20,9 @@ silently ignoring an applicable requirement.
 
 Applies configuration precedence, stdout/stderr separation, terminal and
 machine rendering, exit codes, signal handling, cross-platform distribution,
-and black-box command tests.
+and black-box command tests. Command grammar follows the
+[command-line interface design standard](command-line-interface-design.md)
+(*Unix Philosophy* and one recorded style).
 
 ### Service or worker
 
@@ -33,14 +35,21 @@ configuration, data retention, and service-level integration tests. Follows
 
 Applies accessible interaction, local and remote state boundaries, privacy,
 error recovery, visual regression where valuable, API compatibility, and
-user-journey tests. CLI-only stream and exit-code rules do not apply unless the
-project also ships a CLI.
+user-journey tests, and the [user-interface design standard](user-interface-design.md).
+CLI-only stream and exit-code rules do not apply unless the project also ships
+a CLI.
 
 ### MCP server
 
 Applies [agent-native product interfaces](agent-native-product-interfaces.md).
 A local stdio server follows the CLI stream rules; a remote server also follows
 the Service or worker profile.
+
+### AI agent
+
+Applies to an agent the company builds or configures: a product agent, a
+sub-agent definition, a skill, or repository agent instructions. Follows the
+[agent building standard](agent-building.md).
 
 ### Library or SDK
 
@@ -63,7 +72,8 @@ end-to-end acceptance, and cost/cleanup controls.
 ### Documentation or website
 
 Applies local reproducible builds, links, accessibility, generated-content
-drift, public metadata, and content/release consistency. Runtime configuration
+drift, public metadata, content/release consistency, and the
+[user-interface design standard](user-interface-design.md). Runtime configuration
 and application logging rules are normally not applicable.
 
 ## Twelve-Factor alignment

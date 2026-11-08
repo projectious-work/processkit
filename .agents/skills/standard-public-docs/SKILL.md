@@ -12,11 +12,11 @@ Binding company standard. The rules below are the summary; the linked file is au
 ## Open-source documentation strategy
 
 Documentation follows implementation in the same change and lives in the
-repository. The README is a landing page and map, not the manual. Examples
-are executable promises. Docs build and deploy locally to `gh-pages` without
-GitHub Actions. Status, limits, and breaking changes are honest and visible.
-A release is not publishable until the minimum release documentation gate
-passes.
+repository. The README is a landing page and map (*Progressive Disclosure*).
+Text meets *Plain Language (ISO 24495)*; procedures use *ASD-STE100* rules.
+Examples are executable promises. Docs deploy locally to `gh-pages` without
+GitHub Actions. Status and limits are honest; a release needs the minimum
+release documentation gate.
 
 Full standard: `.standards/open-source-documentation-strategy.md`. Sections:
 

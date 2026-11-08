@@ -8,7 +8,7 @@ projectious.work repository that implements against specifications. The
 [spec-driven development cycle](spec-driven-development-cycle.md) defines how
 work proceeds against them.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 ## What gets a specification

@@ -11,12 +11,12 @@ Binding company standard. The rules below are the summary; the linked file is au
 
 ## Git branching and release standard
 
-*GitHub Flow* with *Conventional Commits*: `feat/`, `fix/`, `chore/`, `spec/`
-from `main` as `[<issue>-]<slug>`; unclear target: stop. Squash-merge after
-explicit owner approval; title type matches the prefix. `release/vX.Y.Z`
-holds only `chore(release): vX.Y.Z`; tag the squash commit. Specs: tag
-`spec/<slug>/vN`. `lts/vN`: names `lts<N>-…`; fix `main` first, then
-`git cherry-pick -x`. Never develop on `release/*`; never bypass protection.
+*GitHub Flow*, *Conventional Commits*, *50/72 Rule*: `feat/`, `fix/`,
+`chore/`, `spec/` from `main` as `[<issue>-]<slug>`; unclear target: stop.
+Squash-merge after explicit owner approval; title type matches the prefix.
+`release/vX.Y.Z` holds only `chore(release): vX.Y.Z`; tag the squash commit.
+Specs: tag `spec/<slug>/vN`. `lts/vN`: names `lts<N>-…`; fix `main` first,
+then `git cherry-pick -x`. Never develop on `release/*` or bypass protection.
 
 Full standard: `.standards/git-branching-and-releases.md`. Sections:
 
