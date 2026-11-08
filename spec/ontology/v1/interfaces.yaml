@@ -1,6 +1,7 @@
 # Interface catalog for ontology@v1.
-# Everything the ontology and content model make observable. Identifiers
-# not stated by the requirements or the baseline are listed under `open`.
+# Everything the ontology and content model make observable. Entries marked
+# `basis: agent-proposal` were drafted to answer former open items and await
+# owner review at freeze (see overview.md, "Resolved open items").
 slug: ontology
 version: 1
 
@@ -9,32 +10,118 @@ schemas:
     id: https://schemas.projectious.work/processkit/v1/resource-metadata.schema.json
     describes: metadata object of the common envelope
     requirements: [PK-MODEL-010, PK-MODEL-011, PK-MODEL-012]
+  - path: schemas/ontology-registry.schema.json
+    id: https://schemas.projectious.work/processkit/v1/ontology-registry.schema.json
+    describes: the published registry document and the data of
+      `processkit ontology list` and MCP `ontology()`
+    basis: agent-proposal
+    requirements: [PK-MODEL-001, PK-MODEL-055, PK-MODEL-057, PK-MODEL-070]
+  - path: schemas/container.schema.json
+    id: https://schemas.projectious.work/processkit/v1/container.schema.json
+    describes: a Container item
+    basis: agent-proposal
+    requirements: [PK-MODEL-046, PK-MODEL-063, PK-MODEL-064, PK-MODEL-065]
+  - path: schemas/status.schema.json
+    id: https://schemas.projectious.work/processkit/v1/status.schema.json
+    describes: the derived `status` member of single-item results
+    basis: agent-proposal
+    requirements: [PK-MODEL-014, PK-MODEL-022, PK-MODEL-023, PK-MODEL-062]
+  - path: schemas/ontology-extension.schema.json
+    id: https://schemas.projectious.work/processkit/v1/ontology-extension.schema.json
+    describes: the published extension metaschema (an OntologyExtension item)
+    basis: agent-proposal
+    requirements: [PK-MODEL-040, PK-MODEL-072]
 
 registry:
   description: >-
     One versioned, release-owned ontology registry generated from the same
     source as the schemas and reference documentation.
-  versioned: true
-  entry_content:
-    # Content each registry entry carries. Field names are not fixed by the
-    # baseline; see OPEN-ontology-01.
-    - class            # one of concept_classes
-    - side             # definition | instance
-    - description
-    - parent_primitive # where applicable (D discriminators)
-    - relations
-    - schema_or_fragment_location
+  file: ontology-registry.json
+  published_at: https://schemas.projectious.work/processkit/v1/ontology-registry.json
+  shipped: in the installed release as a release-owned file
+    (repository-storage@v1 release_owned); not copied into repositories
+  serialization: JSON written as repository-storage@v1
+    serialization_written_by_processkit (UTF-8, LF, two-space indentation,
+    trailing newline)
+  schema: schemas/ontology-registry.schema.json
+  ordering: concepts and relationTypes sorted by name, by Unicode code point
+  version:
+    field: ontologyVersion
+    format: semantic version MAJOR.MINOR.PATCH
+    first_v1_value: "1.0.0"
+    reported_by: processkit version --json (field name cli@v1, OPEN-cli-14)
+  top_level_fields: [ontologyVersion, concepts, relationTypes]
+  entry_fields:
+    - {field: name, content: canonical PascalCase concept name}
+    - {field: class, values: [T, P, D, C]}
+    - {field: side, values: [definition, instance]}
+    - {field: sideRule, content: rule deciding the stored use of a
+        dual-use concept, optional}
+    - {field: description, content: "text, 1..600 characters"}
+    - {field: parent, content: parent P primitive, present exactly for D}
+    - {field: parts, content: concept names, present exactly for C}
+    - {field: relations, content: "list of {type, as}; as is subject or
+        target"}
+    - {field: schema, content: "{form, uri}"}
+    - {field: namespace, content: extension concepts only}
+    - {field: namespaceOwner, content: extension concepts only}
+    - {field: extension, content: "extension concepts only;
+        OntologyExtension/<name>"}
+  schema_forms:
+    - form: closed-schema
+      for: P, D, and C concepts on the definition side
+      uri: https://schemas.projectious.work/processkit/v1/concepts/<name>.schema.json
+    - form: fragment
+      for: T foundational concepts
+      uri: https://schemas.projectious.work/processkit/v1/fragments/<name>.schema.json
+    - form: vocabulary-fragment
+      for: concepts on the instance side
+      uri: https://schemas.projectious.work/processkit/v1/fragments/<name>.schema.json
+  example_entries: |
+    {
+      "name": "Team",
+      "class": "D",
+      "side": "definition",
+      "description": "A long-lived group of people that owns work.",
+      "parent": "Container",
+      "relations": [{ "type": "hierarchy", "as": "subject" }],
+      "schema": {
+        "form": "closed-schema",
+        "uri": "https://schemas.projectious.work/processkit/v1/concepts/Team.schema.json"
+      }
+    }
+  basis: agent-proposal
   requirements: [PK-MODEL-001, PK-MODEL-002, PK-MODEL-004, PK-MODEL-005,
-                 PK-PROD-003]
+                 PK-MODEL-054, PK-MODEL-055, PK-MODEL-056, PK-PROD-003]
   observable_checks:
     - check: registry lists exactly the 90 inventory concepts, each with a
         class and a side
       requirements: [PK-MODEL-005, PK-MODEL-002]
+    - check: every entry has the side listed in `inventory` below
+      requirements: [PK-MODEL-056]
     - check: regenerating registry, schemas, and reference documentation from
         the source yields no difference from the published files
       requirements: [PK-MODEL-004]
     - check: release is blocked when any inventory concept is missing
       requirements: [PK-MODEL-005]
+
+ontology_command:
+  # Semantics of the CLI command and MCP tool whose syntax cli@v1 and
+  # mcp-context-serving@v1 own. Envelope keys and exit categories: cli@v1.
+  basis: agent-proposal
+  operations:
+    - operation: processkit ontology list [--json]
+      data: a registry document (schemas/ontology-registry.schema.json) with
+        the concepts and relation types of every valid OntologyExtension in
+        the effective item set added
+      mcp_equivalent: ontology()
+      requirements: [PK-MODEL-057]
+    - operation: processkit ontology show NAME [--json]
+      data: one concept entry whose name equals NAME (case-sensitive)
+      not_found: diagnostic `ontology.unknown-concept`; exit category usage
+        error (cli@v1)
+      mcp_equivalent: ontology(concept=NAME)
+      requirements: [PK-MODEL-057]
 
 concept_classes:
   classes:
@@ -59,29 +146,48 @@ sides:
     examples: [Policy, Specification, ProcessSpecification, StateMachine,
                RoleSpecification, GateSpecification, WorkItemTemplate, Skill,
                Service, Role, Container, Binding, DecisionRecord]
-    schema_form: closed persistent schema
+    schema_form: closed persistent schema (P, D, C); fragment (T)
   instance:
     processkit: vocabulary inside definitions only; never persisted, served,
       or validated as content
     examples: [WorkItem, Event, LogEntry, Outcome, Measurement,
                EvaluationRun, Iteration]
     schema_form: vocabulary fragment
-  requirements: [PK-MODEL-002, PK-MODEL-003, PK-MODEL-054, PK-PROD-003]
+  rules:
+    - all T foundational concepts are on the definition side
+    - a D discriminator has the side of its parent primitive
+  requirements: [PK-MODEL-002, PK-MODEL-003, PK-MODEL-054, PK-MODEL-056,
+                 PK-PROD-003]
 
 inventory:
   total: 90
+  # Side per concept: `definition` and `instance` lists below.
+  # basis: agent-proposal (OPEN-ontology-08) except the baseline examples.
   T:
     count: 20
     concepts: [State, Transition, StateMachine, Lifecycle, Constraint, Guard,
                Identity, Versioning, Ownership, Immutability, Schema,
                Composition, Inheritance, Uniqueness, Interface,
                ValidationMode, Provenance, Visibility, Cardinality, Labeling]
+    definition: all 20
+    instance: []
   P:
     count: 22
     concepts: [Actor, Artifact, Binding, Capability, Channel, Command,
                Container, Event, Gate, Location, Note, Outcome, Policy,
                Proposition, Queue, Record, Recurrence, Resource, Role, Skill,
                Specification, WorkItem]
+    definition: [Artifact, Binding, Capability, Channel, Container, Gate,
+                 Location, Policy, Queue, Recurrence, Resource, Role, Skill,
+                 Specification]
+    instance: [Actor, Command, Event, Note, Outcome, Proposition, Record,
+               WorkItem]
+    side_rules:
+      Artifact: stored only as a governance document matched by a declared
+        document source (content-kinds@v1 Document); work outputs are
+        instances and are not stored
+      Actor: identity is consumed from authenticators (access-control@v1);
+        definitions name Roles or owners, not stored Actors
   D:
     count: 24
     by_parent:
@@ -91,6 +197,9 @@ inventory:
       Container: [Portfolio, ValueStream, ART, Team, Project, Scope]
       Binding: [Hierarchy, Position, ProvenanceLink, Correlation, Dependency,
                 OwnershipLink, RelatedTo]
+    definition: the 19 discriminators of Location, Capability, Container,
+      and Binding
+    instance: [Risk, Belief, WorldFact, WSJFEstimate, Assumption]
   C:
     count: 24
     concepts: [TeamMember, DecisionRecord, LogEntry, Measurement, Archive,
@@ -100,31 +209,66 @@ inventory:
                ChannelSpecification, QueueSpecification, WorkItemTemplate,
                Migration, ScopePlan, Roadmap, ProgramIncrement, Iteration,
                Release, Discussion, EvaluationRun]
+    definition: [DecisionRecord, ProcessSpecification, GoalSpecification,
+                 Service, RoleSpecification, GateSpecification,
+                 SchemaSpecification, ScheduleSpecification,
+                 TestSpecification, ChannelSpecification,
+                 QueueSpecification, WorkItemTemplate, Migration, ScopePlan,
+                 Roadmap]
+    instance: [TeamMember, LogEntry, Measurement, Archive, ProgramIncrement,
+               Iteration, Release, Discussion, EvaluationRun]
+  side_totals: {definition: 68, instance: 22}
   scaling_framework_concepts:
     # usable, never required by a processkit content kind or default
     examples: [ART, ValueStream, ProgramIncrement, WSJFEstimate]
     requirements: [PK-MODEL-006]
-  requirements: [PK-MODEL-005]
+  requirements: [PK-MODEL-005, PK-MODEL-002, PK-MODEL-056]
 
 generation:
   description: Build-time generation of registry, schemas, and documentation.
+    The generator is a source-tree tool; it exits non-zero and reports each
+    failure with the code below and the concept's canonical name.
   failure_conditions:
-    - unknown class
-    - duplicate canonical name
-    - missing declared parent
-    - dependency cycle
-    - T foundational concept not consumed by any generated P or C schema
-    - uncovered discriminator
-    - composition with unresolved parts
-  requirements: [PK-MODEL-051, PK-MODEL-052]
+    - {condition: unknown class, code: ontology.gen.unknown-class}
+    - {condition: duplicate canonical name,
+       code: ontology.gen.duplicate-name}
+    - {condition: missing declared parent, code: ontology.gen.missing-parent}
+    - {condition: dependency cycle, code: ontology.gen.cycle}
+    - {condition: T foundational concept not consumed by any generated P or
+         C schema, code: ontology.gen.unconsumed-foundational}
+    - {condition: uncovered discriminator,
+       code: ontology.gen.uncovered-discriminator}
+    - {condition: composition with unresolved parts,
+       code: ontology.gen.unresolved-part}
+    - {condition: inventory concept missing from the registry (release
+         gate), code: ontology.gen.inventory-incomplete,
+       requirements: [PK-MODEL-005]}
+    - {condition: published file differs from regenerated output,
+       code: ontology.gen.drift, requirements: [PK-MODEL-004]}
+  requirements: [PK-MODEL-051, PK-MODEL-052, PK-MODEL-058]
+  discriminators:
+    declared_by: the parent schema's `discriminator` field lists the D
+      names it admits (for Container, `spec.discriminator`); Binding admits its
+      discriminators through relation types in `spec.relation`
+    uncovered_when:
+      - the parent schema does not admit the discriminator
+      - the release lacks a positive or a negative fixture for it
+    invalid_mixing:
+      - the item names a discriminator of another parent
+      - the item names more than one discriminator
+      - the item carries a field that only another discriminator of the same
+        parent defines
+    requirements: [PK-MODEL-053, PK-MODEL-059, PK-MODEL-060]
   fixtures:
     - for: every D discriminator
+      location: "fixtures/discriminators/<name>/ in the release,
+        files valid-<n>.json and invalid-<n>.json, n from 1"
       positive: valid specialization of the parent primitive
       negative: invalid mixing is rejected
-      requirements: [PK-MODEL-053]
-  observable_check: >-
-    generation fails for each failure condition (diagnostic form is
-    OPEN-ontology-02)
+      requirements: [PK-MODEL-053, PK-MODEL-060]
+  basis: agent-proposal
+  observable_check: generation fails with the listed code for each failure
+    condition
 
 envelope:
   example: |
@@ -160,11 +304,13 @@ envelope:
     - path: metadata.namespace
       required: false
       authored: true
-      default: the repository's root Container
-      constraint: names a known Container
+      default: root (the root Container)
+      constraint: names a known Container; not allowed on Container and
+        OntologyExtension items
       syntax: "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
       max_length: 63
-      requirements: [PK-MODEL-011, PK-MODEL-048, PK-MODEL-049]
+      requirements: [PK-MODEL-011, PK-MODEL-048, PK-MODEL-049, PK-MODEL-065,
+                     PK-MODEL-066]
     - path: metadata.labels
       required: false
       authored: true
@@ -190,83 +336,194 @@ envelope:
       requirements: [PK-MODEL-010, PK-MODEL-014]
     - path: status
       authored: false
-      content: [validation result, content digest, source path, provenance,
-                other derived facts]
-      shape: OPEN-ontology-05
-      requirements: [PK-MODEL-014]
+      schema: schemas/status.schema.json
+      members:
+        - {member: validation, content: "{outcome: valid | invalid,
+            diagnostics: [cli@v1 diagnostic]}"}
+        - {member: digest, content: "sha256:<64 lowercase hex> over the
+            bytes of the source file that holds the item's envelope"}
+        - {member: source, content: "{path}: POSIX path relative to the root
+            of the repository that holds the file"}
+        - {member: provenance, content: object whose members inheritance@v1
+            defines (OPEN-inheritance-06)}
+        - {member: references, content: "[{pointer, ref, resolved,
+            origin?}] for every typed reference in spec, in document order;
+            origin is the inherited target's provenance"}
+      present_in: [processkit show, processkit explain, MCP get,
+                   MCP explain]
+      absent_from: [processkit list, MCP list]
+      basis: agent-proposal
+      requirements: [PK-MODEL-014, PK-MODEL-022, PK-MODEL-023, PK-MODEL-062]
   reserved_key_prefix: processkit.projectious.work/
-  reserved_key_rule: authored labels and annotations must not use the prefix
+  reserved_key_rule: authored labels, annotations, and extension-map keys
+    must not use the prefix
   unknown_fields: fail validation unless the owning schema declares an
     extension map; extension fields are namespaced
+  extension_map:
+    member_name: extensions
+    key_syntax: "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+/[A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$"
+    key_max_length: 317
+    declared_in_v1_by: [Container spec.extensions]
+    basis: agent-proposal
+    requirements: [PK-MODEL-015, PK-MODEL-063]
   requirements: [PK-MODEL-013, PK-MODEL-015, PK-MODEL-016]
 
 containers:
   kind: Container
+  schema: schemas/container.schema.json
   content_fields:
-    # Field names under `spec` are not fixed by the baseline; see
-    # OPEN-ontology-03.
-    - name
-    - title
-    - owner
-    - parent        # optional, through the Hierarchy relation
-    - lifecycle
+    - {path: spec.title, required: true, type: "string, 1..200"}
+    - {path: spec.owner, required: true, type: "string, 1..200",
+       meaning: accountable person, role, or team}
+    - {path: spec.parent, required: false,
+       type: "typed reference Container/<name>",
+       meaning: the Hierarchy relation; omitted means the root Container}
+    - {path: spec.discriminator, required: false,
+       values: [Portfolio, ValueStream, ART, Team, Project, Scope]}
+    - {path: spec.lifecycle, required: true,
+       values: [proposed, active, retired],
+       effect: none on naming, selection, validation, or access}
+    - {path: spec.extensions, required: false, type: extension map}
+  example: |
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "kind": "Container",
+      "metadata": { "name": "engineering" },
+      "spec": {
+        "title": "Engineering",
+        "owner": "VP Engineering",
+        "parent": "Container/company",
+        "discriminator": "Team",
+        "lifecycle": "active"
+      }
+    }
   discriminators: [Portfolio, ValueStream, ART, Team, Project, Scope]
   no_discriminator_means: a company or another organizational unit
-  root_container: implicit when the repository declares none; name is
-    OPEN-ontology-04
+  root_container:
+    name: root
+    implicit: exists when no Container named root is declared
+    explicit: may be declared; must not set spec.parent
+    children: every Container without spec.parent
+    typed_reference: Container/root
+  container_namespace: Containers carry no metadata.namespace
+  known_containers: root plus the Containers of the effective item set,
+    including Containers from locked upstreams (inheritance@v1)
+  duplicate_check_scope: Containers declared by one repository; a local
+    Container named like an inherited one is handled by inheritance@v1
+    PK-INH-011 and PK-INH-014
   validation_errors:
-    - Container cycle
-    - unknown parent Container
-    - duplicate Container name
-    - item namespace naming an unknown Container (item fails and is not served)
+    - {condition: Container cycle, code: ontology.container-cycle}
+    - {condition: unknown parent Container, code: ontology.unknown-parent}
+    - {condition: duplicate Container name, code: ontology.duplicate-container}
+    - {condition: item namespace naming an unknown Container (item fails and
+         is not served), code: ontology.unknown-namespace}
+    - {condition: root Container declares a parent, code: ontology.root-parent}
+    - {condition: metadata.namespace on a Container or OntologyExtension,
+       code: ontology.namespace-not-allowed}
   semantics: namespace scopes naming, selection, and access only
   visibility: only through labels and access control (access-control@v1);
     no taint-like hiding mechanism
+  basis: agent-proposal
   requirements: [PK-MODEL-011, PK-MODEL-046, PK-MODEL-047, PK-MODEL-048,
-                 PK-MODEL-049, PK-MODEL-050]
+                 PK-MODEL-049, PK-MODEL-050, PK-MODEL-064, PK-MODEL-065,
+                 PK-MODEL-066]
 
 selectors:
-  description: One label-selector grammar shared by the processkit CLI and
-    the MCP server.
+  description: One label-selector grammar shared by the processkit CLI, the
+    MCP server, and Role access rules.
+  grammar: |
+    (* ISO 14977 EBNF. Input is a Unicode string. sp is U+0020 only. *)
+    selector     = [ sps ] , [ requirement ,
+                   { [ sps ] , "," , [ sps ] , requirement } , [ sps ] ] ;
+    requirement  = equality | inequality | set-in | set-notin
+                 | not-exists | exists ;
+    equality     = key , [ sps ] , "=" , [ sps ] , [ value ] ;
+    inequality   = key , [ sps ] , "!=" , [ sps ] , [ value ] ;
+    set-in       = key , sps , "in" , [ sps ] , value-set ;
+    set-notin    = key , sps , "notin" , [ sps ] , value-set ;
+    not-exists   = "!" , [ sps ] , key ;
+    exists       = key ;
+    value-set    = "(" , [ sps ] , value ,
+                   { [ sps ] , "," , [ sps ] , value } , [ sps ] , ")" ;
+    sps          = sp , { sp } ;
+    key          = ? a string matching envelope metadata.labels key_syntax,
+                     at most 317 code points ? ;
+    value        = ? a non-empty string matching envelope metadata.labels
+                     value_syntax ? ;
+  tokenization: keys and values are read greedily as the longest run of
+    characters allowed in a key ([A-Za-z0-9._/-]) or a value
+    ([A-Za-z0-9._-]); "in" and "notin" are case-sensitive keywords only in
+    the set position
   combinator: ","
   combinator_meaning: logical AND
   operators:
     - form: "key=value"
-      meaning: label key present with equal value
+      meaning: label key present with equal value; "key=" matches the empty
+        value
     - form: "key!=value"
-      meaning: label value not equal (behavior for missing key is
-        OPEN-ontology-06)
+      meaning: label key absent, or present with a different value
     - form: "key in (a,b)"
-      meaning: label value is one of the set
+      meaning: label key present with a value in the set
     - form: "key notin (a,b)"
-      meaning: label value is none of the set (behavior for missing key is
-        OPEN-ontology-06)
+      meaning: label key absent, or present with a value not in the set
     - form: "key"
       meaning: label key exists
     - form: "!key"
       meaning: label key does not exist
+  empty_selector: matches every item ("" or spaces only)
+  rejected:
+    - quoted values (the quote character is not allowed)
+    - empty value sets "()"
+    - "=="
+    - whitespace other than U+0020
+    - a selector longer than 4096 code points
+  max_length: 4096
   matches: metadata.labels only; never metadata.annotations
   invalid_selector:
     result: rejected
-    reports: exact position of the error (unit and base OPEN-ontology-07)
+    code: ontology.invalid-selector
+    position:
+      member: offset   # member of the cli@v1 diagnostic object
+      base: 0
+      unit: Unicode code point
+      rule: index of the first character that cannot continue a valid
+        selector; the selector length when input ends too early; the first
+        character of a well-formed token that exceeds a length bound
+    in_files: for a Role rule, the diagnostic also carries file and the JSON
+      pointer of the selector string
+    examples:
+      - {selector: "area=delivery,sensitivity in (internal", offset: 38}
+      - {selector: "area==delivery", offset: 5}
+      - {selector: "area=\"delivery\"", offset: 5}
+      - {selector: "sensitivity in ()", offset: 16}
   example: "sensitivity notin (confidential)"
   consumers:
     - processkit list KIND --selector S   # cli@v1
     - list(kind, selector?, ...)           # mcp-context-serving@v1
     - Role access rule selector            # access-control@v1
-  requirements: [PK-MODEL-044, PK-MODEL-045, PK-MODEL-012]
+  basis: agent-proposal
+  requirements: [PK-MODEL-044, PK-MODEL-045, PK-MODEL-012, PK-MODEL-067,
+                 PK-MODEL-068, PK-MODEL-069]
 
 references:
   forms:
     - "<kind>/<name>"
     - "<kind>/<namespace>/<name>"
+  syntax: "^[A-Z][A-Za-z0-9]*/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+  resolution:
+    - "<kind>/<name>: the item in the root Container; for Container and
+      OntologyExtension, the item of that name"
+    - "<kind>/<namespace>/<name>: the item in that namespace"
+    - through the effective item set, including inherited items
   not_identity: [filenames, Markdown links]
-  unresolved: kept visible as unresolved; fails validation where the owning
-    schema requires the reference
+  unresolved: kept visible as unresolved in status.references; fails
+    validation (severity error) where the owning schema requires the
+    reference, otherwise reported with severity warning
   inherited: resolved through the inheritance lock (inheritance@v1); results
-    carry the upstream identity
+    carry the upstream identity in status.references[].origin
   example: Container/engineering
-  requirements: [PK-MODEL-021, PK-MODEL-022, PK-MODEL-023]
+  basis: agent-proposal (syntax, resolution, severities)
+  requirements: [PK-MODEL-021, PK-MODEL-022, PK-MODEL-023, PK-MODEL-071]
 
 relations:
   relation_fields: [type, subject, target, scope (optional),
@@ -274,7 +531,57 @@ relations:
   relation_type_fields: [direction, cardinality, endpoint constraints,
                          inverse]
   stored_as: Binding
-  requirements: [PK-MODEL-020]
+  binding_fields:
+    # Shared by every relation type. The grants-role Binding contract,
+    # including its subject and validity shapes, is access-control@v1.
+    - {path: spec.relation, meaning: relation type name (the type)}
+    - {path: spec.subject, meaning: "typed reference; a principal object for
+        grants-role (access-control@v1)"}
+    - {path: spec.target, meaning: typed reference}
+    - {path: spec.scope, meaning: "typed reference Container/<name>; only
+        where the relation type allows scope"}
+    - {path: spec.validity, meaning: time bounds (shape access-control@v1)}
+  container_hierarchy: declared only by Container spec.parent; a hierarchy
+    Binding with a Container endpoint fails as ontology.relation-endpoint
+  registry_member: relationTypes of ontology-registry.json
+  endpoints: '"*" is any definition-side item; "principal" is a user or
+    group principal (access-control@v1)'
+  types:
+    - {name: hierarchy, discriminator: Hierarchy, direction: directed,
+       subject: ["*"], target: ["*"], excluded: [Container],
+       cardinality: many-to-one, inverse: contains, scope: false,
+       constraint: subject and target have the same kind}
+    - {name: position, discriminator: Position, direction: directed,
+       subject: [Role], target: [Container], cardinality: many-to-many,
+       inverse: has-position, scope: false}
+    - {name: provenance-link, discriminator: ProvenanceLink,
+       direction: directed, subject: ["*"], target: ["*"],
+       cardinality: many-to-many, inverse: source-of, scope: false}
+    - {name: correlation, discriminator: Correlation, direction: symmetric,
+       subject: ["*"], target: ["*"], cardinality: many-to-many,
+       inverse: correlation, scope: false}
+    - {name: dependency, discriminator: Dependency, direction: directed,
+       subject: ["*"], target: ["*"], cardinality: many-to-many,
+       inverse: required-by, scope: false}
+    - {name: ownership-link, discriminator: OwnershipLink,
+       direction: directed, subject: ["*"], target: [Role, Container],
+       cardinality: many-to-one, inverse: owns, scope: false}
+    - {name: related-to, discriminator: RelatedTo, direction: symmetric,
+       subject: ["*"], target: ["*"], cardinality: many-to-many,
+       inverse: related-to, scope: false}
+    - {name: grants-role, direction: directed, subject: [principal],
+       target: [Role], cardinality: many-to-many, inverse: granted-by,
+       scope: true, semanticsOwner: access-control@v1}
+  validation_errors:
+    - {condition: unknown relation type, code: ontology.unknown-relation-type}
+    - {condition: endpoint not allowed by the relation type,
+       code: ontology.relation-endpoint}
+    - {condition: more targets than the cardinality allows,
+       code: ontology.relation-cardinality}
+    - {condition: scope on a relation type without scope,
+       code: ontology.relation-endpoint}
+  basis: agent-proposal
+  requirements: [PK-MODEL-020, PK-MODEL-070]
 
 vocabulary_reuse:
   descriptive_metadata: Dublin Core Terms where the meaning fits exactly
@@ -288,125 +595,184 @@ extensions:
   may_add: [concepts, discriminators, relation types, content kinds]
   must: [be namespaced, validate against published extension metaschemas,
          declare namespace owner, not redefine published concepts]
-  inherited_extension_owner: upstream repository
+  kind: OntologyExtension
+  metaschema: schemas/ontology-extension.schema.json
+  fields:
+    - {path: spec.namespace, meaning: "DNS-style namespace, for example
+        example.com; processkit.projectious.work and its subdomains are
+        reserved"}
+    - {path: spec.namespaceOwner, meaning: accountable person, role, or team}
+    - {path: spec.concepts, meaning: added concepts and discriminators}
+    - {path: spec.relationTypes, meaning: added relation types}
+    - {path: spec.contentKinds, meaning: added content kinds}
+  naming: added names are plain (PascalCase for concepts and kinds,
+    kebab-case for relation types) and must be unique in the effective item
+    set; the registry entry carries namespace, namespaceOwner, and the
+    declaring OntologyExtension
+  redefinition: an added name equal to a published name, compared without
+    regard to ASCII case, is a redefinition
+  inherited_extension_owner: upstream repository; a local extension may not
+    declare a namespace an inherited extension declares
   location: context/ontology/ (repository-storage@v1)
+  example: |
+    {
+      "apiVersion": "processkit.projectious.work/v1",
+      "kind": "OntologyExtension",
+      "metadata": { "name": "incident-management" },
+      "spec": {
+        "namespace": "example.com",
+        "namespaceOwner": "Platform team",
+        "concepts": [
+          {
+            "name": "Incident",
+            "class": "C",
+            "side": "instance",
+            "description": "An unplanned interruption of a service.",
+            "parts": ["WorkItem", "Service"],
+            "schema": { "type": "object" }
+          }
+        ]
+      }
+    }
+  validation_errors:
+    - {condition: does not validate against the metaschema,
+       code: ontology.extension-invalid}
+    - {condition: missing namespace owner,
+       code: ontology.extension-missing-owner}
+    - {condition: redefines a published name,
+       code: ontology.extension-redefines-concept}
+    - {condition: two extensions add the same name,
+       code: ontology.extension-duplicate-name}
+    - {condition: local extension declares an inherited namespace,
+       code: ontology.extension-namespace-taken}
+    - {condition: reserved namespace, code: ontology.reserved-key}
   ontology_addition_criteria: [need across at least two unrelated domains,
     declared class and side, compatibility and migration treatment]
   processkit_own_repositories: published ontology and schemas only; no
     private concepts
-  requirements: [PK-MODEL-040, PK-MODEL-041, PK-MODEL-042, PK-MODEL-043]
+  basis: agent-proposal (kind, fields, naming, codes)
+  requirements: [PK-MODEL-040, PK-MODEL-041, PK-MODEL-042, PK-MODEL-043,
+                 PK-MODEL-072, PK-MODEL-073, PK-MODEL-074]
 
 observation_points:
   # Operations owned by other slugs through which this slug's effects are
   # observed. Arguments are as stated there; none are added here.
   - operation: processkit ontology list|show
-    owner: cli@v1
-    observes: published registry entries
-    requirements: [PK-MODEL-001, PK-MODEL-005, PK-PROD-003]
+    owner: cli@v1 (semantics in ontology_command above)
+    observes: published registry entries and extension entries
+    requirements: [PK-MODEL-001, PK-MODEL-005, PK-MODEL-057, PK-PROD-003]
   - operation: ontology(concept?)
     owner: mcp-context-serving@v1
     observes: published registry entries
-    requirements: [PK-MODEL-001, PK-MODEL-005]
+    requirements: [PK-MODEL-001, PK-MODEL-005, PK-MODEL-057]
   - operation: processkit version --json
     owner: cli@v1
     observes: ontology version
-    requirements: [PK-MODEL-001]
+    requirements: [PK-MODEL-001, PK-MODEL-055]
   - operation: processkit validate [PATH...] / validate(kind, content)
     owner: cli@v1, mcp-context-serving@v1
-    observes: envelope, Container, reference, and instance-kind validation
-      results with file, JSON pointer, and violated constraint
+    observes: envelope, Container, reference, relation, extension, and
+      instance-kind validation results with code, file, JSON pointer, and
+      violated constraint
     requirements: [PK-MODEL-003, PK-MODEL-010, PK-MODEL-011, PK-MODEL-013,
                    PK-MODEL-014, PK-MODEL-015, PK-MODEL-023, PK-MODEL-047,
-                   PK-MODEL-048]
+                   PK-MODEL-048, PK-MODEL-061]
   - operation: processkit list KIND [--selector S] [--namespace N] /
       list(kind, selector?, namespace?, limit?, cursor?)
     owner: cli@v1, mcp-context-serving@v1
     observes: selector matching, selector errors, namespace scoping,
       unserved invalid items
     requirements: [PK-MODEL-044, PK-MODEL-045, PK-MODEL-048, PK-MODEL-049]
+  - operation: processkit show KIND NAME / get(...)
+    owner: cli@v1, mcp-context-serving@v1
+    observes: status, unresolved references
+    requirements: [PK-MODEL-023, PK-MODEL-062]
   - operation: processkit explain KIND NAME
     owner: cli@v1
     observes: derived status and upstream identity of references
-    requirements: [PK-MODEL-014, PK-MODEL-022]
+    requirements: [PK-MODEL-014, PK-MODEL-022, PK-MODEL-062]
 
 errors:
-  # The baseline defines the conditions but no diagnostic codes.
+  # Diagnostic codes. Diagnostic shape (code, message, file, JSON pointer,
+  # severity, and member keys) is cli@v1 (OPEN-cli-02). Severity is error
+  # unless stated. Codes are lowercase, dot-separated, prefixed by the
+  # owning slug.
+  basis: agent-proposal
+  requirements: [PK-MODEL-061]
   conditions:
-    - {condition: missing envelope field, requirements: [PK-MODEL-010]}
-    - {condition: duplicate name per kind and namespace,
+    - {condition: missing envelope field, code: ontology.missing-field,
        requirements: [PK-MODEL-010]}
-    - {condition: Container cycle or unknown parent,
+    - {condition: duplicate name per kind and namespace,
+       code: ontology.duplicate-name, requirements: [PK-MODEL-010]}
+    - {condition: Container cycle, code: ontology.container-cycle,
        requirements: [PK-MODEL-011]}
-    - {condition: duplicate Container name, requirements: [PK-MODEL-047]}
-    - {condition: unknown namespace Container, requirements: [PK-MODEL-048]}
-    - {condition: label syntax or count out of bounds,
+    - {condition: unknown parent Container, code: ontology.unknown-parent,
+       requirements: [PK-MODEL-011]}
+    - {condition: root Container declares a parent,
+       code: ontology.root-parent, requirements: [PK-MODEL-065]}
+    - {condition: metadata.namespace on a Container or OntologyExtension,
+       code: ontology.namespace-not-allowed,
+       requirements: [PK-MODEL-065, PK-MODEL-072]}
+    - {condition: duplicate Container name, code: ontology.duplicate-container,
+       requirements: [PK-MODEL-047]}
+    - {condition: unknown namespace Container, code: ontology.unknown-namespace,
+       requirements: [PK-MODEL-048]}
+    - {condition: more than 64 labels, code: ontology.label-count,
        requirements: [PK-MODEL-012]}
-    - {condition: reserved key set by authored content,
-       requirements: [PK-MODEL-013]}
-    - {condition: authored status, requirements: [PK-MODEL-014]}
+    - {condition: label key syntax or length, code: ontology.label-key,
+       requirements: [PK-MODEL-012]}
+    - {condition: label value syntax or length, code: ontology.label-value,
+       requirements: [PK-MODEL-012]}
+    - {condition: more than 64 annotations, code: ontology.annotation-count,
+       requirements: [PK-MODEL-012]}
+    - {condition: annotation key length, code: ontology.annotation-key,
+       requirements: [PK-MODEL-012]}
+    - {condition: annotation value length, code: ontology.annotation-value,
+       requirements: [PK-MODEL-012]}
+    - {condition: reserved key or namespace set by authored content,
+       code: ontology.reserved-key, requirements: [PK-MODEL-013]}
+    - {condition: authored status, code: ontology.authored-status,
+       requirements: [PK-MODEL-014]}
     - {condition: unknown field without extension map,
-       requirements: [PK-MODEL-015]}
-    - {condition: instance-concept kind, requirements: [PK-MODEL-003]}
-    - {condition: required reference unresolved,
+       code: ontology.unknown-field, requirements: [PK-MODEL-015]}
+    - {condition: extension-map key not namespaced,
+       code: ontology.extension-field-not-namespaced,
+       requirements: [PK-MODEL-015, PK-MODEL-063]}
+    - {condition: other violation of an ontology-owned schema (envelope,
+         Container, OntologyExtension), code: ontology.schema-violation,
+       requirements: [PK-MODEL-010, PK-MODEL-064]}
+    - {condition: instance-concept kind, code: ontology.instance-kind,
+       requirements: [PK-MODEL-003]}
+    - {condition: reference not in a typed-reference form,
+       code: ontology.invalid-reference, requirements: [PK-MODEL-021]}
+    - {condition: reference unresolved (error where required, warning
+         otherwise), code: ontology.unresolved-reference,
        requirements: [PK-MODEL-023]}
-    - {condition: invalid selector (with position),
-       requirements: [PK-MODEL-045]}
-    - {condition: extension redefines published concept or lacks namespace
-         owner, requirements: [PK-MODEL-040, PK-MODEL-041]}
-  codes: OPEN-ontology-02
+    - {condition: invalid selector (with offset),
+       code: ontology.invalid-selector, requirements: [PK-MODEL-045,
+       PK-MODEL-069]}
+    - {condition: unknown concept in ontology show or ontology(concept),
+       code: ontology.unknown-concept, requirements: [PK-MODEL-057]}
+    - {condition: unknown relation type, code: ontology.unknown-relation-type,
+       requirements: [PK-MODEL-070]}
+    - {condition: relation endpoint or scope not allowed,
+       code: ontology.relation-endpoint, requirements: [PK-MODEL-070]}
+    - {condition: relation cardinality exceeded,
+       code: ontology.relation-cardinality, requirements: [PK-MODEL-070]}
+    - {condition: extension fails the metaschema,
+       code: ontology.extension-invalid, requirements: [PK-MODEL-040]}
+    - {condition: extension lacks namespace owner,
+       code: ontology.extension-missing-owner, requirements: [PK-MODEL-040]}
+    - {condition: extension redefines published concept,
+       code: ontology.extension-redefines-concept,
+       requirements: [PK-MODEL-041, PK-MODEL-073]}
+    - {condition: two extensions add the same name,
+       code: ontology.extension-duplicate-name, requirements: [PK-MODEL-073]}
+    - {condition: local extension declares an inherited namespace,
+       code: ontology.extension-namespace-taken,
+       requirements: [PK-MODEL-041, PK-MODEL-074]}
+  precedence: when a missing required field is also a schema violation,
+    ontology.missing-field is reported; a specific code always replaces
+    ontology.schema-violation for the same JSON pointer
 
-open:
-  - id: OPEN-ontology-01
-    question: What are the registry's file name, location in the release,
-      serialization, and exact entry field names (class, side, description,
-      parent, relations, schema location) and version format?
-    requirements: [PK-MODEL-001, PK-MODEL-005]
-  - id: OPEN-ontology-02
-    question: Which diagnostic codes identify each validation, selector, and
-      generation failure condition listed in this catalog?
-    requirements: [PK-MODEL-003, PK-MODEL-010, PK-MODEL-011, PK-MODEL-013,
-                   PK-MODEL-014, PK-MODEL-015, PK-MODEL-023, PK-MODEL-045,
-                   PK-MODEL-047, PK-MODEL-048, PK-MODEL-051]
-  - id: OPEN-ontology-03
-    question: What is the Container `spec` schema (field names, the type of
-      owner, how the Hierarchy parent is expressed, lifecycle states, how a
-      discriminator is declared)? No Container schema is published.
-    requirements: [PK-MODEL-046, PK-MODEL-011]
-  - id: OPEN-ontology-04
-    question: What is the name of the implicit root Container, and may a
-      repository declare it explicitly?
-    requirements: [PK-MODEL-011]
-  - id: OPEN-ontology-05
-    question: What is the shape and field naming of `status`, and is it
-      present in CLI and MCP results or only in `explain`?
-    requirements: [PK-MODEL-014]
-  - id: OPEN-ontology-06
-    question: Does `key!=value` or `key notin (...)` match an item without
-      the key? Are whitespace around operators, empty set lists, an empty
-      selector, and quoted values allowed?
-    requirements: [PK-MODEL-044]
-  - id: OPEN-ontology-07
-    question: Is the reported selector error position a 0- or 1-based
-      character or byte offset, and in which result field is it returned?
-    requirements: [PK-MODEL-045]
-  - id: OPEN-ontology-08
-    question: Which side (definition or instance) does each of the 90
-      concepts have? The baseline gives only examples per side.
-    requirements: [PK-MODEL-002, PK-MODEL-005, PK-MODEL-054]
-  - id: OPEN-ontology-09
-    question: What makes a discriminator "uncovered", and what counts as
-      "invalid mixing" in discriminator fixtures?
-    requirements: [PK-MODEL-051, PK-MODEL-053]
-  - id: OPEN-ontology-10
-    question: Do Containers declared in a locked upstream repository count as
-      known for `metadata.namespace` and Container parents, and are duplicate
-      names checked across upstream and local Containers?
-    requirements: [PK-MODEL-011, PK-MODEL-047, PK-MODEL-048]
-  - id: OPEN-ontology-11
-    question: What are the published extension metaschemas (names, paths)
-      and how is a namespace owner declared?
-    requirements: [PK-MODEL-040, PK-MODEL-041]
-  - id: OPEN-ontology-12
-    question: Where is the relation-type registry published and which
-      relation types (beyond grants-role and Hierarchy) ship in v1?
-    requirements: [PK-MODEL-020]
+open: []

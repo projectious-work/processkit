@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/container.schema.json",
+  "title": "processkit Container",
+  "description": "An organizational scope that acts as a namespace. A Container has no metadata.namespace. A Container without spec.parent is a child of the root Container named root.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "Container"
+    },
+    "metadata": {
+      "$ref": "resource-metadata.schema.json",
+      "not": {
+        "required": [
+          "namespace"
+        ]
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "owner",
+        "lifecycle"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "owner": {
+          "description": "Accountable person, role, or team.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "parent": {
+          "description": "The Hierarchy relation: typed reference to the parent Container. Omitted means the root Container.",
+          "type": "string",
+          "pattern": "^Container/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "maxLength": 90
+        },
+        "discriminator": {
+          "description": "Container discriminator of the inventory. Omitted means a company or another organizational unit.",
+          "enum": [
+            "Portfolio",
+            "ValueStream",
+            "ART",
+            "Team",
+            "Project",
+            "Scope"
+          ]
+        },
+        "lifecycle": {
+          "description": "Informational in v1: it does not change naming, selection, validation, or access.",
+          "enum": [
+            "proposed",
+            "active",
+            "retired"
+          ]
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensionMap"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "extensionMap": {
+      "description": "Extension map: every key is namespaced as <dns-prefix>/<name>; the prefix processkit.projectious.work/ is reserved.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+/[A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$",
+        "maxLength": 317,
+        "not": {
+          "pattern": "^processkit\\.projectious\\.work/"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/ontology-registry.schema.json",
+  "title": "processkit ontology registry",
+  "description": "The published, versioned ontology registry (ontology-registry.json) and the data of processkit ontology list. Concepts and relation types are sorted by name.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ontologyVersion",
+    "concepts",
+    "relationTypes"
+  ],
+  "properties": {
+    "ontologyVersion": {
+      "description": "Semantic version MAJOR.MINOR.PATCH of the published ontology.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "concepts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/concept"
+      }
+    },
+    "relationTypes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/relationType"
+      }
+    }
+  },
+  "$defs": {
+    "conceptName": {
+      "description": "Canonical concept name in PascalCase.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*$",
+      "maxLength": 63
+    },
+    "relationTypeName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "maxLength": 63
+    },
+    "extensionNamespace": {
+      "description": "DNS-style extension namespace; processkit.projectious.work and its subdomains are reserved.",
+      "type": "string",
+      "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+$",
+      "maxLength": 253,
+      "not": {
+        "pattern": "(^|\\.)processkit\\.projectious\\.work$"
+      }
+    },
+    "endpoint": {
+      "description": "A concept or content kind name, \"*\" for any definition-side item, or \"principal\" for an authenticated user or group (access-control@v1).",
+      "type": "string",
+      "pattern": "^(\\*|principal|[A-Z][A-Za-z0-9]*)$"
+    },
+    "concept": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "class",
+        "side",
+        "description",
+        "relations",
+        "schema"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/conceptName"
+        },
+        "class": {
+          "enum": [
+            "T",
+            "P",
+            "D",
+            "C"
+          ]
+        },
+        "side": {
+          "enum": [
+            "definition",
+            "instance"
+          ]
+        },
+        "sideRule": {
+          "description": "For a concept used both ways: the rule that decides which use is stored (PK-MODEL-002).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "parent": {
+          "description": "Parent P primitive; present exactly when class is D.",
+          "$ref": "#/$defs/conceptName"
+        },
+        "parts": {
+          "description": "Concepts the composition is assembled from; present exactly when class is C.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/conceptName"
+          }
+        },
+        "relations": {
+          "description": "Relation types the concept takes part in, and in which role.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "as"
+            ],
+            "properties": {
+              "type": {
+                "$ref": "#/$defs/relationTypeName"
+              },
+              "as": {
+                "enum": [
+                  "subject",
+                  "target"
+                ]
+              }
+            }
+          }
+        },
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "form",
+            "uri"
+          ],
+          "properties": {
+            "form": {
+              "enum": [
+                "closed-schema",
+                "fragment",
+                "vocabulary-fragment"
+              ]
+            },
+            "uri": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "namespace": {
+          "description": "Extension concepts only: the declaring extension's namespace.",
+          "$ref": "#/$defs/extensionNamespace"
+        },
+        "namespaceOwner": {
+          "description": "Extension concepts only: the declared namespace owner.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "extension": {
+          "description": "Extension concepts only: typed reference to the declaring OntologyExtension item.",
+          "type": "string",
+          "pattern": "^OntologyExtension/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "class": {
+                "const": "D"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "parent"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "parent"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "class": {
+                "const": "C"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "parts"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "parts"
+              ]
+            }
+          }
+        },
+        {
+          "dependentRequired": {
+            "namespace": [
+              "namespaceOwner",
+              "extension"
+            ],
+            "namespaceOwner": [
+              "namespace"
+            ],
+            "extension": [
+              "namespace"
+            ]
+          }
+        }
+      ]
+    },
+    "relationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "direction",
+        "subject",
+        "target",
+        "cardinality",
+        "inverse",
+        "scope"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/relationTypeName"
+        },
+        "discriminator": {
+          "description": "The Binding discriminator this relation type realizes, where one exists.",
+          "$ref": "#/$defs/conceptName"
+        },
+        "direction": {
+          "description": "directed: subject to target; symmetric: the relation holds both ways and is its own inverse.",
+          "enum": [
+            "directed",
+            "symmetric"
+          ]
+        },
+        "subject": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/endpoint"
+          }
+        },
+        "target": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/endpoint"
+          }
+        },
+        "excluded": {
+          "description": "Concepts or kinds that must not be an endpoint even where \"*\" is allowed.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/conceptName"
+          }
+        },
+        "cardinality": {
+          "description": "many-to-one: each subject has at most one target of this type.",
+          "enum": [
+            "one-to-one",
+            "many-to-one",
+            "one-to-many",
+            "many-to-many"
+          ]
+        },
+        "inverse": {
+          "$ref": "#/$defs/relationTypeName"
+        },
+        "scope": {
+          "description": "Whether a Binding of this type may declare spec.scope.",
+          "type": "boolean"
+        },
+        "semanticsOwner": {
+          "description": "Specification that defines the relation type's further semantics, for example access-control@v1.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*@v[1-9][0-9]*$"
+        },
+        "namespace": {
+          "$ref": "#/$defs/extensionNamespace"
+        },
+        "namespaceOwner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "extension": {
+          "type": "string",
+          "pattern": "^OntologyExtension/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        }
+      },
+      "dependentRequired": {
+        "namespace": [
+          "namespaceOwner",
+          "extension"
+        ],
+        "namespaceOwner": [
+          "namespace"
+        ],
+        "extension": [
+          "namespace"
+        ]
+      }
+    }
+  }
+}

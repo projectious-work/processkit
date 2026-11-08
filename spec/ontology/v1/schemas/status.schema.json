@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/status.schema.json",
+  "title": "processkit derived item status",
+  "description": "Derived facts processkit reports as the status member of an item in single-item results (show, get, explain). Authored content never contains status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "validation",
+    "digest",
+    "source",
+    "provenance",
+    "references"
+  ],
+  "properties": {
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome",
+        "diagnostics"
+      ],
+      "properties": {
+        "outcome": {
+          "enum": [
+            "valid",
+            "invalid"
+          ]
+        },
+        "diagnostics": {
+          "description": "Diagnostics for this item; each has the diagnostic shape of cli@v1.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "digest": {
+      "description": "SHA-256 of the bytes of the source file that holds the item's envelope.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "description": "POSIX path of that file, relative to the root of the repository that holds it.",
+          "type": "string",
+          "minLength": 1,
+          "not": {
+            "pattern": "^/|(^|/)\\.\\.(/|$)|\\\\"
+          }
+        }
+      }
+    },
+    "provenance": {
+      "description": "Provenance of the item; members are defined by inheritance@v1.",
+      "type": "object"
+    },
+    "references": {
+      "description": "Every typed reference in the item's spec, in document order.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pointer",
+          "ref",
+          "resolved"
+        ],
+        "properties": {
+          "pointer": {
+            "description": "JSON pointer (RFC 6901) of the reference within the item.",
+            "type": "string",
+            "pattern": "^(/[^/]*)*$"
+          },
+          "ref": {
+            "type": "string"
+          },
+          "resolved": {
+            "type": "boolean"
+          },
+          "origin": {
+            "description": "Present when the target is inherited: the target's provenance (inheritance@v1), which carries the upstream identity.",
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

@@ -43,6 +43,29 @@ recommended, "may" optional; IDs are stable and never reused.
   such as ART, ValueStream, ProgramIncrement, and WSJFEstimate, usable, and
   no processkit content kind or default shall require them.
 
+- **PK-MODEL-055:** processkit shall publish the registry as one JSON
+  document named `ontology-registry.json`. The document shall validate
+  against `schemas/ontology-registry.schema.json`. It shall carry the
+  ontology version as a semantic version `MAJOR.MINOR.PATCH`, and it shall
+  list concepts and relation types sorted by name. The first v1 release
+  shall publish ontology version `1.0.0`.
+  <!-- agent proposal: OPEN-ontology-01 -->
+- **PK-MODEL-056:** processkit shall give each concept the side listed for
+  it in `interfaces.yaml` `inventory`. Every T foundational concept shall
+  be on the definition side and shall be published as a schema fragment,
+  not as a closed persistent schema. Every D discriminator shall have the
+  side of its parent primitive.
+  <!-- agent proposal: OPEN-ontology-08 -->
+- **PK-MODEL-057:** When a user runs `processkit ontology list`, the
+  processkit CLI shall return the registry document with the concepts and
+  relation types of every valid OntologyExtension in the effective item set
+  added. When a user runs `processkit ontology show NAME`, the processkit
+  CLI shall return the one concept entry whose name equals NAME. If no
+  concept has that name, then the processkit CLI shall fail with the
+  diagnostic code `ontology.unknown-concept`. The MCP `ontology` tool shall
+  return the same data for the same input.
+  <!-- agent proposal: OPEN-ontology-01 -->
+
 ## Registry generation
 
 - **PK-MODEL-051:** If the ontology source contains a concept with an
@@ -68,6 +91,25 @@ recommended, "may" optional; IDs are stable and never reused.
   PK-MODEL-003.
   <!-- from governance draft: 13-standard-entity-types.md PK-ENTITY-005
   (closed-schema clause, restricted to definition concepts) -->
+
+- **PK-MODEL-058:** If registry generation fails, then the generator shall
+  exit with a non-zero status and shall report, for each failure, the
+  diagnostic code listed in `interfaces.yaml` `generation` and the
+  canonical name of the concept concerned.
+  <!-- agent proposal: OPEN-ontology-02 -->
+- **PK-MODEL-059:** A D discriminator shall be uncovered when its parent's
+  schema does not admit it as a variant, or when the release lacks at least
+  one positive and one negative fixture for it. A parent's schema shall
+  admit a discriminator by listing its name in the parent's `discriminator`
+  field. The Binding primitive shall instead admit its discriminators
+  through the relation types of the registry, in `spec.relation`.
+  <!-- agent proposal: OPEN-ontology-09 -->
+- **PK-MODEL-060:** A negative discriminator fixture shall show invalid
+  mixing. Invalid mixing is an item that names a discriminator of another
+  parent, names more than one discriminator, or carries a field that only
+  another discriminator of the same parent defines. Validation of each
+  negative fixture shall fail.
+  <!-- agent proposal: OPEN-ontology-09 -->
 
 ## Common envelope
 
@@ -95,6 +137,23 @@ recommended, "may" optional; IDs are stable and never reused.
 - **PK-MODEL-016:** Whenever absent, null, empty, and default values have
   different semantics, the schema shall distinguish them.
 
+- **PK-MODEL-061:** If validation finds a condition listed in
+  `interfaces.yaml` `errors`, then processkit shall report a diagnostic
+  with the code listed for that condition, the file, and the JSON pointer
+  of the offending value, in the diagnostic shape of cli@v1. The CLI and
+  the MCP server shall report the same codes for the same content.
+  <!-- agent proposal: OPEN-ontology-02 -->
+- **PK-MODEL-062:** processkit shall report `status` as an object that
+  validates against `schemas/status.schema.json`. Single-item results
+  (`processkit show`, `processkit explain`, and the MCP `get` and `explain`
+  tools) shall include `status`. List results shall not include `status`.
+  <!-- agent proposal: OPEN-ontology-05 -->
+- **PK-MODEL-063:** An extension map shall be an object member named
+  `extensions`. Every key of an extension map shall have the form
+  `<dns-prefix>/<name>`. The Container schema shall declare an extension
+  map at `spec.extensions`.
+  <!-- agent proposal: OPEN-ontology-11 -->
+
 ## Containers
 
 - **PK-MODEL-046:** A Container shall be an organizational scope with a
@@ -120,6 +179,26 @@ recommended, "may" optional; IDs are stable and never reused.
   a separate taint-like mechanism that hides items outside access control.
   <!-- from governance draft: 17-resources-identity-and-access.md PK-RES-007 -->
 
+- **PK-MODEL-064:** A Container shall validate against
+  `schemas/container.schema.json`. The parent shall be the typed reference
+  `spec.parent`. The discriminator shall be `spec.discriminator`. The
+  lifecycle shall be `spec.lifecycle`, and it shall not change naming,
+  selection, validation, or access.
+  <!-- agent proposal: OPEN-ontology-03 -->
+- **PK-MODEL-065:** The root Container shall be named `root`. It shall exist
+  even when the repository declares no Container named `root`. A
+  repository may declare it explicitly, and then it shall have no parent.
+  A Container without `spec.parent` shall be a child of the root Container.
+  A Container shall not declare `metadata.namespace`.
+  <!-- agent proposal: OPEN-ontology-04 -->
+- **PK-MODEL-066:** The known Containers shall be the root Container and
+  the Containers of the effective item set, which includes Containers from
+  locked upstream repositories (inheritance@v1). PK-MODEL-047 shall apply
+  to the Containers that one repository declares itself. A local Container
+  with the same name as an inherited Container shall be handled as
+  inheritance@v1 PK-INH-011 and PK-INH-014 define.
+  <!-- agent proposal: OPEN-ontology-10 -->
+
 ## Label selectors
 
 - **PK-MODEL-044:** processkit shall support label selectors with equality
@@ -131,6 +210,24 @@ recommended, "may" optional; IDs are stable and never reused.
   selectors with one grammar. If a selector is invalid, then processkit
   shall reject it and report the exact position of the error.
   <!-- from governance draft: 17-resources-identity-and-access.md PK-RES-005 -->
+
+- **PK-MODEL-067:** processkit shall accept exactly the selectors that the
+  grammar in `interfaces.yaml` `selectors.grammar` derives. An empty
+  selector, or one of spaces only, shall match every item. Quoted values
+  and empty value sets shall be invalid.
+  <!-- agent proposal: OPEN-ontology-06 -->
+- **PK-MODEL-068:** An inequality requirement (`key!=value`) and a set
+  exclusion requirement (`key notin (a,b)`) shall match an item that does
+  not have the key.
+  <!-- agent proposal: OPEN-ontology-06 -->
+- **PK-MODEL-069:** When processkit rejects a selector, it shall report the
+  diagnostic code `ontology.invalid-selector` with the member `offset`. The
+  offset shall be the 0-based index, in Unicode code points, of the first
+  character that cannot continue a valid selector. If the selector ends
+  too early, then the offset shall be the selector's length in code points.
+  If a token is well formed but exceeds a length bound, then the offset
+  shall be the index of the token's first character.
+  <!-- agent proposal: OPEN-ontology-07 -->
 
 ## Relations and references
 
@@ -146,6 +243,18 @@ recommended, "may" optional; IDs are stable and never reused.
 - **PK-MODEL-023:** If a reference cannot be resolved, then processkit shall
   keep it visible as unresolved, and validation shall fail where the owning
   schema requires the reference.
+
+- **PK-MODEL-070:** processkit shall ship the relation types listed in
+  `interfaces.yaml` `relations.types` in the registry member
+  `relationTypes`. A Binding shall name its relation type in
+  `spec.relation`. If a Binding names an unknown relation type, an endpoint
+  that the relation type does not allow, or more targets than its
+  cardinality allows, then validation shall fail.
+  <!-- agent proposal: OPEN-ontology-12 -->
+- **PK-MODEL-071:** A reference of the form `<kind>/<name>` shall resolve to
+  the item of that kind and name in the root Container, or to the Container
+  or OntologyExtension of that name.
+  <!-- agent proposal: OPEN-ontology-10 -->
 
 ## Standards reuse
 
@@ -170,3 +279,17 @@ recommended, "may" optional; IDs are stable and never reused.
   side, and shall provide compatibility and migration treatment.
 - **PK-MODEL-043:** processkit's own repositories shall use the published
   ontology and schemas only and shall not define private concepts.
+- **PK-MODEL-072:** A repository shall declare extensions in items of kind
+  `OntologyExtension` that validate against
+  `schemas/ontology-extension.schema.json`. The namespace shall be
+  `spec.namespace`, and the namespace owner shall be `spec.namespaceOwner`.
+  An OntologyExtension shall not declare `metadata.namespace`.
+  <!-- agent proposal: OPEN-ontology-11 -->
+- **PK-MODEL-073:** If an added concept, discriminator, relation type, or
+  content kind has a name equal to a published name, compared without
+  regard to ASCII case, then validation shall fail. If two extensions in
+  the effective item set add the same name, then validation shall fail.
+  <!-- agent proposal: OPEN-ontology-11 -->
+- **PK-MODEL-074:** If a local OntologyExtension declares a namespace that
+  an inherited OntologyExtension declares, then validation shall fail.
+  <!-- agent proposal: OPEN-ontology-11 -->

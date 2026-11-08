@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/cli/result-envelope.schema.json",
+  "title": "processkit CLI result envelope",
+  "description": "The one JSON document a command writes to standard output with --json (cli@v1 PK-OUT-001, PK-OUT-006). Unknown members are not allowed; consumers reject an unknown apiVersion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "command", "outcome", "root", "revision", "data", "diagnostics"],
+  "properties": {
+    "apiVersion": {
+      "description": "Version of the CLI result contract.",
+      "const": "cli.processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "Result"
+    },
+    "command": {
+      "description": "Command path, subcommands joined by one space. Discriminates the shape of 'data'.",
+      "enum": ["init", "new", "validate", "format", "list", "show", "context", "explain", "lock", "fetch", "ontology list", "ontology show", "access whoami", "access can-i", "migrate", "config show", "version"]
+    },
+    "outcome": {
+      "enum": ["succeeded", "failed", "refused", "cancelled", "partial"]
+    },
+    "root": {
+      "description": "Absolute path of the selected repository root, or null when the command selected none.",
+      "type": ["string", "null"]
+    },
+    "revision": {
+      "description": "Working-copy revision in the shape of repository-storage@v1 schemas/revision.schema.json, or null when the command selected no repository root.",
+      "type": ["object", "null"]
+    },
+    "data": {
+      "description": "Command-specific payload. For commands with an MCP equivalent it equals the MCP tool's structured result. Null when the command produced no result.",
+      "type": ["object", "array", "null"]
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {"$ref": "diagnostic.schema.json"}
+    },
+    "plan": {
+      "description": "Present exactly for writing commands (init, new, format, lock, migrate, fetch) once a plan was computed.",
+      "$ref": "plan.schema.json"
+    },
+    "changes": {
+      "description": "Present exactly for writing commands: the repository files actually changed, sorted by path, shape per repository-storage@v1 file-change.schema.json. Empty with --dry-run and on refusal.",
+      "type": "array",
+      "items": {"type": "object"}
+    }
+  }
+}

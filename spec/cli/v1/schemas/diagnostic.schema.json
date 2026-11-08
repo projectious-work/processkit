@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/cli/diagnostic.schema.json",
+  "title": "processkit diagnostic",
+  "description": "One diagnostic as carried in the result envelope (cli@v1 PK-OUT-007). The same shape is used by every processkit command. The owning specification of a code assigns its category.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code", "severity", "category", "scope", "message"],
+  "properties": {
+    "code": {
+      "description": "Stable code '<area>.<condition>', for example cli.plan-stale or storage.target-not-committed. The first segment names the owning area.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"
+    },
+    "severity": {
+      "enum": ["error", "warning", "info"]
+    },
+    "category": {
+      "description": "Exit category. Only diagnostics with severity error decide the exit code.",
+      "enum": ["validation", "usage", "environment", "refused", "internal", "cancelled"]
+    },
+    "scope": {
+      "description": "What the diagnostic is about.",
+      "enum": ["invocation", "configuration", "repository", "file", "item", "upstream", "server"]
+    },
+    "message": {
+      "description": "What happened, in one sentence, redacted.",
+      "type": "string",
+      "minLength": 1
+    },
+    "file": {
+      "description": "Repository-relative path with '/' separators, or '-' for standard input.",
+      "type": "string",
+      "minLength": 1
+    },
+    "pointer": {
+      "description": "RFC 6901 JSON pointer into the file or draft.",
+      "type": "string"
+    },
+    "constraint": {
+      "description": "Identifier of the violated constraint, for example a schema keyword path.",
+      "type": "string"
+    },
+    "evidence": {
+      "description": "Redacted structured facts that support the diagnostic.",
+      "type": "object"
+    },
+    "fix": {
+      "description": "How to fix the problem, in one sentence.",
+      "type": "string",
+      "minLength": 1
+    },
+    "nextAction": {
+      "description": "Machine-readable next action from a closed set.",
+      "enum": ["fix-invocation", "fix-content", "fix-configuration", "run-fetch", "commit-or-stash", "confirm", "rerun", "report-defect"]
+    }
+  }
+}

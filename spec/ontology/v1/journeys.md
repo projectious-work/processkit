@@ -2,10 +2,9 @@
 
 Each journey runs against the exact release-candidate artifacts in a
 temporary Git repository with synthetic content and no ambient credentials.
-Diagnostic codes, registry field names, and the selector error position
-format are open (see `interfaces.yaml` `open`); until they are fixed, a
-journey checks the outcome, the file, the JSON pointer, and the violated
-constraint that the diagnostic reports.
+Each failing step checks the diagnostic code listed in `interfaces.yaml`
+`errors`, the file, and the JSON pointer. The diagnostic shape, the result
+envelope, and exit categories are those of cli@v1.
 
 No acceptance journey of the baseline release list is specific to this
 specification; the journeys below exercise ontology publication, validation,
@@ -23,22 +22,28 @@ Steps:
 3. Run `processkit ontology show Container --json` and
    `processkit ontology show WorkItem --json`.
 4. Over stdio MCP, call `ontology()` and `ontology(concept="Container")`.
+5. Run `processkit ontology show NoSuchConcept --json` and call MCP
+   `ontology(concept="NoSuchConcept")`.
 
 Expected results:
 
-- Step 1 reports an ontology version.
-- Step 2 lists exactly 90 concepts: 20 of class T, 22 of class P, 24 of
-  class D, and 24 of class C, matching the inventory names in
-  `interfaces.yaml`; every concept has a class, a side (definition or
-  instance), a description, relations, and a schema or fragment location,
-  and every D concept names its parent primitive.
-- Step 3 shows Container with side definition and WorkItem with side
-  instance; WorkItem's location is a vocabulary fragment, Container's a
-  closed schema.
+- Step 1 reports the ontology version `1.0.0`.
+- Step 2 returns a document valid against
+  `schemas/ontology-registry.schema.json` with `ontologyVersion` `1.0.0`.
+  `concepts` holds exactly 90 entries, sorted by name: 20 of class T, 22
+  of class P, 24 of class D, and 24 of class C, matching the inventory
+  names in `interfaces.yaml`. Each entry has the side listed there (68
+  definition, 22 instance). Every D entry has `parent`, every C entry has
+  `parts`, and every T entry has schema form `fragment`. `relationTypes`
+  holds the eight relation types of `interfaces.yaml` `relations.types`.
+- Step 3 shows Container with side `definition` and schema form
+  `closed-schema`, and WorkItem with side `instance` and schema form
+  `vocabulary-fragment`.
 - Step 4 returns the same registry content as steps 2 and 3.
+- Step 5 fails with `ontology.unknown-concept` in CLI and MCP.
 
 Covers: PK-PROD-003, PK-MODEL-001, PK-MODEL-002, PK-MODEL-005,
-PK-MODEL-054
+PK-MODEL-054, PK-MODEL-055, PK-MODEL-056, PK-MODEL-057, PK-MODEL-070
 
 ## J2 — Instance concepts are vocabulary, never content
 
@@ -57,12 +62,12 @@ Steps:
 
 Expected results:
 
-- Steps 1 and 2 report a failure that the kind is an instance concept and
-  write no file; CLI and MCP report equivalent diagnostics.
+- Steps 1 and 2 fail with `ontology.instance-kind` and write no file; CLI
+  and MCP report the same code.
 - Step 3 serves no WorkItem item.
 - Step 4 succeeds; the ProcessSpecification is valid and served.
 
-Covers: PK-PROD-003, PK-MODEL-003
+Covers: PK-PROD-003, PK-MODEL-003, PK-MODEL-061
 
 ## J3 — Validate the common envelope
 
@@ -84,25 +89,35 @@ reverting the previous one:
 6. add a top-level `status` object with a content digest;
 7. add an unknown field `spec.foo` to a kind whose schema declares no
    extension map at that position;
-8. add a namespaced extension field where the owning schema declares an
-   extension map, and then one that uses an ontology field name.
+8. add a Container `engineering` with
+   `spec.extensions` `{"example.com/cost-center": "4711"}`; then change the
+   key to `title`;
+9. run `processkit show Standard git-branching --json` and
+   `processkit list Standard --json`.
 
 Expected results:
 
-- 1: each removal fails with the JSON pointer of the missing field.
-- 2: the duplicate in the same namespace fails; the same name in another
-  Container is valid.
+- 1: each removal fails with `ontology.missing-field` and the JSON pointer
+  of the missing field (`/spec`, `/metadata/name`, `/apiVersion`).
+- 2: the duplicate in the same namespace fails with
+  `ontology.duplicate-name`; the same name in another Container is valid.
 - 3: the item keeps its name and typed identity; validation succeeds.
-- 4: each change fails naming the bound that was exceeded.
-- 5: both fail as reserved keys.
-- 6: fails because `status` is derived; `processkit explain Standard
-  git-branching` reports validation result, content digest, source path,
-  and provenance as derived facts.
-- 7: fails as an unknown field.
-- 8: the namespaced extension field is valid; the redefinition fails.
+- 4: the changes fail with `ontology.label-count`, `ontology.label-key`,
+  and `ontology.label-value`.
+- 5: both fail with `ontology.reserved-key`.
+- 6: fails with `ontology.authored-status`; after reverting,
+  `processkit explain Standard git-branching --json` reports `status`
+  valid against `schemas/status.schema.json`, with
+  `status.validation.outcome` `valid`, a `status.digest` that equals
+  `sha256:` and the SHA-256 of the file bytes, and `status.source.path`
+  equal to the file's repository-relative path.
+- 7: fails with `ontology.unknown-field`.
+- 8: the namespaced key is valid; the key `title` fails with
+  `ontology.extension-field-not-namespaced`.
+- 9: the `show` result has `status`; the list items have no `status`.
 
 Covers: PK-MODEL-010, PK-MODEL-012, PK-MODEL-013, PK-MODEL-014,
-PK-MODEL-015
+PK-MODEL-015, PK-MODEL-061, PK-MODEL-062, PK-MODEL-063
 
 ## J4 — Containers as namespaces
 
@@ -125,22 +140,41 @@ Steps:
 6. Set `payments`' parent to `unknown-unit`; validate; revert.
 7. Set `api-style`'s `metadata.namespace` to `nowhere`; run
    `processkit validate`, `processkit list Standard`, and MCP
-   `list(kind="Standard")`.
+   `list(kind="Standard")`; revert.
+8. Run `processkit list Standard --namespace root`.
+9. Add Container `root` with title, owner, and lifecycle and no parent;
+   validate. Then give it `spec.parent` `Container/company`; validate;
+   revert.
+10. Add `metadata.namespace` `engineering` to Container `payments`;
+    validate; revert.
+11. Add a Container with `spec.discriminator` `Risk`; validate; revert.
+12. In a project repository that inherits from this repository through a
+    locked and fetched upstream, add Standard `local-style` with
+    `metadata.namespace` `engineering` and a Container `squad` with
+    `spec.parent` `Container/payments`; validate.
 
 Expected results:
 
-- 1: validation succeeds; `git-branching` belongs to the root Container.
+- 1: validation succeeds; `git-branching` belongs to the root Container
+  `root`; `company` is a child of `root`.
 - 2: CLI and MCP return `api-style` only.
 - 3: both items are served with identical content and semantics; only
   their namespace and typed name differ.
-- 4: fails as a duplicate Container name.
-- 5: fails as a Container cycle.
-- 6: fails as an unknown parent.
-- 7: validation fails for `api-style` with an unknown Container; the item
-  is not returned by either list, and other valid items still are.
+- 4: fails with `ontology.duplicate-container`.
+- 5: fails with `ontology.container-cycle`.
+- 6: fails with `ontology.unknown-parent`.
+- 7: validation fails for `api-style` with `ontology.unknown-namespace`;
+  the item is not returned by either list, and other valid items still
+  are.
+- 8: returns `git-branching` and not `api-style`.
+- 9: the explicit `root` is valid; with a parent it fails with
+  `ontology.root-parent`.
+- 10: fails with `ontology.namespace-not-allowed`.
+- 11: fails with `ontology.schema-violation` at `/spec/discriminator`.
+- 12: validation succeeds; the upstream Containers are known.
 
 Covers: PK-MODEL-011, PK-MODEL-046, PK-MODEL-047, PK-MODEL-048,
-PK-MODEL-049
+PK-MODEL-049, PK-MODEL-064, PK-MODEL-065, PK-MODEL-066
 
 ## J5 — Label selectors
 
@@ -162,18 +196,24 @@ Steps: run `processkit list Standard --selector S --json` and MCP
 8. `example.com/review-cycle=yearly`
 9. `area=delivery,sensitivity in (internal` (missing parenthesis)
 10. `area==delivery`
+11. `` (empty) and `   ` (three spaces)
+12. ` area = delivery , sensitivity  in ( internal , confidential ) `
+13. `area="delivery"`
+14. `sensitivity in ()`
+15. `! sensitivity`
 
 Expected results:
 
-- 1: `a`, `c`. 3: `a`, `b`. 5: `a`, `b`. 6: `c`. 7: `a`.
-- 2 and 4: include `b` and exclude `a`; whether `c` is included is
-  OPEN-ontology-06.
+- 1: `a`, `c`. 2: `b`. 3: `a`, `b`. 4: `a`, `c`. 5: `a`, `b`. 6: `c`.
+  7: `a`.
 - 8: no item; annotations are not selectable.
-- 9 and 10: rejected as invalid selectors; the error reports the exact
-  position of the fault, and CLI and MCP report the same position.
+- 9, 10, 13, and 14: rejected with `ontology.invalid-selector` and
+  `offset` 38, 5, 5, and 16; CLI and MCP report the same offset.
+- 11: `a`, `b`, `c`. 12: `a`. 15: `c`.
 - For every S, CLI and MCP return the same items.
 
-Covers: PK-MODEL-012, PK-MODEL-044, PK-MODEL-045
+Covers: PK-MODEL-012, PK-MODEL-044, PK-MODEL-045, PK-MODEL-067,
+PK-MODEL-068, PK-MODEL-069
 
 ## J6 — Typed references and unresolved references
 
@@ -194,19 +234,21 @@ Steps:
 Expected results:
 
 - 1: validation succeeds; the inherited references resolve through the
-  lock and the results carry the upstream identity.
-- 2: the path is not accepted as a reference.
-- 3: validation fails for the required reference; `processkit show`
-  reports the reference as unresolved rather than omitting it.
+  lock; in `status.references` of the explain result, each inherited
+  reference has `resolved` true and an `origin` that names the upstream.
+- 2: fails with `ontology.invalid-reference`.
+- 3: validation fails with `ontology.unresolved-reference` (severity
+  error); `processkit show` lists the reference in `status.references`
+  with `resolved` false.
 
-Covers: PK-MODEL-021, PK-MODEL-022, PK-MODEL-023
+Covers: PK-MODEL-021, PK-MODEL-022, PK-MODEL-023, PK-MODEL-071
 
 ## J7 — Visibility only through labels and access control
 
 Preconditions: shared server with two principals; Role `reader-all` with
 `get`/`list` on Standard and Role `reader-internal` with selector
 `sensitivity notin (confidential)`, each granted by a `grants-role`
-Binding scoped to the root Container; the Standards from J5.
+Binding scoped to `Container/root`; the Standards from J5.
 
 Steps:
 
@@ -230,21 +272,37 @@ Preconditions: initialized governing repository.
 
 Steps:
 
-1. Under `context/ontology/`, add a namespaced concept and a namespaced
-   relation type with a declared namespace owner; validate.
-2. Remove the namespace owner; validate; revert.
-3. Add an extension that redefines the published concept `Container`;
+1. Under `context/ontology/`, add the OntologyExtension
+   `incident-management` of `interfaces.yaml` `extensions.example`, with
+   one relation type `escalates-to` added; validate; run
+   `processkit ontology show Incident --json`.
+2. Remove `spec.namespaceOwner`; validate; revert.
+3. Add a concept named `container` to the extension; validate; revert.
+4. Set `spec.namespace` to `processkit.projectious.work`; validate;
+   revert.
+5. Add a second OntologyExtension `other` that adds a concept `Incident`;
    validate; revert.
-4. In a project repository inheriting from this one, use the upstream
-   extension concept in an item; validate and run `processkit explain`.
+6. In a project repository inheriting from this one, run
+   `processkit ontology show Incident --json` and
+   `processkit explain OntologyExtension incident-management --json`.
+7. In that project repository, add an OntologyExtension with
+   `spec.namespace` `example.com`; validate.
 
 Expected results:
 
-- 1: valid against the published extension metaschemas.
-- 2 and 3: fail.
-- 4: valid; the namespace owner reported is the upstream repository.
+- 1: valid against `schemas/ontology-extension.schema.json`; the entry
+  has `namespace` `example.com`, `namespaceOwner` `Platform team`, and
+  `extension` `OntologyExtension/incident-management`.
+- 2: fails with `ontology.extension-missing-owner`.
+- 3: fails with `ontology.extension-redefines-concept`.
+- 4: fails with `ontology.reserved-key`.
+- 5: fails with `ontology.extension-duplicate-name`.
+- 6: the entry is listed; the explain provenance names the upstream
+  repository.
+- 7: fails with `ontology.extension-namespace-taken`.
 
-Covers: PK-MODEL-040, PK-MODEL-041
+Covers: PK-MODEL-040, PK-MODEL-041, PK-MODEL-057, PK-MODEL-072,
+PK-MODEL-073, PK-MODEL-074
 
 ## J9 — Scaling-framework concepts are optional
 
@@ -265,14 +323,41 @@ Expected results:
 
 Covers: PK-MODEL-006
 
+## J10 — Relations as Bindings
+
+Preconditions: initialized governing repository with the Containers of J4
+and the Standards of J5.
+
+Steps: add each Binding below, run `processkit validate`, and revert:
+
+1. `spec.relation` `dependency`, subject `Standard/a`, target
+   `Standard/b`.
+2. `spec.relation` `depends-on`, same subject and target.
+3. `spec.relation` `hierarchy`, subject `Container/payments`, target
+   `Container/company`.
+4. Two Bindings with `spec.relation` `ownership-link` and subject
+   `Standard/a`, targets `Container/company` and `Container/engineering`.
+5. `spec.relation` `related-to` with `spec.scope` `Container/engineering`.
+
+Expected results:
+
+- 1: valid.
+- 2: fails with `ontology.unknown-relation-type`.
+- 3: fails with `ontology.relation-endpoint`.
+- 4: fails with `ontology.relation-cardinality`.
+- 5: fails with `ontology.relation-endpoint`.
+
+Covers: PK-MODEL-020, PK-MODEL-070
+
 ## Verified by component tests only
 
 - **PK-MODEL-004** — drift between registry, schemas, and generated
   documentation is a build-time regeneration check on the source tree.
 - **PK-MODEL-016** — absent, null, empty, and default distinctions are
   per-schema properties checked by schema fixtures.
-- **PK-MODEL-020** — relation and relation-type declarations are checked
-  against the relation registry by schema and fixture tests.
+- **PK-MODEL-020** — beyond J10, relation-type declarations (direction,
+  cardinality, endpoints, inverse) are checked against the registry by
+  schema and fixture tests.
 - **PK-MODEL-030** — a recommendation verified by schema review against
   Dublin Core Terms and W3C PROV mappings.
 - **PK-MODEL-031** — optional; no projection ships in v1. If one is added,
@@ -286,4 +371,9 @@ Covers: PK-MODEL-006
 - **PK-MODEL-052** — T-concept fragment coverage and consumption is a
   generator check.
 - **PK-MODEL-053** — discriminator positive and negative fixtures run in the
+  schema test suite.
+- **PK-MODEL-058** — generator failure codes need malformed ontology
+  sources, which only the build-time generator accepts.
+- **PK-MODEL-059** and **PK-MODEL-060** — coverage of discriminators and
+  rejection of invalid mixing are checked on the release fixtures by the
   schema test suite.

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/cli/plan.schema.json",
+  "title": "processkit write plan",
+  "description": "The reviewed plan of a writing command (cli@v1 PK-CLI-012, PK-CLI-031). Entries of 'changes' have the shape of repository-storage@v1 schemas/file-change.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operation", "root", "release", "inputs", "changes", "confirmationRequired"],
+  "properties": {
+    "operation": {
+      "description": "The command that created the plan.",
+      "enum": ["init", "new", "format", "lock", "migrate", "fetch"]
+    },
+    "root": {
+      "description": "Absolute path of the selected repository root.",
+      "type": "string",
+      "minLength": 1
+    },
+    "release": {
+      "description": "processkit release that computed the plan, as in processkit version --json 'release'.",
+      "type": "string",
+      "minLength": 1
+    },
+    "inputs": {
+      "description": "Every input file and every target path the plan depends on, sorted by path. A null digest means the path did not exist.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "digest"],
+        "properties": {
+          "path": {
+            "description": "Repository-relative path with '/' separators.",
+            "type": "string",
+            "minLength": 1
+          },
+          "digest": {
+            "type": ["string", "null"],
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "changes": {
+      "description": "Repository files the plan will change, sorted by path; shape per repository-storage@v1 file-change.schema.json.",
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "confirmationRequired": {
+      "description": "True when the plan needs confirmation before it is applied (PK-CLI-014, PK-CLI-032).",
+      "type": "boolean"
+    }
+  }
+}

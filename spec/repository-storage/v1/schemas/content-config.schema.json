@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/content-config.schema.json",
+  "title": "processkit.toml [content] table",
+  "description": "The [content] table of processkit.toml, shown as its JSON equivalent (repository-storage@v1 PK-STORE-042). Other tables of processkit.toml are owned by other specifications; the file schema is closed (cli@v1 PK-CONFIG-001).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "directory": {
+      "description": "Content directory relative to the repository root, with / as separator. Default when absent: context. Further checks (no .., not the root, not inside .git/ or .processkit/, no nested repository) are in PK-STORE-042 and PK-STORE-044.",
+      "type": "string",
+      "minLength": 1,
+      "default": "context",
+      "pattern": "^(?!/)[^\\u0000\\\\]+$"
+    }
+  }
+}

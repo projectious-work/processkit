@@ -3,6 +3,16 @@
 Non-normative. The requirements are in `requirements.md`; the interface
 catalog is `interfaces.yaml`.
 
+## Owner goal
+
+The owner wants one common language in which a company, its teams, and its
+projects define how they work. With it, a user or an agent can express any
+process, such as ticket handling, in shared concepts that processkit
+validates, stores, and serves (C2). The language must be complete and
+versioned, yet processkit must store definitions only, never instances
+(C1). Containers and labels must carry the scoping that access control
+needs (C7).
+
 ## Purpose
 
 The ontology is the common language in which an organization defines how it
@@ -81,34 +91,37 @@ Gap items carried from tag `archive/processkit-v1-governance-standards`:
 Adjustments for compatibility with #197: the draft's "kernel" terminology,
 `list_resources`/`get_resource` operations, and resource URIs are not
 carried (owned by other slugs); PK-RES-020's "in the same repository" is
-left open for inherited Containers (OPEN-ontology-10); PK-ENTITY-150's
+resolved for inherited Containers by PK-MODEL-066; PK-ENTITY-150's
 "core discriminators Team and Project" is replaced by the six Container
 discriminators of the v1 inventory, consistent with PK-MODEL-006.
 
-## Open questions
+## Resolved open items
 
-Mirrors `interfaces.yaml` `open`.
+All former `open` items of `interfaces.yaml` are answered. Each answer is
+an agent proposal for owner review at freeze; requirements carry an
+`<!-- agent proposal: ... -->` marker and catalog entries
+`basis: agent-proposal`.
 
-- **OPEN-ontology-01:** registry file name, location, serialization, entry
-  field names, and version format.
-- **OPEN-ontology-02:** diagnostic codes for each validation, selector, and
-  generation failure.
-- **OPEN-ontology-03:** Container `spec` schema (field names, owner type,
-  parent expression, lifecycle states, discriminator declaration).
-- **OPEN-ontology-04:** name of the implicit root Container and whether it
-  may be declared explicitly.
-- **OPEN-ontology-05:** shape and placement of `status` in results.
-- **OPEN-ontology-06:** whether `!=` and `notin` match items without the
-  key; whitespace, empty sets, empty selector, quoting.
-- **OPEN-ontology-07:** unit, base, and result field of the selector error
-  position.
-- **OPEN-ontology-08:** the definition-or-instance side of each of the 90
-  concepts.
-- **OPEN-ontology-09:** meaning of "uncovered discriminator" and "invalid
-  mixing".
-- **OPEN-ontology-10:** whether upstream Containers count as known and are
-  included in duplicate-name checks.
-- **OPEN-ontology-11:** names and paths of the extension metaschemas and how
-  a namespace owner is declared.
-- **OPEN-ontology-12:** location of the relation-type registry and the
-  relation types shipped in v1.
+| Item | Resolution | Basis |
+|---|---|---|
+| OPEN-ontology-01 | Registry `ontology-registry.json`, JSON, release-owned, published at the schema base URL; fields in `schemas/ontology-registry.schema.json`; `ontologyVersion` semantic version, first value `1.0.0`; `ontology list` and `show` semantics (PK-MODEL-055, PK-MODEL-057). | agent proposal |
+| OPEN-ontology-02 | Lowercase dot-separated codes with the `ontology.` prefix for every validation, selector, and generation condition (`interfaces.yaml` `errors`, `generation`); diagnostic shape from cli@v1 (PK-MODEL-058, PK-MODEL-061). | agent proposal |
+| OPEN-ontology-03 | `schemas/container.schema.json`: `spec.title`, `spec.owner` (string), `spec.parent` (`Container/<name>`), `spec.discriminator`, `spec.lifecycle` (`proposed`, `active`, `retired`, informational), `spec.extensions` (PK-MODEL-064). | agent proposal |
+| OPEN-ontology-04 | The root Container is `root`; implicit unless declared; declared without parent; parentless Containers are its children; Containers have no `metadata.namespace` (PK-MODEL-065). | agent proposal |
+| OPEN-ontology-05 | `schemas/status.schema.json` (`validation`, `digest`, `source`, `provenance`, `references`); present in single-item results, absent from lists (PK-MODEL-062). | agent proposal |
+| OPEN-ontology-06 | `!=` and `notin` match items without the key (Kubernetes convention, consistent with J7); exact EBNF; spaces allowed around operators; empty selector matches all; quotes and empty sets invalid (PK-MODEL-067, PK-MODEL-068). | agent proposal |
+| OPEN-ontology-07 | Member `offset`, 0-based, in Unicode code points, rules for early end and over-long tokens (PK-MODEL-069). | agent proposal |
+| OPEN-ontology-08 | Side of all 90 concepts in `interfaces.yaml` `inventory` (68 definition, 22 instance); T on the definition side as fragments; D takes its parent's side (PK-MODEL-056). | agent proposal |
+| OPEN-ontology-09 | Uncovered: parent schema does not admit it, or a positive or negative fixture is missing; invalid mixing defined; fixtures under `fixtures/discriminators/<name>/` (PK-MODEL-059, PK-MODEL-060). | agent proposal |
+| OPEN-ontology-10 | Upstream Containers in the effective item set are known; PK-MODEL-047 covers one repository's own Containers; local-versus-inherited names follow inheritance@v1 PK-INH-011 and PK-INH-014 (PK-MODEL-066). Unqualified references resolve in the root Container (PK-MODEL-071). | agent proposal |
+| OPEN-ontology-11 | One metaschema, `schemas/ontology-extension.schema.json`, for items of kind `OntologyExtension`; owner in `spec.namespaceOwner`; redefinition and namespace-taken rules; extension maps `extensions` with `<dns-prefix>/<name>` keys (PK-MODEL-063, PK-MODEL-072 to PK-MODEL-074). | agent proposal |
+| OPEN-ontology-12 | Relation types live in the registry member `relationTypes`; v1 ships the seven Binding discriminators as relation types plus `grants-role` (access-control@v1) (PK-MODEL-070). | agent proposal |
+
+Notes for the owner review:
+
+- PK-MODEL-056 publishes T foundational concepts, which are on the
+  definition side, as fragments. This reads PK-MODEL-054's closed
+  persistent schema as applying to P, D, and C definition concepts, in
+  line with the T class contract ("without independent persistence").
+- Storage locations for items of an extension content kind are not stated
+  by repository-storage@v1.
