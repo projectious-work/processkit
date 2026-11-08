@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/skill.schema.json",
+  "title": "processkit skill metadata (skill.json)",
+  "description": "The authoritative metadata of a Skill, stored as skills/<name>/skill.json (repository-storage@v1 PK-STORE-054). SKILL.md is the level-1 body and is not described here. processkit serves these declarations to agents; it does not enforce or execute them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "Skill"
+    },
+    "metadata": {
+      "$ref": "resource-metadata.schema.json"
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "version",
+        "summary",
+        "triggers",
+        "applicability",
+        "inputs",
+        "outputs",
+        "dependencies",
+        "sideEffects",
+        "safetyConstraints",
+        "requiredMcpServers",
+        "parts"
+      ],
+      "properties": {
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "version": {
+          "$ref": "content-common.schema.json#/$defs/semver"
+        },
+        "summary": {
+          "$ref": "content-common.schema.json#/$defs/summary"
+        },
+        "triggers": {
+          "$ref": "content-common.schema.json#/$defs/triggers"
+        },
+        "applicability": {
+          "$ref": "content-common.schema.json#/$defs/applicability"
+        },
+        "inputs": {
+          "description": "What the skill takes (PK-SKILL-005). May be empty.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/input"
+          }
+        },
+        "outputs": {
+          "description": "What the skill produces (PK-SKILL-005). May be empty.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/output"
+          }
+        },
+        "dependencies": {
+          "description": "Skills and Standards this skill relies on (PK-SKILL-006, PK-SKILL-012). Each must resolve. May be empty.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(Skill|Standard)/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "sideEffects": {
+          "description": "Highest side-effect class of the skill's operations (PK-SKILL-007, PK-SKILL-011), in ascending order: read-only, project-mutating, externally-mutating, privileged, destructive.",
+          "enum": [
+            "read-only",
+            "project-mutating",
+            "externally-mutating",
+            "privileged",
+            "destructive"
+          ]
+        },
+        "safetyConstraints": {
+          "description": "Constraints an agent must respect when it uses the skill (PK-SKILL-008). May be empty.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "uniqueItems": true
+        },
+        "requiredMcpServers": {
+          "description": "Catalogued MCP servers the skill requires (PK-SKILL-009, PK-SKILL-012). Each must resolve. May be empty.",
+          "type": "array",
+          "items": {
+            "$ref": "content-common.schema.json#/$defs/mcpServerRef"
+          },
+          "uniqueItems": true
+        },
+        "parts": {
+          "description": "Role of the skill's files (PK-SKILL-010, PK-SKILL-013). Must contain SKILL.md. A file in the skill directory that is not listed is explanatory.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/part"
+          },
+          "contains": {
+            "type": "object",
+            "required": [
+              "path"
+            ],
+            "properties": {
+              "path": {
+                "const": "SKILL.md"
+              }
+            }
+          }
+        },
+        "agent": {
+          "$ref": "#/$defs/agent"
+        },
+        "final": {
+          "$ref": "content-common.schema.json#/$defs/final"
+        },
+        "overrides": {
+          "$ref": "content-common.schema.json#/$defs/replaceOverride"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "content-common.schema.json#/$defs/name"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "content-common.schema.json#/$defs/name"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        }
+      }
+    },
+    "part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "role"
+      ],
+      "properties": {
+        "path": {
+          "description": "POSIX path relative to the skill directory; not skill.json; no leading /, no .. segment, no backslash.",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!skill\\.json$)(?!(?:.*/)?\\.\\.(?:/|$))[^\\\\\\u0000]+$"
+        },
+        "role": {
+          "enum": [
+            "normative",
+            "explanatory"
+          ]
+        }
+      }
+    },
+    "agent": {
+      "description": "Optional agent-building metadata (PK-SKILL-016; agent proposal, gap row 4). Information for agents and harnesses only; processkit runs no model and no evaluation.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "persona": {
+          "description": "Document that holds the persona to use. Omitted: the organization's default persona applies.",
+          "$ref": "content-common.schema.json#/$defs/documentRef"
+        },
+        "modelClass": {
+          "description": "Model class from the organization's own vocabulary, for example fast or deep.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "maxLength": 40
+        },
+        "evaluationCases": {
+          "description": "Cases a harness or reviewer can use to evaluate the skill.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "task",
+              "expected"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "content-common.schema.json#/$defs/name"
+              },
+              "task": {
+                "description": "The task or prompt given to the agent.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "expected": {
+                "description": "The expected behavior or result, in prose.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

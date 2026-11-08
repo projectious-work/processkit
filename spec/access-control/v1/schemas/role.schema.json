@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/role.schema.json",
+  "title": "processkit Role",
+  "description": "A provider-neutral role with responsibilities and optional access rules (access-control@v1 PK-ACC-020 to PK-ACC-022, PK-ACC-040). Access rules grant nothing until a grants-role Binding binds the Role. A rule matches a request when the kind, the verb, the name (when names is present), and the selector (when present) all match. The selector grammar is ontology@v1 selectors. metadata is ontology@v1 schemas/resource-metadata.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {"const": "processkit.projectious.work/v1"},
+    "kind": {"const": "Role"},
+    "metadata": {"$ref": "resource-metadata.schema.json"},
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["responsibilities"],
+      "properties": {
+        "responsibilities": {
+          "description": "What a holder of the Role is responsible for. A Role is not a person or a model.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {"type": "string", "minLength": 1, "maxLength": 600}
+        },
+        "capabilities": {
+          "description": "Required capabilities or skills, as typed references to Capability or Skill items. Informational: they do not change access decisions. An unresolved reference is reported with severity warning (ontology@v1 references).",
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(Capability|Skill)/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          }
+        },
+        "access": {
+          "description": "Additive access rules. There is no deny rule.",
+          "type": "array",
+          "maxItems": 256,
+          "items": {"$ref": "#/$defs/accessRule"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "accessRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kinds", "verbs"],
+      "properties": {
+        "kinds": {
+          "description": "Content kind names. No wildcard: every kind is named.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$", "maxLength": 63}
+        },
+        "verbs": {
+          "description": "Access verbs a Role can grant. impersonate is not a Role verb (PK-ACC-042).",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["get", "list"]}
+        },
+        "names": {
+          "description": "Narrows the rule to items with one of these metadata.name values, in any Container within the Binding scope.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$", "maxLength": 80}
+        },
+        "selector": {
+          "description": "Label selector (ontology@v1 selectors). An invalid selector makes only this rule grant nothing (ontology.invalid-selector).",
+          "type": "string",
+          "maxLength": 4096
+        }
+      }
+    }
+  }
+}

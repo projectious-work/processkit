@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/inheritance/inheritance-config.schema.json",
+  "title": "processkit.toml inheritance keys",
+  "description": "The [[upstream]], [[winner]], and [downstream] tables of processkit.toml, shown as their JSON equivalent (inheritance@v1 PK-INH-001, PK-INH-032, PK-INH-049, PK-INH-061). Other tables are owned by other specifications; the file schema is closed (cli@v1 PK-CONFIG-001). Violations are reported as cli.config-invalid-value; a credential in a source as cli.config-forbidden-key (PK-INH-033).",
+  "type": "object",
+  "properties": {
+    "upstream": {
+      "description": "Declared upstreams; order has no effect; names unique.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "source", "ref"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "maxLength": 63
+          },
+          "source": {
+            "description": "Absolute local path, file:// URL, https:// URL, ssh:// URL, or SCP-like user@host:path. Plain http:// and git:// are not accepted.",
+            "type": "string",
+            "anyOf": [
+              {"pattern": "^/"},
+              {"pattern": "^file://"},
+              {"pattern": "^https://"},
+              {"pattern": "^ssh://"},
+              {"pattern": "^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+:.+$"}
+            ]
+          },
+          "ref": {
+            "description": "Tag or branch name, full reference name (refs/...), or full commit ID; resolved by PK-INH-035.",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "winner": {
+      "description": "Declared winners, one per item (PK-INH-049).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "upstream"],
+        "properties": {
+          "item": {
+            "description": "Typed name <kind>/<name> or <kind>/<namespace>/<name>.",
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9]*/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          },
+          "upstream": {
+            "description": "Name of a declared upstream.",
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          }
+        }
+      }
+    },
+    "downstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "restricted": {
+          "description": "Typed names of local items that downstream repositories serve only under PK-INH-031.",
+          "type": "array",
+          "uniqueItems": true,
+          "default": [],
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Za-z0-9]*/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,6 +2,17 @@
 
 Non-normative. The requirements are in `requirements.md`.
 
+## Owner goal
+
+The owner wants organizations to trust processkit with the rules their
+agents follow (product definition, "Purpose"; C4). That trust holds only
+if served content stays data that cannot change tools, configuration,
+or access, and only if processkit adds no new way to leak credentials or
+reach the network. The owner also wants the one network transport, the read-only
+shared server (C8), to be safe to expose with fixed, testable defaults
+that a repository cannot weaken, and wants every release to be verifiable
+before installation.
+
 ## Purpose
 
 processkit serves content that agents treat as instructions, so its
@@ -34,7 +45,9 @@ This slug does not cover:
   results (PK-MCP-041) — `mcp-context-serving@v1`;
 - locked commits, digests, and explicit fetch — `inheritance@v1`;
 - skill scripts as labelled content (PK-SKILL-003) and credential values in
-  catalog entries (PK-CAT-003) — `content-kinds@v1`.
+  catalog entries (PK-CAT-003) — `content-kinds@v1`;
+- an instruction or reference trust tag on served content —
+  `mcp-context-serving@v1`.
 
 ## Governing decisions
 
@@ -47,6 +60,9 @@ This slug does not cover:
   operator credentials only as files it reads, never as arguments.
 - **C8** Two serving modes, read-only: stdio plus a TLS-only shared server;
   hardening targets only that HTTP transport.
+- **Owner decision #213 finding 3 (2026-11-08)** "fetch, then lock":
+  `processkit lock` uses no network (PK-SEC-018); recorded in
+  `docs/adr/0002-lock-resolves-from-fetched-data.md`.
 - **C9** Catalog, not gateway: processkit never connects to catalogued
   servers or follows URLs in content.
 
@@ -65,30 +81,23 @@ Gap items carried from the governance draft (tag
 
 | New ID | Source | Adaptation |
 |---|---|---|
-| PK-SEC-013 | `08-security-and-trust.md` PK-SEC-020 | Origin part only; TLS and authentication of every client are PK-ACC-030/011 in `access-control@v1`; accepted origins are OPEN-security-02 |
-| PK-SEC-014 | 08 PK-SEC-020 | request-isolation part, made observable as "session identifier is not identity"; whether sessions exist is OPEN-security-03 |
+| PK-SEC-013 | `08-security-and-trust.md` PK-SEC-020 | Origin part only; TLS and authentication of every client are PK-ACC-030/011 in `access-control@v1`; accepted origins are PK-SEC-023 |
+| PK-SEC-014 | 08 PK-SEC-020 | request-isolation part, made observable as "session identifier is not identity"; the stateless transport is PK-SEC-024 |
 | PK-SEC-015 | 08 PK-SEC-028 | command arguments and MCP discovery responses kept; repository configuration already covered by PK-CONFIG-002; "generated skill projections" dropped (C4: no generated harness outputs); redaction already PK-OUT-004 |
 | PK-SEC-016 | 08 PK-SEC-028 | owner-only credential files; refusal and report made explicit as the observable effect |
 | PK-SEC-017 | `14-performance-and-operations.md` PK-PERF-015 | "system/user authority" read as operator configuration and the invocation layer; "project policy" read as project configuration and repository content |
 
-## Open questions
+## Resolved open items
 
-Mirrors `open` in `interfaces.yaml`.
-
-1. OPEN-security-01 — default size limits, configuration keys, maximum
-   diagnostic size.
-2. OPEN-security-02 — accepted Origin values, requests without Origin,
-   rejection response.
-3. OPEN-security-03 — whether the shared server uses MCP sessions and how
-   they bind to a principal.
-4. OPEN-security-04 — signing scheme, trust anchor, installation command.
-5. OPEN-security-05 — dependency record location and lockfile format.
-6. OPEN-security-06 — which files are credential files; directory and group
-   permissions.
-7. OPEN-security-07 — diagnostic and exit codes of security failures.
-8. OPEN-security-08 — whether `processkit lock` may use the network
-   (baseline tension between PK-SEC-005 and PK-INH-002).
-9. OPEN-security-09 — whether project configuration may tighten limits;
-   release-defined hard ceilings.
-10. OPEN-security-10 — definition of a credential value; how fetch passes
-    upstream credentials to Git without arguments.
+| Item | Resolution | Basis |
+|---|---|---|
+| OPEN-security-01 | Parser limits `limits.file-bytes` 1 MiB, `limits.nesting-depth` 64, `limits.collection-items` 10 000, `limits.string-bytes` 256 KiB; configuration files fixed at 1 MiB; transport limits `transport.max-header-bytes` 16 KiB, `transport.header-timeout-seconds` 10, `transport.idle-timeout-seconds` 60, `transport.max-connections` 256; operator configuration only; a bounded diagnostic is one per input, quotes no input, and is at most 4096 bytes (PK-SEC-019 to 022, PK-SEC-025). MCP request limits stay with `mcp-context-serving@v1`. | agent proposal |
+| OPEN-security-02 | Requests without `Origin` are accepted; listed origins in `transport.allowed-origins` (default empty) are accepted; others get HTTP 403 `security.origin-rejected` before authentication; no CORS; fixed response headers; JSON-RPC rejection body (PK-SEC-023, PK-SEC-026, `schemas/http-rejection.schema.json`). | standard: agent-native-product-interfaces.md#Transport and deployment; agent proposal |
+| OPEN-security-03 | Stateless Streamable HTTP: no `Mcp-Session-Id` is issued; a request carrying one gets HTTP 404 `security.session-rejected`; non-POST gets 405 (PK-SEC-024). | agent proposal |
+| OPEN-security-04 | Sigstore keyless bundles per artifact, identity of the `release.yml` workflow at the release tag, issuer GitHub Actions; documented installation verifies with `sigstore verify identity` before `uv tool install` (PK-SEC-030). | standard: security-and-software-supply-chain.md#Release supply chain; agent proposal |
+| OPEN-security-05 | `uv.lock` committed and checked with `uv lock --check`; dependency record in `docs/dependencies.md` (PK-SEC-031). | standard: security-and-software-supply-chain.md#Dependency policy; agent proposal |
+| OPEN-security-06 | Credential files are operator-named files with secret material (v1: the TLS private key); refused if any group or other read or write bit is set, after following links; directory not checked; `security.credential-file-permissions`, exit 3 (PK-SEC-029). | agent proposal |
+| OPEN-security-07 | `security.limit-exceeded` and `security.malformed-input` (validation, exit 1), `security.credential-file-permissions` (environment, exit 3), HTTP rejection codes with fixed statuses; reuse of `cli.config-*` and `cli.upstream-not-fetched`; release verification failure is the verifier's exit status (`interfaces.yaml` `errors`). | agent proposal |
+| OPEN-security-08 | `processkit lock` uses no network and resolves only from the local cache (PK-SEC-018, `cli@v1` PK-CLI-044); PK-SEC-005 unchanged; ADR `docs/adr/0002-lock-resolves-from-fetched-data.md`. | owner decision: #213 finding 3 (2026-11-08) |
+| OPEN-security-09 | Project configuration may not set a limit, also not a lower one (`cli.config-forbidden-key`); each limit has a release ceiling; values outside 1..ceiling fail with `cli.config-invalid-value`, never clamped (PK-SEC-019, PK-SEC-020). | standard: application-configuration.md#Authority is separate from precedence; agent proposal |
+| OPEN-security-10 | Credential value defined in `interfaces.yaml` (`credentials.credential_value`); bearer credentials only in the `Authorization` header, `access_token` query rejected (PK-SEC-027); processkit passes no credentials to Git, Git uses its own credential configuration; URL user information in an upstream source is `cli.config-forbidden-key` (PK-SEC-028). | agent proposal |

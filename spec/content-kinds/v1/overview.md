@@ -3,6 +3,19 @@
 Non-normative. The requirements are in `requirements.md`; the observable
 interface is in `interfaces.yaml`.
 
+## Owner goal
+
+The owner wants an organization to write its governance once, as reviewed
+files, and have every agent load exactly the part a task needs: standards,
+processes, skills, trusted MCP servers, decisions, and documents
+(PK-PROD-010, C3, C4). The content kinds must be precise enough that an
+agent can draft them from natural language and processkit can validate
+them, yet processkit must stay a definition and serving layer: it never runs
+a process, a skill, a gate, or a catalogued server, and it stores no
+instances (C1, C2, C9). The kinds replace the governance part of harness
+instruction files and skill directories without locking authors into one
+vendor's format.
+
 ## Purpose
 
 processkit provides the format, validation, location, and serving of
@@ -68,7 +81,7 @@ This slug does not cover:
 | `03-repository-and-files.md` "Layout" | file paths in `interfaces.yaml` (informative; owned by `repository-storage@v1`) |
 | `06-cli.md`, `07-mcp-and-context-assembly.md` | operation signatures in `interfaces.yaml` (informative; owned by `cli@v1`, `mcp-context-serving@v1`) |
 | `11-verification-and-release.md` "Acceptance journeys" 2 and 3 | journeys 1 and 2 |
-| `schemas/v1/standard.schema.json`, `schemas/v1/mcp-server.schema.json` | `schemas/` (unchanged copies) |
+| `schemas/v1/standard.schema.json`, `schemas/v1/mcp-server.schema.json` | `schemas/` (extended when resolving open items; see below) |
 | `templates/v1/standard.template.json`, `templates/v1/mcp-server.template.json` | `examples/` (unchanged copies) |
 
 The "Organizational scope and access" paragraph of chapter 4 (Containers,
@@ -104,41 +117,41 @@ Not carried, because they conflict with #197:
 The skill metadata declarations are information served to agents, like
 MCPServer `sideEffects`; processkit does not enforce or execute them.
 
-## Open questions
+### Gap rows drafted as agent proposals
 
-Mirrors `open` in `interfaces.yaml`.
+Owner decision pending; drafted because they fit C1 and C2:
 
-- **OPEN-content-kinds-01:** `skill.json` has no schema or template; field
-  names and constraints for all Skill metadata, including the gap fields.
-- **OPEN-content-kinds-02:** ProcessSpecification has no schema or template
-  although PK-PROC-006 requires both; field names and level 0/1 contents.
-- **OPEN-content-kinds-03:** DecisionRecord has no schema or template;
-  front matter fields, date format, supersession link, level contents.
-- **OPEN-content-kinds-04:** document source keys in `processkit.toml`,
-  heading index shape, section addressing, level 1 contents.
-- **OPEN-content-kinds-05:** PK-CONT-002 requires `summary` and `triggers`
-  on every item, but the MCPServer schema makes `triggers` optional and
-  DecisionRecord and Document declare neither; summary bound for unschemed
-  kinds.
-- **OPEN-content-kinds-06:** diagnostic field names and codes; how an
-  invalid item is reported in results.
-- **OPEN-content-kinds-07:** result field names for the attribution facts,
-  and the meaning of "version" per kind.
-- **OPEN-content-kinds-08:** both schemas `$ref`
-  `resource-metadata.schema.json`; a copy of the `ontology@v1` schema is
-  carried here. Which slug owns future envelope changes?
-- **OPEN-content-kinds-09:** where secret patterns are configured; any
-  default set.
-- **OPEN-content-kinds-10:** KIND tokens for CLI and MCP; `processkit new`
-  for kinds without a template.
-- **OPEN-content-kinds-11:** spelling of the five skill side-effect
-  classes versus the three MCPServer values; per operation or highest.
-- **OPEN-content-kinds-12:** whether skill dependencies and required MCP
-  servers are resolved references that fail validation when dangling.
-- **OPEN-content-kinds-13:** how a Skill marks normative versus explanatory
-  parts, compatibly with Agent Skills.
-- **OPEN-content-kinds-14:** how scripts are identified and labelled;
-  target Agent Skills format version.
-- **OPEN-content-kinds-15:** `upstreams` on a non-gateway entry; whether
-  gateway upstream names must resolve.
-- **OPEN-content-kinds-16:** how a process state is addressed at level 2.
+- **Gap row 6** (governance draft 04, PK-PKG-024 to PK-PKG-026): a
+  `linear` shape of ProcessSpecification (PK-PROC-011) and per-state
+  intent and classified inputs (PK-PROC-012). It is a constrained
+  StateMachine, not a second execution model, so it keeps PK-PROC-001 and
+  C2. Not drafted: PK-PKG-027 to PK-PKG-029 (execution records, step
+  completion proof, rendered stage views), because processkit stores no
+  instances and generates no projections (C1, C4).
+- **Gap row 8, Gate only** (governance draft 13, PK-ENTITY-050 and
+  PK-ENTITY-052): the Gate field contract (PK-PROC-009) and the outcome and
+  waiver vocabulary (PK-PROC-010). Not drafted: PK-ENTITY-051 (append-only
+  evaluation events), because gate evaluations are instances (C1).
+
+## Resolved open items
+
+| Item | Resolution | Basis |
+|---|---|---|
+| OPEN-content-kinds-01 | `schemas/skill.schema.json` for `skill.json` with every Skill field; templates `examples/skill.template.json` and `.md`; level contents in `levels` (PK-CONT-013) | owner decision: #213 finding 5 (schema); agent proposal (fields) |
+| OPEN-content-kinds-02 | `schemas/process-specification.schema.json`, template, and worked example; extra structural checks (PK-PROC-007); level 1 outline and level 2 state in `levels` | owner decision: #213 finding 5 (schema); agent proposal (fields) |
+| OPEN-content-kinds-03 | `schemas/decision-record.schema.json`; every field in front matter, `date` as `YYYY-MM-DD`, body as section `notes` (PK-DEC-005); `supersedes` and its checks (PK-DEC-006) | owner decision: #213 finding 5 (schema); agent proposal (fields; follows repository-storage@v1 front matter rule) |
+| OPEN-content-kinds-04 | `[[document-sources]]` with `pattern`, `namespace`, `labels`, `summary`, `triggers`, patterns against the repository root (PK-DOC-003); name, title, summary, and triggers derivation (PK-DOC-004); heading index and ids (PK-DOC-005); `schemas/document.schema.json` and `document-sources.schema.json` | owner decision: #213 finding 5 (schema); agent proposal (keys; follows repository-storage@v1 pattern root) |
+| OPEN-content-kinds-05 | PK-CONT-002 governs: `triggers` required in `mcp-server.schema.json`; summary 1..600 and triggers rules for every kind (PK-CONT-014); DecisionRecord declares both; Documents take them from front matter or the source | agent proposal (conventional alignment of the schema with the requirement) |
+| OPEN-content-kinds-06 | `cli@v1` diagnostic shape; code table in `errors`; `constraint` is the schema keyword location (PK-CONT-017); invalid items shown without `spec` (PK-CONT-018); draft scope (PK-CONT-022) | agent proposal (reuses cli@v1 diagnostic schema) |
+| OPEN-content-kinds-07 | attribution members in `attribution`, using `ontology@v1` status; version is `spec.version` or the content digest (PK-CONT-016) | agent proposal |
+| OPEN-content-kinds-08 | `ontology@v1` owns the envelope metadata schema; the copy here stays byte-identical and changes only by copying | agent proposal |
+| OPEN-content-kinds-09 | built-in secret patterns in `secret_patterns` plus operator `redaction.patterns` of `cli@v1` (PK-CAT-005) | agent proposal |
+| OPEN-content-kinds-10 | exact, case-sensitive `kind` values (PK-CONT-019); templates per kind, `content-kinds.no-template` for Document (PK-CONT-020) | agent proposal |
+| OPEN-content-kinds-11 | `read-only`, `project-mutating`, `externally-mutating`, `privileged`, `destructive`; one field with the highest class (PK-SKILL-011) | agent proposal |
+| OPEN-content-kinds-12 | typed references that must resolve; dependencies target Skill or Standard (PK-SKILL-012) | agent proposal |
+| OPEN-content-kinds-13 | `spec.parts` in `skill.json` per file; `SKILL.md` required; unlisted files explanatory (PK-SKILL-013) | agent proposal (follows repository-storage@v1: skill.json authoritative) |
+| OPEN-content-kinds-14 | script when under `scripts/` or starting with `#!`; result `{path, script, encoding, content}` (PK-SKILL-014); Agent Skills format target without a version (PK-SKILL-015) | agent proposal |
+| OPEN-content-kinds-15 | `upstreams` on role `server` fails; unknown gateway upstream is a warning (PK-CAT-006) | agent proposal |
+| OPEN-content-kinds-16 | the `section` argument with the state id; section keys per kind (PK-CONT-015) | agent proposal |
+| (PK-INH-012 override effects) | `spec.overrides.effect` `replace` or `amend` with `addRules` and `ruleLevels` in the Standard schema (PK-STD-006, PK-STD-007); `final` and `replace` overrides for ProcessSpecification, Skill, and MCPServer (PK-CONT-023) | owner decision: #213 assignment (content-kinds owns `standard.schema.json`); agent proposal (shape) |
+| (gap row 4) | Skill metadata made concrete in `skill.schema.json`; optional `spec.agent` with persona, model class, and evaluation cases (PK-SKILL-016) | owner decision: standards v2.2.0 applicability record (owner plan); agent proposal (fields) |

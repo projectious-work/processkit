@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/inheritance/provenance.schema.json",
+  "title": "processkit item provenance",
+  "description": "The member status.provenance of a served item (ontology@v1 schemas/status.schema.json; inheritance@v1 PK-INH-015, PK-INH-055). status.references[].origin has the shape of $defs/location.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "origin",
+    "overrides",
+    "restricted"
+  ],
+  "properties": {
+    "origin": {
+      "description": "Where the item comes from: the repository that first provides it. For an overridden inherited item this is the overridden upstream item, not the override.",
+      "$ref": "#/$defs/location"
+    },
+    "overrides": {
+      "description": "Every override applied on the way from the origin to the served item, in the order applied (nearest to the origin first). Empty when no override applied.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/override"
+      }
+    },
+    "restricted": {
+      "description": "True when the repository that provides the item marked it restricted (inheritance@v1 PK-INH-061).",
+      "type": "boolean"
+    },
+    "restrictedBy": {
+      "description": "Present when restricted is true: the lock entry name of the repository that marked the item restricted. Its access rules must be imported (PK-INH-031).",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:/[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*$"
+    }
+  },
+  "if": {
+    "properties": {
+      "restricted": {
+        "const": true
+      }
+    }
+  },
+  "then": {
+    "required": [
+      "restrictedBy"
+    ]
+  },
+  "else": {
+    "not": {
+      "required": [
+        "restrictedBy"
+      ]
+    }
+  },
+  "$defs": {
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstream",
+        "source",
+        "commit",
+        "path"
+      ],
+      "properties": {
+        "upstream": {
+          "description": "Lock entry name of the repository (for example platform or platform/company); null for the serving repository.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:/[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*$"
+        },
+        "source": {
+          "description": "The lock entry's source; null for the serving repository.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "commit": {
+          "description": "The locked commit for an upstream; for the serving repository the working-copy commit (repository-storage@v1 revision.commit), null before the first commit.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+        },
+        "path": {
+          "description": "POSIX path of the file that holds the item's envelope, relative to the root of that repository.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "upstream": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "source": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "commit": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "override": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declaredAt",
+        "upstream",
+        "name",
+        "version",
+        "reason",
+        "effect",
+        "stale"
+      ],
+      "properties": {
+        "declaredAt": {
+          "description": "Location of the overriding item.",
+          "$ref": "#/$defs/location"
+        },
+        "upstream": {
+          "description": "spec.overrides.upstream of the overriding item, as written there.",
+          "type": "string"
+        },
+        "name": {
+          "description": "spec.overrides.name of the overriding item.",
+          "type": "string"
+        },
+        "version": {
+          "description": "spec.overrides.version of the overriding item.",
+          "type": "string"
+        },
+        "reason": {
+          "description": "spec.overrides.reason of the overriding item.",
+          "type": "string"
+        },
+        "effect": {
+          "description": "spec.overrides.effect of the overriding item (inheritance@v1 PK-INH-051).",
+          "enum": [
+            "replace",
+            "amend"
+          ]
+        },
+        "stale": {
+          "description": "True when the override is stale (inheritance@v1 PK-INH-053).",
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

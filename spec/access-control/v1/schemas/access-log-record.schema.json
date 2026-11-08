@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/access-control/access-log-record.schema.json",
+  "title": "processkit access log record",
+  "description": "An operational log record (cli@v1 log-record) for an access decision or an impersonation (access-control@v1 PK-ACC-026, PK-ACC-027, PK-ACC-053). It is never repository content and never contains credential material.",
+  "allOf": [
+    {"$ref": "../cli/log-record.schema.json"},
+    {
+      "required": ["fields"],
+      "properties": {
+        "level": {"const": "info"},
+        "event": {"enum": ["access.decision", "access.impersonation"]},
+        "fields": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["principal", "verb", "outcome"],
+          "properties": {
+            "principal": {"$ref": "principal.schema.json"},
+            "verb": {"enum": ["get", "list", "impersonate"]},
+            "kind": {"type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$"},
+            "namespace": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+            "name": {"type": ["string", "null"]},
+            "outcome": {"enum": ["allow", "deny"]},
+            "binding": {
+              "description": "Typed reference of the granting Binding; null when outcome is deny.",
+              "type": ["string", "null"]
+            },
+            "impersonator": {
+              "description": "Present when the decision was made for an impersonated principal (access can-i): the principal that impersonated.",
+              "$ref": "principal.schema.json"
+            },
+            "impersonated": {
+              "description": "access.impersonation only: the requested user and groups.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["user", "groups"],
+              "properties": {
+                "user": {"type": "string", "minLength": 1},
+                "groups": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          }
+        }
+      },
+      "if": {"properties": {"event": {"const": "access.decision"}}},
+      "then": {
+        "properties": {
+          "fields": {"required": ["kind", "namespace", "name", "binding"]}
+        }
+      },
+      "else": {
+        "properties": {
+          "fields": {
+            "required": ["impersonated"],
+            "properties": {"verb": {"const": "impersonate"}}
+          }
+        }
+      }
+    }
+  ]
+}

@@ -27,6 +27,7 @@
       "required": [
         "title",
         "summary",
+        "triggers",
         "owner",
         "status",
         "role",
@@ -37,20 +38,13 @@
       ],
       "properties": {
         "title": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 120
+          "$ref": "content-common.schema.json#/$defs/title"
         },
         "summary": {
-          "description": "Level-0 briefing: what the server offers and when to use it.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 600
+          "$ref": "content-common.schema.json#/$defs/summary"
         },
         "owner": {
-          "description": "Accountable person, role, or team.",
-          "type": "string",
-          "minLength": 1
+          "$ref": "content-common.schema.json#/$defs/owner"
         },
         "status": {
           "enum": [
@@ -99,9 +93,10 @@
                   "const": "stdio"
                 },
                 "package": {
-                  "description": "Package coordinate, e.g. npm, PyPI, or OCI reference; never a shell command line.",
+                  "description": "Package coordinate, for example npm:@scope/server@1.2.3, pypi:server==1.2.3, or oci:ghcr.io/org/server@sha256:<hex>; never a shell command line: no whitespace and none of ; & | < > $ ` \\ ( ) { } ! * ? ' \" (PK-CAT-002).",
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "pattern": "^[^\\s;&|<>$`\\\\(){}!*?'\"]+$"
                 },
                 "args": {
                   "type": "array",
@@ -158,22 +153,41 @@
           "format": "uri"
         },
         "upstreams": {
-          "description": "For role=gateway: names of MCPServer entries it fronts.",
+          "description": "Only for role gateway: names of MCPServer entries it fronts (PK-CAT-004, PK-CAT-006). A name without an MCPServer entry is allowed and reported as a warning.",
           "type": "array",
           "items": {
-            "type": "string",
-            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+            "$ref": "content-common.schema.json#/$defs/name"
           },
           "uniqueItems": true
         },
         "triggers": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "uniqueItems": true
+          "$ref": "content-common.schema.json#/$defs/triggers"
+        },
+        "applicability": {
+          "$ref": "content-common.schema.json#/$defs/applicability"
+        },
+        "final": {
+          "$ref": "content-common.schema.json#/$defs/final"
+        },
+        "overrides": {
+          "$ref": "content-common.schema.json#/$defs/replaceOverride"
+        }
+      },
+      "if": {
+        "properties": {
+          "role": {
+            "const": "server"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "upstreams"
+          ]
         }
       }
     }

@@ -146,7 +146,11 @@ recommended, "may" optional; IDs are stable and never reused.
 - **PK-MODEL-062:** processkit shall report `status` as an object that
   validates against `schemas/status.schema.json`. Single-item results
   (`processkit show`, `processkit explain`, and the MCP `get` and `explain`
-  tools) shall include `status`. List results shall not include `status`.
+  tools) shall include the full `status`. Entries of list and context
+  results (`processkit list`, `processkit context`, and the MCP `list` and
+  `get_context` tools) shall include `status` in the reduced shape
+  `$defs/listStatus` of that schema, which carries the attribution facts of
+  content-kinds@v1 PK-CONT-003 without diagnostics or references.
   <!-- agent proposal: OPEN-ontology-05 -->
 - **PK-MODEL-063:** An extension map shall be an object member named
   `extensions`. Every key of an extension map shall have the form

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/standard.schema.json",
   "title": "processkit governance standard",
-  "description": "A structured, versioned rule set a company, team, or project defines for its own work. Level 0: id, title, summary, triggers, applicability. Level 1: plus rules and section index. Level 2: one section body.",
+  "description": "A structured, versioned rule set a company, team, or project defines for its own work. Disclosure levels are listed in content-kinds@v1 interfaces.yaml (levels.Standard).",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -22,158 +22,31 @@
       "$ref": "resource-metadata.schema.json"
     },
     "spec": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "title",
-        "version",
-        "status",
-        "owner",
-        "summary",
-        "triggers",
-        "applicability",
-        "rules"
-      ],
-      "properties": {
-        "title": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 120
-        },
-        "version": {
-          "description": "Semantic version of the standard's content.",
-          "type": "string",
-          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
-        },
-        "status": {
-          "enum": [
-            "draft",
-            "active",
-            "deprecated",
-            "superseded"
-          ]
-        },
-        "owner": {
-          "description": "Accountable person, role, or team.",
-          "type": "string",
-          "minLength": 1
-        },
-        "summary": {
-          "description": "Level-0 briefing: what the standard requires, in at most a few sentences.",
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 600
-        },
-        "triggers": {
-          "description": "Situations in which an agent must apply this standard.",
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "uniqueItems": true
-        },
-        "applicability": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "profiles"
-          ],
-          "properties": {
-            "profiles": {
-              "description": "Project-declared profiles this standard applies to; [\"*\"] means all.",
-              "type": "array",
-              "minItems": 1,
-              "items": {
-                "type": "string",
-                "pattern": "^(\\*|[a-z][a-z0-9-]*)$"
-              },
-              "uniqueItems": true
-            },
-            "notes": {
-              "type": "string",
-              "minLength": 1
+      "description": "A complete standard, or (overrides.effect amend) only an amending override of an inherited standard.",
+      "if": {
+        "type": "object",
+        "required": [
+          "overrides"
+        ],
+        "properties": {
+          "overrides": {
+            "type": "object",
+            "required": [
+              "effect"
+            ],
+            "properties": {
+              "effect": {
+                "const": "amend"
+              }
             }
           }
-        },
-        "rules": {
-          "description": "Level-1 normative rules, in order.",
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "$ref": "#/$defs/rule"
-          }
-        },
-        "sections": {
-          "description": "Level-2 detail, retrievable one section at a time.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/section"
-          }
-        },
-        "references": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/reference"
-          }
-        },
-        "supersedes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/standardId"
-          },
-          "uniqueItems": true
-        },
-        "alwaysOn": {
-          "description": "When true, the rules join the level-0 connection briefing.",
-          "type": "boolean",
-          "default": false
-        },
-        "final": {
-          "description": "When true, downstream repositories cannot override this standard.",
-          "type": "boolean",
-          "default": false
-        },
-        "overrides": {
-          "description": "Declares that this standard overrides an inherited one.",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "upstream",
-            "name",
-            "version",
-            "reason"
-          ],
-          "properties": {
-            "upstream": {
-              "description": "Upstream name from processkit.toml.",
-              "type": "string",
-              "minLength": 1
-            },
-            "name": {
-              "$ref": "#/$defs/standardId"
-            },
-            "version": {
-              "type": "string",
-              "minLength": 1
-            },
-            "reason": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        },
-        "decisions": {
-          "description": "DecisionRecords that justify this standard.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "uniqueItems": true
         }
+      },
+      "then": {
+        "$ref": "#/$defs/amendSpec"
+      },
+      "else": {
+        "$ref": "#/$defs/fullSpec"
       }
     }
   },
@@ -193,18 +66,10 @@
       ],
       "properties": {
         "id": {
-          "description": "Stable rule identifier, unique within the standard.",
-          "type": "string",
-          "pattern": "^[A-Z][A-Z0-9]*-[0-9]{3}$"
+          "$ref": "#/$defs/ruleId"
         },
         "level": {
-          "enum": [
-            "MUST",
-            "MUST NOT",
-            "SHOULD",
-            "SHOULD NOT",
-            "MAY"
-          ]
+          "$ref": "#/$defs/level"
         },
         "text": {
           "type": "string",
@@ -219,8 +84,7 @@
           "description": "Narrows the rule to these profiles; omitted means the standard's applicability.",
           "type": "array",
           "items": {
-            "type": "string",
-            "pattern": "^(\\*|[a-z][a-z0-9-]*)$"
+            "$ref": "content-common.schema.json#/$defs/profile"
           },
           "uniqueItems": true
         },
@@ -233,30 +97,6 @@
           "description": "When true, downstream overrides cannot change this rule.",
           "type": "boolean",
           "default": false
-        }
-      }
-    },
-    "section": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "title",
-        "body"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
-        },
-        "body": {
-          "description": "Markdown text.",
-          "type": "string",
-          "minLength": 1
         }
       }
     },
@@ -292,6 +132,189 @@
             "url"
           ]
         }
+      ]
+    },
+    "fullSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "version",
+        "status",
+        "owner",
+        "summary",
+        "triggers",
+        "applicability",
+        "rules"
+      ],
+      "properties": {
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "version": {
+          "$ref": "content-common.schema.json#/$defs/semver"
+        },
+        "status": {
+          "$ref": "content-common.schema.json#/$defs/lifecycleStatus"
+        },
+        "owner": {
+          "$ref": "content-common.schema.json#/$defs/owner"
+        },
+        "summary": {
+          "$ref": "content-common.schema.json#/$defs/summary"
+        },
+        "triggers": {
+          "$ref": "content-common.schema.json#/$defs/triggers"
+        },
+        "applicability": {
+          "$ref": "content-common.schema.json#/$defs/applicability"
+        },
+        "rules": {
+          "description": "Level-1 normative rules, in order.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/rule"
+          }
+        },
+        "sections": {
+          "description": "Level-2 detail, retrievable one section at a time.",
+          "type": "array",
+          "items": {
+            "$ref": "content-common.schema.json#/$defs/section"
+          }
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/reference"
+          }
+        },
+        "supersedes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/standardId"
+          },
+          "uniqueItems": true
+        },
+        "alwaysOn": {
+          "description": "When true, the rules join the level-0 connection briefing.",
+          "type": "boolean",
+          "default": false
+        },
+        "final": {
+          "description": "When true, downstream repositories cannot override this standard (inheritance@v1 PK-INH-013).",
+          "type": "boolean",
+          "default": false
+        },
+        "overrides": {
+          "$ref": "content-common.schema.json#/$defs/replaceOverride"
+        },
+        "decisions": {
+          "$ref": "content-common.schema.json#/$defs/decisions"
+        }
+      }
+    },
+    "amendSpec": {
+      "description": "An amending override (content-kinds@v1 PK-STD-006): the effective standard is the overridden upstream standard with ruleLevels applied and addRules appended. The spec holds nothing but overrides.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overrides"
+      ],
+      "properties": {
+        "overrides": {
+          "$ref": "#/$defs/amendOverride"
+        }
+      }
+    },
+    "amendOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstream",
+        "name",
+        "version",
+        "reason",
+        "effect"
+      ],
+      "properties": {
+        "upstream": {
+          "description": "Upstream name from processkit.toml (inheritance@v1).",
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "$ref": "#/$defs/standardId"
+        },
+        "version": {
+          "description": "Version of the overridden upstream standard.",
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effect": {
+          "description": "amend: add rules, change rule levels, or both.",
+          "const": "amend"
+        },
+        "addRules": {
+          "description": "Rules appended, in order, after the upstream rules. Each id must not exist upstream.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/rule"
+          }
+        },
+        "ruleLevels": {
+          "description": "New levels for upstream rules, each named by rule id.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "rule",
+              "level"
+            ],
+            "properties": {
+              "rule": {
+                "$ref": "#/$defs/ruleId"
+              },
+              "level": {
+                "$ref": "#/$defs/level"
+              }
+            }
+          }
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "addRules"
+          ]
+        },
+        {
+          "required": [
+            "ruleLevels"
+          ]
+        }
+      ]
+    },
+    "ruleId": {
+      "description": "Stable rule identifier, unique within the standard.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]*-[0-9]{3}$"
+    },
+    "level": {
+      "enum": [
+        "MUST",
+        "MUST NOT",
+        "SHOULD",
+        "SHOULD NOT",
+        "MAY"
       ]
     }
   }

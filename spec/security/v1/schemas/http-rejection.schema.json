@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/security/http-rejection.schema.json",
+  "title": "processkit shared-server transport rejection",
+  "description": "Body of an HTTP response with which the shared server rejects a request at the transport layer (security@v1 PK-SEC-023 to PK-SEC-027). It is a JSON-RPC 2.0 error response without an id. Content-Type is application/json. The body never contains request content, header values, or credentials.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["jsonrpc", "id", "error"],
+  "properties": {
+    "jsonrpc": {"const": "2.0"},
+    "id": {"type": "null"},
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "data"],
+      "properties": {
+        "code": {
+          "description": "JSON-RPC error code. Always -32600 (Invalid Request).",
+          "const": -32600
+        },
+        "message": {
+          "description": "One redacted sentence. Not a contract; tests use data.code.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code"],
+          "properties": {
+            "code": {
+              "description": "The security@v1 rejection code; the HTTP status is fixed per code.",
+              "enum": [
+                "security.origin-rejected",
+                "security.session-rejected",
+                "security.method-not-allowed",
+                "security.credential-in-url",
+                "security.header-too-large",
+                "security.connection-limit"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "maxProperties": 3
+}

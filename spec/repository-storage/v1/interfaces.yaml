@@ -72,8 +72,8 @@ configuration:
   - other_keys: document sources (content-kinds@v1 PK-DOC-001,
       OPEN-content-kinds-04); upstreams and override winners
       (inheritance@v1); profiles and briefing budget
-      (mcp-context-serving@v1); file schema and version key (cli@v1
-      PK-CONFIG-001)
+      (mcp-context-serving@v1); file schema (cli@v1 PK-CONFIG-001) and
+      version key `schema-version = 1` (cli@v1 PK-CONFIG-005)
     requirements: [PK-STORE-042]
 
 root:
@@ -184,7 +184,8 @@ location_rules:
     served)
   instance_kinds: a file whose kind is an instance concept (for example
     WorkItem or LogEntry) is reported with the instance-concept diagnostic
-    of ontology@v1 (PK-MODEL-003); it is never served, and processkit
+    of ontology@v1 (PK-MODEL-003, code `ontology.instance-kind`); it is
+    never served, and processkit
     reports no storage.location-mismatch for it in addition
   basis: agent-proposal
   requirements: [PK-STORE-046, PK-PROD-020]
@@ -230,7 +231,7 @@ formats:
         - more than one document (--- or ... inside front matter)
         - duplicate keys (storage.duplicate-key)
       on_forbidden: storage.unsafe-yaml; nothing is expanded or executed
-      size_and_depth_limits: security@v1 (OPEN-security-01)
+      size_and_depth_limits: security@v1 PK-SEC-021 and its `limits`
       basis: agent-proposal
       requirements: [PK-STORE-012, PK-STORE-052]
     rules:
@@ -325,9 +326,12 @@ fields:
   - name: apiVersion
     where: every content item (for a Skill, skill.json; for Markdown, front
       matter)
+    not_on: Documents. A Document is plain Markdown matched by a document
+      source and carries no apiVersion (content-kinds@v1 PK-DOC-001 to
+      PK-DOC-004).
     required: true
     supported_in_v1: [processkit.projectious.work/v1]
-    supported_list_source: processkit version (cli@v1 PK-OUT-005)
+    supported_list_source: processkit version (cli@v1 PK-OUT-005, PK-OUT-010)
     effect: validation uses the schema of the declared apiVersion
     missing: the missing-envelope-field diagnostic of ontology@v1
       (PK-MODEL-010)

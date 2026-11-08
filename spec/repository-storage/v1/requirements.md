@@ -201,7 +201,8 @@ committed files, so Git is always able to restore them.
   environment failure.
 <!-- agent proposal: OPEN-repository-storage-13 -->
 - **PK-STORE-060:** When `processkit init` runs, processkit shall plan
-  `processkit.toml` and shall create the content directory. processkit
+  `processkit.toml` with the key `schema-version = 1` (cli@v1 PK-CONFIG-005)
+  and shall create the content directory. processkit
   shall not create item files, schemas, or templates during `init`.
 <!-- agent proposal: OPEN-repository-storage-01 -->
 

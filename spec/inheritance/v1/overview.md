@@ -2,6 +2,17 @@
 
 Non-normative. The requirements are in `requirements.md`.
 
+## Owner goal
+
+The owner wants organizations to govern in levels: a company sets rules, a
+team refines them, and a project applies them, each level in its own
+repository (PK-PROD-009, C6). Every inherited rule must come from an exact,
+reviewed upstream commit, every override must be explicit and justified,
+and every served item must say where it came from, so that agents and
+reviewers can trust what they receive. Network access and lock changes
+happen only by explicit command and are reviewed as ordinary file changes
+(PK-PROD-026, C8; owner decision #213 finding 3: fetch, then lock).
+
 ## Purpose
 
 Organizations govern in levels: a company sets rules, a business unit or
@@ -15,8 +26,9 @@ company-standards        (governing)
         └── payments-api (project; inherits platform-team)
 ```
 
-This specification fixes how upstreams are declared, pinned in
-`processkit.lock`, and fetched by explicit command; how the repository and
+This specification fixes how upstreams are declared, fetched by explicit
+command, and then pinned in `processkit.lock` from the fetched data; how
+the repository and
 its locked upstreams resolve into one deterministic effective set of items;
 how overrides, `final` items and rules, and declared winners between
 upstreams work; that every served item carries provenance; how upstream
@@ -81,40 +93,33 @@ schema (`spec/schemas/v1/standard.schema.json`, owned by
 
 Gap items carried from the governance draft: none.
 
-Baseline tensions noted, not resolved here: PK-INH-030 speaks of the
-"downstream configuration" importing access rules while chapter 09 lists
-"imported access rules" in operator configuration (OPEN-inheritance-09);
-PK-INH-012 lets an override replace an item, add rules, or change a rule's
-level "as declared by the item's schema", but the Standard schema's
-`overrides` object has no way to select that effect (OPEN-inheritance-04).
+Baseline tensions, resolved: PK-INH-030 speaks of the "downstream
+configuration" importing access rules while chapter 09 lists "imported
+access rules" in operator configuration; the import is an operator key
+(PK-INH-059). PK-INH-012 lets an override replace an item, add rules, or
+change a rule's level "as declared by the item's schema"; the Standard
+schema gains `spec.overrides.effect`, `ruleLevels`, and `addRules` (owned
+by `content-kinds@v1`), whose semantics are PK-INH-051.
 
-## Open questions
+Owner decision #213 finding 3 (2026-11-08), "fetch, then lock", changed
+PK-INH-002 and PK-INH-004: `processkit lock` resolves only from the local
+cache (`cli@v1` PK-CLI-044), and `processkit fetch` also fetches declared
+upstreams that are not locked yet (PK-INH-036).
 
-Mirrors `open` in `interfaces.yaml`.
+## Resolved open items
 
-1. OPEN-inheritance-01 — serialization, keys, and format version of
-   `processkit.lock`; keying of transitive entries.
-2. OPEN-inheritance-02 — algorithm and scope of the content digest; how a
-   mismatch is detected at fetch.
-3. OPEN-inheritance-03 — the `processkit.toml` key and granularity for
-   declaring the winning upstream.
-4. OPEN-inheritance-04 — `final` and `overrides` for kinds other than
-   Standard; how a schema declares allowed override effects; how one
-   overridden rule is identified.
-5. OPEN-inheritance-05 — `lock --update` without NAME; whether plain `lock`
-   re-resolves; confirmation after the change summary.
-6. OPEN-inheritance-06 — provenance field names and repository identity;
-   W3C PROV mapping.
-7. OPEN-inheritance-07 — diagnostic codes and exit categories; whether a
-   stale override fails validation or warns.
-8. OPEN-inheritance-08 — the restricted marker field; restricted items under
-   stdio.
-9. OPEN-inheritance-09 — where and how access rules are imported (project or
-   operator configuration).
-10. OPEN-inheritance-10 — diamond transitive upstreams; whether an
-    upstream's own lock is honoured.
-11. OPEN-inheritance-11 — exact definition of a stale override (version
-    mismatch or content digest change).
-12. OPEN-inheritance-12 — computing "newly conflicting" and the JSON shape
-    of the change summary.
-13. OPEN-inheritance-13 — credentials for private Git sources.
+| Item | Resolution | Basis |
+|---|---|---|
+| OPEN-inheritance-01 | `processkit.lock` is JSON (`schemas/lock.schema.json`, PK-STORE-049 serialization), `apiVersion` `lock.processkit.projectious.work/v1`, entries `{name, source, ref, commit, digest}` sorted by name; transitive entries named `<introducer>/<name>` (PK-INH-040); `[[upstream]]` keys and source forms (PK-INH-032); ref resolution order (PK-INH-035) | agent proposal |
+| OPEN-inheritance-02 | SHA-256 over a sorted manifest of every file and symbolic link of the commit tree (PK-INH-038); verified when fetch stores a commit, mismatch `inheritance.digest-mismatch` (PK-INH-037) | agent proposal |
+| OPEN-inheritance-03 | `[[winner]]` tables with `item` (typed name) and `upstream`, one item each; `inheritance.winner-invalid`, `inheritance.winner-unused` (PK-INH-049) | agent proposal |
+| OPEN-inheritance-04 | overrides and `final` only for kinds whose schema defines them, as `content-kinds@v1` declares (PK-INH-050); `spec.overrides.effect` `replace` (serve the overriding item) or `amend` (upstream item with `ruleLevels` applied and `addRules` appended), rules matched by `id` (PK-INH-051); final rule change defined per effect (PK-INH-052); field shapes owned by `content-kinds@v1` | agent proposal |
+| OPEN-inheritance-05 | plain `lock` keeps unchanged declarations and resolves new or changed ones from the latest fetch (PK-INH-042); `--update` without NAME re-resolves all, NAME only that upstream (PK-INH-043); confirmation only by `cli@v1` rules (PK-INH-044); fetch result data (PK-INH-039) | owner decision: #213 finding 3; agent proposal |
+| OPEN-inheritance-06 | `status.provenance` per `schemas/provenance.schema.json` (`origin`, `overrides`, `restricted`, `restrictedBy`); repository identity is lock entry name plus source; `status.references[].origin` is the target's `provenance.origin` (PK-INH-055); PROV mapping, no PROV output (PK-INH-056) | agent proposal |
+| OPEN-inheritance-07 | `inheritance.*` codes with category and scope in `interfaces.yaml` `errors` (PK-INH-054); stale override is a validation failure (PK-INH-053); lock checks (PK-INH-045); upstream errors (PK-INH-048) | agent proposal |
+| OPEN-inheritance-08 | `[downstream] restricted` in the providing repository's `processkit.toml` (PK-INH-061); stdio and CLI serve restricted items to the local principal (PK-INH-062) | agent proposal |
+| OPEN-inheritance-09 | operator key `inheritance.import-access-rules`, lock entry names; project configuration cannot import (PK-INH-059); imported rules add grants, "downstream rules" are the downstream's own (PK-INH-060) | agent proposal |
+| OPEN-inheritance-10 | transitive entries copied from each upstream's own lock, never re-resolved (PK-INH-041); recursive effective sets (PK-INH-046); identical diamond candidates merge, different ones need a winner (PK-INH-047) | agent proposal |
+| OPEN-inheritance-11 | stale means `spec.overrides.version` differs from the upstream item's `spec.version` (PK-INH-053) | agent proposal |
+| OPEN-inheritance-12 | added, removed, changed, newly conflicting defined over inherited items after winners; `schemas/lock-result.schema.json` (PK-INH-057, PK-INH-058) | agent proposal |
+| OPEN-inheritance-13 | no credentials in sources (`cli.config-forbidden-key`, PK-INH-033); fetch uses only the Git credential mechanisms of the operating-system user (PK-INH-034) | agent proposal |

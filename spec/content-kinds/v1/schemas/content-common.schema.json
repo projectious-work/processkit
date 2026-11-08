@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/content-common.schema.json",
+  "title": "processkit content-kind shared definitions",
+  "description": "Definitions shared by the content-kind schemas of content-kinds@v1. This document validates nothing on its own; other schemas reference its $defs.",
+  "$defs": {
+    "name": {
+      "description": "metadata.name syntax of ontology@v1.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "maxLength": 80
+    },
+    "qualifiedName": {
+      "description": "An item name, optionally namespace-qualified as <namespace>/<name>.",
+      "type": "string",
+      "pattern": "^([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "semver": {
+      "description": "Semantic version MAJOR.MINOR.PATCH of the item's content.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "owner": {
+      "description": "Accountable person, role, or team.",
+      "type": "string",
+      "minLength": 1
+    },
+    "lifecycleStatus": {
+      "enum": [
+        "draft",
+        "active",
+        "deprecated",
+        "superseded"
+      ]
+    },
+    "summary": {
+      "description": "Level-0 briefing: what the item is and when to use it (PK-CONT-002, PK-CONT-014).",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "triggers": {
+      "description": "Situations in which the item applies (PK-CONT-002, PK-CONT-014).",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "uniqueItems": true
+    },
+    "profile": {
+      "description": "A repository-declared profile name, or * for all profiles.",
+      "type": "string",
+      "pattern": "^(\\*|[a-z][a-z0-9-]*)$"
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profiles"
+      ],
+      "properties": {
+        "profiles": {
+          "description": "Project-declared profiles this item applies to; [\"*\"] means all.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/profile"
+          },
+          "uniqueItems": true
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "markdown": {
+      "description": "Markdown text.",
+      "type": "string",
+      "minLength": 1
+    },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "body"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/name"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "body": {
+          "$ref": "#/$defs/markdown"
+        }
+      }
+    },
+    "anyRef": {
+      "description": "Typed reference <Kind>/<name> or <Kind>/<namespace>/<name> (ontology@v1 references).",
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "roleRef": {
+      "type": "string",
+      "pattern": "^Role/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "mcpServerRef": {
+      "type": "string",
+      "pattern": "^MCPServer/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "documentRef": {
+      "type": "string",
+      "pattern": "^Document/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "decisionRecordRef": {
+      "type": "string",
+      "pattern": "^DecisionRecord/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "decisions": {
+      "description": "Names of the DecisionRecords that justify the item (PK-DEC-002). Each resolves as DecisionRecord/<value>; an unresolved name fails validation.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/qualifiedName"
+      },
+      "uniqueItems": true
+    },
+    "final": {
+      "description": "When true, downstream repositories cannot override this item (inheritance@v1 PK-INH-013).",
+      "type": "boolean",
+      "default": false
+    },
+    "replaceOverride": {
+      "description": "Declares that this item replaces an inherited item of the same kind (inheritance@v1 PK-INH-011, PK-INH-012).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstream",
+        "name",
+        "version",
+        "reason",
+        "effect"
+      ],
+      "properties": {
+        "upstream": {
+          "description": "Upstream name from processkit.toml (inheritance@v1).",
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "$ref": "#/$defs/qualifiedName"
+        },
+        "version": {
+          "description": "Version of the overridden upstream item.",
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effect": {
+          "description": "replace: this item replaces the upstream item as a whole.",
+          "const": "replace"
+        }
+      }
+    }
+  }
+}

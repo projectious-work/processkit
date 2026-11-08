@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/inheritance/lock-result.schema.json",
+  "title": "processkit lock result data",
+  "description": "The data member of the cli@v1 result envelope for processkit lock and processkit lock --update, also with --dry-run (inheritance@v1 PK-INH-020, PK-INH-057). The plan and changes members of the envelope are those of cli@v1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["upstreams", "added", "changed", "removed", "newlyConflicting"],
+  "properties": {
+    "upstreams": {
+      "description": "Every lock entry that the run adds, re-resolves to another commit, or removes, sorted by name. Entries that stay the same are not listed.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "previousCommit", "commit"],
+        "properties": {
+          "name": {"$ref": "lock.schema.json#/$defs/entryName"},
+          "previousCommit": {
+            "description": "Commit in the current lock; null when the entry is new.",
+            "oneOf": [{"$ref": "lock.schema.json#/$defs/commit"}, {"type": "null"}]
+          },
+          "commit": {
+            "description": "Commit in the new lock; null when the entry is removed.",
+            "oneOf": [{"$ref": "lock.schema.json#/$defs/commit"}, {"type": "null"}]
+          }
+        }
+      }
+    },
+    "added": {"$ref": "#/$defs/itemList"},
+    "changed": {"$ref": "#/$defs/itemList"},
+    "removed": {"$ref": "#/$defs/itemList"},
+    "newlyConflicting": {"$ref": "#/$defs/itemList"}
+  },
+  "$defs": {
+    "itemList": {
+      "description": "Typed names (<kind>/<name> or <kind>/<namespace>/<name>), sorted in ascending Unicode code point order, each at most once.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Za-z0-9]*/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+      }
+    }
+  }
+}

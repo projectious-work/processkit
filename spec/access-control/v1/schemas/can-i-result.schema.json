@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/access-control/can-i-result.schema.json",
+  "title": "processkit access can-i result",
+  "description": "The data member of the cli@v1 result envelope of processkit access can-i (access-control@v1 PK-ACC-027, PK-ACC-047). Both decisions exit with code 0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decision", "principal", "request", "grantedBy"],
+  "properties": {
+    "decision": {"enum": ["allow", "deny"]},
+    "principal": {
+      "description": "The impersonated principal (from --as and --as-group).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["user", "groups"],
+      "properties": {
+        "user": {"type": "string", "minLength": 1, "maxLength": 256},
+        "groups": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 256}
+        }
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verb", "kind", "namespace", "name"],
+      "properties": {
+        "verb": {"enum": ["get", "list"]},
+        "kind": {"type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$"},
+        "namespace": {
+          "description": "Container name; root when --namespace is absent.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "name": {
+          "description": "NAME, or null when NAME is absent.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "grantedBy": {
+      "description": "The granting Binding, its Role, and the 0-based index of the matching rule in the Role's spec.access; null when decision is deny.",
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["binding", "role", "rule"],
+          "properties": {
+            "binding": {"type": "string", "pattern": "^Binding/"},
+            "role": {"type": "string", "pattern": "^Role/"},
+            "rule": {"type": "integer", "minimum": 0}
+          }
+        }
+      ]
+    }
+  },
+  "if": {"properties": {"decision": {"const": "deny"}}},
+  "then": {"properties": {"grantedBy": {"type": "null"}}},
+  "else": {"properties": {"grantedBy": {"type": "object"}}}
+}

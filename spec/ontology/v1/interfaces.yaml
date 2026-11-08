@@ -23,7 +23,8 @@ schemas:
     requirements: [PK-MODEL-046, PK-MODEL-063, PK-MODEL-064, PK-MODEL-065]
   - path: schemas/status.schema.json
     id: https://schemas.projectious.work/processkit/v1/status.schema.json
-    describes: the derived `status` member of single-item results
+    describes: the derived `status` member (full in single-item results;
+      `$defs/listStatus` in list and context entries)
     basis: agent-proposal
     requirements: [PK-MODEL-014, PK-MODEL-022, PK-MODEL-023, PK-MODEL-062]
   - path: schemas/ontology-extension.schema.json
@@ -532,8 +533,11 @@ relations:
                          inverse]
   stored_as: Binding
   binding_fields:
-    # Shared by every relation type. The grants-role Binding contract,
-    # including its subject and validity shapes, is access-control@v1.
+    # Shared by every relation type. The full Binding schema, including
+    # the grants-role subject and validity shapes, is access-control@v1
+    # schemas/binding.schema.json; it reports the codes
+    # ontology.unresolved-reference, ontology.relation-endpoint,
+    # ontology.invalid-selector, and ontology.missing-field.
     - {path: spec.relation, meaning: relation type name (the type)}
     - {path: spec.subject, meaning: "typed reference; a principal object for
         grants-role (access-control@v1)"}

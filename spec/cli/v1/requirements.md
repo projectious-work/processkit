@@ -424,7 +424,9 @@ Configuration has three layers, lowest precedence first:
   error, or a file when the operator configuration sets `logging.sink` to
   `file` and `logging.file` to an absolute path. If the file sink cannot be
   opened, then processkit shall fail with `cli.log-sink-unavailable` as an
-  environment failure.
+  environment failure. The level shall not filter the audit records that
+  access-control@v1 PK-ACC-053 requires (`access.decision` and
+  `access.impersonation`).
   <!-- agent proposal: OPEN-cli-11 -->
 - **PK-OUT-009:** processkit shall read secret patterns from the operator
   key `redaction.patterns`, a list of regular expressions. processkit shall

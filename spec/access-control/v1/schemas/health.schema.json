@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/access-control/health.schema.json",
+  "title": "processkit shared-server health response",
+  "description": "Body of the unauthenticated health endpoint GET /healthz (access-control@v1 PK-ACC-033, PK-ACC-052). The state values and the checks behind them are owned by mcp-context-serving@v1 (PK-MCP-046, PK-MCP-047). The body has no other member, so it reveals no item names, counts, or rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status"],
+  "properties": {
+    "status": {"enum": ["healthy", "degraded", "blocked"]}
+  }
+}

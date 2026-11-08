@@ -282,7 +282,8 @@ commands:
     semantics_owner: ontology@v1
     requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-040]
   - name: access
-    synopsis: processkit access whoami|can-i
+    synopsis: processkit access whoami | processkit access can-i VERB KIND
+      [NAME] --as USER [--as-group G]... [--namespace N]
     subcommands: [whoami, can-i]
     arguments_and_output: access-control@v1
     writes: nothing
@@ -338,6 +339,7 @@ commands:
       contentApiVersions: repository-storage@v1, content-kinds@v1
       mcpToolContractVersion: mcp-context-serving@v1
       lockFormatVersion: inheritance@v1
+        (lock.processkit.projectious.work/v1, the lock's apiVersion)
       resultContractVersion: cli@v1 (cli.processkit.projectious.work/v1)
     text_output: human projection; contains every value of the JSON data;
       layout is not a contract
@@ -515,7 +517,9 @@ errors:
     cli.config-unknown-key: validation
     cli.config-invalid-value: validation
     cli.config-forbidden-key: validation (project configuration sets an
-      authenticator, credential, listen address, or executable)
+      authenticator, credential, listen address, executable, or limit
+      (security@v1 PK-SEC-019); or an upstream URL carries user
+      information (security@v1 PK-SEC-028))
     cli.config-version-unsupported: validation
     cli.unknown-environment-variable: warning (severity; never an error)
     cli.log-sink-unavailable: environment
@@ -608,7 +612,8 @@ configuration:
                 override winners, briefing budget]
       keys_owned_by: [repository-storage@v1, inheritance@v1,
                       mcp-context-serving@v1, content-kinds@v1]
-      forbidden: [authenticators, credentials, listen addresses, executables]
+      forbidden: [authenticators, credentials, listen addresses, executables,
+                  limits]
     - name: operator
       file: named by --config or PROCESSKIT_CONFIG only; no implicit
         location
@@ -624,7 +629,7 @@ configuration:
              when logging.sink is file}
         - {key: redaction.patterns, type: list of strings, default: []}
       other_keys_owned_by: [access-control@v1, security@v1,
-                            mcp-context-serving@v1]
+                            mcp-context-serving@v1, inheritance@v1]
     - name: invocation
       sources: [options (highest), PROCESSKIT_ environment variables]
   layer_order_note: project and operator keys are disjoint (PK-CONFIG-002),

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/decision-record.schema.json",
+  "title": "processkit decision record front matter",
+  "description": "The front matter of decisions/<name>.md (repository-storage@v1 markdown-front-matter). Every structured field is here (PK-DEC-005); the Markdown body is free explanatory text, served at level 2 as section notes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "DecisionRecord"
+    },
+    "metadata": {
+      "$ref": "resource-metadata.schema.json"
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "status",
+        "date",
+        "deciders",
+        "summary",
+        "triggers",
+        "context",
+        "decision",
+        "consequences"
+      ],
+      "properties": {
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "accepted",
+            "superseded",
+            "rejected"
+          ]
+        },
+        "date": {
+          "description": "Calendar date of the status decision, ISO 8601 YYYY-MM-DD.",
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+        },
+        "deciders": {
+          "description": "People, roles, or teams that took the decision.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "uniqueItems": true
+        },
+        "summary": {
+          "$ref": "content-common.schema.json#/$defs/summary"
+        },
+        "triggers": {
+          "$ref": "content-common.schema.json#/$defs/triggers"
+        },
+        "applicability": {
+          "$ref": "content-common.schema.json#/$defs/applicability"
+        },
+        "context": {
+          "description": "The situation and forces that led to the decision. Markdown. Level 2, section context.",
+          "$ref": "content-common.schema.json#/$defs/markdown"
+        },
+        "decision": {
+          "description": "What was decided. Markdown. Level 1.",
+          "$ref": "content-common.schema.json#/$defs/markdown"
+        },
+        "consequences": {
+          "description": "What follows from the decision. Markdown. Level 1.",
+          "$ref": "content-common.schema.json#/$defs/markdown"
+        },
+        "alternatives": {
+          "description": "Options considered and not chosen. Level 2, section alternatives.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "title",
+              "reason"
+            ],
+            "properties": {
+              "title": {
+                "$ref": "content-common.schema.json#/$defs/title"
+              },
+              "reason": {
+                "description": "Why the option was not chosen.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            }
+          }
+        },
+        "supersedes": {
+          "description": "Decision records this record replaces (PK-DEC-003, PK-DEC-006). Each must resolve and have status superseded.",
+          "type": "array",
+          "items": {
+            "$ref": "content-common.schema.json#/$defs/decisionRecordRef"
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
+}

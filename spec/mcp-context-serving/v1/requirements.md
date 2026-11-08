@@ -76,13 +76,16 @@ The tool set is small and generic, because every tool definition occupies
 the caller's context.
 
 ```text
-get_context(task?, profiles?, paths?, kinds?, level?)
-list(kind, selector?, namespace?, limit?, cursor?)
+get_context(task?, profiles?, paths?, kinds?, level?, excluded?)
+list(kind, selector?, namespace?, limit?, cursor?, excluded?)
 get(kind, name, namespace?, level?, section?)
 explain(kind, name, namespace?)
 validate(kind, content)
 ontology(concept?)
 ```
+
+<!-- changed by owner decision: #213 finding 2 (argument `excluded` of
+     get_context and list) -->
 
 - **PK-MCP-020:** When `get_context` is called, the MCP server shall return
   the items that apply to the given arguments, ranked by declared triggers,
@@ -104,7 +107,10 @@ ontology(concept?)
 - **PK-MCP-044:** When `get_context` or `list` leaves out an item because of
   its profiles or its applicability, the MCP server shall report that item in
   the result with its identity and the reason it was excluded, rather than
-  omitting it silently.
+  omitting it silently. For items that only the pinned profile set leaves
+  out, the MCP server shall instead report their count and a stable
+  reference, and shall list them only on explicit request (PK-MCP-072).
+  <!-- changed by owner decision: #213 finding 2 -->
   <!-- from governance draft: 04-content-packages-and-extensions.md PK-STD-011;
        06-agent-protocol-and-query-surface.md PK-MCP-053 -->
 - **PK-MCP-045:** The MCP server shall report excluded items only when the
@@ -206,8 +212,8 @@ call. Pinning limits relevance; it is not a confidentiality control.
 - **PK-MCP-056:** The MCP server shall treat the pinned profile set as part
   of the normalized arguments, so that it enters assembly and the cache key
   like a caller-supplied `profiles` argument.
-  <!-- from proposal: #204 P1 (reconciles pinning with PK-MCP-030 and PK-
-       MCP-032) -->
+  <!-- from proposal: #204 P1 -->
+  <!-- confirmed by owner decision: #213 finding 1 -->
 - **PK-MCP-057:** Where the shared server's operator configuration binds a
   group to default pinned profiles, the shared server shall pin those
   profiles for principals in that group without the caller passing them.

@@ -39,6 +39,36 @@ task needs:
   declared by project-defined profiles such as `cli`, `library`, `service`,
   or `documentation`, by labels, or by both. processkit shall treat profile
   names as vocabulary the repository declares, not as a fixed list.
+- **PK-CONT-013:** processkit shall serve each kind at each disclosure
+  level with exactly the members that `interfaces.yaml` lists for the kind
+  under `levels`. A level-2 result shall also carry the kind's level-0
+  members.
+  <!-- agent proposal: OPEN-content-kinds-01, -02, -03, -04 -->
+- **PK-CONT-014:** processkit shall require, for every kind, a `summary` of
+  1 to 600 characters and `triggers` as a list of at least one unique string
+  of 1 to 200 characters. This includes MCPServer entries, DecisionRecords,
+  and Documents.
+  <!-- agent proposal: OPEN-content-kinds-05 -->
+- **PK-CONT-015:** When a caller requests one section at level 2,
+  processkit shall find the section by the kind's section key in
+  `interfaces.yaml` `sections`. If the item has no section with that key,
+  then processkit shall fail with `content-kinds.unknown-section` and shall
+  return no section.
+  <!-- agent proposal: OPEN-content-kinds-16 -->
+- **PK-CONT-016:** processkit shall carry the facts of PK-CONT-003 in the
+  members that `interfaces.yaml` lists under `attribution`. The version of
+  a Standard, ProcessSpecification, or Skill shall be its `spec.version`.
+  The version of an MCPServer entry, DecisionRecord, or Document shall be
+  its content digest; the `spec.version` of an MCPServer entry is the
+  version of the catalogued server.
+  <!-- agent proposal: OPEN-content-kinds-07 -->
+- **PK-CONT-021:** processkit shall require every item to declare
+  `spec.applicability`, at least one label, or both. If an item declares
+  neither, then validation shall fail with
+  `content-kinds.applicability-missing`. If an item names a profile that is
+  not `*` and that the repository does not declare, then validation shall
+  fail with `content-kinds.undeclared-profile`.
+  <!-- agent proposal: PK-CONT-004 (profiles as repository vocabulary) -->
 
 ## Standards
 
@@ -64,13 +94,30 @@ documentation standard. Its structure is the published schema
   marked always-on, processkit shall contribute its rules to the level-0
   briefing; always-on standards replace the governance part of harness
   instruction files.
+- **PK-STD-006:** A Standard that overrides an inherited Standard shall
+  declare `spec.overrides.effect` as `replace` or `amend`. With `replace`,
+  the Standard shall be complete. With `amend`, the Standard's `spec` shall
+  contain only `overrides`. inheritance@v1 PK-INH-051 defines how processkit
+  applies each effect.
+  <!-- agent proposal: inheritance@v1 PK-INH-012 override effects
+       (assignment: content-kinds owns standard.schema.json) -->
+- **PK-STD-007:** If an amending override names in `ruleLevels` a rule that
+  the upstream Standard does not have, then validation shall fail with
+  `content-kinds.override-unknown-rule`. If a rule in `addRules` has the id
+  of a rule of the upstream Standard, then validation shall fail with
+  `content-kinds.override-duplicate-rule`.
+  <!-- agent proposal: inheritance@v1 PK-INH-012 override effects -->
 
 ## Process specifications
 
 A ProcessSpecification defines how a kind of work is done, in ontology
 terms: which WorkItem type it governs, its StateMachine, the Roles involved,
 the Gates on transitions, the Artifacts produced, and the standards and
-skills that apply at each step.
+skills that apply at each step. Its structure is the published schema
+`schemas/process-specification.schema.json`; its template is
+`examples/process-specification.template.json`, and
+`examples/process-specification.example.json` is the worked ticket-handling
+example.
 
 - **PK-PROC-001:** processkit shall require a ProcessSpecification to
   declare title, version, status, owner, summary, triggers, the governed
@@ -94,12 +141,45 @@ skills that apply at each step.
   ticket-handling example created from a natural-language description.
 - **PK-PROD-021:** processkit shall not execute or track processes. It
   defines them; harnesses, trackers, forges, and orchestrators run them.
+- **PK-PROC-007:** When processkit validates a ProcessSpecification,
+  processkit shall also check that `initial` and the `from` and `to` of
+  every transition name a declared state, that state ids are unique, and
+  that no terminal state has an outgoing transition.
+  <!-- agent proposal: OPEN-content-kinds-02 -->
+- **PK-PROC-009:** processkit shall require a Gate to declare an id, a
+  title, its kind (`approval` or `check`), a validator description, and the
+  Roles with authority over its outcome. A Gate may declare whether it
+  blocks the transition, the evidence its outcome must cite, and the Roles
+  that may waive it.
+  <!-- agent proposal: gap row 8, owner decision pending -->
+- **PK-PROC-010:** processkit shall not evaluate a Gate, record a Gate
+  outcome, or store a waiver. The outcomes of a Gate are `passed`,
+  `failed`, and `waived`; a waiver states authority, reason, scope, and an
+  expiry or review condition. The external instance system records them.
+  <!-- agent proposal: gap row 8, owner decision pending -->
+- **PK-PROC-011:** Where a ProcessSpecification declares `shape` `linear`,
+  processkit shall require its states to form one ordered chain:
+  `initial` is the first state in `states`, every transition goes from a
+  state to the next state in `states`, every state except the last has
+  exactly one transition, and only the last state is terminal. If the
+  states do not form this chain, then validation shall fail with
+  `content-kinds.process-not-linear`.
+  <!-- agent proposal: gap row 6, owner decision pending -->
+- **PK-PROC-012:** A state of a ProcessSpecification may declare its intent
+  and its inputs. processkit shall require each input to declare its class
+  (`instruction`, `reference`, or `working`) and a description. An input
+  may name a typed reference or an artifact. If an input or a Gate's
+  evidence names an artifact that no state of the process declares, then
+  validation shall fail with `content-kinds.process-unknown-artifact`.
+  <!-- agent proposal: gap row 6, owner decision pending -->
 
 ## Skills
 
 A Skill is a reusable agent capability: instructions, optional reference
 files, and metadata. processkit serves skills over MCP instead of copying
-them into harness skill directories.
+them into harness skill directories. The structure of `skill.json` is the
+published schema `schemas/skill.schema.json`; the templates are
+`examples/skill.template.json` and `examples/skill.template.md`.
 
 - **PK-SKILL-001:** processkit shall require a Skill to consist of
   `SKILL.md` and `skill.json` metadata that declares name, version, summary,
@@ -138,6 +218,40 @@ them into harness skill directories.
   parts are normative semantics and which are explanatory text.
   <!-- from governance draft: 04-content-packages-and-extensions.md
        PK-PKG-015 -->
+- **PK-SKILL-011:** processkit shall require `spec.sideEffects` of a Skill
+  to state the highest side-effect class of the skill's operations, as one
+  of `read-only`, `project-mutating`, `externally-mutating`, `privileged`,
+  or `destructive`, listed in ascending order.
+  <!-- agent proposal: OPEN-content-kinds-11 -->
+- **PK-SKILL-012:** processkit shall treat every entry of
+  `spec.dependencies` (a Skill or a Standard) and of
+  `spec.requiredMcpServers` (an MCPServer) as a typed reference. If such a
+  reference does not resolve, then validation shall fail.
+  <!-- agent proposal: OPEN-content-kinds-12 -->
+- **PK-SKILL-013:** processkit shall read a Skill's normative and
+  explanatory parts from `spec.parts` in `skill.json`, never from
+  `SKILL.md`. processkit shall require `spec.parts` to list `SKILL.md` and
+  shall treat a file that is not listed as explanatory. If a listed path
+  does not exist in the skill directory, then validation shall fail with
+  `content-kinds.skill-part-missing`.
+  <!-- agent proposal: OPEN-content-kinds-13 -->
+- **PK-SKILL-014:** processkit shall label a skill file as a script if its
+  path in the skill directory starts with `scripts/` or its content starts
+  with the two bytes `#!`. processkit shall return an additional skill file
+  with its `path`, `script` label, `encoding`, and `content`.
+  <!-- agent proposal: OPEN-content-kinds-14 -->
+- **PK-SKILL-015:** processkit shall validate a skill directory in the
+  Agent Skills format (`SKILL.md` with front matter `name` and
+  `description`, and optional `scripts/`, `references/`, and `assets/`
+  directories) when only `skill.json` is added. processkit shall not
+  require front matter in `SKILL.md` and shall not require a change to it.
+  <!-- agent proposal: OPEN-content-kinds-14 -->
+- **PK-SKILL-016:** A Skill may declare in `spec.agent` a persona Document,
+  a model class, and evaluation cases. processkit shall serve these fields
+  at level 1 as information. processkit shall not run a model or an
+  evaluation.
+  <!-- agent proposal: gap row 4 (owner plan in the standards v2.2.0
+       applicability record) -->
 
 ## Trusted MCP server catalog
 
@@ -160,11 +274,27 @@ schema `schemas/mcp-server.schema.json`; the template is
 - **PK-CAT-004:** An MCPServer entry with role `gateway` may list the
   catalogued servers it fronts. processkit shall not infer trust in a server
   from its presence behind a gateway.
+- **PK-CAT-005:** processkit shall check every string value of an
+  MCPServer entry, including its metadata, against the built-in secret
+  patterns in `interfaces.yaml` and against the operator's
+  `redaction.patterns` (`cli@v1`). If a value matches, then validation
+  shall fail with `content-kinds.secret-in-catalog-entry`, and the
+  diagnostic shall not contain the value.
+  <!-- agent proposal: OPEN-content-kinds-09 -->
+- **PK-CAT-006:** If an MCPServer entry with role `server` declares
+  `upstreams`, then validation shall fail with
+  `content-kinds.upstreams-not-allowed`. If a name in the `upstreams` of a
+  gateway entry matches no MCPServer entry, then processkit shall report
+  the warning `content-kinds.upstream-not-catalogued` and shall serve the
+  gateway entry.
+  <!-- agent proposal: OPEN-content-kinds-15 -->
 
 ## Decision records
 
 A DecisionRecord states why a rule, process, or structure exists. It is a
-reviewed document, not an activity log.
+reviewed document, not an activity log. The structure of its front matter
+is the published schema `schemas/decision-record.schema.json`; its
+template is `examples/decision-record.template.md`.
 
 - **PK-PROD-010:** processkit shall keep decision records as reviewed
   governance documents and shall make them linkable from the standards and
@@ -182,8 +312,25 @@ reviewed document, not an activity log.
 - **PK-DEC-004:** processkit shall not create a DecisionRecord as a side
   effect of another command. Authors write decision records through
   reviewed file changes.
+- **PK-DEC-005:** processkit shall require every field of a
+  DecisionRecord, including context, decision, and consequences, in its
+  front matter, with `date` as an ISO 8601 calendar date `YYYY-MM-DD`.
+  processkit shall serve the Markdown body only as the level-2 section
+  `notes`.
+  <!-- agent proposal: OPEN-content-kinds-03 -->
+- **PK-DEC-006:** A DecisionRecord that replaces others shall name them in
+  `spec.supersedes`. If a named record does not have status `superseded`,
+  then validation shall fail with `content-kinds.supersession-status`. If a
+  record has status `superseded` and no record names it in `supersedes`,
+  then processkit shall report the warning
+  `content-kinds.supersession-missing`.
+  <!-- agent proposal: OPEN-content-kinds-03 -->
 
 ## Documents
+
+A Document is a Markdown file that a declared document source matches. The
+front matter keys processkit reads are in `schemas/document.schema.json`;
+the document source table is in `schemas/document-sources.schema.json`.
 
 - **PK-DOC-001:** processkit shall require a document source to be declared
   in configuration with a path pattern, a namespace, and labels for every
@@ -192,6 +339,31 @@ reviewed document, not an activity log.
 - **PK-DOC-002:** processkit shall serve a Document's title, path, labels,
   and heading index at level 0, and one heading section at level 2.
   Documents have no rules and no lifecycle.
+- **PK-DOC-003:** processkit shall read document sources from the
+  `[[document-sources]]` tables of `processkit.toml`, with the keys
+  `pattern`, `namespace`, and `labels`, and the optional keys `summary` and
+  `triggers`. processkit shall resolve patterns against the repository root
+  with the syntax of `schemas/document-sources.schema.json`. If a file
+  matches more than one document source, then validation shall fail with
+  `content-kinds.document-source-overlap`.
+  <!-- agent proposal: OPEN-content-kinds-04 -->
+- **PK-DOC-004:** processkit shall take a Document's name from front matter
+  `name`, else from the file name without `.md`. processkit shall take its
+  title from front matter `title`, else from the first level-1 heading,
+  else from the name. processkit shall take its summary and triggers from
+  front matter, else from the document source. If a Document then has no
+  summary or no triggers, then validation shall fail with
+  `content-kinds.document-missing-field`. If two Documents in one namespace
+  have the same name, then validation shall fail with
+  `content-kinds.document-name-collision` for both.
+  <!-- agent proposal: OPEN-content-kinds-04, OPEN-content-kinds-05 -->
+- **PK-DOC-005:** processkit shall build a Document's heading index from
+  its ATX and setext headings as CommonMark 0.31.2 defines them, and shall
+  give each heading the id, level, and title that `interfaces.yaml`
+  `heading_index` defines. A heading section shall extend from its heading
+  to the next heading of the same or a smaller level number, or to the end
+  of the file.
+  <!-- agent proposal: OPEN-content-kinds-04 -->
 
 ## Validation
 
@@ -205,3 +377,40 @@ reviewed document, not an activity log.
 - **PK-CONT-012:** processkit shall validate draft content passed as input,
   without writing files, through both the processkit CLI and the MCP
   server.
+- **PK-CONT-017:** processkit shall report every validation failure that
+  this specification defines as a `cli@v1` diagnostic with category
+  `validation` (unless `interfaces.yaml` `errors` states another category),
+  the code from `interfaces.yaml` `errors`, `file`, `pointer`, and
+  `constraint`. For a schema violation, `constraint` shall be the absolute
+  keyword location in the published schema.
+  <!-- agent proposal: OPEN-content-kinds-06 -->
+- **PK-CONT-018:** If an item is invalid, then processkit shall show it in
+  a result that would have included it with its kind, name, namespace, and
+  attribution only, with validation outcome `invalid` and its diagnostics,
+  and without its `spec` members.
+  <!-- agent proposal: OPEN-content-kinds-06 -->
+- **PK-CONT-019:** processkit shall accept as the KIND operand of the CLI
+  and as the `kind` argument of the MCP tools exactly the `kind` value of a
+  content kind, compared case-sensitively. If the value names no kind,
+  then processkit shall fail with `content-kinds.unknown-kind`.
+  <!-- agent proposal: OPEN-content-kinds-10 -->
+- **PK-CONT-020:** When `processkit new KIND NAME` runs, processkit shall
+  plan the files of the kind's published template at the kind's location,
+  with the template's placeholder name replaced by NAME. If the kind has no
+  published template, then processkit shall fail with
+  `content-kinds.no-template`. If NAME does not match the name syntax of
+  `ontology@v1`, then processkit shall fail with
+  `content-kinds.invalid-name`.
+  <!-- agent proposal: OPEN-content-kinds-10 -->
+- **PK-CONT-022:** When processkit validates draft content passed as input,
+  processkit shall validate the draft as one item of the given kind: its
+  schema, its references, and its cross-field rules. processkit shall skip
+  the checks that need other files of the same item, such as Skill parts,
+  and shall report `-` as the diagnostic `file`.
+  <!-- agent proposal: OPEN-content-kinds-06 -->
+- **PK-CONT-023:** A ProcessSpecification, Skill, or MCPServer entry may
+  declare `spec.final` and a `spec.overrides` with effect `replace`, in the
+  shape a Standard uses. processkit shall apply them as `inheritance@v1`
+  defines for final items and overrides.
+  <!-- agent proposal: inheritance@v1 OPEN-inheritance-04 (kinds other
+       than Standard) -->
