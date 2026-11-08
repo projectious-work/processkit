@@ -50,7 +50,7 @@ Steps:
 Expected results:
 
 - Step 1 starts the server; `/healthz` answers HTTP 200 with
-  `{"status": "healthy"}`; tool results report the working-copy revision.
+  `{"state": "healthy"}`; tool results report the working-copy revision.
 - A: the briefing, `list`, and `get_context` contain `eng-std` only;
   `list` reports one item; `get` of `eng-secret` and `fin-std` returns the
   same result as a missing item; `eng-std`'s reference to `fin-std` is
@@ -328,7 +328,7 @@ Expected results:
   `access.tls-not-configured`; 8: exit 1, `cli.config-forbidden-key`. In
   1 to 8 nothing listens on PORT and no CA, certificate, or certificate
   request is created.
-- 9: `/healthz` answers HTTP 200 with exactly `{"status": "healthy"}`,
+- 9: `/healthz` answers HTTP 200 with exactly `{"state": "healthy"}`,
   without item names, counts, or rules; `/unknown` answers HTTP 404 with
   `access.unknown-path`; results report the revision of the single served
   working copy.

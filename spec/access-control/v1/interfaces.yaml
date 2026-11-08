@@ -503,6 +503,9 @@ authorization:
            principal may get that OntologyExtension"}
       - {operation: resources/list, verb: list, kinds: every kind}
       - {operation: resources/read, verb: get, kinds: kind in the URI}
+      - {operation: resources/read of processkit:health, verb: none, note:
+           "carries no item content (mcp-context-serving@v1 PK-MCP-046);
+           any authenticated principal may read it"}
       - {operation: prompts/list, verb: list, kinds: [Skill,
            ProcessSpecification]}
       - {operation: prompts/get, verb: get, kinds: [Skill,

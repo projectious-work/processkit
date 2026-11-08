@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/operator-config.schema.json",
+  "title": "operator configuration keys of mcp-context-serving",
+  "description": "The [mcp] table of the operator configuration file, as its JSON equivalent (mcp-context-serving@v1 PK-MCP-071, PK-MCP-077). Values outside minimum..maximum fail with cli.config-invalid-value and are never clamped (security@v1 PK-SEC-020).",
+  "type": "object",
+  "properties": {
+    "mcp": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max-request-bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 33554432,
+          "default": 2097152
+        },
+        "max-concurrent-requests": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1024,
+          "default": 64
+        },
+        "request-timeout-seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300,
+          "default": 30
+        },
+        "list-max-items": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 200
+        },
+        "group-profiles": {
+          "description": "Group default pinned profiles of the shared server.",
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "group",
+              "profiles"
+            ],
+            "properties": {
+              "group": {
+                "type": "string",
+                "minLength": 1
+              },
+              "profiles": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*$"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

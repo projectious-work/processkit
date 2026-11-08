@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/tool-inputs.schema.json",
+  "title": "processkit MCP tool input schemas",
+  "description": "The inputSchema of each tool as published by the release (mcp-context-serving@v1 PK-MCP-024, PK-MCP-066). Unknown arguments fail with mcp-context-serving.invalid-argument.",
+  "$defs": {
+    "get_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "task": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "maxItems": 64
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "maxItems": 64
+        },
+        "kinds": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "Standard",
+              "ProcessSpecification",
+              "Skill",
+              "MCPServer",
+              "DecisionRecord",
+              "Document"
+            ]
+          }
+        },
+        "level": {
+          "enum": [
+            0,
+            1
+          ],
+          "default": 0
+        },
+        "excluded": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "list": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "selector": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Default 50 or mcp.list-max-items when lower; at most mcp.list-max-items."
+        },
+        "cursor": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,512}$"
+        },
+        "excluded": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "get": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "level": {
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
+        "section": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      }
+    },
+    "explain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        }
+      }
+    },
+    "validate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "content"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "content": {
+          "type": "string",
+          "description": "Complete draft text (content-kinds@v1 draft content)."
+        }
+      }
+    },
+    "ontology": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "concept": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

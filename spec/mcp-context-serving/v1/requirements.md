@@ -231,6 +231,252 @@ call. Pinning limits relevance; it is not a confidentiality control.
   generation. The MCP server shall never mix two generations within one
   result.
 
+## Tool results
+
+- **PK-MCP-058:** The MCP server shall return the result of every tool call
+  as `structuredContent` that validates against
+  `schemas/tool-result.schema.json`, and as one text content item that
+  holds the same JSON document. The MCP server shall serialize the document
+  with RFC 8785 (JSON Canonicalization Scheme). The MCP server shall set
+  `isError` to true if and only if a diagnostic has severity `error`.
+  <!-- agent proposal: OPEN-mcp-context-serving-01 -->
+- **PK-MCP-059:** The `data` member of a tool result shall validate against
+  the schema that `interfaces.yaml` lists for the tool under `tools`. The
+  processkit CLI command that maps to the tool (cli@v1 `mcp_mapping`) shall
+  carry the same `data` and the same diagnostics.
+  <!-- agent proposal: OPEN-mcp-context-serving-01 -->
+- **PK-MCP-060:** Every entry of a `get_context` or `list` result shall
+  carry the item's identity, its trust class (PK-MCP-087), the served item
+  at the entry's level with the `disclosure` members of content-kinds@v1,
+  and `status` in the shape of ontology@v1 `schemas/status.schema.json`
+  `$defs/listStatus`. Entries shall not carry the full `status` of
+  single-item results.
+  <!-- agent proposal: OPEN-mcp-context-serving-01 -->
+- **PK-MCP-061:** The `level` argument of `get_context` shall accept 0 and 1
+  and shall default to 0. The `level` argument of `get` shall accept 0, 1,
+  and 2 and shall default to 1, or to 2 when `section` is given. If `get` is
+  called with level 2 and without `section`, or with `section` and level 0
+  or 1, then the MCP server shall fail with
+  `mcp-context-serving.invalid-argument`.
+  <!-- agent proposal: OPEN-mcp-context-serving-02 -->
+- **PK-MCP-062:** The documented default `limit` of `list` shall be 50, or
+  the operator maximum `mcp.list-max-items` when that is lower. If `limit`
+  is less than 1 or greater than `mcp.list-max-items`, then the MCP server
+  shall fail with `mcp-context-serving.invalid-argument` and shall not
+  clamp the value.
+  <!-- agent proposal: OPEN-mcp-context-serving-02 -->
+- **PK-MCP-063:** The MCP server shall make a `list` cursor an opaque string
+  that depends only on the generation, the access-set digest, the
+  normalized arguments other than `limit` and `cursor`, and the position in
+  the ordered result. If a cursor belongs to an earlier generation, then the
+  MCP server shall fail with `mcp-context-serving.cursor-stale`. If a cursor
+  is malformed or belongs to other arguments or another access set, then
+  the MCP server shall fail with `mcp-context-serving.cursor-invalid`.
+  <!-- agent proposal: OPEN-mcp-context-serving-03 -->
+- **PK-MCP-064:** The `content` argument of `validate` shall be a string
+  that holds the complete draft text in the draft form of content-kinds@v1
+  for the given `kind`. The `validate` result shall report the outcome
+  `valid` or `invalid` and the draft's diagnostics.
+  <!-- agent proposal: OPEN-mcp-context-serving-12 -->
+- **PK-MCP-065:** The `explain` result shall carry the item at level 0 with
+  its full `status` and an `applicability` member with the item's declared
+  profiles, labels, triggers, always-on flag, and whether the item is
+  within the pinned profile set.
+  <!-- agent proposal: OPEN-mcp-context-serving-01 -->
+- **PK-MCP-066:** The MCP server shall support the MCP protocol versions,
+  the tool annotations, and the tool contract version listed in
+  `interfaces.yaml` (`protocol`). The tool contract version shall be the
+  value of `mcpToolContractVersion` in `processkit version --json`
+  (cli@v1).
+  <!-- agent proposal: OPEN-mcp-context-serving-01 -->
+
+## Resources and prompts
+
+- **PK-MCP-067:** When a resource `processkit://<namespace>/<kind>/<name>`
+  is read, the MCP server shall return one JSON text content item that
+  equals the `data` of `get` for that item at level 1. The namespace of an
+  item in the root Container shall be `root`. `resources/list` shall list
+  the readable items within the pinned profile set, in the order of
+  PK-MCP-083, with the cursor rules of PK-MCP-063.
+  <!-- agent proposal: OPEN-mcp-context-serving-12 -->
+- **PK-MCP-068:** Where the MCP server offers prompts, it shall name the
+  prompt of a Skill or ProcessSpecification by the ontology@v1 reference
+  form `<kind>/<name>` for the root Container and `<kind>/<namespace>/<name>`
+  otherwise. The prompt shall have no arguments, its description shall be
+  the item's `spec.summary`, and `prompts/get` shall return one user message
+  whose text equals the resource content of the item.
+  <!-- agent proposal: OPEN-mcp-context-serving-12 -->
+
+## Context matching and ordering
+
+- **PK-MCP-082:** When `get_context` is called, the MCP server shall select
+  each readable item of the requested kinds that has at least one match
+  basis, after the profile filter of PK-MCP-074 and PK-MCP-076. The match
+  bases shall be exactly those listed in `interfaces.yaml` (`matching`):
+  `always-on`, `profile`, `path`, `label`, and `trigger`. Without `kinds`,
+  the requested kinds shall be the six content kinds of content-kinds@v1.
+  If `kinds` names another kind, then the MCP server shall fail with
+  `mcp-context-serving.invalid-argument`.
+  <!-- agent proposal: OPEN-mcp-context-serving-13 -->
+- **PK-MCP-083:** The MCP server shall order `get_context` entries by tier
+  of their most shared basis (`always-on`, then `profile`, `path`, `label`,
+  `trigger`), then by kind in the order of content-kinds@v1 `kind_tokens`,
+  then by namespace, then by name, comparing strings by Unicode code
+  point. The MCP server shall order `list` entries by namespace, then by
+  name. No weight or score shall influence the order.
+  <!-- agent proposal: OPEN-mcp-context-serving-13 -->
+- **PK-MCP-084:** The MCP server shall report every match basis of an
+  entry, each with its type and the declared value that matched.
+  <!-- agent proposal: OPEN-mcp-context-serving-13 -->
+
+## Normalization and cache key
+
+- **PK-MCP-078:** Before assembly, the MCP server shall normalize the
+  arguments by the rules in `interfaces.yaml` (`normalization`). Two calls
+  whose normalized arguments are equal shall be equal inputs.
+  <!-- agent proposal: OPEN-mcp-context-serving-11 -->
+- **PK-MCP-079:** The MCP server shall form the cache key as `sha256:`
+  followed by 64 lowercase hexadecimal digits of the SHA-256 of the RFC 8785
+  serialization of the preimage in `interfaces.yaml` (`cache_key`).
+  <!-- agent proposal: OPEN-mcp-context-serving-11 -->
+- **PK-MCP-080:** The MCP server shall take the caller's access set, and the
+  access-set digest of the cache key, from access-control@v1 `access_set`.
+  The MCP server shall use one access set for the whole of one request. The
+  request time shall be an input of authorization only, and shall not be an
+  assembly input or a cache-key input. This clarifies PK-MCP-030 and
+  PK-MCP-032 and does not change them.
+  <!-- agent proposal: alignment with access-control@v1 PK-ACC-043,
+       PK-ACC-044 -->
+- **PK-MCP-086:** When the MCP server answers a `get_context` or `list` call
+  from its cache, it shall write an operational log record with the event
+  `mcp-context-serving.cache-hit`. When it assembles the result, it shall
+  write the event `mcp-context-serving.cache-miss`. The cache state shall not
+  appear in the tool result.
+  <!-- agent proposal: OPEN-mcp-context-serving-01 -->
+
+## Profiles and pinning rules
+
+- **PK-MCP-090:** processkit shall read the profiles a repository declares
+  from the top-level key `profiles` of `processkit.toml`
+  (`schemas/project-config.schema.json`). The profiles known to a served
+  instance shall be those of the serving repository and of every locked
+  upstream.
+  <!-- agent proposal: OPEN-mcp-context-serving-09 -->
+- **PK-MCP-074:** An item shall be within a profile set if it declares no
+  `spec.applicability`, if its `spec.applicability.profiles` contains `*`,
+  or if its `spec.applicability.profiles` and the set share a profile.
+  <!-- agent proposal: OPEN-mcp-context-serving-09 -->
+- **PK-MCP-075:** If `processkit mcp serve` is started with a `--profile`
+  that is not a known profile, then processkit shall refuse to start and
+  shall fail with `mcp-context-serving.unknown-profile` (usage, exit 2). If
+  the `profiles` argument of `get_context` names a profile that is not
+  known, then the MCP server shall fail with
+  `mcp-context-serving.unknown-profile`.
+  <!-- agent proposal: OPEN-mcp-context-serving-09 -->
+- **PK-MCP-076:** While profiles are pinned, the profile filter of
+  `get_context` shall be the intersection of the `profiles` argument and
+  the pinned set, or the pinned set when `profiles` is absent. If a
+  profile of the `profiles` argument is not pinned, then the MCP server
+  shall report the warning `mcp-context-serving.profiles-outside-pin`.
+  While no profile is pinned, the profile filter shall be the `profiles`
+  argument; without it, `get_context` shall apply no profile filter.
+  <!-- agent proposal: OPEN-mcp-context-serving-09 -->
+- **PK-MCP-077:** The shared server shall read group default pinned profiles
+  from the operator key `mcp.group-profiles`. The pinned set of a principal
+  in several listed groups shall be the union of their profiles. Where
+  `--profile` is given, the shared server shall pin the `--profile` set for
+  every principal and shall not apply `mcp.group-profiles`. The stdio
+  server shall not apply `mcp.group-profiles`.
+  <!-- agent proposal: OPEN-mcp-context-serving-10 -->
+
+## Excluded-item reporting
+
+- **PK-MCP-072:** While profiles are pinned, every `get_context` and `list`
+  result shall carry `excluded.pinned` with the count of readable items
+  that the result would contain without the pin and that the pin leaves
+  out, and with the pinned set's digest as a stable reference. The MCP
+  server shall list these items only when the `excluded` argument is true.
+  <!-- changed by owner decision: #213 finding 2 -->
+- **PK-MCP-073:** The MCP server shall report an item that the profile
+  filter of `get_context` leaves out with the reason `profile`, and an item
+  that only the pin leaves out with the reason `pinned-profile`. When `list`
+  is called with `excluded` true, the MCP server shall page the
+  pin-excluded entries together with the items in one order, and each
+  shall count against `limit`.
+  <!-- agent proposal: OPEN-mcp-context-serving-08 -->
+- **PK-MCP-091:** In PK-MCP-045 and PK-MCP-072, the MCP server shall treat
+  an item as readable if the caller holds the verb that access-control@v1
+  `operation_declarations` declares for the reporting operation on that
+  item.
+  <!-- agent proposal: alignment with access-control@v1 PK-ACC-045 -->
+
+## Briefing format
+
+- **PK-MCP-069:** processkit shall read the briefing budget from the key
+  `briefing.budget-bytes` of `processkit.toml`, in UTF-8 bytes of the server
+  instructions, with the default and range in `interfaces.yaml`
+  (`briefing`).
+  <!-- agent proposal: OPEN-mcp-context-serving-04 -->
+- **PK-MCP-070:** The MCP server shall build the briefing in the text form
+  of `interfaces.yaml` (`briefing.format`). If the full form exceeds the
+  budget, then the MCP server shall use the summarized form. If the
+  summarized form exceeds the budget, then the MCP server shall use the
+  fallback form and shall log the warning
+  `mcp-context-serving.briefing-over-budget`.
+  <!-- agent proposal: OPEN-mcp-context-serving-04 -->
+
+## Runtime limits and errors
+
+- **PK-MCP-071:** The MCP server shall read the request limits only from the
+  operator keys listed in `interfaces.yaml` (`limits`), each with its
+  default and ceiling, under the rules of security@v1 PK-SEC-019 and
+  PK-SEC-020. On the shared server, the MCP server shall check these limits
+  after authentication and after the limits of access-control@v1.
+  <!-- agent proposal: OPEN-mcp-context-serving-05 -->
+- **PK-MCP-081:** If a request exceeds a request limit, then the MCP server
+  shall answer with a JSON-RPC error response that validates against
+  `schemas/rpc-error.schema.json`, carries exactly one diagnostic, and is at
+  most 8192 bytes, and shall keep serving other requests.
+  <!-- agent proposal: OPEN-mcp-context-serving-05 -->
+- **PK-MCP-085:** Every diagnostic of the MCP server shall have the shape of
+  cli@v1 `schemas/diagnostic.schema.json`. The MCP server shall use the
+  codes of `interfaces.yaml` (`errors`) and the codes of the specifications
+  that own the operation, and shall report the same codes as the processkit
+  CLI for the same input (cli@v1 PK-CLI-001).
+  <!-- agent proposal: OPEN-mcp-context-serving-07 -->
+
+## Health
+
+- **PK-MCP-088:** The MCP server shall expose its health report as the MCP
+  resource `processkit:health`, which validates against
+  `schemas/health-report.schema.json`, over both transports. The shared
+  server's `GET /healthz` (access-control@v1 PK-ACC-052) shall report the
+  same state.
+  <!-- agent proposal: OPEN-mcp-context-serving-06 -->
+- **PK-MCP-089:** The MCP server shall run the health checks listed in
+  `interfaces.yaml` (`health.checks`) when health is read. The state shall
+  be `blocked` if a blocking check failed or was unavailable, else
+  `degraded` if a degrading check failed or was unavailable, else
+  `healthy`. The health report shall not contain item names or counts.
+  <!-- agent proposal: OPEN-mcp-context-serving-06 -->
+
+## Generations
+
+- **PK-MCP-092:** The MCP server shall check the working copy, the lock, and
+  the local cache for changes at the start of each request. Every tool
+  result shall carry the identifier of its generation in `generation`.
+  <!-- agent proposal: OPEN-mcp-context-serving-15 -->
+
+## Trust classes
+
+- **PK-MCP-087:** The MCP server shall give every `get_context` and `list`
+  entry a trust class: `instruction` for a valid Standard,
+  ProcessSpecification, or Skill, and `reference` for every other item.
+  The trust class shall come from kind and validation outcome only and
+  shall not grant any authority over tools, configuration, or access
+  (security@v1 PK-SEC-001).
+  <!-- agent proposal: gap row 5, owner decision pending -->
+
 ## Performance
 
 These are release objectives measured on a repository with 500 items and
@@ -243,3 +489,7 @@ two locked upstreams.
   `get_context` within 50 ms and an uncached one within 500 ms.
 - **PK-PERF-003:** The shared server should sustain 50 concurrent principals
   on one host with these latencies.
+- **PK-PERF-004:** The release process shall measure PK-PERF-001 to
+  PK-PERF-003 by the method in `interfaces.yaml` (`performance.method`) on
+  the reference host. It shall record the results in the release evidence.
+  <!-- agent proposal: OPEN-mcp-context-serving-14 -->

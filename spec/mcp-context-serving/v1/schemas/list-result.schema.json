@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/list-result.schema.json",
+  "title": "processkit list data",
+  "description": "The data member of a list result and of processkit list --json (mcp-context-serving@v1 PK-MCP-021, PK-MCP-049, PK-MCP-050, PK-MCP-072). Entries are level 0 and carry no basis.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cacheKey",
+    "items",
+    "nextCursor",
+    "excluded"
+  ],
+  "properties": {
+    "cacheKey": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "context-result.schema.json#/$defs/entry"
+          },
+          {
+            "not": {
+              "required": [
+                "basis"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "nextCursor": {
+      "description": "Opaque cursor of the next page; null on the last page.",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,512}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "excluded": {
+      "$ref": "context-result.schema.json#/$defs/excluded"
+    }
+  }
+}

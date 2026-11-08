@@ -42,11 +42,14 @@ The processkit CLI provides these commands:
 | `processkit fetch` | Fetch the declared and locked upstreams into the local cache. |
 | `processkit ontology list\|show` | Read the published ontology registry. |
 | `processkit access whoami\|can-i` | Show the current principal or explain an access decision. |
-| `processkit mcp serve --stdio` | Serve the repository over stdio MCP. |
-| `processkit mcp serve --http --listen ADDRESS` | Run the read-only shared server. |
+| `processkit mcp serve --stdio [--profile NAME]...` | Serve the repository over stdio MCP. |
+| `processkit mcp serve --http --listen ADDRESS [--profile NAME]...` | Run the read-only shared server. |
 | `processkit migrate [--from v0]` | Rewrite content to a newer content API version, or convert v0 governance content, from a reviewed plan. |
 | `processkit config show` | Show effective configuration with value sources and secrets redacted. |
 | `processkit version` | Report the release, ontology, and schema versions. |
+
+<!-- changed by owner decision: #204 P1 (2026-11-07), pinned profiles
+     on `mcp serve` (mcp-context-serving@v1 PK-MCP-051 to PK-MCP-057) -->
 
 <!-- changed by owner decision: #213 finding 3 (2026-11-08) — rows `lock`
      and `fetch`: fetch, then lock -->

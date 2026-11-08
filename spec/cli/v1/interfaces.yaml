@@ -195,14 +195,18 @@ commands:
     requirements: [PK-CLI-004, PK-CLI-014, PK-CLI-036, PK-CLI-043]
   - name: list
     synopsis: processkit list KIND [--selector S] [--namespace N]
-      [--limit N] [--cursor C]
+      [--limit N] [--cursor C] [--excluded]
     options:
       - {name: --selector, value: S}
       - {name: --namespace, value: N}
       - {name: --limit, value: N, basis: agent-proposal}
       - {name: --cursor, value: C, basis: agent-proposal}
+      - {name: --excluded, value: none, basis: agent-proposal,
+         effect: also list pin-excluded items (mcp-context-serving@v1
+         PK-MCP-072)}
     writes: nothing
-    mcp_equivalent: list(kind, selector?, namespace?, limit?, cursor?)
+    mcp_equivalent: list(kind, selector?, namespace?, limit?, cursor?,
+      excluded?)
     semantics_owner: mcp-context-serving@v1
     requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005,
                    PK-CLI-040]
@@ -220,16 +224,21 @@ commands:
                    PK-CLI-040]
   - name: context
     synopsis: processkit context [--task T] [--profile P]... [--path PATH]...
-      [--kind K]... [--level L]
+      [--kind K]... [--level L] [--excluded]
     options:
       - {name: --task, value: T}
       - {name: --profile, value: P, repeatable: true}
       - {name: --path, value: PATH, repeatable: true}
       - {name: --kind, value: K, repeatable: true, basis: agent-proposal}
-      - {name: --level, value: L, basis: agent-proposal}
+      - {name: --level, value: L, values: [0, 1], default: 0,
+         basis: agent-proposal}
+      - {name: --excluded, value: none, basis: agent-proposal,
+         effect: also list pin-excluded items (mcp-context-serving@v1
+         PK-MCP-072)}
     writes: nothing
     principal: local (access-control@v1)
-    mcp_equivalent: get_context(task?, profiles?, paths?, kinds?, level?)
+    mcp_equivalent: get_context(task?, profiles?, paths?, kinds?, level?,
+      excluded?)
     semantics_owner: mcp-context-serving@v1
     check: data is byte-identical to the result a stdio MCP server started
       by the same user returns for the same arguments
@@ -290,15 +299,20 @@ commands:
     semantics_owner: access-control@v1
     requirements: [PK-PROD-005, PK-CLI-002]
   - name: mcp serve --stdio
-    synopsis: processkit mcp serve --stdio
+    synopsis: processkit mcp serve --stdio [--profile NAME]...
+    options:
+      - {name: --profile, value: NAME, repeatable: true,
+         effect: pins profiles (mcp-context-serving@v1)}
     stdout: MCP protocol only; --json is a usage error
     writes: nothing
     semantics_owner: mcp-context-serving@v1
     requirements: [PK-PROD-005, PK-CLI-030]
   - name: mcp serve --http
-    synopsis: processkit mcp serve --http --listen ADDRESS
+    synopsis: processkit mcp serve --http --listen ADDRESS [--profile NAME]...
     options:
       - {name: --listen, value: ADDRESS}
+      - {name: --profile, value: NAME, repeatable: true,
+         effect: pins profiles (mcp-context-serving@v1)}
     stdout: nothing; --json is a usage error
     writes: nothing
     semantics_owner: access-control@v1
@@ -338,6 +352,8 @@ commands:
       ontologyVersion: ontology@v1
       contentApiVersions: repository-storage@v1, content-kinds@v1
       mcpToolContractVersion: mcp-context-serving@v1
+        (mcp.processkit.projectious.work/v1)
+      mcpProtocolVersions: mcp-context-serving@v1 (2025-06-18, 2025-11-25)
       lockFormatVersion: inheritance@v1
         (lock.processkit.projectious.work/v1, the lock's apiVersion)
       resultContractVersion: cli@v1 (cli.processkit.projectious.work/v1)

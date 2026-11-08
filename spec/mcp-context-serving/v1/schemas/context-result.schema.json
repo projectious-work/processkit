@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/context-result.schema.json",
+  "title": "processkit get_context data",
+  "description": "The data member of a get_context result and of processkit context --json (mcp-context-serving@v1 PK-MCP-020, PK-MCP-033, PK-MCP-044, PK-MCP-072).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cacheKey",
+    "level",
+    "profileFilter",
+    "items",
+    "excluded"
+  ],
+  "properties": {
+    "cacheKey": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "level": {
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "profileFilter": {
+      "description": "Effective profile filter (PK-MCP-076), sorted; null when no filter applies.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "uniqueItems": true
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/entry"
+          },
+          {
+            "required": [
+              "basis"
+            ]
+          }
+        ]
+      }
+    },
+    "excluded": {
+      "$ref": "#/$defs/excluded"
+    }
+  },
+  "$defs": {
+    "ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "namespace",
+        "name"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "namespace": {
+          "description": "Container name; root for the root Container (access-control@v1 access_set).",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "uri",
+        "trust",
+        "item",
+        "status"
+      ],
+      "properties": {
+        "ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "uri": {
+          "description": "MCP resource URI processkit://<namespace>/<kind>/<name>.",
+          "type": "string",
+          "pattern": "^processkit://[a-z][a-z0-9]*(?:-[a-z0-9]+)*/[A-Z][A-Za-z0-9]*/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "trust": {
+          "description": "Trust class (PK-MCP-087).",
+          "enum": [
+            "instruction",
+            "reference"
+          ]
+        },
+        "item": {
+          "description": "The served item at the result's level: exactly the members content-kinds@v1 `levels` lists for its kind and level, including `disclosure`, without `status`.",
+          "type": "object",
+          "required": [
+            "kind",
+            "metadata"
+          ]
+        },
+        "status": {
+          "$ref": "https://schemas.projectious.work/processkit/v1/status.schema.json#/$defs/listStatus"
+        },
+        "basis": {
+          "description": "get_context only: every match basis, ordered by tier (always-on, profile, path, label, trigger), then by value.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/basis"
+          }
+        }
+      }
+    },
+    "basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "always-on",
+            "profile",
+            "path",
+            "label",
+            "trigger"
+          ]
+        },
+        "value": {
+          "description": "The declared value that matched: the profile (or *), the item source path, the label as key=value, or the trigger text. Absent for always-on.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "if": {
+        "properties": {
+          "type": {
+            "const": "always-on"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "value"
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "value"
+        ]
+      }
+    },
+    "excluded": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "description": "Readable items left out, ordered as the result's entries would be. Reason pinned-profile appears only when the excluded argument is true.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ref",
+              "reason"
+            ],
+            "properties": {
+              "ref": {
+                "$ref": "#/$defs/ref"
+              },
+              "reason": {
+                "enum": [
+                  "profile",
+                  "pinned-profile"
+                ]
+              }
+            }
+          }
+        },
+        "pinned": {
+          "description": "Present exactly while profiles are pinned (PK-MCP-072).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "count",
+            "reference",
+            "listed"
+          ],
+          "properties": {
+            "count": {
+              "description": "Readable items the result would contain without the pin that the pin leaves out (for list: over all pages).",
+              "type": "integer",
+              "minimum": 0
+            },
+            "reference": {
+              "description": "sha256 of the RFC 8785 serialization of the sorted pinned profile array.",
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "listed": {
+              "description": "True when the excluded argument was true.",
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  }
+}

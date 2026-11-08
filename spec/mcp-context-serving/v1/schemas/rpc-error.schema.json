@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/rpc-error.schema.json",
+  "title": "processkit MCP request rejection",
+  "description": "JSON-RPC 2.0 error response of the MCP server for a request it does not execute (mcp-context-serving@v1 PK-MCP-081): a request limit, an unknown tool, or an unparsable message. At most 8192 bytes. Tool failures are tool results with isError true instead.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "jsonrpc",
+    "id",
+    "error"
+  ],
+  "properties": {
+    "jsonrpc": {
+      "const": "2.0"
+    },
+    "id": {
+      "description": "The request id; null when it cannot be read.",
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "data"
+      ],
+      "properties": {
+        "code": {
+          "description": "-32700 unparsable message, -32600 request too large, -32602 unknown tool, -32000 concurrency limit, -32001 request timeout.",
+          "enum": [
+            -32700,
+            -32600,
+            -32602,
+            -32000,
+            -32001
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "data": {
+          "description": "Exactly one diagnostic.",
+          "$ref": "https://schemas.projectious.work/processkit/v1/cli/diagnostic.schema.json"
+        }
+      }
+    }
+  }
+}

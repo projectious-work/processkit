@@ -66,8 +66,10 @@ task needs:
   `spec.applicability`, at least one label, or both. If an item declares
   neither, then validation shall fail with
   `content-kinds.applicability-missing`. If an item names a profile that is
-  not `*` and that the repository does not declare, then validation shall
-  fail with `content-kinds.undeclared-profile`.
+  not `*` and that is not known to the repository (the top-level key
+  `profiles` of `processkit.toml` and those of locked upstreams,
+  mcp-context-serving@v1 PK-MCP-090), then validation shall fail with
+  `content-kinds.undeclared-profile`.
   <!-- agent proposal: PK-CONT-004 (profiles as repository vocabulary) -->
 
 ## Standards

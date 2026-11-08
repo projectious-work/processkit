@@ -2,6 +2,16 @@
 
 Non-normative. The requirements are in `requirements.md`.
 
+## Owner goal
+
+The owner wants agents to get an organization's governance context from
+one vendor-neutral place instead of copied instruction and skill files
+(product definition; C4). The context must be small at connection time and
+loadable on demand, so it does not crowd the agent's window. It must be
+deterministic and cacheable, so personalization does not destroy server,
+harness, or model caching (C5). It must stay read-only and filtered by
+access, so one shared server can serve many readers safely (C7, C8).
+
 ## Purpose
 
 MCP is processkit's agent interface. A harness connects to the processkit
@@ -35,11 +45,18 @@ This slug does not cover:
   `content-kinds@v1`;
 - command syntax, `processkit context` equivalence with `get_context`,
   `--json` envelopes, and exit codes — `cli@v1`;
-- the ontology registry served by the `ontology` tool — `ontology@v1`;
+- the ontology registry served by the `ontology` tool, and `status` —
+  `ontology@v1`;
+- the shared server's paths `/mcp` and `/healthz`, the access set and its
+  digest, per-principal limits, and which verb each operation needs —
+  `access-control@v1`;
 - the lock, upstream fetch, overrides, and provenance — `inheritance@v1`;
 - threat model, input size limits, configuration layering, and log
   redaction — `security@v1`;
-- repository layout and the local cache directory — `repository-storage@v1`.
+- repository layout, the local cache directory, and the revision object —
+  `repository-storage@v1`;
+- catalogue entries that name a product toolkit profile — not in v1,
+  pending owner decision on #204 P2.
 
 ## Governing decisions
 
@@ -83,11 +100,21 @@ Gap items carried from the governance draft (tag
 | PK-MCP-049, 050 | `14-performance-and-operations.md` PK-PERF-010; `06-agent-protocol-and-query-surface.md` PK-MCP-011 | limited to `list`, the only paginated tool; draft PK-MCP-011 is unrelated to baseline PK-MCP-011 (briefing budget) |
 
 Owner-accepted proposal carried: issue #204, section P1 (serve-time pinned
-profiles) as PK-MCP-051 to 057. PK-MCP-056 is a reconciliation, not proposal
-text: PK-MCP-030 forbids any assembly input besides revision, lock, access
-set, and normalized arguments, so the pinned set is treated as part of the
-normalized arguments. Lesson 1 of #204 (gateway-compatible identity) needs
-no change and P2 (catalogue toolkits) is not carried.
+profiles) as PK-MCP-051 to 057. PK-MCP-056 (the pinned profile set counts
+as a normalized argument) is confirmed by owner decision #213 finding 1.
+Lesson 1 of #204 (gateway-compatible identity) needs no change. P2
+(catalogue toolkits) is not carried.
+
+Owner decision #213 finding 2 changed PK-MCP-044: items that only a pin
+leaves out are counted with a stable reference and listed only on request
+(argument `excluded`, PK-MCP-072).
+
+Gap row 5 (instruction versus reference trust on served content, governance
+draft `16-agent-native-posture.md` PK-AGENT-020, 023, 024) is drafted as
+PK-MCP-087. The owner has not decided it. It fits C4 and C5 because the
+class is derived from kind and validation outcome only, and it fits the
+prompt and tool injection rule of `agent-native-product-interfaces.md`
+because content is instruction only after review and grants no authority.
 
 Supporting context (not carried as requirements): the disclosure-level table
 and PK-CONT-001/003/004 of `04-governance-content.md`; PK-STD-005
@@ -95,37 +122,22 @@ and PK-CONT-001/003/004 of `04-governance-content.md`; PK-STD-005
 `06-cli.md`; PK-ACC-023/024/031/033 of `08-identity-and-access.md`;
 PK-TEST-004/005 of `11-verification-and-release.md`.
 
-## Open questions
+## Resolved open items
 
-Mirrors `open` in `interfaces.yaml`.
-
-1. OPEN-mcp-context-serving-01 — result field names (basis, cache key,
-   revision, excluded items, cursor, cache-hit indicator).
-2. OPEN-mcp-context-serving-02 — default `level`; default and maximum
-   `list` limit.
-3. OPEN-mcp-context-serving-03 — cursor format; stale cursor after a
-   generation change.
-4. OPEN-mcp-context-serving-04 — briefing budget key, unit, default, and
-   summarized form.
-5. OPEN-mcp-context-serving-05 — request limit keys, defaults, and the
-   over-limit diagnostic.
-6. OPEN-mcp-context-serving-06 — how health is exposed over stdio and the
-   shared server without a new tool; checks and their mapping to states.
-7. OPEN-mcp-context-serving-07 — diagnostic code registry and severity
-   values.
-8. OPEN-mcp-context-serving-08 — excluded-item reason codes; whether
-   pin-excluded items are reported; bounds.
-9. OPEN-mcp-context-serving-09 — profile-less items under a pin; unknown
-   pinned profile; empty intersection with caller profiles.
-10. OPEN-mcp-context-serving-10 — group default pinned profiles: key,
-    precedence with `--profile`, multiple groups.
-11. OPEN-mcp-context-serving-11 — argument normalization and cache-key
-    format.
-12. OPEN-mcp-context-serving-12 — `validate` content encoding; prompt name
-    form.
-13. OPEN-mcp-context-serving-13 — matching free-text `task` to declared
-    triggers without lexical ranking; ranking weights.
-14. OPEN-mcp-context-serving-14 — reference host and measurement method for
-    performance objectives.
-15. OPEN-mcp-context-serving-15 — generation reporting and cache change
-    detection.
+| Item | Resolution | Basis |
+|---|---|---|
+| OPEN-mcp-context-serving-01 | Tool result envelope `schemas/tool-result.schema.json` (`apiVersion` `mcp.processkit.projectious.work/v1`, `revision`, `generation`, `data`, `diagnostics`), RFC 8785 text, `isError` on error diagnostics; `data.cacheKey`, `items[].basis`, `excluded`, `nextCursor`; entries carry `status` as ontology@v1 `listStatus`; cache hit and miss are log events only, so repeat results stay byte-identical; explain `applicability`; protocol versions and annotations (PK-MCP-058 to 060, 065, 066, 086). | agent proposal |
+| OPEN-mcp-context-serving-02 | `get_context` level 0 or 1, default 0; `get` default 1, or 2 with `section`; `list` default limit 50, maximum `mcp.list-max-items` (default 200); out of range is `mcp-context-serving.invalid-argument`, never clamped (PK-MCP-061, 062). | agent proposal |
+| OPEN-mcp-context-serving-03 | Opaque deterministic cursor bound to generation, access set, and arguments other than `limit`; earlier generation gives `cursor-stale`, other mismatch `cursor-invalid` (PK-MCP-063). | agent proposal |
+| OPEN-mcp-context-serving-04 | `briefing.budget-bytes` in `processkit.toml`, UTF-8 bytes, default 16384, range 4096 to 1048576; fixed full, summarized, and fallback text forms (PK-MCP-069, 070). | agent proposal |
+| OPEN-mcp-context-serving-05 | Operator keys `mcp.max-request-bytes`, `mcp.max-concurrent-requests`, `mcp.request-timeout-seconds`, `mcp.list-max-items`, each with default and ceiling; checked after authentication and access-control limits; JSON-RPC error with one diagnostic, at most 8192 bytes (PK-MCP-071, 081). | standard: security-and-software-supply-chain.md; agent proposal |
+| OPEN-mcp-context-serving-06 | Resource `processkit:health` on both transports (no new tool); `GET /healthz` of access-control@v1 carries the same state; five checks with blocking or degrading effect; unavailable never passes (PK-MCP-088, 089). | agent proposal |
+| OPEN-mcp-context-serving-07 | cli@v1 diagnostic shape and severities; `mcp-context-serving.*` code registry in `interfaces.yaml` `errors`; same codes as the CLI (PK-MCP-085). | agent proposal |
+| OPEN-mcp-context-serving-08 | Pin exclusions: count and pinned-set digest, list only with `excluded` true; other exclusions listed with reason `profile`; unreadable items never reported; with `excluded` true, `list` pages exclusions with items against `limit` (PK-MCP-044, 072, 073, 091). | owner decision: #213 finding 2; agent proposal |
+| OPEN-mcp-context-serving-09 | Items without declared profiles and `*` items are within any pin; unknown `--profile` refuses to start, unknown `profiles` argument fails; caller profiles outside the pin narrow to nothing with a warning; `profiles` key in `processkit.toml` (PK-MCP-074 to 076, 090). | agent proposal |
+| OPEN-mcp-context-serving-10 | Operator key `mcp.group-profiles`; `--profile` replaces group defaults; several groups give the union; stdio ignores it (PK-MCP-077). | agent proposal |
+| OPEN-mcp-context-serving-11 | Normalization rules (task as sorted word set, sorted profiles, paths, kinds, defaults filled, pinned set added); cache key `sha256:` over the RFC 8785 preimage; access set and its digest from access-control@v1, request time not an input (PK-MCP-078 to 080). | agent proposal |
+| OPEN-mcp-context-serving-12 | `validate` `content` is the complete draft text; prompt names use the ontology@v1 reference form; resources return the level-1 `get` data (PK-MCP-064, 067, 068). | agent proposal |
+| OPEN-mcp-context-serving-13 | Declared word-subset matching of triggers and label values against the task, profile, path (local source path), and always-on bases; order by basis tier, kind, namespace, name; no scores (PK-MCP-082 to 084). | agent proposal |
+| OPEN-mcp-context-serving-14 | Reference host, seeded corpus, and percentile method in `performance.method`; results in release evidence (PK-PERF-004). | agent proposal |
+| OPEN-mcp-context-serving-15 | Per-request change check; every result carries `generation`, a content-derived digest (PK-MCP-092). | agent proposal |

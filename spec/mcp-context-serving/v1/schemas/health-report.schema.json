@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/health-report.schema.json",
+  "title": "processkit MCP server health report",
+  "description": "Content of the MCP resource processkit:health (mcp-context-serving@v1 PK-MCP-088, PK-MCP-089). Contains no item names or counts. GET /healthz of the shared server carries only the state (access-control@v1).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "state",
+    "checks"
+  ],
+  "properties": {
+    "state": {
+      "enum": [
+        "healthy",
+        "degraded",
+        "blocked"
+      ]
+    },
+    "checks": {
+      "description": "Every check of interfaces.yaml health.checks, in that order.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "effect",
+          "outcome"
+        ],
+        "properties": {
+          "id": {
+            "enum": [
+              "working-copy",
+              "project-configuration",
+              "lock",
+              "upstreams-fetched",
+              "content"
+            ]
+          },
+          "effect": {
+            "description": "State a failed or unavailable outcome causes.",
+            "enum": [
+              "blocked",
+              "degraded"
+            ]
+          },
+          "outcome": {
+            "enum": [
+              "passed",
+              "failed",
+              "unavailable"
+            ]
+          },
+          "code": {
+            "description": "Diagnostic code of the first finding; present when outcome is failed.",
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$"
+          }
+        }
+      }
+    }
+  }
+}

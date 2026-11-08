@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/explain-result.schema.json",
+  "title": "processkit explain data",
+  "description": "The data member of an explain result and of processkit explain --json (mcp-context-serving@v1 PK-MCP-065). Provenance and overrides are in item.status.provenance (inheritance@v1).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "item",
+    "applicability"
+  ],
+  "properties": {
+    "item": {
+      "description": "The served item at level 0 with its full status (ontology@v1 status.schema.json).",
+      "type": "object",
+      "required": [
+        "kind",
+        "metadata",
+        "status"
+      ]
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "alwaysOn",
+        "profiles",
+        "labels",
+        "triggers",
+        "withinPin"
+      ],
+      "properties": {
+        "alwaysOn": {
+          "description": "spec.alwaysOn of a Standard; false for other kinds.",
+          "type": "boolean"
+        },
+        "profiles": {
+          "description": "spec.applicability.profiles; null when not declared.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "labels": {
+          "description": "metadata.labels; {} when none.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "withinPin": {
+          "description": "Whether the item is within the caller's pinned set (PK-MCP-074); null when nothing is pinned.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

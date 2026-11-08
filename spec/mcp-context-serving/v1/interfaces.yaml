@@ -2,10 +2,47 @@ slug: mcp-context-serving
 version: 1
 
 # Everything mcp-context-serving makes observable. Identifiers, arguments,
-# and values below are stated by the requirements or the #197 baseline (and,
-# for pinned profiles, by the owner-accepted proposal in issue #204 P1).
-# Anything a test author would need but those sources leave undefined is
-# under `open`. No entry here adds an MCP tool: the six-tool set is fixed.
+# and values below are stated by the requirements, the #197 baseline, the
+# owner-accepted proposal in issue #204 P1, owner decisions (#213), or
+# company standards. Entries marked `basis: agent-proposal` are drafted
+# answers to former open items (see overview.md, "Resolved open items").
+# Envelope of the CLI, diagnostic shape, exit categories, configuration
+# layering, and log records are those of cli@v1. The six-tool set is fixed.
+
+schemas:
+  # Every schema below is basis agent-proposal.
+  - path: schemas/tool-result.schema.json
+    describes: structuredContent of every tool result
+    requirements: [PK-MCP-058]
+  - path: schemas/tool-inputs.schema.json
+    describes: published inputSchema of each tool ($defs per tool)
+    requirements: [PK-MCP-024, PK-MCP-066]
+  - path: schemas/context-result.schema.json
+    describes: data of get_context; $defs entry, basis, excluded, ref
+    requirements: [PK-MCP-020, PK-MCP-033, PK-MCP-059, PK-MCP-060,
+                   PK-MCP-072, PK-MCP-084]
+  - path: schemas/list-result.schema.json
+    describes: data of list
+    requirements: [PK-MCP-049, PK-MCP-050, PK-MCP-059, PK-MCP-060]
+  - path: schemas/explain-result.schema.json
+    describes: data of explain
+    requirements: [PK-MCP-065]
+  - path: schemas/validate-result.schema.json
+    describes: data of validate
+    requirements: [PK-MCP-064]
+  - path: schemas/health-report.schema.json
+    describes: content of the resource processkit:health
+    requirements: [PK-MCP-088, PK-MCP-089]
+  - path: schemas/rpc-error.schema.json
+    describes: JSON-RPC error response for requests the server does not
+      execute
+    requirements: [PK-MCP-081]
+  - path: schemas/project-config.schema.json
+    describes: processkit.toml key profiles and table [briefing]
+    requirements: [PK-MCP-069, PK-MCP-090]
+  - path: schemas/operator-config.schema.json
+    describes: operator configuration table [mcp]
+    requirements: [PK-MCP-071, PK-MCP-077]
 
 commands:
   - name: processkit mcp serve --stdio
@@ -18,15 +55,17 @@ commands:
         repeatable: true
         default: none (no profiles pinned)
         effect: pins NAME for the served instance
-        requirements: [PK-MCP-051]
+        unknown_name: refuses to start; mcp-context-serving.unknown-profile
+          (usage, exit 2)
+        requirements: [PK-MCP-051, PK-MCP-075]
     observable: >-
       one MCP session over standard input/output; opens no network listener;
       result revisions all name the one served working copy
     requirements: [PK-MCP-001, PK-MCP-002, PK-MCP-043, PK-MCP-051]
   - name: processkit mcp serve --http
     synopsis: processkit mcp serve --http --listen ADDRESS [--profile NAME]...
-    transport: HTTPS (shared server; startup, TLS, and authenticator rules in
-      access-control@v1)
+    transport: HTTPS (shared server; startup, TLS, authenticators, and the
+      paths /mcp and /healthz in access-control@v1)
     options:
       - name: --listen
         argument: ADDRESS
@@ -35,8 +74,11 @@ commands:
         argument: NAME
         repeatable: true
         default: none (no profiles pinned)
-        effect: pins NAME for the served instance
-        requirements: [PK-MCP-051]
+        effect: pins NAME for every principal; mcp.group-profiles is not
+          applied
+        unknown_name: refuses to start; mcp-context-serving.unknown-profile
+          (usage, exit 2)
+        requirements: [PK-MCP-051, PK-MCP-075, PK-MCP-077]
     observable: the only network transport of the MCP server
     requirements: [PK-MCP-002, PK-MCP-043, PK-MCP-051, PK-MCP-057]
 
@@ -44,92 +86,166 @@ process_model:
   form: foreground process; no service manager, daemon, or proxy is provided
   requirements: [PK-MCP-043]
 
+protocol:
+  mcp_protocol_versions: ["2025-06-18", "2025-11-25"]
+  server_info: {name: processkit, version: the processkit release}
+  capabilities:
+    tools: {listChanged: false}
+    resources: {listChanged: false, subscribe: false}
+    prompts: {listChanged: false}
+  tool_contract_version: mcp.processkit.projectious.work/v1
+  tool_annotations:   # identical for all six tools
+    readOnlyHint: true
+    destructiveHint: false
+    idempotentHint: true
+    openWorldHint: false
+  output_schema: every tool declares schemas/tool-result.schema.json as
+    outputSchema
+  basis: agent-proposal
+  requirements: [PK-MCP-024, PK-MCP-058, PK-MCP-066]
+
 briefing:
-  delivered_as: MCP server instructions at connection time
-  order:
-    - rules of always-on standards
-    - level-0 index of applicable standards, processes, skills, and
-      catalogued MCP servers (only items within pinned profiles while
-      profiles are pinned)
-    - instruction to call get_context at the start of a task
-  when_pinned:
-    names: [pinned profiles, resolved revision]
-    requirements: [PK-MCP-055]
-  budget:
-    source: project configuration (processkit.toml, "briefing budget")
-    key: null          # OPEN-mcp-context-serving-04
-    unit: null         # OPEN-mcp-context-serving-04
-    default: null      # OPEN-mcp-context-serving-04
-    over_budget: index summarized by kind and label; agent relies on list and
-      get_context
+  delivered_as: MCP server instructions (initialize result `instructions`)
+  configuration:
+    file: processkit.toml
+    key: briefing.budget-bytes
+    unit: UTF-8 bytes of the instructions string
+    default: 16384
+    range: 4096..1048576
+    out_of_range: cli.config-invalid-value (validation, exit 1)
+    requirements: [PK-MCP-011, PK-MCP-069]
+  content_rules:
+    rules: rules of every always-on Standard (spec.alwaysOn true) the
+      principal may get, within the pinned set; a rule with
+      `profiles` appears only when within the pinned set (PK-MCP-074);
+      Standards ordered by namespace then name, rules in document order
+    index: items of kinds Standard, ProcessSpecification, Skill, MCPServer
+      the principal may list, within the pinned set, ordered by kind (in
+      that order), namespace, name
+    counts: computed over the same items only (access-control@v1 filtering)
+  format:
+    encoding: UTF-8, LF line endings, one LF at the end
+    full: |
+      # processkit briefing
+
+      Revision: <revision.commit, or none>[ (uncommitted)]
+      Pinned profiles: <p1>, <p2>        <- line only while pinned; sorted
+
+      ## Always-on rules
+
+      ### <spec.title> (Standard/<namespace>/<name> <spec.version>)
+      - <rule.id> <rule.level>: <rule.text>
+
+      ## Index
+
+      - <kind>/<namespace>/<name>: <spec.title> - <spec.summary>
+
+      ## Start of a task
+
+      Call get_context at the start of every task, with the task
+      description and, when known, profiles and paths. Use get to load more
+      detail one level at a time.
+    empty_section: the single line "(none)"
+    summarized: >-
+      the full form with "## Index" replaced by
+      "## Index (summarized)", one line "- <kind>: <n> items" per kind with
+      items, below it one line "  - <key>=<value>: <n>" per label (sorted
+      by key, then value) and "  - (no labels): <n>" when items have none,
+      then the line "Use list and get_context to find items."
+    fallback: the header and Revision (and Pinned profiles) lines, the line
+      "The always-on rules and the index exceed the briefing budget.", and
+      the "## Start of a task" section; logs warning
+      mcp-context-serving.briefing-over-budget
+    selection: full if within budget, else summarized if within budget,
+      else fallback
   observable:
-    - byte-identical across connections for one principal and one resolved
-      revision (and one pinned profile set)
-    - size never exceeds the configured budget
+    - byte-identical across connections for one principal, one resolved
+      revision, and one pinned profile set
+    - size never exceeds briefing.budget-bytes
+  basis: agent-proposal
   requirements: [PK-PROD-008, PK-PROD-014, PK-MCP-010, PK-MCP-011,
-    PK-MCP-012, PK-MCP-052, PK-MCP-055]
+    PK-MCP-012, PK-MCP-052, PK-MCP-055, PK-MCP-069, PK-MCP-070]
 
 # The fixed tool set. Names, descriptions, and schemas are fixed by the
-# release; repository content cannot change them. Discovery (tools/list) must
-# return exactly these six tools.
+# release; repository content cannot change them. tools/list returns
+# exactly these six tools.
 tools:
   - name: get_context
+    input: schemas/tool-inputs.schema.json#/$defs/get_context
     arguments:
-      - {name: task, required: false}
-      - {name: profiles, required: false, note: narrows within pinned set}
-      - {name: paths, required: false}
-      - {name: kinds, required: false}
-      - {name: level, required: false, values: [0, 1, 2],
-         default: null}   # OPEN-mcp-context-serving-02
-    returns: applicable items ranked by declared triggers, profiles, labels,
-      and path applicability, each at the requested level, with the match
-      basis; excluded readable items with reasons; cache key; revision
+      - {name: task, required: false, type: string}
+      - {name: profiles, required: false, type: array of profile names}
+      - {name: paths, required: false, type: array of repository-relative
+           POSIX paths}
+      - {name: kinds, required: false, values: content-kinds@v1 kind_tokens,
+         default: all six}
+      - {name: level, required: false, values: [0, 1], default: 0}
+      - {name: excluded, required: false, type: boolean, default: false,
+         effect: list pin-excluded items}
+    data: schemas/context-result.schema.json
+    access: verb get (access-control@v1 operation_declarations)
     requirements: [PK-MCP-020, PK-MCP-030, PK-MCP-031, PK-MCP-033,
       PK-MCP-034, PK-MCP-044, PK-MCP-045, PK-MCP-052, PK-MCP-053,
-      PK-PROD-006, PK-PROD-007]
+      PK-MCP-061, PK-MCP-072, PK-MCP-082, PK-PROD-006, PK-PROD-007]
   - name: list
+    input: schemas/tool-inputs.schema.json#/$defs/list
     arguments:
       - {name: kind, required: true}
-      - {name: selector, required: false, grammar: same as the processkit CLI}
+      - {name: selector, required: false, grammar: ontology@v1 selectors}
       - {name: namespace, required: false}
-      - {name: limit, required: false,
-         default: null}   # documented default; OPEN-mcp-context-serving-02
-      - {name: cursor, required: false,
-         format: null}    # OPEN-mcp-context-serving-03
-    returns: level-0 items, a cursor for the next page, excluded readable
-      items with reasons
+      - {name: limit, required: false, default: "50, or mcp.list-max-items
+           when lower", maximum: mcp.list-max-items}
+      - {name: cursor, required: false, format: opaque, pattern:
+           "^[A-Za-z0-9_-]{1,512}$"}
+      - {name: excluded, required: false, type: boolean, default: false}
+    data: schemas/list-result.schema.json
+    entries: level 0, ordered by namespace, then name
+    access: verb list
     requirements: [PK-MCP-021, PK-MCP-044, PK-MCP-045, PK-MCP-049,
-      PK-MCP-050, PK-MCP-052, PK-MCP-053]
+      PK-MCP-050, PK-MCP-052, PK-MCP-062, PK-MCP-063, PK-MCP-073]
   - name: get
+    input: schemas/tool-inputs.schema.json#/$defs/get
     arguments:
       - {name: kind, required: true}
       - {name: name, required: true}
-      - {name: namespace, required: false}
+      - {name: namespace, required: false, default: root Container}
       - {name: level, required: false, values: [0, 1, 2],
-         default: null}   # OPEN-mcp-context-serving-02
-      - {name: section, required: false, note: level-2 named section}
-    returns: one item at one disclosure level, or one section
-    requirements: [PK-MCP-021, PK-PROD-008, PK-PROD-014]
+         default: "1; 2 when section is given"}
+      - {name: section, required: false, key: content-kinds@v1 sections}
+    data: the served item at the level (content-kinds@v1 levels, members
+      `disclosure.*`) with full `status` (ontology@v1 status.schema.json)
+    not_found: mcp-context-serving.item-not-found, identical for a missing
+      and an unreadable item
+    access: verb get
+    requirements: [PK-MCP-021, PK-MCP-061, PK-PROD-008, PK-PROD-014]
   - name: explain
+    input: schemas/tool-inputs.schema.json#/$defs/explain
     arguments:
       - {name: kind, required: true}
       - {name: name, required: true}
       - {name: namespace, required: false}
-    returns: provenance, overrides, applicability basis, validation status
-      (same as processkit explain, cli@v1)
-    requirements: [PK-PROD-004]
+    data: schemas/explain-result.schema.json (provenance and overrides in
+      item.status.provenance, inheritance@v1)
+    access: verb get
+    requirements: [PK-PROD-004, PK-MCP-065]
   - name: validate
+    input: schemas/tool-inputs.schema.json#/$defs/validate
     arguments:
       - {name: kind, required: true}
-      - {name: content, required: true,
-         encoding: null}  # OPEN-mcp-context-serving-12
-    returns: validation result for the draft
+      - {name: content, required: true, type: string, encoding: "the
+           complete draft text in content-kinds@v1 draft form (JSON item,
+           skill.json, or whole Markdown file)"}
+    data: schemas/validate-result.schema.json
     writes: nothing
-    requirements: [PK-MCP-022, PK-MCP-003, PK-PROD-022]
+    size: drafts over security@v1 limits.file-bytes fail with
+      security.limit-exceeded
+    requirements: [PK-MCP-022, PK-MCP-003, PK-MCP-064, PK-PROD-022]
   - name: ontology
+    input: schemas/tool-inputs.schema.json#/$defs/ontology
     arguments:
       - {name: concept, required: false}
-    returns: the published ontology registry, or one concept (ontology@v1)
+    data: same data as processkit ontology list / ontology show (ontology@v1
+      PK-MODEL-057)
     requirements: [PK-PROD-004]
 
 tool_set:
@@ -141,95 +257,385 @@ tool_set:
     servers
   requirements: [PK-MCP-003, PK-MCP-024, PK-PROD-022, PK-PROD-025]
 
+tool_results:
+  structured: schemas/tool-result.schema.json
+  text: one text content item holding the same document (RFC 8785)
+  is_error: true exactly when a diagnostic has severity error
+  argument_errors: tool result with isError true and
+    mcp-context-serving.invalid-argument (not a JSON-RPC error)
+  cli_equivalence: CLI envelope data = tool data; CLI diagnostics = tool
+    diagnostics (cli@v1 PK-CLI-001, PK-CLI-040)
+  basis: agent-proposal
+  requirements: [PK-MCP-058, PK-MCP-059, PK-MCP-085]
+
+entries:
+  # One entry of get_context and list (context-result.schema.json
+  # $defs/entry).
+  members:
+    ref: "{kind, namespace, name}; namespace root for the root Container"
+    uri: processkit://<namespace>/<kind>/<name>
+    trust: instruction | reference (PK-MCP-087)
+    item: content-kinds@v1 levels members at the level, including
+      disclosure.*, without status
+    status: ontology@v1 schemas/status.schema.json $defs/listStatus
+      (validation.outcome, digest, source, provenance, uncommitted);
+      provenance per inheritance@v1 schemas/provenance.schema.json
+    basis: get_context only
+  status_rule: full status only in get and explain (ontology@v1 PK-MODEL-062)
+  basis: agent-proposal
+  requirements: [PK-MCP-060, PK-MCP-087]
+
+trust_classes:
+  instruction: valid Standard, ProcessSpecification, Skill
+  reference: MCPServer, DecisionRecord, Document, and every invalid item
+  grants: nothing (security@v1 PK-SEC-001)
+  basis: agent-proposal   # gap row 5; owner decision pending
+  requirements: [PK-MCP-087]
+
 resources:
   - uri: processkit://<namespace>/<kind>/<name>
-    applies_to: every item the caller may read
-    requirements: [PK-MCP-023]
+    applies_to: every item the caller may get
+    namespace: metadata.namespace, or root for the root Container
+    read: one content item, mimeType application/json, text equal to the
+      data of get(kind, name, namespace, level=1), RFC 8785
+    list: resources/list lists items the caller may list, within the pinned
+      set, ordered by kind (content-kinds@v1 kind_tokens), namespace, name;
+      pages as list (default page size, cursor rules)
+    not_found: mcp-context-serving.item-not-found
+    basis: agent-proposal
+    requirements: [PK-MCP-023, PK-MCP-067]
+  - uri: processkit:health
+    content: schemas/health-report.schema.json, mimeType application/json
+    basis: agent-proposal
+    requirements: [PK-MCP-088]
 
 prompts:
   - applies_to: [Skill, ProcessSpecification]
     strength: should
-    name_form: null      # OPEN-mcp-context-serving-12
-    requirements: [PK-MCP-023]
+    name_form: ontology@v1 references form, <kind>/<name> (root Container)
+      or <kind>/<namespace>/<name>
+    arguments: none
+    description: spec.summary
+    get: one message, role user, text equal to the item's resource content
+    list: items the caller may list, within the pinned set
+    basis: agent-proposal
+    requirements: [PK-MCP-023, PK-MCP-068]
 
-# Result fields of assembled results. Meaning is normative; field names are
-# open (OPEN-mcp-context-serving-01).
-result_fields:
-  - meaning: match basis per item (trigger, profile, label, or path)
-    name: null
-    requirements: [PK-MCP-020, PK-MCP-034]
-  - meaning: cache key
-    name: null
-    observable: equal for equal inputs; differs when any input changes
-    requirements: [PK-MCP-032, PK-MCP-033, PK-MCP-056]
-  - meaning: revision of the served working copy
-    name: null
-    requirements: [PK-MCP-033]
-  - meaning: excluded readable items, each with identity (kind, namespace,
-      name) and reason
-    name: null
-    reasons: [profile, applicability]   # codes open, OPEN-mcp-context-serving-08
-    requirements: [PK-MCP-044, PK-MCP-045]
-  - meaning: next-page cursor of list
-    name: null
-    requirements: [PK-MCP-050]
+matching:
+  words: "words(s): NFC-normalize s, apply Unicode casefold, and split it
+    into maximal runs of characters of Unicode categories L* and N*; the
+    set of those runs"
+  bases:
+    always-on: a Standard with spec.alwaysOn true
+    profile: the profile filter F is not null and not empty and the item's
+      spec.applicability.profiles contains * (value *) or a profile in F
+      (one basis per such profile)
+    path: the item comes from the serving repository
+      (status.provenance.origin.upstream null) and its status.source.path
+      equals a normalized path p or starts with p + "/"; value is the
+      source path
+    label: words(label value) is not empty and is a subset of words(task);
+      value is key=value
+    trigger: words(trigger) is not empty and is a subset of words(task);
+      value is the trigger text
+  profile_filter: item passes when F is null or the item is within F
+    (PK-MCP-074); F per PK-MCP-076
+  selection: readable items of the requested kinds that pass the filter and
+    have at least one basis
+  excluded_profile: readable items of the requested kinds with a basis
+    other than profile that fail the filter; reason pinned-profile when
+    the item is outside the pinned set, else reason profile
+  excluded_pinned: items the same call on an unpinned server would return
+    that are outside the pinned set (reason pinned-profile; count always,
+    list only with excluded true)
+  ordering:
+    get_context: tier of the most shared basis (always-on 0, profile 1,
+      path 2, label 3, trigger 4), then kind (kind_tokens order), then
+      namespace, then name; Unicode code point comparison
+    list: namespace, then name (one kind per call)
+    excluded_items: same order as the entries would have
+  no_scores: true
+  basis: agent-proposal
+  requirements: [PK-MCP-020, PK-MCP-031, PK-MCP-034, PK-MCP-074,
+                 PK-MCP-076, PK-MCP-082, PK-MCP-083, PK-MCP-084]
+
+profiles:
+  declared_by: processkit.toml top-level key `profiles` (array of names
+    ^[a-z][a-z0-9-]*$, default []); schemas/project-config.schema.json
+  known: profiles declared by the serving repository and by every locked
+    upstream
+  star: "* means all profiles; it is never declared"
+  used_by: content-kinds@v1 PK-CONT-021 (content-kinds.undeclared-profile)
+  unknown_in_arguments: mcp-context-serving.unknown-profile
+  basis: agent-proposal
+  requirements: [PK-MCP-075, PK-MCP-090]
+
+pinning:
+  sources:
+    - --profile NAME (repeatable), for every principal of the instance
+    - operator key mcp.group-profiles (shared server only, only when no
+      --profile is given); a principal's set is the union over its listed
+      groups; a principal in no listed group has no pin
+  within: PK-MCP-074
+  filter: PK-MCP-076
+  reference: sha256 of the RFC 8785 serialization of the sorted pinned
+    profile array
+  group_profiles_unknown_profile: cli.config-invalid-value at start
+  order: access rules first, then pinned profiles, then caller profiles
+    (narrowing only)
+  basis: agent-proposal
+  requirements: [PK-MCP-051, PK-MCP-052, PK-MCP-053, PK-MCP-054, PK-MCP-057,
+                 PK-MCP-072, PK-MCP-074, PK-MCP-076, PK-MCP-077]
+
+normalization:
+  task: words(task) (see matching), sorted by code point, as an array;
+    empty array means absent
+  profiles: sorted by code point, duplicates removed; [] means absent
+  paths: each must be relative, without "\\", NUL, or a ".." segment
+    (else invalid-argument); "." and empty segments and a trailing "/" are
+    removed; an empty result is invalid-argument; sorted, duplicates
+    removed; [] means absent
+  kinds: duplicates removed, kind_tokens order; [] means absent (all six)
+  level: default filled in
+  excluded: default false filled in
+  limit: default filled in
+  selector, namespace, cursor, kind, name, section: unchanged
+  pinned_profiles: added as member pinnedProfiles, sorted; [] when none
+  basis: agent-proposal
+  requirements: [PK-MCP-030, PK-MCP-056, PK-MCP-078, PK-PROD-007]
+
+cache_key:
+  applies_to: [get_context, list]
+  form: sha256 followed by a colon and 64 lowercase hex digits
+  preimage: 'RFC 8785 serialization of {"apiVersion":
+    "mcp.processkit.projectious.work/v1", "release": <processkit release>,
+    "tool": <tool>, "arguments": <normalized arguments with
+    pinnedProfiles>, "generation": <generation>, "accessSetDigest":
+    <access-control@v1 access_set.digest>}'
+  not_inputs: [request time, earlier requests, cache state]
+  cache_state_reporting: operational log record (cli@v1 log-record), level
+    info, event mcp-context-serving.cache-hit or
+    mcp-context-serving.cache-miss, fields {tool, cacheKey}; never in the
+    tool result
+  basis: agent-proposal
+  requirements: [PK-MCP-032, PK-MCP-033, PK-MCP-056, PK-MCP-079,
+                 PK-MCP-080, PK-MCP-086]
+
+access_set:
+  source: access-control@v1 access_set (computed once per request at
+    authorization, before assembly)
+  digest_in_cache_key: access_set.digest
+  one_per_request: true
+  request_time: authorization input only; not an assembly or cache-key
+    input
+  readable: the caller holds the verb access-control@v1
+    operation_declarations declares for the operation
+  basis: agent-proposal
+  requirements: [PK-MCP-030, PK-MCP-032, PK-MCP-045, PK-MCP-080,
+                 PK-MCP-091]
 
 assembly:
   inputs: [working-copy revision, lock, caller access set,
     normalized arguments (including the pinned profile set)]
   excluded_inputs: [time of day, prior requests, anything else]
-  ordering: stable key; content shared by many callers before
-    caller-specific content
-  cache_key_from: [content digests, lock digest, access-set digest,
-    normalized arguments]
+  ordering: see matching.ordering
   invalidation: any input change invalidates affected entries
-  matching_v1: [declared triggers, profiles, labels, paths]
-  pinning_order: access rules first, then pinned profiles, then caller
-    profiles (narrowing only)
   observable:
-    - repeat request returns byte-identical output and the same cache key,
-      reported as a cache hit   # hit indicator name: OPEN-mcp-context-serving-01
+    - repeat request returns byte-identical output and the same cache key;
+      the log shows mcp-context-serving.cache-hit
     - changing one input yields a different cache key and fresh result
   requirements: [PK-PROD-006, PK-PROD-007, PK-MCP-030, PK-MCP-031,
     PK-MCP-032, PK-MCP-033, PK-MCP-034, PK-MCP-054, PK-MCP-056]
+
+pagination:
+  default_limit: 50, or mcp.list-max-items when lower
+  limit_range: 1..mcp.list-max-items; outside it
+    mcp-context-serving.invalid-argument; never clamped
+  cursor:
+    form: opaque string ^[A-Za-z0-9_-]{1,512}$; content not a contract
+    depends_on: [generation, access_set.digest, normalized arguments except
+      limit and cursor, position]
+    limit_may_change: true
+    stale: cursor of an earlier generation -> mcp-context-serving.cursor-stale
+      (nextAction rerun); restart from the first page
+    invalid: malformed, other arguments, or another access set ->
+      mcp-context-serving.cursor-invalid
+  last_page: nextCursor null
+  excluded_true: pin-excluded entries are paged with the items in one order
+    and count against limit; they appear in excluded.items of their page
+  basis: agent-proposal
+  requirements: [PK-MCP-049, PK-MCP-050, PK-MCP-062, PK-MCP-063,
+                 PK-MCP-073]
 
 configuration:
   - layer: invocation flags
     item: --profile NAME (repeatable) on processkit mcp serve
     requirements: [PK-MCP-051]
-  - layer: operator configuration (shared server)
-    item: group-to-default-pinned-profiles binding
-    key: null            # OPEN-mcp-context-serving-10
-    requirements: [PK-MCP-057]
   - layer: project configuration (processkit.toml)
-    item: briefing budget
-    key: null            # OPEN-mcp-context-serving-04
-    requirements: [PK-MCP-011]
+    keys: [profiles, briefing.budget-bytes]
+    schema: schemas/project-config.schema.json
+    basis: agent-proposal
+    requirements: [PK-MCP-069, PK-MCP-090]
   - layer: operator configuration
-    item: request size, concurrency, and time limits; list result limit
-    key: null            # OPEN-mcp-context-serving-05
-    requirements: [PK-MCP-040, PK-MCP-049]
+    keys: [mcp.max-request-bytes, mcp.max-concurrent-requests,
+           mcp.request-timeout-seconds, mcp.list-max-items,
+           mcp.group-profiles]
+    schema: schemas/operator-config.schema.json
+    basis: agent-proposal
+    requirements: [PK-MCP-071, PK-MCP-077]
+
+limits:
+  # Operator configuration only (security@v1 PK-SEC-019, PK-SEC-020): no
+  # option, no PROCESSKIT_ variable, no project key (a project key fails
+  # with cli.config-unknown-key); values outside 1..ceiling fail with
+  # cli.config-invalid-value and are never clamped. Disjoint from
+  # security@v1 limits.* and transport.* and access-control@v1 limits.*.
+  keys:
+    - key: mcp.max-request-bytes
+      default: 2097152
+      ceiling: 33554432
+      meaning: bytes of one JSON-RPC message (stdio line or HTTP body)
+      on_exceed: mcp-context-serving.request-too-large; JSON-RPC -32600;
+        HTTP 413; the body is read at most to the limit plus one byte
+    - key: mcp.max-concurrent-requests
+      default: 64
+      ceiling: 1024
+      meaning: requests one server executes at once, all principals
+      on_exceed: mcp-context-serving.concurrency-limit; JSON-RPC -32000;
+        HTTP 503 with Retry-After 1; rejected at once, not queued
+    - key: mcp.request-timeout-seconds
+      default: 30
+      ceiling: 300
+      meaning: time from receipt of a request to its response
+      on_exceed: the request is cancelled;
+        mcp-context-serving.request-timeout; JSON-RPC -32001; HTTP 200
+    - key: mcp.list-max-items
+      default: 200
+      ceiling: 1000
+      meaning: maximum list limit (PK-MCP-062)
+      on_exceed: mcp-context-serving.invalid-argument
+  error_payload: schemas/rpc-error.schema.json; one diagnostic; at most
+    8192 bytes; the server keeps serving
+  order_on_shared_server: after security@v1 checks, authentication, and
+    access-control@v1 per-principal and server limits (access-control@v1
+    http_endpoints.request_order)
+  basis: agent-proposal
+  requirements: [PK-MCP-040, PK-MCP-049, PK-MCP-071, PK-MCP-081]
 
 health:
   states: [healthy, degraded, blocked]
   rule: an unavailable or unrun check is never counted as a success
-  exposure: null         # OPEN-mcp-context-serving-06
-  requirements: [PK-MCP-043, PK-MCP-046, PK-MCP-047]
+  exposure:
+    mcp: resource processkit:health on both transports
+      (schemas/health-report.schema.json)
+    http: GET /healthz of the shared server carries the same state
+      (access-control@v1 PK-ACC-052; path and body there); it follows the
+      security@v1 check order (transport limits, Origin, credential in URL,
+      session, method) and skips authentication
+  evaluated: when health is read, on the current generation
+  checks:   # in this order
+    - {id: working-copy, effect: blocked, passes_when: the root is a
+         readable Git working copy}
+    - {id: project-configuration, effect: blocked, passes_when:
+         processkit.toml is valid}
+    - {id: lock, effect: blocked, passes_when: processkit.lock is valid
+         and not outdated (inheritance@v1)}
+    - {id: upstreams-fetched, effect: blocked, passes_when: every locked
+         upstream is in the local cache}
+    - {id: content, effect: degraded, passes_when: every item of the
+         effective item set is valid}
+  unavailable: a check that cannot run, including every check after a
+    failed blocking check
+  state: blocked if a blocking check failed or is unavailable; else
+    degraded if a degrading check failed or is unavailable; else healthy
+  report_contains: [state, per check id, effect, outcome, code of the
+    first finding]
+  report_never_contains: [item names, counts, rules]
+  basis: agent-proposal
+  requirements: [PK-MCP-043, PK-MCP-046, PK-MCP-047, PK-MCP-088,
+                 PK-MCP-089]
 
 diagnostics:
-  fields: [code, severity, scope, evidence, next action]  # names/values open
-  codes: []              # no codes defined; OPEN-mcp-context-serving-07
-  severities: null       # OPEN-mcp-context-serving-07
-  bounded_payload: true
+  schema: cli@v1 schemas/diagnostic.schema.json
+  fields: [code, severity, category, scope, message, evidence, nextAction]
+  severities: [error, warning, info]
+  bounded: one diagnostic at most 4096 bytes (security@v1)
   isolation: never contain another caller's data or diagnostics
-  requirements: [PK-MCP-040, PK-MCP-041, PK-MCP-048]
+  cli_equivalence: same codes as the CLI for the same input (PK-CLI-001)
+  requirements: [PK-MCP-040, PK-MCP-041, PK-MCP-048, PK-MCP-085]
+
+errors:
+  owned:
+    - {code: mcp-context-serving.invalid-argument, category: usage,
+       scope: invocation, next_action: fix-invocation,
+       evidence: "{argument}", when: "argument fails the tool input schema
+       or a rule of PK-MCP-061, PK-MCP-062, PK-MCP-078, PK-MCP-082"}
+    - {code: mcp-context-serving.unknown-profile, category: usage,
+       scope: invocation, next_action: fix-invocation,
+       evidence: "{profile}", exit_code_of_serve: 2}
+    - {code: mcp-context-serving.profiles-outside-pin, severity: warning,
+       category: usage, scope: invocation, evidence: "{profiles}"}
+    - {code: mcp-context-serving.item-not-found, category: usage,
+       scope: item, next_action: fix-invocation, when: "get, explain,
+       resources/read, or prompts/get for a missing or unreadable item
+       (identical, access-control@v1 PK-ACC-023)"}
+    - {code: mcp-context-serving.cursor-invalid, category: usage,
+       scope: invocation, next_action: fix-invocation}
+    - {code: mcp-context-serving.cursor-stale, category: usage,
+       scope: invocation, next_action: rerun}
+    - {code: mcp-context-serving.request-too-large, category: usage,
+       scope: server, next_action: fix-invocation, rpc_code: -32600,
+       http_status: 413}
+    - {code: mcp-context-serving.concurrency-limit, category: environment,
+       scope: server, next_action: rerun, rpc_code: -32000,
+       http_status: 503}
+    - {code: mcp-context-serving.request-timeout, category: environment,
+       scope: server, next_action: rerun, rpc_code: -32001,
+       http_status: 200}
+    - {code: mcp-context-serving.unknown-tool, category: usage,
+       scope: invocation, rpc_code: -32602, http_status: 200}
+  log_events:
+    - {event: mcp-context-serving.briefing-over-budget, level: warning}
+    - {event: mcp-context-serving.cache-hit, level: info}
+    - {event: mcp-context-serving.cache-miss, level: info}
+  reused:
+    - {code: security.malformed-input, when: unparsable JSON-RPC message,
+       rpc_code: -32700}
+    - {code: security.limit-exceeded, when: validate draft over a parser
+       limit}
+    - {code: cli.upstream-not-fetched, when: a read needs an unfetched
+       upstream}
+    - {code: cli.config-invalid-value, when: an operator mcp.* value out of
+       range or naming an unknown profile; briefing.budget-bytes out of
+       range}
+    - {code: cli.config-unknown-key, when: processkit.toml sets an mcp.*
+       key}
+    - {code: cli.internal-error, when: a processkit defect}
+    - {code: content-kinds.unknown-kind, when: unknown kind argument}
+    - {code: content-kinds.unknown-section, when: unknown section}
+    - {code: ontology.invalid-selector, when: invalid selector}
+    - {code: ontology.unknown-concept, when: unknown concept}
+  basis: agent-proposal
+  requirements: [PK-MCP-048, PK-MCP-075, PK-MCP-076, PK-MCP-081,
+                 PK-MCP-085]
 
 generations:
   watched_inputs: [working copy, lock, local cache]
-  observable: every result belongs to exactly one generation; a change is
-    followed by results from a consistent new generation
-  identifier: null       # OPEN-mcp-context-serving-15
-  requirements: [PK-MCP-042, PK-MCP-050]
+  detection: checked at the start of each request; no file watcher is
+    required; a change completed before a request starts is reflected in
+    its result
+  identifier: >-
+    tool result member `generation`; sha256 (form of cache_key) of the
+    RFC 8785 serialization of an object with members revision (the
+    revision object), configDigest (sha256 of the processkit.toml bytes),
+    lockDigest (sha256 of the processkit.lock bytes, or null), and items
+    (sorted arrays [kind, namespace, name, digest], where digest is the
+    sha256 of the RFC 8785 serialization of the sorted [path, sha256]
+    pairs of every file of the item)
+  observable: every result belongs to exactly one generation; equal
+    content gives an equal identifier, also after a restart
+  basis: agent-proposal
+  requirements: [PK-MCP-042, PK-MCP-050, PK-MCP-092]
 
 prohibitions:
   - statement: no tool writes repository files
@@ -250,7 +656,21 @@ prohibitions:
 
 performance:
   reference_repository: 500 items, two locked upstreams
-  reference_host: null   # OPEN-mcp-context-serving-14
+  method:
+    host: GitHub-hosted runner ubuntu-24.04, x86_64, 4 vCPU, 16 GiB RAM,
+      CPython 3.12
+    corpus: synthetic, from a seeded generator; 200 Standards, 100 Skills,
+      100 ProcessSpecifications, 50 MCPServer entries, 25 DecisionRecords,
+      25 Documents, split over the repository and two locked, fetched
+      upstreams
+    startup: process start to the initialize result with instructions;
+      one discarded run, then median of 10 runs
+    cached: p95 of 200 identical get_context calls after one warm-up call
+    uncached: p95 of 200 get_context calls with distinct task values
+    concurrency: 50 principals on loopback, each calling get_context in a
+      loop for 60 s, alternating cached and uncached; p95 per class
+    evidence: host, operating system, Python, filesystem, seed, corpus
+      digest, sample counts, p50, p95, and maximum
   objectives:
     - {metric: stdio startup to served briefing, target: "< 2 s",
        strength: should, requirements: [PK-PERF-001]}
@@ -261,78 +681,7 @@ performance:
     - {metric: concurrent principals on one shared-server host at these
          latencies, target: 50, strength: should,
        requirements: [PK-PERF-003]}
+  basis: agent-proposal
+  requirements: [PK-PERF-001, PK-PERF-002, PK-PERF-003, PK-PERF-004]
 
-open:
-  - id: OPEN-mcp-context-serving-01
-    question: Field names in get_context and list results for the match
-      basis, cache key, revision, excluded items and their reasons, the next
-      cursor, and any cache-hit indicator.
-    requirements: [PK-MCP-020, PK-MCP-033, PK-MCP-044, PK-MCP-050]
-  - id: OPEN-mcp-context-serving-02
-    question: Default `level` for get_context and get; the documented default
-      and maximum `limit` of list, and behavior when `limit` exceeds the
-      maximum.
-    requirements: [PK-MCP-020, PK-MCP-021, PK-MCP-049]
-  - id: OPEN-mcp-context-serving-03
-    question: Cursor format (opaque or not) and the result when a cursor from
-      an older generation is used after the generation changed.
-    requirements: [PK-MCP-050, PK-MCP-042]
-  - id: OPEN-mcp-context-serving-04
-    question: processkit.toml key, unit (bytes or tokens), and default of the
-      briefing budget; exact shape of the summarized-by-kind-and-label index.
-    requirements: [PK-MCP-011]
-  - id: OPEN-mcp-context-serving-05
-    question: Configuration keys and default values of request size,
-      concurrency, and time limits, and the diagnostic returned when a limit
-      is exceeded.
-    requirements: [PK-MCP-040]
-  - id: OPEN-mcp-context-serving-06
-    question: How health is exposed without adding a tool - over stdio, and
-      the shared server's unauthenticated health endpoint path and format -
-      and which checks exist and which outcomes map to healthy, degraded,
-      and blocked.
-    requirements: [PK-MCP-043, PK-MCP-046, PK-MCP-047]
-  - id: OPEN-mcp-context-serving-07
-    question: The registry of stable diagnostic codes, the severity values,
-      and the field names for code, severity, scope, evidence, and next
-      action.
-    requirements: [PK-MCP-048]
-  - id: OPEN-mcp-context-serving-08
-    question: Reason codes for excluded items; whether items excluded by a
-      pinned profile set are reported as excluded or omitted (reporting them
-      defeats pinning's token saving); any bound on the number of excluded
-      items reported, and whether exclusions count against the list limit.
-    requirements: [PK-MCP-044, PK-MCP-045, PK-MCP-052]
-  - id: OPEN-mcp-context-serving-09
-    question: Whether items that declare no profile (labels only, or
-      universally applicable) are "within" a pinned profile set; behavior
-      when --profile names a profile the repository does not declare
-      (refuse to start or serve nothing); result when caller profiles do not
-      intersect the pinned set.
-    requirements: [PK-MCP-051, PK-MCP-052, PK-MCP-053]
-  - id: OPEN-mcp-context-serving-10
-    question: Operator configuration key for group default pinned profiles;
-      precedence with --profile; result for a principal in several groups
-      with different defaults.
-    requirements: [PK-MCP-057, PK-MCP-051]
-  - id: OPEN-mcp-context-serving-11
-    question: Argument normalization rules (case, order, duplicates, path
-      form, task text) and the cache key's digest algorithm and format.
-    requirements: [PK-MCP-030, PK-MCP-032, PK-PROD-007]
-  - id: OPEN-mcp-context-serving-12
-    question: Encoding of validate's `content` argument (string or
-      structured), and the MCP prompt name form for skills and processes.
-    requirements: [PK-MCP-022, PK-MCP-023]
-  - id: OPEN-mcp-context-serving-13
-    question: How the free-text `task` argument is matched against declared
-      triggers when v1 forbids lexical or semantic ranking, and the relative
-      ranking weight of triggers, profiles, labels, and paths.
-    requirements: [PK-MCP-020, PK-MCP-034]
-  - id: OPEN-mcp-context-serving-14
-    question: Reference host and measurement method (cold/warm, percentile,
-      synthetic corpus) for the performance objectives.
-    requirements: [PK-PERF-001, PK-PERF-002, PK-PERF-003]
-  - id: OPEN-mcp-context-serving-15
-    question: Whether and how a result reports its generation, and how
-      changes to the local cache are detected (watch or per-request check).
-    requirements: [PK-MCP-042]
+open: []
