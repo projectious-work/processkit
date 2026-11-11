@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/inheritance/lock.schema.json",
+  "title": "processkit.lock",
+  "description": "The lock file in the repository root (inheritance@v1 PK-INH-002, PK-INH-040, PK-INH-041). processkit writes it with the JSON serialization of repository-storage@v1 PK-STORE-049 (sorted keys, two-space indent, one LF at the end); it is a plan target under repository-storage@v1 PK-STORE-056.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "upstreams"],
+  "properties": {
+    "apiVersion": {
+      "description": "Lock format version. processkit version -o json reports this value as lockFormatVersion (cli@v1 PK-OUT-010).",
+      "const": "lock.processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "Lock"
+    },
+    "upstreams": {
+      "description": "One entry for every declared upstream and every transitive upstream, sorted by name in ascending Unicode code point order; each name at most once. Empty when no upstream is declared.",
+      "type": "array",
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "entryName": {
+      "description": "Entry name: the declared upstream name, or for a transitive upstream the entry name of the upstream whose lock introduced it, '/', and its entry name in that lock (for example platform/company).",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:/[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*$"
+    },
+    "commit": {
+      "description": "Full Git commit ID in lowercase hexadecimal (40 digits for SHA-1, 64 for SHA-256 repositories).",
+      "type": "string",
+      "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "digest": {
+      "description": "Content digest of the commit (inheritance@v1 PK-INH-038).",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source", "ref", "commit", "digest"],
+      "properties": {
+        "name": {"$ref": "#/$defs/entryName"},
+        "source": {
+          "description": "The source exactly as declared (in processkit.toml for a declared upstream, in the introducing upstream's lock for a transitive one).",
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "description": "The ref exactly as declared.",
+          "type": "string",
+          "minLength": 1
+        },
+        "commit": {"$ref": "#/$defs/commit"},
+        "digest": {"$ref": "#/$defs/digest"}
+      }
+    }
+  }
+}

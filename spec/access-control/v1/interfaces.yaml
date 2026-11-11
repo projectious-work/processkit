@@ -1,0 +1,877 @@
+# Interface catalog for access-control@v1.
+# Everything identity and access control make observable. Identifiers,
+# options, defaults, fields, and codes below are stated by the requirements,
+# the #197 baseline, owner decisions, or company standards. Entries marked
+# `basis: agent-proposal` are drafted answers to former open items (see
+# overview.md, "Resolved open items"). The result envelope, diagnostic
+# shape, exit codes, configuration layering, config report, redaction, and
+# log records are those of cli@v1; transport hardening, its check order,
+# credential files, and limit configuration rules are those of security@v1;
+# typed references, selectors, Containers, and relation types are those of
+# ontology@v1; file locations are those of repository-storage@v1. This file
+# adds only access.* codes, access-owned operator keys, and access schemas.
+slug: access-control
+version: 1
+
+schemas:
+  - path: schemas/role.schema.json
+    id: https://schemas.projectious.work/processkit/v1/role.schema.json
+    describes: a Role item; metadata resolves to ontology@v1
+      schemas/resource-metadata.schema.json
+    basis: agent-proposal
+    requirements: [PK-ACC-020, PK-ACC-021, PK-ACC-022, PK-ACC-040]
+  - path: schemas/binding.schema.json
+    id: https://schemas.projectious.work/processkit/v1/binding.schema.json
+    describes: a Binding item of every relation type; metadata resolves to
+      ontology@v1 schemas/resource-metadata.schema.json
+    basis: "owner decision #213 finding 5; agent-proposal (validity.from,
+      description, principal values)"
+    requirements: [PK-ACC-018, PK-ACC-021, PK-ACC-041]
+  - path: schemas/principal.schema.json
+    id: https://schemas.projectious.work/processkit/v1/access-control/principal.schema.json
+    describes: a principal; data of `processkit auth whoami`
+    basis: agent-proposal
+    requirements: [PK-ACC-017, PK-ACC-037, PK-ACC-048]
+  - path: schemas/can-i-result.schema.json
+    id: https://schemas.projectious.work/processkit/v1/access-control/can-i-result.schema.json
+    describes: data of `processkit auth can-i`
+    basis: agent-proposal
+    requirements: [PK-ACC-027, PK-ACC-047]
+  - path: schemas/access-log-record.schema.json
+    id: https://schemas.projectious.work/processkit/v1/access-control/access-log-record.schema.json
+    describes: access decision and impersonation records (a cli@v1
+      log-record with fixed event, level, and fields)
+    basis: agent-proposal
+    requirements: [PK-ACC-026, PK-ACC-027, PK-ACC-042, PK-ACC-053]
+  - path: schemas/access-rejection.schema.json
+    id: https://schemas.projectious.work/processkit/v1/access-control/access-rejection.schema.json
+    describes: HTTP rejection body for authentication, limits, and unknown
+      paths; same shape as security@v1 schemas/http-rejection.schema.json
+    basis: agent-proposal
+    requirements: [PK-ACC-051, PK-ACC-055]
+  - path: schemas/health.schema.json
+    id: https://schemas.projectious.work/processkit/v1/access-control/health.schema.json
+    describes: body of GET /healthz
+    basis: agent-proposal
+    requirements: [PK-ACC-033, PK-ACC-052]
+
+serving_modes:
+  - mode: stdio
+    command: processkit mcp serve --stdio     # mcp-context-serving@v1
+    authenticator: local (the only one)
+    confidentiality_control: false
+    visibility: the local principal sees every item; Roles and Bindings are
+      not evaluated; no access decision record is written
+    check: no output or documentation of stdio mode presents access rules as
+      a confidentiality control; every valid item is returned to the local
+      principal regardless of Roles and Bindings
+    requirements: [PK-ACC-001, PK-ACC-046]
+  - mode: CLI commands
+    principal: local
+    visibility: as stdio
+    requirements: [PK-ACC-046]
+  - mode: shared server
+    command: processkit mcp serve --http --listen ADDRESS
+    transport: HTTPS (TLS required)
+    working_copies: exactly one
+    visibility: each caller sees only items its access set allows
+    requirements: [PK-PROD-011, PK-ACC-030, PK-ACC-031]
+
+operator_configuration:
+  # Keys of the operator configuration file (cli@v1 configuration.layers
+  # operator; TOML; dotted key = table path). Owned by access-control@v1.
+  # No key is accepted in project configuration (errors.reused_codes).
+  # A wrong type or a value
+  # outside the listed values fails with cli.config-invalid-value. Every key
+  # appears in `processkit config view -o json` with its source. Paths must
+  # be absolute (else cli.config-invalid-value). Keys marked required_when
+  # are checked by `processkit mcp serve --http` at start-up
+  # (access.config-missing-key).
+  keys:
+    - key: tls.certificate
+      type: string (absolute path)
+      default: none
+      content: PEM certificate chain of the server, leaf first
+      required_when: mcp serve --http (else access.tls-not-configured)
+      requirements: [PK-ACC-030, PK-ACC-032]
+    - key: tls.private-key
+      type: string (absolute path)
+      default: none
+      content: PEM private key matching tls.certificate
+      credential_file: true    # security@v1 PK-SEC-029
+      required_when: mcp serve --http (else access.tls-not-configured)
+      requirements: [PK-ACC-030, PK-ACC-032, PK-ACC-034]
+    - key: auth.authenticators
+      type: list of strings
+      values: [oidc, x509, trusted-proxy]
+      unique: true
+      default: []
+      meaning: the shared-server chain, in order; local is never listed (it
+        is the only authenticator of stdio and the CLI); listing local or a
+        duplicate fails with cli.config-invalid-value
+      requirements: [PK-ACC-011, PK-ACC-012, PK-ACC-035]
+    - key: auth.anonymous
+      type: boolean
+      default: false
+      requirements: [PK-ACC-012, PK-ACC-035]
+    - key: auth.oidc.issuer
+      type: string (https URL, exact match with the token claim iss)
+      default: none
+      required_when: oidc in auth.authenticators
+      requirements: [PK-ACC-013, PK-ACC-036]
+    - key: auth.oidc.audience
+      type: string (https URL)
+      default: none
+      meaning: required value in the token claim aud (a string, or an array
+        that contains it); also the protected resource identifier; operators
+        set it to the canonical URL of the MCP endpoint, for example
+        https://pk.example.com/mcp
+      required_when: oidc in auth.authenticators
+      requirements: [PK-ACC-013, PK-ACC-036, PK-ACC-055]
+    - key: auth.oidc.user-claim
+      type: string
+      default: sub
+      requirements: [PK-ACC-036]
+    - key: auth.oidc.groups-claim
+      type: string
+      default: groups
+      requirements: [PK-ACC-036]
+    - key: auth.x509.ca-bundle
+      type: string (absolute path)
+      content: PEM CA certificates
+      default: none
+      required_when: x509 in auth.authenticators
+      requirements: [PK-ACC-014, PK-ACC-038]
+    - key: auth.x509.revocation-list
+      type: string (absolute path)
+      content: one or more PEM certificate revocation lists
+      default: none (no revocation check)
+      applies_to: every client certificate
+      requirements: [PK-ACC-014, PK-ACC-038]
+    - key: auth.trusted-proxy.ca-bundle
+      type: string (absolute path)
+      content: PEM CA certificates of proxy client certificates
+      default: none
+      required_when: trusted-proxy in auth.authenticators
+      requirements: [PK-ACC-015, PK-ACC-039]
+    - key: auth.trusted-proxy.allowed-names
+      type: list of strings (subject CN values), at least one
+      default: none
+      required_when: trusted-proxy in auth.authenticators
+      requirements: [PK-ACC-015, PK-ACC-039]
+    - key: auth.trusted-proxy.user-header
+      type: string (HTTP header name, compared without regard to case)
+      default: X-Remote-User
+      requirements: [PK-ACC-015, PK-ACC-039]
+    - key: auth.trusted-proxy.group-header
+      type: string (HTTP header name, compared without regard to case)
+      default: X-Remote-Group
+      requirements: [PK-ACC-015, PK-ACC-039]
+    - key: access.impersonators
+      type: list of strings (user identifiers)
+      default: []
+      meaning: users who hold the impersonate privilege; for the CLI the
+        local user identifier (PK-ACC-037)
+      requirements: [PK-ACC-027, PK-ACC-042]
+    - key: limits.principal-requests-per-minute
+      type: integer
+      default: 600
+      ceiling: 60000
+      meaning: accepted MCP requests of one principal in any 60-second
+        window
+      requirements: [PK-ACC-033, PK-ACC-051]
+    - key: limits.principal-concurrent-requests
+      type: integer
+      default: 8
+      ceiling: 256
+      meaning: MCP requests of one principal in progress at the same time
+      requirements: [PK-ACC-033, PK-ACC-051]
+    - key: limits.server-requests-per-minute
+      type: integer
+      default: 6000
+      ceiling: 600000
+      meaning: accepted MCP requests of all principals in any 60-second
+        window
+      requirements: [PK-ACC-033, PK-ACC-051]
+  limit_rules: the three limits.* keys follow security@v1 PK-SEC-019
+    (operator configuration only; project configuration fails with
+    cli.config-unknown-key) and PK-SEC-020 (1..ceiling, never clamped)
+  example: |
+    schema-version = 1
+
+    [tls]
+    certificate = "/etc/processkit/tls/server.pem"
+    private-key = "/etc/processkit/tls/server.key"
+
+    [auth]
+    authenticators = ["oidc", "x509"]
+    anonymous = false
+
+    [auth.oidc]
+    issuer = "https://id.example.com"
+    audience = "https://pk.example.com/mcp"
+
+    [auth.x509]
+    ca-bundle = "/etc/processkit/clients-ca.pem"
+    revocation-list = "/etc/processkit/clients.crl.pem"
+
+    [access]
+    impersonators = ["alice"]
+  basis: agent-proposal
+  requirements: [PK-ACC-011, PK-ACC-034]
+
+authenticators:
+  chain:
+    order: auth.authenticators
+    outcomes_per_authenticator: [accept, reject, abstain]
+    abstain_when: the request carries no credential of the authenticator's
+      type (oidc no Authorization header; x509 no client certificate that
+      chains to auth.x509.ca-bundle; trusted-proxy connection not from a
+      configured proxy)
+    first_accepting_defines_principal: true
+    none_accepts_one_rejects: request rejected (access.unauthenticated)
+    all_abstain: anonymous principal when auth.anonymous is true; else
+      rejected (access.unauthenticated)
+    invalid_credential_never_anonymous: a request with an invalid token is
+      rejected, never served as anonymous
+    configured_in: operator configuration only (operator_configuration)
+    repository_content_may_not: [enable an authenticator,
+                                 trust an issuer or CA, define a principal]
+    basis: agent-proposal
+    requirements: [PK-ACC-011, PK-ACC-012, PK-ACC-035]
+  request_time: one clock reading per request, taken when authorization
+    runs, used for token expiry and not-before and for Binding validity
+    (PK-ACC-043)
+  anonymous:
+    default: off
+    enabled_by: auth.anonymous = true
+    principal: {user: "system:anonymous",
+                groups: ["system:unauthenticated"],
+                authenticator: anonymous}
+    requirements: [PK-ACC-012, PK-ACC-035, PK-ACC-037]
+  kinds:
+    - name: local
+      use: stdio and every CLI command
+      identity_source: the effective operating-system user of the processkit
+        process
+      user: login name of that user
+      groups: []
+      requirements: [PK-ACC-001, PK-ACC-012, PK-ACC-037]
+    - name: oidc
+      use: people and harnesses using the shared server
+      credential: "Authorization: Bearer <JWT> (security@v1 PK-SEC-027)"
+      key_discovery: OpenID Connect discovery document
+        <auth.oidc.issuer>/.well-known/openid-configuration, then its
+        jwks_uri; fetched before the server listens (failure
+        access.oidc-unavailable); fetched again when a token names an
+        unknown key ID, at most once per 60 seconds; a failed refresh keeps
+        the previous keys
+      outbound_connections: only to the issuer's discovery and key URLs;
+        they never carry a caller's token
+      algorithms: [RS256, RS384, RS512, PS256, PS384, PS512, ES256, ES384]
+      rejected_algorithms: none and every HMAC algorithm
+      clock_skew_seconds: 60   # for exp and nbf
+      validates: [issuer, audience, signature, expiry, not-before]
+      user: claim auth.oidc.user-claim; must be a non-empty string, else the
+        token is rejected
+      groups: claim auth.oidc.groups-claim; absent means no groups; a string
+        is one group; an array of strings is the groups; any other type
+        rejects the token
+      protocol_role: OAuth protected resource per the MCP authorization
+        specification for the supported MCP versions (reported by
+        processkit version -o json, cli@v1); see http_endpoints
+      rejects: [expired token, not-yet-valid token, wrong-audience token,
+                wrong-issuer token, bad signature, rejected algorithm,
+                missing user claim]
+      basis: agent-proposal (claims, discovery, algorithms, skew)
+      requirements: [PK-ACC-013, PK-ACC-016, PK-ACC-036]
+    - name: x509
+      use: services and automation using the shared server
+      tls_handshake: client certificate requested, not required; a
+        presented certificate that is untrusted (neither
+        auth.x509.ca-bundle nor auth.trusted-proxy.ca-bundle), expired, not
+        yet valid, without client-authentication extended key usage, or
+        listed in auth.x509.revocation-list fails the handshake; no HTTP
+        response is sent; log record access.certificate-rejected (warning;
+        fields.reason one of untrusted, expired, not-yet-valid, usage,
+        revoked; no certificate content)
+      accepts: a verified certificate that chains to auth.x509.ca-bundle
+      user: the subject CN; a certificate with no CN or more than one CN is
+        rejected (HTTP 401)
+      groups: every subject O value
+      recommendation: operators should issue short-lived certificates
+      rejects: [untrusted certificate, expired certificate,
+                not-yet-valid certificate, certificate without
+                client-authentication usage, revoked certificate]
+      basis: agent-proposal (handshake failure, CN rule)
+      requirements: [PK-ACC-014, PK-ACC-038]
+    - name: trusted-proxy
+      use: a shared server behind an authenticating reverse proxy
+      proxy_identified_by: client certificate that chains to
+        auth.trusted-proxy.ca-bundle and whose subject CN is in
+        auth.trusted-proxy.allowed-names
+      user: the one auth.trusted-proxy.user-header header; absent, empty, or
+        repeated rejects the request
+      groups: one group per auth.trusted-proxy.group-header header line;
+        values are not split at commas
+      other_connections: both headers removed before any authenticator runs;
+        never used as identity
+      basis: agent-proposal (header names, CN allow-list)
+      requirements: [PK-ACC-015, PK-ACC-039]
+
+principal:
+  attributes: [user, groups, authenticator]
+  schema: schemas/principal.schema.json
+  groups_order: deduplicated, sorted by Unicode code point
+  asserted_by: the authenticator that accepted the request
+  binding_match: exact, case-sensitive string equality of the Binding
+    subject name with the user identifier (principal User) or one group
+    (principal Group); the authenticator is not part of the match
+  not_identity: [Actor items, TeamMember items]
+  passed_to: every application operation; CLI and MCP adapters make no
+    access decisions
+  credentials: never stored, issued, signed, rotated, or forwarded; bearer
+    material redacted from every output (cli@v1 redaction)
+  requirements: [PK-ACC-010, PK-ACC-016, PK-ACC-017, PK-ACC-018,
+                 PK-ACC-037]
+
+content:
+  # Roles and Bindings are ordinary ontology content (ontology@v1), stored
+  # where repository-storage@v1 `item_locations` says (Role:
+  # ontology/roles/<name>.json, Binding: ontology/bindings/<name>.json) and
+  # reviewed through Git. Upstream Roles and Bindings follow inheritance@v1.
+  apiVersion: processkit.projectious.work/v1
+  role:
+    kind: Role
+    schema: schemas/role.schema.json
+    fields:
+      - path: spec.responsibilities
+        type: array of string (1..64 entries, 1..600 characters)
+        required: true
+        source: baseline example; gap row 8 (governance draft ENTITY-100)
+          makes it required
+      - path: spec.capabilities
+        type: array of typed references Capability/<name> or Skill/<name>
+        required: false
+        effect: informational; never changes an access decision
+        source: gap row 8 (governance draft ENTITY-100, "required
+          capabilities or skills")
+      - path: spec.access
+        type: array of access rule (at most 256)
+        required: false
+      - path: spec.access[].kinds
+        type: array of content kind names, at least one; no wildcard
+        required: true
+      - path: spec.access[].verbs
+        type: array of [get, list], at least one; no wildcard
+        required: true
+      - path: spec.access[].names
+        type: array of item names (metadata.name), at least one
+        required: false
+        meaning: narrows the rule to these names, in any Container within the
+          Binding scope
+      - path: spec.access[].selector
+        type: label selector string (grammar ontology@v1 selectors)
+        required: false
+    rule_match: kind in kinds AND verb in verbs AND (name in names, where
+      names is present) AND (labels match selector, where selector is
+      present)
+    metadata_namespace: no effect on what a Role grants
+    not_carried_from_gap_row_8: [default scope (scope is always explicit on
+      the Binding), versioning or supersession of a Role (the served Git
+      revision decides)]
+    example: |
+      {
+        "apiVersion": "processkit.projectious.work/v1",
+        "kind": "Role",
+        "metadata": { "name": "standards-reader" },
+        "spec": {
+          "responsibilities": ["Apply company engineering standards"],
+          "access": [
+            {
+              "kinds": ["Standard", "ProcessSpecification", "Skill"],
+              "verbs": ["get", "list"],
+              "selector": "sensitivity notin (confidential)"
+            }
+          ]
+        }
+      }
+    basis: agent-proposal; gap row 8 accepted by owner 2026-11-11 (#212)
+    requirements: [PK-ACC-020, PK-ACC-021, PK-ACC-022, PK-ACC-025,
+                   PK-ACC-040]
+  binding:
+    kind: Binding
+    schema: schemas/binding.schema.json
+    fields:
+      # spec.relation, subject, target, scope, and validity are kept for
+      # every relation type (owner decision #213 finding 5; ontology@v1
+      # relations.binding_fields). Endpoint and scope permission come from
+      # the registry relation type (ontology@v1 PK-MODEL-070).
+      - path: spec.relation
+        type: relation type name; grants-role for access
+        required: true
+      - path: spec.subject
+        type: typed reference, or principal object where the relation type's
+          subject endpoint is principal (grants-role)
+        required: true
+      - path: spec.subject.principal
+        values: [User, Group]
+      - path: spec.subject.name
+        type: string, 1..256 characters, no control characters
+        meaning: identifier the authenticator asserts (for example an OIDC
+          group claim value or an x509 subject O)
+      - path: spec.target
+        type: typed reference; Role/<name> or Role/<namespace>/<name> for
+          grants-role
+        required: true
+      - path: spec.scope
+        type: typed reference Container/<name>
+        required: for grants-role
+        allowed: only where the relation type allows scope; in v1 only
+          grants-role (else ontology.relation-endpoint)
+        root: Container/root
+      - path: spec.validity
+        type: object with from and/or until (at least one)
+        required: false (absent means unbounded)
+      - path: spec.validity.from
+        type: RFC 3339 timestamp with offset; inclusive
+        source: gap row 8 (governance draft ENTITY-120 and 121, temporal
+          rules)
+      - path: spec.validity.until
+        type: RFC 3339 timestamp with offset; exclusive
+        source: baseline example
+      - path: spec.description
+        type: string, 1..600 characters
+        required: false
+        effect: informational
+        source: gap row 8 (governance draft ENTITY-120)
+    valid_at: from <= t < until, t = request time (PK-ACC-043)
+    metadata_namespace: no effect on what a Binding grants; spec.scope
+      decides
+    not_carried_from_gap_row_8: [conditions (v1 has no condition language;
+      rules stay additive)]
+    example: |
+      {
+        "apiVersion": "processkit.projectious.work/v1",
+        "kind": "Binding",
+        "metadata": { "name": "engineering-reads-standards" },
+        "spec": {
+          "relation": "grants-role",
+          "subject": { "principal": "Group", "name": "engineering@example.com" },
+          "target": "Role/standards-reader",
+          "scope": "Container/engineering",
+          "validity": { "until": "2027-12-31T23:59:59Z" }
+        }
+      }
+    basis: "owner decision #213 finding 5; agent-proposal; gap row 8
+      accepted by owner 2026-11-11 (#212)"
+    requirements: [PK-ACC-018, PK-ACC-021, PK-ACC-025, PK-ACC-041]
+
+authorization:
+  default: deny
+  rules: additive; no deny rule in v1
+  verbs: [get, list]          # Role rule verbs
+  privilege_outside_roles: impersonate (PK-ACC-042)
+  allow_when_all:
+    - a grants-role Binding is valid at the request time
+    - the Binding is scoped to the item's Container or an ancestor of it
+      (Container tree from ontology@v1; an item without metadata.namespace,
+      including a Container item, is in the root Container)
+    - the Binding subject is the principal's user or one of its groups
+    - the bound Role has a rule matching the item's kind, the verb, the
+      item's name (when the rule has names), and the rule's selector (when
+      present)
+  granting_binding: the first allowing Binding by Unicode code-point order
+    of its typed reference
+  local_principal: get and list on every item, no evaluation, no records
+    (PK-ACC-046)
+  operation_declarations:
+    # verb: the verb the principal must hold on each item the operation
+    # reads; kinds: the kinds it reads. An item without the verb is treated
+    # as missing (PK-ACC-023, PK-ACC-024).
+    mcp:
+      - {operation: get_context, verb: get, kinds: "kinds argument, or
+           every kind"}
+      - {operation: list, verb: list, kinds: kind argument}
+      - {operation: get, verb: get, kinds: kind argument}
+      - {operation: explain, verb: get, kinds: kind argument}
+      - {operation: validate, verb: none, kinds: none, note: "reads no
+           stored item; references in the draft resolve only to items the
+           principal may get"}
+      - {operation: ontology, verb: none for release-owned entries, note:
+           "an entry added by an OntologyExtension appears only when the
+           principal may get that OntologyExtension"}
+      - {operation: resources/list, verb: list, kinds: every kind}
+      - {operation: resources/read, verb: get, kinds: kind in the URI}
+      - {operation: resources/read of processkit:health, verb: none, note:
+           "carries no item content (mcp-context-serving@v1 PK-MCP-046);
+           any authenticated principal may read it"}
+      - {operation: prompts/list, verb: list, kinds: [Skill,
+           ProcessSpecification]}
+      - {operation: prompts/get, verb: get, kinds: [Skill,
+           ProcessSpecification]}
+      - {operation: briefing index, verb: list, kinds: every indexed kind}
+      - {operation: briefing rules of always-on standards, verb: get,
+           kinds: [Standard]}
+      - {operation: excluded-item report (PK-MCP-045), verb: same as the
+           operation that reports it}
+      - {operation: reference resolution, verb: get, kinds: target kind}
+    cli:
+      - {command: get TYPE, verb: list}
+      - {command: get TYPE NAME, verb: get}
+      - {command: get context, verb: get}
+      - {command: describe, verb: get}
+      - {command: api-resources, verb: as MCP ontology}
+      - {command: explain, verb: as MCP ontology}
+      - {command: auth can-i, verb: impersonate}
+      - {commands: [init, create, apply, validate, format, lock, fetch,
+          migrate, config view, version, auth whoami, mcp serve],
+         verb: none}
+    cli_principal: always local, so CLI read commands are allowed
+      everything (PK-ACC-046)
+    basis: agent-proposal
+  inherited_rules: governed by inheritance@v1 (upstream rules grant nothing
+    downstream unless imported)
+  requirements: [PK-ACC-020, PK-ACC-021, PK-ACC-022, PK-ACC-045,
+                 PK-ACC-046]
+
+access_set:
+  # Resolves the PK-ACC-021 / mcp-context-serving@v1 PK-MCP-030 tension:
+  # time is an input of authorization, not of assembly.
+  computed: once per request, when authorization runs, before assembly
+  request_time: one clock reading; also used for token validation
+  content: every [verb, kind, namespace, name] the principal may read at the
+    request time; namespace is the Container name, root for the root
+    Container
+  local_principal: get and list on every valid item
+  digest:
+    form: sha256 followed by a colon and 64 lowercase hex digits
+    input: the RFC 8785 (JSON Canonicalization Scheme) serialization of
+      the array of [verb, kind, namespace, name] arrays, sorted by Unicode
+      code point of verb, then kind, then namespace, then name
+  assembly_input: the access set (and its digest in the cache key); never
+    the request time
+  effect: two requests whose access sets are equal have equal access-set
+    digests, whatever their request times; a Binding whose validity starts
+    or ends between two requests changes the digest only if it changes the
+    access set
+  basis: agent-proposal
+  requirements: [PK-ACC-021, PK-ACC-043, PK-ACC-044]
+
+filtering:
+  # Surfaces through which forbidden items must not be observable on the
+  # shared server. Assembly itself is defined by mcp-context-serving@v1.
+  filter_before: [ordering, counting, truncation]
+  surfaces:
+    - surface: list (CLI and MCP)
+      check: forbidden items absent; counts, page sizes, and cursors computed
+        over allowed items only
+      requirements: [PK-ACC-023]
+    - surface: get (CLI and MCP) and MCP resources
+      check: result for a forbidden item is identical to the result for a
+        missing item (outcome, diagnostics, and error text)
+      requirements: [PK-ACC-023, PK-ACC-049]
+    - surface: get_context
+      check: forbidden items absent; ranking and truncation unaffected by them
+      requirements: [PK-ACC-023]
+    - surface: connection briefing
+      check: forbidden items absent from rules, index, and kind/label
+        summaries, including summary counts
+      requirements: [PK-ACC-023]
+    - surface: references
+      check: reference from an allowed item to a forbidden item returned as
+        unresolved without title, labels, or content of the target
+      requirements: [PK-ACC-024]
+    - surface: errors and diagnostics
+      check: no diagnostic names or describes a forbidden item
+      requirements: [PK-PROD-011, PK-ACC-023]
+    - surface: timing
+      check: see timing
+      requirements: [PK-PROD-011, PK-ACC-023, PK-ACC-049]
+  timing:
+    design: get is resolved against the request's access set, so forbidden
+      and missing items take the same path
+    measurement: on the shared server over loopback, one principal, after
+      100 warm-up requests, 1000 get requests for a forbidden item
+      interleaved with 1000 get requests for a never-existing name of the
+      same kind and namespace
+    bound_ms: 2     # absolute difference of the two medians
+    basis: agent-proposal
+    requirements: [PK-ACC-049]
+  requirements: [PK-PROD-011, PK-ACC-023, PK-ACC-024]
+
+http_endpoints:
+  # Paths of the shared server. Every request first passes the security@v1
+  # shared_server_http check order; authentication and access limits slot
+  # in as listed in `request_order`.
+  paths:
+  - path: /mcp
+    methods: [POST]   # others: security@v1 security.method-not-allowed
+    authentication: required
+    serves: MCP Streamable HTTP, stateless (security@v1 PK-SEC-024)
+    requirements: [PK-ACC-055]
+  - path: /healthz
+    methods: [GET]
+    authentication: none
+    counted_against_limits: false
+    response: schemas/health.schema.json; Content-Type application/json;
+      HTTP 200 for healthy and degraded, 503 for blocked
+    state_owner: mcp-context-serving@v1 (PK-MCP-046, PK-MCP-047)
+    must_not_reveal: [item names, counts, rules]
+    requirements: [PK-ACC-033, PK-ACC-052]
+  - path: "/.well-known/oauth-protected-resource<path of auth.oidc.audience>"
+    example: /.well-known/oauth-protected-resource/mcp for audience
+      https://pk.example.com/mcp (RFC 9728)
+    present_when: oidc in auth.authenticators
+    methods: [GET]
+    authentication: none
+    response: 'RFC 9728 metadata {"resource": <auth.oidc.audience>,
+      "authorization_servers": [<auth.oidc.issuer>],
+      "bearer_methods_supported": ["header"]}'
+    requirements: [PK-ACC-013, PK-ACC-055]
+  - path: any other
+    response: HTTP 404, access.unknown-path
+      (schemas/access-rejection.schema.json)
+    requirements: [PK-ACC-055]
+  unauthenticated_response:
+    status: 401
+    body: schemas/access-rejection.schema.json with access.unauthenticated
+    header_when_oidc: 'WWW-Authenticate: Bearer resource_metadata="<metadata
+      URL>", plus error="invalid_token" when a token was presented'
+    same_for_every_reason: true (the reason is only in the log record
+      fields.reason)
+    log: one cli@v1 log-record, level warning, event access.unauthenticated,
+      fields.reason one of [no-credential, invalid-token, expired,
+      not-yet-valid, wrong-audience, wrong-issuer, bad-signature,
+      rejected-algorithm, missing-user, untrusted-proxy-header]; no
+      credential material
+    requirements: [PK-ACC-012, PK-ACC-013, PK-ACC-016, PK-ACC-055]
+  request_order:
+    - security@v1 checks up to and including the method check
+    - authentication (PK-ACC-035)
+    - access.principal-limit (per-principal rate, then concurrency)
+    - access.server-limit
+    - mcp-context-serving@v1 request limits (PK-MCP-040)
+  basis: agent-proposal
+  requirements: [PK-ACC-052, PK-ACC-055]
+
+commands:
+  - name: auth can-i
+    synopsis: processkit auth can-i VERB TYPE [NAME] --as USER
+      [--as-group G]... [-n N]
+    arguments:
+      - {name: VERB, values: [get, list],
+         other: usage failure access.unknown-verb (exit 2)}
+      - {name: TYPE, value: "content kind in the effective ontology, named
+           as in cli@v1 type_names (PK-CLI-049)",
+         other: usage failure content-kinds.unknown-kind (exit 2,
+         cli@v1 PK-CLI-049)}
+      - {name: NAME, optional: true}
+    options:
+      - {name: --as, value: USER, required: true,
+         missing: cli.missing-argument (exit 2)}
+      - {name: --as-group, value: G, repeatable: true}
+      - {name: -n / --namespace, value: N, default: root,
+         unknown_container: access.unknown-namespace (usage, exit 2)}
+    evaluates: the Roles and Bindings of the selected working copy at its
+      revision; no network; request time = the invocation's clock reading
+    without_name: a rule matches on kind and verb; names and selector are
+      ignored
+    with_missing_item: decision deny
+    impersonation:
+      requires: the invoking principal's user in access.impersonators
+      without_privilege: access.impersonation-denied (environment, exit 3);
+        nothing is evaluated; data is null
+      logged: one access.impersonation record per invocation (outcome allow
+        or deny), then one access.decision record with fields.impersonator
+    writes: nothing
+    result_envelope: cli@v1
+    data: schemas/can-i-result.schema.json
+    exit_code: 0 for allow and for deny
+    basis: agent-proposal
+    requirements: [PK-ACC-027, PK-ACC-042, PK-ACC-047, PK-ACC-053]
+  - name: auth whoami
+    synopsis: processkit auth whoami
+    data: schemas/principal.schema.json
+    cli_value: '{"user": <login name>, "groups": [], "authenticator":
+      "local"}'
+    repository: not required
+    writes: nothing
+    basis: agent-proposal
+    requirements: [PK-ACC-037, PK-ACC-048]
+  - name: mcp serve --http
+    synopsis: processkit mcp serve --http --listen ADDRESS
+    options:
+      - {name: --listen, value: ADDRESS,
+         form: "HOST:PORT; an IPv6 host in brackets, for example [::1]:8443",
+         invalid: cli.invalid-option-value (exit 2)}
+    tls_material: supplied by the operator (tls.certificate,
+      tls.private-key); processkit never creates a CA or requests
+      certificates
+    serves: exactly one working copy
+    reports: working-copy revision (in every result, cli@v1 and
+      mcp-context-serving@v1)
+    startup_checks:
+      # In this order, after cli@v1 has loaded and validated the operator
+      # configuration. The first failure is reported and nothing listens.
+      - {check: tls.certificate and tls.private-key set,
+         code: access.tls-not-configured, category: validation, exit: 1}
+      - {check: auth.authenticators not empty,
+         code: access.no-authenticator, category: validation, exit: 1}
+      - {check: every required_when key of each listed authenticator set,
+         code: access.config-missing-key, category: validation, exit: 1,
+         evidence: key}
+      - {check: tls.private-key owner-only,
+         code: security.credential-file-permissions, category: environment,
+         exit: 3}
+      - {check: every configured file readable and parseable; private key
+           matches the certificate, code: access.file-unusable,
+         category: environment, exit: 3, evidence: [key, path]}
+      - {check: OIDC discovery and key fetch (when oidc is listed),
+         code: access.oidc-unavailable, category: environment, exit: 3}
+      - {check: listen address bound, code: access.listen-failed,
+         category: environment, exit: 3}
+    basis: agent-proposal
+    requirements: [PK-ACC-030, PK-ACC-031, PK-ACC-032, PK-ACC-050]
+
+limits:
+  keys: [limits.principal-requests-per-minute,
+         limits.principal-concurrent-requests,
+         limits.server-requests-per-minute]   # see operator_configuration
+  window: sliding 60 seconds
+  principal_identity: authenticator and user identifier (all anonymous
+    requests share one principal)
+  counts: accepted MCP requests on /mcp only; rejected requests and the
+    health and metadata endpoints are not counted
+  over_limit:
+    principal: HTTP 429, access.principal-limit
+    server: HTTP 429, access.server-limit
+    header: Retry-After, integer seconds >= 1 until the request would be
+      accepted
+    body: schemas/access-rejection.schema.json
+    log: one log-record, level warning, event equal to the code, fields
+      principal (no credential)
+  other_limits: transport limits security@v1; request size, concurrency,
+    and time limits mcp-context-serving@v1 (PK-MCP-040)
+  basis: agent-proposal
+  requirements: [PK-ACC-033, PK-ACC-051]
+
+decision_log:
+  sink: operational log (cli@v1 logging; default sink standard error)
+  schema: schemas/access-log-record.schema.json
+  repository_content: false
+  events:
+    - event: access.decision
+      level: info
+      granularity: one record per item and verb a request decides (a get
+        decides one item; list, get_context, the briefing, resources/list,
+        and prompts/list decide every candidate item); a get of a missing
+        item writes outcome deny
+      fields: [principal, verb, kind, namespace, name, outcome, binding,
+               impersonator (can-i only)]
+    - event: access.impersonation
+      level: info
+      fields: [principal, verb (impersonate), outcome, impersonated]
+  level_filter: none; both events are written whatever the configured log
+    level is
+  not_written: for the local principal (PK-ACC-046)
+  outcome_values: [allow, deny]
+  redaction: bearer material never appears
+  basis: agent-proposal
+  requirements: [PK-ACC-016, PK-ACC-026, PK-ACC-027, PK-ACC-042,
+                 PK-ACC-053]
+
+validation_errors:
+  # Reported by processkit validate (cli@v1); the offending Binding or rule
+  # grants nothing. Diagnostic shape cli@v1.
+  conditions:
+    - {condition: Binding names an unknown Role,
+       code: ontology.unresolved-reference, severity: error,
+       pointer: /spec/target}
+    - {condition: Binding scoped to an unknown Container,
+       code: ontology.unresolved-reference, severity: error,
+       pointer: /spec/scope}
+    - {condition: grants-role Binding subject is not a principal object (for
+         example Actor/alice), code: ontology.relation-endpoint,
+       pointer: /spec/subject}
+    - {condition: Role rule with an invalid selector,
+       code: ontology.invalid-selector, pointer: /spec/access/<i>/selector,
+       effect: only that rule grants nothing}
+    - {condition: validity.from not before validity.until,
+       code: access.invalid-validity, pointer: /spec/validity}
+    - {condition: other violation of role.schema.json or
+         binding.schema.json, code: access.schema-violation,
+       precedence: ontology@v1 specific codes (for example
+         ontology.missing-field, ontology.unknown-field) replace it for the
+         same pointer}
+  category: validation (exit 1 from processkit validate)
+  effect: a Role or Binding with any error grants nothing, except that an
+    invalid selector disables only its rule
+  basis: agent-proposal
+  requirements: [PK-ACC-025, PK-ACC-041, PK-ACC-054]
+
+errors:
+  # Codes owned by access-control@v1. CLI diagnostics use cli@v1
+  # schemas/diagnostic.schema.json and exit codes; HTTP rejections use
+  # schemas/access-rejection.schema.json plus a log record.
+  owned:
+    - {code: access.tls-not-configured, category: validation, exit_code: 1,
+       scope: configuration, next_action: fix-configuration,
+       requirements: [PK-ACC-030, PK-ACC-050]}
+    - {code: access.no-authenticator, category: validation, exit_code: 1,
+       scope: configuration, next_action: fix-configuration,
+       requirements: [PK-ACC-030, PK-ACC-050]}
+    - {code: access.config-missing-key, category: validation, exit_code: 1,
+       scope: configuration, next_action: fix-configuration,
+       requirements: [PK-ACC-034, PK-ACC-050]}
+    - {code: access.file-unusable, category: environment, exit_code: 3,
+       scope: configuration, next_action: fix-configuration,
+       requirements: [PK-ACC-032, PK-ACC-050]}
+    - {code: access.oidc-unavailable, category: environment, exit_code: 3,
+       scope: server, next_action: rerun,
+       requirements: [PK-ACC-036, PK-ACC-050]}
+    - {code: access.listen-failed, category: environment, exit_code: 3,
+       scope: server, next_action: fix-invocation,
+       requirements: [PK-ACC-050]}
+    - {code: access.impersonation-denied, category: environment,
+       exit_code: 3, scope: configuration, next_action: fix-configuration,
+       requirements: [PK-ACC-027, PK-ACC-042]}
+    - {code: access.unknown-verb, category: usage, exit_code: 2,
+       scope: invocation, next_action: fix-invocation,
+       requirements: [PK-ACC-047]}
+    - {code: access.unknown-namespace, category: usage, exit_code: 2,
+       scope: invocation, next_action: fix-invocation,
+       requirements: [PK-ACC-047]}
+    - {code: access.invalid-validity, category: validation, exit_code: 1,
+       scope: item, next_action: fix-content,
+       requirements: [PK-ACC-041, PK-ACC-054]}
+    - {code: access.schema-violation, category: validation, exit_code: 1,
+       scope: item, next_action: fix-content,
+       requirements: [PK-ACC-040, PK-ACC-041, PK-ACC-054]}
+    - {code: access.unauthenticated, http_status: 401,
+       requirements: [PK-ACC-012, PK-ACC-055]}
+    - {code: access.principal-limit, http_status: 429,
+       requirements: [PK-ACC-033, PK-ACC-051]}
+    - {code: access.server-limit, http_status: 429,
+       requirements: [PK-ACC-033, PK-ACC-051]}
+    - {code: access.unknown-path, http_status: 404,
+       requirements: [PK-ACC-055]}
+    - {code: access.certificate-rejected, log_only: true,
+       meaning: TLS handshake failed for a client certificate,
+       requirements: [PK-ACC-014, PK-ACC-038]}
+  reused_codes:
+    - {code: cli.config-forbidden-key, when: project configuration sets an
+         auth.* or tls.* key (authenticators and credentials, cli@v1
+         PK-CONFIG-002), requirements: [PK-ACC-011]}
+    - {code: cli.config-unknown-key, when: project configuration sets an
+         access.* key, or a limits.* key (security@v1 PK-SEC-019),
+       requirements: [PK-ACC-034]}
+    - {code: cli.config-invalid-value, when: a wrong type, a relative path,
+         local or a duplicate in auth.authenticators, or a limit outside
+         1..ceiling, requirements: [PK-ACC-034]}
+    - {code: security.credential-file-permissions, when: tls.private-key is
+         readable or writable by group or others,
+       requirements: [PK-ACC-034]}
+  basis: agent-proposal
+
+open: []

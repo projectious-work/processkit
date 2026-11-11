@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/access-control/access-rejection.schema.json",
+  "title": "processkit shared-server access rejection",
+  "description": "Body of an HTTP response with which the shared server rejects a request for authentication, a per-principal or per-server limit, or an unknown path (access-control@v1 PK-ACC-051, PK-ACC-055). Same shape as security@v1 schemas/http-rejection.schema.json, with access-control codes. Content-Type is application/json. The body never says why authentication failed and never contains request content, header values, or credentials.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["jsonrpc", "id", "error"],
+  "properties": {
+    "jsonrpc": {"const": "2.0"},
+    "id": {"type": "null"},
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "data"],
+      "properties": {
+        "code": {"const": -32600},
+        "message": {
+          "description": "One redacted sentence. Not a contract; tests use data.code.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code"],
+          "properties": {
+            "code": {
+              "description": "HTTP status per code: access.unauthenticated 401; access.principal-limit and access.server-limit 429; access.unknown-path 404.",
+              "enum": [
+                "access.unauthenticated",
+                "access.principal-limit",
+                "access.server-limit",
+                "access.unknown-path"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

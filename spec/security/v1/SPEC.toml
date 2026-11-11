@@ -1,0 +1,6 @@
+slug = "security"
+version = 1
+status = "frozen"
+roadmap = ["PK1-P2", "PK1-P3", "PK1-P5"]
+issues = ["206", "213"]
+decisions = ["C4", "C6", "C7", "C8", "C9"]

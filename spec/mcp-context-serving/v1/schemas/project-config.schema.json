@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/project-config.schema.json",
+  "title": "processkit.toml keys of mcp-context-serving",
+  "description": "The top-level profiles key and the [briefing] table of processkit.toml, as their JSON equivalent (mcp-context-serving@v1 PK-MCP-069, PK-MCP-090). Other keys are owned by other specifications; the file schema is closed (cli@v1 PK-CONFIG-001).",
+  "type": "object",
+  "properties": {
+    "profiles": {
+      "description": "Profiles this repository declares (content-kinds@v1 PK-CONT-021). Default []. '*' is not declared; it always means all profiles.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "briefing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "budget-bytes": {
+          "description": "Briefing budget in UTF-8 bytes of the MCP server instructions.",
+          "type": "integer",
+          "minimum": 4096,
+          "maximum": 1048576,
+          "default": 16384
+        }
+      }
+    }
+  }
+}

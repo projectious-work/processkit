@@ -48,11 +48,17 @@ shared-server roadmap phase starts.
 
 | Obligation | Status |
 | --- | --- |
-| CLI command style recorded in an ADR (`command-line-interface-design.md`) | Decided with `cli@v1`, before its freeze (#212). |
-| AI agent profile: each shipped skill and `AGENTS.md` states job, persona, instructions, tools, model, and evaluation (`agent-building.md`) | Open. Plan: extend the v1 skill metadata in `content-kinds@v1` with persona (by reference to the company default), model class, and evaluation cases. |
-| Documentation site follows `user-interface-design.md` | Open. Review `docs-site/` against the standard, then fix each finding or record it as a deviation here. |
+| CLI command style recorded in an ADR (`command-line-interface-design.md`) | Met. Style B (kubectl), ADR `docs/adr/0001-cli-command-style.md`, accepted 2026-11-11 (#212). |
+| AI agent profile: each shipped skill and `AGENTS.md` states job, persona, instructions, tools, model, and evaluation (`agent-building.md`) | Open (#217). Plan: extend the v1 skill metadata in `content-kinds@v1` with persona (by reference to the company default), model class, and evaluation cases. |
+| Documentation site follows `user-interface-design.md` | Open (#218). Review `docs-site/` against the standard, then fix each finding or record it as a deviation here. |
 | stdio MCP servers log to stderr | Met. The local servers write only protocol messages to stdout. |
 | No configuration layer contains a secret | Met for v0. v1 is specified in `cli@v1` and `security@v1`. |
+
+## Deviations from the specification lifecycle
+
+| Rule (`specification-layout-and-lifecycle.md`, `git-branching-and-releases.md`) | Deviation and rationale |
+| --- | --- |
+| One freeze per slug: branch `spec/<slug>-v<N>`, squash title `docs(spec): freeze <slug>@v<N>` | The nine v1 specifications are frozen together in #212 on branch `spec/206-layout-cut-v1`, squash title `docs(spec): freeze the v1 specifications`, with one freeze commit and one tag `spec/<slug>/v1` per slug on the squash commit. They cite each other's requirements, so no single slug passes validation on `main` alone, and a slug frozen first could cite text that a later review changes. Owner decision 2026-11-11 (#212). One-time; later versions follow the rule. |
 
 ## Non-applicable or deferred requirements
 

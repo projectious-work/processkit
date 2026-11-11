@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-server.schema.json",
+  "title": "processkit trusted MCP server entry",
+  "description": "A catalog entry for an MCP server that the publishing repository trusts. processkit serves the entry; it never connects to, proxies, or invokes the server.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "MCPServer"
+    },
+    "metadata": {
+      "$ref": "resource-metadata.schema.json"
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "summary",
+        "triggers",
+        "owner",
+        "status",
+        "role",
+        "transport",
+        "version",
+        "sideEffects",
+        "authentication"
+      ],
+      "properties": {
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "summary": {
+          "$ref": "content-common.schema.json#/$defs/summary"
+        },
+        "owner": {
+          "$ref": "content-common.schema.json#/$defs/owner"
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "active",
+            "deprecated",
+            "retired"
+          ]
+        },
+        "role": {
+          "description": "server: one MCP server. gateway: an external gateway that fronts several servers.",
+          "enum": [
+            "server",
+            "gateway"
+          ]
+        },
+        "transport": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "url"
+              ],
+              "properties": {
+                "type": {
+                  "const": "http"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https://"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "package"
+              ],
+              "properties": {
+                "type": {
+                  "const": "stdio"
+                },
+                "package": {
+                  "description": "Package coordinate, for example npm:@scope/server@1.2.3, pypi:server==1.2.3, or oci:ghcr.io/org/server@sha256:<hex>; never a shell command line: no whitespace and none of ; & | < > $ ` \\ ( ) { } ! * ? ' \" (PK-CAT-002).",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[^\\s;&|<>$`\\\\(){}!*?'\"]+$"
+                },
+                "args": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "version": {
+          "description": "Exact pinned version of the server or gateway.",
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "description": "Content digest of the pinned artifact.",
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "sideEffects": {
+          "description": "Highest side-effect class the server exposes.",
+          "enum": [
+            "read-only",
+            "project-mutating",
+            "externally-mutating"
+          ]
+        },
+        "authentication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "none",
+                "oauth",
+                "mtls",
+                "other"
+              ]
+            },
+            "notes": {
+              "description": "How a client obtains access. Never a credential value.",
+              "type": "string",
+              "maxLength": 1000
+            }
+          }
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri"
+        },
+        "upstreams": {
+          "description": "Only for role gateway: names of MCPServer entries it fronts (PK-CAT-004, PK-CAT-006). A name without an MCPServer entry is allowed and reported as a warning.",
+          "type": "array",
+          "items": {
+            "$ref": "content-common.schema.json#/$defs/name"
+          },
+          "uniqueItems": true
+        },
+        "triggers": {
+          "$ref": "content-common.schema.json#/$defs/triggers"
+        },
+        "applicability": {
+          "$ref": "content-common.schema.json#/$defs/applicability"
+        },
+        "final": {
+          "$ref": "content-common.schema.json#/$defs/final"
+        },
+        "overrides": {
+          "$ref": "content-common.schema.json#/$defs/replaceOverride"
+        }
+      },
+      "if": {
+        "properties": {
+          "role": {
+            "const": "server"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "upstreams"
+          ]
+        }
+      }
+    }
+  }
+}

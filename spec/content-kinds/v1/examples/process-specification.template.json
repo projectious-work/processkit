@@ -1,0 +1,33 @@
+{
+  "apiVersion": "processkit.projectious.work/v1",
+  "kind": "ProcessSpecification",
+  "metadata": {
+    "labels": {
+      "area": "replace-with-area"
+    },
+    "name": "example-process"
+  },
+  "spec": {
+    "owner": "Replace with the accountable person, role, or team",
+    "stateMachine": {
+      "initial": "done",
+      "states": [
+        {
+          "description": "Replace this single state with the states of the process. Add transitions that name existing Roles.",
+          "id": "done",
+          "terminal": true,
+          "title": "Done"
+        }
+      ],
+      "transitions": []
+    },
+    "status": "draft",
+    "summary": "Replace with what this process governs and when it applies.",
+    "title": "Example process",
+    "triggers": [
+      "Replace with a situation in which an agent must follow this process"
+    ],
+    "version": "0.1.0",
+    "workItemType": "replace-with-work-item-type"
+  }
+}

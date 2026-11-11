@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/cli/config-report.schema.json",
+  "title": "processkit effective configuration",
+  "description": "The 'data' of processkit config view -o json (cli@v1 PK-CONFIG-003, PK-CONFIG-007).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["files", "values", "rejected"],
+  "properties": {
+    "files": {
+      "description": "Configuration file layers, project first, loaded or absent.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["layer", "path", "loaded"],
+        "properties": {
+          "layer": {"enum": ["project", "operator"]},
+          "path": {"type": ["string", "null"], "description": "Absolute path, or null when no operator file was named."},
+          "loaded": {"type": "boolean"}
+        }
+      }
+    },
+    "values": {
+      "description": "Every supported key exactly once, sorted by key.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "value", "source", "origin", "redacted"],
+        "properties": {
+          "key": {"type": "string", "description": "Dotted TOML key path, for example logging.level."},
+          "value": {"description": "Effective value; the string [REDACTED] when redacted."},
+          "source": {"enum": ["default", "project", "operator", "environment", "flag"]},
+          "origin": {"type": ["string", "null"], "description": "File path, environment variable name, or option name that supplied the value; null for default."},
+          "redacted": {"type": "boolean"},
+          "overridden": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source", "origin"],
+              "properties": {
+                "source": {"enum": ["project", "operator", "environment", "flag"]},
+                "origin": {"type": "string"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "rejected": {
+      "description": "Settings that were rejected, with the diagnostic code.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "source", "origin", "code"],
+        "properties": {
+          "key": {"type": "string"},
+          "source": {"enum": ["project", "operator", "environment", "flag"]},
+          "origin": {"type": "string"},
+          "code": {"type": "string"}
+        }
+      }
+    }
+  }
+}

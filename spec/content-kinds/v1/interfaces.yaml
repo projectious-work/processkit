@@ -1,0 +1,1175 @@
+slug: content-kinds
+version: 1
+
+# Everything the content kinds make observable. Entries without `basis` are
+# stated by the requirements, the #197 baseline, or an owner decision.
+# Entries with `basis: agent-proposal` are drafted answers to former open
+# items, awaiting owner review at freeze (see overview.md, "Resolved open
+# items"). Envelope, references, status, and selectors: ontology@v1.
+# Locations, formats, and serialization: repository-storage@v1. Diagnostic
+# shape, result envelope, exit codes, and plans: cli@v1
+# (spec/cli/v1/schemas/).
+
+# Content API version every item of this slug declares and is validated
+# against.
+api_versions:
+  - value: processkit.projectious.work/v1
+    field: apiVersion
+    requirements: [PK-CONT-010]
+
+disclosure_levels:
+  - level: 0
+    content: [name, title, summary, triggers, applicability, labels]
+    excludes: [rule text, section bodies]
+    check: >-
+      A level-0 listing of any kind contains no rule text and no section
+      body.
+    requirements: [PK-CONT-001, PK-CONT-002]
+  - level: 1
+    content: >-
+      level 0 plus the binding core: rules, process outline, skill
+      instructions, server entry
+    excludes: [section bodies]
+    check: A level-1 read of any kind contains no section body.
+    requirements: [PK-CONT-001]
+  - level: 2
+    content: one named section in full
+    check: A level-2 read returns exactly one named section.
+    requirements: [PK-CONT-001, PK-STD-002]
+
+kinds:
+  - kind: Standard
+    ontology: composition over Policy
+    file: context/standards/<name>.json
+    format: JSON
+    schema: schemas/standard.schema.json
+    template: examples/standard.template.json
+    requirements: [PK-STD-001, PK-STD-002, PK-STD-004, PK-CONT-001]
+  - kind: ProcessSpecification
+    ontology: composition
+    file: context/processes/<name>.json
+    format: JSON
+    schema: schemas/process-specification.schema.json
+    template: examples/process-specification.template.json
+    worked_example: examples/process-specification.example.json
+    basis: agent-proposal
+    requirements: [PK-PROC-001, PK-PROC-005, PK-PROC-006]
+  - kind: Skill
+    ontology: primitive
+    files:
+      - path: context/skills/<name>/skill.json
+        role: the item, with every structured field (repository-storage@v1)
+        schema: schemas/skill.schema.json
+        template: examples/skill.template.json
+      - path: context/skills/<name>/SKILL.md
+        role: >-
+          skill body (level 1); front matter optional and not interpreted
+          except `name` (repository-storage@v1)
+        template: examples/skill.template.md
+      - path: context/skills/<name>/<other file>
+        role: level 2, retrievable one file at a time
+    basis: agent-proposal
+    requirements: [PK-SKILL-001, PK-SKILL-002, PK-SKILL-004, PK-SKILL-015]
+  - kind: MCPServer
+    ontology: refinement of Service
+    file: context/mcp-servers/<name>.json
+    format: JSON
+    schema: schemas/mcp-server.schema.json
+    template: examples/mcp-server.template.json
+    requirements: [PK-CAT-002, PK-CONT-001]
+  - kind: DecisionRecord
+    ontology: composition
+    file: context/decisions/<name>.md
+    format: Markdown with JSON or YAML front matter
+    schema: schemas/decision-record.schema.json (the front matter)
+    template: examples/decision-record.template.md
+    basis: agent-proposal
+    requirements: [PK-DEC-001, PK-DEC-005, PK-PROD-010]
+  - kind: Document
+    ontology: composition over Artifact
+    file: any Markdown file matched by a declared document source
+    format: Markdown, front matter optional
+    schema: schemas/document.schema.json (the front matter)
+    source_schema: schemas/document-sources.schema.json
+    template: none (create Document fails with content-kinds.no-template)
+    basis: agent-proposal
+    requirements: [PK-DOC-001, PK-DOC-003, PK-DOC-004]
+
+# TYPE operand of the CLI and `kind` argument of the MCP tools.
+kind_tokens:
+  values: [Standard, ProcessSpecification, Skill, MCPServer, DecisionRecord,
+           Document]
+  comparison:
+    cli: >-
+      case-insensitive; the `kind` value, its plural, or its short name
+      (cli@v1 type_names, PK-CLI-049)
+    mcp: case-sensitive, the exact `kind` value
+  basis_cli: owner decision 2026-11-11 (#212), CLI style B
+  other_kinds: >-
+    Container, Role, Binding, OntologyExtension, and extension kinds are
+    accepted as their owning specifications state (ontology@v1,
+    access-control@v1)
+  unknown: content-kinds.unknown-kind (category usage)
+  basis: agent-proposal
+  requirements: [PK-CONT-019]
+
+# Members of a served item per kind and level (PK-CONT-013). Member paths
+# are relative to the served item. `attribution` (below) is always present.
+# `disclosure` is the served-only member:
+#   disclosure.level   0, 1, or 2
+#   disclosure.index   the item's section keys with titles
+#   disclosure.body    the Skill body (level 1)
+#   disclosure.section the one section (level 2)
+# A level-2 result carries the level-0 members plus disclosure.section.
+levels:
+  common_level_0: [kind, metadata.name, metadata.namespace,
+                   metadata.labels, spec.title, spec.summary, spec.triggers,
+                   spec.applicability (when declared), attribution,
+                   disclosure.level]
+  Standard:
+    0: [common_level_0, spec.version]
+    1:
+      - level 0
+      - every other spec member except spec.sections
+      - disclosure.index = [{id, title}] of spec.sections, in order
+    2: disclosure.section = {id, title, body} of one spec.sections entry
+  ProcessSpecification:
+    0: [common_level_0, spec.version]
+    1:
+      - level 0
+      - spec.status, spec.owner, spec.workItemType, spec.instanceSystem,
+        spec.shape, spec.decisions, spec.final, spec.overrides
+      - spec.stateMachine.initial
+      - spec.stateMachine.states[] with {id, title, terminal} only
+      - spec.stateMachine.transitions[] with {from, to, title, roles,
+        gates[] with {id, title} only}
+      - disclosure.index = [{id, title}] of the states, in order
+    2: >-
+      disclosure.section = the full state object plus `transitions`, which
+      lists every transition whose `from` is the state, in full, in
+      document order
+  Skill:
+    0: [common_level_0, spec.version]
+    1:
+      - level 0
+      - every other spec member, including spec.agent
+      - disclosure.body = the SKILL.md bytes after its front matter, as text
+      - disclosure.index = [{path, script}] of the additional files, sorted
+        by path in Unicode code point order
+    2: disclosure.section = {path, script, encoding, content} of one file
+    additional_files: >-
+      every regular file below the skill directory except skill.json and
+      SKILL.md; the path rules of repository-storage@v1 apply
+  MCPServer:
+    0: [common_level_0]
+    1: [level 0, every other spec member]
+    2: none (no sections)
+  DecisionRecord:
+    0: [common_level_0, spec.status, spec.date]
+    1:
+      - level 0
+      - spec.deciders, spec.decision, spec.consequences, spec.supersedes
+      - disclosure.index = the present sections among context,
+        alternatives, and notes, in this order, each as {id}
+    2: >-
+      disclosure.section = {id = context, body} or {id = alternatives,
+      alternatives} or {id = notes, body}
+  Document:
+    0: [common_level_0, "disclosure.index = the heading index"]
+    1: same as level 0 (a Document has no binding core)
+    2: >-
+      disclosure.section = {id, level, title, body} of one heading section;
+      body is the Markdown from the heading line to the end of the section
+  basis: agent-proposal
+  requirements: [PK-CONT-001, PK-CONT-013, PK-STD-002, PK-PROC-005,
+                 PK-SKILL-002, PK-DEC-005, PK-DOC-002]
+
+# Level-2 section key per kind. It is the value of the MCP get `section`
+# argument and of CLI get TYPE NAME --section (syntax owned by
+# mcp-context-serving@v1 and cli@v1).
+sections:
+  Standard: spec.sections[].id
+  ProcessSpecification: a state id (spec.stateMachine.states[].id)
+  Skill: >-
+    path of an additional file relative to the skill directory, for example
+    references/api.md or scripts/mark.sh; SKILL.md and skill.json are not
+    sections
+  MCPServer: none
+  DecisionRecord: >-
+    context, alternatives, or notes; notes exists when the body is not
+    empty, alternatives when spec.alternatives is not empty
+  Document: a heading id from the heading index
+  unknown_key: content-kinds.unknown-section (category usage); no section
+  basis: agent-proposal
+  requirements: [PK-CONT-015, PK-PROC-005, PK-SKILL-002, PK-DOC-002]
+
+# Where the facts of PK-CONT-003 are carried in a served item. In
+# single-item results they are members of `status` (ontology@v1
+# schemas/status.schema.json). list and get_context entries carry the same
+# member paths; the entry shape is mcp-context-serving@v1.
+attribution:
+  facts:
+    - fact: kind
+      member: kind
+      requirements: [PK-CONT-003]
+    - fact: name
+      member: metadata.name and metadata.namespace
+      requirements: [PK-CONT-003]
+    - fact: version
+      member:
+        Standard: spec.version
+        ProcessSpecification: spec.version
+        Skill: spec.version
+        MCPServer: status.digest (spec.version is the server's version)
+        DecisionRecord: status.digest
+        Document: status.digest
+      requirements: [PK-CONT-003, PK-CONT-016]
+    - fact: source repository
+      member: status.provenance (members owned by inheritance@v1)
+      requirements: [PK-CONT-003]
+    - fact: source path
+      member: status.source.path
+      requirements: [PK-CONT-003]
+    - fact: content digest
+      member: status.digest
+      digest_input: >-
+        the file that holds the envelope (skill.json for a Skill; the
+        Markdown file for a DecisionRecord or Document)
+      requirements: [PK-CONT-003]
+    - fact: validation status
+      member: status.validation.outcome
+      values: [valid, invalid]
+      requirements: [PK-CONT-003, PK-CONT-011]
+    - fact: decision references of a served rule
+      member: >-
+        spec.decisions of the Standard or ProcessSpecification at level 1,
+        each also listed in status.references
+      requirements: [PK-DEC-002]
+    - fact: script label on a skill file returned as content
+      member: disclosure.section.script (true or false)
+      requirements: [PK-SKILL-003, PK-SKILL-014]
+  basis: agent-proposal
+
+invalid_items:
+  in_results: >-
+    kind, metadata.name, metadata.namespace, and attribution, with
+    status.validation.outcome invalid and status.validation.diagnostics;
+    no spec members and no disclosure members other than disclosure.level
+  other_items: served unchanged
+  basis: agent-proposal
+  requirements: [PK-CONT-011, PK-CONT-018]
+
+fields:
+  common:
+    # schemas/content-common.schema.json
+    - name: spec.summary
+      required: true
+      constraint: string of 1..600 characters, every kind
+      document_source: front matter summary, else the source's summary
+      requirements: [PK-CONT-002, PK-CONT-014, PK-DOC-004]
+    - name: spec.triggers
+      required: true
+      constraint: >-
+        list of at least one unique string of 1..200 characters, every kind
+        (MCPServer included)
+      document_source: front matter triggers, else the source's triggers
+      requirements: [PK-CONT-002, PK-CONT-014, PK-DOC-004]
+    - name: spec.applicability
+      required: Standard and Skill; optional for the other kinds
+      shape: >-
+        {profiles: [profile, ...], notes (optional)}; a profile is * or
+        matches ^[a-z][a-z0-9-]*$
+      rule: >-
+        every item declares spec.applicability, at least one label, or both
+        (content-kinds.applicability-missing); a profile other than * must
+        be declared by the repository (content-kinds.undeclared-profile;
+        the profiles key is owned by mcp-context-serving@v1)
+      requirements: [PK-CONT-004, PK-CONT-021]
+    - name: spec.final
+      kinds: [Standard, ProcessSpecification, Skill, MCPServer]
+      type: boolean
+      default: false
+      requirements: [PK-CONT-023]
+    - name: spec.overrides
+      kinds: [Standard, ProcessSpecification, Skill, MCPServer]
+      required_keys: [upstream, name, version, reason, effect]
+      effect_values:
+        replace: >-
+          every listed kind; the item is complete and is used in place of
+          the upstream item
+        amend: Standard only (see fields.Standard)
+      semantics_owner: >-
+        inheritance@v1 (conflicts, final items and rules, stale overrides,
+        provenance)
+      requirements: [PK-CONT-023, PK-STD-006]
+  Standard:
+    # Authoritative structure: schemas/standard.schema.json.
+    - {name: spec.title, required: true, requirements: [PK-STD-001]}
+    - name: spec.version
+      required: true
+      constraint: semantic version MAJOR.MINOR.PATCH
+      requirements: [PK-STD-001]
+    - name: spec.status
+      required: true
+      values: [draft, active, deprecated, superseded]
+      requirements: [PK-STD-001]
+    - {name: spec.owner, required: true, requirements: [PK-STD-001]}
+    - {name: spec.summary, required: true, requirements: [PK-STD-001]}
+    - {name: spec.triggers, required: true, requirements: [PK-STD-001]}
+    - name: spec.applicability.profiles
+      required: true
+      constraint: '"*" means all profiles'
+      requirements: [PK-STD-001, PK-CONT-004]
+    - name: spec.rules
+      required: true
+      constraint: ordered, at least one
+      requirements: [PK-STD-001]
+    - name: "spec.rules[].id"
+      required: true
+      constraint: >-
+        pattern ^[A-Z][A-Z0-9]*-[0-9]{3}$, unique within the standard
+        (content-kinds.duplicate-id)
+      requirements: [PK-STD-001]
+    - name: "spec.rules[].level"
+      required: true
+      values: [MUST, MUST NOT, SHOULD, SHOULD NOT, MAY]
+      requirements: [PK-STD-001]
+    - {name: "spec.rules[].text", required: true, requirements: [PK-STD-001]}
+    - name: "spec.sections[]"
+      required: false
+      constraint: >-
+        id, title, Markdown body; ids unique (content-kinds.duplicate-id);
+        served one at a time (level 2)
+      requirements: [PK-STD-002]
+    - name: "spec.references[]"
+      required: false
+      constraint: >-
+        title plus exactly one of ref (<Kind>/<name> or
+        <Kind>/<namespace>/<name>) or url; an unresolved ref is a
+        validation error (ontology.unresolved-reference, severity error)
+      requirements: [PK-STD-003]
+    - name: "spec.supersedes[]"
+      required: false
+      constraint: Standard names; each must resolve
+      requirements: [PK-STD-003]
+    - name: "spec.decisions[]"
+      required: false
+      constraint: >-
+        names of DecisionRecords that justify the standard, optionally
+        <namespace>/<name>; each resolves as DecisionRecord/<value> and
+        must resolve
+      requirements: [PK-STD-003, PK-DEC-002, PK-PROD-010]
+    - name: spec.alwaysOn
+      required: false
+      default: false
+      constraint: when true, rules join the level-0 briefing
+      requirements: [PK-STD-005]
+    - name: spec.overrides.effect
+      values: [replace, amend]
+      basis: agent-proposal
+      requirements: [PK-STD-006]
+    - name: spec.overrides.addRules
+      only_with: effect amend
+      constraint: >-
+        rules in the shape of spec.rules[], appended in order after the
+        upstream rules; an id that exists upstream fails
+        (content-kinds.override-duplicate-rule)
+      basis: agent-proposal
+      requirements: [PK-STD-006, PK-STD-007]
+    - name: spec.overrides.ruleLevels
+      only_with: effect amend
+      constraint: >-
+        list of {rule, level}, where rule is an upstream rule id; an
+        unknown rule id fails (content-kinds.override-unknown-rule); a
+        final rule fails as inheritance@v1 PK-INH-013 states
+      basis: agent-proposal
+      requirements: [PK-STD-006, PK-STD-007]
+    - name: amending override
+      constraint: >-
+        with effect amend, spec contains only overrides, and overrides
+        contains addRules, ruleLevels, or both
+      effective_item: >-
+        the upstream Standard with ruleLevels applied and addRules
+        appended; every other member is the upstream item's
+      basis: agent-proposal
+      requirements: [PK-STD-006]
+  ProcessSpecification:
+    # Authoritative structure: schemas/process-specification.schema.json.
+    - {name: spec.title, required: true, requirements: [PK-PROC-001]}
+    - {name: spec.version, required: true, constraint: semantic version,
+       requirements: [PK-PROC-001]}
+    - {name: spec.status, required: true,
+       values: [draft, active, deprecated, superseded],
+       requirements: [PK-PROC-001]}
+    - {name: spec.owner, required: true, requirements: [PK-PROC-001]}
+    - {name: spec.summary, required: true, requirements: [PK-PROC-001]}
+    - {name: spec.triggers, required: true, requirements: [PK-PROC-001]}
+    - name: spec.workItemType
+      required: true
+      constraint: name syntax; vocabulary only, no instance is stored
+      requirements: [PK-PROC-001, PK-PROC-004]
+    - name: spec.stateMachine
+      required: true
+      members: [initial, states, transitions]
+      requirements: [PK-PROC-001, PK-PROC-003, PK-PROC-007]
+    - name: "spec.stateMachine.states[]"
+      required: true (at least one)
+      members: [id, title, description (optional),
+                terminal (optional, default false), intent (optional),
+                inputs (optional), artifacts (optional),
+                references (optional), guidance (optional)]
+      requirements: [PK-PROC-001, PK-PROC-003]
+    - name: "spec.stateMachine.transitions[]"
+      required: true (may be empty)
+      members: [from, to, title (optional), roles, gates (optional)]
+      requirements: [PK-PROC-001, PK-PROC-002]
+    - name: "spec.stateMachine.transitions[].roles"
+      required: true
+      constraint: at least one typed reference Role/<name>; each must resolve
+      requirements: [PK-PROC-001, PK-PROC-003]
+    - name: "spec.stateMachine.transitions[].gates[]"
+      required: false
+      members: [id, title, description (optional), kind, validator, authority,
+                blocking (optional, default true), evidence (optional),
+                waiver (optional)]
+      requirements: [PK-PROC-002, PK-PROC-009]
+    - name: "gates[].kind"
+      values: [approval, check]
+      basis: agent-proposal
+      requirements: [PK-PROC-009]
+    - name: "gates[].validator"
+      members: [description, mcpServer (optional, MCPServer reference),
+                standard (optional, Standard reference)]
+      basis: agent-proposal
+      requirements: [PK-PROC-009]
+    - name: "gates[].authority"
+      constraint: at least one Role reference; each must resolve
+      basis: agent-proposal
+      requirements: [PK-PROC-009]
+    - name: "gates[].evidence[]"
+      members: [description, artifact (optional, an artifact of the from state)]
+      basis: agent-proposal
+      requirements: [PK-PROC-009, PK-PROC-012]
+    - name: "gates[].waiver"
+      members: [authority (at least one Role reference)]
+      meaning: present when the gate may be waived
+      basis: agent-proposal
+      requirements: [PK-PROC-009, PK-PROC-010]
+    - name: gate outcomes
+      values: [passed, failed, waived]
+      recorded_by: the external instance system, never processkit
+      basis: agent-proposal
+      requirements: [PK-PROC-010]
+    - name: "states[].artifacts[]"
+      required: false
+      members: [name, direction (required or produced), title (optional),
+                description (optional), template (optional, Document reference)]
+      requirements: [PK-PROC-002]
+    - name: "states[].references[]"
+      required: false
+      constraint: >-
+        typed references to Standard, Skill, or MCPServer; each must
+        resolve
+      requirements: [PK-PROC-002, PK-PROC-003]
+    - name: "states[].intent"
+      required: false
+      basis: agent-proposal
+      requirements: [PK-PROC-012]
+    - name: "states[].inputs[]"
+      required: false
+      members: [class (instruction, reference, or working), description,
+                ref (optional, typed reference; must resolve),
+                artifact (optional, an artifact declared by a state)]
+      constraint: not both ref and artifact
+      basis: agent-proposal
+      requirements: [PK-PROC-012]
+    - name: spec.shape
+      values: [state-machine, linear]
+      default: state-machine
+      linear_rule: PK-PROC-011 (content-kinds.process-not-linear)
+      basis: agent-proposal
+      requirements: [PK-PROC-011]
+    - name: spec.decisions
+      required: false
+      constraint: as Standard spec.decisions
+      requirements: [PK-DEC-002, PK-PROD-010]
+    - name: spec.instanceSystem
+      required: false
+      members: [title, url (optional),
+                mcpServer (optional, MCPServer reference)]
+      requirements: [PK-PROC-004]
+  Skill:
+    # Authoritative structure: schemas/skill.schema.json (skill.json).
+    - {name: spec.title, required: true, basis: agent-proposal,
+       requirements: [PK-CONT-013]}
+    - {name: spec.version, required: true, constraint: semantic version,
+       requirements: [PK-SKILL-001]}
+    - {name: spec.summary, required: true, requirements: [PK-SKILL-001]}
+    - {name: spec.triggers, required: true, requirements: [PK-SKILL-001]}
+    - {name: spec.applicability, required: true,
+       requirements: [PK-SKILL-001]}
+    - name: spec.inputs
+      required: true (may be empty)
+      members: [name, description, required (optional, default false)]
+      requirements: [PK-SKILL-005]
+    - name: spec.outputs
+      required: true (may be empty)
+      members: [name, description]
+      requirements: [PK-SKILL-005]
+    - name: spec.dependencies
+      required: true (may be empty)
+      constraint: >-
+        typed references Skill/<name> or Standard/<name>; each must
+        resolve
+      requirements: [PK-SKILL-006, PK-SKILL-012]
+    - name: spec.sideEffects
+      required: true
+      values: [read-only, project-mutating, externally-mutating,
+               privileged, destructive]
+      order: ascending as listed
+      meaning: highest class of the skill's operations
+      requirements: [PK-SKILL-007, PK-SKILL-011]
+    - name: spec.safetyConstraints
+      required: true (may be empty)
+      constraint: unique strings of 1..1000 characters
+      requirements: [PK-SKILL-008]
+    - name: spec.requiredMcpServers
+      required: true (may be empty)
+      constraint: typed references MCPServer/<name>; each must resolve
+      requirements: [PK-SKILL-009, PK-SKILL-012]
+    - name: spec.parts
+      required: true
+      members: [path (relative to the skill directory),
+                role (normative or explanatory)]
+      constraint: >-
+        lists SKILL.md; never skill.json; unlisted files are explanatory;
+        a listed path that does not exist fails
+        (content-kinds.skill-part-missing)
+      requirements: [PK-SKILL-010, PK-SKILL-013]
+    - name: spec.agent
+      required: false
+      members:
+        - persona (Document reference; omitted means the organization's
+          default persona)
+        - modelClass (name syntax, at most 40 characters, organization
+          vocabulary)
+        - evaluationCases (list of {id, task, expected})
+      served_at: level 1
+      effect: information only; processkit runs no model and no evaluation
+      basis: agent-proposal (gap row 4, owner plan)
+      requirements: [PK-SKILL-016]
+  MCPServer:
+    # Authoritative structure: schemas/mcp-server.schema.json.
+    - {name: spec.version, required: true, constraint: exact pinned version,
+       requirements: [PK-CAT-002]}
+    - name: spec.transport
+      required: true
+      constraint: >-
+        {type: http, url: https://...} or {type: stdio, package: <package
+        coordinate>, args?: [..]}; never a shell command line
+      requirements: [PK-CAT-002]
+    - name: spec.transport.package
+      constraint: >-
+        no whitespace and none of ; & | < > $ ` \ ( ) { } ! * ? ' "
+        (content-kinds.package-not-coordinate); examples are
+        npm:@scope/server@1.2.3 and pypi:server==1.2.3
+      basis: agent-proposal
+      requirements: [PK-CAT-002]
+    - name: spec.sideEffects
+      required: true
+      values: [read-only, project-mutating, externally-mutating]
+      constraint: highest class the server exposes
+      requirements: [PK-CAT-002]
+    - {name: spec.owner, required: true, requirements: [PK-CAT-002]}
+    - name: spec.status
+      required: true
+      values: [draft, active, deprecated, retired]
+      requirements: [PK-CAT-002]
+    - name: spec.authentication.mode
+      required: true
+      values: [none, oauth, mtls, other]
+      requirements: [PK-CAT-002]
+    - name: spec.authentication.notes
+      required: false
+      constraint: never a credential value
+      requirements: [PK-CAT-003]
+    - name: spec.triggers
+      required: true
+      constraint: as fields.common spec.triggers (aligned with PK-CONT-002)
+      basis: agent-proposal
+      requirements: [PK-CONT-002, PK-CONT-014]
+    - name: spec.role
+      required: true
+      values: [server, gateway]
+      requirements: [PK-CAT-004]
+    - name: "spec.upstreams[]"
+      required: false
+      constraint: >-
+        only with role gateway (content-kinds.upstreams-not-allowed); names
+        of MCPServer entries the gateway fronts; a name without an entry is
+        allowed, reported as warning content-kinds.upstream-not-catalogued,
+        and not served
+      requirements: [PK-CAT-004, PK-CAT-006]
+  DecisionRecord:
+    # Authoritative structure: schemas/decision-record.schema.json (front
+    # matter). Every field is in front matter (PK-DEC-005).
+    - {name: spec.title, required: true, requirements: [PK-DEC-001]}
+    - name: spec.status
+      required: true
+      values: [proposed, accepted, superseded, rejected]
+      requirements: [PK-DEC-001]
+    - name: spec.date
+      required: true
+      constraint: >-
+        ISO 8601 calendar date YYYY-MM-DD, as a string (unquoted YAML dates
+        stay strings, repository-storage@v1)
+      requirements: [PK-DEC-001, PK-DEC-005]
+    - name: spec.deciders
+      required: true
+      constraint: at least one unique string (person, role, or team)
+      requirements: [PK-DEC-001]
+    - {name: spec.summary, required: true, requirements: [PK-CONT-014]}
+    - {name: spec.triggers, required: true, requirements: [PK-CONT-014]}
+    - {name: spec.context, required: true, constraint: Markdown string,
+       requirements: [PK-DEC-001, PK-DEC-005]}
+    - {name: spec.decision, required: true, constraint: Markdown string,
+       requirements: [PK-DEC-001, PK-DEC-005]}
+    - {name: spec.consequences, required: true, constraint: Markdown string,
+       requirements: [PK-DEC-001, PK-DEC-005]}
+    - name: spec.alternatives
+      required: false
+      constraint: list of {title, reason}
+      requirements: [PK-DEC-001]
+    - name: spec.supersedes
+      required: false
+      constraint: >-
+        typed references DecisionRecord/<name>; each must resolve and have
+        status superseded (content-kinds.supersession-status)
+      requirements: [PK-DEC-003, PK-DEC-006]
+    - name: body
+      meaning: free Markdown without fields; served as level-2 section notes
+      requirements: [PK-DEC-005]
+  DocumentSource:
+    # processkit.toml [[document-sources]];
+    # schemas/document-sources.schema.json
+    - name: pattern
+      required: true
+      constraint: >-
+        relative to the repository root; * matches characters except /, ?
+        matches one character except /, ** as a whole segment matches zero
+        or more segments; no other special characters; ends in .md;
+        case-sensitive
+      requirements: [PK-DOC-001, PK-DOC-003]
+    - name: namespace
+      required: true
+      constraint: Container name; root for the root Container
+      requirements: [PK-DOC-001, PK-DOC-003]
+    - name: labels
+      required: true
+      constraint: TOML table of 1..64 labels in ontology@v1 label syntax
+      requirements: [PK-DOC-001, PK-DOC-003]
+    - {name: summary, required: false, requirements: [PK-DOC-003,
+       PK-DOC-004]}
+    - {name: triggers, required: false, requirements: [PK-DOC-003,
+       PK-DOC-004]}
+    - name: example
+      value: |
+        [[document-sources]]
+        pattern = "handbook/*.md"
+        namespace = "root"
+        labels = { area = "handbook" }
+        triggers = ["Onboarding a new team member"]
+        summary = "Company handbook page."
+      basis: agent-proposal
+      requirements: [PK-DOC-003]
+  Document:
+    # schemas/document.schema.json (front matter; optional; unknown keys
+    # are kept and ignored).
+    - name: name
+      default: the file name without .md
+      constraint: >-
+        name syntax (content-kinds.document-name-invalid); unique per
+        namespace (content-kinds.document-name-collision)
+      requirements: [PK-DOC-004]
+    - name: title
+      default: the first level-1 heading, else the name
+      requirements: [PK-DOC-002, PK-DOC-004]
+    - name: summary
+      default: the document source's summary
+      requirements: [PK-DOC-004]
+    - name: triggers
+      default: the document source's triggers
+      requirements: [PK-DOC-004]
+    - name: metadata.namespace
+      source: the document source's namespace
+      requirements: [PK-DOC-001]
+    - name: metadata.labels
+      source: the document source's labels
+      requirements: [PK-DOC-001]
+    - name: apiVersion and kind
+      required: false
+      meaning: >-
+        a Document needs no envelope; it is built from the document source
+        and the optional front matter
+      basis: agent-proposal
+      requirements: [PK-DOC-004]
+
+heading_index:
+  headings: >-
+    ATX and setext headings as CommonMark 0.31.2 defines them; text inside
+    code blocks and HTML blocks is not a heading
+  entry: >-
+    {id, level (1..6), title (the heading text with inline markup
+    removed)}
+  id: >-
+    lowercase the title; remove every character that is not a letter, a
+    digit, a space, a hyphen, or an underscore; replace each space by a
+    hyphen; an empty result becomes "section"; the second and later equal
+    ids get the suffix -1, -2, and so on, in document order
+  order: document order
+  section_extent: >-
+    from the heading line to the line before the next heading with the
+    same or a smaller level number, or to the end of the file
+  example: >-
+    the headings "# Onboarding", "## First day", and "## First day" get
+    the ids onboarding, first-day, and first-day-1
+  basis: agent-proposal
+  requirements: [PK-DOC-002, PK-DOC-005]
+
+skill_files:
+  script_when: path starts with scripts/, or the content starts with "#!"
+  returned_as: "{path, script, encoding, content}"
+  encoding: >-
+    utf-8 when the bytes are valid UTF-8; else base64 (RFC 4648), and
+    content is the base64 text
+  executed: never (PK-SKILL-003; security@v1 PK-SEC-003)
+  agent_skills_target:
+    format: >-
+      Agent Skills (https://agentskills.io/specification); the format has
+      no version number
+    compatible_means: >-
+      a directory with SKILL.md (front matter name and description) and
+      optional scripts/, references/, and assets/ directories validates
+      unchanged once skill.json is added
+    skill_md_front_matter: >-
+      optional; only name is checked (repository-storage@v1 PK-STORE-054)
+  basis: agent-proposal
+  requirements: [PK-SKILL-003, PK-SKILL-004, PK-SKILL-014, PK-SKILL-015]
+
+secret_patterns:
+  # Python re syntax, searched in every string value of an MCPServer entry,
+  # metadata included. Operator redaction.patterns (cli@v1) also apply. A
+  # match fails validation; the diagnostic carries the pointer and the
+  # pattern id in evidence.pattern, never the value.
+  built_in:
+    - id: private-key
+      pattern: '-----BEGIN [A-Z ]*PRIVATE KEY-----'
+    - id: bearer-token
+      pattern: '(?i)\bbearer\s+[A-Za-z0-9._~+/-]{16,}=*'
+    - id: url-credentials
+      pattern: '[A-Za-z][A-Za-z0-9+.-]*://[^/\s:@]+:[^/\s@]+@'
+    - id: github-token
+      pattern: '\bgh[pousr]_[A-Za-z0-9]{36,}\b'
+    - id: aws-access-key-id
+      pattern: '\bAKIA[0-9A-Z]{16}\b'
+    - id: slack-token
+      pattern: '\bxox[abposr]-[A-Za-z0-9-]{10,}'
+    - id: api-key-prefix
+      pattern: '\bsk-[A-Za-z0-9_-]{20,}'
+    - id: assignment
+      pattern: '(?i)\b(passw(or)?d|secret|token|api[_-]?key)\s*[:=]\s*\S{8,}'
+  operator_patterns: >-
+    redaction.patterns of the operator configuration (cli@v1), with the
+    ids operator-0, operator-1, and so on, in list order
+  code: content-kinds.secret-in-catalog-entry
+  basis: agent-proposal
+  requirements: [PK-CAT-003, PK-CAT-005]
+
+# Operations through which this slug's requirements are observed. Their
+# syntax is owned by cli@v1 and mcp-context-serving@v1.
+operations:
+  - name: processkit create TYPE NAME
+    owner: cli@v1 (semantics here)
+    templates:
+      Standard: examples/standard.template.json
+      ProcessSpecification: examples/process-specification.template.json
+      Skill:
+        - examples/skill.template.json, written as skills/<NAME>/skill.json
+        - examples/skill.template.md, written as skills/<NAME>/SKILL.md
+      MCPServer: examples/mcp-server.template.json
+      DecisionRecord: examples/decision-record.template.md
+      Document: none (content-kinds.no-template)
+      other kinds: >-
+        content-kinds.no-template unless the owning specification publishes
+        a template
+    substitution: >-
+      the template's metadata.name, and for a Skill the SKILL.md front
+      matter name, is replaced by NAME; nothing else changes
+    writing: >-
+      JSON in the serialization of repository-storage@v1; Markdown
+      templates byte for byte apart from the substitution
+    invalid_name: content-kinds.invalid-name (category usage)
+    check: the planned files validate with processkit validate
+    basis: agent-proposal
+    requirements: [PK-STD-001, PK-CAT-002, PK-SKILL-001, PK-PROC-006,
+                   PK-CONT-020]
+  - name: processkit validate [TYPE [NAME...]] [-f PATH|-]...
+    owner: cli@v1
+    draft_content:
+      Standard: the JSON item
+      ProcessSpecification: the JSON item
+      MCPServer: the JSON item
+      Skill: the skill.json document
+      DecisionRecord: the whole Markdown file
+      Document: the whole Markdown file
+    draft_rules: >-
+      schema, references, and cross-field rules; checks that need other
+      files of the item (Skill parts and SKILL.md) or a document source are
+      skipped; the diagnostic file is "-"
+    check: >-
+      every violation is reported with file, JSON pointer, and violated
+      constraint; draft input via "-f -" writes no file
+    basis: agent-proposal
+    requirements: [PK-CONT-010, PK-CONT-012, PK-CONT-022, PK-STD-003,
+                   PK-PROC-003, PK-CAT-003]
+  - name: processkit get TYPE [-l S] [-n N | -A]
+    owner: cli@v1
+    check: results are level 0 only
+    requirements: [PK-CONT-001, PK-CONT-002]
+  - name: processkit get TYPE NAME [-n N] [--level L] [--section S]
+    owner: cli@v1
+    check: >-
+      --level 1 returns no section bodies; --section returns exactly one
+      section, skill file, process state, decision section, or document
+      heading section
+    requirements: [PK-CONT-001, PK-STD-002, PK-SKILL-002, PK-PROC-005,
+                   PK-DOC-002, PK-CONT-015]
+  - name: processkit get context [--task T] [--profile P]... [--path PATH]...
+    owner: cli@v1
+    requirements: [PK-CONT-004]
+  - name: validate(kind, content)
+    owner: mcp-context-serving@v1
+    check: draft content is validated and no file is written
+    requirements: [PK-CONT-012, PK-CONT-022]
+  - name: list(kind, selector?, namespace?, limit?, cursor?)
+    owner: mcp-context-serving@v1
+    requirements: [PK-CONT-001, PK-CONT-011, PK-CONT-018]
+  - name: get(kind, name, namespace?, level?, section?)
+    owner: mcp-context-serving@v1
+    requirements: [PK-CONT-001, PK-CONT-003, PK-PROC-005, PK-SKILL-002,
+                   PK-SKILL-003, PK-DEC-002, PK-CONT-015, PK-CONT-016]
+  - name: get_context(task?, profiles?, paths?, kinds?, level?)
+    owner: mcp-context-serving@v1
+    requirements: [PK-CONT-004, PK-CONT-011]
+  - name: connection briefing (MCP server instructions)
+    owner: mcp-context-serving@v1
+    check: rules of every always-on Standard appear in the briefing
+    requirements: [PK-STD-005]
+
+# Diagnostic codes owned by this specification. Shape: cli@v1
+# schemas/diagnostic.schema.json, scope item (configuration for document
+# sources, invocation for usage errors). Severity is error unless stated.
+# A specific code replaces content-kinds.schema-violation for the same
+# pointer. Envelope fields and references use the ontology@v1 codes
+# (ontology.missing-field, ontology.unresolved-reference, and others).
+# Every typed reference and decision name in this specification's schemas
+# is required to resolve, so ontology.unresolved-reference has severity
+# error here.
+errors:
+  basis: agent-proposal
+  constraint_member: >-
+    for a schema violation, the absolute keyword location in the published
+    schema, that is, the schema $id, the character "#", and the keyword's
+    JSON pointer (for example the skill schema $id followed by
+    "#/properties/spec/required"); for a rule outside the schema, the
+    requirement ID, for example PK-PROC-003
+  codes:
+    - code: content-kinds.missing-field
+      category: validation
+      condition: a required spec or front-matter field is missing
+      requirements: [PK-STD-001, PK-PROC-001, PK-SKILL-001, PK-SKILL-005,
+                     PK-SKILL-006, PK-SKILL-007, PK-SKILL-008, PK-SKILL-009,
+                     PK-SKILL-010, PK-CAT-002, PK-DEC-001, PK-CONT-017]
+    - code: content-kinds.schema-violation
+      category: validation
+      condition: any other violation of a content-kinds schema
+      requirements: [PK-CONT-010, PK-CONT-017]
+    - code: content-kinds.duplicate-id
+      category: validation
+      condition: >-
+        duplicate rule id or section id in a Standard; duplicate state id,
+        gate id, or artifact name within one state in a
+        ProcessSpecification
+      requirements: [PK-STD-001, PK-PROC-007]
+    - code: content-kinds.applicability-missing
+      category: validation
+      condition: neither spec.applicability nor a label
+      requirements: [PK-CONT-021]
+    - code: content-kinds.undeclared-profile
+      category: validation
+      condition: a profile other than * that the repository does not declare
+      requirements: [PK-CONT-021]
+    - code: content-kinds.override-unknown-rule
+      category: validation
+      condition: ruleLevels names a rule the upstream Standard does not have
+      requirements: [PK-STD-007]
+    - code: content-kinds.override-duplicate-rule
+      category: validation
+      condition: addRules contains the id of an upstream rule
+      requirements: [PK-STD-007]
+    - code: content-kinds.process-unknown-state
+      category: validation
+      condition: initial, from, or to names no declared state
+      requirements: [PK-PROC-007]
+    - code: content-kinds.process-unreachable-state
+      category: validation
+      condition: no path of transitions reaches the state from initial
+      requirements: [PK-PROC-003]
+    - code: content-kinds.process-no-terminal-state
+      category: validation
+      condition: no state has terminal set to true
+      requirements: [PK-PROC-003]
+    - code: content-kinds.process-terminal-transition
+      category: validation
+      condition: a transition leaves a terminal state
+      requirements: [PK-PROC-007]
+    - code: content-kinds.process-not-linear
+      category: validation
+      condition: shape is linear and the states do not form one chain
+      requirements: [PK-PROC-011]
+    - code: content-kinds.process-unknown-artifact
+      category: validation
+      condition: >-
+        an input names an artifact that no state declares, or gate evidence
+        names an artifact that the transition's from state does not declare
+      requirements: [PK-PROC-012]
+    - code: content-kinds.skill-part-missing
+      category: validation
+      condition: a spec.parts path, SKILL.md included, does not exist
+      requirements: [PK-SKILL-013]
+    - code: content-kinds.transport-not-https
+      category: validation
+      condition: an http transport URL does not start with https://
+      requirements: [PK-CAT-002]
+    - code: content-kinds.package-not-coordinate
+      category: validation
+      condition: a stdio package is not a package coordinate
+      requirements: [PK-CAT-002]
+    - code: content-kinds.secret-in-catalog-entry
+      category: validation
+      condition: >-
+        a string value matches a secret pattern; evidence.pattern carries
+        the pattern id; the value is never reported
+      requirements: [PK-CAT-003, PK-CAT-005]
+    - code: content-kinds.upstreams-not-allowed
+      category: validation
+      condition: upstreams on an entry with role server
+      requirements: [PK-CAT-006]
+    - code: content-kinds.upstream-not-catalogued
+      severity: warning
+      condition: a gateway upstream name without an MCPServer entry
+      requirements: [PK-CAT-004, PK-CAT-006]
+    - code: content-kinds.supersession-status
+      category: validation
+      condition: a record named in supersedes does not have status superseded
+      requirements: [PK-DEC-006]
+    - code: content-kinds.supersession-missing
+      severity: warning
+      condition: status superseded, and no record names it in supersedes
+      requirements: [PK-DEC-006]
+    - code: content-kinds.document-source-overlap
+      category: validation
+      condition: a file matches more than one document source
+      requirements: [PK-DOC-003]
+    - code: content-kinds.document-missing-field
+      category: validation
+      condition: >-
+        a Document has no summary or no triggers from front matter or
+        source
+      requirements: [PK-DOC-004, PK-CONT-014]
+    - code: content-kinds.document-name-invalid
+      category: validation
+      condition: a Document name does not match the name syntax
+      requirements: [PK-DOC-004]
+    - code: content-kinds.document-name-collision
+      category: validation
+      condition: >-
+        two Documents have one name in one namespace; reported for both
+      requirements: [PK-DOC-004]
+    - code: content-kinds.unknown-kind
+      category: usage
+      condition: the CLI TYPE or the MCP kind names no kind
+      requirements: [PK-CONT-019]
+    - code: content-kinds.no-template
+      category: usage
+      condition: create for a kind without a published template
+      requirements: [PK-CONT-020]
+    - code: content-kinds.invalid-name
+      category: usage
+      condition: create with a NAME that does not match the name syntax
+      requirements: [PK-CONT-020]
+    - code: content-kinds.unknown-section
+      category: usage
+      condition: a section key that the item does not have
+      requirements: [PK-CONT-015]
+  requirements: [PK-CONT-017]
+
+validation_failures:
+  # Conditions that make processkit validate fail, with their codes.
+  - condition: item violates the schema of its declared apiVersion
+    code: content-kinds.schema-violation or content-kinds.missing-field
+    requirements: [PK-CONT-010]
+  - condition: unresolved reference in a Standard
+    code: ontology.unresolved-reference
+    requirements: [PK-STD-003]
+  - condition: ProcessSpecification state not reachable
+    code: content-kinds.process-unreachable-state
+    requirements: [PK-PROC-003]
+  - condition: ProcessSpecification without declared terminal states
+    code: content-kinds.process-no-terminal-state
+    requirements: [PK-PROC-003]
+  - condition: transition names a Role that does not exist
+    code: ontology.unresolved-reference
+    requirements: [PK-PROC-003]
+  - condition: ProcessSpecification reference does not resolve
+    code: ontology.unresolved-reference
+    requirements: [PK-PROC-003]
+  - condition: MCPServer remote transport URL not https://
+    code: content-kinds.transport-not-https
+    requirements: [PK-CAT-002]
+  - condition: MCPServer stdio transport without package coordinate
+    code: content-kinds.missing-field or content-kinds.package-not-coordinate
+    requirements: [PK-CAT-002]
+  - condition: MCPServer field matches a configured secret pattern
+    code: content-kinds.secret-in-catalog-entry
+    requirements: [PK-CAT-003]
+  - condition: required field of any kind missing
+    code: content-kinds.missing-field
+    requirements: [PK-STD-001, PK-PROC-001, PK-SKILL-001, PK-SKILL-005,
+                   PK-SKILL-006, PK-SKILL-007, PK-SKILL-008, PK-SKILL-009,
+                   PK-SKILL-010, PK-CAT-002, PK-DEC-001]
+
+prohibitions:
+  # Absence checks: each effect must not be observable.
+  - effect: processkit runs a process, or creates, stores, or tracks a
+      WorkItem instance
+    check: >-
+      no command or MCP tool starts, advances, or records a process
+      instance; no instance file appears in the repository or cache
+    requirements: [PK-PROC-004, PK-PROD-021]
+  - effect: processkit evaluates a Gate or records a Gate outcome or waiver
+    check: >-
+      no command or MCP tool takes a gate outcome or waiver as input or
+      writes one; no such file appears in the repository or cache
+    requirements: [PK-PROC-010]
+  - effect: processkit executes a script contained in a skill
+    check: >-
+      serving a skill whose script would create a marker file leaves no
+      marker file; the script is returned as labelled content
+    requirements: [PK-SKILL-003]
+  - effect: processkit runs a model or an evaluation case of a skill
+    check: >-
+      serving and validating a skill with spec.agent opens no network
+      connection and starts no process
+    requirements: [PK-SKILL-016]
+  - effect: processkit connects to, forwards to, proxies, or invokes a
+      catalogued server
+    check: >-
+      serving and validating catalog entries opens no connection to any
+      catalogued URL and starts no catalogued package
+    requirements: [PK-CAT-001]
+  - effect: trust inferred from presence behind a gateway
+    check: >-
+      a server named only in a gateway's upstreams, with no MCPServer entry
+      of its own, is not served as a catalogued server
+    requirements: [PK-CAT-004]
+  - effect: processkit creates a DecisionRecord as a side effect
+    check: >-
+      no command other than an explicit author file edit adds a file under
+      context/decisions/
+    requirements: [PK-DEC-004]
+  - effect: Markdown matched by no document source is served
+    check: list and get for Document never return it
+    requirements: [PK-DOC-001]
+  - effect: invalid item served as valid
+    check: >-
+      the item is reported with an invalid validation status; other valid
+      items remain served
+    requirements: [PK-CONT-011]
+
+schemas:
+  id_base: >-
+    https://schemas.projectious.work/processkit/v1/ is the base of every
+    schema $id; relative $ref values resolve against it
+  files:
+    - path: schemas/content-common.schema.json
+      kind: shared definitions of the content-kind schemas
+      basis: agent-proposal
+      requirements: [PK-CONT-014, PK-CONT-021, PK-CONT-023]
+    - path: schemas/standard.schema.json
+      kind: Standard
+      requirements: [PK-STD-001, PK-STD-002, PK-STD-003, PK-STD-005,
+                     PK-STD-006]
+    - path: schemas/process-specification.schema.json
+      kind: ProcessSpecification
+      basis: agent-proposal
+      requirements: [PK-PROC-001, PK-PROC-002, PK-PROC-006, PK-PROC-009,
+                     PK-PROC-011, PK-PROC-012]
+    - path: schemas/skill.schema.json
+      kind: Skill (skill.json)
+      basis: agent-proposal
+      requirements: [PK-SKILL-001, PK-SKILL-005, PK-SKILL-006,
+                     PK-SKILL-007, PK-SKILL-008, PK-SKILL-009,
+                     PK-SKILL-010, PK-SKILL-016]
+    - path: schemas/mcp-server.schema.json
+      kind: MCPServer
+      requirements: [PK-CAT-002, PK-CAT-003, PK-CAT-004, PK-CAT-006]
+    - path: schemas/decision-record.schema.json
+      kind: DecisionRecord (front matter)
+      basis: agent-proposal
+      requirements: [PK-DEC-001, PK-DEC-005, PK-DEC-006]
+    - path: schemas/document.schema.json
+      kind: Document (front matter)
+      basis: agent-proposal
+      requirements: [PK-DOC-004]
+    - path: schemas/document-sources.schema.json
+      kind: processkit.toml [[document-sources]]
+      basis: agent-proposal
+      requirements: [PK-DOC-001, PK-DOC-003]
+    - path: schemas/resource-metadata.schema.json
+      kind: common envelope metadata
+      owner: ontology@v1 (schemas/resource-metadata.schema.json)
+      rule: >-
+        byte-identical copy, carried so this version resolves standalone;
+        changed only by copying a new ontology@v1 version
+      basis: agent-proposal
+      requirements: [PK-CONT-002]
+
+examples:
+  - path: examples/standard.template.json
+    validates_against: schemas/standard.schema.json
+    requirements: [PK-STD-001]
+  - path: examples/mcp-server.template.json
+    validates_against: schemas/mcp-server.schema.json
+    requirements: [PK-CAT-002]
+  - path: examples/skill.template.json
+    validates_against: schemas/skill.schema.json
+    requirements: [PK-SKILL-001]
+  - path: examples/skill.template.md
+    role: SKILL.md template in the Agent Skills format
+    requirements: [PK-SKILL-001, PK-SKILL-015]
+  - path: examples/process-specification.template.json
+    validates_against: schemas/process-specification.schema.json
+    note: >-
+      one terminal state and no transitions, so the output of processkit
+      create validates without any Role
+    requirements: [PK-PROC-006]
+  - path: examples/process-specification.example.json
+    validates_against: schemas/process-specification.schema.json
+    role: worked ticket-handling example (journey 2)
+    requirements: [PK-PROC-006]
+  - path: examples/decision-record.template.md
+    validates_against: schemas/decision-record.schema.json (front matter)
+    requirements: [PK-DEC-001]
+
+open: []

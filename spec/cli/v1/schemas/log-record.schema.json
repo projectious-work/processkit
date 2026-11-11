@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/cli/log-record.schema.json",
+  "title": "processkit operational log record",
+  "description": "One line of the JSON Lines operational log (cli@v1 PK-OUT-003, PK-OUT-008). Logs are not evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["time", "level", "event", "message", "correlationId"],
+  "properties": {
+    "time": {"type": "string", "format": "date-time", "description": "RFC 3339 UTC timestamp."},
+    "level": {"enum": ["debug", "info", "warning", "error"]},
+    "event": {"type": "string", "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$", "description": "Stable event name."},
+    "message": {"type": "string"},
+    "component": {"type": "string"},
+    "operation": {"type": "string"},
+    "correlationId": {"type": "string", "minLength": 1, "description": "Identifier shared by every record of one invocation or one MCP request."},
+    "fields": {"type": "object", "description": "Redacted structured fields."}
+  }
+}

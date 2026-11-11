@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/file-change.schema.json",
+  "title": "processkit file change",
+  "description": "One entry of a write plan or of a change report (repository-storage@v1 PK-STORE-021, PK-STORE-057). A plan or report is an array of entries sorted by path in ascending Unicode code point order, with each path at most once.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["path", "action", "digest_before", "digest_after"],
+  "properties": {
+    "path": {
+      "description": "Path of the file relative to the repository root, with / as separator, normalized (no . or .. segments, no leading or trailing /).",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*//)(?!(?:.*/)?\\.{1,2}(?:/|$))[^\\u0000]*[^/]$"
+    },
+    "action": {
+      "description": "create: the file did not exist before the command. replace: an existing file gets new content. delete: an existing file is removed. replace and delete require confirmation (PK-STORE-022, cli@v1 PK-CLI-014).",
+      "enum": ["create", "replace", "delete"]
+    },
+    "digest_before": {
+      "description": "SHA-256 of the file's bytes before the command; null for create.",
+      "oneOf": [
+        {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        {"type": "null"}
+      ]
+    },
+    "digest_after": {
+      "description": "SHA-256 of the file's bytes after the command; null for delete.",
+      "oneOf": [
+        {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        {"type": "null"}
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"action": {"const": "create"}}},
+      "then": {"properties": {"digest_before": {"type": "null"}, "digest_after": {"type": "string"}}}
+    },
+    {
+      "if": {"properties": {"action": {"const": "replace"}}},
+      "then": {"properties": {"digest_before": {"type": "string"}, "digest_after": {"type": "string"}}}
+    },
+    {
+      "if": {"properties": {"action": {"const": "delete"}}},
+      "then": {"properties": {"digest_before": {"type": "string"}, "digest_after": {"type": "null"}}}
+    }
+  ]
+}

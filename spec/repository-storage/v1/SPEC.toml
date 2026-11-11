@@ -1,0 +1,6 @@
+slug = "repository-storage"
+version = 1
+status = "frozen"
+roadmap = ["PK1-P1"]
+issues = ["206", "213"]
+decisions = ["C1", "C2", "C6", "C8"]

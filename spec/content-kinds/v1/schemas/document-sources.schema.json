@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/document-sources.schema.json",
+  "title": "processkit.toml document-sources",
+  "description": "The [[document-sources]] array of tables in processkit.toml, shown as its JSON equivalent (PK-DOC-001, PK-DOC-003). Other tables of processkit.toml are owned by other specifications; the file schema is closed (cli@v1 PK-CONFIG-001).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "pattern",
+      "namespace",
+      "labels"
+    ],
+    "properties": {
+      "pattern": {
+        "description": "Path pattern relative to the repository root, / as separator. * matches any characters except /; ? matches one character except /; ** as a whole segment matches zero or more segments. No other special characters. Must end in .md.",
+        "type": "string",
+        "minLength": 4,
+        "pattern": "^(?!/)(?!(?:.*/)?\\.\\.(?:/|$))[^\\\\\\[\\]{}\\u0000]*\\.md$"
+      },
+      "namespace": {
+        "description": "Container name every matched Document belongs to; root for the root Container.",
+        "$ref": "content-common.schema.json#/$defs/name"
+      },
+      "labels": {
+        "description": "Labels of every matched Document (ontology@v1 label syntax).",
+        "type": "object",
+        "minProperties": 1,
+        "maxProperties": 64,
+        "propertyNames": {
+          "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?[A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?$",
+          "maxLength": 317
+        },
+        "additionalProperties": {
+          "type": "string",
+          "pattern": "^([A-Za-z0-9]([-A-Za-z0-9_.]{0,61}[A-Za-z0-9])?)?$"
+        }
+      },
+      "summary": {
+        "description": "Summary of every matched Document that does not declare its own.",
+        "$ref": "content-common.schema.json#/$defs/summary"
+      },
+      "triggers": {
+        "description": "Triggers of every matched Document that does not declare its own.",
+        "$ref": "content-common.schema.json#/$defs/triggers"
+      }
+    }
+  }
+}

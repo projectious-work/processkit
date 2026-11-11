@@ -1,0 +1,6 @@
+slug = "access-control"
+version = 1
+status = "frozen"
+roadmap = ["PK1-P5"]
+issues = ["206"]
+decisions = ["C7", "C8", "C10"]

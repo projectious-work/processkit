@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/revision.schema.json",
+  "title": "processkit working-copy revision",
+  "description": "The working-copy revision that a result is attributed to (repository-storage@v1 PK-STORE-041, PK-STORE-062).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["commit", "uncommitted"],
+  "properties": {
+    "commit": {
+      "description": "Full hexadecimal object name of the commit at HEAD (40 digits for SHA-1, 64 for SHA-256 repositories); null when the repository has no commit.",
+      "oneOf": [
+        {"type": "string", "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"},
+        {"type": "null"}
+      ]
+    },
+    "uncommitted": {
+      "description": "true when any served item is uncommitted, or when processkit.toml or processkit.lock is untracked or has a staged or unstaged change relative to HEAD; always true when commit is null.",
+      "type": "boolean"
+    }
+  },
+  "if": {"properties": {"commit": {"type": "null"}}},
+  "then": {"properties": {"uncommitted": {"const": true}}}
+}

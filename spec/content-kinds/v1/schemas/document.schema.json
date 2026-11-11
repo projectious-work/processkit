@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/document.schema.json",
+  "title": "processkit document front matter",
+  "description": "Front matter keys processkit reads from a Markdown file matched by a document source (PK-DOC-004). Front matter is optional. Other keys are kept and ignored, so files written for other tools stay valid. Identity, namespace, and labels come from the document source (document-sources.schema.json).",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "description": "Document name; default: the file name without .md.",
+      "$ref": "content-common.schema.json#/$defs/name"
+    },
+    "title": {
+      "description": "Default: the text of the first level-1 heading, else the name.",
+      "$ref": "content-common.schema.json#/$defs/title"
+    },
+    "summary": {
+      "description": "Replaces the document source's summary for this file.",
+      "$ref": "content-common.schema.json#/$defs/summary"
+    },
+    "triggers": {
+      "description": "Replaces the document source's triggers for this file.",
+      "$ref": "content-common.schema.json#/$defs/triggers"
+    }
+  }
+}

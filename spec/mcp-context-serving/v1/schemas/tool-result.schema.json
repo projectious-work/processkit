@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/tool-result.schema.json",
+  "title": "processkit MCP tool result",
+  "description": "structuredContent of every processkit MCP tool result (mcp-context-serving@v1 PK-MCP-058). The text content item of the result holds the same document, serialized with RFC 8785. The processkit CLI puts `data` in its envelope's data and `diagnostics` in its envelope's diagnostics (cli@v1 PK-CLI-040).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "tool",
+    "revision",
+    "generation",
+    "data",
+    "diagnostics"
+  ],
+  "properties": {
+    "apiVersion": {
+      "description": "MCP tool contract version; equals mcpToolContractVersion of processkit version -o json.",
+      "const": "mcp.processkit.projectious.work/v1"
+    },
+    "tool": {
+      "enum": [
+        "get_context",
+        "list",
+        "get",
+        "explain",
+        "validate",
+        "ontology"
+      ]
+    },
+    "revision": {
+      "description": "Working-copy revision (repository-storage@v1); null only when the working copy cannot be read.",
+      "oneOf": [
+        {
+          "$ref": "https://schemas.projectious.work/processkit/v1/revision.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "generation": {
+      "description": "Identifier of the generation the result belongs to (PK-MCP-092); null only when the working copy cannot be read.",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "data": {
+      "description": "Tool-specific data; schema per tool in interfaces.yaml `tools`. Null when the call failed.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.projectious.work/processkit/v1/cli/diagnostic.schema.json"
+      }
+    }
+  }
+}

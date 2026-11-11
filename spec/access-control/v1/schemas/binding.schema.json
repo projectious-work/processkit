@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/binding.schema.json",
+  "title": "processkit Binding",
+  "description": "A typed relation stored as an item (ontology@v1 relations). Every Binding has spec.relation, spec.subject, and spec.target, and may have spec.scope, spec.validity, and spec.description. Endpoints, cardinality, and whether a relation type allows scope are checked against the ontology registry (ontology@v1 PK-MODEL-070); in v1 only grants-role allows scope. For grants-role (access-control@v1 PK-ACC-021, PK-ACC-041) the subject is a principal object, the target a Role, and the scope a Container, required; a Binding scoped to the root Container names Container/root. metadata is ontology@v1 schemas/resource-metadata.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": {"const": "processkit.projectious.work/v1"},
+    "kind": {"const": "Binding"},
+    "metadata": {"$ref": "resource-metadata.schema.json"},
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relation", "subject", "target"],
+      "properties": {
+        "relation": {
+          "description": "Relation type name from the registry member relationTypes.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "maxLength": 63
+        },
+        "subject": {
+          "description": "A typed reference, or a principal object where the relation type's subject endpoint is principal. Any other form for grants-role is reported as ontology.relation-endpoint.",
+          "oneOf": [
+            {"$ref": "#/$defs/typedReference"},
+            {"$ref": "#/$defs/principal"}
+          ]
+        },
+        "target": {"$ref": "#/$defs/typedReference"},
+        "scope": {
+          "description": "Typed reference to a Container. Containers have no namespace.",
+          "type": "string",
+          "pattern": "^Container/[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+          "maxLength": 90
+        },
+        "validity": {"$ref": "#/$defs/validity"},
+        "description": {
+          "description": "Why the relation exists. Informational.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        }
+      },
+      "if": {
+        "properties": {"relation": {"const": "grants-role"}},
+        "required": ["relation"]
+      },
+      "then": {
+        "required": ["scope"]
+      }
+    }
+  },
+  "$defs": {
+    "typedReference": {
+      "description": "ontology@v1 references: <kind>/<name> or <kind>/<namespace>/<name>.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "principal": {
+      "description": "A user or group principal, named by the identifier the authenticator asserts (PK-ACC-018).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principal", "name"],
+      "properties": {
+        "principal": {"enum": ["User", "Group"]},
+        "name": {
+          "description": "Exact, case-sensitive identifier: a user identifier or a group name as the authenticator asserts it.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        }
+      }
+    },
+    "validity": {
+      "description": "Time bounds of the relation. A grant is valid at time t when from <= t < until; an absent bound does not limit. Both bounds are RFC 3339 timestamps with an explicit offset. If from is not before until, the Binding is invalid (access.invalid-validity) and grants nothing.",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "from": {"$ref": "#/$defs/timestamp"},
+        "until": {"$ref": "#/$defs/timestamp"}
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    }
+  }
+}

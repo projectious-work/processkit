@@ -1,0 +1,525 @@
+slug: security
+version: 1
+
+# Everything the security baseline makes observable. Identifiers, options,
+# defaults, and fields below are stated by the requirements, the #197
+# baseline, the governance-draft gap items carried as PK-SEC-013 to
+# PK-SEC-017, owner decisions, or company standards. Entries marked
+# `basis: agent-proposal` are drafted answers to former open items (see
+# overview.md, "Resolved open items"). Behavior owned by another slug is
+# named with `owner` and is not restated here. Envelope, diagnostic shape,
+# exit categories, configuration layering, config report, redaction, and
+# log records are those of cli@v1; this file adds only security.* codes and
+# security-owned operator keys.
+
+content_handling:
+  - effect: repository and upstream content is data; it gains no authority
+      over tool definitions, configuration, access rules of other
+      repositories, or processkit behavior
+    check: with content that contains instructions to change tools,
+      configuration, or access, the MCP tool names, descriptions, and schemas
+      (owner mcp-context-serving@v1, PK-MCP-024), `processkit config view
+      -o json`, and access decisions for other repositories are identical to
+      a run without that content
+    requirements: [PK-SEC-001]
+  - effect: every served item is labelled with its kind and provenance
+    applies_to: [get_context, list, get, explain, MCP resources, briefing
+      index, processkit get context, processkit get TYPE, processkit get
+      TYPE NAME]
+    check: every served item carries its kind and its provenance (repository
+      or upstream, and origin of the item); exact field names are owned by
+      mcp-context-serving@v1 and inheritance@v1
+    requirements: [PK-SEC-002]
+  - effect: processkit never executes content, runs skill scripts, evaluates
+      templates with code, or follows URLs in content
+    check: a skill script that would create a marker file when run, a
+      template containing code syntax, and content containing URLs leave no
+      marker file, no evaluated output, and no network connection; the
+      script is returned as labelled content (owner content-kinds@v1,
+      PK-SKILL-003)
+    requirements: [PK-SEC-003]
+
+input_limits:
+  inputs:
+    - repository files (JSON items, Markdown with front matter, skill files)
+    - files of upstream copies in the local cache
+    - draft content passed to `processkit validate -f -` and the MCP
+      `validate` tool
+    - configuration files (project and operator; TOML)
+    - MCP requests (size, concurrency, and time limits owned by
+      mcp-context-serving@v1, PK-MCP-040)
+  malformed_formats: [JSON, YAML, TOML, Markdown]
+  markdown_note: malformed Markdown is a front matter or encoding failure,
+    reported with the codes of repository-storage@v1
+    (storage.front-matter-delimiter, storage.invalid-encoding,
+    storage.unsafe-yaml); a syntax error inside JSON or YAML front matter is
+    security.malformed-input
+  order: size check before parsing; reading stops at limits.file-bytes + 1
+    bytes; depth, collection, and string limits are checked while parsing
+  per_input: exactly one diagnostic per failing input; the rest of that
+    input is not parsed
+  effect: input over a size limit, and malformed JSON, YAML, TOML, or
+    Markdown, fails with a bounded diagnostic
+  check: the command or tool fails; the diagnostic is bounded in size
+    regardless of input size and does not echo the full input
+  related: [repository-storage@v1 PK-STORE-012 (safe YAML subset and front
+    matter delimiter), repository-storage@v1 PK-STORE-013 (path containment)]
+  basis: agent-proposal
+  requirements: [PK-SEC-004, PK-SEC-021, PK-SEC-022]
+
+bounded_diagnostic:
+  shape: cli@v1 schemas/diagnostic.schema.json
+  max_serialized_bytes: 4096   # UTF-8 JSON of one diagnostic
+  never_contains:
+    - input content (no quoted excerpt)
+    - credential values (cli@v1 PK-OUT-004)
+  contains:
+    file: repository-relative path, "-" for standard input, or the
+      configuration file path
+    pointer_or_position: evidence.line and evidence.column (1-based) when
+      known
+    limit: evidence.limit (key, for example limits.file-bytes) and
+      evidence.maximum (effective value) for security.limit-exceeded
+    format: evidence.format (json, yaml, or toml) for
+      security.malformed-input
+  check: an input of 100 MiB and an input of 2 MiB over the same limit give
+    diagnostics of the same size apart from the file name; no byte sequence
+    of 16 or more bytes from the input body appears in stdout, stderr, or
+    any log
+  basis: agent-proposal
+  requirements: [PK-SEC-004, PK-SEC-022]
+
+limits:
+  # Operator configuration keys owned by security@v1 (cli@v1
+  # configuration.layers operator.other_keys_owned_by). Every key is an
+  # integer, minimum 1. Values outside 1..ceiling fail with
+  # cli.config-invalid-value (validation, exit 1) before the command runs.
+  # Each key appears in `processkit config view -o json` (cli@v1
+  # schemas/config-report.schema.json) with source default or operator.
+  parser:
+    - key: limits.file-bytes
+      default: 1048576
+      ceiling: 16777216
+      meaning: bytes of one repository file, cached upstream file, or draft,
+        including any Markdown body
+    - key: limits.nesting-depth
+      default: 64
+      ceiling: 256
+      meaning: nested JSON objects and arrays or YAML mappings and
+        sequences; the outermost container is depth 1
+    - key: limits.collection-items
+      default: 10000
+      ceiling: 1000000
+      meaning: members of one object or mapping, or items of one array or
+        sequence
+    - key: limits.string-bytes
+      default: 262144
+      ceiling: 16777216
+      meaning: UTF-8 bytes of one string value or key
+  configuration_files:
+    max_bytes: 1048576   # fixed by the release; not configurable
+    applies_to: [processkit.toml, the operator configuration file]
+  transport:
+    - key: transport.max-header-bytes
+      default: 16384
+      ceiling: 65536
+      meaning: bytes of the request line and all request headers
+      on_exceed: HTTP 431, security.header-too-large
+    - key: transport.header-timeout-seconds
+      default: 10
+      ceiling: 60
+      meaning: time from connection, or from the end of the previous
+        request, until the request headers are complete
+      on_exceed: connection closed, nothing served; log event
+        security.header-timeout
+    - key: transport.idle-timeout-seconds
+      default: 60
+      ceiling: 600
+      meaning: time a kept-alive connection may stay without a request
+      on_exceed: connection closed; no log record
+    - key: transport.max-connections
+      default: 256
+      ceiling: 4096
+      meaning: open client connections of one shared server
+      on_exceed: HTTP 503 with header Retry-After set to 1,
+        security.connection-limit; connection closed
+  mcp_request_limits: request size, concurrency, and time limits and the
+    list result limit are keys of mcp-context-serving@v1 (PK-MCP-040);
+    per-principal limits are keys of access-control@v1 (PK-ACC-033);
+    PK-SEC-017 and PK-SEC-019 apply to them
+  basis: agent-proposal
+  requirements: [PK-SEC-004, PK-SEC-017, PK-SEC-019, PK-SEC-020,
+                 PK-SEC-025]
+
+limit_configuration:
+  configurable_from: [operator configuration]
+  not_configurable_from: [invocation options, PROCESSKIT_ environment
+    variables, project configuration (processkit.toml), repository content]
+  project_key_result: cli.config-forbidden-key (validation, exit 1), also for
+    a lower value
+  out_of_range_result: cli.config-invalid-value (validation, exit 1); never
+    clamped
+  effect: project configuration and repository content cannot raise,
+    lower, remove, or disable a request or parser limit; operator
+    configuration cannot exceed a ceiling or disable a limit
+  check: a processkit.toml with `[limits] file-bytes = 100` fails with
+    cli.config-forbidden-key; operator `limits.file-bytes = 0` and
+    `limits.file-bytes = 16777217` each fail with cli.config-invalid-value;
+    `processkit config view -o json` reports limits.file-bytes with source
+    default and value 1048576 when no operator file is named; an input over
+    the limit still fails
+  basis: agent-proposal
+  requirements: [PK-SEC-017, PK-SEC-019, PK-SEC-020]
+
+network:
+  default: no network access and no telemetry
+  allowed:
+    - command: processkit fetch
+      purpose: fetch every declared upstream into the local cache
+        (inheritance@v1)
+    - command: processkit mcp serve --http --listen ADDRESS
+      purpose: the shared server (listens; owner access-control@v1)
+  lock:
+    command: processkit lock
+    network: none; resolves only from the local cache (cli@v1 PK-CLI-044)
+    missing_data: cli.upstream-not-fetched (environment, exit 3); the lock
+      is not written
+    decision: 'owner decision #213 finding 3 (2026-11-08), "fetch, then
+      lock"; docs/adr/0002-lock-resolves-from-fetched-data.md'
+    requirements: [PK-SEC-018]
+  check: every other command, `processkit lock`, and `processkit mcp serve
+    --stdio`, run with all outbound connections observed (or blocked), make
+    no connection attempt and succeed when they would succeed offline; no
+    command sends telemetry
+  requirements: [PK-SEC-005, PK-SEC-018]
+
+release:
+  - artifact: signatures for every release artifact
+    effect: releases are signed
+    requirements: [PK-SEC-010, PK-SEC-030]
+  - artifact: documented installation
+    effect: verifies integrity and authenticity before use; a checksum from
+      the artifact's own location is not accepted as authentication
+    check: a tampered artifact, a missing or invalid signature, and an
+      artifact whose only evidence is a checksum from the same location are
+      each rejected before anything is installed
+    requirements: [PK-SEC-010, PK-SEC-030]
+  - artifact: committed dependency lockfiles in the processkit source
+      repository
+    check: release build fails when a dependency input is unresolved or
+      mutable (for example a version range or a moving reference)
+    requirements: [PK-SEC-011, PK-SEC-031]
+  - artifact: dependency record (documented purpose and reviewed license per
+      direct runtime dependency)
+    check: every direct runtime dependency of the release has an entry
+    requirements: [PK-SEC-011, PK-SEC-031]
+  - artifact: negative regression test per security defect; coordinated
+      disclosure procedure
+    test_reference: each regression test names the advisory identifier
+      (GHSA-...) in its name or docstring
+    disclosure_policy: SECURITY.md in the source repository root
+    check: release gate finds, for every published advisory of the
+      processkit repository, at least one test that names it; SECURITY.md
+      exists and names the private reporting channel
+    requirements: [PK-SEC-012]
+
+release_signing:
+  scheme: Sigstore keyless signing (Fulcio certificate, Rekor transparency
+    log entry), one bundle per artifact
+  bundle_name: "<artifact file name>.sigstore.json"
+  signed_artifacts: [wheel, source distribution, SBOM, SHA256SUMS]
+  location: assets of the GitHub release for tag v<version> of
+    projectious-work/processkit
+  identity:
+    certificate_identity: "https://github.com/projectious-work/processkit/.github/workflows/release.yml@refs/tags/v<version>"
+    certificate_oidc_issuer: "https://token.actions.githubusercontent.com"
+  trust_anchor: the Sigstore public-good trust root (obtained by the
+    verifier through TUF) plus the identity and issuer above, which are
+    published in this specification and in README.md of the source
+    repository; nothing in the release assets serves as the trust anchor
+  checksums: SHA256SUMS is published for integrity only; it is never
+    accepted as authentication
+  documented_installation:
+    location: section "Install" of README.md and of the release notes
+    steps:
+      - download the wheel and its .sigstore.json bundle from the release
+      - "uvx sigstore verify identity --bundle <wheel>.sigstore.json
+         --cert-identity <certificate_identity> --cert-oidc-issuer
+         <certificate_oidc_issuer> <wheel>"
+      - only if that command exits 0, "uv tool install <wheel>"
+    verifier_version: the documentation pins an exact sigstore release in
+      the uvx command
+    on_failure: the verify command exits non-zero; the installation stops;
+      nothing is installed; processkit defines no diagnostic code (the
+      verifier reports the failure)
+  check: a tampered wheel, a wheel without its bundle, a bundle from
+    another identity, and a wheel with only SHA256SUMS each make the verify
+    step fail, and `uv tool list` does not show processkit afterwards
+  basis: agent-proposal
+  requirements: [PK-SEC-010, PK-SEC-030]
+
+dependencies:
+  lockfile: uv.lock at the source repository root, committed
+  lock_check: the release build runs `uv lock --check`; a failure fails the
+    build
+  build_inputs: the release build runs "uv build" from a clean worktree with
+    --locked dependency installation; [build-system].requires pins exact
+    versions
+  record:
+    path: docs/dependencies.md
+    format: one Markdown table with columns Package, Purpose, License,
+      Reviewed (ISO 8601 date)
+    rows: exactly the direct runtime dependencies of [project].dependencies
+      in pyproject.toml
+  check: removing a row, adding a dependency without a row, or a stale
+    uv.lock each fail the release build
+  basis: agent-proposal
+  requirements: [PK-SEC-011, PK-SEC-031]
+
+shared_server_http:
+  transports:
+    - name: stdio
+      network: none
+      hardening: not applicable
+    - name: shared server
+      command: processkit mcp serve --http --listen ADDRESS
+      prerequisites: TLS and at least one authenticator other than local
+        (owner access-control@v1, PK-ACC-030)
+  mcp_transport: Streamable HTTP, stateless form (no MCP sessions)
+  applies_to: every HTTP request, including the unauthenticated health
+    endpoint (owner access-control@v1, PK-ACC-033)
+  check_order:
+    # The first failing check decides the response; later checks do not run.
+    - transport limits (header size, header timeout, connections)
+    - Origin
+    - credential in URL
+    - Mcp-Session-Id header
+    - method (MCP endpoint POST only)
+    - authentication (access-control@v1; the unauthenticated endpoints
+      GET /healthz and the protected-resource metadata endpoint skip it,
+      access-control@v1 http_endpoints)
+    - per-principal access limits (access-control@v1)
+    - request size and other request limits (mcp-context-serving@v1)
+  origin_validation:
+    rule: the Origin validation the MCP specification requires for the HTTP
+      transport of each supported MCP protocol version
+    key: transport.allowed-origins
+    type: list of strings
+    default: []
+    value_form: a serialized origin "<scheme>://<host>[:<port>]" with scheme
+      http or https, no path, no trailing slash
+    comparison: scheme and host case-insensitive; a default port (80 for
+      http, 443 for https) is equal to no port
+    invalid_values:
+      - "*"
+      - "null"
+      - a value with a path, a query, or user information
+    on_invalid_value: cli.config-invalid-value
+    without_origin_header: accepted (checks continue)
+    listed_origin: accepted (checks continue)
+    other_origin: HTTP 403, security.origin-rejected; body not read; not
+      authenticated
+    requirements: [PK-SEC-013, PK-SEC-023]
+  request_isolation:
+    rule: the request-isolation controls the MCP specification requires for
+      the HTTP transport of each supported MCP protocol version
+    sessions: none; the server never sends Mcp-Session-Id
+    effects:
+      - every HTTP request is authenticated
+      - an MCP session identifier is never proof of identity
+      - a request presenting a session identifier is rejected with HTTP 404,
+        security.session-rejected, without serving content
+      - GET, PUT, PATCH, DELETE, and OPTIONS on the MCP endpoint get HTTP
+        405, security.method-not-allowed, with the Allow header set to POST
+      - a method other than GET on GET /healthz or on the protected-resource
+        metadata endpoint (access-control@v1 http_endpoints) gets HTTP 405,
+        security.method-not-allowed, with the Allow header set to GET
+    check: replaying any Mcp-Session-Id value with principal B's
+      credentials, or with no credentials, returns HTTP 404 and no content;
+      no response carries Mcp-Session-Id; concurrent requests of different
+      principals never share results or diagnostics (owner
+      mcp-context-serving@v1, PK-MCP-041)
+    requirements: [PK-SEC-014, PK-SEC-024]
+  response_headers:
+    every_response:
+      Cache-Control: no-store
+      X-Content-Type-Options: nosniff
+      Strict-Transport-Security: max-age=31536000
+    never_sent: [Access-Control-Allow-Origin, Access-Control-Allow-Methods,
+      Access-Control-Allow-Headers, Access-Control-Allow-Credentials,
+      Mcp-Session-Id, Server version details]
+    cors: not supported in v1
+    requirements: [PK-SEC-026]
+  rejection:
+    content_type: application/json
+    body: schemas/http-rejection.schema.json
+    example: {"jsonrpc": "2.0", "id": null, "error": {"code": -32600,
+      "message": "Origin not allowed.", "data": {"code":
+      "security.origin-rejected"}}}
+    log: one cli@v1 log-record per rejection, level warning, event equal to
+      the code, fields.status = HTTP status; fields never contain header
+      values other than the rejected Origin
+    requirements: [PK-SEC-026]
+  credential_transport:
+    accepted_in: Authorization request header only (bearer); x509 client
+      certificates in TLS (access-control@v1)
+    rejected: a query parameter access_token -> HTTP 400,
+      security.credential-in-url; the request is not authenticated
+    never_logged: [Authorization header, URL query component]
+    requirements: [PK-SEC-027]
+
+credentials:
+  credential_value:
+    definition: any of a bearer or access token, a password, a client
+      secret, private key material (PEM blocks "-----BEGIN ... PRIVATE
+      KEY-----"), the content of a credential file, a value of an http or
+      https URL's user information, and any value that matches
+      redaction.patterns (cli@v1 PK-OUT-009)
+    not_credential: certificates, CA bundles, and revocation lists (public
+      material; still redacted in output by cli@v1 PK-OUT-004)
+    basis: agent-proposal
+    requirements: [PK-SEC-015]
+  command_arguments:
+    effect: no command or option of the processkit CLI accepts a credential
+      value; no process started by processkit receives a credential value
+      in its command arguments
+    check: the documented option set contains no option whose value is a
+      credential; during `processkit fetch` and `processkit mcp serve
+      --http`, the argument vectors of processkit and of every child process
+      contain no credential value
+    related: cli@v1 PK-CLI-025
+    requirements: [PK-SEC-015]
+  discovery_responses:
+    applies_to: [MCP initialize result including server instructions,
+      tools/list, resources/list, prompts/list]
+    effect: no credential value appears in an MCP discovery response
+    requirements: [PK-SEC-015]
+  upstream_git:
+    processkit_supplies: nothing (no credential read, stored, or passed)
+    git_uses: its own credential configuration of the operating-system user
+      (credential helper, SSH agent, SSH keys)
+    child_process: processkit adds no credential to Git's arguments,
+      environment, or configuration
+    source_with_userinfo: an http or https upstream source with user
+      information (for example https://user:token@host/repo.git) fails with
+      cli.config-forbidden-key; scp-like SSH sources (git@host:repo.git)
+      are allowed
+    check: with a credential helper that records its calls, fetch of a
+      private synthetic upstream succeeds through the helper; the argument
+      vectors and environments of every Git child process contain no
+      credential value added by processkit
+    basis: agent-proposal
+    requirements: [PK-SEC-015, PK-SEC-028]
+  credential_files:
+    set: files named by operator configuration that hold secret material;
+      in v1 the TLS private key file of the shared server (operator key
+      `tls.private-key`, access-control@v1) and every file an operator key marks as a
+      credential file
+    not_credential_files:
+      - TLS certificate
+      - CA bundle
+      - revocation list
+      - operator configuration file (it holds no secret value; company
+        application configuration standard)
+    platform_condition: where the platform supports owner-only permissions
+      (the supported release targets are Linux and macOS, cli@v1 PK-CLI-016)
+    rule: after following symbolic links, permission bits mode & 0o066 must
+      be 0 (no read or write for group or others); the owner is not
+      compared; the containing directory is not checked
+    on_refusal: security.credential-file-permissions, environment, exit 3;
+      evidence.path and evidence.mode (octal string, for example "0644");
+      fix "chmod 600 <path>"; no file content
+    when_checked: when processkit opens the file; `processkit mcp serve
+      --http` checks before it listens and refuses to start
+    effect: a credential file readable or writable by a user other than its
+      owner is refused; the report names the file path and the reason, not
+      the content
+    check: with the TLS key file at mode 0644 or 0640
+      `processkit mcp serve --http` refuses to start with exit 3; at mode
+      0600 or 0400 it starts
+    basis: agent-proposal
+    requirements: [PK-SEC-016, PK-SEC-029]
+  related: [cli@v1 PK-CONFIG-002 (no credentials in project configuration),
+    cli@v1 PK-OUT-004 (redaction), access-control@v1 PK-ACC-011 and
+    PK-ACC-016 (authenticators outside repository files; no token
+    pass-through), content-kinds@v1 PK-CAT-003 (no credential values in
+    catalog entries)]
+
+errors:
+  # Codes owned by security@v1. Diagnostics use cli@v1
+  # schemas/diagnostic.schema.json; CLI exit codes follow cli@v1
+  # exit_codes. Shared-server rejections are HTTP responses
+  # (schemas/http-rejection.schema.json) plus a log record; they have no
+  # CLI exit code.
+  owned:
+    - code: security.limit-exceeded
+      category: validation
+      exit_code: 1
+      scope: file (or configuration)
+      next_action: fix-content
+      condition: input over limits.file-bytes, limits.nesting-depth,
+        limits.collection-items, limits.string-bytes, or the fixed
+        configuration file size
+      requirements: [PK-SEC-004, PK-SEC-021, PK-SEC-022]
+    - code: security.malformed-input
+      category: validation
+      exit_code: 1
+      scope: file (or configuration)
+      next_action: fix-content
+      condition: JSON, YAML, or TOML input that is not syntactically valid
+      requirements: [PK-SEC-004, PK-SEC-021, PK-SEC-022]
+    - code: security.credential-file-permissions
+      category: environment
+      exit_code: 3
+      scope: configuration
+      next_action: fix-configuration
+      condition: credential file with a read or write bit for group or
+        others
+      requirements: [PK-SEC-016, PK-SEC-029]
+    - code: security.origin-rejected
+      http_status: 403
+      condition: Origin header not in transport.allowed-origins
+      requirements: [PK-SEC-013, PK-SEC-023]
+    - code: security.session-rejected
+      http_status: 404
+      condition: request carries an Mcp-Session-Id header
+      requirements: [PK-SEC-014, PK-SEC-024]
+    - code: security.method-not-allowed
+      http_status: 405
+      condition: method other than POST on the MCP endpoint, or other than
+        GET on GET /healthz or the protected-resource metadata endpoint
+      requirements: [PK-SEC-024, PK-SEC-026]
+    - code: security.credential-in-url
+      http_status: 400
+      condition: query parameter access_token
+      requirements: [PK-SEC-027]
+    - code: security.header-too-large
+      http_status: 431
+      condition: request line and headers over transport.max-header-bytes
+      requirements: [PK-SEC-025]
+    - code: security.connection-limit
+      http_status: 503
+      condition: new connection over transport.max-connections
+      requirements: [PK-SEC-025]
+    - code: security.header-timeout
+      http_status: none (connection closed)
+      log_only: true
+      condition: headers incomplete after transport.header-timeout-seconds
+      requirements: [PK-SEC-025]
+  reused_codes:
+    - code: cli.config-invalid-value
+      when: an operator limit outside 1..ceiling, or an invalid
+        transport.allowed-origins value
+      requirements: [PK-SEC-020, PK-SEC-023]
+    - code: cli.config-forbidden-key
+      when: project configuration sets a limit key, or an upstream source
+        URL carries user information
+      requirements: [PK-SEC-019, PK-SEC-028]
+    - code: cli.upstream-not-fetched
+      when: lock needs data that is not in the local cache
+      requirements: [PK-SEC-018]
+  release_verification_failure: reported by the verifier (non-zero exit);
+    no processkit code (release_signing.documented_installation)
+  basis: agent-proposal
+
+open: []

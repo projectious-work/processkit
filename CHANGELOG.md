@@ -13,6 +13,21 @@ Versions follow [Semantic Versioning](https://semver.org/).
   the tagged commit is on `origin/main`, and record the release line in the
   host provenance. The release documentation describes how to recover from
   a failed host build (#165).
+- The v1 specification is cut into nine feature specifications under
+  `spec/<slug>/v1/` (company specification-layout standard, #206). All
+  198 baseline requirements keep their IDs; 54 compatible requirements were
+  added from the earlier governance draft (#206) and the pinned-profiles
+  proposal (#204). Product definition, architecture, decisions, and the
+  release-wide verification text move to `docs/v1/`; the roadmap moves to
+  `roadmap.yaml` and lists each phase's `specs`. The open questions of
+  the nine drafts are answered (#213): 244 requirements and 48 JSON Schemas
+  were added, and agent proposals are marked for owner review. Two ADRs
+  in `docs/adr/` record the CLI command style and that `processkit lock`
+  reads only fetched data. The v1 CLI uses the kubectl verb–resource style
+  (#212): `get`, `describe`, `create`, `apply -f`, `explain`,
+  `api-resources`, `auth`, `config view`, `-o json|yaml|name|wide`, `-n`
+  and `-A`, and `--dry-run=client|server`. The owner accepted gap rows 5,
+  6, and 8; v1 has no schema vendoring and no catalogue toolkit profiles.
 - Adopt GitHub Flow for this repository (#205): v1 is developed on `main`,
   v0 continues on `lts/v0`, and releases are prepared on `release/vX.Y.Z`
   and tagged on the squash commit. `scripts/maintain.sh` keys release

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/access-control/principal.schema.json",
+  "title": "processkit principal",
+  "description": "The principal of a request (access-control@v1 PK-ACC-017, PK-ACC-037, PK-ACC-048). It is the data of processkit auth whoami and the principal member of access log records. It never contains credential material.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["user", "groups", "authenticator"],
+  "properties": {
+    "user": {
+      "description": "User identifier as the authenticator asserts it; system:anonymous for the anonymous principal.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "groups": {
+      "description": "Group names as the authenticator asserts them, without duplicates, sorted by Unicode code point; exactly [\"system:unauthenticated\"] for the anonymous principal.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 256}
+    },
+    "authenticator": {
+      "enum": ["local", "oidc", "x509", "trusted-proxy", "anonymous"]
+    }
+  }
+}

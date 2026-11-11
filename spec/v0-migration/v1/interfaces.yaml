@@ -1,0 +1,689 @@
+slug: v0-migration
+version: 1
+
+# Everything the v0 conversion and the contract-version report make
+# observable. Plan binding, staleness, and confirmation (PK-CLI-012 to
+# PK-CLI-014, PK-CLI-034 to PK-CLI-036), --dry-run, --yes, -o json, the
+# result envelope, the diagnostic shape, and exit codes are defined by
+# cli@v1; file writing, the file-change shape, and the committed-target
+# check (PK-STORE-020 to PK-STORE-022, PK-STORE-056, PK-STORE-057) by
+# repository-storage@v1; the target kinds and their schemas by
+# content-kinds@v1. They are referenced here, not redefined. Entries with
+# `basis: agent-proposal` are design choices of this specification that
+# the baseline did not state.
+
+commands:
+  - name: migrate
+    synopsis: processkit migrate [--from v0]
+    defined_in: cli@v1
+    options:
+      - name: --from
+        value: v0
+        only_value: v0; any other value fails with cli.invalid-option-value
+          (cli@v1, category usage, exit code 2)
+        meaning: convert v0 governance content to v1 content
+        basis: agent-proposal
+        requirements: [PK-MIG-001, PK-MIG-024]
+      - name: --dry-run
+        value: "none | client | server; bare --dry-run means client"
+        defined_in: cli@v1 (PK-CLI-004, PK-CLI-031, PK-CLI-052)
+        meaning: analyse and print the plan; write nothing; with server,
+          also run the checks of a real run (migrate_steps)
+        requirements: [PK-MIG-003]
+      - name: -o json
+        defined_in: cli@v1 (PK-CLI-002, PK-CLI-050, PK-OUT-001)
+        meaning: the analysis is carried in `data`
+          (schemas/migrate-result.schema.json), the plan in `plan`
+          (cli@v1 schemas/plan.schema.json), the files written in `changes`
+        requirements: [PK-MIG-003, PK-MIG-022]
+      - name: --yes
+        defined_in: cli@v1 (PK-CLI-014, PK-CLI-034)
+        meaning: confirms the plan in a non-interactive run
+        requirements: [PK-MIG-001]
+    repository: required; the selected root must contain processkit.toml
+      (cli@v1 PK-CLI-008); in a v0 repository run `processkit init` first
+    requirements: [PK-MIG-001, PK-MIG-003, PK-MIG-004, PK-MIG-012,
+                   PK-COMPAT-003]
+
+  - name: version
+    synopsis: processkit version
+    defined_in: cli@v1 (PK-OUT-005, PK-OUT-010)
+    data: cli@v1 schemas/version.schema.json
+    canonical_report: cli@v1 PK-OUT-010 is the canonical report of both
+      cli@v1 PK-OUT-005 and PK-COMPAT-001; the union of their fields is
+      reported once
+    contract_fields:
+      - {contract: content apiVersion, field: contentApiVersions,
+         value_owner: "repository-storage@v1, content-kinds@v1",
+         v1_value: "[\"processkit.projectious.work/v1\"]"}
+      - {contract: ontology version, field: ontologyVersion,
+         value_owner: ontology@v1, v1_value: "1.0.0"}
+      - {contract: MCP tool contract, field: mcpToolContractVersion,
+         value_owner: mcp-context-serving@v1}
+      - {contract: CLI result contract, field: resultContractVersion,
+         value_owner: cli@v1,
+         v1_value: cli.processkit.projectious.work/v1}
+      - {contract: lock format, field: lockFormatVersion,
+         value_owner: inheritance@v1,
+         v1_value: lock.processkit.projectious.work/v1}
+    independence: each contract carries its own version; a change to one
+      does not require a version change of another
+    check: with -o json, `data` validates against cli@v1
+      schemas/version.schema.json and each of the five fields above is
+      present and non-empty
+    requirements: [PK-COMPAT-001]
+
+# Order of the steps of `processkit migrate`. Steps 6 to 9 follow the
+# cli@v1 writing-command order (cli@v1 interfaces `writing_commands`).
+migrate_steps:
+  steps:
+    - "1: select the root (cli@v1 PK-CLI-008) and read processkit.toml"
+    - "2: check the provenance marker (PK-MIG-009)"
+    - "3: recognize v0 sources (PK-MIG-008, PK-MIG-010, PK-MIG-011)"
+    - "4: map each source, apply its supplement, add annotations, and
+      validate the converted items (PK-MIG-014 to PK-MIG-019)"
+    - "5: compute and print the plan and report manual actions; with
+      nothing to convert, report migration.nothing-to-migrate and stop
+      with exit code 0 (PK-MIG-023)"
+    - "6: with --dry-run=client (or a bare --dry-run), report the
+      committed-target check at severity warning (cli@v1 PK-CLI-036) and
+      stop; exit code 1 if a manual action is open, else 0"
+    - "7: if a manual action is open, stop; write nothing; exit code 1
+      (PK-MIG-021)"
+    - "8: committed-target check (repository-storage@v1 PK-STORE-056); on
+      failure storage.target-not-committed, refused, exit code 4, nothing
+      written (PK-MIG-004, cli@v1 PK-CLI-036)"
+    - "9: with --dry-run=server, stop here (cli@v1 PK-CLI-052); else
+      confirmation (cli@v1 PK-CLI-034), staleness check (cli@v1
+      PK-CLI-035), then write: created and replaced files first, deleted
+      files last, each group in path order (PK-MIG-013)"
+  basis: agent-proposal
+  requirements: [PK-MIG-004, PK-MIG-013, PK-MIG-021, PK-MIG-023]
+
+apply_precondition:
+  rule: repository-storage@v1 PK-STORE-056 (committed-target check) on
+    every plan target; plan targets of a migration are the converted v0
+    source files that the plan deletes and every existing file it replaces
+  clean_worktree: satisfies the rule; it is not required
+  does_not_count: untracked, ignored, or changed files that are not plan
+    targets
+  on_violation: storage.target-not-committed per failing target
+    (repository-storage@v1), category refused, exit code 4, no file
+    written (cli@v1 PK-CLI-036)
+  dry_run: with --dry-run=client, the same diagnostics at severity
+    warning; with --dry-run=server, as on_violation (cli@v1 PK-CLI-036,
+    PK-CLI-052)
+  bypass: none
+  backup: none; processkit creates no backup; recovery is through Git
+  basis: owner decision (#213 finding 4, 2026-11-08)
+  requirements: [PK-MIG-004]
+
+v0_sources:
+  root: context/   # directly below the repository root; not configurable
+  files_read: files that Git tracks below context/ (as listed by
+    `git ls-files -- context/`)
+  excluded:
+    - context/templates/ and everything below it (aibox reference copies
+      of upstream processkit releases)
+    - untracked and ignored files (for example context/**/private/)
+  read_rules:
+    front_matter: a file is a candidate when its first line is exactly
+      `---`; the front matter ends at the next line that is exactly `---`
+    yaml: read with the YAML subset of repository-storage@v1
+      (formats.markdown-front-matter.yaml_subset); timestamps stay strings
+    text: UTF-8 without byte order mark; CR LF line endings are read as LF
+    limits: security@v1 size and depth limits apply
+  provenance_marker:
+    path: context/.processkit-provenance.toml
+    key: install.processkit_version   # TOML table [install]
+    optional: true; written by aibox installs since v0.20.0
+    on_unsupported_value: migration.unsupported-v0-release; nothing
+      written
+    reported_as: data.source.v0Release (null when the marker is absent)
+  supported_releases:
+    range: v0.8.0 to v0.28.8, inclusive, by Semantic Versioning precedence
+    note: every v0 tag in that range (git tag -l 'v0.*'); v0.9.0 was never
+      released. Releases before v0.8.0 had no context/ layout.
+    formats:
+      - releases: v0.8.0
+        item_apiVersion: processkit.projectious.work/v1
+        skill_layout: context/skills/<name>/SKILL.md
+        process_definitions: kind Process in context/processes/<name>.md
+      - releases: v0.10.0 to v0.24.0
+        item_apiVersion: processkit.projectious.work/v1
+        skill_layout: context/skills/<category>/<name>/SKILL.md
+        process_definitions: kind Process in context/processes/PROC-*.md
+      - releases: v0.25.0 to v0.28.8
+        item_apiVersion: processkit.projectious.work/v2
+        skill_layout: context/skills/<category>/<name>/SKILL.md
+        process_definitions: kind Artifact with spec.kind
+          process-definition in context/artifacts/
+  apiVersion_note: v0 legacy items use the string
+    processkit.projectious.work/v1, which equals the v1 content
+    apiVersion; a v0 item is told apart by its string metadata.id, which
+    the v1 item envelope does not allow
+  converted:
+    - v0_type: decision record
+      match: a .md file whose front matter has kind DecisionRecord and a
+        string metadata.id
+      v0_directory: context/decisions/
+      v1_kind: DecisionRecord
+    - v0_type: process definition (Process)
+      match: a .md file whose front matter has kind Process and a string
+        metadata.id
+      v0_directory: context/processes/
+      v1_kind: ProcessSpecification
+    - v0_type: process definition (Artifact)
+      match: a .md file whose front matter has kind Artifact, spec.kind
+        process-definition, and a string metadata.id
+      v0_directory: context/artifacts/
+      v1_kind: ProcessSpecification
+    - v0_type: skill
+      match: a file named SKILL.md whose front matter has a mapping
+        metadata.processkit with a string id
+      v0_directory: context/skills/
+      skill_directory: the directory that holds SKILL.md; the skill's files
+        are every tracked regular file in it and below it
+      apiVersion_field: metadata.processkit.apiVersion
+      v1_kind: Skill
+  apiVersion_allowed: [processkit.projectious.work/v1,
+                       processkit.projectious.work/v2]
+  untouched:
+    rule: every file below context/ that is not a source of a converted
+      item stays byte-identical at its path
+    includes:
+      - {record: logs and events, v0_kind: LogEntry,
+         v0_directory: context/logs/}
+      - {record: work items, v0_kind: WorkItem,
+         v0_directory: context/workitems/}
+      - {record: memory records, v0_kind: Note,
+         v0_directory: context/notes/}
+      - {record: every other v0 kind, v0_kind: "for example Actor,
+         Artifact (other than process-definition), Binding, Discussion,
+         Migration, Role, Scope, StateMachine, TeamMember"}
+      - {record: files without v0 front matter, v0_kind: none}
+    reported_as: data.untouched - the number of untouched v0 items (files
+      with a string metadata.id) per v0 kind
+    unreadable_elsewhere: migration.unreadable-file (warning); the file is
+      untouched
+    check: every such file is byte-identical, with the same path, before and
+      after analysis, planning, and apply; no v1 item is created from it
+  basis: agent-proposal (v0 facts from tags v0.8.0 to v0.28.8 on lts/v0)
+  requirements: [PK-MIG-002, PK-MIG-008, PK-MIG-009, PK-MIG-010,
+                 PK-MIG-011]
+
+targets:
+  location: the location of the v1 kind in the content directory of
+    processkit.toml (repository-storage@v1 kind_locations)
+  paths:
+    - {v1_kind: DecisionRecord, path: "<content>/decisions/<name>.md",
+       format: "Markdown with JSON front matter: the line ---json, the
+         front matter in deterministic serialization, the line ---, then
+         the body"}
+    - {v1_kind: ProcessSpecification,
+       path: "<content>/processes/<name>.json",
+       format: JSON in deterministic serialization}
+    - {v1_kind: Skill, path: "<content>/skills/<name>/skill.json",
+       format: JSON in deterministic serialization}
+    - {v1_kind: Skill, path: "<content>/skills/<name>/SKILL.md",
+       content: byte-identical copy of the v0 SKILL.md}
+    - {v1_kind: Skill, path: "<content>/skills/<name>/<relative path>",
+       content: byte-identical copy of every other file of the v0 skill
+         directory, at the same path relative to the skill directory}
+  serialization: repository-storage@v1 serialization_written_by_processkit
+    (PK-STORE-049)
+  sources: every v0 source file is deleted by the plan (action delete),
+    except a file whose path and content equal a target's; such a file is
+    not listed in the plan
+  write_order: created and replaced files first, then deleted files
+  empty_directories: after the deletes, processkit removes every directory
+    below context/ that the deletes left empty (Git does not track
+    directories, so this is not a file change)
+  leftovers: a file that the plan leaves in place at a declared location of
+    a v1 kind in the content directory (for example context/skills/_lib/
+    or context/decisions/INDEX.md when the content directory is context)
+    is reported with migration.leftover-in-content-location (warning); it
+    is not moved or deleted
+  namespace: converted items set no metadata.namespace (root Container)
+  conflicts: migration.target-conflict when two sources map to the same
+    target path, or a target path exists and is not a source file of the
+    plan
+  basis: agent-proposal
+  requirements: [PK-MIG-012, PK-MIG-013, PK-MIG-019, PK-MIG-027]
+
+# The name rule used by field_mapping.
+name_from_id:
+  steps:
+    - lower-case every ASCII letter of metadata.id
+    - replace each run of characters other than a-z and 0-9 by one "-"
+    - remove a leading or trailing "-"
+  example: {v0: DEC-20260409_2102-GrandGlade-no-state-based-directory,
+            v1: dec-20260409-2102-grandglade-no-state-based-directory}
+  invalid_or_longer_than_80: the converted item fails validation
+    (migration.converted-item-invalid); set `name` in the supplement
+  basis: agent-proposal
+  requirements: [PK-MIG-014]
+
+# The field-level preservation report (PK-MIG-007, PK-MIG-026). Pointers are
+# JSON pointers into the v0 front matter (source) and into the converted
+# item's front matter or JSON (target); `body` is the Markdown body.
+# Treatments: mapped (the value is carried into the v1 field, transformed
+# by the rule), annotated (preservation rules below), kept (the file is
+# copied unchanged), supplement (read as the v1 supplement). Every member of
+# the front matter root, of metadata, of spec, and of metadata.processkit
+# (skills) has a treatment; a deeper value travels with its member. A field
+# whose rule does not apply to its value, or whose v1 field the supplement
+# sets, is annotated instead of mapped.
+field_mapping:
+  DecisionRecord:
+    - {source: /apiVersion, treatment: annotated}
+    - {source: /kind, treatment: mapped, target: /kind,
+       rule: "DecisionRecord"}
+    - {source: none, target: /apiVersion,
+       rule: "fixed: processkit.projectious.work/v1"}
+    - {source: /metadata/id, treatment: annotated,
+       also: "metadata.name is derived from it by name_from_id"}
+    - {source: none, target: /metadata/name,
+       rule: "name_from_id(metadata.id), or supplement name"}
+    - {source: /metadata/created, treatment: annotated}
+    - {source: /metadata/updated, treatment: annotated}
+    - {source: /metadata/labels, treatment: mapped,
+       target: /metadata/labels,
+       rule: "copied when every key and value is a valid v1 label;
+         otherwise annotated"}
+    - {source: /spec/title, treatment: mapped, target: /spec/title,
+       rule: copied}
+    - {source: /spec/title, treatment: mapped, target: /spec/summary,
+       rule: copied}
+    - {source: /spec/state, treatment: mapped, target: /spec/status,
+       rule: "copied; v0 states proposed, accepted, superseded, rejected
+         are the v1 values"}
+    - {source: /spec/decided_at, treatment: mapped, target: /spec/date,
+       rule: "the first 10 characters (YYYY-MM-DD) of an RFC 3339
+         date-time string"}
+    - {source: /spec/deciders, treatment: mapped, target: /spec/deciders,
+       rule: "copied when a non-empty list of strings"}
+    - {source: /spec/context, treatment: mapped, target: /spec/context,
+       rule: copied}
+    - {source: /spec/decision, treatment: mapped, target: /spec/decision,
+       rule: copied}
+    - {source: /spec/consequences, treatment: mapped,
+       target: /spec/consequences,
+       rule: "a string is copied; a list of strings becomes one line
+         \"- <item>\" per item, joined by LF; null leaves the field unset"}
+    - {source: /spec/alternatives, treatment: mapped,
+       target: /spec/alternatives,
+       rule: "each {option, rejected_because} becomes {title: option,
+         reason: rejected_because}; an empty list leaves the field unset"}
+    - {source: /spec/supersedes, treatment: mapped,
+       target: /spec/supersedes,
+       rule: "a string DEC id becomes [\"DecisionRecord/<n>\"], where n is
+         the v1 name of the converted item with that metadata.id, else
+         name_from_id(id); null or [] leaves the field unset"}
+    - {source: /spec/superseded_by, treatment: annotated}
+    - {source: /spec/rationale, treatment: mapped, target: body,
+       rule: "the body starts with \"## Rationale\", an empty line, the
+         rationale without leading and trailing white space, and LF"}
+    - {source: body, treatment: mapped, target: body,
+       rule: "appended after the rationale and one empty line, without
+         its leading empty lines; the whole body when there is no
+         rationale"}
+    - {source: /spec/related_workitems, treatment: annotated}
+    - {source: /spec/v1, treatment: supplement}
+    - {source: none, target: /spec/triggers,
+       rule: "supplement only; no v0 counterpart"}
+    - {source: any other member, treatment: annotated}
+  ProcessSpecification_from_Process:
+    - {source: /apiVersion, treatment: annotated}
+    - {source: /kind, treatment: mapped, target: /kind,
+       rule: "ProcessSpecification"}
+    - {source: none, target: /apiVersion,
+       rule: "fixed: processkit.projectious.work/v1"}
+    - {source: /metadata/id, treatment: annotated}
+    - {source: /metadata/version, treatment: mapped, target: /spec/version,
+       rule: copied}
+    - {source: /metadata/created, treatment: annotated}
+    - {source: /metadata/labels, treatment: mapped,
+       target: /metadata/labels, rule: as for DecisionRecord}
+    - {source: /spec/name, treatment: mapped, target: /metadata/name,
+       rule: "copied, or supplement name"}
+    - {source: /spec/description, treatment: mapped, target: /spec/summary,
+       rule: "copied without leading and trailing white space"}
+    - {source: /spec/triggers, treatment: mapped, target: /spec/triggers,
+       rule: "copied when a non-empty list of strings"}
+    - {source: body, treatment: mapped, target: /spec/title,
+       rule: "the text after \"# \" of the first body line that starts
+         with \"# \", without trailing white space"}
+    - {source: body, treatment: annotated,
+       also: "the whole body is preserved"}
+    - {source: /spec/roles, treatment: annotated}
+    - {source: /spec/steps, treatment: annotated}
+    - {source: /spec/definition_of_done, treatment: annotated}
+    - {source: /spec/parallel, treatment: annotated}
+    - {source: /spec/retryable, treatment: annotated}
+    - {source: /spec/v1, treatment: supplement}
+    - {source: none,
+       target: "/spec/status, /spec/owner, /spec/workItemType,
+         /spec/stateMachine",
+       rule: "supplement only; v0 steps are not turned into a state
+         machine, because roles, transitions, and the governed WorkItem
+         type cannot be derived without guessing"}
+    - {source: any other member, treatment: annotated}
+  ProcessSpecification_from_Artifact:
+    - {source: /apiVersion, treatment: annotated}
+    - {source: /kind, treatment: mapped, target: /kind,
+       rule: "ProcessSpecification"}
+    - {source: none, target: /apiVersion,
+       rule: "fixed: processkit.projectious.work/v1"}
+    - {source: /metadata/id, treatment: annotated}
+    - {source: none, target: /metadata/name,
+       rule: "name_from_id(metadata.id), or supplement name"}
+    - {source: /metadata/created, treatment: annotated}
+    - {source: /metadata/updated, treatment: annotated}
+    - {source: /metadata/labels, treatment: mapped,
+       target: /metadata/labels, rule: as for DecisionRecord}
+    - {source: /spec/name, treatment: mapped, target: /spec/title,
+       rule: copied}
+    - {source: /spec/kind, treatment: mapped, target: none,
+       rule: "process-definition selects this mapping"}
+    - {source: /spec/version, treatment: mapped, target: /spec/version,
+       rule: copied}
+    - {source: /spec/owner, treatment: mapped, target: /spec/owner,
+       rule: "copied when a string"}
+    - {source: body, treatment: annotated}
+    - {source: /spec/v1, treatment: supplement}
+    - {source: none,
+       target: "/spec/status, /spec/summary, /spec/triggers,
+         /spec/workItemType, /spec/stateMachine",
+       rule: supplement only}
+    - {source: any other member, treatment: annotated}
+  Skill:
+    - {source: SKILL.md, treatment: kept,
+       rule: "copied byte-identical to <content>/skills/<name>/SKILL.md;
+         every front-matter field and the body are preserved there"}
+    - {source: other files of the skill directory, treatment: kept}
+    - {source: none, target: /apiVersion,
+       rule: "fixed: processkit.projectious.work/v1"}
+    - {source: none, target: /kind, rule: "fixed: Skill"}
+    - {source: /name, treatment: mapped, target: /metadata/name,
+       rule: copied}
+    - {source: /description, treatment: mapped, target: /spec/summary,
+       rule: "copied without leading and trailing white space"}
+    - {source: body, treatment: mapped, target: /spec/title,
+       rule: as for Process}
+    - {source: /metadata/processkit/version, treatment: mapped,
+       target: /spec/version, rule: copied}
+    - {source: /metadata/processkit/uses, treatment: mapped,
+       target: /spec/dependencies,
+       rule: "each entry's skill becomes \"Skill/<skill>\"; purposes stay
+         in SKILL.md"}
+    - {source: /metadata/processkit/v1, treatment: supplement}
+    - {source: none, target: /spec/applicability,
+       rule: "fixed: {\"profiles\": [\"*\"]}; v0 had no profiles and every
+         installed skill was available everywhere"}
+    - {source: none, target: "/spec/inputs, /spec/outputs,
+         /spec/safetyConstraints, /spec/requiredMcpServers",
+       rule: "fixed: []; v0 declared none"}
+    - {source: none, target: /spec/parts,
+       rule: "fixed: [{\"path\": \"SKILL.md\", \"role\": \"normative\"}];
+         other files are explanatory (content-kinds@v1)"}
+    - {source: none, target: "/spec/triggers, /spec/sideEffects",
+       rule: "supplement only; v0 has no counterpart"}
+    - {source: "any other member (for example license, compatibility,
+         and metadata.processkit id, created, category, layer, provides,
+         commands, replaces, core)", treatment: kept}
+  basis: agent-proposal (field sets from the v0 schemas decisionrecord.yaml,
+    process.yaml, artifact.yaml and the skill FORMAT.md of v0.8.0 to
+    v0.28.8)
+  requirements: [PK-MIG-001, PK-MIG-007, PK-MIG-014, PK-MIG-016,
+                 PK-MIG-026, PK-MIG-006]
+
+supplement:
+  purpose: lets the author state a v1 value that has no v0 counterpart or
+    whose v0 value does not convert, in the v0 source, before migrating
+  member:
+    DecisionRecord: spec.v1
+    Process: spec.v1
+    Artifact: spec.v1
+    Skill: metadata.processkit.v1 (in the SKILL.md front matter)
+  schema: schemas/v0-supplement.schema.json
+  members:
+    name: the v1 metadata.name (not allowed for a Skill, whose name is the
+      v0 `name`)
+    spec: an object of v1 spec fields of the target kind; each replaces
+      the derived value of the same field
+  validated: as part of the converted item (PK-MIG-018)
+  on_wrong_shape: migration.invalid-supplement
+  example: |
+    spec:
+      v1:
+        spec:
+          triggers: ["choosing a directory layout for entity files"]
+  basis: agent-proposal
+  requirements: [PK-MIG-006, PK-MIG-015]
+
+preservation:
+  where: metadata.annotations of the converted item (the target kinds
+    declare no extension map; ontology@v1 PK-MODEL-015)
+  key: "v0.processkit.projectious.work/ followed by the source JSON
+    pointer without its leading /, or v0.processkit.projectious.work/body
+    for the Markdown body"
+  key_example: v0.processkit.projectious.work/spec/related_workitems
+  key_note: the prefix is not the reserved prefix
+    processkit.projectious.work/ (ontology@v1 PK-MODEL-013)
+  value: the field value serialized by the JSON Canonicalization Scheme
+    (RFC 8785); the body as its text
+  limits: ontology@v1 metadata.annotations - at most 64 annotations,
+    key at most 317 characters, value at most 4096 characters
+  not_preservable: migration.field-not-preservable (manual action) when a
+    limit is exceeded or two fields get the same key
+  skills: no annotations; SKILL.md is kept unchanged
+  check: for a v0 item with an unknown field, either the converted item
+    has the annotation with the field's canonical JSON value or the run
+    reports migration.field-not-preservable naming the field and writes no
+    file; no run succeeds with the value absent
+  basis: agent-proposal
+  requirements: [PK-MIG-005, PK-MIG-016, PK-MIG-017]
+
+manual_actions:
+  representation: a diagnostic (cli@v1 schemas/diagnostic.schema.json)
+    with severity error, category validation, a migration.* code below,
+    scope item, file = v0 source path, pointer into the v0 front matter
+    where one applies, fix, nextAction fix-content
+  converted_item_invalid_fields: pointer = the pointer into the converted
+    item; constraint = the code of the validation diagnostic; evidence =
+    {targetKind, targetPath}
+  effect: no confirmation is asked and no file is written; exit code 1;
+    outcome failed; the items without a manual action still appear in the
+    plan
+  resolution: the author edits the v0 source (usually adds the supplement),
+    commits it, and runs the command again
+  check: a corpus with a manual action yields the golden diagnostics, exit
+    code 1, outcome failed, and byte-identical files
+  basis: agent-proposal
+  requirements: [PK-MIG-006, PK-MIG-020, PK-MIG-021]
+
+result:
+  data: schemas/migrate-result.schema.json
+  plan: cli@v1 schemas/plan.schema.json, operation migrate; each change in
+    the shape of repository-storage@v1 schemas/file-change.schema.json
+  changes: the files written; empty with a dry run, on refusal, and with an
+    open manual action
+  items_order: by the first source path, ascending Unicode code point
+  untouched_order: by v0 kind, ascending Unicode code point
+  text_output: lists each converted source with its target, the untouched
+    counts, and the manual actions; layout is not a contract
+  basis: agent-proposal
+  requirements: [PK-MIG-002, PK-MIG-003, PK-MIG-022, PK-COMPAT-003]
+
+without_from:
+  rewrites: items whose apiVersion is a supported content API version older
+    than the current one (the last entry of contentApiVersions)
+  v1_behavior: v1 supports only processkit.projectious.work/v1, which is
+    current; the command reports migration.nothing-to-migrate and exits 0
+  unsupported_apiVersion: reported by validation as
+    storage.unsupported-api-version (repository-storage@v1 PK-STORE-061);
+    not rewritten
+  basis: agent-proposal
+  requirements: [PK-MIG-023, PK-MIG-024, PK-COMPAT-003]
+
+errors:
+  # Codes owned by this specification (area `migration`).
+  owned:
+    - code: migration.unsupported-v0-release
+      severity: error
+      category: validation
+      when: the provenance marker names a release outside v0.8.0 to v0.28.8
+      effect: nothing is mapped or written
+      requirements: [PK-MIG-009]
+    - code: migration.unreadable-source
+      severity: error
+      category: validation
+      manual_action: true
+      when: front matter below a v0 directory of a converted type cannot be
+        read
+      requirements: [PK-MIG-011]
+    - code: migration.unsupported-source
+      severity: error
+      category: validation
+      manual_action: true
+      when: a v0 source declares an apiVersion other than the two allowed,
+        or its skill directory holds a symbolic link or special file
+      requirements: [PK-MIG-011]
+    - code: migration.unreadable-file
+      severity: warning
+      when: front matter of a file in another directory below context/ cannot
+        be read; the file is untouched
+      requirements: [PK-MIG-011]
+    - code: migration.invalid-supplement
+      severity: error
+      category: validation
+      manual_action: true
+      when: the supplement does not match schemas/v0-supplement.schema.json
+      requirements: [PK-MIG-015]
+    - code: migration.field-not-preservable
+      severity: error
+      category: validation
+      manual_action: true
+      when: an annotation limit would be exceeded or two fields get the same
+        key
+      requirements: [PK-MIG-005, PK-MIG-017]
+    - code: migration.converted-item-invalid
+      severity: error
+      category: validation
+      manual_action: true
+      when: a converted item fails validation; one per validation error
+      requirements: [PK-MIG-018]
+    - code: migration.target-conflict
+      severity: error
+      category: validation
+      manual_action: true
+      when: two sources share a target path, or a target path exists and is
+        not a source file of the plan
+      requirements: [PK-MIG-019]
+    - code: migration.leftover-in-content-location
+      severity: warning
+      when: a file the plan leaves in place is at a declared location of a
+        v1 kind in the content directory; fix - move or delete it
+      requirements: [PK-MIG-027]
+    - code: migration.nothing-to-migrate
+      severity: info
+      when: no v0 source (with --from v0) or no item to rewrite (without
+        --from); exit code 0, no confirmation, no write
+      requirements: [PK-MIG-023]
+  other_codes_used:
+    - {code: storage.target-not-committed, owner: repository-storage@v1}
+    - {code: cli.invalid-option-value, owner: cli@v1}
+    - {code: cli.confirmation-required, owner: cli@v1}
+    - {code: cli.plan-stale, owner: cli@v1}
+  basis: agent-proposal
+  requirements: [PK-MIG-020]
+
+verification:
+  golden_corpora:
+    location: tests/golden/v0-migration/<corpus>/
+    layout:
+      input/: a v0 repository tree, committed in the test's temporary Git
+        repository, with processkit.toml (content directory `context`)
+      expected/: the complete repository tree after apply (absent for a
+        corpus whose golden outcome is a manual action)
+      expected-diagnostics.json: the golden diagnostics as a JSON array of
+        {code, severity, file, pointer?}, sorted by file, then code
+    corpora:
+      - {name: v0.8-flat, content: "v0.8.0 format: apiVersion v1, flat
+           skills, Process in context/processes/<name>.md"}
+      - {name: v0.24-nested, content: "v0.24.0 format: apiVersion v1,
+           nested skills, Process in context/processes/PROC-*.md"}
+      - {name: v0.28-v2, content: "v0.28.8 format: apiVersion v2, an
+           Artifact process-definition, the provenance marker, sharded
+           logs and work items, notes, and context/templates/"}
+      - {name: unknown-fields, content: "a decision record with unknown
+           fields that fit annotations, and one whose value exceeds 4096
+           characters"}
+      - {name: manual-actions, content: "missing supplement values,
+           an invalid supplement, unreadable front matter, a target
+           conflict, an unsupported apiVersion"}
+      - {name: unsupported-release, content: "provenance marker
+           v0.7.0"}
+    every_corpus_contains: at least one decision record, one skill, and
+      one process definition, unless its name states one case only; and
+      at least one log entry, work item, and note
+    data: synthetic; no network; no credentials
+    check: converting each corpus yields exactly its expected/ tree and its
+      expected-diagnostics.json
+    requirements: [PK-MIG-007, PK-MIG-025]
+  preservation_report:
+    static: field_mapping above (every field of the v0 schemas of the
+      supported releases, and a rule for any other member)
+    per_run: data.items[].fields of every migrate run (one entry per source
+      field and target)
+    treatments: [mapped, annotated, kept, supplement]
+    check: every member occurring in the golden corpora appears in the
+      per-run fields of its item, and every field of the v0 schemas has a
+      row in field_mapping
+    requirements: [PK-MIG-007, PK-MIG-026]
+
+compatibility:
+  independently_versioned_contracts: see commands.version.contract_fields
+  before_v1_0_0: prereleases may break contracts with documented migration
+    (PK-COMPAT-004)
+  from_v1_0_0: a breaking change requires a new major version of the
+    affected contract
+  documented_migration:
+    where: release notes, section `Breaking changes`
+    per_broken_contract: [contract, old version, new version, migration
+      steps, rollback or non-rollback statement]
+    stored_content: a change that affects stored content is rewritten by
+      `processkit migrate`
+    basis: standard
+      (compatibility-and-machine-interfaces.md#change-classification)
+    requirements: [PK-COMPAT-002, PK-COMPAT-004]
+  change_classification:
+    classes: [compatible, conditionally compatible, breaking]
+    breaking:
+      - a field, command, option, code, exit code, or value is removed or
+        renamed
+      - input that the previous version accepted is rejected
+      - a value is interpreted with a different meaning
+      - a default changes
+      - a new member is added to a closed shape (for example the result
+        envelope or a content schema with additionalProperties false)
+      - a deterministic order changes
+    conditionally_compatible: a change that is compatible only for
+      consumers that meet a stated condition, for example a new optional
+      member in a shape that consumers are documented to read leniently;
+      the release notes state the condition
+    compatible: every other change
+    considers: behavior, validation strictness, defaults, ordering,
+      performance guarantees, security policy, and persisted data, not only
+      schema shape
+    basis: standard
+      (compatibility-and-machine-interfaces.md#change-classification)
+    requirements: [PK-COMPAT-005]
+  stored_content: validated under its declared apiVersion
+    (repository-storage@v1 PK-STORE-031); never silently reinterpreted under
+    a newer schema; rewritten only by `processkit migrate`, which reports
+    every change
+  requirements: [PK-COMPAT-001, PK-COMPAT-002, PK-COMPAT-003]
+
+open: []

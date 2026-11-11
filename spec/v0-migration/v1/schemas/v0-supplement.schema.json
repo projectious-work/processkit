@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/v0-migration/v0-supplement.schema.json",
+  "title": "processkit v0 migration supplement",
+  "description": "The v1 supplement an author adds to a v0 source before migrating (v0-migration@v1 PK-MIG-015): spec.v1 in a v0 DecisionRecord, Process, or process-definition Artifact; metadata.processkit.v1 in a v0 SKILL.md. Each member of 'spec' replaces the derived value of the same v1 spec field; the values are validated with the converted item against the content-kinds@v1 schema of the target kind (PK-MIG-018).",
+  "type": "object",
+  "additionalProperties": false,
+  "minProperties": 1,
+  "properties": {
+    "name": {
+      "description": "The v1 metadata.name of the converted item. Not allowed in a Skill supplement; a Skill's name is its v0 'name'.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "maxLength": 80
+    },
+    "spec": {
+      "description": "v1 spec fields of the target kind (content-kinds@v1 decision-record, skill, or process-specification schema), by their v1 names.",
+      "type": "object",
+      "minProperties": 1
+    }
+  }
+}

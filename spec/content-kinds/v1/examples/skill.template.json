@@ -1,0 +1,48 @@
+{
+  "apiVersion": "processkit.projectious.work/v1",
+  "kind": "Skill",
+  "metadata": {
+    "labels": {
+      "area": "replace-with-area"
+    },
+    "name": "example-skill"
+  },
+  "spec": {
+    "applicability": {
+      "profiles": [
+        "*"
+      ]
+    },
+    "dependencies": [],
+    "inputs": [
+      {
+        "description": "Replace with what the skill needs from the caller.",
+        "name": "example-input",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "description": "Replace with what the skill produces.",
+        "name": "example-output"
+      }
+    ],
+    "parts": [
+      {
+        "path": "SKILL.md",
+        "role": "normative"
+      }
+    ],
+    "requiredMcpServers": [],
+    "safetyConstraints": [
+      "Replace with a constraint an agent must respect when it uses this skill."
+    ],
+    "sideEffects": "read-only",
+    "summary": "Replace with what the skill does and when an agent should use it.",
+    "title": "Example skill",
+    "triggers": [
+      "Replace with a situation in which an agent should use this skill"
+    ],
+    "version": "0.1.0"
+  }
+}

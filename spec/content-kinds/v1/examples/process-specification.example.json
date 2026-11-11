@@ -1,0 +1,134 @@
+{
+  "apiVersion": "processkit.projectious.work/v1",
+  "kind": "ProcessSpecification",
+  "metadata": {
+    "labels": {
+      "area": "delivery"
+    },
+    "name": "ticket-handling"
+  },
+  "spec": {
+    "applicability": {
+      "profiles": [
+        "*"
+      ]
+    },
+    "decisions": [
+      "trunk-based"
+    ],
+    "instanceSystem": {
+      "mcpServer": "MCPServer/issue-tracker",
+      "title": "Issue tracker"
+    },
+    "owner": "Engineering leads",
+    "stateMachine": {
+      "initial": "new",
+      "states": [
+        {
+          "description": "The ticket was reported and is not yet assessed.",
+          "id": "new",
+          "title": "New"
+        },
+        {
+          "guidance": "Reproduce the problem before you set a priority.",
+          "id": "triaged",
+          "inputs": [
+            {
+              "class": "working",
+              "description": "The ticket as reported in the issue tracker."
+            },
+            {
+              "class": "instruction",
+              "description": "The triage skill.",
+              "ref": "Skill/triage-ticket"
+            }
+          ],
+          "intent": "Assess the ticket, set its priority, and assign it.",
+          "references": [
+            "Skill/triage-ticket",
+            "MCPServer/issue-tracker"
+          ],
+          "title": "Triaged"
+        },
+        {
+          "artifacts": [
+            {
+              "direction": "produced",
+              "name": "pull-request",
+              "title": "Pull request"
+            }
+          ],
+          "id": "in-progress",
+          "intent": "Implement and review the change.",
+          "references": [
+            "Standard/git-branching"
+          ],
+          "title": "In progress"
+        },
+        {
+          "id": "closed",
+          "terminal": true,
+          "title": "Closed"
+        }
+      ],
+      "transitions": [
+        {
+          "from": "new",
+          "roles": [
+            "Role/triager"
+          ],
+          "to": "triaged"
+        },
+        {
+          "from": "triaged",
+          "roles": [
+            "Role/developer"
+          ],
+          "to": "in-progress"
+        },
+        {
+          "from": "in-progress",
+          "gates": [
+            {
+              "authority": [
+                "Role/developer"
+              ],
+              "blocking": true,
+              "evidence": [
+                {
+                  "artifact": "pull-request",
+                  "description": "Link to the approved pull request."
+                }
+              ],
+              "id": "review-approved",
+              "kind": "approval",
+              "title": "Review approved",
+              "validator": {
+                "description": "A second developer approved the pull request.",
+                "standard": "Standard/git-branching"
+              },
+              "waiver": {
+                "authority": [
+                  "Role/triager"
+                ]
+              }
+            }
+          ],
+          "roles": [
+            "Role/developer"
+          ],
+          "to": "closed"
+        }
+      ]
+    },
+    "status": "active",
+    "summary": "How a ticket moves from intake to closure: a triager triages it, a developer implements it, and a review gate closes it.",
+    "title": "Ticket handling",
+    "triggers": [
+      "Working on a ticket from the issue tracker",
+      "Triaging or closing a ticket"
+    ],
+    "version": "1.0.0",
+    "workItemType": "ticket"
+  }
+}

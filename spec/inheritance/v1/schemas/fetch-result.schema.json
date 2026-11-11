@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/inheritance/fetch-result.schema.json",
+  "title": "processkit fetch result data",
+  "description": "The data member of the cli@v1 result envelope for processkit fetch (inheritance@v1 PK-INH-036, PK-INH-039). Failures are diagnostics; this object reports what was resolved and stored.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["refs", "commits"],
+  "properties": {
+    "refs": {
+      "description": "One entry for every declared upstream, sorted by name.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["upstream", "source", "ref", "commit"],
+        "properties": {
+          "upstream": {
+            "description": "Declared upstream name.",
+            "type": "string"
+          },
+          "source": {"type": "string"},
+          "ref": {"type": "string"},
+          "commit": {
+            "description": "Commit the ref resolved to; null when resolution failed.",
+            "oneOf": [{"$ref": "lock.schema.json#/$defs/commit"}, {"type": "null"}]
+          }
+        }
+      }
+    },
+    "commits": {
+      "description": "Every commit the run needed, sorted by source, then commit; each source and commit pair at most once.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "commit", "for", "result"],
+        "properties": {
+          "source": {"type": "string"},
+          "commit": {"$ref": "lock.schema.json#/$defs/commit"},
+          "for": {
+            "description": "Lock entry names (current lock, or the entry names a first lock would use) that need this commit, sorted.",
+            "type": "array",
+            "minItems": 1,
+            "items": {"$ref": "lock.schema.json#/$defs/entryName"}
+          },
+          "result": {
+            "description": "fetched: downloaded and verified in this run. present: already in the local cache and verified. failed: not stored; a diagnostic names the reason.",
+            "enum": ["fetched", "present", "failed"]
+          }
+        }
+      }
+    }
+  }
+}

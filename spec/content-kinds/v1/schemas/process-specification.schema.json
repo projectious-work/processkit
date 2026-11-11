@@ -1,0 +1,410 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.projectious.work/processkit/v1/process-specification.schema.json",
+  "title": "processkit process specification",
+  "description": "How a kind of work is done, in ontology terms: the governed WorkItem type, a StateMachine, the Roles per transition, Gates, Artifacts, and per-state references (PK-PROC-001, PK-PROC-002). processkit validates and serves it; it never runs it or stores instances (PK-PROC-004, PK-PROD-021).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "apiVersion",
+    "kind",
+    "metadata",
+    "spec"
+  ],
+  "properties": {
+    "apiVersion": {
+      "const": "processkit.projectious.work/v1"
+    },
+    "kind": {
+      "const": "ProcessSpecification"
+    },
+    "metadata": {
+      "$ref": "resource-metadata.schema.json"
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "version",
+        "status",
+        "owner",
+        "summary",
+        "triggers",
+        "workItemType",
+        "stateMachine"
+      ],
+      "properties": {
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "version": {
+          "$ref": "content-common.schema.json#/$defs/semver"
+        },
+        "status": {
+          "$ref": "content-common.schema.json#/$defs/lifecycleStatus"
+        },
+        "owner": {
+          "$ref": "content-common.schema.json#/$defs/owner"
+        },
+        "summary": {
+          "$ref": "content-common.schema.json#/$defs/summary"
+        },
+        "triggers": {
+          "$ref": "content-common.schema.json#/$defs/triggers"
+        },
+        "applicability": {
+          "$ref": "content-common.schema.json#/$defs/applicability"
+        },
+        "workItemType": {
+          "description": "Name of the governed WorkItem type, for example ticket. Vocabulary only; processkit stores no WorkItem.",
+          "$ref": "content-common.schema.json#/$defs/name"
+        },
+        "instanceSystem": {
+          "description": "The external system that holds instances of the governed WorkItem type (PK-PROC-004).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title"
+          ],
+          "properties": {
+            "title": {
+              "$ref": "content-common.schema.json#/$defs/title"
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "mcpServer": {
+              "$ref": "content-common.schema.json#/$defs/mcpServerRef"
+            }
+          }
+        },
+        "shape": {
+          "description": "state-machine: any StateMachine. linear: ordered steps only (PK-PROC-011; agent proposal, gap row 6).",
+          "enum": [
+            "state-machine",
+            "linear"
+          ],
+          "default": "state-machine"
+        },
+        "stateMachine": {
+          "$ref": "#/$defs/stateMachine"
+        },
+        "decisions": {
+          "$ref": "content-common.schema.json#/$defs/decisions"
+        },
+        "final": {
+          "$ref": "content-common.schema.json#/$defs/final"
+        },
+        "overrides": {
+          "$ref": "content-common.schema.json#/$defs/replaceOverride"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "stateId": {
+      "$ref": "content-common.schema.json#/$defs/name"
+    },
+    "stateMachine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "initial",
+        "states",
+        "transitions"
+      ],
+      "properties": {
+        "initial": {
+          "description": "Id of the state a new WorkItem starts in.",
+          "$ref": "#/$defs/stateId"
+        },
+        "states": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/state"
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/transition"
+          }
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/stateId"
+        },
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "terminal": {
+          "type": "boolean",
+          "default": false
+        },
+        "intent": {
+          "description": "What work happens in this state or step (PK-PROC-012; agent proposal, gap row 6).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "inputs": {
+          "description": "Context the work in this state consumes (PK-PROC-012; agent proposal, gap row 6).",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/input"
+          }
+        },
+        "artifacts": {
+          "description": "Artifacts required or produced in this state (PK-PROC-002).",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/artifact"
+          }
+        },
+        "references": {
+          "description": "Standards, skills, and MCP servers that apply in this state (PK-PROC-002). Each must resolve.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(Standard|Skill|MCPServer)/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "guidance": {
+          "description": "Detailed guidance for this state; served only at level 2.",
+          "$ref": "content-common.schema.json#/$defs/markdown"
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "description"
+      ],
+      "properties": {
+        "class": {
+          "description": "instruction: accepted guidance; reference: stable reference material; working: per-instance context such as an earlier step's output.",
+          "enum": [
+            "instruction",
+            "reference",
+            "working"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "ref": {
+          "description": "Item the input is, as a typed reference. Must resolve.",
+          "$ref": "content-common.schema.json#/$defs/anyRef"
+        },
+        "artifact": {
+          "description": "Name of an artifact that an earlier state produces.",
+          "$ref": "content-common.schema.json#/$defs/name"
+        }
+      },
+      "not": {
+        "required": [
+          "ref",
+          "artifact"
+        ]
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "direction"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "content-common.schema.json#/$defs/name"
+        },
+        "direction": {
+          "enum": [
+            "required",
+            "produced"
+          ]
+        },
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        },
+        "template": {
+          "description": "Document that serves as the artifact's template. Must resolve.",
+          "$ref": "content-common.schema.json#/$defs/documentRef"
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to",
+        "roles"
+      ],
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/stateId"
+        },
+        "to": {
+          "$ref": "#/$defs/stateId"
+        },
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "roles": {
+          "description": "Roles that may perform the transition. Each must resolve (PK-PROC-003).",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "content-common.schema.json#/$defs/roleRef"
+          },
+          "uniqueItems": true
+        },
+        "gates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gate"
+          }
+        }
+      }
+    },
+    "gate": {
+      "description": "A check on a transition (PK-PROC-009; agent proposal, gap row 8). processkit never evaluates it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "kind",
+        "validator",
+        "authority"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "content-common.schema.json#/$defs/name"
+        },
+        "title": {
+          "$ref": "content-common.schema.json#/$defs/title"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "kind": {
+          "description": "approval: a person in an authority Role decides. check: an external tool or procedure decides.",
+          "enum": [
+            "approval",
+            "check"
+          ]
+        },
+        "validator": {
+          "description": "What decides whether the gate passes.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "description"
+          ],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "mcpServer": {
+              "$ref": "content-common.schema.json#/$defs/mcpServerRef"
+            },
+            "standard": {
+              "description": "Standard whose rules the gate checks.",
+              "type": "string",
+              "pattern": "^Standard/([a-z][a-z0-9]*(?:-[a-z0-9]+)*/)?[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+            }
+          }
+        },
+        "authority": {
+          "description": "Roles that may record the gate's outcome.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "content-common.schema.json#/$defs/roleRef"
+          },
+          "uniqueItems": true
+        },
+        "blocking": {
+          "description": "true: the transition must not happen before the gate passed or was waived. false: advisory.",
+          "type": "boolean",
+          "default": true
+        },
+        "evidence": {
+          "description": "Evidence the gate's outcome must cite.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "description"
+            ],
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "artifact": {
+                "description": "Name of an artifact of the transition's from state.",
+                "$ref": "content-common.schema.json#/$defs/name"
+              }
+            }
+          }
+        },
+        "waiver": {
+          "description": "Present when the gate may be waived. A waiver states authority, reason, scope, and expiry or review condition.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "authority"
+          ],
+          "properties": {
+            "authority": {
+              "description": "Roles that may waive the gate.",
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "content-common.schema.json#/$defs/roleRef"
+              },
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    }
+  }
+}
