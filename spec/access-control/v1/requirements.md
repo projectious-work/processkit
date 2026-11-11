@@ -5,7 +5,7 @@ what each caller may read: the operator-configured authenticator chain
 (`local`, `oidc`, `x509`, `trusted-proxy`) that turns a request into a
 principal, the additive, deny-by-default access rules declared on Roles and
 granted by `grants-role` Bindings scoped to Containers, how access
-decisions filter every read surface, the `processkit access can-i` command,
+decisions filter every read surface, the `processkit auth can-i` command,
 the decision log, and the start-up and operating conditions of the shared
 server. processkit consumes identity; it never manages it. Label selectors
 and Containers are defined by ontology@v1, context assembly and the MCP
@@ -136,9 +136,10 @@ recommended, "may" optional; IDs are stable and never reused.
   operational log with the principal, authenticator, verb, kind, namespace,
   name, outcome, and granting Binding. Access decisions shall not be
   repository content.
-- **PK-ACC-027:** `processkit access can-i VERB KIND [NAME] --as USER
+- **PK-ACC-027:** `processkit auth can-i VERB TYPE [NAME] --as USER
   [--as-group G]` shall report the decision and the granting Binding.
   Impersonation shall require an explicit grant and shall be logged.
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B -->
 
 ### Access content
 
@@ -214,25 +215,29 @@ recommended, "may" optional; IDs are stable and never reused.
 - **PK-ACC-042:** Impersonation shall be a separate privilege. It shall be
   recorded with the verb `impersonate` and shall not be an access verb of a
   Role rule. processkit shall grant it only to a user identifier listed in
-  the operator key `access.impersonators`. If `processkit access can-i` is
+  the operator key `access.impersonators`. If `processkit auth can-i` is
   run by a principal without this privilege, then processkit shall report
   `access.impersonation-denied` as an environment failure and shall
   evaluate nothing. processkit shall log every impersonation attempt with
   the event `access.impersonation`.
-  <!-- agent proposal: OPEN-access-control-07 -->
-- **PK-ACC-047:** `processkit access can-i` shall evaluate the Roles and
+  <!-- agent proposal: OPEN-access-control-07; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
+- **PK-ACC-047:** `processkit auth can-i` shall evaluate the Roles and
   Bindings of the selected working copy at its revision, without network
   access. The option `--as` shall be required, `--as-group` shall be
-  repeatable, and `--namespace N` shall select the item's Container (default
-  `root`). Without NAME, a rule shall match on kind and verb alone. With
-  NAME, if no such item exists, then the decision shall be `deny`. The
-  result data shall have the shape of `schemas/can-i-result.schema.json`.
-  The exit code shall be 0 for both decisions.
-  <!-- agent proposal: OPEN-access-control-09 -->
-- **PK-ACC-048:** `processkit access whoami` shall report the principal of
+  repeatable, and `-n N` shall select the item's Container (default
+  `root`). TYPE shall be resolved as in `cli@v1` PK-CLI-049. Without NAME,
+  a rule shall match on kind and verb alone. With NAME, if no such item
+  exists, then the decision shall be `deny`. The result data shall have
+  the shape of `schemas/can-i-result.schema.json`. The exit code shall be
+  0 for both decisions.
+  <!-- agent proposal: OPEN-access-control-09; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
+- **PK-ACC-048:** `processkit auth whoami` shall report the principal of
   the invocation in the shape of `schemas/principal.schema.json`. The
   command shall write nothing.
-  <!-- agent proposal: OPEN-access-control-10 -->
+  <!-- agent proposal: OPEN-access-control-10; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
 
 ## Shared server
 

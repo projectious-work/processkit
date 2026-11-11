@@ -41,7 +41,7 @@ This slug does not cover:
   `ontology@v1`;
 - content locations, file formats, front matter, deterministic
   serialization, and write behavior — `repository-storage@v1`;
-- command syntax, `--json` envelopes, and exit codes — `cli@v1`;
+- command syntax, `-o json` envelopes, and exit codes — `cli@v1`;
 - MCP tools, the connection briefing, `get_context` ranking, caching, and
   resources — `mcp-context-serving@v1`;
 - overrides, final items, and provenance across upstream repositories —
@@ -147,7 +147,7 @@ Drafted because they fit C1 and C2; accepted by owner 2026-11-11
 | OPEN-content-kinds-07 | attribution members in `attribution`, using `ontology@v1` status; version is `spec.version` or the content digest (PK-CONT-016) | agent proposal |
 | OPEN-content-kinds-08 | `ontology@v1` owns the envelope metadata schema; the copy here stays byte-identical and changes only by copying | agent proposal |
 | OPEN-content-kinds-09 | built-in secret patterns in `secret_patterns` plus operator `redaction.patterns` of `cli@v1` (PK-CAT-005) | agent proposal |
-| OPEN-content-kinds-10 | exact, case-sensitive `kind` values (PK-CONT-019); templates per kind, `content-kinds.no-template` for Document (PK-CONT-020) | agent proposal |
+| OPEN-content-kinds-10 | exact, case-sensitive `kind` values for MCP; case-insensitive name, plural, or short name for the CLI TYPE, owner decision 2026-11-11 (#212), CLI style B (PK-CONT-019); templates per kind, `content-kinds.no-template` for Document (PK-CONT-020) | agent proposal |
 | OPEN-content-kinds-11 | `read-only`, `project-mutating`, `externally-mutating`, `privileged`, `destructive`; one field with the highest class (PK-SKILL-011) | agent proposal |
 | OPEN-content-kinds-12 | typed references that must resolve; dependencies target Skill or Standard (PK-SKILL-012) | agent proposal |
 | OPEN-content-kinds-13 | `spec.parts` in `skill.json` per file; `SKILL.md` required; unlisted files explanatory (PK-SKILL-013) | agent proposal (follows repository-storage@v1: skill.json authoritative) |

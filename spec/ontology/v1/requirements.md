@@ -56,15 +56,18 @@ recommended, "may" optional; IDs are stable and never reused.
   not as a closed persistent schema. Every D discriminator shall have the
   side of its parent primitive.
   <!-- agent proposal: OPEN-ontology-08 -->
-- **PK-MODEL-057:** When a user runs `processkit ontology list`, the
+- **PK-MODEL-057:** When a user runs `processkit api-resources`, the
   processkit CLI shall return the registry document with the concepts and
   relation types of every valid OntologyExtension in the effective item set
-  added. When a user runs `processkit ontology show NAME`, the processkit
-  CLI shall return the one concept entry whose name equals NAME. If no
-  concept has that name, then the processkit CLI shall fail with the
-  diagnostic code `ontology.unknown-concept`. The MCP `ontology` tool shall
-  return the same data for the same input.
-  <!-- agent proposal: OPEN-ontology-01 -->
+  added. When a user runs `processkit explain TYPE`, the processkit CLI
+  shall return the one concept entry whose name equals TYPE, compared
+  without regard to case, or, if TYPE is a kind's plural or short name
+  (cli@v1 PK-CLI-049), the entry named by that kind. If no concept has
+  that name, then the processkit CLI shall fail with the diagnostic code
+  `ontology.unknown-concept`. The MCP `ontology` tool shall return the same
+  data for the same input.
+  <!-- agent proposal: OPEN-ontology-01; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
 
 ## Registry generation
 
@@ -150,13 +153,15 @@ recommended, "may" optional; IDs are stable and never reused.
   <!-- agent proposal: OPEN-ontology-02 -->
 - **PK-MODEL-062:** processkit shall report `status` as an object that
   validates against `schemas/status.schema.json`. Single-item results
-  (`processkit show`, `processkit explain`, and the MCP `get` and `explain`
-  tools) shall include the full `status`. Entries of list and context
-  results (`processkit list`, `processkit context`, and the MCP `list` and
-  `get_context` tools) shall include `status` in the reduced shape
-  `$defs/listStatus` of that schema, which carries the attribution facts of
-  content-kinds@v1 PK-CONT-003 without diagnostics or references.
-  <!-- agent proposal: OPEN-ontology-05 -->
+  (`processkit get TYPE NAME`, `processkit describe`, and the MCP `get` and
+  `explain` tools) shall include the full `status`. Entries of list and
+  context results (`processkit get TYPE`, `processkit get context`, and the
+  MCP `list` and `get_context` tools) shall include `status` in the
+  reduced shape `$defs/listStatus` of that schema, which carries the
+  attribution facts of content-kinds@v1 PK-CONT-003 without diagnostics or
+  references.
+  <!-- agent proposal: OPEN-ontology-05; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
 - **PK-MODEL-063:** An extension map shall be an object member named
   `extensions`. Every key of an extension map shall have the form
   `<dns-prefix>/<name>`. The Container schema shall declare an extension
@@ -302,3 +307,13 @@ recommended, "may" optional; IDs are stable and never reused.
 - **PK-MODEL-074:** If a local OntologyExtension declares a namespace that
   an inherited OntologyExtension declares, then validation shall fail.
   <!-- agent proposal: OPEN-ontology-11 -->
+- **PK-MODEL-076:** Every content kind that an OntologyExtension adds shall
+  declare `plural` and `shortName`, each a lowercase string that matches
+  `^[a-z][a-z0-9]*$`, as the type names of cli@v1 PK-CLI-049. If the kind's
+  name, plural, or short name equals, compared without regard to ASCII
+  case, the name, plural, or short name of another kind of the release
+  (cli@v1 `type_names`) or of another extension kind in the effective item
+  set, or the reserved word `context`, then validation shall fail with
+  `ontology.extension-type-name-taken`. A kind name equal to a published
+  name shall be reported as PK-MODEL-073 states.
+  <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->

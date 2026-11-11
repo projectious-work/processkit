@@ -244,7 +244,7 @@ tools:
     input: schemas/tool-inputs.schema.json#/$defs/ontology
     arguments:
       - {name: concept, required: false}
-    data: same data as processkit ontology list / ontology show (ontology@v1
+    data: same data as processkit api-resources / explain TYPE (ontology@v1
       PK-MODEL-057)
     requirements: [PK-PROD-004]
 

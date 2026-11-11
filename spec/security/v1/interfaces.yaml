@@ -18,13 +18,14 @@ content_handling:
       repositories, or processkit behavior
     check: with content that contains instructions to change tools,
       configuration, or access, the MCP tool names, descriptions, and schemas
-      (owner mcp-context-serving@v1, PK-MCP-024), `processkit config show
-      --json`, and access decisions for other repositories are identical to
+      (owner mcp-context-serving@v1, PK-MCP-024), `processkit config view
+      -o json`, and access decisions for other repositories are identical to
       a run without that content
     requirements: [PK-SEC-001]
   - effect: every served item is labelled with its kind and provenance
     applies_to: [get_context, list, get, explain, MCP resources, briefing
-      index, processkit context, processkit list, processkit show]
+      index, processkit get context, processkit get TYPE, processkit get
+      TYPE NAME]
     check: every served item carries its kind and its provenance (repository
       or upstream, and origin of the item); exact field names are owned by
       mcp-context-serving@v1 and inheritance@v1
@@ -42,8 +43,8 @@ input_limits:
   inputs:
     - repository files (JSON items, Markdown with front matter, skill files)
     - files of upstream copies in the local cache
-    - draft content passed to `processkit validate -` and the MCP `validate`
-      tool
+    - draft content passed to `processkit validate -f -` and the MCP
+      `validate` tool
     - configuration files (project and operator; TOML)
     - MCP requests (size, concurrency, and time limits owned by
       mcp-context-serving@v1, PK-MCP-040)
@@ -93,7 +94,7 @@ limits:
   # configuration.layers operator.other_keys_owned_by). Every key is an
   # integer, minimum 1. Values outside 1..ceiling fail with
   # cli.config-invalid-value (validation, exit 1) before the command runs.
-  # Each key appears in `processkit config show --json` (cli@v1
+  # Each key appears in `processkit config view -o json` (cli@v1
   # schemas/config-report.schema.json) with source default or operator.
   parser:
     - key: limits.file-bytes
@@ -164,7 +165,7 @@ limit_configuration:
   check: a processkit.toml with `[limits] file-bytes = 100` fails with
     cli.config-forbidden-key; operator `limits.file-bytes = 0` and
     `limits.file-bytes = 16777217` each fail with cli.config-invalid-value;
-    `processkit config show --json` reports limits.file-bytes with source
+    `processkit config view -o json` reports limits.file-bytes with source
     default and value 1048576 when no operator file is named; an input over
     the limit still fails
   basis: agent-proposal

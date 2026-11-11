@@ -210,7 +210,7 @@ scoped to `Container/unknown`; a `grants-role` Binding whose subject is
 `spec.responsibilities`; a Role rule with selector `sensitivity in (`,
 next to a second, valid rule of the same Role that grants `get` on
 `fin-std` by name, the Role bound to principal A scoped to
-`Container/company`. Run `processkit validate --json`, then restart
+`Container/company`. Run `processkit validate -o json`, then restart
 the server and call `list(kind=Standard)` and `get(Standard, fin-std)` as
 A. Then add an Actor item named `alice` and a Binding naming that Actor as
 subject.
@@ -266,16 +266,15 @@ configuration file without `access.impersonators`, and a second one with
 
 Steps:
 
-1. With the first file, run `processkit access can-i get Standard eng-std
-   --namespace engineering --as alice --as-group engineering@example.com
-   --json`.
+1. With the first file, run `processkit auth can-i get Standard eng-std
+   -n engineering --as alice --as-group engineering@example.com -o json`.
 2. With the second file, repeat step 1; then run it for `eng-secret`,
-   for `fin-std` with `--namespace finance`, and for the never-existing
-   name `nope`; then run `can-i list Standard --namespace engineering --as
-   carol` and `can-i list Standard --namespace engineering --as bob
-   --as-group engineering@example.com`.
-3. Run `can-i get Standard eng-std` without `--as`, and `can-i delete
-   Standard eng-std --as alice`.
+   for `fin-std` with `-n finance`, and for the never-existing name
+   `nope`; then run `auth can-i list Standard -n engineering --as carol`
+   and `auth can-i list Standard -n engineering --as bob --as-group
+   engineering@example.com`.
+3. Run `auth can-i get Standard eng-std` without `--as`, and `auth can-i
+   delete Standard eng-std --as alice`.
 4. Inspect the operational log, written with `--log-level error`.
 
 Expected results:
@@ -389,7 +388,7 @@ Covers: PK-ACC-001, PK-ACC-046
 
 ## J14 — whoami
 
-Steps: run `processkit access whoami --json` in the common fixture, and
+Steps: run `processkit auth whoami -o json` in the common fixture, and
 outside any repository.
 
 Expected results: both exit 0 with `data` equal to `{"user": <login name

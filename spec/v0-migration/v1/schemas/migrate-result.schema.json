@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/v0-migration/migrate-result.schema.json",
   "title": "processkit migrate data",
-  "description": "The 'data' of processkit migrate --json (v0-migration@v1 PK-MIG-022). The plan is carried in the envelope's 'plan' (cli@v1 schemas/plan.schema.json), the written files in 'changes', and manual actions in 'diagnostics' (PK-MIG-020).",
+  "description": "The 'data' of processkit migrate -o json (v0-migration@v1 PK-MIG-022). The plan is carried in the envelope's 'plan' (cli@v1 schemas/plan.schema.json), the written files in 'changes', and manual actions in 'diagnostics' (PK-MIG-020).",
   "type": "object",
   "additionalProperties": false,
   "required": ["mode", "source", "items", "untouched"],

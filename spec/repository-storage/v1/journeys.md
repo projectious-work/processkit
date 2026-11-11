@@ -20,8 +20,9 @@ Steps:
 1. Run `processkit init --governing`.
 2. Declare a document source in `processkit.toml` that matches
    `context/documents/*.md` (keys per `content-kinds@v1`) and commit.
-3. Run `processkit new Standard example-rule`, `processkit new Skill
-   example-skill`, `processkit new MCPServer example-server`, create the
+3. Run `processkit create Standard example-rule`,
+   `processkit create Skill example-skill`,
+   `processkit create MCPServer example-server`, create the
    decision record `context/decisions/example-decision.md`, and create the
    document `context/documents/guide.md`.
 4. Run `processkit validate`.
@@ -64,8 +65,8 @@ Steps:
 
 1. Copy `context/standards/example-rule.json` to `context/stray/other.json`
    and to `notes/other.json`, changing `metadata.name` to `other`.
-2. Run `processkit list Standard --json` and `processkit validate --json`.
-3. Run `processkit validate notes/other.json --json`.
+2. Run `processkit get Standard -o json` and `processkit validate -o json`.
+3. Run `processkit validate -f notes/other.json -o json`.
 
 Expected results:
 
@@ -79,13 +80,13 @@ Covers: PK-STORE-002, PK-STORE-047
 ## 3. The cache is disposable
 
 Preconditions: a project repository with one locked upstream that has been
-fetched, and a warm cache from `processkit context --json`.
+fetched, and a warm cache from `processkit get context -o json`.
 
 Steps:
 
-1. Record the output of `processkit context --json`.
+1. Record the output of `processkit get context -o json`.
 2. Delete `.processkit/`.
-3. Run `processkit fetch`, then `processkit context --json` again.
+3. Run `processkit fetch`, then `processkit get context -o json` again.
 4. Inspect `.processkit/` and `git status --porcelain`.
 
 Expected results:
@@ -110,9 +111,9 @@ Steps:
    it.
 2. Rewrite the front matter of `context/decisions/example-decision.md` as
    JSON front matter (`---json`) with unsorted keys and commit it.
-3. Run `processkit format --yes --json` twice, recording file digests after
+3. Run `processkit format --yes -o json` twice, recording file digests after
    each run.
-4. Commit, then run `processkit format --json` on the clean tree.
+4. Commit, then run `processkit format -o json` on the clean tree.
 
 Expected results:
 
@@ -174,15 +175,15 @@ repository.
 
 Steps:
 
-1. Run `processkit new Standard ../../escape`.
+1. Run `processkit create Standard ../../escape`.
 2. Create `context/standards/link.json` as a symlink to a file outside the
-   repository and run `processkit validate --json`.
+   repository and run `processkit validate -o json`.
 3. Replace it with a symlink to `context/standards/example-rule.json`
-   and run `processkit validate --json`.
+   and run `processkit validate -o json`.
 4. Create a named pipe under `context/standards/` and run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 5. Create `context/standards/Case.json` and `context/standards/case.json`
-   on a case-sensitive filesystem and run `processkit validate --json`.
+   on a case-sensitive filesystem and run `processkit validate -o json`.
 6. Copy `context/standards/example-rule.json` to `fixtures/rule.json`,
    make `context/standards/example-rule.json` a symlink to it, commit, and
    run `processkit format --yes`.
@@ -209,9 +210,9 @@ hand so it is not in deterministic serialization, and that edit committed.
 
 Steps:
 
-1. Run `processkit format --dry-run --json`.
+1. Run `processkit format --dry-run -o json`.
 2. Run `processkit format` non-interactively without `--yes`.
-3. Run `processkit format --yes --json`.
+3. Run `processkit format --yes -o json`.
 4. Run `processkit init --governing` again, non-interactively, without
    `--yes`.
 
@@ -236,12 +237,12 @@ Preconditions: the repository from journey 1.
 
 Steps:
 
-1. Run `processkit version --json` and record the supported content API
+1. Run `processkit version -o json` and record the supported content API
    versions.
 2. Create one Standard declaring `processkit.projectious.work/v1`, one
    declaring `processkit.projectious.work/v99`, and one without
-   `apiVersion`; run `processkit validate --json` and
-   `processkit list Standard --json`.
+   `apiVersion`; run `processkit validate -o json` and
+   `processkit get Standard -o json`.
 
 Expected results:
 
@@ -261,16 +262,16 @@ snapshot of `HEAD`, all refs, the index, and `.git/config`.
 
 Steps:
 
-1. Run every writing command (`init` with confirmation declined, `new`,
-   `format`, `lock`) and every read command, including
+1. Run every writing command (`init` with confirmation declined,
+   `create`, `apply -f`, `format`, `lock`) and every read command, including
    `processkit mcp serve --stdio` answering one `get_context` call. Commit
    the result with Git and take a new snapshot.
 2. Edit one standard without committing; call `get_context` and run
-   `processkit show Standard example-rule --json` and
-   `processkit list Standard --json`.
-3. In a new repository with no commit, run `processkit init --governing
-   --yes`, `processkit new Standard first`, and `processkit list Standard
-   --json`.
+   `processkit get Standard example-rule -o json` and
+   `processkit get Standard -o json`.
+3. In a new repository with no commit, run
+   `processkit init --governing --yes`, `processkit create Standard first`,
+   and `processkit get Standard -o json`.
 
 Expected results:
 
@@ -296,15 +297,15 @@ files under paths matching `context/standards/`.
 
 Steps:
 
-1. Run `processkit list Standard --json` and `processkit validate --json`
+1. Run `processkit get Standard -o json` and `processkit validate -o json`
    from the outer repository root.
-2. Run `processkit list Standard --json --root sub` after giving `sub/` its
+2. Run `processkit get Standard -o json --root sub` after giving `sub/` its
    own `processkit.toml`.
 3. Set `[content] directory = "sub/context"` in the outer
-   `processkit.toml` and run `processkit validate --json`.
-4. Run `processkit validate --json --root` with a subdirectory of the outer
+   `processkit.toml` and run `processkit validate -o json`.
+4. Run `processkit validate -o json --root` with a subdirectory of the outer
    working copy that contains its own `processkit.toml`.
-5. Run `processkit validate --json` in a directory with `processkit.toml`
+5. Run `processkit validate -o json` in a directory with `processkit.toml`
    that is not inside any Git working copy.
 
 Expected results:
@@ -328,7 +329,7 @@ Steps:
 1. Run every CLI command and serve several MCP requests over stdio.
 2. Create `context/processes/ticket-42.json` whose `kind` is `WorkItem`,
    and `context/standards/log-1.json` whose `kind` is `LogEntry`; run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 3. List all files created in the repository and in `.processkit/`.
 
 Expected results:
@@ -350,17 +351,18 @@ Preconditions: the repository from journey 1, committed; one Standard
 
 Steps:
 
-1. Run `processkit format --yes --json`.
-2. Edit `a` again without committing and run `processkit format --yes
-   --json` and `processkit format --dry-run --json`.
+1. Run `processkit format --yes -o json`.
+2. Edit `a` again without committing and run
+   `processkit format --yes -o json` and
+   `processkit format --dry-run -o json`.
 3. Stage the edit (`git add`) without committing and run
-   `processkit format --yes --json`.
+   `processkit format --yes -o json`.
 4. Commit. Create `context/standards/b.json` that is untracked and not in
    deterministic serialization; add `context/standards/c.json` to
    `.gitignore` and create it the same way. Run
-   `processkit format --yes --json`.
+   `processkit format --yes -o json`.
 5. Hand-edit `processkit.lock` without committing and run
-   `processkit lock --yes --json` with a change of a declared upstream.
+   `processkit lock --yes -o json` with a change of a declared upstream.
 
 Expected results:
 
@@ -408,7 +410,7 @@ Steps:
    `context/standards/renamed.json` without changing `metadata.name`.
 2. Copy `context/mcp-servers/example-server.json` to
    `context/standards/example-server.json`.
-3. Run `processkit validate --json` and `processkit list Standard --json`.
+3. Run `processkit validate -o json` and `processkit get Standard -o json`.
 
 Expected results:
 

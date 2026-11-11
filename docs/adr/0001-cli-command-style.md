@@ -80,13 +80,14 @@ Rules that style B adds:
   Omitting the name addresses every resource of the type.
 - **Output** (PK-CLI-050): `-o json` is the result envelope; `-o yaml` is the
   same envelope as YAML; `-o name` prints one `<Kind>/<namespace>/<name>` per
-  line; `-o wide` is text with extra columns. Default text output and `wide`
+  line (`get`, `create`, `apply`, `format`); `-o wide` is text with extra columns. Default text output and `wide`
   are not a contract.
 - **Scope** (PK-CLI-051): without `-n`, a command uses the root Container;
   `-A` lists every namespace (the CLI then omits `namespace` from the MCP
   call).
-- **Dry run** (PK-CLI-052): `client` computes and prints the plan without
-  checking Git state; `server` also runs every check a real run runs
+- **Dry run** (PK-CLI-052): `client` computes and prints the plan and
+  reports failed committed-target checks only as warnings; `server` runs
+  every check a real run runs, with real-run severity
   (committed targets, validation of the planned content, for `fetch`
   resolution over the network) and then stops before confirmation and
   writing.

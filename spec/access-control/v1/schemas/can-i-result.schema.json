@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/access-control/can-i-result.schema.json",
-  "title": "processkit access can-i result",
-  "description": "The data member of the cli@v1 result envelope of processkit access can-i (access-control@v1 PK-ACC-027, PK-ACC-047). Both decisions exit with code 0.",
+  "title": "processkit auth can-i result",
+  "description": "The data member of the cli@v1 result envelope of processkit auth can-i (access-control@v1 PK-ACC-027, PK-ACC-047). Both decisions exit with code 0.",
   "type": "object",
   "additionalProperties": false,
   "required": ["decision", "principal", "request", "grantedBy"],
@@ -28,9 +28,13 @@
       "required": ["verb", "kind", "namespace", "name"],
       "properties": {
         "verb": {"enum": ["get", "list"]},
-        "kind": {"type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$"},
+        "kind": {
+          "description": "TYPE resolved to the kind name (cli@v1 PK-CLI-049).",
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
         "namespace": {
-          "description": "Container name; root when --namespace is absent.",
+          "description": "Container name; root when -n is absent.",
           "type": "string",
           "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
         },

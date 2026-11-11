@@ -37,7 +37,7 @@ OWL, SHACL, JSON-LD, and knowledge graphs are not runtime dependencies.
 |---|---|
 | repository layout, declared locations, file formats, serialization, release-owned files | repository-storage@v1 |
 | individual content kinds (Standard, ProcessSpecification, Skill, MCPServer, DecisionRecord, Document), their schemas and templates | content-kinds@v1 |
-| commands such as `processkit ontology`, `list`, `validate`, exit codes, result envelope | cli@v1 |
+| commands such as `processkit api-resources`, `explain`, `get`, `validate`, exit codes, result envelope | cli@v1 |
 | MCP tools such as `ontology`, `list`, `validate`, and resources | mcp-context-serving@v1 |
 | the lockfile and resolution of inherited items | inheritance@v1 |
 | Roles, `grants-role` Bindings, authenticators, and access decisions that consume selectors and Containers | access-control@v1 |
@@ -104,7 +104,7 @@ an agent proposal for owner review at freeze; requirements carry an
 
 | Item | Resolution | Basis |
 |---|---|---|
-| OPEN-ontology-01 | Registry `ontology-registry.json`, JSON, release-owned, published at the schema base URL; fields in `schemas/ontology-registry.schema.json`; `ontologyVersion` semantic version, first value `1.0.0`; `ontology list` and `show` semantics (PK-MODEL-055, PK-MODEL-057). | agent proposal |
+| OPEN-ontology-01 | Registry `ontology-registry.json`, JSON, release-owned, published at the schema base URL; fields in `schemas/ontology-registry.schema.json`; `ontologyVersion` semantic version, first value `1.0.0`; `api-resources` and `explain TYPE` semantics, formerly `ontology list` and `ontology show` (PK-MODEL-055, PK-MODEL-057). | agent proposal |
 | OPEN-ontology-02 | Lowercase dot-separated codes with the `ontology.` prefix for every validation, selector, and generation condition (`interfaces.yaml` `errors`, `generation`); diagnostic shape from cli@v1 (PK-MODEL-058, PK-MODEL-061). | agent proposal |
 | OPEN-ontology-03 | `schemas/container.schema.json`: `spec.title`, `spec.owner` (string), `spec.parent` (`Container/<name>`), `spec.discriminator`, `spec.lifecycle` (`proposed`, `active`, `retired`, informational), `spec.extensions` (PK-MODEL-064). | agent proposal |
 | OPEN-ontology-04 | The root Container is `root`; implicit unless declared; declared without parent; parentless Containers are its children; Containers have no `metadata.namespace` (PK-MODEL-065). | agent proposal |
@@ -125,3 +125,15 @@ Notes for the owner review:
   line with the T class contract ("without independent persistence").
 - Storage locations for items of an extension content kind are not stated
   by repository-storage@v1.
+
+## CLI style B (owner decision 2026-11-11, #212)
+
+The CLI uses the verb–resource style of kubectl
+(`docs/adr/0001-cli-command-style.md`). The registry is read with
+`processkit api-resources` and `processkit explain TYPE`; `explain` now
+also accepts a concept name in any case and a kind's plural or short name
+(PK-MODEL-057). Because the CLI accepts kinds by plural and short name,
+every content kind an OntologyExtension adds declares `plural` and
+`shortName`, and collisions with any other kind's names or with the
+reserved word `context` fail with `ontology.extension-type-name-taken`
+(PK-MODEL-076, an agent proposal on that decision).

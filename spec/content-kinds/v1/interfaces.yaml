@@ -91,15 +91,20 @@ kinds:
     format: Markdown, front matter optional
     schema: schemas/document.schema.json (the front matter)
     source_schema: schemas/document-sources.schema.json
-    template: none (new Document fails with content-kinds.no-template)
+    template: none (create Document fails with content-kinds.no-template)
     basis: agent-proposal
     requirements: [PK-DOC-001, PK-DOC-003, PK-DOC-004]
 
-# KIND operand of the CLI and `kind` argument of the MCP tools.
+# TYPE operand of the CLI and `kind` argument of the MCP tools.
 kind_tokens:
   values: [Standard, ProcessSpecification, Skill, MCPServer, DecisionRecord,
            Document]
-  comparison: case-sensitive, the exact `kind` value
+  comparison:
+    cli: >-
+      case-insensitive; the `kind` value, its plural, or its short name
+      (cli@v1 type_names, PK-CLI-049)
+    mcp: case-sensitive, the exact `kind` value
+  basis_cli: owner decision 2026-11-11 (#212), CLI style B
   other_kinds: >-
     Container, Role, Binding, OntologyExtension, and extension kinds are
     accepted as their owning specifications state (ontology@v1,
@@ -180,7 +185,7 @@ levels:
                  PK-SKILL-002, PK-DEC-005, PK-DOC-002]
 
 # Level-2 section key per kind. It is the value of the MCP get `section`
-# argument and of CLI show --section (syntax owned by
+# argument and of CLI get TYPE NAME --section (syntax owned by
 # mcp-context-serving@v1 and cli@v1).
 sections:
   Standard: spec.sections[].id
@@ -783,7 +788,7 @@ secret_patterns:
 # Operations through which this slug's requirements are observed. Their
 # syntax is owned by cli@v1 and mcp-context-serving@v1.
 operations:
-  - name: processkit new KIND NAME
+  - name: processkit create TYPE NAME
     owner: cli@v1 (semantics here)
     templates:
       Standard: examples/standard.template.json
@@ -808,7 +813,7 @@ operations:
     basis: agent-proposal
     requirements: [PK-STD-001, PK-CAT-002, PK-SKILL-001, PK-PROC-006,
                    PK-CONT-020]
-  - name: processkit validate [PATH... | -] [--kind KIND]
+  - name: processkit validate [TYPE [NAME...]] [-f PATH|-]...
     owner: cli@v1
     draft_content:
       Standard: the JSON item
@@ -823,15 +828,15 @@ operations:
       skipped; the diagnostic file is "-"
     check: >-
       every violation is reported with file, JSON pointer, and violated
-      constraint; draft input via "-" writes no file
+      constraint; draft input via "-f -" writes no file
     basis: agent-proposal
     requirements: [PK-CONT-010, PK-CONT-012, PK-CONT-022, PK-STD-003,
                    PK-PROC-003, PK-CAT-003]
-  - name: processkit list KIND [--selector S] [--namespace N]
+  - name: processkit get TYPE [-l S] [-n N | -A]
     owner: cli@v1
     check: results are level 0 only
     requirements: [PK-CONT-001, PK-CONT-002]
-  - name: processkit show KIND NAME [--level L] [--section S]
+  - name: processkit get TYPE NAME [-n N] [--level L] [--section S]
     owner: cli@v1
     check: >-
       --level 1 returns no section bodies; --section returns exactly one
@@ -839,7 +844,7 @@ operations:
       heading section
     requirements: [PK-CONT-001, PK-STD-002, PK-SKILL-002, PK-PROC-005,
                    PK-DOC-002, PK-CONT-015]
-  - name: processkit context [--task T] [--profile P] [--path PATH]
+  - name: processkit get context [--task T] [--profile P]... [--path PATH]...
     owner: cli@v1
     requirements: [PK-CONT-004]
   - name: validate(kind, content)
@@ -993,15 +998,15 @@ errors:
       requirements: [PK-DOC-004]
     - code: content-kinds.unknown-kind
       category: usage
-      condition: KIND or kind names no kind
+      condition: the CLI TYPE or the MCP kind names no kind
       requirements: [PK-CONT-019]
     - code: content-kinds.no-template
       category: usage
-      condition: new for a kind without a published template
+      condition: create for a kind without a published template
       requirements: [PK-CONT-020]
     - code: content-kinds.invalid-name
       category: usage
-      condition: new with a NAME that does not match the name syntax
+      condition: create with a NAME that does not match the name syntax
       requirements: [PK-CONT-020]
     - code: content-kinds.unknown-section
       category: usage
@@ -1157,7 +1162,7 @@ examples:
     validates_against: schemas/process-specification.schema.json
     note: >-
       one terminal state and no transitions, so the output of processkit
-      new validates without any Role
+      create validates without any Role
     requirements: [PK-PROC-006]
   - path: examples/process-specification.example.json
     validates_against: schemas/process-specification.schema.json

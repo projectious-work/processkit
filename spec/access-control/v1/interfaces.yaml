@@ -29,12 +29,12 @@ schemas:
     requirements: [PK-ACC-018, PK-ACC-021, PK-ACC-041]
   - path: schemas/principal.schema.json
     id: https://schemas.projectious.work/processkit/v1/access-control/principal.schema.json
-    describes: a principal; data of `processkit access whoami`
+    describes: a principal; data of `processkit auth whoami`
     basis: agent-proposal
     requirements: [PK-ACC-017, PK-ACC-037, PK-ACC-048]
   - path: schemas/can-i-result.schema.json
     id: https://schemas.projectious.work/processkit/v1/access-control/can-i-result.schema.json
-    describes: data of `processkit access can-i`
+    describes: data of `processkit auth can-i`
     basis: agent-proposal
     requirements: [PK-ACC-027, PK-ACC-047]
   - path: schemas/access-log-record.schema.json
@@ -83,7 +83,7 @@ operator_configuration:
   # No key is accepted in project configuration (errors.reused_codes).
   # A wrong type or a value
   # outside the listed values fails with cli.config-invalid-value. Every key
-  # appears in `processkit config show --json` with its source. Paths must
+  # appears in `processkit config view -o json` with its source. Paths must
   # be absolute (else cli.config-invalid-value). Keys marked required_when
   # are checked by `processkit mcp serve --http` at start-up
   # (access.config-missing-key).
@@ -279,7 +279,7 @@ authenticators:
         rejects the token
       protocol_role: OAuth protected resource per the MCP authorization
         specification for the supported MCP versions (reported by
-        processkit version --json, cli@v1); see http_endpoints
+        processkit version -o json, cli@v1); see http_endpoints
       rejects: [expired token, not-yet-valid token, wrong-audience token,
                 wrong-issuer token, bad signature, rejected algorithm,
                 missing user claim]
@@ -517,15 +517,16 @@ authorization:
            operation that reports it}
       - {operation: reference resolution, verb: get, kinds: target kind}
     cli:
-      - {command: list, verb: list}
-      - {command: show, verb: get}
-      - {command: context, verb: get}
-      - {command: explain, verb: get}
-      - {command: ontology list, verb: as MCP ontology}
-      - {command: ontology show, verb: as MCP ontology}
-      - {command: access can-i, verb: impersonate}
-      - {commands: [init, new, validate, format, lock, fetch, migrate,
-          config show, version, access whoami, mcp serve], verb: none}
+      - {command: get TYPE, verb: list}
+      - {command: get TYPE NAME, verb: get}
+      - {command: get context, verb: get}
+      - {command: describe, verb: get}
+      - {command: api-resources, verb: as MCP ontology}
+      - {command: explain, verb: as MCP ontology}
+      - {command: auth can-i, verb: impersonate}
+      - {commands: [init, create, apply, validate, format, lock, fetch,
+          migrate, config view, version, auth whoami, mcp serve],
+         verb: none}
     cli_principal: always local, so CLI read commands are allowed
       everything (PK-ACC-046)
     basis: agent-proposal
@@ -655,20 +656,22 @@ http_endpoints:
   requirements: [PK-ACC-052, PK-ACC-055]
 
 commands:
-  - name: access can-i
-    synopsis: processkit access can-i VERB KIND [NAME] --as USER
-      [--as-group G]... [--namespace N]
+  - name: auth can-i
+    synopsis: processkit auth can-i VERB TYPE [NAME] --as USER
+      [--as-group G]... [-n N]
     arguments:
       - {name: VERB, values: [get, list],
          other: usage failure access.unknown-verb (exit 2)}
-      - {name: KIND, value: content kind in the effective ontology,
-         other: usage failure access.unknown-kind (exit 2)}
+      - {name: TYPE, value: "content kind in the effective ontology, named
+           as in cli@v1 type_names (PK-CLI-049)",
+         other: usage failure content-kinds.unknown-kind (exit 2,
+         cli@v1 PK-CLI-049)}
       - {name: NAME, optional: true}
     options:
       - {name: --as, value: USER, required: true,
          missing: cli.missing-argument (exit 2)}
       - {name: --as-group, value: G, repeatable: true}
-      - {name: --namespace, value: N, default: root,
+      - {name: -n / --namespace, value: N, default: root,
          unknown_container: access.unknown-namespace (usage, exit 2)}
     evaluates: the Roles and Bindings of the selected working copy at its
       revision; no network; request time = the invocation's clock reading
@@ -687,8 +690,8 @@ commands:
     exit_code: 0 for allow and for deny
     basis: agent-proposal
     requirements: [PK-ACC-027, PK-ACC-042, PK-ACC-047, PK-ACC-053]
-  - name: access whoami
-    synopsis: processkit access whoami
+  - name: auth whoami
+    synopsis: processkit auth whoami
     data: schemas/principal.schema.json
     cli_value: '{"user": <login name>, "groups": [], "authenticator":
       "local"}'
@@ -834,9 +837,6 @@ errors:
        exit_code: 3, scope: configuration, next_action: fix-configuration,
        requirements: [PK-ACC-027, PK-ACC-042]}
     - {code: access.unknown-verb, category: usage, exit_code: 2,
-       scope: invocation, next_action: fix-invocation,
-       requirements: [PK-ACC-047]}
-    - {code: access.unknown-kind, category: usage, exit_code: 2,
        scope: invocation, next_action: fix-invocation,
        requirements: [PK-ACC-047]}
     - {code: access.unknown-namespace, category: usage, exit_code: 2,

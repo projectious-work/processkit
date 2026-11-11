@@ -167,7 +167,7 @@ kind_locations:
   - check: a file placed outside every declared location is not read,
       listed, validated, or served, and no diagnostic names it
     requirements: [PK-STORE-002]
-  - check: a path argument (validate, format) outside every declared
+  - check: a -f path of validate or format outside every declared
       location is reported with storage.undeclared-path (category usage)
     basis: agent-proposal
     requirements: [PK-STORE-047]
@@ -286,11 +286,15 @@ formats:
     requirements: [PK-STORE-010, PK-STORE-049]
 
 format_command:
-  # Semantics of `processkit format [PATH...]` (cli@v1 lists the command).
-  default_paths: every item file in the declared locations of the
-    repository, including Document files; never files under .processkit/
-  explicit_paths: files or directories; each must be inside a declared
-    location, otherwise storage.undeclared-path (category usage)
+  # Semantics of `processkit format [TYPE [NAME...]] [-n N] [-f PATH]...`
+  # (cli@v1 lists the command; style B, owner decision 2026-11-11, #212).
+  default_paths: without TYPE and -f, every item file in the declared
+    locations of the repository, including Document files; never files
+    under .processkit/
+  type_and_names: the item files of every item of TYPE, or of the named
+    items, in the namespace of -n (cli@v1 PK-CLI-051)
+  explicit_paths: -f names files or directories; each must be inside a
+    declared location, otherwise storage.undeclared-path (category usage)
   steps:
     - replace every CRLF and every lone CR with LF
     - JSON item file - parse and write in deterministic serialization
@@ -350,8 +354,8 @@ paths:
     item paths and names: the content directory
     document source matches, processkit.toml, processkit.lock: the
       repository root
-  applies_to: names from command arguments (for example processkit new KIND
-    NAME), path arguments, and every file found in a declared location
+  applies_to: names from command arguments (for example processkit create
+    TYPE NAME), -f paths, and every file found in a declared location
   collision: two paths collide when they are equal after Unicode NFC
     normalization followed by Unicode full case folding; checked among the
     files in declared locations and against every plan target

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/access-control/principal.schema.json",
   "title": "processkit principal",
-  "description": "The principal of a request (access-control@v1 PK-ACC-017, PK-ACC-037, PK-ACC-048). It is the data of processkit access whoami and the principal member of access log records. It never contains credential material.",
+  "description": "The principal of a request (access-control@v1 PK-ACC-017, PK-ACC-037, PK-ACC-048). It is the data of processkit auth whoami and the principal member of access log records. It never contains credential material.",
   "type": "object",
   "additionalProperties": false,
   "required": ["user", "groups", "authenticator"],

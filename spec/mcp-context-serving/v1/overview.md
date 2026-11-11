@@ -43,8 +43,8 @@ This slug does not cover:
 - the content kinds, their schemas, disclosure-level contents, `summary` and
   `triggers`, served-item identity fields, and invalid-item reporting —
   `content-kinds@v1`;
-- command syntax, `processkit context` equivalence with `get_context`,
-  `--json` envelopes, and exit codes — `cli@v1`;
+- command syntax, `processkit get context` equivalence with
+  `get_context`, `-o json` envelopes, and exit codes — `cli@v1`;
 - the ontology registry served by the `ontology` tool, and `status` —
   `ontology@v1`;
 - the shared server's paths `/mcp` and `/healthz`, the access set and its

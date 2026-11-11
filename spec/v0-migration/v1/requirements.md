@@ -157,11 +157,12 @@ codes, field names, and the field mapping are in `interfaces.yaml`.
   With `--dry-run`, processkit shall still print the plan of the items
   without a manual action.
   <!-- agent proposal: OPEN-v0-migration-06 -->
-- **PK-MIG-022:** When `processkit migrate --json` runs, the envelope's
+- **PK-MIG-022:** When `processkit migrate -o json` runs, the envelope's
   `data` shall have the shape of `schemas/migrate-result.schema.json`. It
   shall list every converted source with the treatment of each of its
   fields, and the number of untouched v0 items per v0 kind.
-  <!-- agent proposal: OPEN-v0-migration-07 -->
+  <!-- agent proposal: OPEN-v0-migration-07; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
 - **PK-MIG-023:** If the analysis finds nothing to convert or rewrite, then
   processkit shall report `migration.nothing-to-migrate` with severity
   `info`, shall not ask for confirmation, shall write no file, and shall

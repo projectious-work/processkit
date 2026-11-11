@@ -17,12 +17,12 @@ initialized governing repository exists.
 
 Steps:
 
-1. Run `processkit version --json`.
-2. Run `processkit ontology list --json`.
-3. Run `processkit ontology show Container --json` and
-   `processkit ontology show WorkItem --json`.
+1. Run `processkit version -o json`.
+2. Run `processkit api-resources -o json`.
+3. Run `processkit explain Container -o json` and
+   `processkit explain WorkItem -o json`.
 4. Over stdio MCP, call `ontology()` and `ontology(concept="Container")`.
-5. Run `processkit ontology show NoSuchConcept --json` and call MCP
+5. Run `processkit explain NoSuchConcept -o json` and call MCP
    `ontology(concept="NoSuchConcept")`.
 
 Expected results:
@@ -52,10 +52,10 @@ Preconditions: initialized governing repository.
 Steps:
 
 1. Pipe a draft item with `"kind": "WorkItem"` and a valid envelope to
-   `processkit validate -`.
+   `processkit validate -f -`.
 2. Call MCP `validate(kind="WorkItem", content=...)` with the same draft.
 3. Place the same item as a file under the content directory and run
-   `processkit list WorkItem` and MCP `list(kind="WorkItem")`.
+   `processkit get WorkItem -A` and MCP `list(kind="WorkItem")`.
 4. Create a ProcessSpecification that names WorkItem as the type it governs
    and references the instance concepts Event and Outcome by name; run
    `processkit validate`.
@@ -92,8 +92,8 @@ reverting the previous one:
 8. add a Container `engineering` with
    `spec.extensions` `{"example.com/cost-center": "4711"}`; then change the
    key to `title`;
-9. run `processkit show Standard git-branching --json` and
-   `processkit list Standard --json`.
+9. run `processkit get Standard git-branching -o json` and
+   `processkit get Standard -o json`.
 
 Expected results:
 
@@ -106,7 +106,7 @@ Expected results:
   and `ontology.label-value`.
 - 5: both fail with `ontology.reserved-key`.
 - 6: fails with `ontology.authored-status`; after reverting,
-  `processkit explain Standard git-branching --json` reports `status`
+  `processkit describe Standard git-branching -o json` reports `status`
   valid against `schemas/status.schema.json`, with
   `status.validation.outcome` `valid`, a `status.digest` that equals
   `sha256:` and the SHA-256 of the file bytes, and `status.source.path`
@@ -114,7 +114,8 @@ Expected results:
 - 7: fails with `ontology.unknown-field`.
 - 8: the namespaced key is valid; the key `title` fails with
   `ontology.extension-field-not-namespaced`.
-- 9: the `show` result has `status`; the list items have no `status`.
+- 9: the single-item result has `status`; the list items have no
+  `status`.
 
 Covers: PK-MODEL-010, PK-MODEL-012, PK-MODEL-013, PK-MODEL-014,
 PK-MODEL-015, PK-MODEL-061, PK-MODEL-062, PK-MODEL-063
@@ -131,17 +132,17 @@ Steps:
    lifecycle. Add Standard `git-branching` without `metadata.namespace` and
    Standard `api-style` in namespace `engineering`. Run
    `processkit validate`.
-2. Run `processkit list Standard --namespace engineering` and the MCP
+2. Run `processkit get Standard -n engineering` and the MCP
    `list(kind="Standard", namespace="engineering")`.
 3. Give `api-style` the same `spec` content as an item in another
-   namespace and run `processkit show` on both.
+   namespace and run `processkit get Standard NAME -n N` on both.
 4. Add a second Container named `engineering`; validate; revert.
 5. Set `company`'s parent to `payments`; validate; revert.
 6. Set `payments`' parent to `unknown-unit`; validate; revert.
 7. Set `api-style`'s `metadata.namespace` to `nowhere`; run
-   `processkit validate`, `processkit list Standard`, and MCP
+   `processkit validate`, `processkit get Standard -A`, and MCP
    `list(kind="Standard")`; revert.
-8. Run `processkit list Standard --namespace root`.
+8. Run `processkit get Standard -n root` and `processkit get Standard`.
 9. Add Container `root` with title, owner, and lifecycle and no parent;
    validate. Then give it `spec.parent` `Container/company`; validate;
    revert.
@@ -166,7 +167,8 @@ Expected results:
 - 7: validation fails for `api-style` with `ontology.unknown-namespace`;
   the item is not returned by either list, and other valid items still
   are.
-- 8: returns `git-branching` and not `api-style`.
+- 8: both return `git-branching` and not `api-style`; without `-n`
+  the root Container is the default scope (cli@v1 PK-CLI-051).
 - 9: the explicit `root` is valid; with a parent it fails with
   `ontology.root-parent`.
 - 10: fails with `ontology.namespace-not-allowed`.
@@ -183,7 +185,7 @@ Preconditions: repository with Standards `a` (labels `area=delivery`,
 `sensitivity=confidential`), and `c` (label `area=delivery`, no
 `sensitivity`), and annotation `example.com/review-cycle: yearly` on `a`.
 
-Steps: run `processkit list Standard --selector S --json` and MCP
+Steps: run `processkit get Standard -l S -o json` and MCP
 `list(kind="Standard", selector=S)` for each S:
 
 1. `area=delivery`
@@ -225,20 +227,21 @@ Steps:
 
 1. Add a local Standard that references `Standard/git-branching`,
    `DecisionRecord/adopt-github-flow`, and `Container/engineering`; run
-   `processkit validate` and `processkit explain` on it.
+   `processkit validate` and `processkit describe` on it.
 2. Replace one reference with the file path
    `standards/git-branching.json`; validate.
 3. Replace one reference with `Standard/does-not-exist` in a field the
-   owning schema requires; validate and run `processkit show`.
+   owning schema requires; validate and run `processkit get` on the
+   item.
 
 Expected results:
 
 - 1: validation succeeds; the inherited references resolve through the
-  lock; in `status.references` of the explain result, each inherited
+  lock; in `status.references` of the describe result, each inherited
   reference has `resolved` true and an `origin` that names the upstream.
 - 2: fails with `ontology.invalid-reference`.
 - 3: validation fails with `ontology.unresolved-reference` (severity
-  error); `processkit show` lists the reference in `status.references`
+  error); `processkit get` lists the reference in `status.references`
   with `resolved` false.
 
 Covers: PK-MODEL-021, PK-MODEL-022, PK-MODEL-023, PK-MODEL-071
@@ -253,8 +256,8 @@ Binding scoped to `Container/root`; the Standards from J5.
 Steps:
 
 1. As each principal, call MCP `list(kind="Standard")`.
-2. Run `processkit access can-i list Standard b --as` each principal.
-3. Inspect `processkit config show` and the published schemas for any
+2. Run `processkit auth can-i list Standard b --as` each principal.
+3. Inspect `processkit config view` and the published schemas for any
    other setting or field that hides items.
 
 Expected results:
@@ -275,7 +278,7 @@ Steps:
 1. Under `context/ontology/`, add the OntologyExtension
    `incident-management` of `interfaces.yaml` `extensions.example`, with
    one relation type `escalates-to` added; validate; run
-   `processkit ontology show Incident --json`.
+   `processkit explain Incident -o json`.
 2. Remove `spec.namespaceOwner`; validate; revert.
 3. Add a concept named `container` to the extension; validate; revert.
 4. Set `spec.namespace` to `processkit.projectious.work`; validate;
@@ -283,10 +286,18 @@ Steps:
 5. Add a second OntologyExtension `other` that adds a concept `Incident`;
    validate; revert.
 6. In a project repository inheriting from this one, run
-   `processkit ontology show Incident --json` and
-   `processkit explain OntologyExtension incident-management --json`.
+   `processkit explain Incident -o json` and
+   `processkit describe OntologyExtension incident-management -o json`.
 7. In that project repository, add an OntologyExtension with
    `spec.namespace` `example.com`; validate.
+8. Back in the governing repository, add to `incident-management` a
+   content kind `Runbook` with `plural` `runbooks`, `shortName` `rb`, a
+   concept, and a schema;
+   validate; run `processkit get rb -o json`. Then, each separately and
+   reverted: remove `shortName`; set `shortName` to `standard`; set `plural`
+   to `context`; add a second OntologyExtension with a content kind
+   `Playbook` (`plural` `playbooks`, `shortName` `pb`) and set `Runbook`'s
+   `shortName` to `playbooks`; validate after each change.
 
 Expected results:
 
@@ -297,12 +308,17 @@ Expected results:
 - 3: fails with `ontology.extension-redefines-concept`.
 - 4: fails with `ontology.reserved-key`.
 - 5: fails with `ontology.extension-duplicate-name`.
-- 6: the entry is listed; the explain provenance names the upstream
+- 6: the entry is listed; the describe provenance names the upstream
   repository.
 - 7: fails with `ontology.extension-namespace-taken`.
+- 8: the kind is valid and `processkit get rb` addresses `Runbook` items.
+  Without `shortName`, validation fails with `ontology.extension-invalid`;
+  each other change fails with `ontology.extension-type-name-taken`
+  (`standard` collides with the kind name Standard, compared without
+  regard to case).
 
 Covers: PK-MODEL-040, PK-MODEL-041, PK-MODEL-057, PK-MODEL-072,
-PK-MODEL-073, PK-MODEL-074
+PK-MODEL-073, PK-MODEL-074, PK-MODEL-076
 
 ## J9 — Scaling-framework concepts are optional
 

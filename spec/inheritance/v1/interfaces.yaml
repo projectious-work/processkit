@@ -27,8 +27,8 @@ configuration:
         pattern: "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$ (at most 63 characters)"
         unique: true
         meaning: upstream name; referenced by overrides (Standard
-          spec.overrides.upstream), winners, lock --update NAME, and as the
-          first segment of lock entry names
+          spec.overrides.upstream), winners, lock --update UPSTREAM...,
+          and as the first segment of lock entry names
         example: company
       - name: source
         required: true
@@ -126,8 +126,8 @@ files:
       PK-STORE-049 (sorted keys, two-space indent, one LF at the end)
     apiVersion: lock.processkit.projectious.work/v1
     kind: Lock
-    format_version_report: processkit version --json reports the apiVersion
-      value as lockFormatVersion (cli@v1 PK-OUT-010)
+    format_version_report: processkit version -o json reports the
+      apiVersion value as lockFormatVersion (cli@v1 PK-OUT-010)
     entries:
       member: upstreams
       fields: [name, source, ref, commit, digest]
@@ -225,8 +225,9 @@ content_digest:
   requirements: [PK-INH-002, PK-INH-004, PK-INH-037, PK-INH-038]
 
 commands:
-  # Syntax, global options, --json, --dry-run, --yes, exit codes, plans,
-  # and confirmation are those of cli@v1. Rows `lock` and `fetch` follow
+  # Syntax, global options, -o, --dry-run, --yes, exit codes, plans,
+  # and confirmation are those of cli@v1 (style B, owner decision
+  # 2026-11-11, #212). Rows `lock` and `fetch` follow
   # owner decision #213 finding 3 (fetch, then lock).
   - name: fetch
     synopsis: processkit fetch
@@ -292,14 +293,16 @@ commands:
                    PK-INH-041, PK-INH-042, PK-INH-044, PK-INH-057,
                    PK-PROD-026]
   - name: lock --update
-    synopsis: processkit lock --update [NAME]
+    synopsis: processkit lock --update [UPSTREAM...]
     arguments:
-      - {name: NAME, optional: true,
-         meaning: declared upstream name; resolves NAME and its transitive
-           entries again; every other upstream as plain lock}
-    without_name: every declared upstream is resolved again
-    unknown_name: inheritance.unknown-upstream (usage); the lock is not
-      written
+      - {name: UPSTREAM, optional: true, repeatable: true,
+         meaning: declared upstream name; resolves each named upstream and
+           its transitive entries again; every other upstream as plain
+           lock}
+    without_upstream: every declared upstream is resolved again
+    upstream_without_update: usage error, cli.unexpected-argument (cli@v1)
+    unknown_upstream: inheritance.unknown-upstream (usage) for each
+      UPSTREAM that is not declared; the lock is not written
     shows_before_write: [items added, items changed, items removed,
       items newly conflicting]
     summary_placement: data (schemas/lock-result.schema.json); in text mode
@@ -307,13 +310,13 @@ commands:
     text_lines: one line per item, "<added|changed|removed|newly-conflicting>
       <typed name>", in that group order, each group sorted
     writes: processkit.lock
-    check: with --dry-run (cli@v1) the four lists are reported and the lock
-      is byte-identical afterwards
+    check: with --dry-run (client or server, cli@v1) the four lists are
+      reported and the lock is byte-identical afterwards
     basis: agent-proposal
     requirements: [PK-INH-020, PK-INH-021, PK-INH-043, PK-INH-057,
                    PK-INH-058]
   - name: validate
-    synopsis: processkit validate [PATH...]
+    synopsis: processkit validate [TYPE [NAME...]] [-n N] [-f PATH|-]...
     network: false
     checks:
       - local item with the identity of an inherited item and no override
@@ -343,8 +346,8 @@ commands:
                    PK-INH-014, PK-INH-016, PK-INH-045, PK-INH-048,
                    PK-INH-049, PK-INH-050, PK-INH-051, PK-INH-052,
                    PK-INH-053]
-  - name: explain
-    synopsis: processkit explain KIND NAME
+  - name: describe
+    synopsis: processkit describe TYPE NAME [-n N]
     mcp_equivalent: explain(kind, name, namespace?)
     network: false
     reports: [provenance, overrides, applicability basis, validation status]
@@ -562,7 +565,7 @@ errors:
        evidence: "{reason: absent | unsupported-version | schema |
        outdated}", requirements: [PK-INH-041]}
     - {code: inheritance.unknown-upstream, category: usage,
-       scope: invocation, reported_by: [lock --update NAME],
+       scope: invocation, reported_by: [lock --update UPSTREAM...],
        next_action: fix-invocation, requirements: [PK-INH-043]}
     - {code: inheritance.lock-invalid, category: validation,
        scope: file, reported_by: [every command that reads the lock],
@@ -625,7 +628,7 @@ git_boundary:
   network: only processkit fetch reaches an upstream source; lock reads the
     local cache only (owner decision #213 finding 3; security@v1 PK-SEC-005)
   check: refs, HEAD, index, and remotes of the repository are unchanged
-    after lock, fetch, validate, explain, and serving; no network access
+    after lock, fetch, validate, describe, and serving; no network access
     occurs except during fetch
   requirements: [PK-PROD-026, PK-INH-003, PK-INH-021, PK-INH-036]
 

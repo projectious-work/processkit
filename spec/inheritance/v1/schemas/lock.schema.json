@@ -8,7 +8,7 @@
   "required": ["apiVersion", "kind", "upstreams"],
   "properties": {
     "apiVersion": {
-      "description": "Lock format version. processkit version --json reports this value as lockFormatVersion (cli@v1 PK-OUT-010).",
+      "description": "Lock format version. processkit version -o json reports this value as lockFormatVersion (cli@v1 PK-OUT-010).",
       "const": "lock.processkit.projectious.work/v1"
     },
     "kind": {

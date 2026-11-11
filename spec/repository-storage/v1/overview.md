@@ -30,7 +30,7 @@ This slug does not cover:
   `ontology@v1`;
 - the schemas, templates, levels, and fields of each content kind —
   `content-kinds@v1`;
-- command syntax, exit codes, `--json` envelopes, and `--dry-run` —
+- command syntax, exit codes, `-o json` envelopes, and `--dry-run` —
   `cli@v1`;
 - `get_context`, briefing, assembly, and caching semantics —
   `mcp-context-serving@v1`;

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/explain-result.schema.json",
   "title": "processkit explain data",
-  "description": "The data member of an explain result and of processkit explain --json (mcp-context-serving@v1 PK-MCP-065). Provenance and overrides are in item.status.provenance (inheritance@v1).",
+  "description": "The data member of an explain result and of processkit describe TYPE NAME -o json (mcp-context-serving@v1 PK-MCP-065). Provenance and overrides are in item.status.provenance (inheritance@v1).",
   "type": "object",
   "additionalProperties": false,
   "required": [

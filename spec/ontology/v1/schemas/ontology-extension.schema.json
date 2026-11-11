@@ -86,6 +86,11 @@
     }
   },
   "$defs": {
+    "typeName": {
+      "description": "A lowercase CLI type name.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*$"
+    },
     "concept": {
       "type": "object",
       "additionalProperties": false,
@@ -251,6 +256,8 @@
       "additionalProperties": false,
       "required": [
         "kind",
+        "plural",
+        "shortName",
         "concept",
         "schema"
       ],
@@ -258,6 +265,14 @@
         "kind": {
           "description": "Envelope kind name of the added content kind.",
           "$ref": "ontology-registry.schema.json#/$defs/conceptName"
+        },
+        "plural": {
+          "description": "Plural type name the CLI accepts for the kind (cli@v1 PK-CLI-049). Must not collide, compared without regard to case, with any name, plural, or short name of another kind, or with context (PK-MODEL-076).",
+          "$ref": "#/$defs/typeName"
+        },
+        "shortName": {
+          "description": "Short type name the CLI accepts for the kind (cli@v1 PK-CLI-049). Must not collide, compared without regard to case, with any name, plural, or short name of another kind, or with context (PK-MODEL-076).",
+          "$ref": "#/$defs/typeName"
         },
         "concept": {
           "description": "Definition-side concept (published or added) the kind realizes.",

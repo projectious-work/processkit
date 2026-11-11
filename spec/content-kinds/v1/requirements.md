@@ -391,19 +391,23 @@ the document source table is in `schemas/document-sources.schema.json`.
   attribution only, with validation outcome `invalid` and its diagnostics,
   and without its `spec` members.
   <!-- agent proposal: OPEN-content-kinds-06 -->
-- **PK-CONT-019:** processkit shall accept as the KIND operand of the CLI
-  and as the `kind` argument of the MCP tools exactly the `kind` value of a
-  content kind, compared case-sensitively. If the value names no kind,
-  then processkit shall fail with `content-kinds.unknown-kind`.
-  <!-- agent proposal: OPEN-content-kinds-10 -->
-- **PK-CONT-020:** When `processkit new KIND NAME` runs, processkit shall
+- **PK-CONT-019:** processkit shall accept as the TYPE operand of the CLI
+  the `kind` value of a content kind, its plural, or its short name,
+  compared without regard to case (cli@v1 PK-CLI-049), and as the `kind`
+  argument of the MCP tools exactly the `kind` value, compared
+  case-sensitively. If the value names no kind, then processkit shall fail
+  with `content-kinds.unknown-kind`.
+  <!-- agent proposal: OPEN-content-kinds-10; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
+- **PK-CONT-020:** When `processkit create TYPE NAME` runs, processkit shall
   plan the files of the kind's published template at the kind's location,
   with the template's placeholder name replaced by NAME. If the kind has no
   published template, then processkit shall fail with
   `content-kinds.no-template`. If NAME does not match the name syntax of
   `ontology@v1`, then processkit shall fail with
   `content-kinds.invalid-name`.
-  <!-- agent proposal: OPEN-content-kinds-10 -->
+  <!-- agent proposal: OPEN-content-kinds-10; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
 - **PK-CONT-022:** When processkit validates draft content passed as input,
   processkit shall validate the draft as one item of the given kind: its
   schema, its references, and its cross-field rules. processkit shall skip

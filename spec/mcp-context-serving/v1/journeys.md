@@ -36,8 +36,8 @@ Steps:
 1. Start the harness, which runs `processkit mcp serve --stdio`.
 2. Read the server instructions at connection.
 3. Call `get_context(task="triage a new ticket", profiles=["service"])`
-   and run `processkit context --task "triage a new ticket" --profile
-   service --json`.
+   and run `processkit get context --task "triage a new ticket" --profile
+   service -o json`.
 4. Call `get(kind="Skill", name="triage-ticket", level=1)` and
    `get(kind="ProcessSpecification", name="ticket-handling", level=2,
    section="triaged")`.
@@ -114,12 +114,13 @@ Preconditions: the governed project served over stdio.
 
 Steps:
 
-1. Call `list(kind="Standard")` and `processkit list Standard --json`;
-   repeat with the selector `area=support` on `ProcessSpecification`.
+1. Call `list(kind="Standard")` and `processkit get Standard -A -o json`;
+   repeat with the selector `area=support` on `ProcessSpecification`
+   (`-l area=support`).
 2. Call `get` for `release-rules` without `level`, at levels 0 and 1, and
    with `section` set to one section id; call it with `level=2` and no
    section, and with `level=0` and a section; compare with
-   `processkit show`.
+   `processkit get Standard release-rules`.
 3. Read the resource `processkit://root/Standard/release-rules`.
 4. List the MCP prompts and get `Skill/triage-ticket`.
 5. Call `explain(kind="Standard", name="release-rules")` and
@@ -189,7 +190,7 @@ Steps:
 2. Raise the budget above the full form size and reconnect.
 3. Set the budget to 4096 and give `always-on` rules of 5000 bytes in
    total; reconnect.
-4. Set `briefing.budget-bytes = 1000` and run `processkit config show`.
+4. Set `briefing.budget-bytes = 1000` and run `processkit config view`.
 
 Expected results:
 

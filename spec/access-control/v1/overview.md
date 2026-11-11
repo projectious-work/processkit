@@ -42,7 +42,7 @@ local principal sees everything.
 | label-selector grammar, Containers, the Container tree, the envelope, typed references, relation types and their endpoint checks | ontology@v1 |
 | where Role, Binding, and Container files live; serialization | repository-storage@v1 |
 | the MCP tools, briefing, context assembly, caching, MCP resources, health states and checks, and per-request size, concurrency, and time limits | mcp-context-serving@v1 |
-| command structure, result envelope, diagnostics, exit codes, configuration layering, `validate`, `config show`, log records, redaction | cli@v1 |
+| command structure, result envelope, diagnostics, exit codes, configuration layering, `validate`, `config view`, log records, redaction | cli@v1 |
 | upstream access rules, import of upstream Roles and Bindings, restricted inherited items | inheritance@v1 |
 | threat model, transport hardening and its check order, credential files, limit configuration rules | security@v1 |
 
@@ -77,7 +77,8 @@ Baseline (`spec/doc/v1`, #197):
   cases of PK-TEST-006 are J2 to J6 (PK-TEST-006 itself stays in the
   verification documentation).
 - `06-cli.md`: the `access whoami|can-i` and `mcp serve --http` command rows
-  (also in cli@v1).
+  (also in cli@v1); `access` is `auth` since owner decision 2026-11-11
+  (#212), ADR `docs/adr/0001-cli-command-style.md`.
 
 Gap row 8 from the governance draft (tag
 `archive/processkit-v1-governance-standards`,

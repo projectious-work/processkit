@@ -52,7 +52,9 @@ type_names:
     - {name: context, verbs: [get], meaning: the assembled context of
        mcp-context-serving@v1 get_context; no stored resource, no NAME}
   concept_names: explain TYPE also accepts every concept name of the
-    ontology registry, case-insensitively
+    ontology registry, case-insensitively; a kind's plural or short name
+    resolves to the concept the kind declares; neither a kind nor a concept
+    is ontology.unknown-concept (as the MCP ontology tool)
   names: case-sensitive
   unknown_type: content-kinds.unknown-kind (usage)
   basis: agent-proposal (owner decision 2026-11-11, #212)
@@ -78,8 +80,9 @@ global_options:
         (schemas/result-envelope.schema.json)
       yaml: the same envelope as one YAML 1.2 document; its parsed value
         equals the parsed json output
-      name: one line <Kind>/<namespace>/<name> per item in data, in data
-        order; only get TYPE, create, apply, and format
+      name: one line <Kind>/<namespace>/<name> per item that get returns,
+        or that create, apply, or format wrote or would write, in result
+        order; only get (both forms), create, apply, and format
       wide: text output with additional columns; not a contract
     default: text output; not a contract
     on_mcp_serve: usage error, cli.option-not-applicable
@@ -131,7 +134,7 @@ scope_options:
       default: the root Container (namespace root, ontology@v1)
       requirements: [PK-CLI-051]
     - name: -A, --all-namespaces
-      applies_to: get TYPE without NAME
+      applies_to: get TYPE without NAME; elsewhere cli.option-not-applicable
       effect: every namespace; namespace is omitted from the MCP list call
       with_namespace: usage error, cli.conflicting-options
       requirements: [PK-CLI-051]
@@ -145,19 +148,24 @@ scope_options:
       repeatable: true
       applies_to: [validate, format, apply]
       effect: an item file, or every item file below a directory; "-" reads
-        one draft from standard input (validate and apply only, at most once)
+        one draft from standard input (validate and apply only, else
+        cli.option-not-applicable; at most once, else
+        cli.conflicting-options)
       with_type_or_name: usage error, cli.conflicting-options
       requirements: [PK-CLI-043, PK-CLI-053, PK-CLI-054]
 
 writing_options:
   - name: --dry-run
     value: "none | client | server"
-    value_optional: true; --dry-run alone means client
+    value_optional: "true; --dry-run alone means client; a value is given
+      only as --dry-run=VALUE (in --dry-run VALUE, VALUE is an operand)"
     default: none (the command runs)
     applies_to: [init, create, apply, format, lock, migrate, fetch]
     client: the plan is printed (and carried in `plan` with -o json or
-      yaml) and nothing is written; `changes` is empty; failed Git-state
-      checks are warnings; exit 0 unless the plan cannot be computed
+      yaml) and nothing is written; `changes` is empty; the committed-target
+      check runs and its failures are warnings; the exit code follows
+      PK-CLI-028 for every other diagnostic; checks that are part of
+      computing the plan (apply document validation) run in every mode
     server: as client, and every check of a real run before confirmation
       runs and fails as in a real run (committed targets PK-CLI-036,
       validation of the planned content, for fetch the resolution of refs
@@ -512,9 +520,9 @@ writing_commands:
     - compute the plan (inputs and target digests bound)
     - print the plan (`plan` with -o json or yaml; in text mode on standard
       output with a dry run, else on standard error)
-    - with --dry-run=client, stop; exit 0
     - committed-target check (repository-storage@v1 PK-STORE-056); on
-      failure refuse, exit 4
+      failure refuse, exit 4; with --dry-run=client, failures are warnings
+    - with --dry-run=client, stop
     - with --dry-run=server, run the remaining checks of a real run, then
       stop
     - confirmation when required (prompt, or --yes); on failure refuse,

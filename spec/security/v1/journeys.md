@@ -19,12 +19,12 @@ repository root (outside it); a stdio MCP client connected with
 
 Steps:
 
-1. Run `processkit new Standard ../../outside`.
+1. Run `processkit create Standard ../../outside`.
 2. Add a skill whose `skill.json` and `SKILL.md` are valid and request, over
    MCP `get`, a level-2 file of that skill with a section or file name
    `../../outside.txt`.
 3. Add a Markdown document whose front matter names a related path
-   `../../outside.txt`, and run `processkit validate --json`.
+   `../../outside.txt`, and run `processkit validate -o json`.
 
 Expected results:
 
@@ -47,8 +47,8 @@ outside that upstream, locked and fetched.
 Steps:
 
 1. Over MCP, `get` the skill at level 2 for `notes.md`.
-2. Run `processkit list Skill --json` and `processkit context --json`.
-3. Run `processkit validate --json`.
+2. Run `processkit get Skill -o json` and `processkit get context -o json`.
+3. Run `processkit validate -o json`.
 
 Expected results:
 
@@ -72,14 +72,15 @@ tag), a truncated JSON file, and a truncated TOML operator configuration.
 
 Steps:
 
-1. Run `processkit validate --json` for each input file separately.
-2. Pass each input as draft content to `processkit validate -` and to the
+1. Run `processkit validate -f FILE -o json` for each input file
+   separately.
+2. Pass each input as draft content to `processkit validate -f -` and to the
    MCP `validate` tool.
 3. Send an MCP request larger than the request size limit of
    `mcp-context-serving@v1`.
 4. Add `[limits]` with `file-bytes = 100` to `processkit.toml` and run
-   `processkit config show --json`.
-5. Remove it. Run `processkit config show --json` with an operator file
+   `processkit config view -o json`.
+5. Remove it. Run `processkit config view -o json` with an operator file
    that sets `limits.file-bytes = 0`, then `16777217`, then `4194304`, and
    repeat step 1 for the 2 MiB Standard with the last file.
 6. Run any command with the truncated TOML file as `--config`.
@@ -124,7 +125,7 @@ Steps:
    `tools/list`, and `resources/list`.
 2. Call `get_context` with a task matching the Standard and the skill, and
    `get` the skill at level 2 for `setup.sh`.
-3. Run `processkit config show --json` and `processkit context --json`.
+3. Run `processkit config view -o json` and `processkit get context -o json`.
 
 Expected results:
 
@@ -149,7 +150,7 @@ the shared server configured with TLS material and an `oidc` authenticator
 
 Steps:
 
-1. Run `processkit validate --json` on the entry.
+1. Run `processkit validate -f FILE -o json` on the entry's file.
 2. Remove the credential value and start `processkit mcp serve --http
    --listen ADDRESS`; while it runs, read the argument vectors of the
    processkit process and of every child process.
@@ -161,7 +162,7 @@ Steps:
    process.
 5. Inspect the documented options of every command.
 6. Declare an upstream source `https://user:token@git.example/repo.git` in
-   `processkit.toml` and run `processkit validate --json`.
+   `processkit.toml` and run `processkit validate -o json`.
 
 Expected results:
 
@@ -262,9 +263,10 @@ Steps:
 2. Install the copy that has only a same-location checksum.
 3. Install the copy with the other identity's bundle.
 4. Install the genuine artifacts.
-5. Run `processkit init --governing`, `new`, `validate`, `list`, `show`,
-   `context`, `explain`, `ontology list`, `config show`, `version`, and
-   `processkit mcp serve --stdio` with a client session.
+5. Run `processkit init --governing`, `create`, `validate`, `get TYPE`,
+   `get TYPE NAME`, `get context`, `describe`, `api-resources`,
+   `config view`, `version`, and `processkit mcp serve --stdio` with a
+   client session.
 6. Run `processkit lock` before any fetch.
 7. Run `processkit fetch`, then `processkit lock --yes`.
 

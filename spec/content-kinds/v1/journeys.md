@@ -2,7 +2,7 @@
 
 Each journey runs against a temporary Git repository initialized as a
 governing repository (`processkit init --governing`), with synthetic data
-and no ambient credentials. "Validates" means `processkit validate --json`
+and no ambient credentials. "Validates" means `processkit validate -o json`
 reports success; "fails validation with C" means it reports a validation
 failure (exit code 1) with at least one diagnostic whose `code` is C, with
 `file`, `pointer`, and `constraint` set (PK-CONT-017). Field names, codes,
@@ -17,11 +17,11 @@ declares the profiles `cli` and `service`.
 
 Steps:
 
-1. Run `processkit new Standard git-branching --yes`,
-   `processkit new MCPServer issue-tracker --yes`, and
-   `processkit new Skill triage-ticket --yes`.
-2. Run `processkit new standard x`, `processkit new Document x`, and
-   `processkit new Standard Bad_Name`.
+1. Run `processkit create Standard git-branching --yes`,
+   `processkit create MCPServer issue-tracker --yes`, and
+   `processkit create Skill triage-ticket --yes`.
+2. Run `processkit create nosuchkind x`, `processkit create Document x`,
+   and `processkit create Standard Bad_Name`.
 3. Fill in `triage-ticket/skill.json`: `sideEffects`
    `externally-mutating`, `dependencies` `[Standard/git-branching]`,
    `requiredMcpServers` `[MCPServer/issue-tracker]`, one input, one output,
@@ -36,7 +36,9 @@ Steps:
    `reference.md`; remove `SKILL.md` from `parts`; remove `triggers` from
    `issue-tracker`; remove both the labels and `applicability` from
    `issue-tracker`.
-6. Run `processkit show` for each item with `--level 0` and `--level 1`.
+6. Run `processkit get TYPE NAME` for each item with `--level 0` and
+   `--level 1`, once with TYPE as the kind name and once as its short
+   name (`std`, `mcp`, `sk`).
 
 Expected results:
 
@@ -60,7 +62,8 @@ Expected results:
   adds the members of `levels` level 1: rules and the section index
   (Standard), `disclosure.body` with the `SKILL.md` body and the file index
   `[{path: reference.md, script: false}]` (Skill), and the server entry
-  (MCPServer). No section body appears.
+  (MCPServer). No section body appears. The kind name and the short name
+  return the same result.
 
 Covers: PK-STD-001, PK-CAT-002, PK-SKILL-001, PK-SKILL-002, PK-SKILL-005,
 PK-SKILL-006, PK-SKILL-007, PK-SKILL-008, PK-SKILL-009, PK-SKILL-010,
@@ -92,7 +95,7 @@ Steps:
    `instanceSystem`.
 3. The agent calls the MCP tool `validate(kind, content)` with the draft.
    Separately, pipe the same draft to
-   `processkit validate - --kind ProcessSpecification --json`.
+   `processkit validate ProcessSpecification -f - -o json`.
 4. Write the draft to `context/processes/ticket-handling.json` and run
    `processkit validate`.
 5. Introduce, one at a time, and validate after each, then restore: an
@@ -101,7 +104,7 @@ Steps:
    transition to state `done`; two states with id `triaged`.
 6. Call `get` for the process at level 1, then with `section` `triaged`,
    then with `section` `nonexistent`.
-7. Run `processkit new ProcessSpecification example-process --yes` and
+7. Run `processkit create ProcessSpecification example-process --yes` and
    validate.
 8. Inspect the MCP tool list and the CLI command list, and the repository
    and `.processkit/` after all steps.
@@ -144,7 +147,7 @@ Steps:
 1. Call MCP `list` for kind `Standard`.
 2. Call `get` for `git-branching` at level 1.
 3. Call `get` for `git-branching` with `section` set to one section id.
-4. Run `processkit show Standard git-branching --section <id> --json`.
+4. Run `processkit get Standard git-branching --section <id> -o json`.
 5. Call `get` for `issue-tracker` at level 1.
 
 Expected results:
@@ -206,10 +209,10 @@ Preconditions: journeys 1 and 2 completed.
 
 Steps:
 
-1. Run `processkit new DecisionRecord trunk-based --yes`; fill in the front
-   matter with status `accepted`, date `2026-11-08`, deciders, summary,
-   triggers, context, decision, consequences, and two alternatives; add a
-   Markdown body; validate.
+1. Run `processkit create DecisionRecord trunk-based --yes`; fill in the
+   front matter with status `accepted`, date `2026-11-08`, deciders,
+   summary, triggers, context, decision, consequences, and two
+   alternatives; add a Markdown body; validate.
 2. One at a time, validate after each, then restore: remove `status`; set
    it to `approved`; set `date` to `08.11.2026`.
 3. Reference `trunk-based` from `git-branching` (`spec.decisions`) and from
@@ -219,9 +222,10 @@ Steps:
 5. Create `trunk-based-v2` with `supersedes: [DecisionRecord/trunk-based]`;
    validate. Set `trunk-based` to `superseded`; validate. Remove the
    `supersedes` entry from `trunk-based-v2`; validate; restore.
-6. Run every write command (`init` dry run, `new Standard other`,
-   `format`, `lock`, `migrate` dry run) and every read command once;
-   compare the file list of `context/decisions/` before and after.
+6. Run every write command (`init` dry run, `create Standard other`,
+   `apply -f` with a Standard document, `format`, `lock`, `migrate` dry
+   run) and every read command once; compare the file list of
+   `context/decisions/` before and after.
 
 Expected results:
 
@@ -254,7 +258,7 @@ Steps:
 2. Connect a harness with `processkit mcp serve --stdio` and no instruction
    or skill files; read the connection briefing.
 3. Call `get_context` with `profiles: [cli]`, then with
-   `profiles: [service]`; run `processkit context --profile cli`.
+   `profiles: [service]`; run `processkit get context --profile cli`.
 4. Set `applicability.profiles: [documentation]` on `api-style`; validate.
    Then declare the profile `documentation` in the repository; validate.
 

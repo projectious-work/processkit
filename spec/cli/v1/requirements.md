@@ -144,16 +144,21 @@ beyond this table are listed with the command in `interfaces.yaml`
   declared by an OntologyExtension (`plural`, `shortName`, `ontology@v1`)
   for extension kinds. NAME shall be case-sensitive. If TYPE names no
   kind, then the processkit CLI shall fail with `content-kinds.unknown-kind`
-  as a usage error. When a resource command is run without NAME, it shall
+  as a usage error. `processkit explain TYPE` shall also accept every concept
+  name of the ontology registry; a kind's plural or short name shall resolve
+  to the concept the kind declares, and a TYPE that names neither a kind nor
+  a concept shall fail with `ontology.unknown-concept`, as the MCP `ontology`
+  tool does. When a resource command is run without NAME, it shall
   address every resource of the type in the selected scope (PK-CLI-051).
   <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
 - **PK-CLI-050:** The processkit CLI shall accept `-o`/`--output` with
   the values `json`, `yaml`, `name`, and `wide`. `json` shall write exactly
   one result envelope (PK-OUT-001). `yaml` shall write the same envelope as
   one YAML 1.2 document whose parsed value equals the parsed `json` output.
-  `name` shall write one line `<Kind>/<namespace>/<name>` per item in
-  `data`, in `data` order, and shall be accepted only by `get TYPE`,
-  `create`, `apply`, and `format`; elsewhere it shall fail with
+  `name` shall write one line `<Kind>/<namespace>/<name>` per item that
+  `get` returns, or that `create`, `apply`, or `format` wrote or, in a dry
+  run, would write, in result order; it shall be accepted only by these
+  four commands, and elsewhere it shall fail with
   `cli.option-not-applicable`. `wide` shall write text output with
   additional columns. Without `-o`, and with `wide`, the layout of the
   output shall not be a contract.
@@ -163,14 +168,20 @@ beyond this table are listed with the command in `interfaces.yaml`
   (`ontology@v1`). When `processkit get TYPE` is run with
   `-A`/`--all-namespaces`, the processkit CLI shall address every
   namespace and shall omit `namespace` from the MCP call. `-A` shall be
-  accepted only by `get TYPE` without NAME; `-A` together with `-n` shall
-  fail with `cli.conflicting-options`.
+  accepted only by `get TYPE` without NAME, and elsewhere shall fail with
+  `cli.option-not-applicable`; `-A` together with `-n` shall fail with
+  `cli.conflicting-options`.
   <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
 - **PK-CLI-052:** Every writing command shall accept
   `--dry-run=none|client|server`; `--dry-run` without a value shall mean
-  `client`, and `none`, the default, shall run the command. With `client`,
-  the processkit CLI shall compute and print the plan and shall write
-  nothing, and shall not report a failed check of Git state as an error.
+  `client`, and `none`, the default, shall run the command. A value shall
+  be given only as `--dry-run=VALUE`; in `--dry-run VALUE`, VALUE is an
+  operand. With `client`, the processkit CLI shall compute and print the
+  plan, shall run the committed-target check and report its failures as
+  warnings (PK-CLI-036), and shall write nothing; the exit code shall
+  follow PK-CLI-028 for every other diagnostic. Checks that are part of
+  computing a plan, such as the validation of `apply` documents
+  (PK-CLI-053), shall run in every mode.
   With `server`, the processkit CLI shall also run every check that a real
   run runs before confirmation (the committed-target check of PK-CLI-036,
   validation of the planned content, and for `fetch` the resolution of refs
@@ -191,7 +202,8 @@ beyond this table are listed with the command in `interfaces.yaml`
   <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
 - **PK-CLI-054:** The processkit CLI shall accept `-f`/`--filename` more
   than once. `-f -` shall be accepted only by `validate` and `apply`, and
-  at most once per command.
+  elsewhere shall fail with `cli.option-not-applicable`; `-f -` given more
+  than once shall fail with `cli.conflicting-options`.
   <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
 - **PK-CLI-055:** The processkit CLI shall not execute programs named
   `processkit-<name>` or any other plugin. If the first operand names no

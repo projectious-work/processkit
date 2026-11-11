@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/mcp-context-serving/list-result.schema.json",
   "title": "processkit list data",
-  "description": "The data member of a list result and of processkit list --json (mcp-context-serving@v1 PK-MCP-021, PK-MCP-049, PK-MCP-050, PK-MCP-072). Entries are level 0 and carry no basis.",
+  "description": "The data member of a list result and of processkit get TYPE -o json (mcp-context-serving@v1 PK-MCP-021, PK-MCP-049, PK-MCP-050, PK-MCP-072). Entries are level 0 and carry no basis.",
   "type": "object",
   "additionalProperties": false,
   "required": [

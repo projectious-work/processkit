@@ -15,7 +15,7 @@
   ],
   "properties": {
     "apiVersion": {
-      "description": "MCP tool contract version; equals mcpToolContractVersion of processkit version --json.",
+      "description": "MCP tool contract version; equals mcpToolContractVersion of processkit version -o json.",
       "const": "mcp.processkit.projectious.work/v1"
     },
     "tool": {

@@ -47,7 +47,7 @@ This slug does not cover:
   defines `final` and `overrides` — `content-kinds@v1`;
 - the location of `processkit.lock`, the `.processkit/` cache, atomic writes,
   and the Git read boundary — `repository-storage@v1`;
-- command syntax, `--json` envelopes, `--dry-run`, exit codes, and the
+- command syntax, `-o json` envelopes, `--dry-run`, exit codes, and the
   offline-read rule for an unfetched upstream — `cli@v1`;
 - assembly inputs (the lock is one), caching by lock digest, and generation
   switching when the lock or cache changes — `mcp-context-serving@v1`;
@@ -106,6 +106,12 @@ PK-INH-002 and PK-INH-004: `processkit lock` resolves only from the local
 cache (`cli@v1` PK-CLI-044), and `processkit fetch` also fetches declared
 upstreams that are not locked yet (PK-INH-036).
 
+Owner decision 2026-11-11 (#212), CLI style B, changed PK-INH-020 and
+PK-INH-043: `processkit lock --update [UPSTREAM...]` replaces
+`lock --update [NAME]` and accepts several upstreams. Item provenance is
+shown by `processkit describe TYPE NAME`, which replaces `explain KIND NAME`
+(ADR `docs/adr/0001-cli-command-style.md`).
+
 ## Resolved open items
 
 | Item | Resolution | Basis |
@@ -114,7 +120,7 @@ upstreams that are not locked yet (PK-INH-036).
 | OPEN-inheritance-02 | SHA-256 over a sorted manifest of every file and symbolic link of the commit tree (PK-INH-038); verified when fetch stores a commit, mismatch `inheritance.digest-mismatch` (PK-INH-037) | agent proposal |
 | OPEN-inheritance-03 | `[[winner]]` tables with `item` (typed name) and `upstream`, one item each; `inheritance.winner-invalid`, `inheritance.winner-unused` (PK-INH-049) | agent proposal |
 | OPEN-inheritance-04 | overrides and `final` only for kinds whose schema defines them, as `content-kinds@v1` declares (PK-INH-050); `spec.overrides.effect` `replace` (serve the overriding item) or `amend` (upstream item with `ruleLevels` applied and `addRules` appended), rules matched by `id` (PK-INH-051); final rule change defined per effect (PK-INH-052); field shapes owned by `content-kinds@v1` | agent proposal |
-| OPEN-inheritance-05 | plain `lock` keeps unchanged declarations and resolves new or changed ones from the latest fetch (PK-INH-042); `--update` without NAME re-resolves all, NAME only that upstream (PK-INH-043); confirmation only by `cli@v1` rules (PK-INH-044); fetch result data (PK-INH-039) | owner decision: #213 finding 3; agent proposal |
+| OPEN-inheritance-05 | plain `lock` keeps unchanged declarations and resolves new or changed ones from the latest fetch (PK-INH-042); `--update` without UPSTREAM re-resolves all, each UPSTREAM only that upstream (PK-INH-043); confirmation only by `cli@v1` rules (PK-INH-044); fetch result data (PK-INH-039) | owner decision: #213 finding 3; agent proposal |
 | OPEN-inheritance-06 | `status.provenance` per `schemas/provenance.schema.json` (`origin`, `overrides`, `restricted`, `restrictedBy`); repository identity is lock entry name plus source; `status.references[].origin` is the target's `provenance.origin` (PK-INH-055); PROV mapping, no PROV output (PK-INH-056) | agent proposal |
 | OPEN-inheritance-07 | `inheritance.*` codes with category and scope in `interfaces.yaml` `errors` (PK-INH-054); stale override is a validation failure (PK-INH-053); lock checks (PK-INH-045); upstream errors (PK-INH-048) | agent proposal |
 | OPEN-inheritance-08 | `[downstream] restricted` in the providing repository's `processkit.toml` (PK-INH-061); stdio and CLI serve restricted items to the local principal (PK-INH-062) | agent proposal |

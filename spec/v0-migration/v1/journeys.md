@@ -8,7 +8,7 @@ network, and no ambient credentials or user configuration, from the exact
 release artifacts. The v0 repositories are the golden corpora of
 `interfaces.yaml` (`verification.golden_corpora`): the `input/` tree is
 committed, and `processkit.toml` selects the content directory `context`.
-Commands, `--dry-run`, `--json`, `--yes`, plan confirmation, the result
+Commands, `--dry-run`, `-o json`, `--yes`, plan confirmation, the result
 envelope, and exit codes are those of `cli@v1`. Codes, field names, and the
 field mapping are in `interfaces.yaml`.
 
@@ -20,7 +20,7 @@ Steps:
 
 1. Record the content digest of every file in the working copy.
 2. Run `processkit migrate --from v0 --dry-run`.
-3. Run `processkit migrate --from v0 --dry-run --json`.
+3. Run `processkit migrate --from v0 --dry-run -o json`.
 4. Record the content digests again and run `git status --porcelain`.
 
 Expected results:
@@ -51,11 +51,11 @@ Steps:
 1. Run `processkit migrate --from v0`, review the printed plan, and
    confirm it.
 2. Run `git status --porcelain` and `git diff`.
-3. Run `processkit validate --json`.
-4. Run `processkit list DecisionRecord`, `processkit list Skill`, and
-   `processkit list ProcessSpecification`.
+3. Run `processkit validate -o json`.
+4. Run `processkit get DecisionRecord`, `processkit get Skill`, and
+   `processkit get ProcessSpecification`.
 5. Compare the working tree with the corpus's `expected/` tree.
-6. Run `processkit migrate --from v0 --json` again.
+6. Run `processkit migrate --from v0 -o json` again.
 
 Expected results:
 
@@ -91,10 +91,11 @@ Steps:
 
 1. Record the path and content digest of every v0 log, event, work-item,
    and memory record file, tracked or not.
-2. Run `processkit migrate --from v0 --json` and confirm the plan with
+2. Run `processkit migrate --from v0 -o json` and confirm the plan with
    `--yes`.
 3. Record the paths and digests again.
-4. Run `processkit list` for every v1 kind and `processkit validate`.
+4. Run `processkit get TYPE -A` for every v1 kind and
+   `processkit validate`.
 
 Expected results:
 
@@ -116,21 +117,24 @@ Steps:
 
 1. Modify one tracked v0 skill file without committing it.
 2. Create an untracked file `notes.txt` in the repository root.
-3. Run `processkit migrate --from v0 --dry-run --json`.
-4. Run `processkit migrate --from v0 --yes --json`.
-5. Commit the modification, keep `notes.txt` untracked, and run
+3. Run `processkit migrate --from v0 --dry-run -o json`.
+4. Run `processkit migrate --from v0 --dry-run=server -o json`.
+5. Run `processkit migrate --from v0 --yes -o json`.
+6. Commit the modification, keep `notes.txt` untracked, and run
    `processkit migrate --from v0 --yes`.
 
 Expected results:
 
-- Step 3 reports `storage.target-not-committed` for the modified file at
-  severity `warning` and exits with code 0.
-- Step 4 reports `storage.target-not-committed` for the modified file
-  with category `refused`, exits with code 4, has outcome `refused` and
-  empty `changes`, and writes no file: every file is byte-identical to
-  before the step. No backup file or directory exists anywhere.
+- Step 3 (a bare `--dry-run` means `client`) reports
+  `storage.target-not-committed` for the modified file at severity
+  `warning` and exits with code 0.
+- Steps 4 and 5 each report `storage.target-not-committed` for the
+  modified file with category `refused`, exit with code 4, have outcome
+  `refused` and empty `changes`, and write no file: every file is
+  byte-identical to before the step. No backup file or directory exists
+  anywhere.
 - No option of `processkit migrate` disables the check.
-- Step 5 applies the plan and reports every change; the untracked
+- Step 6 applies the plan and reports every change; the untracked
   `notes.txt` does not block it.
 
 Covers: PK-MIG-004
@@ -144,7 +148,7 @@ characters.
 
 Steps:
 
-1. Run `processkit migrate --from v0 --dry-run --json`.
+1. Run `processkit migrate --from v0 --dry-run -o json`.
 2. Remove the decision record with the long field from the corpus,
    commit, and run `processkit migrate --from v0 --yes`.
 3. Inspect the converted decision record.
@@ -173,8 +177,8 @@ matter. Two decision records map to the same name. A skill declares
 
 Steps:
 
-1. Run `processkit migrate --from v0 --dry-run --json`.
-2. Run `processkit migrate --from v0 --yes --json`.
+1. Run `processkit migrate --from v0 --dry-run -o json`.
+2. Run `processkit migrate --from v0 --yes -o json`.
 3. Inspect the repository.
 4. Add a supplement with `status`, `owner`, `workItemType`, and
    `stateMachine` to the process definition, resolve the other cases as
@@ -205,7 +209,7 @@ Preconditions: an installed release candidate; any directory.
 Steps:
 
 1. Run `processkit version`.
-2. Run `processkit version --json`.
+2. Run `processkit version -o json`.
 
 Expected results:
 
@@ -228,7 +232,7 @@ Preconditions: the golden corpora at `tests/golden/v0-migration/`.
 Steps:
 
 1. For each corpus, copy `input/` into a fresh temporary repository,
-   commit it, run `processkit migrate --from v0 --yes --json`, and compare
+   commit it, run `processkit migrate --from v0 --yes -o json`, and compare
    the result with the corpus's `expected/` tree and
    `expected-diagnostics.json`.
 2. Collect every member of the front matter root, of `metadata`, of
@@ -255,8 +259,8 @@ that holds only v1 content.
 
 Steps:
 
-1. In the corpus, run `processkit migrate --from v0 --json`.
-2. In the v1 repository, run `processkit migrate --json`.
+1. In the corpus, run `processkit migrate --from v0 -o json`.
+2. In the v1 repository, run `processkit migrate -o json`.
 3. In the v1 repository, run `processkit migrate --from v1`.
 4. In the corpus, delete `processkit.toml`, commit, and run
    `processkit migrate --from v0`.
@@ -281,7 +285,7 @@ Preconditions: the corpus `v0.24-nested`, which contains
 
 Steps:
 
-1. Run `processkit migrate --from v0 --dry-run --json`.
+1. Run `processkit migrate --from v0 --dry-run -o json`.
 
 Expected results:
 

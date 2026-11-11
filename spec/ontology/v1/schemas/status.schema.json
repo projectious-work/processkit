@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/status.schema.json",
   "title": "processkit derived item status",
-  "description": "Derived facts processkit reports as the status member of an item. Single-item results (show, get, explain) carry the full object; list and get_context entries carry $defs/listStatus. Authored content never contains status.",
+  "description": "Derived facts processkit reports as the status member of an item. Single-item results (CLI get TYPE NAME and describe, MCP get and explain) carry the full object; list and context entries (CLI get TYPE and get context, MCP list and get_context) carry $defs/listStatus. Authored content never contains status.",
   "type": "object",
   "additionalProperties": false,
   "required": [

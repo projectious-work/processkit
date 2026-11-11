@@ -78,8 +78,10 @@ one configured content directory, `context/` by default. The local cache is
 - **PK-STORE-047:** If a command receives a path argument that is outside
   every declared location, then processkit shall report
   `storage.undeclared-path` as a usage error and shall not read the file as
-  content.
-<!-- agent proposal: OPEN-repository-storage-01 -->
+  content. The input documents of `processkit apply -f` (`cli@v1`
+  PK-CLI-053) are exempt; the locations `apply` writes to are not.
+<!-- agent proposal: OPEN-repository-storage-01; changed by owner decision:
+     2026-11-11 (#212), CLI style B -->
 
 ## File formats
 

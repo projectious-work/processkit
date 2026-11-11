@@ -140,15 +140,16 @@ recommended, "may" optional; IDs are stable and never reused.
   `processkit fetch` stored for that `source` and `ref`. processkit shall
   remove the entries of upstreams that are no longer declared.
   <!-- agent proposal: OPEN-inheritance-05 -->
-- **PK-INH-043:** When `processkit lock --update` runs without NAME,
+- **PK-INH-043:** When `processkit lock --update` runs without UPSTREAM,
   processkit shall resolve every declared upstream again as PK-INH-042
-  resolves a new declaration. When NAME is given, processkit shall resolve
-  only the declared upstream NAME again, and its transitive entries, and
-  shall treat every other upstream as PK-INH-042 states. If NAME is not
-  the name of a declared upstream, then processkit shall report
-  `inheritance.unknown-upstream` as a usage error and shall not write the
-  lock.
-  <!-- agent proposal: OPEN-inheritance-05 -->
+  resolves a new declaration. When UPSTREAM operands are given, processkit
+  shall resolve only those declared upstreams again, and their transitive
+  entries, and shall treat every other upstream as PK-INH-042 states. If
+  an UPSTREAM is not the name of a declared upstream, then processkit
+  shall report `inheritance.unknown-upstream` as a usage error and shall
+  not write the lock.
+  <!-- agent proposal: OPEN-inheritance-05; changed by owner decision:
+       2026-11-11 (#212), CLI style B -->
 - **PK-INH-044:** `processkit lock` shall write the lock only through the
   plan and confirmation rules of `cli@v1` (PK-CLI-004, PK-CLI-014) and the
   write precondition of `repository-storage@v1` (PK-STORE-056).
@@ -291,9 +292,10 @@ recommended, "may" optional; IDs are stable and never reused.
 
 ## Upstream changes
 
-- **PK-INH-020:** When `processkit lock --update [NAME]` runs, the processkit
-  CLI shall show the items added, changed, removed, and newly conflicting
-  before it writes the lock.
+- **PK-INH-020:** When `processkit lock --update [UPSTREAM...]` runs, the
+  processkit CLI shall show the items added, changed, removed, and newly
+  conflicting before it writes the lock.
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B -->
 - **PK-INH-021:** processkit shall treat a lock change as an ordinary file
   change reviewed through Git, and shall not update the lock as a side
   effect of serving.

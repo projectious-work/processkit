@@ -26,7 +26,7 @@
               "type": ["string", "null"]
             },
             "impersonator": {
-              "description": "Present when the decision was made for an impersonated principal (access can-i): the principal that impersonated.",
+              "description": "Present when the decision was made for an impersonated principal (auth can-i): the principal that impersonated.",
               "$ref": "principal.schema.json"
             },
             "impersonated": {

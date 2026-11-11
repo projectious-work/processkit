@@ -286,9 +286,10 @@ call. Pinning limits relevance; it is not a confidentiality control.
 - **PK-MCP-066:** The MCP server shall support the MCP protocol versions,
   the tool annotations, and the tool contract version listed in
   `interfaces.yaml` (`protocol`). The tool contract version shall be the
-  value of `mcpToolContractVersion` in `processkit version --json`
+  value of `mcpToolContractVersion` in `processkit version -o json`
   (cli@v1).
-  <!-- agent proposal: OPEN-mcp-context-serving-01 -->
+  <!-- agent proposal: OPEN-mcp-context-serving-01; changed by owner
+       decision: 2026-11-11 (#212), CLI style B -->
 
 ## Resources and prompts
 

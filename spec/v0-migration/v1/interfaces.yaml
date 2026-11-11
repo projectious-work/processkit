@@ -3,7 +3,7 @@ version: 1
 
 # Everything the v0 conversion and the contract-version report make
 # observable. Plan binding, staleness, and confirmation (PK-CLI-012 to
-# PK-CLI-014, PK-CLI-034 to PK-CLI-036), --dry-run, --yes, --json, the
+# PK-CLI-014, PK-CLI-034 to PK-CLI-036), --dry-run, --yes, -o json, the
 # result envelope, the diagnostic shape, and exit codes are defined by
 # cli@v1; file writing, the file-change shape, and the committed-target
 # check (PK-STORE-020 to PK-STORE-022, PK-STORE-056, PK-STORE-057) by
@@ -25,11 +25,13 @@ commands:
         basis: agent-proposal
         requirements: [PK-MIG-001, PK-MIG-024]
       - name: --dry-run
-        defined_in: cli@v1 (PK-CLI-004, PK-CLI-031)
-        meaning: analyse and print the plan; write nothing
+        value: "none | client | server; bare --dry-run means client"
+        defined_in: cli@v1 (PK-CLI-004, PK-CLI-031, PK-CLI-052)
+        meaning: analyse and print the plan; write nothing; with server,
+          also run the checks of a real run (migrate_steps)
         requirements: [PK-MIG-003]
-      - name: --json
-        defined_in: cli@v1 (PK-CLI-002, PK-OUT-001)
+      - name: -o json
+        defined_in: cli@v1 (PK-CLI-002, PK-CLI-050, PK-OUT-001)
         meaning: the analysis is carried in `data`
           (schemas/migrate-result.schema.json), the plan in `plan`
           (cli@v1 schemas/plan.schema.json), the files written in `changes`
@@ -66,7 +68,7 @@ commands:
          v1_value: lock.processkit.projectious.work/v1}
     independence: each contract carries its own version; a change to one
       does not require a version change of another
-    check: with --json, `data` validates against cli@v1
+    check: with -o json, `data` validates against cli@v1
       schemas/version.schema.json and each of the five fields above is
       present and non-empty
     requirements: [PK-COMPAT-001]
@@ -83,15 +85,16 @@ migrate_steps:
     - "5: compute and print the plan and report manual actions; with
       nothing to convert, report migration.nothing-to-migrate and stop
       with exit code 0 (PK-MIG-023)"
-    - "6: with --dry-run, report the committed-target check at severity
-      warning (cli@v1 PK-CLI-036) and stop; exit code 1 if a manual
-      action is open, else 0"
+    - "6: with --dry-run=client (or a bare --dry-run), report the
+      committed-target check at severity warning (cli@v1 PK-CLI-036) and
+      stop; exit code 1 if a manual action is open, else 0"
     - "7: if a manual action is open, stop; write nothing; exit code 1
       (PK-MIG-021)"
     - "8: committed-target check (repository-storage@v1 PK-STORE-056); on
       failure storage.target-not-committed, refused, exit code 4, nothing
       written (PK-MIG-004, cli@v1 PK-CLI-036)"
-    - "9: confirmation (cli@v1 PK-CLI-034), staleness check (cli@v1
+    - "9: with --dry-run=server, stop here (cli@v1 PK-CLI-052); else
+      confirmation (cli@v1 PK-CLI-034), staleness check (cli@v1
       PK-CLI-035), then write: created and replaced files first, deleted
       files last, each group in path order (PK-MIG-013)"
   basis: agent-proposal
@@ -107,7 +110,9 @@ apply_precondition:
   on_violation: storage.target-not-committed per failing target
     (repository-storage@v1), category refused, exit code 4, no file
     written (cli@v1 PK-CLI-036)
-  dry_run: same diagnostics at severity warning
+  dry_run: with --dry-run=client, the same diagnostics at severity
+    warning; with --dry-run=server, as on_violation (cli@v1 PK-CLI-036,
+    PK-CLI-052)
   bypass: none
   backup: none; processkit creates no backup; recovery is through Git
   basis: owner decision (#213 finding 4, 2026-11-08)
@@ -502,7 +507,7 @@ result:
   data: schemas/migrate-result.schema.json
   plan: cli@v1 schemas/plan.schema.json, operation migrate; each change in
     the shape of repository-storage@v1 schemas/file-change.schema.json
-  changes: the files written; empty with --dry-run, on refusal, and with an
+  changes: the files written; empty with a dry run, on refusal, and with an
     open manual action
   items_order: by the first source path, ascending Unicode code point
   untouched_order: by v0 kind, ascending Unicode code point

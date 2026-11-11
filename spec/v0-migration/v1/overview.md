@@ -41,7 +41,7 @@ silently reinterpreted under a newer schema.
 
 This slug does not cover:
 
-- the `migrate` and `version` command syntax, `--dry-run`, `--json`,
+- the `migrate` and `version` command syntax, `--dry-run`, `-o json`,
   `--yes`, exit codes, the result envelope, and how a reviewed plan is
   bound, made stale, and confirmed (PK-CLI-012 to PK-CLI-014) -
   `cli@v1`;

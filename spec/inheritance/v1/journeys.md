@@ -32,21 +32,21 @@ Steps:
 1. Run `processkit init --project` in `payments-api` and declare in
    `processkit.toml` one upstream: `[[upstream]] name = "platform"`, with
    `source` the `platform` repository and `ref = "main"`.
-2. Run `processkit lock --json` before fetching.
-3. Run `processkit fetch --json`; inspect `git status` and `.processkit/`.
-4. Run `processkit lock --json`; inspect `processkit.lock` and
+2. Run `processkit lock -o json` before fetching.
+3. Run `processkit fetch -o json`; inspect `git status` and `.processkit/`.
+4. Run `processkit lock -o json`; inspect `processkit.lock` and
    `git status`.
-5. Delete `.processkit/` and run `processkit list Standard`. Then run
+5. Delete `.processkit/` and run `processkit get Standard`. Then run
    `processkit fetch` again.
-6. Run `processkit list Standard` and `processkit show Standard api-design`.
+6. Run `processkit get Standard` and `processkit get Standard api-design`.
 7. Add a local Standard `api-design` whose `spec` contains only
    `overrides = {upstream: "platform", name: "api-design",
    version: "2.0.0", reason: "public API must version endpoints",
    effect: "amend", ruleLevels: [{rule: "API-002", level: "MUST"}]}`,
    which raises rule `API-002` from `SHOULD` to `MUST`. Run
    `processkit validate`.
-8. Run `processkit explain Standard api-design --json` and
-   `processkit explain Standard secure-coding --json`.
+8. Run `processkit describe Standard api-design -o json` and
+   `processkit describe Standard secure-coding -o json`.
 9. Repeat steps 6 and 8 and compare the output byte for byte.
 10. Run `git log --all --oneline`, `git status`, and list remotes of
     `payments-api` before and after steps 2 to 9.
@@ -66,7 +66,7 @@ Expected results:
   file equals its own re-serialization by `repository-storage@v1`
   PK-STORE-049; `data.added` lists all four Standards; it is an
   uncommitted file change and nothing was committed or staged.
-- 5: `list` fails as an environment failure (`cli.upstream-not-fetched`)
+- 5: `get` fails as an environment failure (`cli.upstream-not-fetched`)
   naming the unfetched upstream and the fix; the second fetch reports the
   locked commits with `result` `fetched`.
 - 6: `secure-coding`, `code-review`, `api-design`, and `release-notes` are
@@ -95,14 +95,14 @@ Preconditions: `payments-api` from journey 1 after step 6.
 Steps:
 
 1. Add a local Standard named `code-review` with no `spec.overrides`. Run
-   `processkit validate --json`.
-2. Add `spec.overrides` without `reason`. Run `processkit validate --json`.
+   `processkit validate -o json`.
+2. Add `spec.overrides` without `reason`. Run `processkit validate -o json`.
 3. Complete the override with `upstream`, `name`, `version`, `reason`,
    and `effect: "replace"`. Run `processkit validate`.
 4. Change `spec.overrides.name` to `review-policy`. Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 5. Restore the name and change `spec.overrides.upstream` to `company`. Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 
 Expected results:
 
@@ -129,16 +129,16 @@ Steps:
 
 1. Add a local `replace` override of `secure-coding` that changes rule
    `SEC-002` (marked `final`) from `MUST` to `SHOULD`. Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 2. Change the override so that it keeps `SEC-002` and removes the member
-   `final` from it. Run `processkit validate --json`.
+   `final` from it. Run `processkit validate -o json`.
 3. Change the override so that it keeps `SEC-002` as upstream and changes
    only rule `SEC-001` (not final). Run `processkit validate`.
 4. Replace it by an `amend` override with
    `ruleLevels: [{rule: "SEC-002", level: "SHOULD"}]`. Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 5. Add a local `replace` override of `code-review` (marked `final`). Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 
 Expected results:
 
@@ -162,17 +162,17 @@ both as upstreams, fetched and locked.
 
 Steps:
 
-1. Run `processkit validate --json`.
+1. Run `processkit validate -o json`.
 2. Add `[[winner]] item = "Standard/logging"`, `upstream = "team-b"` to
    `processkit.toml`. Run `processkit validate` and
-   `processkit explain Standard logging --json`.
+   `processkit describe Standard logging -o json`.
 3. Swap the order of the two `[[upstream]]` tables, run `processkit lock`,
    and repeat step 2.
 4. Change the winner's `upstream` to `team-c`. Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 5. Remove Standard `logging` from `team-a`, commit, run `processkit fetch`,
    restore the winner to `team-b`, and run `processkit lock --update team-a`
-   and `processkit validate --json`.
+   and `processkit validate -o json`.
 
 Expected results:
 
@@ -202,13 +202,13 @@ Steps:
    Standard `secrets`; `payments-api` already has a local Standard
    `secrets` without an override (which validated before, as no upstream
    provided `secrets`).
-2. In `payments-api`, run `processkit lock --update platform --json`
+2. In `payments-api`, run `processkit lock --update platform -o json`
    before fetching.
 3. Run `processkit fetch`, then
-   `processkit lock --update platform --dry-run --json`.
+   `processkit lock --update platform --dry-run -o json`.
 4. Run `processkit lock --update platform` interactively in a terminal and
    answer `y`.
-5. Run `processkit validate --json`.
+5. Run `processkit validate -o json`.
 6. Run `git diff --stat`.
 7. Run `processkit lock --update unknown`.
 
@@ -244,13 +244,13 @@ committed.
 Steps:
 
 1. Change the `ref` of `platform` to a ref that does not exist. Run
-   `processkit fetch --json`, then `processkit lock --json`.
+   `processkit fetch -o json`, then `processkit lock -o json`.
 2. Restore the ref; change `source` to a path that does not exist. Run
-   `processkit fetch --json` and `processkit lock --json`.
+   `processkit fetch -o json` and `processkit lock -o json`.
 3. Restore the source. Replace the `digest` of entry `platform` in
    `processkit.lock` with another valid digest, commit it, delete
-   `.processkit/`, and run `processkit fetch --json` and
-   `processkit list Standard`.
+   `.processkit/`, and run `processkit fetch -o json` and
+   `processkit get Standard`.
 4. Restore the lock and run `processkit fetch`. Compute the content digest
    of the locked `platform` commit independently from `git ls-tree -r` and
    the blob bytes, by the manifest of `interfaces.yaml`
@@ -266,7 +266,7 @@ Expected results:
   `platform`; `lock` fails with `cli.upstream-not-fetched`.
 - 3: `fetch` fails with `inheritance.digest-mismatch` naming `platform`
   with the expected and actual digests, and does not keep the commit;
-  `list` fails with `cli.upstream-not-fetched`.
+  `get` fails with `cli.upstream-not-fetched`.
 - 4: `fetch` succeeds, and the computed digest equals the digest of
   entry `platform` in `processkit.lock`.
 - 5: the lock is unchanged after every failure, and no other revision of
@@ -282,8 +282,8 @@ disabled for the processkit process (or Git sources made unreachable).
 
 Steps:
 
-1. Run `processkit validate`, `processkit list Standard`,
-   `processkit explain Standard api-design`, and `processkit lock`.
+1. Run `processkit validate`, `processkit get Standard`,
+   `processkit describe Standard api-design`, and `processkit lock`.
 2. Start `processkit mcp serve --stdio`, connect, and call `get_context`,
    `list`, and `explain`.
 3. Meanwhile, push a new commit to `platform` `main` (with the network
@@ -324,11 +324,11 @@ Steps:
    as `alice`.
 4. Add `"unknown"` to `inheritance.import-access-rules` and restart.
 5. Put `[inheritance] import-access-rules = ["company"]` in `platform`'s
-   `processkit.toml` and run `processkit validate --json`.
-6. In `platform`, run `processkit show Standard incident-runbook --json`
+   `processkit.toml` and run `processkit validate -o json`.
+6. In `platform`, run `processkit get Standard incident-runbook -o json`
    and get it through `processkit mcp serve --stdio`.
 7. In `company`, add `"Standard/missing"` to `[downstream] restricted` and
-   run `processkit validate --json` there.
+   run `processkit validate -o json` there.
 
 Expected results:
 
@@ -357,28 +357,28 @@ committed; `platform` `main` has a newer commit than the locked one.
 
 Steps:
 
-1. Run `processkit fetch`, then `processkit lock --json`.
+1. Run `processkit fetch`, then `processkit lock -o json`.
 2. Declare a second upstream `[[upstream]] name = "tools"` (a governing
-   repository without upstreams, ref `v1`) and run `processkit validate
-   --json` and `processkit list Standard --json`.
-3. Run `processkit fetch` and `processkit lock --json`.
+   repository without upstreams, ref `v1`) and run
+   `processkit validate -o json` and `processkit get Standard -o json`.
+3. Run `processkit fetch` and `processkit lock -o json`.
 4. Edit `processkit.lock` so that it misses `apiVersion`, and run
-   `processkit validate --json` and `processkit list Standard --json`.
+   `processkit validate -o json` and `processkit get Standard -o json`.
 5. Restore the lock of step 3 without committing it; change the `ref` of
    `tools` and run `processkit fetch` and `processkit lock`.
 6. Remove the `tools` declaration, commit the lock, and run
-   `processkit lock --json`.
+   `processkit lock -o json`.
 
 Expected results:
 
 - 1: the plan is empty and the lock is byte-identical: plain `lock` keeps
   entries whose `source` and `ref` are unchanged.
-- 2: `validate` fails with `inheritance.lock-outdated`; `list` succeeds,
+- 2: `validate` fails with `inheritance.lock-outdated`; `get` succeeds,
   reports `inheritance.lock-outdated` as a warning, and serves the items
   of the existing lock.
 - 3: the lock gains the entry `tools` with the fetched commit; `platform`
   and `platform/company` are unchanged; entries are sorted by name.
-- 4: both fail with `inheritance.lock-invalid`; `list` serves no inherited
+- 4: both fail with `inheritance.lock-invalid`; `get` serves no inherited
   item.
 - 5: `lock` is refused with `storage.target-not-committed` (exit code 4)
   and writes nothing.
@@ -395,16 +395,16 @@ Steps:
 
 1. Add a local `api-design` `amend` override with
    `addRules: [{id: "API-003", level: "MAY", text: "..."}]`. Run
-   `processkit validate` and `processkit show Standard api-design --json`.
+   `processkit validate` and `processkit get Standard api-design -o json`.
 2. Add `ruleLevels: [{rule: "API-001", level: "SHOULD"}]` to the same
-   override. Run `processkit show Standard api-design --json`.
+   override. Run `processkit get Standard api-design -o json`.
 3. Change the `ruleLevels` entry to rule `API-009`. Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 4. Restore it and change the added rule's id to `API-001`. Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 5. Replace the override by a complete `replace` override whose `summary`
    and rule texts differ from the upstream item. Run `processkit validate`
-   and `processkit explain Standard api-design --json`.
+   and `processkit describe Standard api-design -o json`.
 
 Expected results:
 
@@ -433,15 +433,15 @@ Steps:
 2. In `company`, tag `v1.1.0` with a changed `code-review`; move
    `security` to `v1.1.0` (fetch, lock, commit). In the project, run
    `processkit fetch`, `processkit lock --update security`, and
-   `processkit validate --json`.
+   `processkit validate -o json`.
 3. Add `[[winner]] item = "Standard/code-review"`, `upstream = "security"`
    and run `processkit validate` and
-   `processkit explain Standard code-review --json`.
+   `processkit describe Standard code-review -o json`.
 4. In a new governing repository `loose`, declare an upstream but commit
-   no lock. Declare `loose` in the project and run `processkit fetch --json`.
+   no lock. Declare `loose` in the project and run `processkit fetch -o json`.
 5. In `platform`, add a local Standard `code-review` without override and
    commit it. In the project, run `processkit fetch`,
-   `processkit lock --update platform`, and `processkit validate --json`.
+   `processkit lock --update platform`, and `processkit validate -o json`.
 
 Expected results:
 
@@ -470,12 +470,12 @@ configuration.
 Steps:
 
 1. Declare two `[[upstream]]` tables with the same `name`. Run
-   `processkit validate --json`.
+   `processkit validate -o json`.
 2. Declare one upstream with `source = "http://git.example.com/x.git"`.
-   Run `processkit validate --json`.
+   Run `processkit validate -o json`.
 3. Declare one upstream with
    `source = "https://user:s3cret-token@git.example.com/x.git"`. Run
-   `processkit validate --json` and `processkit config show --json`, and
+   `processkit validate -o json` and `processkit config view -o json`, and
    collect every log line.
 4. Declare one upstream with an absolute local path source of a public
    repository and run `processkit fetch`, recording the argument vectors of

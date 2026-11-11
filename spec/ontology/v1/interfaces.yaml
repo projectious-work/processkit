@@ -13,7 +13,7 @@ schemas:
   - path: schemas/ontology-registry.schema.json
     id: https://schemas.projectious.work/processkit/v1/ontology-registry.schema.json
     describes: the published registry document and the data of
-      `processkit ontology list` and MCP `ontology()`
+      `processkit api-resources` and MCP `ontology()`
     basis: agent-proposal
     requirements: [PK-MODEL-001, PK-MODEL-055, PK-MODEL-057, PK-MODEL-070]
   - path: schemas/container.schema.json
@@ -31,7 +31,7 @@ schemas:
     id: https://schemas.projectious.work/processkit/v1/ontology-extension.schema.json
     describes: the published extension metaschema (an OntologyExtension item)
     basis: agent-proposal
-    requirements: [PK-MODEL-040, PK-MODEL-072]
+    requirements: [PK-MODEL-040, PK-MODEL-072, PK-MODEL-076]
 
 registry:
   description: >-
@@ -50,7 +50,7 @@ registry:
     field: ontologyVersion
     format: semantic version MAJOR.MINOR.PATCH
     first_v1_value: "1.0.0"
-    reported_by: processkit version --json (field name cli@v1, OPEN-cli-14)
+    reported_by: processkit version -o json (field name cli@v1, OPEN-cli-14)
   top_level_fields: [ontologyVersion, concepts, relationTypes]
   entry_fields:
     - {field: name, content: canonical PascalCase concept name}
@@ -111,17 +111,20 @@ ontology_command:
   # mcp-context-serving@v1 own. Envelope keys and exit categories: cli@v1.
   basis: agent-proposal
   operations:
-    - operation: processkit ontology list [--json]
+    - operation: processkit api-resources [-o json]
       data: a registry document (schemas/ontology-registry.schema.json) with
         the concepts and relation types of every valid OntologyExtension in
         the effective item set added
       mcp_equivalent: ontology()
       requirements: [PK-MODEL-057]
-    - operation: processkit ontology show NAME [--json]
-      data: one concept entry whose name equals NAME (case-sensitive)
+    - operation: processkit explain TYPE [-o json]
+      data: one concept entry whose name equals TYPE (case-insensitive), or,
+        for a kind's plural or short name (cli@v1 type_names), the entry
+        named by that kind
+      basis: owner decision 2026-11-11 (#212), CLI style B
       not_found: diagnostic `ontology.unknown-concept`; exit category usage
         error (cli@v1)
-      mcp_equivalent: ontology(concept=NAME)
+      mcp_equivalent: ontology(concept=TYPE resolved to the concept name)
       requirements: [PK-MODEL-057]
 
 concept_classes:
@@ -350,9 +353,9 @@ envelope:
         - {member: references, content: "[{pointer, ref, resolved,
             origin?}] for every typed reference in spec, in document order;
             origin is the inherited target's provenance"}
-      present_in: [processkit show, processkit explain, MCP get,
+      present_in: [processkit get TYPE NAME, processkit describe, MCP get,
                    MCP explain]
-      absent_from: [processkit list, MCP list]
+      absent_from: [processkit get TYPE, MCP list]
       basis: agent-proposal
       requirements: [PK-MODEL-014, PK-MODEL-022, PK-MODEL-023, PK-MODEL-062]
   reserved_key_prefix: processkit.projectious.work/
@@ -499,7 +502,7 @@ selectors:
       - {selector: "sensitivity in ()", offset: 16}
   example: "sensitivity notin (confidential)"
   consumers:
-    - processkit list KIND --selector S   # cli@v1
+    - processkit get TYPE -l S            # cli@v1
     - list(kind, selector?, ...)           # mcp-context-serving@v1
     - Role access rule selector            # access-control@v1
   basis: agent-proposal
@@ -608,13 +611,24 @@ extensions:
     - {path: spec.namespaceOwner, meaning: accountable person, role, or team}
     - {path: spec.concepts, meaning: added concepts and discriminators}
     - {path: spec.relationTypes, meaning: added relation types}
-    - {path: spec.contentKinds, meaning: added content kinds}
+    - {path: spec.contentKinds, meaning: "added content kinds, each with
+        kind, plural, shortName, concept, and schema"}
+    - {path: "spec.contentKinds[].plural, spec.contentKinds[].shortName",
+       meaning: "CLI type names of the kind (cli@v1 PK-CLI-049); required;
+        pattern ^[a-z][a-z0-9]*$", basis: owner decision 2026-11-11 (#212),
+       requirements: [PK-MODEL-076]}
   naming: added names are plain (PascalCase for concepts and kinds,
     kebab-case for relation types) and must be unique in the effective item
     set; the registry entry carries namespace, namespaceOwner, and the
     declaring OntologyExtension
   redefinition: an added name equal to a published name, compared without
     regard to ASCII case, is a redefinition
+  type_names: an added content kind's name, plural, or short name must not
+    equal, compared without regard to ASCII case, any name, plural, or
+    short name of another kind of the release (cli@v1 type_names) or of
+    another extension kind in the effective item set, nor the reserved
+    word context; a kind name equal to a published name is a redefinition
+    (above)
   inherited_extension_owner: upstream repository; a local extension may not
     declare a namespace an inherited extension declares
   location: context/ontology/ (repository-storage@v1)
@@ -650,18 +664,22 @@ extensions:
     - {condition: local extension declares an inherited namespace,
        code: ontology.extension-namespace-taken}
     - {condition: reserved namespace, code: ontology.reserved-key}
+    - {condition: "an added kind's name, plural, or short name collides
+         with another kind's type names or with context",
+       code: ontology.extension-type-name-taken}
   ontology_addition_criteria: [need across at least two unrelated domains,
     declared class and side, compatibility and migration treatment]
   processkit_own_repositories: published ontology and schemas only; no
     private concepts
-  basis: agent-proposal (kind, fields, naming, codes)
+  basis: "agent-proposal (kind, fields, naming, codes); type names: owner
+    decision 2026-11-11 (#212), CLI style B"
   requirements: [PK-MODEL-040, PK-MODEL-041, PK-MODEL-042, PK-MODEL-043,
-                 PK-MODEL-072, PK-MODEL-073, PK-MODEL-074]
+                 PK-MODEL-072, PK-MODEL-073, PK-MODEL-074, PK-MODEL-076]
 
 observation_points:
   # Operations owned by other slugs through which this slug's effects are
   # observed. Arguments are as stated there; none are added here.
-  - operation: processkit ontology list|show
+  - operation: processkit api-resources | processkit explain TYPE
     owner: cli@v1 (semantics in ontology_command above)
     observes: published registry entries and extension entries
     requirements: [PK-MODEL-001, PK-MODEL-005, PK-MODEL-057, PK-PROD-003]
@@ -669,29 +687,30 @@ observation_points:
     owner: mcp-context-serving@v1
     observes: published registry entries
     requirements: [PK-MODEL-001, PK-MODEL-005, PK-MODEL-057]
-  - operation: processkit version --json
+  - operation: processkit version -o json
     owner: cli@v1
     observes: ontology version
     requirements: [PK-MODEL-001, PK-MODEL-055]
-  - operation: processkit validate [PATH...] / validate(kind, content)
+  - operation: processkit validate [TYPE [NAME...]] [-f PATH|-]... /
+      validate(kind, content)
     owner: cli@v1, mcp-context-serving@v1
     observes: envelope, Container, reference, relation, extension, and
       instance-kind validation results with code, file, JSON pointer, and
       violated constraint
     requirements: [PK-MODEL-003, PK-MODEL-010, PK-MODEL-011, PK-MODEL-013,
                    PK-MODEL-014, PK-MODEL-015, PK-MODEL-023, PK-MODEL-047,
-                   PK-MODEL-048, PK-MODEL-061]
-  - operation: processkit list KIND [--selector S] [--namespace N] /
+                   PK-MODEL-048, PK-MODEL-061, PK-MODEL-076]
+  - operation: processkit get TYPE [-l S] [-n N | -A] /
       list(kind, selector?, namespace?, limit?, cursor?)
     owner: cli@v1, mcp-context-serving@v1
     observes: selector matching, selector errors, namespace scoping,
       unserved invalid items
     requirements: [PK-MODEL-044, PK-MODEL-045, PK-MODEL-048, PK-MODEL-049]
-  - operation: processkit show KIND NAME / get(...)
+  - operation: processkit get TYPE NAME / get(...)
     owner: cli@v1, mcp-context-serving@v1
     observes: status, unresolved references
     requirements: [PK-MODEL-023, PK-MODEL-062]
-  - operation: processkit explain KIND NAME
+  - operation: processkit describe TYPE NAME / explain(...)
     owner: cli@v1
     observes: derived status and upstream identity of references
     requirements: [PK-MODEL-014, PK-MODEL-022, PK-MODEL-062]
@@ -755,7 +774,7 @@ errors:
     - {condition: invalid selector (with offset),
        code: ontology.invalid-selector, requirements: [PK-MODEL-045,
        PK-MODEL-069]}
-    - {condition: unknown concept in ontology show or ontology(concept),
+    - {condition: unknown concept in explain TYPE or ontology(concept),
        code: ontology.unknown-concept, requirements: [PK-MODEL-057]}
     - {condition: unknown relation type, code: ontology.unknown-relation-type,
        requirements: [PK-MODEL-070]}
@@ -775,6 +794,10 @@ errors:
     - {condition: local extension declares an inherited namespace,
        code: ontology.extension-namespace-taken,
        requirements: [PK-MODEL-041, PK-MODEL-074]}
+    - {condition: "extension kind name, plural, or short name collides with
+         another kind's name, plural, or short name, or with context",
+       code: ontology.extension-type-name-taken,
+       requirements: [PK-MODEL-076]}
   precedence: when a missing required field is also a schema violation,
     ontology.missing-field is reported; a specific code always replaces
     ontology.schema-violation for the same JSON pointer
