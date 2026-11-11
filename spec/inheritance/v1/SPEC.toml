@@ -1,6 +1,6 @@
 slug = "inheritance"
 version = 1
-status = "draft"
+status = "frozen"
 roadmap = ["PK1-P4"]
 issues = ["206", "213"]
 decisions = ["C5", "C6", "C7", "C8"]
