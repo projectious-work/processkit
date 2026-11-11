@@ -114,6 +114,7 @@ mode = "harness-only"
 # or use `aibox set addon <name>` (which also pulls in transitive `requires`).
 #
 # Addon catalog — uncomment/comment one block header to enable or remove an addon.
+# Addon catalog fingerprint: a4ffa18442afcca2705ce970ff3e30aee2784ba0433952994ca150a103eb873c
 # Inside an enabled addon, omitted default-enabled tools stay enabled. Uncomment
 # a tool line to pin a version, enable an off-by-default tool, or disable a default-on tool.
 #
@@ -122,7 +123,7 @@ mode = "harness-only"
 
 # Documentation/docs-docusaurus — Docusaurus static docs site (React/MDX); requires node
 [addons.docs-docusaurus.tools]
-docusaurus = { version = "3.8" } # React and MDX documentation site generator; default on; options: {}, { enabled = true|false }, { version = "3.7.0" | "3.8" | "3.9.2" | "3.10.1" (default) or "latest" }
+docusaurus = { version = "3.8" } # React and MDX documentation site generator; default on; options: {}, { enabled = true|false }, { version = "3.7.0" | "3.8" | "3.9.2" | "3.10.1" | "3.10.2" (default) or "latest" }
 
 # Documentation/docs-hugo — Hugo static site generator (Go)
 # [addons.docs-hugo.tools]
@@ -142,13 +143,21 @@ docusaurus = { version = "3.8" } # React and MDX documentation site generator; d
 
 # Documentation/docs-zensical — Zensical – Python docs site; requires python
 # [addons.docs-zensical.tools]
-# zensical = {} # Python documentation site generator; default on; options: {}, { enabled = true|false }, { version = "0.0.43" | "0.0.44" | "0.0.47" | "0.0.51" (default) or "latest" }
+# zensical = {} # Python documentation site generator; default on; options: {}, { enabled = true|false }, { version = "0.0.43" | "0.0.44" | "0.0.47" | "0.0.51" | "0.0.52" | "0.0.53" | "0.0.55" | "0.0.56" | "0.0.57" | "0.0.66" | "0.0.72" (default) or "latest" }
 
 # ---- Languages ------------------------------------------------------------
 
 # Languages/go — Go programming language toolchain
 # [addons.go.tools]
-# go = {} # Go compiler, tooling, and module workflow; default on; options: {}, { enabled = true|false }, { version = "1.25.12" | "1.26.3" | "1.26.4" | "1.26.5" (default) or "latest" }
+# go = {} # Go compiler, tooling, and module workflow; default on; options: {}, { enabled = true|false }, { version = "1.25.12" | "1.26.3" | "1.26.4" | "1.26.5" | "1.26.6" | "1.27.0" | "1.27.1" | "1.27.3" (default) or "latest" }
+
+# Languages/go-quality — Production Go formatting, linting, vulnerability, and security tools; requires go
+# [addons.go-quality.tools]
+# goimports = {} # Go import organizer and formatter; default on; options: {}, { enabled = true|false }, { version = "v0.48.0" | "v0.50.0" (default) or "latest" }
+# staticcheck = {} # Advanced Go static analysis suite; default on; options: {}, { enabled = true|false }, { version = "v0.7.0" | "v0.8.1" (default) or "latest" }
+# golangci-lint = {} # Fast aggregate Go linter runner; default on; options: {}, { enabled = true|false }, { version = "v2.12.2" | "v2.14.0" (default) or "latest" }
+# govulncheck = {} # Official Go vulnerability analyzer; default on; options: {}, { enabled = true|false }, { version = "v1.6.0" | "v1.8.0" (default) or "latest" }
+# gosec = {} # Go source security analyzer; default on; options: {}, { enabled = true|false }, { version = "v2.28.0" | "v2.29.0" (default) or "latest" }
 
 # Languages/latex — TeX Live LaTeX typesetting system
 # [addons.latex.tools]
@@ -167,21 +176,21 @@ docusaurus = { version = "3.8" } # React and MDX documentation site generator; d
 # Languages/node — Node.js runtime with pnpm, yarn, or bun
 [addons.node.tools]
 node = { version = "22" } # Node.js JavaScript and TypeScript runtime; default on; options: {}, { enabled = true|false }, { version = "20" | "22" | "24" | "26" (default) or "latest" }
-pnpm = { version = "10" } # Fast disk-efficient Node package manager; default on; options: {}, { enabled = true|false }, { version = "9" | "10" | "11.1.3" | "11.5.2" | "11.10.0" | "11.17.0" (default) or "latest" }
-# yarn = { enabled = true } # Yarn Node package manager; default off; options: {}, { enabled = true|false }, { version = "4" | "4.16.0" | "4.17.0" (default) or "latest" }
-# bun = { enabled = true } # Bun JavaScript runtime, package manager, and test runner; default off; options: {}, { enabled = true|false }, { version = "1.2" | "1.3.14" (default) or "latest" }
+pnpm = { version = "10" } # Fast disk-efficient Node package manager; default on; options: {}, { enabled = true|false }, { version = "9" | "10" | "11.1.3" | "11.5.2" | "11.10.0" | "11.18.0" | "11.20.0" | "11.21.0" | "11.22.0" | "12.6.0" | "12.8.1" | "12.15.0" (default) or "latest" }
+# yarn = { enabled = true } # Yarn Node package manager; default off; options: {}, { enabled = true|false }, { version = "4" | "4.16.0" | "4.17.0" | "4.18.1" (default) or "latest" }
+# bun = { enabled = true } # Bun JavaScript runtime, package manager, and test runner; default off; options: {}, { enabled = true|false }, { version = "1.2" | "1.3.14" | "1.4.0" | "1.4.2" | "1.4.4" (default) or "latest" }
 
 # Languages/python — Python runtime with uv, poetry, or pdm
 [addons.python.tools]
 python = { version = "3.13" } # Python interpreter runtime for applications and scripts; default on; options: {}, { enabled = true|false }, { version = "3.12" | "3.13" | "3.14" (default) or "latest" }
-uv = { version = "0.7" } # Fast Python package manager and virtual environment tool; default on; options: {}, { enabled = true|false }, { version = "0.7" | "0.11.10" | "0.11.11" | "0.11.15" | "0.11.19" | "0.11.26" | "0.11.32" (default) or "latest" }
+uv = { version = "0.7" } # Fast Python package manager and virtual environment tool; default on; options: {}, { enabled = true|false }, { version = "0.7" | "0.11.10" | "0.11.11" | "0.11.15" | "0.11.19" | "0.11.26" | "0.12.0" | "0.12.5" | "0.12.20" | "0.13.5" (default) or "latest" }
 # pip = { enabled = true } # Python package installer for pip-based projects; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-# poetry = { enabled = true } # Python dependency and packaging workflow manager; default off; options: {}, { enabled = true|false }, { version = "1.8" | "2.0" | "2.4.1" (default) or "latest" }
-# pdm = { enabled = true } # Python project and dependency manager using PEP standards; default off; options: {}, { enabled = true|false }, { version = "2.22" | "2.26.9" | "2.27.0" | "2.28.0" (default) or "latest" }
+# poetry = { enabled = true } # Python dependency and packaging workflow manager; default off; options: {}, { enabled = true|false }, { version = "1.8" | "2.0" | "2.4.1" | "2.5.1" (default) or "latest" }
+# pdm = { enabled = true } # Python project and dependency manager using PEP standards; default off; options: {}, { enabled = true|false }, { version = "2.22" | "2.26.9" | "2.27.0" | "2.28.0" | "2.28.1" | "2.28.2" | "2.29.2" | "2.29.3" (default) or "latest" }
 
 # Languages/rust — Rust toolchain via rustup
 [addons.rust.tools]
-rustc = {} # Rust compiler toolchain installed via rustup; default on; options: {}, { enabled = true|false }, { version = "1.90" | "1.91" | "1.92" | "1.93" | "1.94" | "1.94.1" | "1.96.0" | "1.96.1" | "1.97.1" (default) or "latest" }
+rustc = {} # Rust compiler toolchain installed via rustup; default on; options: {}, { enabled = true|false }, { version = "1.90" | "1.91" | "1.92" | "1.93" | "1.94" | "1.94.1" | "1.96.0" | "1.96.1" | "1.97.1" | "1.98.0" | "1.98.1" | "1.99.1" (default) or "latest" }
 clippy = {} # Rust linter for catching common mistakes and style issues; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 rustfmt = {} # Rust code formatter; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 cargo-audit = {} # Rust dependency vulnerability scanner; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
@@ -189,9 +198,17 @@ x86_64-cross = {} # Cross-compilation target support for x86_64 Linux; default o
 
 # Languages/typst — Typst – modern typesetting system
 # [addons.typst.tools]
-# typst = {} # Typst compiler for modern document typesetting; default on; options: {}, { enabled = true|false }, { version = "0.13.1" | "0.14.2" | "0.15.0" (default) or "latest" }
+# typst = {} # Typst compiler for modern document typesetting; default on; options: {}, { enabled = true|false }, { version = "0.13.1" | "0.14.2" | "0.15.0" | "0.15.1" (default) or "latest" }
 
 # ---- Tools ------------------------------------------------------------
+
+# Tools/browser-testing — Playwright visual and accessibility testing with Chromium by default; requires node
+# [addons.browser-testing.tools]
+# playwright = {} # Pinned Playwright Test runner and browser automation library; default on; options: {}, { enabled = true|false }, { version = "1.62.1" | "1.63.0" (default) or "latest" }
+# axe-playwright = {} # Pinned axe-core accessibility checks for Playwright pages; default on; options: {}, { enabled = true|false }, { version = "4.13.0" (default) or "latest" }
+# chromium = {} # Playwright-managed full Chromium browser (enabled by default); default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# firefox = { enabled = true } # Optional Playwright-managed Firefox browser; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+# webkit = { enabled = true } # Optional Playwright-managed WebKit browser; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/cloud-aws — AWS CLI v2
 # [addons.cloud-aws.tools]
@@ -214,23 +231,43 @@ x86_64-cross = {} # Cross-compilation target support for x86_64 Linux; default o
 # sqlite3 = {} # SQLite shell used to preview database schemas and tables; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 # csvkit = {} # CSV and TSV inspection utilities for tabular previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
+# Tools/data-visualization — Build-time Vega and Vega-Lite visualization rendering; requires node
+# [addons.data-visualization.tools]
+# vega-cli = {} # Vega SVG, PNG, and PDF command-line renderers; default on; options: {}, { enabled = true|false }, { version = "6.4.0" (default) or "latest" }
+# vega-lite = {} # Vega-Lite compiler and SVG, PNG, and PDF command-line renderers; default on; options: {}, { enabled = true|false }, { version = "6.4.3" (default) or "latest" }
+
+# Tools/diagramming — Build-time diagram rendering with D2 and Graphviz
+# [addons.diagramming.tools]
+# d2 = {} # D2 declarative diagram renderer; default on; options: {}, { enabled = true|false }, { version = "0.7.1" | "0.9.0" (default) or "latest" }
+# graphviz = {} # Graphviz graph layout and rendering commands; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+
 # Tools/git-ui — GitHub CLI and lazygit interactive Git UI
 [addons.git-ui.tools]
 gh = {} # GitHub CLI for issues, PRs, releases, and auth; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 lazygit = { enabled = false } # Interactive terminal UI for Git status, commits, and branches; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
-# Tools/infrastructure — OpenTofu, Ansible, Packer
+# Tools/go-release — GoReleaser plus language-neutral release validation; requires go, release
+# [addons.go-release.tools]
+# goreleaser = {} # Multi-platform Go release packager; default on; options: {}, { enabled = true|false }, { version = "2.17.1" | "2.18.2" (default) or "latest" }
+
+# Tools/infrastructure — OpenTofu, Ansible, Packer, and optional rootless Podman
 # [addons.infrastructure.tools]
-# opentofu = {} # Open-source Terraform-compatible infrastructure as code CLI; default on; options: {}, { enabled = true|false }, { version = "1.9.0" | "1.12.0" | "1.12.1" | "1.12.3" | "1.12.5" (default) or "latest" }
-# ansible = {} # Configuration management and automation engine; default on; options: {}, { enabled = true|false }, { version = "13.7.0" | "14.0.0" | "14.1.0" | "14.2.0" (default) or "latest" }
-# packer = {} # Machine image build automation tool; default on; options: {}, { enabled = true|false }, { version = "1.11.2" | "1.15.3" | "1.15.4" | "1.16.0" (default) or "latest" }
+# opentofu = {} # Open-source Terraform-compatible infrastructure as code CLI; default on; options: {}, { enabled = true|false }, { version = "1.9.0" | "1.12.0" | "1.12.1" | "1.12.3" | "1.12.5" | "1.12.6" | "1.13.2" (default) or "latest" }
+# ansible = {} # Configuration management and automation engine; default on; options: {}, { enabled = true|false }, { version = "13.7.0" | "14.0.0" | "14.1.0" | "14.2.0" | "14.3.1" | "14.4.0" | "14.5.0" (default) or "latest" }
+# packer = {} # Machine image build automation tool; default on; options: {}, { enabled = true|false }, { version = "1.11.2" | "1.15.3" | "1.15.4" | "1.16.0" | "1.16.1" | "1.16.2" (default) or "latest" }
+# podman = { enabled = true } # Rootless container engine with Compose support; default off; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # Tools/kubernetes — kubectl, Helm, Kustomize, k9s
 # [addons.kubernetes.tools]
-# kubectl = {} # Kubernetes command-line client; default on; options: {}, { enabled = true|false }, { version = "1.36.1" | "1.36.2" | "1.36.3" (default) or "latest" }
-# helm = {} # Kubernetes package manager for charts; default on; options: {}, { enabled = true|false }, { version = "3.17.2" | "4.2.0" | "4.2.2" | "4.2.3" (default) or "latest" }
-# kustomize = {} # Kubernetes manifest overlay and patching tool; default on; options: {}, { enabled = true|false }, { version = "5.6.0" | "5.8.1" (default) or "latest" }
+# kubectl = {} # Kubernetes command-line client; default on; options: {}, { enabled = true|false }, { version = "1.36.1" | "1.36.2" | "1.36.3" | "1.36.4" | "1.37.1" (default) or "latest" }
+# helm = {} # Kubernetes package manager for charts; default on; options: {}, { enabled = true|false }, { version = "3.17.2" | "4.2.0" | "4.2.2" | "4.2.3" | "4.2.4" | "4.3.0" | "4.3.1" (default) or "latest" }
+# kustomize = {} # Kubernetes manifest overlay and patching tool; default on; options: {}, { enabled = true|false }, { version = "5.6.0" | "5.8.1" | "5.8.3" (default) or "latest" }
 # k9s = { enabled = true } # Interactive terminal UI for Kubernetes clusters; default off; options: {}, { enabled = true|false }, { version = "0.50.18" | "0.51.0" (default) or "latest" }
+
+# Tools/mermaid — Build-time Mermaid rendering with a pinned headless browser; requires node
+# [addons.mermaid.tools]
+# mermaid-cli = {} # Mermaid CLI (mmdc) for static SVG, PNG, and PDF rendering; default on; options: {}, { enabled = true|false }, { version = "11.16.0" | "12.0.0" (default) or "latest" }
+# puppeteer = {} # Pinned Puppeteer and compatible Chrome headless shell runtime; default on; options: {}, { enabled = true|false }, { version = "25.9.0" | "25.12.0" (default) or "latest" }
 
 # Tools/preview-archive — Yazi image/PDF/SVG preview helpers plus archive preview/extraction tools
 [addons.preview-archive.tools]
@@ -241,13 +278,30 @@ timg = { enabled = false } # Terminal image and PDF thumbnail viewer; default on
 mupdf = { enabled = false } # Lightweight PDF utilities for document previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 entr = { enabled = false } # File watcher used by live preview helpers; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 p7zip = { enabled = false } # Archive listing and extraction support for previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
-resvg = { enabled = false } # High-quality SVG rasterizer for Yazi previews; default on; options: {}, { enabled = true|false }, { version = "0.47.0" (default) or "latest" }
+resvg = { enabled = false } # High-quality SVG rasterizer for Yazi previews; default on; options: {}, { enabled = true|false }, { version = "0.47.0" | "0.48.1" (default) or "latest" }
 
 # Tools/preview-enhanced — Rich Markdown rendering, ffmpeg, and Ghostscript; requires preview-archive
 [addons.preview-enhanced.tools]
 # ffmpeg = { enabled = false } # Video and audio metadata plus thumbnail support for previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 # ghostscript = { enabled = false } # PostScript and EPS rendering support for document previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 rich = {} # Markdown, JSON, RST, and notebook terminal rendering for Yazi previews; default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
+
+# Tools/release — Language-neutral shell and container release validation
+# [addons.release.tools]
+# shellcheck = {} # Shell script static analyzer; default on; options: {}, { enabled = true|false }, { version = "0.11.0" (default) or "latest" }
+# hadolint = {} # Dockerfile linter; default on; options: {}, { enabled = true|false }, { version = "2.15.1" (default) or "latest" }
+
+# Tools/supply-chain — Secret scanning, vulnerability analysis, SBOM generation, and signing
+# [addons.supply-chain.tools]
+# gitleaks = {} # Repository secret scanner; default on; options: {}, { enabled = true|false }, { version = "8.30.1" (default) or "latest" }
+# osv-scanner = {} # OSV dependency vulnerability scanner; default on; options: {}, { enabled = true|false }, { version = "2.4.0" | "2.6.0" (default) or "latest" }
+# syft = {} # Software bill of materials generator; default on; options: {}, { enabled = true|false }, { version = "1.50.0" | "1.52.0" (default) or "latest" }
+# grype = {} # Artifact and container vulnerability scanner; default on; options: {}, { enabled = true|false }, { version = "0.116.1" | "0.119.0" (default) or "latest" }
+# cosign = {} # Sigstore artifact signing and verification CLI; default on; options: {}, { enabled = true|false }, { version = "3.1.2" | "3.1.3" (default) or "latest" }
+
+# Tools/yazi-omp — oh-my-posh for the omp.yazi header prompt
+# [addons.yazi-omp.tools]
+# oh-my-posh = {} # default on; options: {}, { enabled = true|false }, { version = "x.y.z" or "latest" }
 
 # =============================================================================
 # [ai] — AI agent harnesses and model providers
@@ -263,6 +317,7 @@ rich = {} # Markdown, JSON, RST, and notebook terminal rendering for Yazi previe
 # GitHub Copilot              copilot        (uses GITHUB_TOKEN)
 # OpenCode                    opencode       any (multi-provider)
 # Hermes                      hermes         any (multi-provider)
+# Tau                         tau            any (multi-provider)
 #
 # Harnesses are configured by the ordered `harnesses` list below.
 # The list order is the tmux/layout order: 1st, 2nd, 3rd harness.
@@ -285,7 +340,7 @@ model_providers = [
 ]
 
 # Ordered harness list. Supported harness values:
-# claude, codex, gemini, aider, continue, cursor, copilot, opencode, hermes.
+# claude, codex, gemini, aider, continue, cursor, copilot, opencode, hermes, tau.
 # Each one-line entry is directly uncommentable; list order is tmux/layout order.
 # `enable = true` includes the harness in generated agent/MCP/runtime config.
 # `install = true` installs the matching in-container CLI recipe when one exists.
@@ -293,8 +348,8 @@ model_providers = [
 # keep `install = false` for cursor even when `enable = true`.
 # `version` optionally pins the CLI recipe; omit it to use the addon default.
 harnesses = [
-    { harness = "codex", enable = true, install = true },
     { harness = "claude", enable = true, install = true },
+    { harness = "codex", enable = true, install = true },
 #   { harness = "gemini", enable = true, install = true },
 #   { harness = "aider", enable = true, install = true },
 #   { harness = "continue", enable = true, install = true },
@@ -302,6 +357,7 @@ harnesses = [
 #   { harness = "copilot", enable = true, install = true },
 #   { harness = "opencode", enable = true, install = true },
 #   { harness = "hermes", enable = true, install = true },
+#   { harness = "tau", enable = true, install = true },
 ]
 
 # AI harness execution policy. These are aibox-level intent settings;
@@ -318,12 +374,12 @@ network    = "ask"
 # Per-harness execution overrides. Uncomment a section and only the axes
 # you want to override; omitted axes inherit `[ai.execution]`.
 
-# [ai.execution.codex]
+# [ai.execution.claude]
 # filesystem = "workspace-write"
 # approval   = "on-request"
 # network    = "ask"
 
-# [ai.execution.claude]
+# [ai.execution.codex]
 # filesystem = "workspace-write"
 # approval   = "on-request"
 # network    = "ask"
@@ -363,6 +419,11 @@ network    = "ask"
 # approval   = "on-request"
 # network    = "ask"
 
+# [ai.execution.tau]
+# filesystem = "workspace-write"
+# approval   = "on-request"
+# network    = "ask"
+
 [ai.agents]
 canonical     = "AGENTS.md"
 provider_mode = "pointer"  # options: pointer, full
@@ -381,17 +442,18 @@ provider_mode = "pointer"  # options: pointer, full
 # [customization] — color theme, shell prompt, and tmux layout
 # =============================================================================
 # Theme is applied consistently across tmux, Vim, Yazi, lazygit, and bat.
-# Theme families (31 total):
-#   Multi-variant: ayu, catppuccin, dracula, everforest, github, gruvbox,
-#     kanagawa, material, min, night-owl, one-dark, rose-pine, slack,
-#     solarized, tokyo-night, vitesse, vscode
-#   Solo (mode ignored): andromeeda, aurora-x, houston, laserwave,
-#     monokai, moonlight, nord, plastic, poimandres, projectious, red,
+# Theme families (37 total):
+#   Multi-variant: ayu, borland, catppuccin, dracula, everforest, github, gruvbox,
+#     kanagawa, material, min, mono, night-owl, one-dark, projectious,
+#     rose-pine, slack, solarized, tokyo-night, vitesse, vscode, contrast,
+#     contrast-mono, norton, phosphor
+#   Single-mode: andromeeda, aurora-x, houston, laserwave,
+#     monokai, moonlight, nord, plastic, poimandres, red,
 #     snazzy, synthwave-84, vesper
 [customization]
 theme  = "rose-pine"
 # Light/dark variant. `auto` follows host OS appearance when detectable.
-# Solo families (see list above) ignore mode.
+# Single-mode families reject an incompatible explicit mode.
 # Options: auto | light | dark
 mode   = "dark"
 # Optional alternate variant override (per family). Default = unset.
@@ -400,7 +462,13 @@ mode   = "dark"
 #   kanagawa: "dragon"      material: "ocean" | "palenight" | "darker"
 #   rose-pine: "moon"       slack: "ochin"
 #   tokyo-night: "storm"    vitesse: "black"
+#   projectious: "deep" | "high-contrast-dark" | "high-contrast-light"
+#   contrast, contrast-mono: "max"
+#   borland, norton, phosphor: "classic" | "optimized"
 # variant = "<name>"
+# Font-decoration channel: auto | full | standard | minimal | none.
+# Mono/high-contrast themes require standard or stronger; max requires full.
+emphasis = "auto"
 # Starship prompt preset.
 # Options: default | plain | minimal | nerd-font | pastel | powerline-pastel | bracketed | arrow
 # ASCII sketches:
@@ -429,10 +497,45 @@ prompt = "powerline-pastel"
 # Extra windows: ai holds additional harnesses; lazygit and shell open when enabled.
 layout = "ai"
 
+# Optional semantic role overrides. Attribute values are space-separated.
+# Roles include code_comment, code_invalid, status_error, search_current,
+# active_foreground, git_untracked, and the other documented semantic roles.
+[customization.emphasis_overrides]
+# code_comment = "italic dim"
+# status_error = "bold underline"
+
 # tmux runtime options. `layout` may override [customization].layout for tmux only.
 [customization.tmux]
 prefix = "C-g"
 session_name = "processkit"
+
+# tmux terminal/tab title. The runtime attention helper updates the
+# @aibox_attention_* tmux options used by this format.
+# Placeholders: {state_symbol}, {state}, {project}, {session}, {window},
+# {window_index}, {pane}, {directory}, {directory_path}, {repository},
+# {branch}, {harness}, {agent}, {agent_suffix}, {task}, {message}, {elapsed}.
+[customization.tmux.title]
+enabled = true
+format = "{state_symbol}{repository}{agent_suffix}"
+max-length = 60
+directory-style = "basename"  # basename | abbreviated | full
+repository-style = "basename"  # basename | full (owner/repository)
+agent-style = "basename"  # basename (model) | full (model + reasoning effort)
+done-ttl-seconds = 10
+message-max-length = 32
+
+[customization.tmux.title.states]
+working = "● "
+question = "❓ "
+done = "✓ "
+error = "! "
+idle = ""
+
+[customization.tmux.notifications]
+enabled = false  # terminal attention notifications; opt-in
+protocol = "osc-9"  # osc-9 | bell
+states = ["question", "error"]
+include-message = true
 
 # tmux status presentation.
 # - extended: full aibox themed status (legacy alias: powerline)
@@ -452,8 +555,6 @@ mode = "extended"  # extended | plain | disabled (legacy: powerline -> extended)
 # - aibox_oom: cgroup OOM kill counters
 # - aibox_proc: live process count versus configured process warning limit
 # - aibox_ai: detected AI-agent/runtime process count
-# - aibox_mcp: processkit/MCP daemon and server process status
-# - aibox_mig: pending processkit migration count
 # - weather: weather segment from tmux-powerkit
 # - uptime: container uptime
 # - datetime: local date/time
@@ -491,8 +592,6 @@ line2-right = ["hostname", "externalip", "ssh", "netspeed", "ping", "cpu", "load
 # aibox-oom: cgroup OOM event/kill counter header.
 # aibox-proc: process/thread count header.
 # aibox-ai: active AI-agent process count header.
-# aibox-mcp: processkit/MCP topology header.
-# aibox-mig: pending processkit migration count header.
 # kubernetes: Kubernetes segment icon/header.
 # cloud/cloud-aws/cloud-gcp/cloud-azure/cloud-multi: local cloud context icons.
 # uptime: container uptime icon/header.
@@ -501,8 +600,6 @@ aibox-log = "󱖫"
 aibox-oom = "󰍛󰚌"
 aibox-proc = "󰊚"
 aibox-ai = "󱙺"
-aibox-mcp = "󰌹"
-aibox-mig = "󰚰"
 kubernetes = "󱃾"
 cloud = "󰅣"
 cloud-aws = "󰸏"
