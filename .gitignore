@@ -95,5 +95,3 @@ context/templates/aibox-home/
 # aibox apply writes runtime-sync migration records here; this repo runs in
 # harness-only mode and has no tracked root context/ tree (#203).
 context/migrations/
-
-.agents/skills/
