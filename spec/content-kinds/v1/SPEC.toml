@@ -1,6 +1,6 @@
 slug = "content-kinds"
 version = 1
-status = "draft"
+status = "frozen"
 roadmap = ["PK1-P1", "PK1-P6"]
 issues = ["206"]
 decisions = ["C1", "C2", "C3", "C4", "C9"]
