@@ -1,6 +1,6 @@
 slug = "mcp-context-serving"
 version = 1
-status = "draft"
+status = "frozen"
 roadmap = ["PK1-P3"]
 issues = ["206", "204", "213"]
 decisions = ["C4", "C5", "C6", "C7", "C8", "C9", "C10"]
