@@ -27,6 +27,17 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
     echo "error: tag does not match source SHA" >&2
     exit 1
 }
+# v1 releases are tagged on the squash commit on main (GitHub Flow).
+RELEASE_LINE="main"
+git -C "$REPO_ROOT" fetch --quiet origin "$RELEASE_LINE" || {
+    echo "error: cannot fetch origin/$RELEASE_LINE to verify the release line" >&2
+    exit 1
+}
+git -C "$REPO_ROOT" merge-base --is-ancestor "$SOURCE_SHA" \
+    "origin/$RELEASE_LINE" || {
+    echo "error: source SHA is not on origin/$RELEASE_LINE" >&2
+    exit 1
+}
 [[ -z "$(git -C "$REPO_ROOT" status --porcelain)" ]] || {
     echo "error: host checkout is dirty" >&2
     exit 1
@@ -55,12 +66,14 @@ jq -n --sort-keys \
     --arg version "$VERSION" \
     --arg target "$TARGET" \
     --arg sourceSha "$SOURCE_SHA" \
+    --arg releaseLine "$RELEASE_LINE" \
     --arg hostOs "$(uname -s)" \
     --arg hostArch "$(uname -m)" \
     --arg hostKernel "$(uname -r)" \
     --arg rustHost "$host_target" \
     --arg rustcVersion "$(rustc --version)" \
     '{version:$version,target:$target,sourceSha:$sourceSha,
+      releaseLine:$releaseLine,
       buildEnvironment:"local-host",
       host:{os:$hostOs,arch:$hostArch,kernel:$hostKernel,rustHost:$rustHost,
         rustcVersion:$rustcVersion},

@@ -9,6 +9,10 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Host release builds (`scripts/build-host-artifact.sh`) also check that
+  the tagged commit is on `origin/main`, and record the release line in the
+  host provenance. The release documentation describes how to recover from
+  a failed host build (#165).
 - Adopt GitHub Flow for this repository (#205): v1 is developed on `main`,
   v0 continues on `lts/v0`, and releases are prepared on `release/vX.Y.Z`
   and tagged on the squash commit. `scripts/maintain.sh` keys release

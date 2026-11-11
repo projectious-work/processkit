@@ -57,6 +57,41 @@ size. Each local host executes `scripts/build-host-artifact.sh`, verifies tag
 and commit provenance, and natively smoke-tests its binary. Merely naming a
 target never manufactures or validates it.
 
+On each host, check out the release tag and run:
+
+```sh
+scripts/maintain.sh release-host v1.0.0-alpha.5
+```
+
+Before building, the host checks the following:
+
+- The checkout is exactly the tagged commit.
+- The tag points to that commit.
+- The commit is on `origin/main`, the v1 release line.
+- The worktree is clean.
+- The Rust host target matches the requested target.
+
+The provenance file records the version, target, source SHA, release line,
+and host details.
+
+## Recovering from a failed host build
+
+A host build never changes the tag or the release line, so recovery is local:
+
+1. Read the error. A provenance error (`checkout does not match source SHA`,
+   `tag does not match source SHA`, `source SHA is not on origin/main`, or
+   `host checkout is dirty`) means the host has the wrong source. Run
+   `git fetch --tags origin`, check out the tag, and remove local changes.
+   Never move or recreate a published tag to make a host pass.
+2. A toolchain or smoke-test error means the host itself is broken. Fix the
+   Rust toolchain, delete that host's `dist/processkit-<version>-<target>*`
+   files, and run the host build again.
+3. If a target cannot be built at all, do not finalize a matrix that names
+   it. The prerelease is finalized only with the targets that were actually
+   built and verified, and the missing target is tracked in an issue.
+4. If the fix needs a source change, the tag is not reused. Merge the fix to
+   `main` and cut the next prerelease version.
+
 ## Exact-version bootstrap
 
 The non-root bootstrap installs a native executable only after checking its
