@@ -1,6 +1,6 @@
 ---
 name: standard-application-engineering
-description: Company application engineering standards: application profiles, Twelve-Factor alignment, layered configuration, output/logging/evidence channels, and compatibility of machine interfaces. Use when building or changing a CLI, service, worker, or MCP server's configuration, output, logs, JSON results, schemas, or public contracts, or when deciding which standards apply to a product.
+description: Company application engineering standards: application profiles, Twelve-Factor alignment, CLI command grammar (Unix, kubectl, or OpenStackClient style), layered configuration, output/logging/evidence channels, and compatibility of machine interfaces. Use when building or changing a CLI, service, worker, or MCP server's commands, options, configuration, output, logs, JSON results, schemas, or public contracts, or when deciding which standards apply to a product.
 ---
 
 # standard-application-engineering
@@ -25,6 +25,24 @@ Full standard: `.standards/application-profiles.md`. Sections:
 - Conditional overlays
 - Composite products
 - Applicability record
+
+## Command-line interface design standard
+
+Each CLI picks one recorded style (ADR): A Unix utility `tool [opts]
+[operands]`, B verb–resource `tool <verb> <type> [<name>]` (kubectl), or C
+object–action `tool <object> <action>` (OpenStackClient). All follow the
+*Unix Philosophy* and the baseline: `--help` with examples, `--version`,
+long names for all options, `--` and `-`, machine envelope as contract, no
+secrets in options, prompts only on a TTY, `--dry-run` for destructive use.
+
+Full standard: `.standards/command-line-interface-design.md`. Sections:
+
+- Purpose and scope
+- Choosing a style
+- Baseline for every style
+- A. Unix utility style
+- B. Verb–resource style (kubectl)
+- C. Object–action style (OpenStackClient)
 
 ## Application configuration standard
 

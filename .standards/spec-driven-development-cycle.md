@@ -17,7 +17,7 @@ A repository adopting this standard, or a later revision of it, names the
 first phase it applies to. Phases completed before that point are not reopened
 or re-gated; their evidence stands as recorded.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 ## Small-change path
@@ -93,7 +93,9 @@ defines: *EARS* requirements, an interface catalog for everything the feature
 makes observable, acceptance journeys, schemas, fixtures, and examples. A
 roadmap phase is covered by the specification versions of its features. Owner
 decisions a specification depends on are made here, not during
-implementation.
+implementation. While drafting, the agent asks why each requested attribute
+matters until the owner's goal is clear (*Laddering (Interview Technique)*),
+batching the questions per round, and records that goal in `overview.md`.
 
 A specification version that is not **test-ready**, as the
 [layout standard](specification-layout-and-lifecycle.md#lifecycle) defines it,
@@ -104,6 +106,7 @@ blocks approval.
 Classify applicable requirements by component, public interface, security,
 compatibility, persistence, migration, concurrency, failure behavior,
 documentation, test level, external dependency, and implementation order.
+Quality requirements name their *ISO/IEC 25010* characteristic.
 
 Produce a traceability matrix that maps every normative requirement to planned
 work, expected evidence, and verification method (end-to-end journey, unit or
@@ -126,6 +129,8 @@ The plan defines:
 - requirement IDs addressed by every task.
 
 The plan covers specification conformance work as well as feature code.
+Tasks follow the *MECE Principle*: together they cover every requirement, and
+each requirement and file has one owning task.
 
 ## 3. Assign agents and models
 
@@ -319,6 +324,7 @@ A phase is complete only when these items hold (its *Definition of Done*):
 
 ## 11. Retrospect and improve
 
+This step closes the cycle's *PDCA* loop (plan §0–5, do §6–7, check §8–10).
 For significant phases, compare planned and actual decomposition, agent/model
 cost and effectiveness, integration friction, specification gaps, late defect
 detection, and validation value. Feed reusable improvements into company

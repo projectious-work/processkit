@@ -6,7 +6,7 @@ This standard defines the minimum security and dependency practices for
 projectious.work software. Projects add stronger controls according to their
 trust boundary, data sensitivity, deployment model, and release profile.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 ## Security model
@@ -18,7 +18,8 @@ Every released application documents:
 - credentials and authorization model;
 - external processes, services, plugins, and network destinations;
 - persistence, retention, and deletion responsibilities;
-- likely abuse and failure paths, modeled with *STRIDE*; and
+- likely abuse and failure paths, modeled with *STRIDE*, and for every web or
+  HTTP interface checked against the current *OWASP Top 10*; and
 - supported security-reporting process.
 
 Security-sensitive behavior fails closed. Error messages and diagnostics do
@@ -28,7 +29,11 @@ instructions.
 ## Input, filesystem, and process safety
 
 Applications validate untrusted structured input, versions, sizes, paths,
-archives, URLs, and encodings. File operations account for traversal,
+archives, URLs, and encodings wherever untrusted data enters, and again
+before use in a filesystem or process operation (*Defensive Programming
+according to McConnell*; see the
+[architecture standard](software-architecture-and-code-design.md#code-conventions)).
+File operations account for traversal,
 symlinks, special files, permissions, partial writes, and races.
 
 Programs invoking external tools preserve argument boundaries and avoid a shell
@@ -110,7 +115,8 @@ are never moved; corrected versions are released normally.
 
 ## Agent briefing
 
-> Identify the trust boundary before coding. Preserve argument and path
-> boundaries, redact before data leaves the core, review every direct
-> dependency, and verify the final published artifact rather than trusting the
-> source build alone.
+> Identify the trust boundary before coding; model abuse with *STRIDE* and
+> check web interfaces against the *OWASP Top 10*. Validate untrusted input
+> where it enters and before filesystem or process use. Preserve argument and
+> path boundaries, redact before data leaves the core, review every direct
+> dependency, and verify the final published artifact, not only the build.

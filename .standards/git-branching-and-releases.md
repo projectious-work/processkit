@@ -28,7 +28,7 @@ The linked
 governs the evidence, tests, artifacts, and post-publication checks required
 before a merge or a tag.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 ## Branches
@@ -85,7 +85,9 @@ Commit messages and squash-merge titles follow *Conventional Commits*: a type,
 an optional scope, and an imperative subject; `!` or a `BREAKING CHANGE:`
 footer marks a breaking change. Types map to *Keep a Changelog* sections and
 to the *Semantic Versioning (SemVer)* bump. Required attribution trailers
-follow the repository's policy.
+follow the repository's policy. Layout follows the *50/72 Rule*, with one
+deviation: a squash-merge title MAY exceed 50 characters for type, scope, and
+pull-request number, but never 72.
 
 The squash-merge title MUST be a valid Conventional Commit whose type matches
 the branch prefix:
@@ -274,12 +276,12 @@ repository migrates once:
 
 ## Agent briefing
 
-> *GitHub Flow* with *Conventional Commits*: `feat/`, `fix/`, `chore/`, `spec/`
-> from `main` as `[<issue>-]<slug>`; unclear target: stop. Squash-merge after
-> explicit owner approval; title type matches the prefix. `release/vX.Y.Z`
-> holds only `chore(release): vX.Y.Z`; tag the squash commit. Specs: tag
-> `spec/<slug>/vN`. `lts/vN`: names `lts<N>-…`; fix `main` first, then
-> `git cherry-pick -x`. Never develop on `release/*`; never bypass protection.
+> *GitHub Flow*, *Conventional Commits*, *50/72 Rule*: `feat/`, `fix/`,
+> `chore/`, `spec/` from `main` as `[<issue>-]<slug>`; unclear target: stop.
+> Squash-merge after explicit owner approval; title type matches the prefix.
+> `release/vX.Y.Z` holds only `chore(release): vX.Y.Z`; tag the squash commit.
+> Specs: tag `spec/<slug>/vN`. `lts/vN`: names `lts<N>-…`; fix `main` first,
+> then `git cherry-pick -x`. Never develop on `release/*` or bypass protection.
 
 ## Authoritative references
 

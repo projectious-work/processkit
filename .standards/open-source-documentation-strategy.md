@@ -24,7 +24,7 @@ The [aibox repository](https://github.com/projectious-work/aibox) and
 reference example. They demonstrate the intended repository-to-site flow, not
 an immutable template or a claim that every current detail already conforms.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 ## Principles
@@ -41,7 +41,9 @@ Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic
    integrator, contributor, security reporter, and maintainer need different
    paths through the same product truth.
 4. **The README is a landing page and map.** It proves value and gets a reader
-   to a first success; it does not duplicate the complete manual.
+   to a first success; it does not duplicate the complete manual. Detail
+   unfolds from README to Getting Started to guides to reference
+   (*Progressive Disclosure*).
 5. **Examples are executable promises.** Commands, configuration, output, and
    API examples are versioned and tested where practical.
 6. **Local-first delivery.** Documentation builds, checks, and deploys through
@@ -159,7 +161,7 @@ but the content covers these questions:
 10. **Security:** trust model, supported versions, reporting, and links to the
     canonical policy.
 
-The four *Diátaxis* modes SHOULD remain visibly distinct whatever the
+The four *Diátaxis* modes SHOULD remain visibly distinct (*MECE Principle*) whatever the
 generator; "Getting started" is the tutorial and "Concepts" the explanation.
 Public API symbols and schemas are documented close to source and linked from
 the reference section.
@@ -411,11 +413,16 @@ arguments, logs, generated files, or Git history.
 
 Documentation is reviewed with the same seriousness as code.
 
-Prose follows *Plain English according to Strunk & White*: short sentences,
-active voice, concrete words, no filler. German text follows *Gutes Deutsch
-nach Wolf Schneider*. Documentation, CLI messages, release notes, and commit
-messages use the product's Ubiquitous Language: the same terms as the
-specification and the code.
+Text meets *Plain Language (ISO 24495)*: readers find, understand, and use
+what they need. Prose follows *Plain English according to Strunk & White*:
+short sentences, active voice, concrete words, no filler. German text follows
+*Gutes Deutsch nach Wolf Schneider*. Procedures, CLI and error messages, and
+agent instructions follow the writing rules of *Simplified Technical English
+(ASD-STE100)*; its controlled dictionary is not required. Documentation, CLI
+messages, release notes, and commit messages use the product's Ubiquitous
+Language (*Domain-Driven Design according to Evans*): the same terms as the
+specification and the code. Visual design of documentation sites follows the
+[user-interface design standard](user-interface-design.md).
 
 Required quality checks cover:
 
@@ -479,8 +486,8 @@ item is checked after publication:
 ## Agent briefing
 
 > Documentation follows implementation in the same change and lives in the
-> repository. The README is a landing page and map, not the manual. Examples
-> are executable promises. Docs build and deploy locally to `gh-pages` without
-> GitHub Actions. Status, limits, and breaking changes are honest and visible.
-> A release is not publishable until the minimum release documentation gate
-> passes.
+> repository. The README is a landing page and map (*Progressive Disclosure*).
+> Text meets *Plain Language (ISO 24495)*; procedures use *ASD-STE100* rules.
+> Examples are executable promises. Docs deploy locally to `gh-pages` without
+> GitHub Actions. Status and limits are honest; a release needs the minimum
+> release documentation gate.

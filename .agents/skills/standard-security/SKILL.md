@@ -11,10 +11,11 @@ Binding company standard. The rules below are the summary; the linked file is au
 
 ## Security and software-supply-chain standard
 
-Identify the trust boundary before coding. Preserve argument and path
-boundaries, redact before data leaves the core, review every direct
-dependency, and verify the final published artifact rather than trusting the
-source build alone.
+Identify the trust boundary before coding; model abuse with *STRIDE* and
+check web interfaces against the *OWASP Top 10*. Validate untrusted input
+where it enters and before filesystem or process use. Preserve argument and
+path boundaries, redact before data leaves the core, review every direct
+dependency, and verify the final published artifact, not only the build.
 
 Full standard: `.standards/security-and-software-supply-chain.md`. Sections:
 

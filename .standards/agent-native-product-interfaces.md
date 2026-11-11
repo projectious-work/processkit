@@ -6,7 +6,7 @@ This standard defines how projectious.work products expose consequential
 capabilities to AI agents without making probabilistic model behavior the
 execution, authorization, or evidence boundary.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 It applies when a product provides MCP tools or another agent-facing protocol

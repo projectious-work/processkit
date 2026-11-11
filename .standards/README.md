@@ -18,12 +18,15 @@ reports local edits and drift. The exact version is recorded in `lock.json`.
 
 ## Conventions
 
-- Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f),
-  pinned to catalog commit `ccb05b6b` (2026-10-26): the canonical meaning
+- Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966),
+  pinned to catalog commit `6554641a` (2026-11-06): the canonical meaning
   applies, and a standard states only where the company deviates. Adopting a
   later catalog revision is a standards change.
 - MUST, MUST NOT, SHOULD, and MAY are used as in RFC 2119; lowercase forms are
   ordinary prose.
 - Each standard ends with an `## Agent briefing`, the binding summary loaded
   into agent context: at most six lines, except the always-on communication
-  briefing.
+  briefing. Briefing, skill, and full standard form three levels of
+  *Progressive Disclosure*.
+- Each topic has one owning standard (*MECE Principle*); other standards
+  refer to it instead of restating it (*DRY (Don't Repeat Yourself)*).

@@ -6,7 +6,7 @@ This standard defines how AI agents shape what they tell people in every
 projectious.work repository and harness. It is the company default for every
 agent and every person; nobody needs to opt in.
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 The reader is assumed to have little working memory to spare and to be switching
@@ -34,6 +34,8 @@ NOT remove safety or confirmation behavior.
    prose follows only if needed.
    - Bad: "Let's think about this. Your auth flow has a few moving pieces…"
    - Good: "Edit `src/auth.ts:42` to update the token validation."
+   - Longer answers follow the *Pyramid Principle according to Barbara
+     Minto*: the governing answer, then grouped support.
 2. **Number multi-step work.** One bounded action per step; use the fewest steps
    that still work and fold trivial steps into the step before.
 3. **End with one concrete next action** the reader can start in under two
@@ -50,7 +52,7 @@ NOT remove safety or confirmation behavior.
    ("15 minutes if tests cover it, an afternoon if not"). Do not invent
    estimates of the agent's own run time.
 9. **Rank and group long lists**, showing at most five items per group and the
-   most relevant first. Keep the rest and show it on request or when it becomes
+   most relevant first. Groups follow the *MECE Principle*. Keep the rest and show it on request or when it becomes
    next. Reviews, audits, inventories, and security or compliance findings are
    never truncated: show them completely, grouped.
 10. **No preamble, recap, closing pleasantries, praise openers, or idioms.**
@@ -58,8 +60,8 @@ NOT remove safety or confirmation behavior.
 11. **Finish one topic, then offer the next.** A second issue becomes a separate
     question at the end. A question that comes up mid-work is not a tangent:
     answer it yourself if you can; otherwise raise it once, at the end.
-12. **Write in the person's language.** Code, paths, and commands stay verbatim
-    in code spans.
+12. **Write in the person's language**, as *Plain Language (ISO 24495)*. Code,
+    paths, and commands stay verbatim in code spans.
 
 ## When to change the shape
 
@@ -128,7 +130,8 @@ adopt.
 > Errors: cause, location, fix. Flag unverified claims; never fake certainty.
 > Estimate human work in minutes or hours, with the assumption.
 > No preamble, recap, pleasantries, or tangents; offer a second topic after.
-> Rank long lists, 5 per group; never truncate reviews, audits, findings.
+> Rank long lists in *MECE Principle* groups of 5;
+> never truncate reviews, audits, findings.
 > Safety and confirmation of destructive or outward-facing actions come first;
 > "explain" gets full depth. Sub-agent briefs and reports are machine-facing:
 > result, evidence, unknowns.

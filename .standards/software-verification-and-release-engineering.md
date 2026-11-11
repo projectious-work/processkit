@@ -16,7 +16,7 @@ Repositories requiring native-host, container-engine, signing, or publication
 authority also apply the
 [human-controlled host-phase execution standard](human-controlled-host-phase-execution.md).
 
-Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/ccb05b6bd41a663eaf2595e707d98f35d743e61f); see
+Terms in *italics* are [Semantic Anchors](https://github.com/llm-coding/Semantic-Anchors/tree/6554641a11fdf99fdbdf09cc0602268e3db88966); see
 [README](README.md#conventions).
 
 ## Release identity and chain of custody
@@ -61,7 +61,7 @@ tests do not replace focused negative, boundary, and failure-path tests.
 
 Unit and component tests follow *TDD, Chicago School*: tests assert state and
 observable results, collaborators inside the core are real, and test doubles
-(named per *Test Doubles (Meszaros)*) replace only ports to external systems,
+(named per *Test Double (Meszaros)*) replace only ports to external systems,
 time, and randomness. Tests do not assert internal call sequences.
 
 Default local tests MUST be deterministic, offline, credential-free,

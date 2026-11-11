@@ -12,7 +12,8 @@ when the product boundary or distribution model changes.
 | MCP servers (`src/context/skills/*/mcp/`), local over stdio | MCP server, CLI stream rules |
 | Shared server (v1 roadmap, access-controlled) | MCP server, remote, so also Service or worker |
 | Schemas, ontology, templates (`src/context/`, `spec/`) | Schema, protocol, or process package |
-| Documentation site (`docs-site/`) | Documentation website |
+| Documentation site (`docs-site/`) | Documentation website, so also the user-interface design standard |
+| Shipped skills (`src/context/skills/`) and `AGENTS.md` | AI agent |
 
 ## Platforms and distribution
 
@@ -42,6 +43,16 @@ release), X (dev containers), and XI (CLI logs). processkit adds:
 No further deviation is identified for the local stdio servers. The shared
 server does not exist yet. Its Twelve-Factor review is due when the
 shared-server roadmap phase starts.
+
+## Obligations added by standards v2.2.0
+
+| Obligation | Status |
+| --- | --- |
+| CLI command style recorded in an ADR (`command-line-interface-design.md`) | Decided with `cli@v1`, before its freeze (#212). |
+| AI agent profile: each shipped skill and `AGENTS.md` states job, persona, instructions, tools, model, and evaluation (`agent-building.md`) | Open. Plan: extend the v1 skill metadata in `content-kinds@v1` with persona (by reference to the company default), model class, and evaluation cases. |
+| Documentation site follows `user-interface-design.md` | Open. Review `docs-site/` against the standard, then fix each finding or record it as a deviation here. |
+| stdio MCP servers log to stderr | Met. The local servers write only protocol messages to stdout. |
+| No configuration layer contains a secret | Met for v0. v1 is specified in `cli@v1` and `security@v1`. |
 
 ## Non-applicable or deferred requirements
 
