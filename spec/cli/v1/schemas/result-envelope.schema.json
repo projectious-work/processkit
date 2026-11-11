@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/cli/result-envelope.schema.json",
   "title": "processkit CLI result envelope",
-  "description": "The one JSON document a command writes to standard output with --json (cli@v1 PK-OUT-001, PK-OUT-006). Unknown members are not allowed; consumers reject an unknown apiVersion.",
+  "description": "The one JSON document a command writes to standard output with -o json (or, as YAML, with -o yaml) (cli@v1 PK-OUT-001, PK-OUT-006). Unknown members are not allowed; consumers reject an unknown apiVersion.",
   "type": "object",
   "additionalProperties": false,
   "required": ["apiVersion", "kind", "command", "outcome", "root", "revision", "data", "diagnostics"],
@@ -15,8 +15,8 @@
       "const": "Result"
     },
     "command": {
-      "description": "Command path, subcommands joined by one space. Discriminates the shape of 'data'.",
-      "enum": ["init", "new", "validate", "format", "list", "show", "context", "explain", "lock", "fetch", "ontology list", "ontology show", "access whoami", "access can-i", "migrate", "config show", "version"]
+      "description": "Command path, words joined by one space; for get, 'get' with TYPE alone (MCP list result), 'get item' with TYPE NAME (MCP get result), 'get context' (MCP get_context result). Discriminates the shape of 'data'.",
+      "enum": ["init", "create", "apply", "validate", "format", "get", "get item", "get context", "describe", "lock", "fetch", "api-resources", "explain", "auth whoami", "auth can-i", "migrate", "config view", "version"]
     },
     "outcome": {
       "enum": ["succeeded", "failed", "refused", "cancelled", "partial"]
@@ -38,11 +38,11 @@
       "items": {"$ref": "diagnostic.schema.json"}
     },
     "plan": {
-      "description": "Present exactly for writing commands (init, new, format, lock, migrate, fetch) once a plan was computed.",
+      "description": "Present exactly for writing commands (init, create, apply, format, lock, migrate, fetch) once a plan was computed.",
       "$ref": "plan.schema.json"
     },
     "changes": {
-      "description": "Present exactly for writing commands: the repository files actually changed, sorted by path, shape per repository-storage@v1 file-change.schema.json. Empty with --dry-run and on refusal.",
+      "description": "Present exactly for writing commands: the repository files actually changed, sorted by path, shape per repository-storage@v1 file-change.schema.json. Empty with a dry run and on refusal.",
       "type": "array",
       "items": {"type": "object"}
     }

@@ -31,21 +31,23 @@ The processkit CLI provides these commands:
 | Command | Purpose |
 |---|---|
 | `processkit init [--governing \| --project]` | Create configuration and the content directory in the current repository from a reviewed plan. |
-| `processkit new KIND NAME` | Create an item from the published template. |
-| `processkit validate [PATH...]` | Validate items, references, overrides, and the lock. Reads draft content from standard input with `-`. |
-| `processkit format [PATH...]` | Rewrite items in deterministic serialization. |
-| `processkit list KIND [--selector S] [--namespace N]` | List resolved items at level 0. |
-| `processkit show KIND NAME [--level L] [--section S]` | Show one resolved item at a level, or one section. |
-| `processkit context [--task T] [--profile P] [--path PATH]` | Assemble the context an agent would receive for the given arguments. |
-| `processkit explain KIND NAME` | Show provenance, overrides, applicability basis, and validation status. |
-| `processkit lock [--update [NAME]]` | Resolve upstreams from data already in the local cache and write the lock. |
+| `processkit create TYPE NAME` | Create an item from the published template. |
+| `processkit apply -f FILE\|DIR\|-` | Write item documents to their canonical locations, creating or replacing, from a reviewed plan. |
+| `processkit validate [TYPE [NAME...]] [-f PATH\|-]...` | Validate items, references, overrides, and the lock. Reads draft content from standard input with `-f -`. |
+| `processkit format [TYPE [NAME...]] [-f PATH]...` | Rewrite items in deterministic serialization. |
+| `processkit get TYPE [-l S] [-n N \| -A]` | List resolved items at level 0. |
+| `processkit get TYPE NAME [-n N] [--level L] [--section S]` | Show one resolved item at a level, or one section. |
+| `processkit get context [--task T] [--profile P] [--path PATH]` | Assemble the context an agent would receive for the given arguments. |
+| `processkit describe TYPE NAME [-n N]` | Show provenance, overrides, applicability basis, and validation status. |
+| `processkit lock [--update] [UPSTREAM...]` | Resolve upstreams from data already in the local cache and write the lock. |
 | `processkit fetch` | Fetch the declared and locked upstreams into the local cache. |
-| `processkit ontology list\|show` | Read the published ontology registry. |
-| `processkit access whoami\|can-i` | Show the current principal or explain an access decision. |
+| `processkit api-resources` | List the concepts of the published ontology registry. |
+| `processkit explain TYPE` | Show one concept of the published ontology registry. |
+| `processkit auth whoami\|can-i` | Show the current principal or explain an access decision. |
 | `processkit mcp serve --stdio [--profile NAME]...` | Serve the repository over stdio MCP. |
 | `processkit mcp serve --http --listen ADDRESS [--profile NAME]...` | Run the read-only shared server. |
 | `processkit migrate [--from v0]` | Rewrite content to a newer content API version, or convert v0 governance content, from a reviewed plan. |
-| `processkit config show` | Show effective configuration with value sources and secrets redacted. |
+| `processkit config view` | Show effective configuration with value sources and secrets redacted. |
 | `processkit version` | Report the release, ontology, and schema versions. |
 
 <!-- changed by owner decision: #204 P1 (2026-11-07), pinned profiles
@@ -53,6 +55,9 @@ The processkit CLI provides these commands:
 
 <!-- changed by owner decision: #213 finding 3 (2026-11-08) — rows `lock`
      and `fetch`: fetch, then lock -->
+
+<!-- changed by owner decision: 2026-11-11 (#212), CLI style B — every row; `apply` is
+     new (PK-CLI-053) -->
 
 Every command also accepts the global options of `interfaces.yaml`
 (`global_options`). Options that this specification adds to a command
@@ -65,25 +70,28 @@ beyond this table are listed with the command in `interfaces.yaml`
   the MCP server shall call the same application operation and shall
   produce equivalent results and diagnostics.
 - **PK-CLI-002:** Every data-bearing command of the processkit CLI shall
-  support `--json` with a versioned result envelope. Text output is a
+  support `-o json` with a versioned result envelope. Text output is a
   projection and shall not be the only way to obtain names, digests,
   provenance, or diagnostics.
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B -->
 - **PK-CLI-003:** The processkit CLI shall use exit codes that distinguish
   success, validation failure, usage error, and environment failure, and
   those exit codes shall be documented.
 - **PK-CLI-004:** When a command writes, the processkit CLI shall print its
   plan, and every writing command shall support `--dry-run`. Only `init`,
-  `new`, `format`, `lock`, and `migrate` shall write repository files;
-  `fetch` shall write only the local cache.
+  `create`, `apply`, `format`, `lock`, and `migrate` shall write repository
+  files; `fetch` shall write only the local cache.
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B -->
 - **PK-CLI-005:** The processkit CLI shall run read commands offline from
   committed files, the lock, and the local cache. If a read command needs an
   upstream that has not been fetched, then the processkit CLI shall report
   it as an environment failure together with the fix.
 - **PK-CLI-006:** The processkit CLI shall not stage, commit, push, or open
   pull requests.
-- **PK-CLI-007:** When `processkit context` is run, the processkit CLI shall
+- **PK-CLI-007:** When `processkit get context` is run, the processkit CLI shall
   return exactly what the MCP server would return for the same principal and
   arguments, so authors can inspect what agents receive.
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B -->
 - **PK-CLI-044:** When `processkit lock` runs, the processkit CLI shall
   resolve upstreams only from data that `processkit fetch` has already
   stored in the local cache, and shall not access the network. If data that
@@ -95,12 +103,17 @@ beyond this table are listed with the command in `interfaces.yaml`
 
 ## Command style
 
-- **PK-CLI-021:** The processkit CLI shall follow style A (Unix utility,
-  with Git-style subcommands) of the company command-line interface design
-  standard, and the baseline of that standard, for every command. Commands
-  and subcommands are words before the operands; options are long names;
-  operands carry only the primary inputs (KIND, NAME, PATH, CONCEPT).
-  <!-- agent proposal: OPEN-cli-15 -->
+- **PK-CLI-021:** The processkit CLI shall follow style B (verb–resource,
+  as in kubectl) of the company command-line interface design standard, and
+  the baseline of that standard, for every command. A resource command is a
+  verb followed by a type and optional names (`get TYPE [NAME...]`); a
+  command that acts on no resource type is a non-resource command (`init`,
+  `fetch`, `lock`, `migrate`, `mcp serve`, `config view`, `version`,
+  `api-resources`, `auth whoami`). Wherever `TYPE NAME` is accepted,
+  `TYPE/NAME` shall be accepted with the same meaning. The decision is
+  recorded in ADR `docs/adr/0001-cli-command-style.md`.
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B; was the
+       agent proposal of style A (OPEN-cli-15) -->
 - **PK-CLI-022:** When `-h` or `--help` is given to any command, the
   processkit CLI shall print help that begins with examples to standard
   output, shall ignore the other arguments, and shall exit with code 0. If
@@ -112,14 +125,79 @@ beyond this table are listed with the command in `interfaces.yaml`
   and shall exit with code 0. `-v` shall not mean version.
 - **PK-CLI-024:** The processkit CLI shall treat `--` as the end of option
   parsing. The processkit CLI shall accept options before and after
-  operands. An option value shall never be optional.
-  <!-- agent proposal: OPEN-cli-15 -->
+  operands. Only `--dry-run` shall have an optional value (PK-CLI-052); every
+  other option that takes a value shall require it.
+  <!-- agent proposal: OPEN-cli-15; changed by owner decision: 2026-11-11
+       (#212), CLI style B -->
 - **PK-CLI-025:** The processkit CLI shall not accept a secret as the value
   of an option or of a `PROCESSKIT_` environment variable.
 - **PK-CLI-026:** The processkit CLI shall write plain output without color
   or other terminal control sequences when standard output is not a
   terminal, when the environment variable `NO_COLOR` is set to a non-empty
   value, or when `--no-color` is given.
+
+## Resource addressing and options (style B)
+
+- **PK-CLI-049:** The processkit CLI shall accept a TYPE case-insensitively
+  as the kind's name, its plural, or its short name, as listed in
+  `interfaces.yaml` (`type_names`) for the kinds of this release and as
+  declared by an OntologyExtension (`plural`, `shortName`, `ontology@v1`)
+  for extension kinds. NAME shall be case-sensitive. If TYPE names no
+  kind, then the processkit CLI shall fail with `content-kinds.unknown-kind`
+  as a usage error. When a resource command is run without NAME, it shall
+  address every resource of the type in the selected scope (PK-CLI-051).
+  <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
+- **PK-CLI-050:** The processkit CLI shall accept `-o`/`--output` with
+  the values `json`, `yaml`, `name`, and `wide`. `json` shall write exactly
+  one result envelope (PK-OUT-001). `yaml` shall write the same envelope as
+  one YAML 1.2 document whose parsed value equals the parsed `json` output.
+  `name` shall write one line `<Kind>/<namespace>/<name>` per item in
+  `data`, in `data` order, and shall be accepted only by `get TYPE`,
+  `create`, `apply`, and `format`; elsewhere it shall fail with
+  `cli.option-not-applicable`. `wide` shall write text output with
+  additional columns. Without `-o`, and with `wide`, the layout of the
+  output shall not be a contract.
+  <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
+- **PK-CLI-051:** When a resource command is run without `-n`/`--namespace`,
+  the processkit CLI shall use the namespace of the root Container
+  (`ontology@v1`). When `processkit get TYPE` is run with
+  `-A`/`--all-namespaces`, the processkit CLI shall address every
+  namespace and shall omit `namespace` from the MCP call. `-A` shall be
+  accepted only by `get TYPE` without NAME; `-A` together with `-n` shall
+  fail with `cli.conflicting-options`.
+  <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
+- **PK-CLI-052:** Every writing command shall accept
+  `--dry-run=none|client|server`; `--dry-run` without a value shall mean
+  `client`, and `none`, the default, shall run the command. With `client`,
+  the processkit CLI shall compute and print the plan and shall write
+  nothing, and shall not report a failed check of Git state as an error.
+  With `server`, the processkit CLI shall also run every check that a real
+  run runs before confirmation (the committed-target check of PK-CLI-036,
+  validation of the planned content, and for `fetch` the resolution of refs
+  over the network), shall report their failures as in a real run, and
+  shall stop before confirmation and before any write. Any other value
+  shall fail with `cli.invalid-option-value` as a usage error.
+  <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
+- **PK-CLI-053:** When `processkit apply -f` is run, the processkit CLI
+  shall read each item document that `-f` names (a file, every item file
+  below a directory, or one draft from standard input with `-f -`), shall
+  take its kind, namespace, and name from the document, shall validate it
+  in the context of the selected repository, and shall plan to write it to
+  the location `repository-storage@v1` assigns, creating the file or
+  replacing an existing one. If any document fails validation, then the
+  processkit CLI shall write no file. `apply` shall never delete a file,
+  and a document whose content equals the file at its location shall not
+  appear in the plan. Confirmation follows PK-CLI-014.
+  <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
+- **PK-CLI-054:** The processkit CLI shall accept `-f`/`--filename` more
+  than once. `-f -` shall be accepted only by `validate` and `apply`, and
+  at most once per command.
+  <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
+- **PK-CLI-055:** The processkit CLI shall not execute programs named
+  `processkit-<name>` or any other plugin. If the first operand names no
+  command, then the processkit CLI shall fail with `cli.unknown-command` as
+  a usage error.
+  <!-- agent proposal: owner decision 2026-11-11 (#212), CLI style B -->
 
 ## Exit codes and outcomes
 
@@ -146,17 +224,19 @@ beyond this table are listed with the command in `interfaces.yaml`
 ## Machine output
 
 - **PK-CLI-030:** Every command except `mcp serve` shall be data-bearing
-  and shall accept `--json`. If `--json` is given to `mcp serve`, then the
-  processkit CLI shall fail with `cli.option-not-applicable` as a usage
+  and shall accept `-o`/`--output`. If `-o` is given to `mcp serve`, then
+  the processkit CLI shall fail with `cli.option-not-applicable` as a usage
   error.
-  <!-- agent proposal: OPEN-cli-03 -->
+  <!-- agent proposal: OPEN-cli-03; changed by owner decision: 2026-11-11
+       (#212), CLI style B -->
 - **PK-CLI-031:** In text mode, a writing command shall print its plan to
-  standard output when `--dry-run` is given, and to standard error
-  otherwise. When a writing command runs with `--json`, its envelope
-  shall carry the plan in `plan` (`schemas/plan.schema.json`) and the files
-  it actually changed in `changes`. With `--dry-run`, and when the plan is
-  refused, `changes` shall be empty.
-  <!-- agent proposal: OPEN-cli-03 -->
+  standard output when `--dry-run` is `client` or `server`, and to standard
+  error otherwise. When a writing command runs with `-o json` or `-o yaml`,
+  its envelope shall carry the plan in `plan` (`schemas/plan.schema.json`)
+  and the files it actually changed in `changes`. With a dry run, and when
+  the plan is refused, `changes` shall be empty.
+  <!-- agent proposal: OPEN-cli-03; changed by owner decision: 2026-11-11
+       (#212), CLI style B -->
 
 ## Equivalence with MCP
 
@@ -168,26 +248,33 @@ beyond this table are listed with the command in `interfaces.yaml`
   <!-- agent proposal: OPEN-cli-07 -->
 - **PK-CLI-041:** The processkit CLI shall act as the `local` principal of
   `access-control@v1` (the operating-system user that runs the command).
-  `processkit context` shall therefore return what a stdio MCP server
+  `processkit get context` shall therefore return what a stdio MCP server
   started by the same user returns.
-  <!-- agent proposal: OPEN-cli-07 -->
+  <!-- agent proposal: OPEN-cli-07; changed by owner decision: 2026-11-11
+       (#212), CLI style B -->
 
 ## Validation input
 
-- **PK-CLI-042:** When `processkit validate -` reads a draft from standard
-  input, the processkit CLI shall use the value of `--kind` as the kind if
-  it is given, and otherwise the draft's own `kind` field. If neither gives
-  a kind, then the draft shall fail validation. The processkit CLI shall not
-  accept `-` together with a PATH.
-  <!-- agent proposal: OPEN-cli-08 -->
-- **PK-CLI-043:** When `processkit validate` is run without PATH, the
-  processkit CLI shall validate the whole selected repository: project
-  configuration, every item in the content directory, references,
-  overrides, and the lock. When a PATH names a directory, the processkit CLI
-  shall validate every item file below it. Named files shall be validated in
-  the context of the selected repository. When `processkit format` is run
-  without PATH, it shall format every item in the content directory.
-  <!-- agent proposal: OPEN-cli-08 -->
+- **PK-CLI-042:** When `processkit validate -f -` reads a draft from
+  standard input, the processkit CLI shall use the kind that TYPE names if
+  TYPE is given, and otherwise the draft's own `kind` field. If neither
+  gives a kind, then the draft shall fail validation. The processkit CLI
+  shall not accept `-f -` together with another `-f` or with NAME.
+  <!-- agent proposal: OPEN-cli-08; changed by owner decision: 2026-11-11
+       (#212), CLI style B -->
+- **PK-CLI-043:** When `processkit validate` is run without TYPE and
+  without `-f`, the processkit CLI shall validate the whole selected
+  repository: project configuration, every item in the content directory,
+  references, overrides, and the lock. With TYPE, it shall validate every
+  item of that kind, or with NAME only the named items, in the namespace of
+  PK-CLI-051. When `-f` names a directory, the processkit CLI shall validate
+  every item file below it. Named files shall be validated in the context of
+  the selected repository. `processkit format` shall select items in the
+  same way, and without TYPE and `-f` shall format every item in the content
+  directory. TYPE or NAME together with `-f` shall be a usage error,
+  `cli.conflicting-options`.
+  <!-- agent proposal: OPEN-cli-08; changed by owner decision: 2026-11-11
+       (#212), CLI style B -->
 
 ## Repository root selection
 
@@ -300,9 +387,12 @@ confirmed.
   the processkit CLI shall report each `storage.target-not-committed`
   diagnostic as a refusal with the fix (commit or stash the change, then
   run the command again), shall exit with code 4, and shall write no file.
-  With `--dry-run`, the processkit CLI shall report the same diagnostics
-  with severity `warning`. No option shall bypass the check.
-  <!-- changed by owner decision: #213 finding 4 (2026-11-08) -->
+  With `--dry-run=client`, the processkit CLI shall report the same
+  diagnostics with severity `warning`; with `--dry-run=server`, it shall
+  report them as in a real run (PK-CLI-052). No option shall bypass the
+  check.
+  <!-- changed by owner decision: #213 finding 4 (2026-11-08); changed by
+       owner decision: 2026-11-11 (#212), CLI style B -->
 - **PK-CLI-037:** When `processkit init` runs, the processkit CLI shall
   ensure that the Git ignore file `.gitignore` in the repository root
   ignores `/.processkit/`. It shall create the file if it is absent. It
@@ -361,9 +451,10 @@ Configuration has three layers, lowest precedence first:
   then processkit shall fail.
 - **PK-CONFIG-002:** processkit shall not accept project configuration that
   configures authenticators, credentials, listen addresses, or executables.
-- **PK-CONFIG-003:** When `processkit config show --json` is run, the
+- **PK-CONFIG-003:** When `processkit config view -o json` is run, the
   processkit CLI shall report the effective configuration with the source of
   every value and with secrets redacted.
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B -->
 
 - **PK-CONFIG-004:** processkit shall load operator configuration only
   from the file that `--config PATH` names, or else the file that
@@ -380,11 +471,12 @@ Configuration has three layers, lowest precedence first:
 - **PK-CONFIG-006:** In the invocation layer, an option shall take
   precedence over the `PROCESSKIT_` environment variable for the same key.
   An option shall affect only the invocation in which it is given.
-- **PK-CONFIG-007:** The report of `processkit config show` shall list, in
+- **PK-CONFIG-007:** The report of `processkit config view` shall list, in
   key order, every supported key exactly once with its redacted effective
   value, its source, and its origin; it shall also list the loaded and
   absent configuration files and every rejected setting with its reason
   (`schemas/config-report.schema.json`).
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B -->
 - **PK-CONFIG-008:** If the environment contains a `PROCESSKIT_` variable
   that processkit does not define, then processkit shall report
   `cli.unknown-environment-variable` as a warning and shall otherwise
@@ -404,9 +496,10 @@ Configuration has three layers, lowest precedence first:
 - **PK-OUT-004:** processkit shall redact bearer material, certificates, and
   values matching configured secret patterns from logs, diagnostics, and
   errors.
-- **PK-OUT-005:** When `processkit version --json` is run, the processkit
+- **PK-OUT-005:** When `processkit version -o json` is run, the processkit
   CLI shall report the release, source commit, ontology version, supported
   content API versions, and supported MCP protocol versions.
+  <!-- changed by owner decision: 2026-11-11 (#212), CLI style B -->
 - **PK-OUT-006:** The result envelope shall have exactly the members of
   `schemas/result-envelope.schema.json`. Its `apiVersion` shall be
   `cli.processkit.projectious.work/v1`. Its `outcome` shall be
@@ -417,10 +510,11 @@ Configuration has three layers, lowest precedence first:
 - **PK-OUT-007:** Every diagnostic shall have the shape of
   `schemas/diagnostic.schema.json`, with a stable code of the form
   `<area>.<condition>`. processkit shall write every diagnostic as text to
-  standard error, also when `--json` is given. A text diagnostic shall
+  standard error, also when `-o` is given. A text diagnostic shall
   contain its severity, code, and message, and its fix, if any, shall be its
   last line.
-  <!-- agent proposal: OPEN-cli-02 -->
+  <!-- agent proposal: OPEN-cli-02; changed by owner decision: 2026-11-11
+       (#212), CLI style B -->
 - **PK-OUT-008:** processkit shall write each operational log record as one
   JSON line in the shape of `schemas/log-record.schema.json`. The log level
   shall be set by `--log-level`, else `PROCESSKIT_LOG_LEVEL`, else the
@@ -436,11 +530,12 @@ Configuration has three layers, lowest precedence first:
   key `redaction.patterns`, a list of regular expressions. processkit shall
   replace every redacted value with the text `[REDACTED]`.
   <!-- agent proposal: OPEN-cli-11 -->
-- **PK-OUT-010:** When `processkit version --json` is run, the processkit
+- **PK-OUT-010:** When `processkit version -o json` is run, the processkit
   CLI shall report the fields of `schemas/version.schema.json`: `release`,
   `sourceCommit`, `ontologyVersion`, `contentApiVersions`,
   `mcpProtocolVersions`, `mcpToolContractVersion`, `resultContractVersion`,
   and `lockFormatVersion`. These fields are the canonical report of
   PK-OUT-005 and of PK-COMPAT-001 (`v0-migration@v1`). The text output of
   `processkit version` shall contain every one of these values.
-  <!-- agent proposal: OPEN-cli-14 -->
+  <!-- agent proposal: OPEN-cli-14; changed by owner decision: 2026-11-11
+       (#212), CLI style B -->

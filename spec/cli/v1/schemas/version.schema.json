@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/cli/version.schema.json",
   "title": "processkit version data",
-  "description": "The 'data' of processkit version --json (cli@v1 PK-OUT-005, PK-OUT-010; v0-migration@v1 PK-COMPAT-001). The value format of each contract version is owned by the contract's specification.",
+  "description": "The 'data' of processkit version -o json (cli@v1 PK-OUT-005, PK-OUT-010; v0-migration@v1 PK-COMPAT-001). The value format of each contract version is owned by the contract's specification.",
   "type": "object",
   "additionalProperties": false,
   "required": ["release", "sourceCommit", "ontologyVersion", "contentApiVersions", "mcpProtocolVersions", "mcpToolContractVersion", "resultContractVersion", "lockFormatVersion"],

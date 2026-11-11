@@ -12,19 +12,51 @@ version: 1
 executable: processkit
 
 command_style:
-  style: A (Unix utility, Git-style subcommands)
+  style: B (verb–resource, as in kubectl)
   standard: command-line-interface-design.md (company standards v2.2.0)
-  grammar: processkit <command> [<subcommand>] [options] [operands]
-  options: long names only, except -h; an option value is never optional
+  adr: docs/adr/0001-cli-command-style.md
+  grammar:
+    resource_commands: processkit <verb> TYPE [NAME...] [options]
+    type_slash_name: "TYPE/NAME is accepted wherever TYPE NAME is"
+    non_resource_commands: [init, fetch, lock, migrate, mcp serve,
+                            config view, version, api-resources,
+                            auth whoami]
+  options: every option has a long name; short forms -h, -o, -n, -A, -l,
+    -f only; only --dry-run has an optional value
   interleaving: options are accepted before and after operands
   end_of_options: "--"
-  stdin_operand: "\"-\" (validate only)"
-  deviations:
-    - lock --update [NAME] is a flag --update plus an optional operand NAME
-      (not an option with an optional value); `lock NAME` without --update
-      fails with cli.unexpected-argument
-  basis: agent-proposal
-  requirements: [PK-CLI-021, PK-CLI-024]
+  stdin_operand: "-f - (validate and apply only)"
+  plugins: none; processkit never executes processkit-<name> programs
+  deviations: none
+  basis: owner decision 2026-11-11 (#212)
+  requirements: [PK-CLI-021, PK-CLI-024, PK-CLI-055]
+
+type_names:
+  # TYPE accepts any of these, compared case-insensitively. Extension kinds
+  # declare plural and shortName in their OntologyExtension (ontology@v1).
+  # A name, plural, or short name that collides with another entry or with
+  # `context` is rejected by ontology@v1 validation.
+  kinds:
+    - {kind: Standard, plural: standards, short: std}
+    - {kind: ProcessSpecification, plural: processspecifications,
+       short: proc}
+    - {kind: Skill, plural: skills, short: sk}
+    - {kind: MCPServer, plural: mcpservers, short: mcp}
+    - {kind: DecisionRecord, plural: decisionrecords, short: dr}
+    - {kind: Document, plural: documents, short: doc}
+    - {kind: Container, plural: containers, short: ctr}
+    - {kind: Role, plural: roles, short: rl}
+    - {kind: Binding, plural: bindings, short: bd}
+    - {kind: OntologyExtension, plural: ontologyextensions, short: ext}
+  virtual_types:
+    - {name: context, verbs: [get], meaning: the assembled context of
+       mcp-context-serving@v1 get_context; no stored resource, no NAME}
+  concept_names: explain TYPE also accepts every concept name of the
+    ontology registry, case-insensitively
+  names: case-sensitive
+  unknown_type: content-kinds.unknown-kind (usage)
+  basis: agent-proposal (owner decision 2026-11-11, #212)
+  requirements: [PK-CLI-049]
 
 global_options:
   - name: -h, --help
@@ -36,18 +68,28 @@ global_options:
     applies_to: processkit (no command)
     effect: prints exactly one line "processkit <release>" to stdout; exit 0
     check: output equals "processkit " + data.release of
-      processkit version --json, followed by one LF
+      processkit version -o json, followed by one LF
     requirements: [PK-CLI-023]
-  - name: --json
+  - name: -o, --output
+    value: "json | yaml | name | wide"
     applies_to: every command except mcp serve
-    effect: standard output carries exactly one result envelope
-      (schemas/result-envelope.schema.json)
+    effect:
+      json: standard output carries exactly one result envelope
+        (schemas/result-envelope.schema.json)
+      yaml: the same envelope as one YAML 1.2 document; its parsed value
+        equals the parsed json output
+      name: one line <Kind>/<namespace>/<name> per item in data, in data
+        order; only get TYPE, create, apply, and format
+      wide: text output with additional columns; not a contract
+    default: text output; not a contract
     on_mcp_serve: usage error, cli.option-not-applicable
-    check: stdout parses as one JSON document valid against the envelope
-      schema; names, digests, provenance, and diagnostics present in text
-      output are also present in the envelope
-    basis: agent-proposal
-    requirements: [PK-CLI-002, PK-CLI-030, PK-OUT-001, PK-OUT-006]
+    name_elsewhere: usage error, cli.option-not-applicable
+    check: with json, stdout parses as one JSON document valid against the
+      envelope schema; names, digests, provenance, and diagnostics present
+      in text output are also present in the envelope
+    basis: agent-proposal (owner decision 2026-11-11, #212)
+    requirements: [PK-CLI-002, PK-CLI-030, PK-CLI-050, PK-OUT-001,
+                   PK-OUT-006]
   - name: --root
     value: PATH
     env: PROCESSKIT_ROOT
@@ -80,18 +122,54 @@ global_options:
     basis: agent-proposal
     requirements: [PK-OUT-003, PK-OUT-008]
 
+scope_options:
+  basis: agent-proposal (owner decision 2026-11-11, #212)
+  options:
+    - name: -n, --namespace
+      value: N
+      applies_to: [get, describe, create, validate, format, auth can-i]
+      default: the root Container (namespace root, ontology@v1)
+      requirements: [PK-CLI-051]
+    - name: -A, --all-namespaces
+      applies_to: get TYPE without NAME
+      effect: every namespace; namespace is omitted from the MCP list call
+      with_namespace: usage error, cli.conflicting-options
+      requirements: [PK-CLI-051]
+    - name: -l, --selector
+      value: S
+      grammar: ontology@v1 selectors
+      applies_to: get TYPE without NAME
+      requirements: [PK-CLI-049]
+    - name: -f, --filename
+      value: "PATH | -"
+      repeatable: true
+      applies_to: [validate, format, apply]
+      effect: an item file, or every item file below a directory; "-" reads
+        one draft from standard input (validate and apply only, at most once)
+      with_type_or_name: usage error, cli.conflicting-options
+      requirements: [PK-CLI-043, PK-CLI-053, PK-CLI-054]
+
 writing_options:
   - name: --dry-run
-    applies_to: [init, new, format, lock, migrate, fetch]
-    effect: the plan is printed (and carried in `plan` with --json) and
-      nothing is written; `changes` is empty; exit 0 unless the plan cannot
-      be computed
+    value: "none | client | server"
+    value_optional: true; --dry-run alone means client
+    default: none (the command runs)
+    applies_to: [init, create, apply, format, lock, migrate, fetch]
+    client: the plan is printed (and carried in `plan` with -o json or
+      yaml) and nothing is written; `changes` is empty; failed Git-state
+      checks are warnings; exit 0 unless the plan cannot be computed
+    server: as client, and every check of a real run before confirmation
+      runs and fails as in a real run (committed targets PK-CLI-036,
+      validation of the planned content, for fetch the resolution of refs
+      over the network); stops before confirmation and before any write
+    invalid_value: usage error, cli.invalid-option-value
     check: repository files and the local cache are byte-identical before
       and after the command
-    precedence: --dry-run wins over --yes
-    requirements: [PK-CLI-004, PK-CLI-031, PK-CLI-036]
+    precedence: a dry run wins over --yes
+    basis: agent-proposal (owner decision 2026-11-11, #212)
+    requirements: [PK-CLI-004, PK-CLI-031, PK-CLI-036, PK-CLI-052]
   - name: --yes
-    applies_to: [init, new, format, lock, migrate, fetch]
+    applies_to: [init, create, apply, format, lock, migrate, fetch]
     effect: confirms the plan without a prompt, interactive or not
     check: without --yes in a non-interactive run, a plan that requires
       confirmation is refused with cli.confirmation-required (exit 4) and no
@@ -146,45 +224,59 @@ commands:
     requirements: [PK-PROD-005, PK-CLI-004, PK-CLI-006, PK-CLI-008,
                    PK-CLI-012, PK-CLI-013, PK-CLI-034, PK-CLI-037,
                    PK-CLI-038]
-  - name: new
-    synopsis: processkit new KIND NAME
+  - name: create
+    synopsis: processkit create TYPE NAME [-n N]
     arguments:
-      - {name: KIND, meaning: content kind}
+      - {name: TYPE, meaning: content kind (type_names)}
       - {name: NAME, meaning: item name}
     writes: repository files (one item)
     confirmation: only when the plan overwrites an existing file (PK-CLI-014)
     semantics_owner: content-kinds@v1
     check: the created file validates with processkit validate
-    requirements: [PK-PROD-012, PK-CLI-004, PK-CLI-014]
-  - name: validate
-    synopsis: processkit validate [PATH... | -] [--kind KIND]
-    arguments:
-      - {name: PATH, meaning: an item file or a directory; a directory means
-           every item file below it}
-      - {name: "-", meaning: read one draft from standard input; not
-           combinable with PATH (cli.conflicting-options)}
+    requirements: [PK-PROD-012, PK-CLI-004, PK-CLI-014, PK-CLI-049]
+  - name: apply
+    synopsis: processkit apply -f FILE|DIR|- [-f ...]
     options:
-      - name: --kind
-        value: KIND
-        basis: agent-proposal
-        meaning: kind of the draft read from "-"; without it the draft's
-          own kind field is used; with PATH it is a usage error
-          (cli.option-not-applicable)
-    default_without_path: the whole selected repository (project
+      - {name: -f, value: "PATH | -", repeatable: true, required: true}
+    writes: repository files (creates or replaces items; never deletes)
+    confirmation: when the plan replaces an existing file (PK-CLI-014)
+    location: repository-storage@v1 assigns the path from kind, namespace,
+      and name
+    invalid_document: validation failure; no file written
+    unchanged_document: not in the plan
+    semantics_owner: repository-storage@v1, content-kinds@v1
+    check: after apply, processkit get TYPE NAME -o json returns the
+      applied content; a second apply of the same documents plans nothing
+    basis: agent-proposal (owner decision 2026-11-11, #212)
+    requirements: [PK-PROD-012, PK-CLI-004, PK-CLI-014, PK-CLI-053,
+                   PK-CLI-054]
+  - name: validate
+    synopsis: processkit validate [TYPE [NAME...]] [-n N] [-f PATH|-]...
+    arguments:
+      - {name: TYPE, meaning: "validate every item of the kind; with
+           -f -, the kind of the draft"}
+      - {name: NAME, meaning: validate only the named items}
+    options:
+      - name: -f
+        value: "PATH | -"
+        meaning: an item file or a directory (every item file below it);
+          "-" reads one draft from standard input; not combinable with
+          another -f or with NAME (cli.conflicting-options)
+    default_without_type_and_file: the whole selected repository (project
       configuration, every item in the content directory, references,
       overrides, the lock)
     writes: nothing
     mcp_equivalent: validate(kind, content)
     semantics_owner: content-kinds@v1
-    check: draft content read from "-" is validated and no file is written;
-      result and diagnostics equal those of the MCP validate tool for the
-      same content
+    check: draft content read from "-f -" is validated and no file is
+      written; result and diagnostics equal those of the MCP validate tool
+      for the same content
     basis: agent-proposal
     requirements: [PK-PROD-005, PK-PROD-012, PK-CLI-001, PK-CLI-002,
                    PK-CLI-042, PK-CLI-043]
   - name: format
-    synopsis: processkit format [PATH...]
-    default_without_path: every item in the content directory
+    synopsis: processkit format [TYPE [NAME...]] [-n N] [-f PATH]...
+    default_without_type_and_file: every item in the content directory
       (basis agent-proposal)
     writes: repository files (rewrites existing items)
     confirmation: when the plan overwrites a file (always, if it changes
@@ -193,12 +285,13 @@ commands:
     check: a second run changes no file; existing files are overwritten only
       after confirmation
     requirements: [PK-CLI-004, PK-CLI-014, PK-CLI-036, PK-CLI-043]
-  - name: list
-    synopsis: processkit list KIND [--selector S] [--namespace N]
-      [--limit N] [--cursor C] [--excluded]
+  - name: get TYPE
+    synopsis: processkit get TYPE [-l S] [-n N | -A] [--limit N]
+      [--cursor C] [--excluded]
     options:
-      - {name: --selector, value: S}
-      - {name: --namespace, value: N}
+      - {name: -l / --selector, value: S}
+      - {name: -n / --namespace, value: N}
+      - {name: -A / --all-namespaces}
       - {name: --limit, value: N, basis: agent-proposal}
       - {name: --cursor, value: C, basis: agent-proposal}
       - {name: --excluded, value: none, basis: agent-proposal,
@@ -209,22 +302,22 @@ commands:
       excluded?)
     semantics_owner: mcp-context-serving@v1
     requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005,
-                   PK-CLI-040]
-  - name: show
-    synopsis: processkit show KIND NAME [--namespace N] [--level L]
-      [--section S]
+                   PK-CLI-040, PK-CLI-049, PK-CLI-051]
+  - name: get TYPE NAME
+    synopsis: processkit get TYPE NAME [-n N] [--level L] [--section S]
+    names: exactly one NAME; more is a usage error, cli.unexpected-argument
     options:
-      - {name: --namespace, value: N, basis: agent-proposal}
+      - {name: -n / --namespace, value: N, basis: agent-proposal}
       - {name: --level, value: L}
       - {name: --section, value: S}
     writes: nothing
     mcp_equivalent: get(kind, name, namespace?, level?, section?)
     semantics_owner: mcp-context-serving@v1
     requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005,
-                   PK-CLI-040]
-  - name: context
-    synopsis: processkit context [--task T] [--profile P]... [--path PATH]...
-      [--kind K]... [--level L] [--excluded]
+                   PK-CLI-040, PK-CLI-049, PK-CLI-051]
+  - name: get context
+    synopsis: processkit get context [--task T] [--profile P]...
+      [--path PATH]... [--kind K]... [--level L] [--excluded]
     options:
       - {name: --task, value: T}
       - {name: --profile, value: P, repeatable: true}
@@ -235,6 +328,7 @@ commands:
       - {name: --excluded, value: none, basis: agent-proposal,
          effect: also list pin-excluded items (mcp-context-serving@v1
          PK-MCP-072)}
+    names: none; a NAME is a usage error, cli.unexpected-argument
     writes: nothing
     principal: local (access-control@v1)
     mcp_equivalent: get_context(task?, profiles?, paths?, kinds?, level?,
@@ -244,10 +338,10 @@ commands:
       by the same user returns for the same arguments
     requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005,
                    PK-CLI-007, PK-CLI-040, PK-CLI-041]
-  - name: explain
-    synopsis: processkit explain KIND NAME [--namespace N]
+  - name: describe
+    synopsis: processkit describe TYPE NAME [-n N]
     options:
-      - {name: --namespace, value: N, basis: agent-proposal}
+      - {name: -n / --namespace, value: N, basis: agent-proposal}
     writes: nothing
     mcp_equivalent: explain(kind, name, namespace?)
     semantics_owner: inheritance@v1
@@ -255,12 +349,14 @@ commands:
     requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-005,
                    PK-CLI-040]
   - name: lock
-    synopsis: processkit lock [--update [NAME]]
+    synopsis: processkit lock [--update] [UPSTREAM...]
     options:
       - {name: --update, meaning: re-resolve refs; a flag without value}
     arguments:
-      - {name: NAME, optional: true, only_with: --update,
-         meaning: upstream to update (inheritance@v1)}
+      - {name: UPSTREAM, repeatable: true, only_with: --update,
+         meaning: upstreams to update (inheritance@v1); without UPSTREAM,
+         --update updates every upstream}
+    upstream_without_update: usage error, cli.unexpected-argument
     writes: repository files (the lock)
     network: none; resolves only from the local cache
     missing_fetched_data: environment failure, cli.upstream-not-fetched,
@@ -278,21 +374,26 @@ commands:
     semantics_owner: inheritance@v1
     check: no repository file changes; only the local cache changes
     requirements: [PK-CLI-004]
-  - name: ontology list
-    synopsis: processkit ontology list
+  - name: api-resources
+    synopsis: processkit api-resources
     writes: nothing
     mcp_equivalent: ontology()
+    text_columns: concept name, plural, short name, definition or instance
     semantics_owner: ontology@v1
     requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-040]
-  - name: ontology show
-    synopsis: processkit ontology show CONCEPT
+  - name: explain
+    synopsis: processkit explain TYPE
+    arguments:
+      - {name: TYPE, meaning: a concept name, or a kind's plural or short
+           name (type_names)}
     writes: nothing
     mcp_equivalent: ontology(concept)
     semantics_owner: ontology@v1
-    requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-040]
-  - name: access
-    synopsis: processkit access whoami | processkit access can-i VERB KIND
-      [NAME] --as USER [--as-group G]... [--namespace N]
+    requirements: [PK-PROD-005, PK-CLI-001, PK-CLI-002, PK-CLI-040,
+                   PK-CLI-049]
+  - name: auth
+    synopsis: processkit auth whoami | processkit auth can-i VERB TYPE
+      [NAME] --as USER [--as-group G]... [-n N]
     subcommands: [whoami, can-i]
     arguments_and_output: access-control@v1
     writes: nothing
@@ -303,7 +404,7 @@ commands:
     options:
       - {name: --profile, value: NAME, repeatable: true,
          effect: pins profiles (mcp-context-serving@v1)}
-    stdout: MCP protocol only; --json is a usage error
+    stdout: MCP protocol only; -o is a usage error
     writes: nothing
     semantics_owner: mcp-context-serving@v1
     requirements: [PK-PROD-005, PK-CLI-030]
@@ -313,7 +414,7 @@ commands:
       - {name: --listen, value: ADDRESS}
       - {name: --profile, value: NAME, repeatable: true,
          effect: pins profiles (mcp-context-serving@v1)}
-    stdout: nothing; --json is a usage error
+    stdout: nothing; -o is a usage error
     writes: nothing
     semantics_owner: access-control@v1
     requirements: [PK-PROD-005, PK-CLI-030]
@@ -326,11 +427,11 @@ commands:
     semantics_owner: v0-migration@v1
     requirements: [PK-CLI-004, PK-CLI-012, PK-CLI-013, PK-CLI-014,
                    PK-CLI-034]
-  - name: config show
-    synopsis: processkit config show
+  - name: config view
+    synopsis: processkit config view
     writes: nothing
     data: schemas/config-report.schema.json
-    check: with --json, every supported key appears once with its source;
+    check: with -o json, every supported key appears once with its source;
       no secret value appears in stdout or stderr
     requirements: [PK-CONFIG-003, PK-CONFIG-007, PK-OUT-004]
   - name: version
@@ -364,47 +465,58 @@ commands:
 
 mcp_mapping:
   # CLI operand or option -> MCP tool argument. An option that is not
-  # given is omitted from the call, so the MCP default applies.
+  # given is omitted from the call, so the MCP default applies, except
+  # namespace: without -n the CLI passes the root Container's namespace,
+  # and with -A it omits namespace (PK-CLI-051).
   rule: data equals the tool's structured result; diagnostics equal the
     tool's diagnostics
   principal: local (access-control@v1); same as a stdio server started by
     the same operating-system user
   entries:
-    - {cli: list KIND, mcp: list.kind}
-    - {cli: list --selector S, mcp: list.selector}
-    - {cli: list --namespace N, mcp: list.namespace}
-    - {cli: list --limit N, mcp: list.limit}
-    - {cli: list --cursor C, mcp: list.cursor}
-    - {cli: show KIND NAME, mcp: "get.kind and get.name"}
-    - {cli: show --namespace N, mcp: get.namespace}
-    - {cli: show --level L, mcp: get.level}
-    - {cli: show --section S, mcp: get.section}
-    - {cli: context --task T, mcp: get_context.task}
-    - {cli: context --profile P (each in order), mcp: get_context.profiles}
-    - {cli: context --path PATH (each in order), mcp: get_context.paths}
-    - {cli: context --kind K (each in order), mcp: get_context.kinds}
-    - {cli: context --level L, mcp: get_context.level}
-    - {cli: explain KIND NAME, mcp: "explain.kind and explain.name"}
-    - {cli: explain --namespace N, mcp: explain.namespace}
-    - {cli: "validate - (standard input, UTF-8)", mcp: validate.content}
-    - {cli: "validate --kind K, else the draft's kind field",
+    - {cli: get TYPE, mcp: list.kind}
+    - {cli: get TYPE -l S, mcp: list.selector}
+    - {cli: "get TYPE -n N, else root; omitted with -A", mcp: list.namespace}
+    - {cli: get TYPE --limit N, mcp: list.limit}
+    - {cli: get TYPE --cursor C, mcp: list.cursor}
+    - {cli: get TYPE --excluded, mcp: list.excluded}
+    - {cli: get TYPE NAME, mcp: "get.kind and get.name"}
+    - {cli: "get TYPE NAME -n N, else root", mcp: get.namespace}
+    - {cli: get TYPE NAME --level L, mcp: get.level}
+    - {cli: get TYPE NAME --section S, mcp: get.section}
+    - {cli: get context --task T, mcp: get_context.task}
+    - {cli: get context --profile P (each in order),
+       mcp: get_context.profiles}
+    - {cli: get context --path PATH (each in order), mcp: get_context.paths}
+    - {cli: get context --kind K (each in order), mcp: get_context.kinds}
+    - {cli: get context --level L, mcp: get_context.level}
+    - {cli: get context --excluded, mcp: get_context.excluded}
+    - {cli: describe TYPE NAME, mcp: "explain.kind and explain.name"}
+    - {cli: "describe -n N, else root", mcp: explain.namespace}
+    - {cli: "validate -f - (standard input, UTF-8)", mcp: validate.content}
+    - {cli: "validate TYPE -f -, else the draft's kind field",
        mcp: validate.kind}
-    - {cli: ontology list, mcp: ontology()}
-    - {cli: ontology show CONCEPT, mcp: ontology.concept}
+    - {cli: api-resources, mcp: ontology()}
+    - {cli: explain TYPE, mcp: "ontology.concept (TYPE resolved to the
+       concept name)"}
+  type_resolution: TYPE is resolved to the exact kind or concept name
+    (type_names) before the call
   basis: agent-proposal
-  requirements: [PK-CLI-001, PK-CLI-007, PK-CLI-040, PK-CLI-041]
+  requirements: [PK-CLI-001, PK-CLI-007, PK-CLI-040, PK-CLI-041,
+                 PK-CLI-049, PK-CLI-051]
 
 writing_commands:
-  repository_files: [init, new, format, lock, migrate]
+  repository_files: [init, create, apply, format, lock, migrate]
   local_cache_only: [fetch]
   all_other_commands: write nothing
   order_of_steps:
     - compute the plan (inputs and target digests bound)
-    - print the plan (`plan` with --json; in text mode on standard output
-      with --dry-run, else on standard error)
-    - with --dry-run, stop; exit 0
+    - print the plan (`plan` with -o json or yaml; in text mode on standard
+      output with a dry run, else on standard error)
+    - with --dry-run=client, stop; exit 0
     - committed-target check (repository-storage@v1 PK-STORE-056); on
       failure refuse, exit 4
+    - with --dry-run=server, run the remaining checks of a real run, then
+      stop
     - confirmation when required (prompt, or --yes); on failure refuse,
       exit 4
     - staleness check; on failure cli.plan-stale, exit 4
@@ -412,7 +524,7 @@ writing_commands:
   check: after any other command, repository files and the local cache are
     unchanged
   requirements: [PK-CLI-004, PK-CLI-013, PK-CLI-014, PK-CLI-031,
-                 PK-CLI-034, PK-CLI-035, PK-CLI-036]
+                 PK-CLI-034, PK-CLI-035, PK-CLI-036, PK-CLI-052]
 
 git_boundary:
   never: [stage, commit, push, open pull requests]
@@ -550,15 +662,18 @@ errors:
                  PK-CLI-014, PK-CLI-022, PK-CLI-027, PK-CLI-029, PK-CLI-030,
                  PK-CLI-033, PK-CLI-034, PK-CLI-035, PK-CLI-038, PK-CLI-042,
                  PK-CLI-044, PK-CLI-048, PK-CONFIG-001, PK-CONFIG-002,
-                 PK-CONFIG-004, PK-CONFIG-005, PK-CONFIG-008, PK-OUT-008]
+                 PK-CONFIG-004, PK-CONFIG-005, PK-CONFIG-008, PK-OUT-008,
+                 PK-CLI-049, PK-CLI-050, PK-CLI-051, PK-CLI-052, PK-CLI-054,
+                 PK-CLI-055]
   cli_side_of_other_codes:
     - code: storage.target-not-committed
       owner: repository-storage@v1 (PK-STORE-056)
       category: refused
       exit_code: 4
       next_action: commit-or-stash
-      with_dry_run: severity warning; exit code 0
-      requirements: [PK-CLI-036]
+      with_dry_run_client: severity warning; exit code 0
+      with_dry_run_server: as in a real run; exit code 4
+      requirements: [PK-CLI-036, PK-CLI-052]
     - code: storage.write-failed
       owner: repository-storage@v1 (PK-STORE-057)
       category: environment
@@ -575,14 +690,14 @@ interactivity:
   non_interactive_without_yes: refused, cli.confirmation-required
   confirmation_required:
     always: [init, migrate]
-    when_plan_overwrites_replaces_or_deletes: [new, format, lock]
+    when_plan_overwrites_replaces_or_deletes: [create, apply, format, lock]
     never: [fetch]   # writes only the local cache
-  json_does_not_change_interactivity: true
+  output_format_does_not_change_interactivity: true
   requirements: [PK-CLI-014, PK-CLI-032, PK-CLI-033, PK-CLI-034]
 
 streams:
-  stdout: results (text, or exactly one envelope with --json); MCP protocol
-    only for mcp serve --stdio
+  stdout: results (text, or exactly one envelope with -o json or yaml); MCP
+    protocol only for mcp serve --stdio
   stderr: [text diagnostics, text-mode plans of runs that may write,
            prompts, operational logs (default sink)]
   color: none when stdout is not a terminal, NO_COLOR is non-empty, or
@@ -606,7 +721,7 @@ logging:
   requirements: [PK-OUT-003, PK-OUT-008]
 
 redaction:
-  applies_to: [logs, diagnostics, errors, config show]
+  applies_to: [logs, diagnostics, errors, config view]
   redacted: [bearer material, certificates,
              values matching configured secret patterns]
   patterns_key: redaction.patterns (operator configuration; list of

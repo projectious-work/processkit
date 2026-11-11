@@ -9,7 +9,7 @@
   "properties": {
     "operation": {
       "description": "The command that created the plan.",
-      "enum": ["init", "new", "format", "lock", "migrate", "fetch"]
+      "enum": ["init", "create", "apply", "format", "lock", "migrate", "fetch"]
     },
     "root": {
       "description": "Absolute path of the selected repository root.",
@@ -17,7 +17,7 @@
       "minLength": 1
     },
     "release": {
-      "description": "processkit release that computed the plan, as in processkit version --json 'release'.",
+      "description": "processkit release that computed the plan, as in processkit version -o json 'release'.",
       "type": "string",
       "minLength": 1
     },

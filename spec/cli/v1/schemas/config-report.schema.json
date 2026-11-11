@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.projectious.work/processkit/v1/cli/config-report.schema.json",
   "title": "processkit effective configuration",
-  "description": "The 'data' of processkit config show --json (cli@v1 PK-CONFIG-003, PK-CONFIG-007).",
+  "description": "The 'data' of processkit config view -o json (cli@v1 PK-CONFIG-003, PK-CONFIG-007).",
   "type": "object",
   "additionalProperties": false,
   "required": ["files", "values", "rejected"],
