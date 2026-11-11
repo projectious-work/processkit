@@ -475,7 +475,7 @@ call. Pinning limits relevance; it is not a confidentiality control.
   The trust class shall come from kind and validation outcome only and
   shall not grant any authority over tools, configuration, or access
   (security@v1 PK-SEC-001).
-  <!-- agent proposal: gap row 5, owner decision pending -->
+  <!-- agent proposal: gap row 5, accepted by owner 2026-11-11 (#212) -->
 
 ## Performance
 

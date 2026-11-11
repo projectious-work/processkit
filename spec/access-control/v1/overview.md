@@ -81,8 +81,8 @@ Baseline (`spec/doc/v1`, #197):
 
 Gap row 8 from the governance draft (tag
 `archive/processkit-v1-governance-standards`,
-`13-standard-entity-types.md`), carried as agent proposals pending an owner
-decision:
+`13-standard-entity-types.md`), carried as agent proposals and accepted by
+owner decision 2026-11-11 (#212):
 
 | Source | Carried as | Not carried, and why |
 |---|---|---|
@@ -141,8 +141,8 @@ mcp-context-serving@v1 needs to state, for wave 3:
 | OPEN-access-control-01 | Operator keys `tls.*`, `auth.*`, `access.impersonators`, `limits.principal-*`, `limits.server-requests-per-minute` (`interfaces.yaml` `operator_configuration`); `tls.private-key` is a credential file (PK-SEC-029); limit keys follow PK-SEC-019 and PK-SEC-020; chain with accept, reject, abstain, and anonymous only when all abstain; invalid client certificates fail the TLS handshake; `/mcp`, `/healthz`, RFC 9728 metadata, HTTP 401 `access.unauthenticated` (PK-ACC-034, PK-ACC-035, PK-ACC-038, PK-ACC-055). | agent proposal |
 | OPEN-access-control-02 | OIDC user claim `sub`, groups claim `groups`, both configurable; discovery for keys; asymmetric algorithms only; 60 s skew; audience is the resource identifier. `local` asserts the login name and no groups; anonymous is `system:anonymous` (PK-ACC-036, PK-ACC-037). | agent proposal |
 | OPEN-access-control-03 | Headers `X-Remote-User` and `X-Remote-Group` (configurable); a proxy is a client certificate from `auth.trusted-proxy.ca-bundle` with a CN in `auth.trusted-proxy.allowed-names` (PK-ACC-039). | agent proposal |
-| OPEN-access-control-04 | `schemas/role.schema.json`: `names` narrows a rule; kinds, verbs, names, and selector combine by AND; no wildcards (PK-ACC-040). | agent proposal; gap row 8 pending |
-| OPEN-access-control-05 | `schemas/binding.schema.json`: subject `User` or `Group`; validity optional with `from` (inclusive) and `until` (exclusive); scope required on `grants-role`; target and scope accept the typed-reference forms of ontology@v1 (PK-ACC-041). | owner decision: #213 finding 5; agent proposal; gap row 8 pending |
+| OPEN-access-control-04 | `schemas/role.schema.json`: `names` narrows a rule; kinds, verbs, names, and selector combine by AND; no wildcards (PK-ACC-040). | agent proposal; gap row 8 accepted by owner 2026-11-11 (#212) |
+| OPEN-access-control-05 | `schemas/binding.schema.json`: subject `User` or `Group`; validity optional with `from` (inclusive) and `until` (exclusive); scope required on `grants-role`; target and scope accept the typed-reference forms of ontology@v1 (PK-ACC-041). | owner decision: #213 finding 5; agent proposal; gap row 8 accepted by owner 2026-11-11 (#212) |
 | OPEN-access-control-06 | Verb per tool, resource and prompt operation, briefing part, and command (`authorization.operation_declarations`, PK-ACC-045). | agent proposal |
 | OPEN-access-control-07 | Separate `impersonate` privilege from `access.impersonators` (PK-ACC-042); `can-i` evaluates the local working copy (PK-ACC-047); the local principal is never evaluated (PK-ACC-046). | agent proposal |
 | OPEN-access-control-08 | `get` resolves against the access set; medians of forbidden and missing differ by at most 2 ms over 1000 interleaved requests (PK-ACC-049). | agent proposal |

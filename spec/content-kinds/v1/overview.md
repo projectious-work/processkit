@@ -119,7 +119,8 @@ MCPServer `sideEffects`; processkit does not enforce or execute them.
 
 ### Gap rows drafted as agent proposals
 
-Owner decision pending; drafted because they fit C1 and C2:
+Drafted because they fit C1 and C2; accepted by owner 2026-11-11
+(#212):
 
 - **Gap row 6** (governance draft 04, PK-PKG-024 to PK-PKG-026): a
   `linear` shape of ProcessSpecification (PK-PROC-011) and per-state

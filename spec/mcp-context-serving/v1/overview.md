@@ -55,8 +55,8 @@ This slug does not cover:
   redaction — `security@v1`;
 - repository layout, the local cache directory, and the revision object —
   `repository-storage@v1`;
-- catalogue entries that name a product toolkit profile — not in v1,
-  pending owner decision on #204 P2.
+- catalogue entries that name a product toolkit profile — not in v1
+  (#204 P2, left out by owner decision 2026-11-11 (#212)).
 
 ## Governing decisions
 
@@ -103,7 +103,7 @@ Owner-accepted proposal carried: issue #204, section P1 (serve-time pinned
 profiles) as PK-MCP-051 to 057. PK-MCP-056 (the pinned profile set counts
 as a normalized argument) is confirmed by owner decision #213 finding 1.
 Lesson 1 of #204 (gateway-compatible identity) needs no change. P2
-(catalogue toolkits) is not carried.
+(catalogue toolkits) is not carried (owner decision 2026-11-11, #212).
 
 Owner decision #213 finding 2 changed PK-MCP-044: items that only a pin
 leaves out are counted with a stable reference and listed only on request
@@ -111,10 +111,11 @@ leaves out are counted with a stable reference and listed only on request
 
 Gap row 5 (instruction versus reference trust on served content, governance
 draft `16-agent-native-posture.md` PK-AGENT-020, 023, 024) is drafted as
-PK-MCP-087. The owner has not decided it. It fits C4 and C5 because the
-class is derived from kind and validation outcome only, and it fits the
-prompt and tool injection rule of `agent-native-product-interfaces.md`
-because content is instruction only after review and grants no authority.
+PK-MCP-087 and accepted by owner 2026-11-11 (#212). It fits C4 and C5
+because the class is derived from kind and validation outcome only, and it
+fits the prompt and tool injection rule of
+`agent-native-product-interfaces.md` because content is instruction only
+after review and grants no authority.
 
 Supporting context (not carried as requirements): the disclosure-level table
 and PK-CONT-001/003/004 of `04-governance-content.md`; PK-STD-005

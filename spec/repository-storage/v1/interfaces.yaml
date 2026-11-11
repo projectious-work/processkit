@@ -469,7 +469,8 @@ writes:
 release_owned:
   items: [schemas, templates, ontology registry]
   default: used from the installed release; not copied into the repository
-  vendoring: open (OPEN-repository-storage-07)
+  vendoring: none in v1; no release-pin key (OPEN-repository-storage-07,
+    owner decision 2026-11-11 (#212))
   observable: after init and new with defaults, no schema or template file
     exists in the repository
   requirements: [PK-STORE-030, PK-STORE-060]
@@ -598,22 +599,4 @@ errors:
     category: validation
     requirements: [PK-STORE-061]
 
-open:
-  - id: OPEN-repository-storage-07
-    question: How are schemas and templates vendored (command, location,
-      configuration key for pinning a release), how do vendored copies carry
-      the release version and digest, and which diagnostic reports a modified
-      copy?
-    requirements: [PK-STORE-030]
-    recommendation: >-
-      v1 ships no vendoring mechanism and no release-pin key; processkit
-      always uses the installed release, and content pins compatibility
-      through apiVersion (PK-STORE-031). PK-STORE-030's "where a repository
-      vendors them" clause then has no v1 trigger; journey 8 tests only the
-      apiVersion part. If the owner wants vendoring in v1: add
-      `processkit vendor` (cli@v1), writing
-      `<content directory>/vendor/processkit/<release>/` with a
-      `manifest.json` that lists the release version and the sha256 of
-      every copied file; `[release] version` in processkit.toml pins the
-      release; validate reports a digest mismatch as
-      `storage.vendored-modified` (category validation).
+open: []

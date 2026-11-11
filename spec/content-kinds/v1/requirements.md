@@ -153,12 +153,12 @@ example.
   Roles with authority over its outcome. A Gate may declare whether it
   blocks the transition, the evidence its outcome must cite, and the Roles
   that may waive it.
-  <!-- agent proposal: gap row 8, owner decision pending -->
+  <!-- agent proposal: gap row 8, accepted by owner 2026-11-11 (#212) -->
 - **PK-PROC-010:** processkit shall not evaluate a Gate, record a Gate
   outcome, or store a waiver. The outcomes of a Gate are `passed`,
   `failed`, and `waived`; a waiver states authority, reason, scope, and an
   expiry or review condition. The external instance system records them.
-  <!-- agent proposal: gap row 8, owner decision pending -->
+  <!-- agent proposal: gap row 8, accepted by owner 2026-11-11 (#212) -->
 - **PK-PROC-011:** Where a ProcessSpecification declares `shape` `linear`,
   processkit shall require its states to form one ordered chain:
   `initial` is the first state in `states`, every transition goes from a
@@ -166,14 +166,14 @@ example.
   exactly one transition, and only the last state is terminal. If the
   states do not form this chain, then validation shall fail with
   `content-kinds.process-not-linear`.
-  <!-- agent proposal: gap row 6, owner decision pending -->
+  <!-- agent proposal: gap row 6, accepted by owner 2026-11-11 (#212) -->
 - **PK-PROC-012:** A state of a ProcessSpecification may declare its intent
   and its inputs. processkit shall require each input to declare its class
   (`instruction`, `reference`, or `working`) and a description. An input
   may name a typed reference or an artifact. If an input or a Gate's
   evidence names an artifact that no state of the process declares, then
   validation shall fail with `content-kinds.process-unknown-artifact`.
-  <!-- agent proposal: gap row 6, owner decision pending -->
+  <!-- agent proposal: gap row 6, accepted by owner 2026-11-11 (#212) -->
 
 ## Skills
 

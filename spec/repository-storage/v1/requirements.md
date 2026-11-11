@@ -217,6 +217,8 @@ except when it pins a release in configuration.
   explicitly, the vendored copies shall carry the release version and digest,
   and if a vendored copy is modified, then processkit shall fail its
   verification.
+  <!-- owner decision 2026-11-11 (#212): v1 has no vendoring mechanism, so
+  the vendoring clause has no v1 trigger (OPEN-repository-storage-07) -->
 - **PK-STORE-031:** processkit shall require content to declare the
   `apiVersion` it was written for. When processkit validates content,
   processkit shall use the schema of that declared `apiVersion`.

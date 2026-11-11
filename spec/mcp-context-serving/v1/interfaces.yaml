@@ -289,7 +289,7 @@ trust_classes:
   instruction: valid Standard, ProcessSpecification, Skill
   reference: MCPServer, DecisionRecord, Document, and every invalid item
   grants: nothing (security@v1 PK-SEC-001)
-  basis: agent-proposal   # gap row 5; owner decision pending
+  basis: agent-proposal   # gap row 5 accepted by owner 2026-11-11 (#212)
   requirements: [PK-MCP-087]
 
 resources:

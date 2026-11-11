@@ -84,6 +84,7 @@ Gap items carried from the governance draft: none.
 | OPEN-repository-storage-04 | `schemas/revision.schema.json` in the envelope's `revision`; per-item `status.uncommitted` (PK-STORE-062) | agent proposal |
 | OPEN-repository-storage-05 | mechanism and refusal are `cli@v1` PK-CLI-014; entries with action `replace` or `delete` need confirmation | baseline (`cli@v1` PK-CLI-014) |
 | OPEN-repository-storage-06 | `schemas/file-change.schema.json` entries in `data.plan` and `data.changed`, sorted by path; unchanged files omitted; partial failure reported (PK-STORE-057) | agent proposal |
+| OPEN-repository-storage-07 | no vendoring mechanism and no release-pin key in v1; processkit always uses the installed release, and content pins compatibility through `apiVersion` (PK-STORE-031); PK-STORE-030's vendoring clause has no v1 trigger | owner decision 2026-11-11 (#212) |
 | OPEN-repository-storage-08 | missing: `ontology@v1` envelope diagnostic; unsupported: `storage.unsupported-api-version` (PK-STORE-061) | agent proposal |
 | OPEN-repository-storage-09 | root must be the working-copy top level (PK-STORE-043); content directory in a nested repository fails; nested repositories in declared locations are skipped silently (PK-STORE-044) | agent proposal |
 | OPEN-repository-storage-10 | `storage.invalid-encoding`, `storage.invalid-line-ending` (PK-STORE-048); no schema defines a key order in v1; concrete JSON serialization (PK-STORE-049); `format` behavior (PK-STORE-050) | agent proposal |
@@ -94,8 +95,4 @@ Gap items carried from the governance draft: none.
 
 ## Open questions
 
-Mirrors `open` in `interfaces.yaml`.
-
-1. OPEN-repository-storage-07 — vendoring of release-owned schemas and
-   templates. Recommendation: no vendoring mechanism and no release-pin key
-   in v1; see `interfaces.yaml` for the alternative if the owner wants it.
+None. Mirrors `open` in `interfaces.yaml`.

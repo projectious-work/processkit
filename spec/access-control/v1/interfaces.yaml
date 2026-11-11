@@ -396,7 +396,7 @@ content:
           ]
         }
       }
-    basis: agent-proposal; gap row 8, owner decision pending
+    basis: agent-proposal; gap row 8 accepted by owner 2026-11-11 (#212)
     requirements: [PK-ACC-020, PK-ACC-021, PK-ACC-022, PK-ACC-025,
                    PK-ACC-040]
   binding:
@@ -463,8 +463,8 @@ content:
           "validity": { "until": "2027-12-31T23:59:59Z" }
         }
       }
-    basis: "owner decision #213 finding 5; agent-proposal; gap row 8, owner
-      decision pending"
+    basis: "owner decision #213 finding 5; agent-proposal; gap row 8
+      accepted by owner 2026-11-11 (#212)"
     requirements: [PK-ACC-018, PK-ACC-021, PK-ACC-025, PK-ACC-041]
 
 authorization:

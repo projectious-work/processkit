@@ -149,7 +149,7 @@ recommended, "may" optional; IDs are stable and never reused.
   `selector` is present. Kinds and verbs shall have no wildcard. The
   references in `spec.capabilities` shall not change any access decision.
   <!-- agent proposal: OPEN-access-control-04 -->
-  <!-- agent proposal: gap row 8, owner decision pending -->
+  <!-- agent proposal: gap row 8, accepted by owner 2026-11-11 (#212) -->
 - **PK-ACC-041:** A Binding shall have the shape of
   `schemas/binding.schema.json` for every relation type. A `grants-role`
   Binding shall have a principal subject (`User` or `Group`), a Role target,
@@ -162,7 +162,7 @@ recommended, "may" optional; IDs are stable and never reused.
   <!-- owner decision: #213 finding 5 (fields, scope only on grants-role,
        Container/root) -->
   <!-- agent proposal: OPEN-access-control-05 -->
-  <!-- agent proposal: gap row 8, owner decision pending -->
+  <!-- agent proposal: gap row 8, accepted by owner 2026-11-11 (#212) -->
 - **PK-ACC-054:** processkit shall report the conditions of PK-ACC-025 with
   the codes in `interfaces.yaml` (`validation_errors`). A Role or Binding
   with any other validation error of severity error shall grant nothing. An
